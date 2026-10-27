@@ -30,7 +30,7 @@ func hit_stop(duration_sec: float, time_scale: float = 0.05) -> void:
 
 
 func screen_shake(strength: float, duration: float) -> void:
-	if _camera_rig != null:
+	if is_instance_valid(_camera_rig):
 		_camera_rig.shake(strength, duration)
 
 

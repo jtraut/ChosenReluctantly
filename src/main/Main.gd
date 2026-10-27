@@ -16,3 +16,6 @@ func _ready() -> void:
 	enemy_spawner.target = player
 	hud.set_player(player)
 	debug_overlay.player = player
+	var problems := SceneSelfCheck.find_problems(self)
+	if not problems.is_empty():
+		push_error("Main scene self-check FAILED (world may render empty): " + "; ".join(problems))

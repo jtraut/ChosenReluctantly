@@ -1,25 +1,25 @@
 # Handoff State
 
-Last updated: 2026-10-26, well into Milestone 2. The architectural core is done; the test runner also had a real bug that's now fixed.
+Last updated: 2026-10-26. **Milestone 2 is done.**
 
 ## What's done
-- Project scaffold, gdUnit4, docs, role agents, README, isometric camera + Player (movement/aim), basic attack + dodge roll, full combat/status/effect-template/card architecture, and the 5-slot card system wired into Player — all committed, see `git log` for the full sequence (each commit is one vertical slice with its own tests).
-- Architectural core, specifically: `StatModifiers` (generic modifier stack), `Health`/`Hurtbox`/`CombatMath`/`MeleeQuery` (combat foundation), `StatusEffectManager`/`StatusDatabase` + Burn (generic status effects), `EffectTemplates`/`EffectContext`/`Projectile` (all 7 effect templates: projectile, cone, aoe, dash, heal, apply_status, buff), `CardSchema`/`CardDatabase`/`SlotTypeDatabase`/`PoolDatabase`/`JsonDataTable` (data-driven cards/slots/pools), `CardSlot`/`CardSlotController` (the 5-slot mini-deck system, wired into `Player` on keys 1-5 + Ctrl+1-5 swap).
-- **data/cards/ is still empty** - no starter cards authored yet. Every slot is correctly inert in the running game until that task lands.
-- Fixed a real bug in `tools/run_tests.ps1`: it was silently reporting exit 0 even for a failing test (PowerShell's `&` doesn't reliably wait on/read a GUI-subsystem process). Now auto-switches to the `_console.exe` sibling. Verified both directions (deliberately failing test -> 100, clean -> 0).
-- 57/57 tests passing headless. Every commit so far verified with: `--headless --editor --quit` (parse/class-cache clean), `--headless --path . --quit-after 30` (runtime clean), and the full test suite.
+Everything in `docs/ROADMAP.md`'s Milestone 2 list is checked off and verified: isometric camera + Player (movement/aim), basic attack + dodge roll, the full combat/status/effect-template/card architecture (`StatModifiers`, `Health`/`Hurtbox`/`CombatMath`/`MeleeQuery`, `StatusEffectManager`/`StatusDatabase`+Burn, all 7 `EffectTemplates`, `CardSchema`/`CardDatabase`/`SlotTypeDatabase`/`PoolDatabase`, `CardSlot`/`CardSlotController`), 3 enemy types + wave spawner, the 15-card Fire Rogue starter set, HUD + F3 debug overlay, the juice pass (hit-stop/shake/damage numbers/hit-flash/telegraphs), and a headless bot-sim stub. See `git log` for the full commit-by-commit sequence - each is one vertical slice with its own tests.
+
+Final verification before marking the milestone done: fresh `--headless --editor --quit` (zero errors/warnings), a 20-second `--headless --path . --quit-after 1200` run (zero errors - long enough for enemy waves to spawn, chase, attack, and get hit by the player), full test suite (**62/62 passing**), and the bot-sim (20 rooms clean, no NaN).
+
+Two real bugs were found and fixed along the way (both logged in `docs/DECISIONS.md` with detail): `tools/run_tests.ps1` was silently reporting exit 0 for a failing test (PowerShell doesn't reliably wait on a GUI-subsystem process); and the bot-sim's nodes weren't `is_inside_tree()` until the main loop ticked once, since it drives everything from `_initialize()`.
+
+**What I cannot verify myself:** actually playing it. The DoD's "I can play a wave arena with the Fire Rogue using all 5 slots plus basic attack and dodge" needs the director at the keyboard - everything automatable says the systems are wired correctly and crash-free, but feel/fun is not something I can self-certify.
 
 ## In progress
-Nothing mid-implementation. Just finished the card slot system commit. Next up is enemies.
+Nothing. Milestone 2 is closed out. Milestone 3 (card system and run loop) hasn't been started - see `docs/ROADMAP.md` for its outline.
 
-## Exact next step (in order)
-1. **Enemies + wave spawner:** melee chaser, ranged shooter, and one elemental-resistant type (to exercise `CombatMath.apply_resistance`'s cap). Health/Hurtbox/StatusEffectManager already exist as reusable components (see `scenes/debug/TrainingDummy.tscn` for the pattern) - enemies are mostly: a chase/shoot behavior script + reusing those components + simple hit reaction (flash/knockback) + a spawner that sends waves into the arena.
-2. **Starter card set (~12-15 JSON cards)** for the Fire Rogue, into `data/cards/`: some physical Rogue cards, some Fire cards that `apply_status` Burn, a few neutral cards. Must include: one fast card with a negative `cooldown_modifier`, one AoE, one dash-style Movement card, one Recovery card. Dry/sarcastic flavor text per GDD §11 tone. Add the "every real card in data/cards/ validates" test here (enumerate via DirAccess) - this is the specific schema-validation test the kickoff prompt calls out, and it only makes sense once there's real data to enumerate.
-3. **HUD:** 5 slot widgets (name, cooldown sweep, next-card preview) + health bar. Debug overlay on F3 (FPS, slot cooldowns, deck contents).
-4. **Juice pass:** hit-stop, screen shake on heavy hits, damage numbers, hit flash, enemy attack telegraphs.
-5. **Headless bot-sim stub in `/tools`:** runs a bot through N rooms with random card draws, reports crashes/NaN. A stub is fine for this milestone.
-6. **QA pass:** review each already-landed feature against the GDD + its tests before marking Milestone 2 done in `docs/ROADMAP.md`.
-7. Update `docs/ROADMAP.md` (milestone 2 complete, milestone 3 outlined - already is) and this file, then the final summary to the director per the kickoff prompt's Definition of Done.
+## Exact next step
+Wait for the director's playtest and design feedback before starting Milestone 3. If asked to proceed anyway: Milestone 3's first real decision is the two open questions it inherits from GDD §14 item 1 (single-card reward offer vs. choice of several; whether shops/drops exist alongside post-battle rewards) - resolve those via the GDD's own `[PROPOSED]` defaults if no new director input arrives, log in `docs/DECISIONS.md`, then start with the room-graph/run-structure data model before the reward screen, since the reward screen needs somewhere to fire between rooms.
 
 ## Open questions for the director
-None blocking — remaining Milestone 2 ambiguities (enemy stat values, exact juice tuning, card flavor jokes) are all things to log a default for in `docs/DECISIONS.md` and keep moving, not things to stop and ask about.
+None blocking. Everything to actually look at and react to:
+- Does the core loop (move/aim/basic-attack/dodge + 5 card slots) feel good? This is literally the only question Milestone 2 was scoped to answer.
+- Are the enemy/card damage and cooldown numbers in the right neighborhood, or wildly off? They're placeholder tuning values, logged as such in `docs/DECISIONS.md`.
+- Is the Ctrl+number dead-card-swap binding comfortable, or does it want a different default?
+- Tone check on the card flavor text (dry/sarcastic, per GDD §11) - too much, too little, right amount?

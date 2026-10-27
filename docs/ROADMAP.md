@@ -15,7 +15,7 @@ Engine, perspective, and slice classes/elements decided (Godot, 3D isometric, Ro
 - [x] Role agents in `.claude/agents/`
 - [x] `README.md` with run/test instructions
 
-## Milestone 2 — Combat Feel Prototype (current)
+## Milestone 2 — Combat Feel Prototype — **Done**
 Goal: one arena room where moving, aiming, and using card slots already feels good. The only question this milestone answers is "is the core combat fun?"
 
 - [x] Camera and player: fixed isometric 3D camera, capsule player, WASD movement, mouse-raycast aim, smooth camera follow
@@ -26,16 +26,16 @@ Goal: one arena room where moving, aiming, and using card slots already feels go
 - [x] Effect-template registry: projectile, cone, aoe, dash, heal, apply_status, buff
 - [x] Card slot system: 5 data-driven slots, mini-decks, shuffle/reshuffle, cooldown = base + modifier, dead-card swap with penalty cooldown
 - [x] Status effect system, generic, with Burn as the first implementation
-- [ ] Damage/resistance model: elemental-only resistance, caps per GDD §7
+- [x] Damage/resistance model: elemental-only resistance, caps per GDD §7
 - [x] Enemies: melee chaser, ranged shooter, resistant elemental type; health, hit reactions, knockback, simple chase AI
 - [x] Wave spawner for the arena
 - [x] HUD: 5 slot widgets (name, cooldown sweep, next-card preview), health bar
 - [x] Debug overlay (F3): FPS, slot cooldowns, deck contents
 - [x] Starter card set: ~12-15 JSON cards for Fire Rogue (class/element/neutral pools)
 - [x] Juice pass: hit-stop, screen shake, damage numbers, hit flash, enemy attack telegraphs
-- [ ] Unit tests: cooldown math, slot cycling/reshuffle, dead-card swap penalty, resistance math, Burn tick, card schema validation
+- [x] Unit tests: cooldown math, slot cycling/reshuffle, dead-card swap penalty, resistance math, Burn tick, card schema validation
 - [x] Headless bot-simulation stub in `/tools`
-- [ ] QA pass over the milestone before marking done
+- [x] QA pass over the milestone before marking done
 
 ## Milestone 3 — Card system and run loop (next, outlined only)
 Not started. Expected scope per GDD §13 milestone 3 and §9:

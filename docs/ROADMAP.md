@@ -34,7 +34,7 @@ Goal: one arena room where moving, aiming, and using card slots already feels go
 - [x] Starter card set: ~12-15 JSON cards for Fire Rogue (class/element/neutral pools)
 - [x] Juice pass: hit-stop, screen shake, damage numbers, hit flash, enemy attack telegraphs
 - [ ] Unit tests: cooldown math, slot cycling/reshuffle, dead-card swap penalty, resistance math, Burn tick, card schema validation
-- [ ] Headless bot-simulation stub in `/tools`
+- [x] Headless bot-simulation stub in `/tools`
 - [ ] QA pass over the milestone before marking done
 
 ## Milestone 3 — Card system and run loop (next, outlined only)

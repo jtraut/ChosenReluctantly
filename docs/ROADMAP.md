@@ -18,7 +18,7 @@ Engine, perspective, and slice classes/elements decided (Godot, 3D isometric, Ro
 ## Milestone 2 — Combat Feel Prototype (current)
 Goal: one arena room where moving, aiming, and using card slots already feels good. The only question this milestone answers is "is the core combat fun?"
 
-- [ ] Camera and player: fixed isometric 3D camera, capsule player, WASD movement, mouse-raycast aim, smooth camera follow
+- [x] Camera and player: fixed isometric 3D camera, capsule player, WASD movement, mouse-raycast aim, smooth camera follow
 - [ ] Basic attack: left click, fixed cooldown, melee arc (see DECISIONS.md)
 - [ ] Dodge roll: Space, i-frames, own cooldown, universal (separate from Movement slot)
 - [ ] Generic stat-modifier system (stub values, data-driven hook for future passives/equipment)

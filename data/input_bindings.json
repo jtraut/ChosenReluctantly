@@ -1,0 +1,6 @@
+{
+    "move_forward": [{ "type": "key", "keycode": "W" }],
+    "move_back": [{ "type": "key", "keycode": "S" }],
+    "move_left": [{ "type": "key", "keycode": "A" }],
+    "move_right": [{ "type": "key", "keycode": "D" }]
+}

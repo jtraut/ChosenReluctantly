@@ -1,0 +1,17 @@
+# Normalize line endings; Godot text resources are line-based and merge better as LF
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ogg binary
+*.wav binary
+*.ttf binary
+*.otf binary
+*.glb binary
+*.gltf binary
+*.import binary
+
+# Avoid accidental diffs/merges on generated or binary-ish Godot files
+*.tres -diff
+*.tscn -diff

@@ -11,7 +11,3 @@
 *.glb binary
 *.gltf binary
 *.import binary
-
-# Avoid accidental diffs/merges on generated or binary-ish Godot files
-*.tres -diff
-*.tscn -diff

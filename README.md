@@ -19,6 +19,6 @@ Tests use [gdUnit4](https://github.com/godot-gdunit-labs/gdUnit4), vendored in `
 powershell -File tools\run_tests.ps1
 ```
 
-This resolves the Godot binary from `$env:GODOT_BIN` (set it first if `godot` isn't on PATH), runs every suite under `/tests`, and exits non-zero on any failure. Reports are written to `reports/` (gitignored).
+This resolves the Godot binary from `$env:GODOT_BIN` (set it first if `godot` isn't on PATH), runs every suite under `/tests`, and exits non-zero on any failure. Reports are written to `reports/` (gitignored). It automatically prefers the console-subsystem `*_console.exe` build if one sits next to the resolved binary — PowerShell can't reliably wait on or read output from the windowed build, which otherwise makes failures look like passes (see `docs/DECISIONS.md`).
 
 > Note: new global-class scripts (addons, autoloads) aren't picked up by a plain headless run. If tests fail with "Could not find type X in current scope" after adding one, run `godot --headless --editor --quit --path .` once to rebuild the class cache, then re-run the tests.

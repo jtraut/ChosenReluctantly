@@ -6,7 +6,7 @@ class_name Health
 
 signal damaged(amount: float, damage_type: String)
 signal healed(amount: float)
-signal health_changed(current: float, max: float)
+signal health_changed(current: float, maximum: float)
 signal died()
 
 @export var max_health: float = 20.0

@@ -30,6 +30,10 @@ var draw_pile: Array[String] = []
 var discard_pile: Array[String] = []
 var current_card_id: String = ""
 var cooldown_remaining: float = 0.0
+## The cooldown duration set by the most recent use_card()/swap_card() call,
+## purely informational (the HUD divides cooldown_remaining by this to draw
+## a sweep/bar) - nothing here reads it back for gameplay logic.
+var last_cooldown_duration: float = 0.0
 
 var _rng: RandomNumberGenerator
 
@@ -78,6 +82,7 @@ func use_card(card_cooldown_modifier: float, stat_modifiers: StatModifiers = nul
 	discard_pile.append(used_card_id)
 	_draw_next_card()
 	cooldown_remaining = _compute_cooldown(card_cooldown_modifier, stat_modifiers)
+	last_cooldown_duration = cooldown_remaining
 	return used_card_id
 
 
@@ -90,6 +95,7 @@ func swap_card() -> bool:
 	discard_pile.append(current_card_id)
 	_draw_next_card()
 	cooldown_remaining = swap_penalty
+	last_cooldown_duration = swap_penalty
 	return true
 
 

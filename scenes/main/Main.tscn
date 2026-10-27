@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://src/main/Main.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="2"]
@@ -8,6 +8,8 @@
 [ext_resource type="PackedScene" path="res://scenes/enemies/MeleeChaser.tscn" id="6"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/RangedShooter.tscn" id="7"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/FireResistantGolem.tscn" id="8"]
+[ext_resource type="PackedScene" path="res://scenes/ui/Hud.tscn" id="9"]
+[ext_resource type="PackedScene" path="res://scenes/ui/DebugOverlay.tscn" id="10"]
 
 [sub_resource type="Environment" id="Environment_1"]
 background_mode = 1
@@ -48,3 +50,7 @@ wave_interval = 10.0
 enemies_per_wave = 2
 spawn_radius = 12.0
 min_spawn_distance = 6.0
+
+[node name="Hud" parent="." instance=ExtResource("9")]
+
+[node name="DebugOverlay" parent="." instance=ExtResource("10")]

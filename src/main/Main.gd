@@ -5,6 +5,8 @@ class_name Main
 @onready var player: Player = $Player
 @onready var camera_rig: CameraRig = $CameraRig
 @onready var enemy_spawner: EnemySpawner = $EnemySpawner
+@onready var hud: Hud = $Hud
+@onready var debug_overlay: DebugOverlay = $DebugOverlay
 
 
 func _ready() -> void:
@@ -12,3 +14,5 @@ func _ready() -> void:
 	camera_rig.global_position = player.global_position
 	player.camera = camera_rig.camera
 	enemy_spawner.target = player
+	hud.set_player(player)
+	debug_overlay.player = player

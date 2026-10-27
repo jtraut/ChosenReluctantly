@@ -1,8 +1,9 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://src/main/Main.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/camera/CameraRig.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://scenes/debug/TrainingDummy.tscn" id="4"]
 
 [sub_resource type="Environment" id="Environment_1"]
 background_mode = 1
@@ -32,3 +33,6 @@ material = SubResource("StandardMaterial3D_floor")
 [node name="Player" parent="." instance=ExtResource("2")]
 
 [node name="CameraRig" parent="." instance=ExtResource("3")]
+
+[node name="TrainingDummy" parent="." instance=ExtResource("4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3)

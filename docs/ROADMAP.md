@@ -19,8 +19,8 @@ Engine, perspective, and slice classes/elements decided (Godot, 3D isometric, Ro
 Goal: one arena room where moving, aiming, and using card slots already feels good. The only question this milestone answers is "is the core combat fun?"
 
 - [x] Camera and player: fixed isometric 3D camera, capsule player, WASD movement, mouse-raycast aim, smooth camera follow
-- [ ] Basic attack: left click, fixed cooldown, melee arc (see DECISIONS.md)
-- [ ] Dodge roll: Space, i-frames, own cooldown, universal (separate from Movement slot)
+- [x] Basic attack: left click, fixed cooldown, melee arc (see DECISIONS.md)
+- [x] Dodge roll: Space, i-frames, own cooldown, universal (separate from Movement slot)
 - [ ] Generic stat-modifier system (stub values, data-driven hook for future passives/equipment)
 - [ ] Card data schema + loader + validation (fails loudly on malformed JSON)
 - [ ] Effect-template registry: projectile, cone, aoe, dash, heal, apply_status, buff

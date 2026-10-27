@@ -24,7 +24,7 @@ Goal: one arena room where moving, aiming, and using card slots already feels go
 - [x] Generic stat-modifier system (stub values, data-driven hook for future passives/equipment)
 - [x] Card data schema + loader + validation (fails loudly on malformed JSON)
 - [x] Effect-template registry: projectile, cone, aoe, dash, heal, apply_status, buff
-- [ ] Card slot system: 5 data-driven slots, mini-decks, shuffle/reshuffle, cooldown = base + modifier, dead-card swap with penalty cooldown
+- [x] Card slot system: 5 data-driven slots, mini-decks, shuffle/reshuffle, cooldown = base + modifier, dead-card swap with penalty cooldown
 - [x] Status effect system, generic, with Burn as the first implementation
 - [ ] Damage/resistance model: elemental-only resistance, caps per GDD §7
 - [ ] Enemies: melee chaser, ranged shooter, resistant elemental type; health, hit reactions, knockback, simple chase AI

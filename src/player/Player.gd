@@ -17,8 +17,13 @@ class_name Player
 @export var dodge_duration: float = 0.25
 @export var dodge_cooldown: float = 0.8
 
+## Milestone 2 has one character: a Fire Rogue with no class/element pick
+## yet, so this is a fixed export rather than real character creation.
+@export var owned_pools: Array[String] = ["rogue", "fire", "neutral"]
+
 var camera: Camera3D = null
 var stat_modifiers := StatModifiers.new()
+var card_slots: CardSlotController
 
 @onready var hurtbox: Hurtbox = $Hurtbox
 @onready var health: Health = $Health
@@ -34,8 +39,14 @@ var _forced_move_time_remaining: float = 0.0
 var _forced_move_invulnerable: bool = false
 
 
+func _ready() -> void:
+	var team := hurtbox.team if hurtbox != null else "player"
+	card_slots = CardSlotController.new(self, get_tree().current_scene, team, stat_modifiers, owned_pools)
+
+
 func _physics_process(delta: float) -> void:
 	_tick_cooldowns(delta)
+	card_slots.advance(delta)
 	_handle_dodge_input()
 	if _forced_move_time_remaining > 0.0:
 		_apply_forced_move(delta)
@@ -43,6 +54,7 @@ func _physics_process(delta: float) -> void:
 		_apply_movement(delta)
 	_apply_aim(delta)
 	_handle_attack()
+	_handle_card_slot_input()
 	move_and_slide()
 
 
@@ -110,6 +122,17 @@ func _perform_melee_attack() -> void:
 		"range": attack_range,
 		"half_angle_degrees": attack_half_angle_degrees,
 	}, context)
+
+
+## exact_match=true matters here: without it, Ctrl+1 would also register as
+## a plain "1" press and fire slot_1 and dead_card_swap_1 in the same frame.
+func _handle_card_slot_input() -> void:
+	for i in range(CardSlotController.SLOT_TYPE_ORDER.size()):
+		var slot_type := CardSlotController.slot_type_at_index(i)
+		if Input.is_action_just_pressed("dead_card_swap_%d" % (i + 1), true):
+			card_slots.try_swap(slot_type)
+		elif Input.is_action_just_pressed("slot_%d" % (i + 1), true):
+			card_slots.try_use(slot_type)
 
 
 func _movement_input_direction() -> Vector3:

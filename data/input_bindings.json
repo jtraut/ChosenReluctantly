@@ -4,5 +4,15 @@
     "move_left": [{ "type": "key", "keycode": "A" }],
     "move_right": [{ "type": "key", "keycode": "D" }],
     "dodge": [{ "type": "key", "keycode": "Space" }],
-    "attack_basic": [{ "type": "mouse_button", "button": "LEFT" }]
+    "attack_basic": [{ "type": "mouse_button", "button": "LEFT" }],
+    "slot_1": [{ "type": "key", "keycode": "1" }],
+    "slot_2": [{ "type": "key", "keycode": "2" }],
+    "slot_3": [{ "type": "key", "keycode": "3" }],
+    "slot_4": [{ "type": "key", "keycode": "4" }],
+    "slot_5": [{ "type": "key", "keycode": "5" }],
+    "dead_card_swap_1": [{ "type": "key", "keycode": "1", "ctrl": true }],
+    "dead_card_swap_2": [{ "type": "key", "keycode": "2", "ctrl": true }],
+    "dead_card_swap_3": [{ "type": "key", "keycode": "3", "ctrl": true }],
+    "dead_card_swap_4": [{ "type": "key", "keycode": "4", "ctrl": true }],
+    "dead_card_swap_5": [{ "type": "key", "keycode": "5", "ctrl": true }]
 }

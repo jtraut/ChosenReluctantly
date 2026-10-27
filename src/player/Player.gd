@@ -121,6 +121,7 @@ func _perform_melee_attack() -> void:
 		"damage_type": "physical",
 		"range": attack_range,
 		"half_angle_degrees": attack_half_angle_degrees,
+		"knockback_strength": 3.0,
 	}, context)
 
 

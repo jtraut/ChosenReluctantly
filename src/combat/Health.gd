@@ -4,7 +4,7 @@ class_name Health
 ## Resistance is per-element, data on this node (set it for enemies via their
 ## spawner/data); physical damage always ignores resistance.
 
-signal damaged(amount: float, damage_type: String)
+signal damaged(amount: float, damage_type: String, knockback: Vector3)
 signal healed(amount: float)
 signal health_changed(current: float, maximum: float)
 signal died()
@@ -22,7 +22,7 @@ func _ready() -> void:
 	current_health = max_health
 
 
-func take_damage(amount: float, damage_type: String = "physical") -> void:
+func take_damage(amount: float, damage_type: String = "physical", knockback: Vector3 = Vector3.ZERO) -> void:
 	if _is_dead or amount <= 0.0:
 		return
 	var resistance_fraction: float = resistances.get(damage_type, 0.0)
@@ -30,7 +30,7 @@ func take_damage(amount: float, damage_type: String = "physical") -> void:
 	if final_amount <= 0.0:
 		return
 	current_health = maxf(current_health - final_amount, 0.0)
-	damaged.emit(final_amount, damage_type)
+	damaged.emit(final_amount, damage_type, knockback)
 	health_changed.emit(current_health, max_health)
 	if current_health <= 0.0 and not _is_dead:
 		_is_dead = true

@@ -5,6 +5,7 @@ class_name Projectile
 ## and frees itself on hit or at max range, independent of whoever cast it.
 
 @export var hit_radius: float = 0.25
+@export var knockback_strength: float = 0.0
 
 var _damage: float = 0.0
 var _damage_type: String = "physical"
@@ -51,5 +52,6 @@ func _on_area_entered(area: Area3D) -> void:
 	var hurtbox: Hurtbox = area
 	if hurtbox.team == _exclude_team:
 		return
-	hurtbox.receive_damage(_damage, _damage_type)
+	var knockback := _direction * knockback_strength if knockback_strength > 0.0 else Vector3.ZERO
+	hurtbox.receive_damage(_damage, _damage_type, knockback)
 	queue_free()

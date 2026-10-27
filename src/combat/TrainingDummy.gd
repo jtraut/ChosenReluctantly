@@ -11,7 +11,7 @@ func _ready() -> void:
 	health.died.connect(_on_died)
 
 
-func _on_damaged(amount: float, damage_type: String) -> void:
+func _on_damaged(amount: float, damage_type: String, _knockback: Vector3) -> void:
 	print("TrainingDummy took %.1f %s damage (%.1f/%.1f hp)" % [amount, damage_type, health.current_health, health.max_health])
 
 

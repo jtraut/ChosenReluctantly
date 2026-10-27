@@ -62,8 +62,9 @@ static func _execute_cone(params: Dictionary, context: EffectContext) -> void:
 		CollisionLayers.HURTBOX
 	)
 	context.last_hits = hits
+	var knockback_strength: float = params.get("knockback_strength", 0.0)
 	for hurtbox: Hurtbox in hits:
-		hurtbox.receive_damage(params["damage"], params["damage_type"])
+		hurtbox.receive_damage(params["damage"], params["damage_type"], _knockback_from(context.caster.global_position, hurtbox.global_position, knockback_strength))
 
 
 static func _execute_aoe(params: Dictionary, context: EffectContext) -> void:
@@ -76,8 +77,22 @@ static func _execute_aoe(params: Dictionary, context: EffectContext) -> void:
 		CollisionLayers.HURTBOX
 	)
 	context.last_hits = hits
+	var knockback_strength: float = params.get("knockback_strength", 0.0)
 	for hurtbox: Hurtbox in hits:
-		hurtbox.receive_damage(params["damage"], params["damage_type"])
+		hurtbox.receive_damage(params["damage"], params["damage_type"], _knockback_from(context.caster.global_position, hurtbox.global_position, knockback_strength))
+
+
+## Horizontal-only impulse pointing from `origin` toward `target_pos`, scaled
+## by `strength`. Zero strength (the common case - most cards have none)
+## is a real Vector3.ZERO, not a tiny near-zero vector.
+static func _knockback_from(origin: Vector3, target_pos: Vector3, strength: float) -> Vector3:
+	if strength <= 0.0:
+		return Vector3.ZERO
+	var away := target_pos - origin
+	away.y = 0.0
+	if away.length_squared() < 0.0001:
+		return Vector3.ZERO
+	return away.normalized() * strength
 
 
 static func _execute_projectile(params: Dictionary, context: EffectContext) -> void:
@@ -87,6 +102,7 @@ static func _execute_projectile(params: Dictionary, context: EffectContext) -> v
 	var forward: Vector3 = -context.caster.global_transform.basis.z
 	var origin: Vector3 = context.caster.global_position + forward * 0.6
 	instance.hit_radius = params["hit_radius"]
+	instance.knockback_strength = params.get("knockback_strength", 0.0)
 	instance.launch(origin, forward, params["damage"], params["damage_type"], params["speed"], params["max_range"], context.caster_team)
 	# Async flight: this effect's damage lands later, so it never populates last_hits.
 	context.last_hits = []

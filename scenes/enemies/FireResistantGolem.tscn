@@ -1,0 +1,56 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/enemies/Enemy.gd" id="1"]
+[ext_resource type="Script" path="res://src/combat/Health.gd" id="2"]
+[ext_resource type="Script" path="res://src/combat/StatusEffectManager.gd" id="3"]
+[ext_resource type="Script" path="res://src/combat/Hurtbox.gd" id="4"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1"]
+size = Vector3(1.2, 1.9, 1.2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_1"]
+size = Vector3(1.2, 1.9, 1.2)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1"]
+albedo_color = Color(0.45, 0.4, 0.38, 1)
+
+[node name="FireResistantGolem" type="CharacterBody3D"]
+collision_layer = 4
+collision_mask = 5
+script = ExtResource("1")
+move_speed = 2.0
+attack_range = 2.0
+attack_damage = 9.0
+attack_cooldown = 1.8
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+shape = SubResource("BoxShape3D_1")
+
+[node name="BodyMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+mesh = SubResource("BoxMesh_1")
+material_override = SubResource("StandardMaterial3D_1")
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("2")
+max_health = 50.0
+resistances = {
+"fire": 0.5
+}
+
+[node name="StatusEffectManager" type="Node" parent="."]
+script = ExtResource("3")
+health_path = NodePath("../Health")
+
+[node name="Hurtbox" type="Area3D" parent="."]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("4")
+team = "enemy"
+health_path = NodePath("../Health")
+status_manager_path = NodePath("../StatusEffectManager")
+
+[node name="HurtboxShape" type="CollisionShape3D" parent="Hurtbox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+shape = SubResource("BoxShape3D_1")

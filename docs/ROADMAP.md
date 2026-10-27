@@ -27,8 +27,8 @@ Goal: one arena room where moving, aiming, and using card slots already feels go
 - [x] Card slot system: 5 data-driven slots, mini-decks, shuffle/reshuffle, cooldown = base + modifier, dead-card swap with penalty cooldown
 - [x] Status effect system, generic, with Burn as the first implementation
 - [ ] Damage/resistance model: elemental-only resistance, caps per GDD §7
-- [ ] Enemies: melee chaser, ranged shooter, resistant elemental type; health, hit reactions, knockback, simple chase AI
-- [ ] Wave spawner for the arena
+- [x] Enemies: melee chaser, ranged shooter, resistant elemental type; health, hit reactions, knockback, simple chase AI
+- [x] Wave spawner for the arena
 - [ ] HUD: 5 slot widgets (name, cooldown sweep, next-card preview), health bar
 - [ ] Debug overlay (F3): FPS, slot cooldowns, deck contents
 - [ ] Starter card set: ~12-15 JSON cards for Fire Rogue (class/element/neutral pools)

@@ -1,0 +1,58 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/enemies/Enemy.gd" id="1"]
+[ext_resource type="Script" path="res://src/combat/Health.gd" id="2"]
+[ext_resource type="Script" path="res://src/combat/StatusEffectManager.gd" id="3"]
+[ext_resource type="Script" path="res://src/combat/Hurtbox.gd" id="4"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+radius = 0.4
+height = 1.6
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_1"]
+radius = 0.4
+height = 1.6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1"]
+albedo_color = Color(0.3, 0.25, 0.75, 1)
+
+[node name="RangedShooter" type="CharacterBody3D"]
+collision_layer = 4
+collision_mask = 5
+script = ExtResource("1")
+move_speed = 3.0
+is_ranged = true
+preferred_range = 7.0
+attack_damage = 4.0
+attack_cooldown = 1.6
+projectile_speed = 9.0
+projectile_max_range = 18.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+shape = SubResource("CapsuleShape3D_1")
+
+[node name="BodyMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+mesh = SubResource("CapsuleMesh_1")
+material_override = SubResource("StandardMaterial3D_1")
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("2")
+max_health = 14.0
+
+[node name="StatusEffectManager" type="Node" parent="."]
+script = ExtResource("3")
+health_path = NodePath("../Health")
+
+[node name="Hurtbox" type="Area3D" parent="."]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("4")
+team = "enemy"
+health_path = NodePath("../Health")
+status_manager_path = NodePath("../StatusEffectManager")
+
+[node name="HurtboxShape" type="CollisionShape3D" parent="Hurtbox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+shape = SubResource("CapsuleShape3D_1")

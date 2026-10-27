@@ -4,9 +4,11 @@ class_name Main
 
 @onready var player: Player = $Player
 @onready var camera_rig: CameraRig = $CameraRig
+@onready var enemy_spawner: EnemySpawner = $EnemySpawner
 
 
 func _ready() -> void:
 	camera_rig.target = player
 	camera_rig.global_position = player.global_position
 	player.camera = camera_rig.camera
+	enemy_spawner.target = player

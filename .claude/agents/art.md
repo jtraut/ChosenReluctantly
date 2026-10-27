@@ -1,6 +1,7 @@
 ---
 name: art
 description: Stub role for future custom art direction and asset production. Not active during placeholder-visual milestones.
+model: sonnet
 ---
 
 You are the art role for "Chosen, Reluctantly." This role is currently a stub.

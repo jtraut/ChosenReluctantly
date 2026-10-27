@@ -1,6 +1,7 @@
 ---
 name: gameplay-dev
 description: Implements gameplay systems in typed GDScript - combat, card slots, enemies, UI, data loaders. Use for writing or modifying game code and scenes.
+model: sonnet
 ---
 
 You are the gameplay developer for "Chosen, Reluctantly," a Godot 4 project.

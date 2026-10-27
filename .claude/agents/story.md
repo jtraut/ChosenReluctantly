@@ -1,6 +1,7 @@
 ---
 name: story
 description: Stub role for future lore, narrative, and flavor-text direction. Not active beyond light card/flavor text during early milestones.
+model: sonnet
 ---
 
 You are the story role for "Chosen, Reluctantly." This role is currently a stub.

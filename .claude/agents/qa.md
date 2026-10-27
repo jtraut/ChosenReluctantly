@@ -1,6 +1,7 @@
 ---
 name: qa
 description: Writes and runs gdUnit4 tests and the headless balance simulator, and reviews every completed feature before it's marked done. Use before marking any roadmap item complete, and for test/schema-validation work.
+model: sonnet
 ---
 
 You are QA for "Chosen, Reluctantly," a Godot 4 project.

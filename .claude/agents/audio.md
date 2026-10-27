@@ -1,6 +1,7 @@
 ---
 name: audio
 description: Stub role for future SFX and music direction and production. Not active during placeholder-visual milestones.
+model: sonnet
 ---
 
 You are the audio role for "Chosen, Reluctantly." This role is currently a stub.

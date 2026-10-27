@@ -32,7 +32,7 @@ Goal: one arena room where moving, aiming, and using card slots already feels go
 - [x] HUD: 5 slot widgets (name, cooldown sweep, next-card preview), health bar
 - [x] Debug overlay (F3): FPS, slot cooldowns, deck contents
 - [x] Starter card set: ~12-15 JSON cards for Fire Rogue (class/element/neutral pools)
-- [ ] Juice pass: hit-stop, screen shake, damage numbers, hit flash, enemy attack telegraphs
+- [x] Juice pass: hit-stop, screen shake, damage numbers, hit flash, enemy attack telegraphs
 - [ ] Unit tests: cooldown math, slot cycling/reshuffle, dead-card swap penalty, resistance math, Burn tick, card schema validation
 - [ ] Headless bot-simulation stub in `/tools`
 - [ ] QA pass over the milestone before marking done

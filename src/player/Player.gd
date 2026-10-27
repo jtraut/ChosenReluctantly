@@ -21,15 +21,22 @@ class_name Player
 ## yet, so this is a fixed export rather than real character creation.
 @export var owned_pools: Array[String] = ["rogue", "fire", "neutral"]
 
+const HIT_FLASH_COLOR := Color(1.0, 0.3, 0.3)
+const HIT_FLASH_DURATION := 0.15
+const KNOCKBACK_DECAY := 18.0
+
 var camera: Camera3D = null
 var stat_modifiers := StatModifiers.new()
 var card_slots: CardSlotController
 
 @onready var hurtbox: Hurtbox = $Hurtbox
 @onready var health: Health = $Health
+@onready var body_mesh: MeshInstance3D = $BodyMesh
 
 var _attack_cooldown_remaining: float = 0.0
 var _dodge_cooldown_remaining: float = 0.0
+var _base_body_color: Color = Color.WHITE
+var _knockback_velocity: Vector3 = Vector3.ZERO
 
 # Generic forced-motion override (dodge roll, and later any Movement-slot
 # "dash" card): while active, this drives velocity instead of normal input.
@@ -42,10 +49,17 @@ var _forced_move_invulnerable: bool = false
 func _ready() -> void:
 	var team := hurtbox.team if hurtbox != null else "player"
 	card_slots = CardSlotController.new(self, get_tree().current_scene, team, stat_modifiers, owned_pools)
+	health.damaged.connect(_on_damaged)
+	var material := body_mesh.material_override
+	if material is StandardMaterial3D:
+		var unique_material: StandardMaterial3D = (material as StandardMaterial3D).duplicate()
+		body_mesh.material_override = unique_material
+		_base_body_color = unique_material.albedo_color
 
 
 func _physics_process(delta: float) -> void:
 	_tick_cooldowns(delta)
+	_knockback_velocity = _knockback_velocity.move_toward(Vector3.ZERO, KNOCKBACK_DECAY * delta)
 	card_slots.advance(delta)
 	_handle_dodge_input()
 	if _forced_move_time_remaining > 0.0:
@@ -56,6 +70,21 @@ func _physics_process(delta: float) -> void:
 	_handle_attack()
 	_handle_card_slot_input()
 	move_and_slide()
+
+
+func _on_damaged(amount: float, damage_type: String, knockback: Vector3) -> void:
+	_knockback_velocity = knockback
+	_flash_body(HIT_FLASH_COLOR)
+	Juice.on_hit_landed(global_position, amount, damage_type)
+
+
+func _flash_body(color: Color) -> void:
+	var material := body_mesh.material_override
+	if not (material is StandardMaterial3D):
+		return
+	(material as StandardMaterial3D).albedo_color = color
+	var tween := create_tween()
+	tween.tween_property(material, "albedo_color", _base_body_color, HIT_FLASH_DURATION)
 
 
 func _tick_cooldowns(delta: float) -> void:
@@ -157,8 +186,8 @@ func _apply_movement(delta: float) -> void:
 	var rate := acceleration if move_dir.length_squared() > 0.0 else friction
 	horizontal_velocity = horizontal_velocity.move_toward(target_velocity, rate * delta)
 
-	velocity.x = horizontal_velocity.x
-	velocity.z = horizontal_velocity.z
+	velocity.x = horizontal_velocity.x + _knockback_velocity.x
+	velocity.z = horizontal_velocity.z + _knockback_velocity.z
 
 	if is_on_floor():
 		velocity.y = 0.0

@@ -129,9 +129,10 @@ func _execute_attack() -> void:
 		}, context)
 
 
-func _on_damaged(_amount: float, _damage_type: String, knockback: Vector3) -> void:
+func _on_damaged(amount: float, damage_type: String, knockback: Vector3) -> void:
 	_knockback_velocity = knockback
 	_flash_body(HIT_FLASH_COLOR)
+	Juice.on_hit_landed(global_position, amount, damage_type)
 
 
 func _on_died() -> void:

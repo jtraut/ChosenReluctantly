@@ -1,0 +1,27 @@
+{
+    "attack_single": {
+        "display_name": "Attack: Single",
+        "base_cooldown": 1.0,
+        "input_action": "slot_1"
+    },
+    "attack_aoe": {
+        "display_name": "Attack: AoE",
+        "base_cooldown": 2.5,
+        "input_action": "slot_2"
+    },
+    "utility": {
+        "display_name": "Utility",
+        "base_cooldown": 4.0,
+        "input_action": "slot_3"
+    },
+    "movement": {
+        "display_name": "Movement",
+        "base_cooldown": 3.0,
+        "input_action": "slot_4"
+    },
+    "recovery": {
+        "display_name": "Recovery",
+        "base_cooldown": 8.0,
+        "input_action": "slot_5"
+    }
+}

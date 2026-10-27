@@ -1,0 +1,5 @@
+{
+    "rogue": { "kind": "class", "display_name": "Rogue" },
+    "fire": { "kind": "element", "display_name": "Fire" },
+    "neutral": { "kind": "neutral", "display_name": "Neutral" }
+}

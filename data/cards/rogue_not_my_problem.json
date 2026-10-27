@@ -1,0 +1,11 @@
+{
+    "id": "rogue_not_my_problem",
+    "name": "Not My Problem",
+    "slot_type": "utility",
+    "pool": "rogue",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "Delegates the follow-up swing to Future Me.",
+    "effects": [
+        { "template": "buff", "params": { "stat": "slot_cooldown.attack_single", "modifier_type": "additive", "value": -0.5, "duration": 6.0 } }
+    ]
+}

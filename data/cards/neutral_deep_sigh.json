@@ -1,0 +1,11 @@
+{
+    "id": "neutral_deep_sigh",
+    "name": "Deep Sigh",
+    "slot_type": "utility",
+    "pool": "neutral",
+    "cooldown_modifier": 0.5,
+    "flavor_text": "Gathers the will to keep going. Briefly.",
+    "effects": [
+        { "template": "buff", "params": { "stat": "slot_cooldown.recovery", "modifier_type": "additive", "value": -2.0, "duration": 8.0 } }
+    ]
+}

@@ -1,0 +1,11 @@
+{
+    "id": "neutral_pointy_stick",
+    "name": "Pointy Stick",
+    "slot_type": "attack_single",
+    "pool": "neutral",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "Everyone starts somewhere.",
+    "effects": [
+        { "template": "projectile", "params": { "damage": 6, "damage_type": "physical", "speed": 10.0, "max_range": 12.0, "hit_radius": 0.25 } }
+    ]
+}

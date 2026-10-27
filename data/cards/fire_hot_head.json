@@ -1,0 +1,11 @@
+{
+    "id": "fire_hot_head",
+    "name": "Hot Head",
+    "slot_type": "utility",
+    "pool": "fire",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "A brief, manageable rage.",
+    "effects": [
+        { "template": "buff", "params": { "stat": "slot_cooldown.attack_aoe", "modifier_type": "additive", "value": -0.8, "duration": 6.0 } }
+    ]
+}

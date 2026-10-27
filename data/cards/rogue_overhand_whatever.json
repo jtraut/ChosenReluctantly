@@ -1,0 +1,11 @@
+{
+    "id": "rogue_overhand_whatever",
+    "name": "Overhand, Whatever",
+    "slot_type": "attack_single",
+    "pool": "rogue",
+    "cooldown_modifier": 0.3,
+    "flavor_text": "A bigger stab. More effort than I'd like.",
+    "effects": [
+        { "template": "cone", "params": { "damage": 12, "damage_type": "physical", "range": 2.0, "half_angle_degrees": 40, "knockback_strength": 2.0 } }
+    ]
+}

@@ -1,0 +1,11 @@
+{
+    "id": "rogue_everyone_calm_down",
+    "name": "Everyone Calm Down",
+    "slot_type": "attack_aoe",
+    "pool": "rogue",
+    "cooldown_modifier": 0.5,
+    "flavor_text": "A wide, unenthusiastic sweep.",
+    "effects": [
+        { "template": "aoe", "params": { "damage": 8, "damage_type": "physical", "radius": 3.0, "knockback_strength": 2.0 } }
+    ]
+}

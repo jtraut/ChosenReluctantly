@@ -1,0 +1,11 @@
+{
+    "id": "fire_flaming_nonsense",
+    "name": "Flaming Nonsense",
+    "slot_type": "attack_single",
+    "pool": "fire",
+    "cooldown_modifier": 0.2,
+    "flavor_text": "Throws fire at the problem. Works surprisingly often.",
+    "effects": [
+        { "template": "projectile", "params": { "damage": 9, "damage_type": "fire", "speed": 11.0, "max_range": 14.0, "hit_radius": 0.3 } }
+    ]
+}

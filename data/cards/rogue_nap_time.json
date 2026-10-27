@@ -1,0 +1,11 @@
+{
+    "id": "rogue_nap_time",
+    "name": "Nap Time (Brief)",
+    "slot_type": "recovery",
+    "pool": "rogue",
+    "cooldown_modifier": -1.5,
+    "flavor_text": "Closes your eyes for exactly one (1) second. Technically rest.",
+    "effects": [
+        { "template": "heal", "params": { "amount": 8 } }
+    ]
+}

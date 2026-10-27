@@ -1,0 +1,11 @@
+{
+    "id": "rogue_quick_slash",
+    "name": "Quick, I Guess",
+    "slot_type": "attack_single",
+    "pool": "rogue",
+    "cooldown_modifier": -0.4,
+    "flavor_text": "A fast, uninspired stab. It'll do.",
+    "effects": [
+        { "template": "cone", "params": { "damage": 5, "damage_type": "physical", "range": 1.8, "half_angle_degrees": 45, "knockback_strength": 1.0 } }
+    ]
+}

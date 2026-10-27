@@ -1,0 +1,11 @@
+{
+    "id": "neutral_shrug_bomb",
+    "name": "Shrug Bomb",
+    "slot_type": "attack_aoe",
+    "pool": "neutral",
+    "cooldown_modifier": -0.3,
+    "flavor_text": "It's not a strategy. It's a shrug with consequences.",
+    "effects": [
+        { "template": "aoe", "params": { "damage": 5, "damage_type": "physical", "radius": 2.2 } }
+    ]
+}

@@ -1,0 +1,11 @@
+{
+    "id": "rogue_ugh_fine_moving",
+    "name": "Ugh, Fine, Moving",
+    "slot_type": "movement",
+    "pool": "rogue",
+    "cooldown_modifier": -0.3,
+    "flavor_text": "Repositions. Grudgingly.",
+    "effects": [
+        { "template": "dash", "params": { "distance": 4.5, "speed": 16.0 } }
+    ]
+}

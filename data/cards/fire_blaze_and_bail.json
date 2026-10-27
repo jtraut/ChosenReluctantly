@@ -1,0 +1,13 @@
+{
+    "id": "fire_blaze_and_bail",
+    "name": "Blaze and Bail",
+    "slot_type": "movement",
+    "pool": "fire",
+    "cooldown_modifier": 0.4,
+    "flavor_text": "Sets the immediate area on fire, then leaves it to figure that out.",
+    "effects": [
+        { "template": "aoe", "params": { "damage": 6, "damage_type": "fire", "radius": 2.5 } },
+        { "template": "apply_status", "params": { "status_id": "burn", "duration": 4.0 } },
+        { "template": "dash", "params": { "distance": 4.0, "speed": 15.0 } }
+    ]
+}

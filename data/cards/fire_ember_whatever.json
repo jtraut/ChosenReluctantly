@@ -1,0 +1,12 @@
+{
+    "id": "fire_ember_whatever",
+    "name": "Ember, Whatever",
+    "slot_type": "attack_single",
+    "pool": "fire",
+    "cooldown_modifier": 0.1,
+    "flavor_text": "A little fire. A little regret, probably, for them.",
+    "effects": [
+        { "template": "cone", "params": { "damage": 5, "damage_type": "fire", "range": 1.8, "half_angle_degrees": 45 } },
+        { "template": "apply_status", "params": { "status_id": "burn", "duration": 4.0 } }
+    ]
+}

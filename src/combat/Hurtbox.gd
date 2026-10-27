@@ -6,8 +6,10 @@ class_name Hurtbox
 
 @export var team: String = "neutral"
 @export var health_path: NodePath
+@export var status_manager_path: NodePath
 
 var health: Health = null
+var status_manager: StatusEffectManager = null
 var _default_collision_layer: int = 0
 
 
@@ -15,6 +17,8 @@ func _ready() -> void:
 	_default_collision_layer = collision_layer
 	if health_path != NodePath():
 		health = get_node(health_path) as Health
+	if status_manager_path != NodePath():
+		status_manager = get_node(status_manager_path) as StatusEffectManager
 
 
 func receive_damage(amount: float, damage_type: String = "physical") -> void:

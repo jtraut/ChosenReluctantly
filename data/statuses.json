@@ -1,0 +1,10 @@
+{
+    "burn": {
+        "display_name": "Burn",
+        "effect_type": "damage_over_time",
+        "damage_per_tick": 2.0,
+        "damage_type": "fire",
+        "tick_interval": 1.0,
+        "flavor_text": "Fine. It's fine. Everything's fine."
+    }
+}

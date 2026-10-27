@@ -23,7 +23,7 @@ Goal: one arena room where moving, aiming, and using card slots already feels go
 - [x] Dodge roll: Space, i-frames, own cooldown, universal (separate from Movement slot)
 - [x] Generic stat-modifier system (stub values, data-driven hook for future passives/equipment)
 - [ ] Card data schema + loader + validation (fails loudly on malformed JSON)
-- [ ] Effect-template registry: projectile, cone, aoe, dash, heal, apply_status, buff
+- [x] Effect-template registry: projectile, cone, aoe, dash, heal, apply_status, buff
 - [ ] Card slot system: 5 data-driven slots, mini-decks, shuffle/reshuffle, cooldown = base + modifier, dead-card swap with penalty cooldown
 - [x] Status effect system, generic, with Burn as the first implementation
 - [ ] Damage/resistance model: elemental-only resistance, caps per GDD §7

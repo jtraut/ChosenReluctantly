@@ -18,21 +18,27 @@ class_name Player
 @export var dodge_cooldown: float = 0.8
 
 var camera: Camera3D = null
+var stat_modifiers := StatModifiers.new()
 
 @onready var hurtbox: Hurtbox = $Hurtbox
+@onready var health: Health = $Health
 
 var _attack_cooldown_remaining: float = 0.0
 var _dodge_cooldown_remaining: float = 0.0
-var _dodge_time_remaining: float = 0.0
-var _is_dodging: bool = false
-var _dodge_direction: Vector3 = Vector3.FORWARD
+
+# Generic forced-motion override (dodge roll, and later any Movement-slot
+# "dash" card): while active, this drives velocity instead of normal input.
+var _forced_move_direction: Vector3 = Vector3.FORWARD
+var _forced_move_speed: float = 0.0
+var _forced_move_time_remaining: float = 0.0
+var _forced_move_invulnerable: bool = false
 
 
 func _physics_process(delta: float) -> void:
 	_tick_cooldowns(delta)
-	_handle_dodge(delta)
-	if _is_dodging:
-		_apply_dodge_motion(delta)
+	_handle_dodge_input()
+	if _forced_move_time_remaining > 0.0:
+		_apply_forced_move(delta)
 	else:
 		_apply_movement(delta)
 	_apply_aim(delta)
@@ -45,35 +51,44 @@ func _tick_cooldowns(delta: float) -> void:
 	_dodge_cooldown_remaining = maxf(_dodge_cooldown_remaining - delta, 0.0)
 
 
-func _handle_dodge(delta: float) -> void:
-	if _is_dodging:
-		_dodge_time_remaining -= delta
-		if _dodge_time_remaining <= 0.0:
-			_end_dodge()
-		return
-	if _dodge_cooldown_remaining > 0.0:
+func _handle_dodge_input() -> void:
+	if _forced_move_time_remaining > 0.0 or _dodge_cooldown_remaining > 0.0:
 		return
 	if not Input.is_action_just_pressed("dodge"):
 		return
 	var input_dir := _movement_input_direction()
-	_dodge_direction = input_dir if input_dir.length_squared() > 0.0001 else -global_transform.basis.z
-	_is_dodging = true
-	_dodge_time_remaining = dodge_duration
+	var dodge_direction := input_dir if input_dir.length_squared() > 0.0001 else -global_transform.basis.z
 	_dodge_cooldown_remaining = dodge_cooldown
-	if hurtbox != null:
+	start_forced_move(dodge_direction, dodge_speed, dodge_duration, true)
+
+
+## Overrides normal movement input for `duration` seconds, driving velocity
+## directly along `direction` at `speed`. Used by the dodge roll, and by the
+## "dash" card effect template so Movement-slot cards can reuse the same
+## motion/invulnerability machinery instead of duplicating it.
+func start_forced_move(direction: Vector3, speed: float, duration: float, invulnerable: bool = false) -> void:
+	var flat_direction := direction
+	flat_direction.y = 0.0
+	if flat_direction.length_squared() < 0.0001:
+		flat_direction = -global_transform.basis.z
+	_forced_move_direction = flat_direction.normalized()
+	_forced_move_speed = speed
+	_forced_move_time_remaining = duration
+	_forced_move_invulnerable = invulnerable
+	if invulnerable and hurtbox != null:
 		hurtbox.set_invulnerable(true)
 
 
-func _end_dodge() -> void:
-	_is_dodging = false
-	if hurtbox != null:
-		hurtbox.set_invulnerable(false)
-
-
-func _apply_dodge_motion(_delta: float) -> void:
-	velocity.x = _dodge_direction.x * dodge_speed
-	velocity.z = _dodge_direction.z * dodge_speed
+func _apply_forced_move(delta: float) -> void:
+	velocity.x = _forced_move_direction.x * _forced_move_speed
+	velocity.z = _forced_move_direction.z * _forced_move_speed
 	velocity.y = 0.0
+	_forced_move_time_remaining -= delta
+	if _forced_move_time_remaining <= 0.0:
+		_forced_move_time_remaining = 0.0
+		if _forced_move_invulnerable and hurtbox != null:
+			hurtbox.set_invulnerable(false)
+		_forced_move_invulnerable = false
 
 
 func _handle_attack() -> void:
@@ -86,21 +101,15 @@ func _handle_attack() -> void:
 
 
 func _perform_melee_attack() -> void:
-	var world := get_world_3d()
-	if world == null:
-		return
-	var forward := -global_transform.basis.z
-	var hits := MeleeQuery.find_hurtboxes_in_cone(
-		world.direct_space_state,
-		global_position,
-		forward,
-		attack_range,
-		attack_half_angle_degrees,
-		"player",
-		CollisionLayers.HURTBOX
-	)
-	for target_hurtbox: Hurtbox in hits:
-		target_hurtbox.receive_damage(attack_damage, "physical")
+	# The basic attack is just a "cone" effect with no card behind it, so it
+	# goes through the same EffectTemplates path a Rogue card would.
+	var context := EffectContext.new(self, get_tree().current_scene, hurtbox.team if hurtbox != null else "neutral")
+	EffectTemplates.execute("cone", {
+		"damage": attack_damage,
+		"damage_type": "physical",
+		"range": attack_range,
+		"half_angle_degrees": attack_half_angle_degrees,
+	}, context)
 
 
 func _movement_input_direction() -> Vector3:

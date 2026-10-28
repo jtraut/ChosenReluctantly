@@ -45,5 +45,25 @@ func heal(amount: float) -> void:
 	health_changed.emit(current_health, max_health)
 
 
+func get_current_health() -> float:
+	return current_health
+
+
+func get_max_health() -> float:
+	return max_health
+
+
+## Change max HP at runtime (buffs, passives). Clamps current HP and emits
+## health_changed so bars update.
+func set_max_health(new_max: float) -> void:
+	max_health = maxf(new_max, 1.0)
+	current_health = minf(current_health, max_health)
+	health_changed.emit(current_health, max_health)
+
+
+func get_resistance(element: String) -> float:
+	return clampf(resistances.get(element, 0.0), 0.0, resistance_cap)
+
+
 func is_dead() -> bool:
 	return _is_dead

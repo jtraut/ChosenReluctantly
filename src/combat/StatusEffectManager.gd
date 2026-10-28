@@ -7,6 +7,9 @@ class_name StatusEffectManager
 ## change, not a code change. A genuinely new effect_type is a new branch in
 ## `_tick()`.
 
+signal status_applied(status_id: String)
+signal status_expired(status_id: String)
+
 @export var health_path: NodePath
 
 var health: Health = null
@@ -40,7 +43,10 @@ func _ready() -> void:
 ## Applying the same status_id again refreshes its duration (does not stack
 ## multiple instances of the same status).
 func apply_status(status_id: String, status_def: Dictionary, duration: float) -> void:
+	var was_active: bool = _active.has(status_id)
 	_active[status_id] = ActiveStatus.new(status_id, status_def, duration)
+	if not was_active:
+		status_applied.emit(status_id)
 
 
 func has_status(status_id: String) -> bool:
@@ -66,6 +72,7 @@ func _process(delta: float) -> void:
 			expired.append(status_id)
 	for status_id: String in expired:
 		_active.erase(status_id)
+		status_expired.emit(status_id)
 
 
 func _tick(active: ActiveStatus) -> void:

@@ -177,7 +177,8 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
     3. Lower the light per-hit damage (8) and raise damage cards until the rule holds. Do not change non-damage cards, enemy numbers, or the light interval. If the rule forces any card past ~2x its current damage, still apply the simplest compliant numbers, and put a proposal in the hand-back (for example, slowing the light interval).
     4. A data validation check and a test that fail when any damage card breaks the rule.
     5. A before/after table in DECISIONS: every damage card's cast damage, slot cooldown and DPS, plus light and heavy for comparison. Also report rough time-to-kill per enemy type, before and after.
-  - [ ] **3b-2, heavy redesign (gameplay-dev):**
+  - [x] **3b-2, heavy redesign (gameplay-dev):** BUILT 2026-10-28 (7192e13..ee9adbe, 292/292, soak OK). Rogue heavy 8.5 / 1.8 s (4.72 DPS direct, about 5.8 with Burn), arc area 3x light, stun, 50% Burn; Wizard `targeted_aoe` is data-only with a scenario. Director call D5. Follow-ups: (3b-a) a character entry in `/data` replacing the Player `owned_pools` export -> Milestone 3a; (3b-b) a Burn refresh resets its tick timer, so refreshes faster than 1 s deal 0 Burn (pre-existing; gameplay-dev, later); (3b-c) `attack_started` emitted before the wind-up state is set; (3b-d) re-stun emits no signal; qa at 3b-4.
+   
     1. Per-class heavy definitions in data (for example under `heavy`, keyed by class id; the current character's class picks one). Shapes:
        - `arc`: wide melee, larger area than light.
        - `targeted_aoe`: centred on the mouse point, capped at `max_range`, with a ground telegraph during the wind-up. Clamp the target to the max range and the arena, with no errors when off the arena.

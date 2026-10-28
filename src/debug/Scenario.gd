@@ -13,6 +13,14 @@ var _elapsed: float = 0.0
 var _late_hit_done: bool = false
 
 
+static func has_scenario(scenario_id: String) -> bool:
+	var file := FileAccess.open(DATA_PATH, FileAccess.READ)
+	if file == null:
+		return false
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	return typeof(parsed) == TYPE_DICTIONARY and (parsed as Dictionary).has(scenario_id)
+
+
 static func load_def(scenario_id: String) -> Dictionary:
 	var file := FileAccess.open(DATA_PATH, FileAccess.READ)
 	if file == null:

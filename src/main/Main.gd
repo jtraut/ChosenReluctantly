@@ -28,9 +28,15 @@ func _setup_debug_capture() -> void:
 	if args.is_empty():
 		return
 	var config := CaptureArgs.parse(args)
+	var error: String = config["error"]
+	if error != "":
+		push_error("Capture args: " + error)
+		get_tree().quit(1)
+		return
 	var scenario_id: String = config["scenario"]
-	if scenario_id != "":
-		Scenario.setup(self, scenario_id)
+	if scenario_id != "" and Scenario.setup(self, scenario_id) == null:
+		get_tree().quit(1)
+		return
 	var times: Array[float] = config["times"]
 	if not times.is_empty():
 		var capture := ScreenshotCapture.new()

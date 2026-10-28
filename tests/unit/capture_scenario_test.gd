@@ -24,6 +24,20 @@ func test_parse_count_and_interval() -> void:
 func test_parse_ignores_garbage_times() -> void:
 	var cfg := CaptureArgs.parse(PackedStringArray(["--screenshot-after=abc,-1,2"]))
 	assert_array(cfg["times"]).contains_exactly([2.0])
+	assert_str(cfg["error"]).is_not_empty()
+
+
+func test_validate_malformed_args() -> void:
+	assert_str(CaptureArgs.validate(PackedStringArray(["--screenshot-after=abc"]))).contains("abc")
+	assert_str(CaptureArgs.validate(PackedStringArray(["--screenshot-after=-2"]))).is_not_empty()
+	assert_str(CaptureArgs.validate(PackedStringArray(["--screenshot-after="]))).is_not_empty()
+	assert_str(CaptureArgs.validate(PackedStringArray(["--screenshot-count=0"]))).is_not_empty()
+	assert_str(CaptureArgs.validate(PackedStringArray(["--scenario=nope"]))).contains("nope")
+
+
+func test_validate_good_args() -> void:
+	assert_str(CaptureArgs.validate(PackedStringArray())).is_empty()
+	assert_str(CaptureArgs.validate(PackedStringArray(["--screenshot-after=1", "--scenario=hp_bars"]))).is_empty()
 
 
 func test_output_path_single_and_multiple() -> void:

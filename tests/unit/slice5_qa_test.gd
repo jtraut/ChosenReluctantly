@@ -288,27 +288,25 @@ func test_spawn_ring_stays_inside_the_walls_and_away_from_the_player() -> void:
 				under_min += 1
 	# Informational: how many corner spawns fell short of spawn_distance_min (grace covers them).
 	print("QA 5: %d of %d ring spawns were closer than spawn_distance_min (closest %.2f m)" % [under_min, samples, worst])
-	assert_float(float(under_min) / float(samples)).is_less(0.05)
+	assert_int(under_min).is_equal(0)
 
 
-func test_pin_corner_spawn_can_land_almost_on_the_player() -> void:
-	# PIN (S5-4): with the player in an arena corner (19, 19) the 9 to 13 m ring is mostly clamped away.
-	# EnemySpawner._random_spawn_position tries 8 angles and keeps the farthest, but the farthest can still be
-	# under 4 m (seed 11: 0.54 m at (19, -19), about 0.7 percent of spawns come out under spawn_distance_min).
-	# The 1.5 s grace keeps it harmless to HP, but the bodies overlap. Fix: re-roll along the free side
-	# (or spawn along the wall), then flip this assert to "closest >= spawn_distance_min * 0.9".
+func test_corner_spawn_keeps_the_minimum_distance_from_the_player() -> void:
+	# S5-4 (was a PIN): with the player in an arena corner the ring is mostly clamped away, so the spawner
+	# falls back to a sweep of angles. Every spawn is now at least spawn_distance_min from the player.
 	var main := _spawn_root_main()
 	await _frames(2)
 	var spawner: EnemySpawner = main.enemy_spawner
 	spawner.set_seed(11)
+	var min_dist: float = float(spawner.plan.config["spawn_distance_min"])
 	var worst: float = 1000.0
-	for spot in [Vector3(19, 0, 19), Vector3(-19, 0, 19), Vector3(19, 0, -19), Vector3(-19, 0, -19)]:
+	for spot in [Vector3(19, 0, 19), Vector3(-19, 0, 19), Vector3(19, 0, -19), Vector3(-19, 0, -19), Vector3(19.5, 0, 0), Vector3(0, 0, -19.5)]:
 		main.player.global_position = spot
 		for i in range(1500):
 			var p: Vector3 = spawner._random_spawn_position()
 			worst = minf(worst, Vector2(p.x - spot.x, p.z - spot.z).length())
 	print("QA 5: closest spawn with the player in a corner: %.2f m" % worst)
-	assert_float(worst).override_failure_message("fixed? closest was %.2f m, flip the PIN" % worst).is_less(4.5)
+	assert_float(worst).is_greater_equal(min_dist - 0.001)
 
 
 func test_spawn_grace_no_attack_starts_or_lands_for_1_5_seconds() -> void:

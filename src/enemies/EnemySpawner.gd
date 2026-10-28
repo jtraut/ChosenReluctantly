@@ -17,6 +17,9 @@ var _rng := RandomNumberGenerator.new()
 var _alive: int = 0
 var _scenes: Dictionary = {}
 
+## Evenly spaced fallback angles tried when random ring points keep landing too close (player in a corner).
+const SWEEP_ANGLES := 32
+
 
 func _ready() -> void:
 	if plan == null:
@@ -76,24 +79,42 @@ func _scene_for(enemy_id: String) -> PackedScene:
 	return _scenes[enemy_id]
 
 
-## A point on a ring around the target, clamped inside the arena. Tries a few angles so
-## a player standing at the wall still gets spawns at least spawn_distance_min away.
+## A point on a ring around the target, clamped inside the arena and at least spawn_distance_min
+## from the target. Random angles first; if the clamp keeps squeezing them under the minimum (a
+## player in a corner), sweep evenly spaced angles and take the first that fits, else the farthest (S5-4).
 func _random_spawn_position() -> Vector3:
 	var config: Dictionary = plan.config
-	var limit: float = float(config["arena_half_extent"])
 	var min_dist: float = float(config["spawn_distance_min"])
+	var max_dist: float = float(config["spawn_distance_max"])
 	var best: Vector3 = target.global_position
 	var best_dist: float = -1.0
 	for attempt in range(8):
-		var angle := _rng.randf_range(0.0, TAU)
-		var dist := _rng.randf_range(min_dist, float(config["spawn_distance_max"]))
-		var pos: Vector3 = target.global_position + Vector3(cos(angle), 0.0, sin(angle)) * dist
-		pos.x = clampf(pos.x, -limit, limit)
-		pos.z = clampf(pos.z, -limit, limit)
-		var actual: float = Vector2(pos.x - target.global_position.x, pos.z - target.global_position.z).length()
+		var pos: Vector3 = _ring_point(_rng.randf_range(0.0, TAU), _rng.randf_range(min_dist, max_dist))
+		var actual: float = _flat_distance(pos)
 		if actual > best_dist:
 			best = pos
 			best_dist = actual
 		if actual >= min_dist:
-			break
+			return pos
+	var sweep_start: float = _rng.randf_range(0.0, TAU)
+	for step in range(SWEEP_ANGLES):
+		var pos: Vector3 = _ring_point(sweep_start + TAU * float(step) / float(SWEEP_ANGLES), max_dist)
+		var actual: float = _flat_distance(pos)
+		if actual > best_dist:
+			best = pos
+			best_dist = actual
+		if actual >= min_dist:
+			return pos
 	return best
+
+
+func _ring_point(angle: float, dist: float) -> Vector3:
+	var limit: float = float(plan.config["arena_half_extent"])
+	var pos: Vector3 = target.global_position + Vector3(cos(angle), 0.0, sin(angle)) * dist
+	pos.x = clampf(pos.x, -limit, limit)
+	pos.z = clampf(pos.z, -limit, limit)
+	return pos
+
+
+func _flat_distance(pos: Vector3) -> float:
+	return Vector2(pos.x - target.global_position.x, pos.z - target.global_position.z).length()

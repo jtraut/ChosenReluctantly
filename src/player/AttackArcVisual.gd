@@ -16,6 +16,7 @@ const GROUND_OFFSET := 0.06
 const TELEGRAPH_ALPHA_MIN := 0.15
 const TELEGRAPH_ALPHA_MAX := 0.6
 const FLASH_ALPHA := 0.95
+const FLASH_HOLD_FRACTION := 0.45
 const EDGE_THICKNESS := 0.1
 const TELEGRAPH_WHITEN := 0.75
 const FILL_START_SCALE := 0.15
@@ -137,8 +138,10 @@ func flash(duration: float) -> void:
 		hide_now()
 		return
 	_tween = create_tween().set_parallel(true)
-	_tween.tween_property(_material, "albedo_color:a", 0.0, duration)
-	_tween.tween_property(_edge_material, "albedo_color:a", 0.0, duration)
+	# Hold full strength for the first part so a still frame catches it, then fade.
+	var hold: float = duration * FLASH_HOLD_FRACTION
+	_tween.tween_property(_material, "albedo_color:a", 0.0, duration - hold).set_delay(hold)
+	_tween.tween_property(_edge_material, "albedo_color:a", 0.0, duration - hold).set_delay(hold)
 	_tween.chain().tween_callback(hide_now)
 
 

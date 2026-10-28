@@ -14,8 +14,8 @@
         "hit_stop_scale": 0.2,
         "shake_strength": 0.05,
         "shake_duration": 0.08,
-        "color": "#ffe27a",
-        "flash_duration": 0.12
+        "color": "#ffcf1a",
+        "flash_duration": 0.2
     },
     "heavy": {
         "auto": false,

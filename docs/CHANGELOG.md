@@ -32,9 +32,19 @@ A plain-language history of the project for the director, grouped by date (from 
 - **Balance: Rogue heavy** 22 -> 8.5 damage per hit (1.8 s cooldown). Its area is 3x the light attack's. Direct damage per second is 12.2 -> 4.7, about 5.8 with Burn. (7192e13)
 - **Balance: heavy wind-up** now slows movement by 35%. Before, it neither slowed nor rooted. (7192e13)
 - **Balance: stun** is 0.6 s. The window in which repeat stuns shrink went 4 s -> 1.5 s, so every heavy swing gets the full stun. (7192e13, 8a9c704)
+- **Balance: Fine, Burn Then** direct damage 7 -> 12, because after the Burn fix it really did less damage per second than the light attack (3.9 vs 5.0). It is now about 5.6. With the honest Burn count, Ember's credited figure fell from 11.8 to 6.4 DPS; how it actually plays did not change. The Rogue heavy's total with Burn is about 6.0. (9d91d7a)
 - **Balance (side effect of a bug fix): projectile hit size** now really reads its data. Flaming Nonsense hits at 0.3 (was 0.25), and ranged enemy shots at 0.3 (was 0.25). (1d87756)
 
 ### Fixed
+- **Burn did less damage than intended.** Recasting a Burn card restarted Burn's tick timer, so Burn often ticked only once. A refresh now keeps the timer, and the card rule only credits Burn damage that really lands. (9d91d7a)
+- **Cleanups from the Slice 3b review:**
+  - The heavy wind-up now sets its state before telling the rest of the game it started.
+  - Re-stuns now signal.
+  - Test scenarios are checked for typos on load.
+  - Some per-frame waste removed before Slice 5 adds more enemies.
+  - Damage values must be real numbers.
+
+  (ffd14f3, 482031b, 5710d0d, 5f49c33, 9c7d874)
 - **Projectiles ignored their hit-size data** and all used 0.25. They also shared one collision shape. (1d87756)
 - **The player's hit and death colour flashes never showed.** The code read the wrong material, so only the topple ran. (9ef095a, 6583dbf)
 - **The pale blue triangle in the top-left corner** was the sky colour showing past the floor edge on wide screens. (888e37b)
@@ -44,6 +54,7 @@ A plain-language history of the project for the director, grouped by date (from 
 ### Docs and process
 - Slice 4 was split into four steps (4a-4d), and Slice 3b into four (3b-1 to 3b-4), so each step fits in one sitting. The Slice 4 playtest was folded into the 3b playtest. (0a8f929, 877a46c)
 - Hold-to-preview was logged as a proposal only; nothing was built. (0a8f929)
+- **New `docs/CHANGELOG.md`** (this file): backfilled from git history. It became a standing rule in CLAUDE.md, with pointers in README and STATE. Most of it landed inside commit 9d91d7a by accident, because a parallel commit picked up the files. (9d91d7a, d8cf75f)
 - **New `docs/OPEN_ITEMS.md`**: one page listing everything waiting on the director. It became a standing rule in CLAUDE.md, with a pointer in STATE.md. (1d4a1fc)
 - Director questions D4 (light attack cut) and D5 (heavy attack damage with Burn) were added. (493c1a3, 3ebe6c9)
 - qa reviews: Slice 4 PASS, its re-check PASS, and Slice 3b PASS with should-fix items. A Burn bug found by the 3b review is being fixed before the playtest. (6f82a4b, 8cc7b92, 552ef04, 8501ce1)

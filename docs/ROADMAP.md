@@ -197,7 +197,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
     - A readable `targeted_aoe` ground telegraph that matches the hitbox via VfxSizing.
     - Heavy meter or labels updated if the heavy's shape or class matters to the player.
     - Any new bindings in `input_bindings.json`.
-  - [ ] **3b-4, qa:** PASS 552ef04 (`docs/reviews/2026-10-28-polish1-slice3b-qa.md`, 326/326, DoD clean) with should-fix items. **Fix pass (gameplay-dev, in progress):** S3B-1 (Burn keeps its tick phase on refresh, and the card rule credits only the Burn that really lands, then Fine, Burn Then is retuned to comply), S3B-3..S3B-8, S4-4. Then a qa targeted re-check, then the playtester (Slice 4 + 3b), then close. S3B-2 (IMMUNE clipped by HP bars) -> Slice 5.
+  - [ ] **3b-4, qa:** PASS 552ef04 (`docs/reviews/2026-10-28-polish1-slice3b-qa.md`, 326/326, DoD clean) with should-fix items. **Fix pass (gameplay-dev) done 9d91d7a..cdcdf47, 337/337; Fine, Burn Then 7 -> 12 (accepted, game-lead):** S3B-1 (Burn keeps its tick phase on refresh, and the card rule credits only the Burn that really lands, then Fine, Burn Then is retuned to comply), S3B-3..S3B-8, S4-4. Then a qa targeted re-check (in progress, also checks CHANGELOG accuracy), then the playtester (Slice 4 + 3b), then close. S3B-2 (IMMUNE clipped by HP bars) -> Slice 5.
   - **qa tests:**
     - The click ratio never exceeds ratio x auto DPS, including under attack-speed modifiers.
     - The card rule check (fails on a bad fixture).

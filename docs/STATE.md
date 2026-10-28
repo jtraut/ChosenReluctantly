@@ -20,7 +20,7 @@ Last updated: 2026-10-28. **Milestone 2 is done.** Now running **Post-milestone 
 **Director prompt 2026-10-28 (attack decisions + OPEN_ITEMS) is being executed.**
 - Part A (decisions recorded in GDD/DECISIONS): done.
 - Part C (`docs/OPEN_ITEMS.md`, CLAUDE.md rule): done.
-- **Part B is the new Slice 3b (ROADMAP). 3b-1 built (4fb5b57). 3b-2 built (ee9adbe). 3b-3 built (ad9ee04). 3b-4 qa PASS 552ef04 with should-fix items; gameplay-dev fix pass in progress (S3B-1, S3B-3..8, S4-4), then a qa targeted re-check, then the playtester.**
+- **Part B is the new Slice 3b (ROADMAP). 3b-1 built (4fb5b57). 3b-2 built (ee9adbe). 3b-3 built (ad9ee04). 3b-4 qa PASS 552ef04 with should-fix items; fix pass done (cdcdf47, 337/337). qa targeted re-check + CHANGELOG accuracy check in progress, then the playtester.**
 - Slice 4: built, qa PASS and re-check PASS (8cc7b92). Its playtest is folded into the Slice 3b playtest. Not closed yet.
 
 ## Exact next step

@@ -20,7 +20,7 @@
         "max_length": 6.0
     },
     "hp_bars": {
-        "visibility_mode": "always_alive",
+        "visibility_mode": "elite_boss_always",
         "width": 1.2,
         "height": 0.16,
         "render_priority": 10,

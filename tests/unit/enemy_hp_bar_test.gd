@@ -36,7 +36,7 @@ func test_config_merge_fills_missing_keys() -> void:
 	assert_str(merged["visibility_mode"]).is_equal("after_damage")
 	assert_str(merged["colors"]["fill"]).is_equal("#ffffff")
 	assert_str(merged["colors"]["back"]).is_equal(UiConfig.DEFAULT_HP_BARS["colors"]["back"])
-	assert_str(UiConfig.hp_bars()["visibility_mode"]).is_equal("always_alive")
+	assert_str(UiConfig.hp_bars()["visibility_mode"]).is_equal("elite_boss_always")  # D7 (2026-10-28); the code fallback DEFAULT_HP_BARS stays always_alive
 
 
 func _spawn_dummy() -> Node3D:

@@ -21,8 +21,8 @@ A plain-language history of the project for the director, grouped by date (from 
 - **More tests.** qa added real-scene tests for Slice 4 and 3b, and the bot simulator is now seeded so its failures can be reproduced. (6f82a4b, 8cc7b92, 552ef04)
 
 ### Changed
-- **Attack wedge size.** The light and heavy wedges are now drawn to where hits really land, about 0.45 past the old drawn edge. They were later trimmed 4-5 cm to the exact reach at floor height. The projectile path marker went from 0.75 to 0.60 wide. How attacks hit did not change. (1d87756, 5807412)
-- **Light attack and heavy telegraph look.** The light flash went from pale tan to saturated yellow and from 0.12 s to 0.2 s. The heavy wind-up is now a pale pulsing outline, clearly different from the solid impact flash. (0e2646d)
+- **Attack wedge size.** The light and heavy wedges are now drawn to where hits really land, about 0.45 past the old drawn edge. They were later trimmed 4-5 cm to the exact reach at floor height. The projectile path marker's half-width went from 0.75 to 0.60 (so the lane is 1.5 -> 1.2 wide). How attacks hit did not change. (1d87756, 5807412)
+- **Light attack and heavy telegraph look.** The light flash went from pale yellow (#ffe27a) to saturated yellow (#ffcf1a) and from 0.12 s to 0.2 s. The heavy wind-up is now a pale pulsing outline, clearly different from the solid impact flash. (0e2646d)
 - **Death cue.** Death now flashes white then red, greys and topples the player, with a burst, a ring and a camera shake. (e046cdd, 6583dbf)
 - **Arena background.** The pale-blue sky past the floor edge became a dark void. The floor stays 40x40; a trial 60x60 floor was reverted. (888e37b, 7755fbf)
 - **[Director decision] Basic attacks.** Clicking is an early-game crutch. Basic attacks are weaker than cards. Heavy trades sustained damage for burst and utility. The heavy wind-up slows and never roots. GDD §3 was updated; this resolves balance questions P1-P4. (5a3b998)
@@ -52,6 +52,7 @@ A plain-language history of the project for the director, grouped by date (from 
 - **DECISIONS.md had a stray non-UTF-8 character.** (cd60da8)
 
 ### Docs and process
+- qa checked this file against git on 2026-10-28 and corrected three wording errors (projectile marker is a half-width; light flash start colour is pale yellow, not tan; camera basis was transposed, not flipped). All hashes and dates verified. (see docs/reviews/2026-10-28-changelog-qa.md)
 - Slice 4 was split into four steps (4a-4d), and Slice 3b into four (3b-1 to 3b-4), so each step fits in one sitting. The Slice 4 playtest was folded into the 3b playtest. (0a8f929, 877a46c)
 - Hold-to-preview was logged as a proposal only; nothing was built. (0a8f929)
 - **New `docs/CHANGELOG.md`** (this file): backfilled from git history. It became a standing rule in CLAUDE.md, with pointers in README and STATE. Most of it landed inside commit 9d91d7a by accident, because a parallel commit picked up the files. (9d91d7a, d8cf75f)
@@ -88,7 +89,7 @@ A plain-language history of the project for the director, grouped by date (from 
   (1c12fd9)
 
 ### Fixed
-- **The game showed only sky.** The camera's rotation was stored flipped, so it looked upward and the world never appeared; movement and aim were also wrong. (be64ea9)
+- **The game showed only sky.** The camera's orientation was saved transposed (a file error), so it looked upward and the world never appeared; movement and aim were also wrong. (be64ea9)
 - **Player kept moving and casting at 0 HP.** Death was never handled; fixed by Slice 1. (9744135)
 - **HUD slots swallowed mouse clicks.** (b4011aa)
 - **A flaky test** and a wrong README path. (ed0bf58)

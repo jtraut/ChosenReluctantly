@@ -78,3 +78,23 @@ Before: 306. After: **326** (+20 in `tests/unit/slice3b_qa_test.gd`), three cons
 - Windowed feel, readability of stars, tint, the slow, a real mouse (headless plus one 720p capture only; playtester).
 - `Scenario` bad-flag crash (by inspection only, not run).
 - No mutation testing against deliberately broken game code (I do not edit game source), except that I proved the new bot-sim check and the projectile test's control arm are not vacuous.
+
+## Re-check 2026-10-28 (qa, fix pass 9d91d7a, ffd14f3, 482031b, 5710d0d, 5f49c33, 9c7d874)
+
+Runs, all at HEAD efc42e7: full suite **337/337, 0 errors, 0 failures, 0 orphans**, exit 0 (the only error-matching lines are the known runner `--remote-debug` pair); 20 s headless run (`--quit-after 1200`): 0 error/warning/bug lines; four scenarios (attacks, stun_crowd, targeted_aoe, card_cast) 600 frames each: 0 lines; SceneSelfCheck silent at startup and in the smoke test; `run_reload_cycle.ps1 -Cycles 5`: RELOAD CYCLE OK (objects 1870, nodes 104, orphans 0, time_scale 1.0, lag 13.7 ms); `run_bot_sim.ps1 -Rooms 200` (seed 1): Bot-sim OK.
+
+| Item | Verdict | Evidence |
+|---|---|---|
+| S3B-1 | RESOLVED | `ActiveStatus.refresh` leaves `time_to_next_tick` alone, duration = max(remaining, new). `CardDamageRule.cast_damage` takes a required `cycle_time` and credits whole ticks over min(duration, cycle). Data diff: only `fire_fine_burn_then.json` aoe damage 7 -> 12 (Ember untouched: cast 7 = 5 + 2, 6.36 DPS). Fine, Burn Then: cycle 3.3, 3 ticks = 6, (12+6)/3.3 = 5.45 > 5.0. `test_real_sustained_dps_of_every_burn_card_is_at_least_what_the_rule_credits` drives the real manager, asserts real >= credited - 0.1 and > 5.0, and asserts exactly 2 Burn cards were seen, so it cannot pass vacuously. Heavy: seeded 600-swing sim, asserted 5.85..6.1 (5.97 reported). The test's balance table and the DECISIONS table both match the data (Ember 7 / 1.1 / 6.36, Fine Burn Then 18 / 3.3 / 5.45). D5 in OPEN_ITEMS quotes 5.97. Caveat, not blocking: DECISIONS (d) says "real >= credit", the test tolerance is 0.1; measured values (6.55, 5.64) are above credit anyway. |
+| S3B-3 | RESOLVED | `_start` sets the wind-up and slow, then emits `attack_started`; the pin test now asserts the new order. |
+| S3B-4 | RESOLVED | `status_refreshed` and `Enemy.stun_refreshed`; `status_applied`/`stunned` still mean "began"; test counts stars before/after a re-stun (one set). |
+| S3B-5 | RESOLVED | `has_aoe_telegraph` / `get_aoe_telegraph` (copy); `grep _telegraphs tests` finds nothing. |
+| S3B-6 + S4-4 | RESOLVED | `ScenarioSchema.validate` run by `Scenario.load_def`; 17-case bad fixture plus all shipped scenarios validated; unknown keys rejected. All four scenarios above run clean. |
+| S3B-7 | RESOLVED | `_stun_count` is incremented on create, decremented on expiry, unchanged on refresh (code read; no other erase path); `_expired` reused; Player pool cached; test added. Left-as-is items are logged (query in `_attack_has_target`) and acceptable. |
+| S3B-8 | RESOLVED | `_all_finite` / `_effects_finite` in `check_card`; `test_nan_and_inf_values_are_rejected` covers NaN/INF/-INF, modifier and duration. |
+
+N-docs (DR window text) was fixed by game-lead in 8501ce1 ("DR window doc fix"). S3B-2 (IMMUNE under HP bars) was deliberately deferred to Slice 5 and stays open.
+
+### Overall Slice 3b verdict: PASS. No blockers. All fix-pass items resolved; nothing in the changelog work changes game code. Next: playtester. Not verified: windowed feel (same as before).
+
+Changelog entry for Slice 3b exists (10-28 section, hash-checked; see the changelog review file).

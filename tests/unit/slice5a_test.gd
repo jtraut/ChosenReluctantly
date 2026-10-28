@@ -179,3 +179,24 @@ func test_ranged_enemy_shows_a_shot_lane_for_the_whole_wind_up() -> void:
 	assert_int(pool.get_child_count()).is_greater(0)
 	var lane: PooledEffect = pool.get_child(0)
 	assert_float(lane.duration).is_equal_approx(shooter.telegraph_duration, 0.001)
+
+
+func test_shot_lane_ends_when_the_wind_up_is_cancelled_or_the_enemy_dies() -> void:
+	var holder: Node3D = auto_free(Node3D.new())
+	add_child(holder)
+	var shooter: Enemy = auto_free((load("res://scenes/enemies/RangedShooter.tscn") as PackedScene).instantiate())
+	holder.add_child(shooter)
+	shooter.set_physics_process(false)
+	shooter._start_telegraph()
+	var pool := EffectPool.for_world(holder)
+	var lane: PooledEffect = shooter._shot_lane
+	assert_object(lane).is_not_null()
+	assert_bool(lane.active).is_true()
+	shooter._cancel_telegraph()  # what a stun, the player's death, or a re-target does
+	assert_bool(lane.active).is_false()
+	shooter._start_telegraph()
+	var second: PooledEffect = shooter._shot_lane
+	assert_bool(second.active).is_true()
+	shooter._on_died()
+	assert_bool(second.active).is_false()
+	assert_object(pool).is_not_null()

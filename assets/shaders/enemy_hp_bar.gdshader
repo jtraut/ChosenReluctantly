@@ -4,7 +4,7 @@ shader_type spatial;
 // Per-bar state is driven by instance uniforms (no per-bar material).
 // Depth-tested (Slice 5a): a bar is hidden by a model standing in front of it
 // instead of being drawn over unrelated enemies. The quad is opaque (discard, no blend).
-render_mode unshaded, cull_disabled, depth_draw_opaque, blend_mix;
+render_mode unshaded, cull_disabled, depth_draw_opaque;
 
 uniform vec2 total_size = vec2(1.5, 0.15); // world units, whole quad
 uniform float bar_width = 1.1;
@@ -79,5 +79,5 @@ void fragment() {
 		discard;
 	}
 	ALBEDO = col.rgb;
-	ALPHA = 1.0;
+	// No ALPHA write on purpose: that keeps the bar in the opaque pass, which tests and writes depth.
 }

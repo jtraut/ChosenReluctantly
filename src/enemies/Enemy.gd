@@ -54,6 +54,10 @@ var _knockback_velocity: Vector3 = Vector3.ZERO
 var _was_stunned: bool = false
 ## Ground wedge showing a melee wind-up (built on the first telegraph; ranged enemies have none).
 var _wedge: AttackArcVisual = null
+## The ranged wind-up lane (pooled), ended early when the wind-up is cancelled or the enemy dies.
+var _shot_lane: PooledEffect = null
+var _shot_lane_generation: int = 0
+var _shot_lane_pool: EffectPool = null
 var _stun_tint: Color = DEFAULT_STUN_TINT
 var _stun_tint_amount: float = DEFAULT_STUN_TINT_AMOUNT
 ## Seconds until another "IMMUNE" popup may show on this enemy (keeps it quiet).
@@ -157,6 +161,7 @@ func _on_status_resisted(_status_id: String) -> void:
 func _cancel_telegraph() -> void:
 	if _telegraph_remaining > 0.0:
 		_telegraph_remaining = 0.0
+		_stop_shot_lane()
 		if _wedge != null:
 			_wedge.hide_now()
 		_set_body_color(_rest_color())
@@ -221,7 +226,16 @@ func _show_shot_lane() -> void:
 		return
 	var forward: Vector3 = -global_transform.basis.z
 	var color: Color = ElementVisuals.visual_for_team(attack_damage_type, "enemy")["color"]
-	TemplateVfx.enemy_shot_lane(pool, global_position + forward * 0.6, forward, projectile_max_range, EnemyConfig.projectile_hit_radius(), color, telegraph_duration)
+	_shot_lane = TemplateVfx.enemy_shot_lane(pool, global_position + forward * 0.6, forward, projectile_max_range, EnemyConfig.projectile_hit_radius(), color, telegraph_duration)
+	_shot_lane_pool = pool
+	_shot_lane_generation = _shot_lane.generation if _shot_lane != null else 0
+
+
+## Ends the lane now (a cancelled wind-up must not promise a shot that never comes).
+func _stop_shot_lane() -> void:
+	if _shot_lane != null and is_instance_valid(_shot_lane_pool):
+		_shot_lane_pool.stop(_shot_lane, _shot_lane_generation)
+	_shot_lane = null
 
 
 ## Wind-up wedge on the ground, the same language as the player's heavy (pale outline, fill growing in),
@@ -238,6 +252,7 @@ func _update_wedge() -> void:
 
 func _execute_attack() -> void:
 	_set_body_color(_rest_color())
+	_stop_shot_lane()
 	if _wedge != null:
 		_wedge.hide_now()  # the cone template draws the impact itself
 	_attack_cooldown_remaining = attack_cooldown
@@ -269,6 +284,7 @@ func _on_damaged(amount: float, damage_type: String, knockback: Vector3) -> void
 
 
 func _on_died() -> void:
+	_stop_shot_lane()
 	queue_free()
 
 

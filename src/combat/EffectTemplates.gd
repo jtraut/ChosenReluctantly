@@ -132,6 +132,10 @@ static func _execute_projectile(params: Dictionary, context: EffectContext) -> v
 	instance.set_hit_radius(params["hit_radius"])
 	instance.set_look(ElementVisuals.visual_for_damage_type(String(params["damage_type"])))
 	instance.knockback_strength = params.get("knockback_strength", 0.0)
+	# Player shots only: an enemy shot's lane would look like a telegraph it is not.
+	if context.caster_team == "player":
+		TemplateVfx.projectile_lane(_vfx_pool(context), origin, forward, float(params["max_range"]), float(params["hit_radius"]),
+				ElementVisuals.visual_for_damage_type(String(params["damage_type"])))
 	instance.launch(origin, forward, params["damage"], params["damage_type"], params["speed"], params["max_range"], context.caster_team)
 	# Async flight: this effect's damage lands later, so it never populates last_hits.
 	context.last_hits = []
@@ -158,6 +162,7 @@ static func _execute_dash(params: Dictionary, context: EffectContext) -> void:
 	var duration: float = distance / speed if speed > 0.0 else 0.0
 	var look := ElementVisuals.visual_for_damage_type(String(params.get("damage_type", "physical")))
 	TemplateVfx.dash_start(_vfx_pool(context), _caster_pos(context), look)
+	TemplateVfx.dash_path(_vfx_pool(context), _caster_pos(context), forward, distance, look)
 	context.caster.start_forced_move(forward, speed, duration, params.get("invulnerable", false), look)
 
 

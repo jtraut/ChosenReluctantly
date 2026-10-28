@@ -60,6 +60,17 @@ static func projectile_impact(pool: EffectPool, position: Vector3, look: Diction
 	pool.play(EffectPool.Shape.SPHERE, position, 0.4 * s, color, 0.22, 0.5, 1.8, 0.7, 0.0)
 
 
+## Brief faint lane along a shot's path at cast time: from the launch point
+## `max_range` forward, as wide as the area that shot can hit (VfxSizing). Not
+## element-scaled: it shows a hit area.
+static func projectile_lane(pool: EffectPool, origin: Vector3, direction: Vector3, max_range: float, hit_radius: float, look: Dictionary) -> void:
+	if pool == null or direction.length_squared() < 0.0001:
+		return
+	var yaw: float = atan2(-direction.x, -direction.z)
+	pool.play(EffectPool.Shape.STRIP, origin, VfxSizing.projectile_lane_half_width(hit_radius), look["color"],
+			VfxConfig.marker("projectile_lane_duration"), 1.0, 1.0, VfxConfig.marker("projectile_lane_alpha"), 0.0, yaw) 			.lengthened(max_range)
+
+
 # --- cone / melee ------------------------------------------------------------
 
 ## Static wedge at the true hit reach (fades) plus a brighter blade that sweeps
@@ -98,6 +109,16 @@ static func dash_start(pool: EffectPool, position: Vector3, look: Dictionary) ->
 		return
 	var s: float = float(look["scale"])
 	pool.play(EffectPool.Shape.SPHERE, position + Vector3(0.0, 0.3, 0.0), 0.3 * s, look["color"], 0.22, 0.5, 1.7, 0.7, 0.0)
+
+
+## Brief faint path of the dash as intended (start to start + distance). Cosmetic
+## width (a dash has no hit area); if the dash is blocked short, the end puff shows where it stopped.
+static func dash_path(pool: EffectPool, origin: Vector3, direction: Vector3, distance: float, look: Dictionary) -> void:
+	if pool == null or direction.length_squared() < 0.0001 or distance <= 0.0:
+		return
+	var yaw: float = atan2(-direction.x, -direction.z)
+	pool.play(EffectPool.Shape.STRIP, origin, VfxConfig.marker("dash_path_half_width"), look["color"],
+			VfxConfig.marker("dash_path_duration"), 1.0, 1.0, VfxConfig.marker("dash_path_alpha"), 0.0, yaw) 			.lengthened(distance)
 
 
 static func dash_trail(pool: EffectPool, position: Vector3, look: Dictionary) -> void:

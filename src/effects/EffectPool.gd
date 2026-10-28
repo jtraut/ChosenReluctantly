@@ -17,12 +17,13 @@ const NODE_NAME := "EffectPool"
 const GROUND_OFFSET := 0.05
 const RING_INNER := 0.8
 
-enum Shape { DISC, WEDGE, SPHERE, RING }
+enum Shape { DISC, WEDGE, SPHERE, RING, STRIP }
 
 static var _disc_mesh: CylinderMesh = null
 static var _sphere_mesh: SphereMesh = null
 static var _wedge_meshes: Dictionary = {}
 static var _ring_mesh: ArrayMesh = null
+static var _strip_mesh: ArrayMesh = null
 
 var max_effects: int = 48
 
@@ -90,6 +91,25 @@ static func ring_mesh() -> ArrayMesh:
 	return _ring_mesh
 
 
+## Flat lane from the origin forward (-Z): x from -1 to 1 (half width 1), z from 0
+## to -1 (length 1). Scale x by the half width and z by the length (PooledEffect.lengthened).
+static func strip_mesh() -> ArrayMesh:
+	if _strip_mesh == null:
+		var vertices := PackedVector3Array([
+			Vector3(-1, 0, 0), Vector3(1, 0, 0), Vector3(1, 0, -1),
+			Vector3(-1, 0, 0), Vector3(1, 0, -1), Vector3(-1, 0, -1)])
+		var normals := PackedVector3Array()
+		for n in range(6):
+			normals.append(Vector3.UP)
+		var arrays: Array = []
+		arrays.resize(Mesh.ARRAY_MAX)
+		arrays[Mesh.ARRAY_VERTEX] = vertices
+		arrays[Mesh.ARRAY_NORMAL] = normals
+		_strip_mesh = ArrayMesh.new()
+		_strip_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return _strip_mesh
+
+
 ## Unit-range fan (scale it by the range), cached per half angle (0.1 degree).
 static func wedge_mesh(half_angle_degrees: float) -> ArrayMesh:
 	var key: int = roundi(half_angle_degrees * 10.0)
@@ -132,6 +152,9 @@ func play(shape: Shape, position: Vector3, size: float, color: Color, duration: 
 			effect.is_flat = false
 		Shape.RING:
 			effect.mesh = ring_mesh()
+			effect.is_flat = true
+		Shape.STRIP:
+			effect.mesh = strip_mesh()
 			effect.is_flat = true
 	var flat: bool = shape != Shape.SPHERE
 	effect.origin = Vector3(position.x, position.y + (GROUND_OFFSET if flat else 0.0), position.z)

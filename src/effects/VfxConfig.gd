@@ -9,7 +9,16 @@ const DEFAULTS: Dictionary = {
 	"hurtbox_reach_radius": 0.45,
 	"heal_color": "#7dff9a",
 	"buff_color": "#ffd24a",
+	"projectile_lane_alpha": 0.2,
+	"projectile_lane_duration": 0.3,
+	"dash_path_alpha": 0.28,
+	"dash_path_duration": 0.3,
+	"dash_path_half_width": 0.25,
 }
+
+## Ground marker tuning (4c): alpha 0..1, durations in seconds, half width in meters.
+const MARKER_KEYS: Array[String] = ["projectile_lane_alpha", "projectile_lane_duration",
+		"dash_path_alpha", "dash_path_duration", "dash_path_half_width"]
 
 static var _cache: Dictionary = {}
 static var _loaded: bool = false
@@ -31,6 +40,16 @@ static func validate(config: Dictionary) -> Array[String]:
 	for key: String in ["heal_color", "buff_color"]:
 		if config.has(key) and not (typeof(config[key]) == TYPE_STRING and String(config[key]).is_valid_html_color()):
 			errors.append("'%s' must be a hex color like #7dff9a" % key)
+	for key: String in MARKER_KEYS:
+		if not config.has(key):
+			continue  # optional: DEFAULTS fill it in
+		var value: Variant = config[key]
+		if typeof(value) != TYPE_INT and typeof(value) != TYPE_FLOAT:
+			errors.append("'%s' must be a number" % key)
+		elif is_nan(float(value)) or float(value) <= 0.0:
+			errors.append("'%s' must be > 0" % key)
+		elif key.ends_with("_alpha") and float(value) > 1.0:
+			errors.append("'%s' must be <= 1" % key)
 	return errors
 
 
@@ -72,3 +91,9 @@ static func heal_color() -> Color:
 
 static func buff_color() -> Color:
 	return Color.html(String(get_config()["buff_color"]))
+
+
+## Cast ground marker numbers (data/vfx.json), see TemplateVfx.projectile_lane / dash_path.
+static func marker(key: String) -> float:
+	return float(get_config()[key])
+

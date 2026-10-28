@@ -2,5 +2,10 @@
     "max_simultaneous": 64,
     "hurtbox_reach_radius": 0.45,
     "heal_color": "#7dff9a",
-    "buff_color": "#ffd24a"
+    "buff_color": "#ffd24a",
+    "projectile_lane_alpha": 0.2,
+    "projectile_lane_duration": 0.3,
+    "dash_path_alpha": 0.28,
+    "dash_path_duration": 0.3,
+    "dash_path_half_width": 0.25
 }

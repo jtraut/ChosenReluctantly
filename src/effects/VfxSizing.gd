@@ -23,3 +23,11 @@ static func aoe_reach(radius: float) -> float:
 ## Radius of the projectile ball: exactly its hit sphere.
 static func projectile_radius(hit_radius: float) -> float:
 	return hit_radius
+
+
+## Half width of the lane a projectile sweeps: its hit sphere plus the target's
+## hurtbox reach, so an enemy whose centre is inside the lane gets hit (the same
+## rule as cone and aoe). The lane runs max_range from the launch point.
+static func projectile_lane_half_width(hit_radius: float) -> float:
+	return hit_radius + VfxConfig.hurtbox_reach_radius()
+

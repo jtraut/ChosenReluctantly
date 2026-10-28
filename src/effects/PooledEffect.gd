@@ -37,6 +37,8 @@ var follow_offset: Vector3 = Vector3.ZERO
 ## Incremented every time the pool hands this node out, so a holder of an old
 ## handle cannot stop somebody else's effect (see EffectPool.stop).
 var generation: int = 0
+## STRIP shapes only: world length of the strip (0 = not a strip). base_size is its half width.
+var strip_length: float = 0.0
 
 
 func _init() -> void:
@@ -70,7 +72,10 @@ func _apply() -> void:
 	var s: float = base_size * lerpf(scale_from, scale_to, t)
 	if pulse_amount > 0.0:
 		s *= 1.0 + pulse_amount * sin(local * pulse_hz * TAU)
-	scale = Vector3(s, 1.0, s) if is_flat else Vector3(s, s * stretch_y, s)
+	if strip_length > 0.0:
+		scale = Vector3(s, 1.0, strip_length * lerpf(scale_from, scale_to, t))
+	else:
+		scale = Vector3(s, 1.0, s) if is_flat else Vector3(s, s * stretch_y, s)
 	position = origin + velocity * local
 	rotation = Vector3(0.0, lerpf(yaw_from, yaw_to, t), 0.0)
 	material.albedo_color = Color(color.r, color.g, color.b, lerpf(alpha_from, alpha_to, t))
@@ -87,6 +92,7 @@ func begin() -> void:
 	persistent = false
 	follow_id = 0
 	follow_offset = Vector3.ZERO
+	strip_length = 0.0
 	yaw_to = yaw_from
 	_apply()
 
@@ -125,6 +131,13 @@ func stretched(y_factor: float) -> PooledEffect:
 func pulsing(amount: float, hz: float) -> PooledEffect:
 	pulse_amount = amount
 	pulse_hz = hz
+	return self
+
+
+## STRIP only: its length in world units (base_size is the half width).
+func lengthened(world_length: float) -> PooledEffect:
+	strip_length = maxf(world_length, 0.0)
+	_apply()
 	return self
 
 

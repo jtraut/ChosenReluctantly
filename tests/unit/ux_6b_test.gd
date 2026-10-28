@@ -254,7 +254,9 @@ func test_occlusion_cue_is_attached_from_data_and_a_3d_object() -> void:
 	var color: Color = cue.shader_parameter(&"cue_color")
 	assert_bool(color.is_equal_approx(Color(Color.html(String(config["color"])), float(config["alpha"])))).is_true()
 	assert_float(cue.shader_parameter(&"depth_bias")).is_equal_approx(float(config["depth_bias"]), 0.0001)
-	assert_object(cue.mesh).is_same(main.player.body_mesh.mesh)
+	# Plain bool compare, not assert_object(cue.mesh): gdUnit's object assert keeps a reference to the
+	# mesh, and freeing the Main afterwards made the renderer print 'Parameter "material" is null' x4.
+	assert_bool(cue.mesh == main.player.body_mesh.mesh).is_true()
 	# It lives in the 3D world, so it can never be drawn over a Control (the HUD).
 	assert_bool(cue is Node3D).is_true()
 

@@ -172,12 +172,53 @@ static func hp_bars() -> Dictionary:
 	return merged
 
 
-## Only the keys a typo could silently break: today the visibility mode.
+## Every key of DEFAULT_HP_BARS is checked (S5-2), so a typo in data/ui.json fails loud.
 static func validate_hp_bars(block: Dictionary) -> Array[String]:
 	var problems: Array[String] = []
 	var mode: Variant = block.get("visibility_mode")
 	if typeof(mode) != TYPE_STRING or not HP_BAR_MODES.has(String(mode)):
 		problems.append("visibility_mode must be one of %s" % str(HP_BAR_MODES))
+	for key: String in ["width", "height", "ghost_drain_per_sec"]:
+		if not _is_number(block.get(key)) or float(block[key]) <= 0.0:
+			problems.append("%s must be a number > 0" % key)
+	for key: String in ["border", "resist_border", "y_offset", "ghost_delay"]:
+		if not _is_number(block.get(key)) or float(block[key]) < 0.0:
+			problems.append("%s must be a number >= 0" % key)
+	var priority: Variant = block.get("render_priority")
+	if typeof(priority) != TYPE_INT and not (typeof(priority) == TYPE_FLOAT and not is_nan(float(priority)) and float(priority) == floorf(float(priority))):
+		problems.append("render_priority must be a whole number")
+	elif float(priority) < -127.0 or float(priority) > 126.0:
+		problems.append("render_priority must be in [-127, 126] (the IMMUNE word adds 1)")
+	if typeof(block.get("ghost_enabled")) != TYPE_BOOL:
+		problems.append("ghost_enabled must be true or false")
+	var burn_id: Variant = block.get("burn_status_id")
+	if typeof(burn_id) != TYPE_STRING or String(burn_id).strip_edges().is_empty():
+		problems.append("burn_status_id must be a non-empty string")
+	var tint: Variant = block.get("default_resistance_tint")
+	if typeof(tint) != TYPE_STRING or not String(tint).is_valid_html_color():
+		problems.append("default_resistance_tint must be a hex color")
+	problems.append_array(_validate_color_map(block.get("colors"), "colors", DEFAULT_HP_BARS["colors"] as Dictionary))
+	problems.append_array(_validate_color_map(block.get("resistance_tints"), "resistance_tints", {}))
+	return problems
+
+
+static func _is_number(value: Variant) -> bool:
+	return (typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT) and not is_nan(float(value))
+
+
+## A dictionary of name -> hex color; every key in `required` must be present.
+static func _validate_color_map(value: Variant, label: String, required: Dictionary) -> Array[String]:
+	var problems: Array[String] = []
+	if typeof(value) != TYPE_DICTIONARY:
+		problems.append("%s must be an object of hex colors" % label)
+		return problems
+	var map: Dictionary = value
+	for key: Variant in required:
+		if not map.has(key):
+			problems.append("%s.%s is missing" % [label, str(key)])
+	for key: Variant in map:
+		if typeof(map[key]) != TYPE_STRING or not String(map[key]).is_valid_html_color():
+			problems.append("%s.%s must be a hex color" % [label, str(key)])
 	return problems
 
 

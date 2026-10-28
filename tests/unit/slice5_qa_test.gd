@@ -642,16 +642,38 @@ func test_dead_enemy_bar_is_hidden_in_every_mode() -> void:
 	EnemyHpBar._shared_config["visibility_mode"] = original
 
 
-func test_pin_hp_bar_block_validates_only_the_mode() -> void:
-	# PIN (S5-2): validate_hp_bars checks only visibility_mode, so a bad render_priority, width or
-	# height in data/ui.json is accepted silently (int("x") is 0; width 0 makes a zero-size quad).
-	# Fix: validate every key in DEFAULT_HP_BARS the way validate_damage_numbers does; flip these asserts.
-	var block: Dictionary = UiConfig.DEFAULT_HP_BARS.duplicate(true)
-	block["render_priority"] = "x"
-	assert_array(UiConfig.validate_hp_bars(block)).is_empty()
-	block["render_priority"] = 10
-	block["width"] = 0.0
-	assert_array(UiConfig.validate_hp_bars(block)).is_empty()
+func test_hp_bar_block_validates_every_key() -> void:
+	# S5-2 (was a PIN): every key of DEFAULT_HP_BARS is checked, so a typo fails loud.
+	assert_array(UiConfig.validate_hp_bars(UiConfig.DEFAULT_HP_BARS.duplicate(true))).is_empty()
+	var bad_values: Dictionary = {
+		"visibility_mode": ["nope", 3, null],
+		"width": [0.0, -1.0, "x", null],
+		"height": [0.0, -0.1, "x", null],
+		"ghost_drain_per_sec": [0.0, "x"],
+		"border": [-0.1, "x"],
+		"resist_border": [-0.1, "x"],
+		"y_offset": [-1.0, "x"],
+		"ghost_delay": [-0.1, "x"],
+		"render_priority": ["x", 10.5, 127, -128, null],
+		"ghost_enabled": ["yes", 1],
+		"burn_status_id": ["", 4],
+		"default_resistance_tint": ["zzz", 5],
+		"colors": ["x", {"fill": "#e2483f"}, {"fill": "nope", "ghost": "#fff", "back": "#fff", "frame": "#fff", "burn": "#fff"}],
+		"resistance_tints": ["x", {"fire": "nope"}],
+	}
+	for key: String in bad_values:
+		for bad: Variant in bad_values[key]:
+			var block: Dictionary = UiConfig.DEFAULT_HP_BARS.duplicate(true)
+			block[key] = bad
+			assert_array(UiConfig.validate_hp_bars(block)).override_failure_message("%s = %s should be rejected" % [key, str(bad)]).is_not_empty()
+	# Every key of the defaults is covered above (a new default key without a check would slip through).
+	for key: String in UiConfig.DEFAULT_HP_BARS:
+		assert_bool(bad_values.has(key)).override_failure_message("add a bad-value case for hp_bars.%s" % key).is_true()
+	var edge: Dictionary = UiConfig.DEFAULT_HP_BARS.duplicate(true)
+	edge["render_priority"] = 126
+	assert_array(UiConfig.validate_hp_bars(edge)).is_empty()
+	edge["render_priority"] = -127
+	assert_array(UiConfig.validate_hp_bars(edge)).is_empty()
 
 
 # =====================================================================================

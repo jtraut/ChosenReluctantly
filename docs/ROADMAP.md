@@ -133,7 +133,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
     8. Bindings configurable via `data/input_bindings.json`, defaults left/right click.
     9. ux-designer: small, unobtrusive light and heavy timer indicators.
     10. Placeholder numbers logged in DECISIONS.md.
-  - **Also in this slice (from Slice 2 follow-ups):** ux-designer raises `preview_min_font_size` to 10 (s2-b) and adds a visible slot cooldown/ready state (s2-b); qa tests that HUD slots don't swallow left clicks (s2-e).
+  - **Also in this slice (from Slice 2 follow-ups):** ux-designer raises `preview_min_font_size` to 10 (s2-a) and adds a visible slot cooldown/ready state (s2-b); qa tests that HUD slots don't swallow left clicks (s2-e).
   - **qa tests:** auto interval math incl. modifiers; manual click resets timer; no double fire; no fire without a target in range/arc; no fire while dead; heavy cooldown; data flag switches heavy to auto.
   - **playtester:** does auto-fire feel good; is clicking worth doing; is heavy meaningfully different; is auto light too strong or weak versus cards. Screenshot of an auto light and a heavy attack.
 

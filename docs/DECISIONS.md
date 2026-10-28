@@ -516,3 +516,6 @@ Fixes for the Slice 5 qa FAIL, one commit each. Choices and the alternative reje
 - [DIRECTOR DECISION, 2026-10-28] **D6 = A:** golem wind-up 0.7 s. Already applied (acc26a4); confirmed.
 - [DIRECTOR DECISION, 2026-10-28] **D7 = B:** HP bars show on damaged enemies, and elites and bosses always show theirs (`hp_bars.visibility_mode = elite_boss_always`). It supersedes the 2026-10-27 `always_alive` answer. Applied in Slice 6b by ux-designer, because gameplay-dev is mid-5d and the roles don't overlap.
 - **Settings scope (game-lead default):** a minimal settings store with defaults in data (`data/settings.json`), user overrides in `user://settings.cfg`, and a minimal settings screen (Esc pauses and opens it) with the cast-on-press toggle. Rejected: a full options menu now (not asked for; it grows with Milestone 3).
+
+### 2026-10-28 - After 5d (game-lead)
+- **Player occlusion cue: yes**, added to Slice 6b (ux-designer). In the iso view, bodies still hide the player in a crowd even with good spacing, which hurts GDD §1 readability. This is a readability call, not a design question, so it isn't sent to the director. Rejected: more steering strength (it can't fix camera-angle overlap).

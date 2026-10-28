@@ -221,3 +221,7 @@ These were already resolved by explicit instruction in the Milestone 2 kickoff p
 - `StatusDatabase.validate_entry/validate_table` check `display_name`, `damage_type`, `effect_type` (only `damage_over_time`), `damage_per_tick` (>= 0), `tick_interval` (> 0) and the optional `visual` block: `kind` in {flame}, `size` a number in (0, 5], optional `color` a valid hex string. Validation runs once on first `get_status`/`has_status`; every problem is `push_error`'d and an invalid entry is treated as missing (`get_status` returns `{}`). Bad-fixture test: `tests/fixtures/statuses_bad/statuses.json` and `tests/unit/status_database_test.gd`.
 - `visual.color` is validated but not yet consumed (the flame takes the element color); it exists so the validator covers the color rule from the brief without inventing a new feature.
 - Rejected: leaving invalid entries in place after the error (the status would then run with silent defaults, the exact failure S4-3 reports).
+
+### 2026-10-28 - Correction and Slice 4 re-check calls (game-lead)
+- Correction to the S4-1 entry: the aoe radius 2.5 draws **2.9155** (sqrt(2.95^2 - 0.45^2)), not 2.906. The code is right.
+- N1 (ground shapes understate the hit area against the golem's box hurtbox by ~20-30 cm): accepted for now, because it errs the safe way. Moved to Slice 5's enemy review, which decides between per-enemy reach and a capsule hurtbox. Rejected: fixing it now (it needs per-enemy hurtbox data, which overlaps Slice 5).

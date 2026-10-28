@@ -88,7 +88,7 @@ func test_aoe_template_plays_through_pool() -> void:
 	var context := EffectContext.new(caster, holder, "player")
 	EffectTemplates._play_aoe_vfx({"radius": 2.5}, context)
 	var pool := EffectPool.for_world(holder)
-	assert_int(pool.active_count()).is_equal(1)
+	assert_int(pool.active_count()).is_equal(2)  # ground disc + cosmetic burst
 
 
 func test_vfx_config_validation() -> void:
@@ -96,3 +96,35 @@ func test_vfx_config_validation() -> void:
 	assert_array(VfxConfig.validate({"max_simultaneous": 0})).is_not_empty()
 	assert_array(VfxConfig.validate({"max_simultaneous": 2.5})).is_not_empty()
 	assert_array(VfxConfig.validate({})).is_not_empty()
+
+
+func test_pools_json_is_valid_and_fire_is_orange_red() -> void:
+	assert_array(PoolDatabase.validate_all()).is_empty()
+	var fire := ElementVisuals.color_for_damage_type("fire")
+	assert_float(fire.r).is_greater(0.9)
+	assert_float(fire.g).is_between(0.2, 0.6)
+	assert_float(fire.b).is_less(0.3)
+
+
+func test_physical_and_unknown_types_use_neutral_visual() -> void:
+	var neutral := ElementVisuals.color_for_damage_type("neutral")
+	assert_object(ElementVisuals.color_for_damage_type("physical")).is_equal(neutral)
+	assert_object(ElementVisuals.color_for_damage_type("not_an_element")).is_equal(neutral)
+
+
+func test_new_element_is_data_only() -> void:
+	var table := {
+		"neutral": {"kind": "neutral", "display_name": "Neutral"},
+		"water": {"kind": "element", "display_name": "Water", "visual": {"color": "#4aa8ff", "scale": 1.2}},
+	}
+	assert_array(PoolDatabase.validate_table(table)).is_empty()
+
+
+func test_pool_schema_rejects_bad_visuals() -> void:
+	var base := {"kind": "element", "display_name": "X"}
+	assert_array(PoolDatabase.validate_entry(base)).is_not_empty()
+	assert_array(PoolDatabase.validate_entry({"kind": "element", "display_name": "X", "visual": {"color": "nope", "scale": 1.0}})).is_not_empty()
+	assert_array(PoolDatabase.validate_entry({"kind": "element", "display_name": "X", "visual": {"color": "#fff", "scale": 0.0}})).is_not_empty()
+	assert_array(PoolDatabase.validate_entry({"kind": "element", "display_name": "X", "visual": {"color": "#fff"}})).is_not_empty()
+	assert_array(PoolDatabase.validate_entry({"kind": "bogus", "display_name": "X"})).is_not_empty()
+	assert_array(PoolDatabase.validate_table({"rogue": {"kind": "class", "display_name": "R"}})).is_not_empty()

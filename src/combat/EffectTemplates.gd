@@ -89,7 +89,12 @@ static func _play_aoe_vfx(params: Dictionary, context: EffectContext) -> void:
 	var pool := EffectPool.for_world(context.spawn_parent)
 	if pool == null or not is_instance_valid(context.caster):
 		return
-	pool.play(EffectPool.Shape.DISC, context.caster.global_position, float(params["radius"]), Color(1.0, 1.0, 1.0), 0.35)
+	var look := ElementVisuals.visual_for_damage_type(String(params.get("damage_type", "physical")))
+	var color: Color = look["color"]
+	var origin: Vector3 = context.caster.global_position
+	pool.play(EffectPool.Shape.DISC, origin, float(params["radius"]), color, 0.35)
+	# Cosmetic burst: the element "scale" resizes this, never the hit-area disc above.
+	pool.play(EffectPool.Shape.SPHERE, origin + Vector3(0.0, 0.5, 0.0), 0.4 * float(look["scale"]), color, 0.25, 0.6, 1.6, 0.8, 0.0)
 
 
 ## Horizontal-only impulse pointing from `origin` toward `target_pos`, scaled

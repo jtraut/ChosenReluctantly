@@ -1,0 +1,26 @@
+{
+    "hp_bars": {
+        "visibility_mode": "always_alive",
+        "width": 1.4,
+        "height": 0.19,
+        "border": 0.02,
+        "resist_border": 0.04,
+        "y_offset": 2.35,
+        "ghost_enabled": true,
+        "ghost_delay": 0.35,
+        "ghost_drain_per_sec": 1.5,
+        "burn_status_id": "burn",
+        "colors": {
+            "fill": "#e2483f",
+            "ghost": "#ffd7a8",
+            "back": "#1c1218",
+            "frame": "#0d080b",
+            "burn": "#ff9a1f"
+        },
+        "default_resistance_tint": "#cfd8dc",
+        "resistance_tints": {
+            "fire": "#ff8a3d",
+            "water": "#4aa8ff"
+        }
+    }
+}

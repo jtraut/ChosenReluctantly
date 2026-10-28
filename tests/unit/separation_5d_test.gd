@@ -34,6 +34,7 @@ func _build(seed_value: int, count: int, steering_on: bool) -> Array[Enemy]:
 	var list: Array[Enemy] = []
 	for i in range(count):
 		var enemy: Enemy = (load(CHASER_PATH) as PackedScene).instantiate()
+		enemy.spawn_index = i  # not the instance id: the same seed behaves the same in any suite order
 		_main.add_child(enemy)
 		# A 70 degree arc 8-10 m out: they all arrive from the same side, the worst case for piling up.
 		var angle: float = rng.randf_range(-0.6, 0.6)

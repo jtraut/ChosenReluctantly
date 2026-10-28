@@ -43,6 +43,10 @@ signal stun_refreshed(remaining: float)
 @export var projectile_max_range: float = 20.0
 
 var target: Node3D = null
+## Order this enemy came into the world (the spawner assigns it before add_child; a test may set it). Drives
+## the swirl side and the on-top push direction so behaviour repeats from a seed. -1 = not assigned: _ready
+## then uses how many enemies are already alive (still deterministic for a given scene, never the instance id).
+var spawn_index: int = -1
 
 ## Every live enemy in the tree, for separation steering (5d). A plain static array walked in place:
 ## no per-frame allocation, and the order (spawn order) is deterministic.
@@ -73,6 +77,8 @@ var _immune_popup_cooldown: float = 0.0
 
 
 func _ready() -> void:
+	if spawn_index < 0:
+		spawn_index = _roster.size()
 	_roster.append(self)
 	_apply_stats(EnemyConfig.stats_for(enemy_id))
 	_separation_radius = EnemyConfig.separation_radius()
@@ -226,7 +232,7 @@ func _chase_and_attack(delta: float) -> void:
 		# chase and parks an enemy in a queue behind its neighbour). A fixed per-enemy swirl, scaled by how
 		# crowded it is, makes a queue fan out around the target instead of waiting in line.
 		var lateral := push - dir * push.dot(dir)
-		var side := 1.0 if get_instance_id() % 2 == 0 else -1.0
+		var side := 1.0 if spawn_index % 2 == 0 else -1.0
 		lateral += Vector3(-dir.z, 0.0, dir.x) * (push.length() * SWIRL * side)
 		var move := dir * move_speed + lateral * (move_speed * _separation_strength)
 		var speed := Vector2(move.x, move.z).length()
@@ -270,8 +276,8 @@ func _separation_push() -> Vector3:
 		if d2 >= _separation_radius * _separation_radius:
 			continue
 		if d2 < 0.0001:
-			# Exactly on top: a stable, per-enemy direction (instance id) rather than random.
-			var angle := float(get_instance_id() % 628) * 0.01
+			# Exactly on top: a stable, per-enemy direction (golden angle steps of the spawn index), not random.
+			var angle := float(spawn_index) * 2.399963
 			push += Vector3(cos(angle), 0.0, sin(angle))
 			continue
 		var d := sqrt(d2)

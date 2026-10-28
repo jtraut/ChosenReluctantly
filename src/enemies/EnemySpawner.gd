@@ -21,6 +21,10 @@ var _scenes: Dictionary = {}
 const SWEEP_ANGLES := 32
 
 
+## Enemies this spawner has spawned so far; each gets its running number as `spawn_index`.
+var _spawn_count: int = 0
+
+
 func _ready() -> void:
 	if plan == null:
 		plan = WavePlan.new(WaveConfig.get_config(), _rng)
@@ -30,6 +34,7 @@ func _ready() -> void:
 ## Call before the first wave; it rebuilds the plan from the current config.
 func set_seed(seed_value: int) -> void:
 	_rng.seed = seed_value
+	_spawn_count = 0
 	plan = WavePlan.new(WaveConfig.get_config(), _rng)
 
 
@@ -58,6 +63,8 @@ func _spawn_one(enemy_id: String) -> void:
 	if scene == null:
 		return
 	var instance: Enemy = scene.instantiate()
+	instance.spawn_index = _spawn_count
+	_spawn_count += 1
 	# The arena is the spawner's parent (Main); only a parentless spawner falls back to the scene root.
 	var world: Node = get_parent() if get_parent() != null else get_tree().current_scene
 	world.add_child(instance)

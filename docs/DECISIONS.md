@@ -96,4 +96,5 @@ These were already resolved by explicit instruction in the Milestone 2 kickoff p
 - `Health` already guards against double death (`_is_dead`, `died` emitted once), so Slice 1 consumes that signal rather than adding a second guard.
 
 ### 2026-10-27 — Post-milestone polish 1: how roles are run
-- This main session has no in-process subagent tool, so game-lead runs each role one at a time via the Claude Code CLI (`claude -p --agent <role> "<brief>"`) from Bash, waiting for each to finish before starting the next. Roles still only do work in their own scope; game-lead does not write game code. Rejected alternative: game-lead writing code itself (outside its role scope per `.claude/agents/game-lead.md`).
+- This main session has no in-process subagent tool. game-lead tried running roles via the Claude Code CLI (`claude -p --agent <role> ...`) from Bash; the session's auto-mode permission check **denied** launching nested agents. game-lead did not work around it, and does not write game code itself (out of scope per `.claude/agents/game-lead.md`).
+- Result: Slice 0 (docs) is done; slices 1-5 are fully briefed in `docs/ROADMAP.md` and wait for the director to run each role. Options: start sessions per role (`claude --agent gameplay-dev`, then `ux-designer`, `qa`, `playtester`), or allow nested agents / a subagent tool so game-lead can orchestrate the loop itself.

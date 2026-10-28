@@ -8,12 +8,12 @@ Last updated: 2026-10-27. **Milestone 2 is done.** Now running **Post-milestone 
 - "0 / 30" investigated: it is player HP; the player never handles `Health.died`, so it keeps acting at 0 HP. Fix is in Slice 1.
 
 ## In progress
-Slice 1 (death and game over). Brief is in `docs/ROADMAP.md`.
+Nothing is half-built. Slice 1 (death and game over) is briefed in `docs/ROADMAP.md` but no code has been started. Repo runs as of a941ddd.
 
 ## Exact next step
 Run **gameplay-dev** on Slice 1 with the roadmap brief. Then ux-designer (Game Over screen + HUD "HP" label) -> qa -> playtester -> game-lead close. Then slices 2, 3, 4, 5 in order, then the whole-pass playtester report. After the pass: **Milestone 3a (run structure)**.
 
-How roles are run this session: `claude -p --agent <role> "<brief>"` from Bash, one at a time (logged in DECISIONS.md).
+**Blocker for orchestration:** this session couldn't launch role agents (no subagent tool, and nested `claude -p --agent` was denied by the permission check; see DECISIONS.md). Until that changes, the director runs each role directly, e.g. `claude --agent gameplay-dev` with the prompt: "Implement Post-milestone polish 1, Slice 1 per its brief in docs/ROADMAP.md. Commit when done and update docs/STATE.md." Then the same for ux-designer, qa, and playtester, then `claude --agent game-lead` to close the slice and brief the next.
 
 ## Open questions for the director
 None blocking. Carried over from before: damage-number readability and ghost-segment visibility follow-ups (HP bars, ROADMAP follow-ups (e)/(f)) are unscheduled.

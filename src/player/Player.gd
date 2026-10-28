@@ -30,6 +30,11 @@ signal attack_cancelled(attack_id: StringName)
 const HIT_FLASH_COLOR := Color(1.0, 0.3, 0.3)
 const HIT_FLASH_DURATION := 0.15
 const KNOCKBACK_DECAY := 18.0
+const DEATH_FLASH_WHITE := Color(1.0, 1.0, 1.0)
+const DEATH_FLASH_RED := Color(1.0, 0.1, 0.1)
+const DEATH_FLASH_HOLD := 0.08
+const DEATH_SHAKE_STRENGTH := 0.45
+const DEATH_SHAKE_DURATION := 0.3
 
 var camera: Camera3D = null
 var stat_modifiers := StatModifiers.new()
@@ -141,16 +146,28 @@ func _tick_dead(delta: float) -> void:
 	move_and_slide()
 
 
-## Placeholder: grey out and topple the body mesh (primitives only).
+## Placeholder death beat (s1-a): the body flashes white then red (so the moment
+## of death reads in a still), a red ring and burst pop out of it, the camera
+## shakes, and then the body greys out and topples. Primitives only. The beat
+## runs in slow-mo, so the flash holds are short in game time.
 func _play_death_animation() -> void:
 	var config := UiConfig.death_beat()
 	var duration: float = config["collapse_duration"]
 	var material := body_mesh.material_override
-	var tween := create_tween().set_parallel(true).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	TemplateVfx.death_cue(EffectPool.for_world(get_parent()), global_position)
+	Juice.screen_shake(DEATH_SHAKE_STRENGTH, DEATH_SHAKE_DURATION)
+	var topple := create_tween().set_parallel(true).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	topple.tween_property(body_mesh, "rotation_degrees:x", -90.0, duration).set_delay(DEATH_FLASH_HOLD)
+	topple.tween_property(body_mesh, "position:y", body_mesh.position.y * 0.5, duration).set_delay(DEATH_FLASH_HOLD)
 	if material is StandardMaterial3D:
-		tween.tween_property(material, "albedo_color", Color(0.25, 0.25, 0.25), duration)
-	tween.tween_property(body_mesh, "rotation_degrees:x", -90.0, duration)
-	tween.tween_property(body_mesh, "position:y", body_mesh.position.y * 0.5, duration)
+		var standard := material as StandardMaterial3D
+		standard.albedo_color = DEATH_FLASH_WHITE
+		var colors := create_tween()
+		colors.tween_interval(DEATH_FLASH_HOLD * 0.5)
+		colors.tween_property(standard, "albedo_color", DEATH_FLASH_RED, DEATH_FLASH_HOLD * 0.5)
+		colors.tween_interval(DEATH_FLASH_HOLD)
+		colors.set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+		colors.tween_property(standard, "albedo_color", Color(0.25, 0.25, 0.25), duration)
 
 
 func _on_damaged(amount: float, damage_type: String, knockback: Vector3) -> void:

@@ -140,3 +140,16 @@ static func status_flame(pool: EffectPool, target: Node3D, look: Dictionary, siz
 	if effect == null:
 		return null
 	return effect.held().stretched(1.6).pulsing(0.18, 6.0).following(target, Vector3(0.0, height, 0.0))
+
+
+# --- death -------------------------------------------------------------------
+
+## The player's death cue: a white-hot burst and a red ring racing outward from
+## the body. Cosmetic only (no hit area).
+static func death_cue(pool: EffectPool, position: Vector3) -> void:
+	if pool == null:
+		return
+	var red := Color(1.0, 0.15, 0.15)
+	pool.play(EffectPool.Shape.SPHERE, position + Vector3(0.0, 0.9, 0.0), 0.5, Color.WHITE, 0.35, 0.6, 2.2, 0.95, 0.0)
+	pool.play(EffectPool.Shape.RING, position + Vector3(0.0, 0.03, 0.0), 1.0, red, 0.6, 0.5, 3.2, 0.9, 0.0)
+	pool.play(EffectPool.Shape.DISC, position, 1.4, red, 0.8, 1.0, 1.0, 0.45, 0.0)

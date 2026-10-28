@@ -875,3 +875,37 @@ func test_old_bot_sim_script_compiles_and_runs_without_script_errors() -> void:
 	assert_array(bad).override_failure_message("bot_sim.gd printed script errors (first: %s)" % (bad[0] if not bad.is_empty() else "")).is_empty()
 	assert_int(code).is_equal(0)
 	assert_bool(text.contains("Bot-sim OK")).is_true()
+
+
+# =====================================================================================
+# Re-check 2026-10-28: D6 golem wind-up, live (real physics ticks, not a call to _execute_attack)
+# =====================================================================================
+
+func test_golem_wedge_shows_for_the_whole_0_7_s_wind_up_and_the_hit_lands_at_0_7_s() -> void:
+	var main := _spawn_root_main()
+	main.player.set_physics_process(false)
+	main.player.health.set_max_health(9999.0)
+	main.player.health.heal(9999.0)
+	await _frames(2)
+	var golem := _enemy(main, GOLEM_PATH, Vector3(0.0, 0.0, 0.0))
+	golem.rotation = Vector3.ZERO  # faces -Z
+	main.player.global_position = Vector3(0.0, 0.0, -1.2)
+	await _frames(1)
+	golem._attack_cooldown_remaining = 0.0
+	var hp_start: float = main.player.health.current_health
+	golem._start_telegraph()
+	var dt: float = 1.0 / float(Engine.physics_ticks_per_second)
+	var elapsed: float = 0.0
+	var hit_at: float = -1.0
+	var wedge_hidden_early: int = 0
+	for i in range(80):
+		await get_tree().physics_frame
+		elapsed += dt
+		if main.player.health.current_health < hp_start:
+			hit_at = elapsed
+			break
+		if not golem._wedge.visible:
+			wedge_hidden_early += 1
+	assert_float(hit_at).override_failure_message("golem hit never landed").is_greater(0.0)
+	assert_float(hit_at).override_failure_message("hit landed at %.3f s, expected 0.7 s" % hit_at).is_between(0.7 - dt, 0.7 + 2.0 * dt)
+	assert_int(wedge_hidden_early).override_failure_message("wedge was hidden on %d frames before the hit" % wedge_hidden_early).is_equal(0)

@@ -99,3 +99,43 @@ Slice 5 entries are present and accurate. I checked every claim against the comm
 - **D7** HP bar default: still the director's call (`always_alive` shipped; ux suggests `elite_boss_always`). Nothing in QA changes that; today every enemy is rank normal, so three of the four modes look identical in real waves.
 - **D6** golem wind-up 0.45 -> 0.7 s: unanswered, not applied.
 - Does a competent-bot mean of 6.0 to 6.6 alive, with peaks of 11 to 12, count as "holds about 6 to 15"? The cap is a ceiling the stage gates reach only at peaks. If "about 6 to 15" should feel like 10 or more most of the time, that is a data change in `waves.json` (gates and stage sizes), not code.
+
+## Re-check 2026-10-28 (targeted, after fix pass e100f09..b814bfd)
+
+### Overall Slice 5 verdict: PASS
+All blocker and should-fix items are resolved, the intentional red test is green through the real fix, and nothing else changed.
+
+### Per-item
+| Item | Commit | Verdict | Evidence |
+|---|---|---|---|
+| S5-1 old bot-sim compile | e100f09 | RESOLVED | `UiConfig.HP_BAR_MODES`, `EnemyHpBar.MODES = UiConfig.HP_BAR_MODES`. `run_bot_sim.ps1 -Rooms 20` prints "Bot-sim OK", exit 0, no ERROR lines. The script fails on any ERROR/WARNING line (my change from the review), so the OK is trustworthy. `test_old_bot_sim_script_compiles_and_runs_without_script_errors` PASSED in the real suite run (child `-s` process), 0 failures. |
+| S5-2 hp_bars validation | 8634b2b | RESOLVED | `test_hp_bar_block_validates_every_key` covers 14 keys with bad values, requires a case for every key in `DEFAULT_HP_BARS`, and checks edges 126 / -127 pass, 127 / -128 fail. Correct new behaviour (rejects, was accepted). |
+| S5-3 arena_half_extent | 24480cc | RESOLVED | Cap 19.5 (wall 20.0 minus 0.5). 19.5 passes, 19.6 and 60 fail; a second test reads the four wall boxes in Main.tscn and fails if the constant drifts. |
+| S5-4 corner spawns | 6115702 | RESOLVED | Flipped test: 6 spots (4 corners, 2 edges) x 1500 spawns, closest >= spawn_distance_min (9.0); ring test now asserts exactly 0 under minimum. Both pass. |
+| S5-5 merge eviction | 20483c7 | RESOLVED | Flipped test asserts the merged number survives and the second-oldest is freed. Correct new behaviour. |
+| S5-7 damage_numbers cache | c3c67f6 | RESOLVED | `is_same` test; read-only by convention (no caller mutates it; a bad block errors once). |
+| S5-6 per-frame allocation | 1b6e725 | RESOLVED | `step_one` returns one id or "", spawner uses it, `step` kept as wrapper with an equivalence test. Cap fuzz test still green. |
+| S5-10 scene root check | c9925fb | RESOLVED | Main.tscn (both paths) rejected as an enemy scene; the shipped three still validate. |
+| S5-8 README | 26c0c3a | RESOLVED | No CR bytes (0), `git ls-files --eol` = `i/lf w/lf`, text again. -w diff is 3 lines. The wave-sim commands pasted and ran (see below). |
+| .uid files | f82b0a8 | RESOLVED | Tracked; `git status` clean before my edit. |
+| D6 golem 0.7 s | acc26a4 | RESOLVED | See below. |
+| enemy_hp_bar_test edit | 2669d26 | RESOLVED, assertion not weakened | It is strengthened. Because `validate_hp_bars` now needs a full block, the old `{"visibility_mode": x}` fixtures would fail for the wrong reason (missing keys). The new helper builds a full default block and varies only the mode, so valid modes still assert empty and bad modes ("sometimes", 3) assert non-empty for the right reason. Same assertion count. |
+
+### Extra checks
+- **No other value changes:** `git diff cdede75..HEAD -- data scenes` is exactly one line: `telegraph_duration = 0.7` in `scenes/enemies/FireResistantGolem.tscn`. No `data/` file changed. Chaser stays 0.45 (asserted).
+- **Golem live check (new test, mine):** `slice5_qa_test.gd::test_golem_wedge_shows_for_the_whole_0_7_s_wind_up_and_the_hit_lands_at_0_7_s`. Real physics ticks in Main: wedge visible on every frame before the hit, HP drops at 0.7 s (within one tick). PASSES. The fix pass's own test only called `_update_wedge` once at 0.02 s remaining, so this closes the "hit lands at 0.7" gap.
+- Full suite: **417/417** (416 from the fix pass + my 1 new), 0 errors, 0 failures, 0 orphans, exit 0. Only the four expected ERROR lines appear (runner remote-port pair, plus the two intentional `assert_error` ones).
+- 20 s headless run (`--quit-after 1200`): 0 lines matching error, warning or bug. SceneSelfCheck runs on every Main._ready and is silent; `main_scene_smoke_test` is in the green suite.
+- Reload soak `-Cycles 5`: RELOAD CYCLE OK, orphans 0, objects 1843 (baseline 1826), nodes 93, time_scale 1.0.
+- `run_bot_sim.ps1 -Rooms 20`: OK, exit 0.
+- Wave sim, all exit 0, "WAVE SIM OK", no ERROR/WARNING: normal `-Seed 300 -Seconds 180 -Runs 3`: survived, alive max 12, mean 5.7 to 7.4, stages opened 14 to 16, max stall 14 s (HP lost 64 / 20 / 20-class; kills 74 / 85). God `-Seed 400 -Seconds 240 -Runs 2 -God`: alive max 12, mean 6.7, stages opened 20, max stall 11 s, kills 110. Idle `-Seed 500 -Seconds 60 -Runs 3 -Idle -Scale 1`: died at 7.7 / 8.6 / 7.5 s, 0 kills (unchanged from before; the idle player is not affected by the golem change since it dies to chasers and shooters first).
+- Changelog check: fix pass and D6 entries are present and accurate (D6 numbers 2.25 -> 2.5 s cycle and 4.0 -> 3.6 DPS match DECISIONS; "min 9 m" matches `waves.json`; hashes exist and touch the described files). No edit needed.
+
+### New findings
+None blocking. Non-blocking: the D6 golem wind-up remains a scene export while every other combat number for enemies is... also a scene export (so no inconsistency); the fix pass already flags moving them to `data/enemies.json` as a later pass. S5-9 (bar rank change shows on next hit) is still open by design (ux, low).
+
+### Still unverified
+Z-fighting in motion, 1080p+, and a human fighting 12 enemies (playtester / director), as before.
+
+### Director questions
+D7 (bar default) and the D6 revert option (reply B) remain with the director; no new ones.

@@ -3,6 +3,10 @@ extends RefCounted
 ## data/ui.json: UI tuning values. Missing keys fall back to DEFAULT_HP_BARS so
 ## a partial or absent file never breaks the HUD.
 
+## Every valid `hp_bars.visibility_mode`. Lives here (not in EnemyHpBar) so a `-s` tool that reaches
+## UiConfig does not compile EnemyHpBar -> Enemy -> the Juice autoload (S5-1). EnemyHpBar.MODES points here.
+const HP_BAR_MODES: Array[String] = ["always_alive", "after_damage", "hidden_at_full", "elite_boss_always"]
+
 const DEFAULT_HP_BARS: Dictionary = {
 	"visibility_mode": "always_alive",
 	"width": 1.2,
@@ -172,8 +176,8 @@ static func hp_bars() -> Dictionary:
 static func validate_hp_bars(block: Dictionary) -> Array[String]:
 	var problems: Array[String] = []
 	var mode: Variant = block.get("visibility_mode")
-	if typeof(mode) != TYPE_STRING or not EnemyHpBar.MODES.has(String(mode)):
-		problems.append("visibility_mode must be one of %s" % str(EnemyHpBar.MODES))
+	if typeof(mode) != TYPE_STRING or not HP_BAR_MODES.has(String(mode)):
+		problems.append("visibility_mode must be one of %s" % str(HP_BAR_MODES))
 	return problems
 
 

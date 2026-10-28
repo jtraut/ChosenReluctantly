@@ -12,7 +12,7 @@ const MODE_AFTER_DAMAGE := "after_damage"
 const MODE_HIDDEN_AT_FULL := "hidden_at_full"
 const MODE_ELITE_BOSS_ALWAYS := "elite_boss_always"
 ## Every valid `hp_bars.visibility_mode` (validated in UiConfig).
-const MODES: Array[String] = [MODE_ALWAYS_ALIVE, MODE_AFTER_DAMAGE, MODE_HIDDEN_AT_FULL, MODE_ELITE_BOSS_ALWAYS]
+const MODES: Array[String] = UiConfig.HP_BAR_MODES
 
 @export var health_path: NodePath = NodePath("../Health")
 @export var status_path: NodePath = NodePath("../StatusEffectManager")

@@ -5,16 +5,19 @@ class_name Player
 ## Emitted once when Health reaches 0. Main, the run system, and UI listen here.
 signal player_died()
 
+## Attack timing signals for UI (ids are &"light" / &"heavy"). Forwarded from
+## the AttackController. started: swing or wind-up begins; fired: damage
+## moment; ready: cooldown finished; cancelled: wind-up aborted (death).
+signal attack_started(attack_id: StringName)
+signal attack_fired(attack_id: StringName)
+signal attack_ready(attack_id: StringName)
+signal attack_cancelled(attack_id: StringName)
+
 @export var move_speed: float = 6.0
 @export var acceleration: float = 24.0
 @export var friction: float = 28.0
 @export var turn_speed: float = 14.0
 @export var gravity: float = 20.0
-
-@export var attack_damage: float = 8.0
-@export var attack_cooldown: float = 0.45
-@export var attack_range: float = 1.8
-@export var attack_half_angle_degrees: float = 50.0
 
 @export var dodge_speed: float = 14.0
 @export var dodge_duration: float = 0.25
@@ -31,12 +34,13 @@ const KNOCKBACK_DECAY := 18.0
 var camera: Camera3D = null
 var stat_modifiers := StatModifiers.new()
 var card_slots: CardSlotController
+var attacks: AttackController
 
 @onready var hurtbox: Hurtbox = $Hurtbox
 @onready var health: Health = $Health
 @onready var body_mesh: MeshInstance3D = $BodyMesh
 
-var _attack_cooldown_remaining: float = 0.0
+var _attack_visuals: Dictionary = {}
 var _dodge_cooldown_remaining: float = 0.0
 var _base_body_color: Color = Color.WHITE
 var _knockback_velocity: Vector3 = Vector3.ZERO
@@ -53,6 +57,7 @@ var _forced_move_invulnerable: bool = false
 func _ready() -> void:
 	var team := hurtbox.team if hurtbox != null else "player"
 	card_slots = CardSlotController.new(self, get_tree().current_scene, team, stat_modifiers, owned_pools)
+	_setup_attacks()
 	health.damaged.connect(_on_damaged)
 	health.died.connect(_on_died)
 	var material := body_mesh.material_override
@@ -75,7 +80,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		_apply_movement(delta)
 	_apply_aim(delta)
-	_handle_attack()
+	_handle_attack(delta)
 	_handle_card_slot_input()
 	move_and_slide()
 
@@ -84,9 +89,24 @@ func is_dead() -> bool:
 	return _dead
 
 
-## False once dead: gates input, movement, cards, dodge, and basic attack.
+## False once dead: gates input, movement, cards, dodge, and light/heavy attacks.
 func can_act() -> bool:
 	return not _dead
+
+
+## 0..1 fraction of the attack's cooldown elapsed (1.0 = ready). `attack_id`
+## is &"light" or &"heavy". Unknown ids return 0.0.
+func get_attack_progress(attack_id: StringName) -> float:
+	return attacks.get_progress(attack_id)
+
+
+func is_attack_ready(attack_id: StringName) -> bool:
+	return attacks.is_ready(attack_id)
+
+
+## Effective cooldown in seconds after StatModifiers.
+func get_attack_interval(attack_id: StringName) -> float:
+	return attacks.get_interval(attack_id)
 
 
 func _on_died() -> void:
@@ -95,6 +115,7 @@ func _on_died() -> void:
 	_dead = true
 	_forced_move_time_remaining = 0.0
 	_forced_move_invulnerable = false
+	attacks.cancel_all()
 	if hurtbox != null:
 		hurtbox.set_invulnerable(true)
 	_play_death_animation()
@@ -142,7 +163,6 @@ func _flash_body(color: Color) -> void:
 
 
 func _tick_cooldowns(delta: float) -> void:
-	_attack_cooldown_remaining = maxf(_attack_cooldown_remaining - delta, 0.0)
 	_dodge_cooldown_remaining = maxf(_dodge_cooldown_remaining - delta, 0.0)
 
 
@@ -188,26 +208,79 @@ func _apply_forced_move(delta: float) -> void:
 		_forced_move_invulnerable = false
 
 
-func _handle_attack() -> void:
-	if _attack_cooldown_remaining > 0.0:
-		return
-	if not Input.is_action_just_pressed("attack_basic"):
-		return
-	_attack_cooldown_remaining = attack_cooldown
-	_perform_melee_attack()
+func _setup_attacks() -> void:
+	var defs := AttackDatabase.load_valid()
+	attacks = AttackController.new(defs, stat_modifiers)
+	attacks.attack_started.connect(_on_attack_started)
+	attacks.attack_fired.connect(_on_attack_fired)
+	attacks.attack_ready.connect(func(attack_id: StringName) -> void: attack_ready.emit(attack_id))
+	attacks.attack_cancelled.connect(_on_attack_cancelled)
+	for attack_id: StringName in attacks.ids():
+		var def := attacks.get_def(attack_id)
+		var visual := AttackArcVisual.new()
+		visual.name = "AttackVisual_%s" % attack_id
+		add_child(visual)
+		visual.setup(float(def["range"]), float(def["half_angle_degrees"]), Color.html(String(def["color"])))
+		_attack_visuals[attack_id] = visual
 
 
-func _perform_melee_attack() -> void:
-	# The basic attack is just a "cone" effect with no card behind it, so it
-	# goes through the same EffectTemplates path a Rogue card would.
+func _handle_attack(delta: float) -> void:
+	var manual: Dictionary = {
+		&"light": Input.is_action_just_pressed("attack_light"),
+		&"heavy": Input.is_action_just_pressed("attack_heavy"),
+	}
+	attacks.tick(delta, can_act(), manual, _attack_has_target)
+	for attack_id: StringName in attacks.ids():
+		if attacks.is_winding_up(attack_id):
+			(_attack_visuals[attack_id] as AttackArcVisual).show_windup(attacks.get_windup_progress(attack_id))
+
+
+## True when at least one enemy is inside the attack's range and arc, facing
+## the current aim direction. Gate for automatic attacks (never whiff).
+func _attack_has_target(attack_id: StringName) -> bool:
+	if not is_inside_tree():
+		return false
+	var def := attacks.get_def(attack_id)
+	var hits := MeleeQuery.find_hurtboxes_in_cone(
+		get_world_3d().direct_space_state,
+		global_position,
+		-global_transform.basis.z,
+		float(def["range"]),
+		float(def["half_angle_degrees"]),
+		hurtbox.team if hurtbox != null else "player",
+		CollisionLayers.HURTBOX
+	)
+	return not hits.is_empty()
+
+
+func _on_attack_started(attack_id: StringName) -> void:
+	if attacks.is_winding_up(attack_id):
+		(_attack_visuals[attack_id] as AttackArcVisual).show_windup(0.0)
+	attack_started.emit(attack_id)
+
+
+func _on_attack_cancelled(attack_id: StringName) -> void:
+	(_attack_visuals[attack_id] as AttackArcVisual).hide_now()
+	attack_cancelled.emit(attack_id)
+
+
+func _on_attack_fired(attack_id: StringName) -> void:
+	var def := attacks.get_def(attack_id)
+	# Light and heavy are just "cone" effects with no card behind them, so
+	# they go through the same EffectTemplates path a Rogue card would.
 	var context := EffectContext.new(self, get_tree().current_scene, hurtbox.team if hurtbox != null else "neutral")
 	EffectTemplates.execute("cone", {
-		"damage": attack_damage,
-		"damage_type": "physical",
-		"range": attack_range,
-		"half_angle_degrees": attack_half_angle_degrees,
-		"knockback_strength": 3.0,
+		"damage": def["damage"],
+		"damage_type": def["damage_type"],
+		"range": def["range"],
+		"half_angle_degrees": def["half_angle_degrees"],
+		"knockback_strength": def["knockback"],
 	}, context)
+	(_attack_visuals[attack_id] as AttackArcVisual).flash(float(def["flash_duration"]))
+	if not context.last_hits.is_empty():
+		Juice.hit_stop(float(def["hit_stop_duration"]), float(def["hit_stop_scale"]))
+		Juice.screen_shake(float(def["shake_strength"]), float(def["shake_duration"]))
+	attack_fired.emit(attack_id)
 
 
 ## exact_match=true matters here: without it, Ctrl+1 would also register as

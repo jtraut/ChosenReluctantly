@@ -1,0 +1,38 @@
+{
+    "light": {
+        "auto": true,
+        "stat": "attack_interval.light",
+        "interval": 0.6,
+        "manual_min_gap": 0.25,
+        "damage": 8.0,
+        "damage_type": "physical",
+        "range": 1.8,
+        "half_angle_degrees": 50.0,
+        "wind_up": 0.0,
+        "knockback": 3.0,
+        "hit_stop_duration": 0.03,
+        "hit_stop_scale": 0.2,
+        "shake_strength": 0.05,
+        "shake_duration": 0.08,
+        "color": "#ffe27a",
+        "flash_duration": 0.12
+    },
+    "heavy": {
+        "auto": false,
+        "stat": "attack_cooldown.heavy",
+        "interval": 1.8,
+        "manual_min_gap": -1.0,
+        "damage": 22.0,
+        "damage_type": "physical",
+        "range": 2.4,
+        "half_angle_degrees": 85.0,
+        "wind_up": 0.45,
+        "knockback": 8.0,
+        "hit_stop_duration": 0.1,
+        "hit_stop_scale": 0.03,
+        "shake_strength": 0.4,
+        "shake_duration": 0.25,
+        "color": "#ff5a2a",
+        "flash_duration": 0.2
+    }
+}

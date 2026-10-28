@@ -75,17 +75,22 @@ func test_actions_blocked_after_death() -> void:
 	assert_float(player._forced_move_time_remaining).is_equal(0.0)
 	# Held input cannot move or act: simulate pressed actions, run physics.
 	Input.action_press("move_forward")
-	Input.action_press("attack_basic")
+	Input.action_press("attack_light")
+	Input.action_press("attack_heavy")
 	Input.action_press("dodge")
 	Input.action_press("slot_1")
-	var cooldown_before := player._attack_cooldown_remaining
+	var fired: Array[StringName] = []
+	player.attack_fired.connect(func(attack_id: StringName) -> void: fired.append(attack_id))
+	var progress_before := player.get_attack_progress(&"light")
 	for i in range(5):
 		player._physics_process(0.016)
 	Input.action_release("move_forward")
-	Input.action_release("attack_basic")
+	Input.action_release("attack_light")
+	Input.action_release("attack_heavy")
 	Input.action_release("dodge")
 	Input.action_release("slot_1")
-	assert_float(player._attack_cooldown_remaining).is_equal(cooldown_before)
+	assert_array(fired).is_empty()
+	assert_float(player.get_attack_progress(&"light")).is_equal(progress_before)
 	assert_float(player._dodge_cooldown_remaining).is_equal(0.0)
 	assert_float(player.global_position.distance_to(start)).is_less(0.05)
 	# Dead player cannot be damaged (Health guard) and is not targetable.

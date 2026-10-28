@@ -214,7 +214,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
   - (2) Remove the TrainingDummy from the normal run (keep it available to scenarios). It reads as an enemy and clutters every run.
   - (3) Move per-type enemy combat stats (wind-up, damage, speeds, cooldown) from scene exports into `data/enemies.json`, with values unchanged. Only if it fits in the sitting; otherwise list it as a follow-up.
   - **qa:** no stacking (minimum pair distance over a seeded wave sim), telegraph/hit match, wave sim clean, DoD.
-- [ ] **Slice 5 original brief (kept for reference)**
+- **Slice 5 brief and sub-steps (reference, done):**
   - **Owner sequence:** gameplay-dev (spawner, enemy fixes, bar rendering) -> ux-designer (bar visibility/size options) -> qa (incl. bot-sim) -> playtester (compare bar options, density screenshots) -> game-lead (pick bar default, close).
   - **GDD:** §1 density principle, §7.
   - **Sub-steps (game-lead, 2026-10-28):**
@@ -232,7 +232,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
       - Pointy Stick / neutral projectile clearly visible.
       - s4-c: cone sweep duration moves to data, with the cone, heal sparkle and dash trail reads strengthened.
       - s4-b: golem occlusion of ground shapes (cheap fix or a note).
-    - [ ] **5c:** qa FAIL c13a43a (`docs/reviews/2026-10-28-polish1-slice5-qa.md`): blocker S5-1 (old bot-sim broken since 058d3dd, and it still printed OK). One intentionally red test until it's fixed. **Fix pass (gameplay-dev) done e100f09..2669d26, 416/416, bot-sim fixed, golem wind-up 0.7 s (D6-A).** qa re-check PASS 45ae002 (417/417). Playtester in progress. Items were: S5-1, S5-2..S5-7, S5-10, D6 default A, README CR bytes (S5-8), untracked .uid files. Then the qa re-check -> playtester -> close. Original line: qa (incl. bot-sim at the new density) -> playtester -> game-lead picks the bar default and closes.
+    - [x] **5c:** qa FAIL c13a43a (`docs/reviews/2026-10-28-polish1-slice5-qa.md`): blocker S5-1 (old bot-sim broken since 058d3dd, and it still printed OK). One intentionally red test until it's fixed. **Fix pass (gameplay-dev) done e100f09..2669d26, 416/416, bot-sim fixed, golem wind-up 0.7 s (D6-A).** qa re-check PASS 45ae002 (417/417). Playtester in progress. Items were: S5-1, S5-2..S5-7, S5-10, D6 default A, README CR bytes (S5-8), untracked .uid files. Then the qa re-check -> playtester -> close. Original line: qa (incl. bot-sim at the new density) -> playtester -> game-lead picks the bar default and closes.
   - **Also in this slice:** (s4-b) tall golems occlude ground shapes; (N1) ground shapes understate hit area vs FireResistantGolem box hurtbox (~20-30 cm short; per-enemy reach or accept); s3-g (enemy HP bars clump into an unreadable cluster in crowds), s1-f (first contact ~1 s after spawn).
   - **Files likely touched:** `src/enemies/EnemySpawner.gd`, new wave table data (e.g. `data/waves.json`), `src/enemies/Enemy.gd`, `scenes/enemies/*.tscn`, `src/ui/EnemyHpBar.gd`, `assets/shaders/enemy_hp_bar.gdshader`, `data/ui.json`, `tools/bot_sim.gd`, tests.
   - **Acceptance criteria:**

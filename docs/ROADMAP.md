@@ -58,11 +58,14 @@ Small director-requested items between milestones. Not Milestone 3 scope.
   - **Done requires:**
     - qa PASS: tests for ratio math, clamping at 0 and at max, updates on damage and heal, hidden on death, no errors when an enemy spawns or is freed mid-frame; full suite green; 20-second headless run; zero errors and warnings.
     - playtester report with no blockers: smoke check, a screenshot of a wave, readability notes.
-  - **Follow-ups (not started):**
-    - [ ] (a) gameplay-dev: screenshot tooling, e.g. a `--screenshot-after N` flag, ideally with a scripted damage/Burn scenario, so the team can verify visuals without a human (the playtester had to use a scratch `--script` capture).
-    - [ ] (b) director/playtester: live visual check of the damaged state, ghost trail, Burn flame pip, interplay with damage numbers and telegraphs, bars overlapping the player, and `after_damage` mode. Only full bars were observed so far.
-    - [ ] (c) ux-designer (later): resistance marker reads as "armoured", not "resists fire" - needs a tooltip/legend once there's a place for one.
-    - [ ] (d) ux-designer (optional, data-only): bump bar size to ~1.6 wide x ~0.22 tall in `data/ui.json` if bars (~70x9 px at 720p) feel small below 720p.
+  - **Follow-ups** (director answers 2026-10-27, logged in `docs/DECISIONS.md`):
+    - [x] (a) gameplay-dev: screenshot tooling - **done** (f468959, 96ca1a1, 083a8cf; qa PASS on 083a8cf, 91/91 tests). `powershell -File tools\capture_screenshot.ps1 -Scenario hp_bars -After "2.0,2.9,3.6"` (see README).
+    - [ ] (b) visual check - **partially covered** by an hp_bars capture: damaged fills, Burn triangles, and resistant frames read clearly; ghost segment is subtle at 720p; in a very tight cluster bars stack and are hard to match to bodies. **Remaining:** director's hands-on look at bars over/near the player while playing.
+    - [ ] (c) ux-designer (later): resistance marker reads as "armoured", not "resists fire". Director: acceptable for now; tooltip/legend stays open for later.
+    - ~~(d) size bump~~ - dropped; director says size is fine.
+    - [ ] (e) ux-designer (small): damage-number readability - numbers are ~10 px at 720p and hard to read (pre-existing, not caused by the bars).
+    - [ ] (f) ux-designer (optional, config-only in `data/ui.json`): make the ghost segment more visible at 720p.
+  - **Deferred idea (not a task):** show HP as a number or % (e.g. "34/100") on or near the bar.
 
 ## Milestone 3 — Card system and run loop (next, outlined only)
 Not started. Expected scope per GDD §13 milestone 3 and §9:

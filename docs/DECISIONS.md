@@ -74,3 +74,11 @@ These were already resolved by explicit instruction in the Milestone 2 kickoff p
 - **Stored as data, not code:** the rule is a config value (e.g. `data/enemy_health_bar.json`, `"visibility": "always_while_alive"`) that the bar reads at spawn, so it can later become `"after_first_damage"` or a player setting without touching the bar's script. Exact file/key name is gameplay-dev's call; it must be logged here when chosen.
 - **Reasoning:** simplest rule to implement and verify, and the most readable for a combat-feel prototype where the director is judging fight state.
 - **Rejected alternative:** "show only after first damage" (less clutter in big waves, but hides information during the exact playtests where readability is being judged). Kept available as a future config value.
+
+### 2026-10-27 — Enemy HP bars: director follow-up answers
+- **Visibility:** director confirmed `always_alive` (always visible while alive) as the default. No change.
+- **Size:** director says the current size is fine. The proposed bump (~1.6 x 0.22) is dropped. Rejected alternative: bump now pre-emptively. No evidence it's needed.
+- **Resistance marker:** reading as "armoured" rather than "resists fire" is acceptable for now. Tooltip/legend follow-up stays open for later.
+- **Deferred idea, not a task:** show HP as a number or % (e.g. "34/100") on or near the bar. Not scheduled. Revisit if the director asks or readability feedback calls for it.
+- **Screenshot tooling approved and built** (f468959, 96ca1a1, 083a8cf; qa PASS on 083a8cf after an earlier FAIL for malformed args hanging and an unknown scenario exiting 0). Agents now verify visuals with `tools/capture_screenshot.ps1 -Scenario <name> -After "<seconds,...>"` instead of ad-hoc `--script` captures.
+- **New follow-ups from the capture review** (game-lead call, small and reversible): damage-number readability (~10 px at 720p) and an optional, config-only, more visible ghost segment, both for ux-designer. Tight-cluster bar stacking is noted but not scheduled; it only shows in very dense clusters.

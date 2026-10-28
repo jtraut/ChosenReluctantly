@@ -19,13 +19,15 @@ Fixed the transform (now forward ~ (-0.58, -0.58, -0.58)). Added `SceneSelfCheck
 Lesson: "nodes exist" checks don't catch an empty world - the frustum checks are what matter.
 
 ## Post-milestone polish (2026-10-27): HP bars above enemies - done
-Every enemy and the TrainingDummy now shows a world-space billboard HP bar (`scenes/ui/EnemyHpBar.tscn`, `src/ui/EnemyHpBar.gd`, shared shader `assets/shaders/enemy_hp_bar.gdshader`, config `data/ui.json` `hp_bars`). Signal-driven off `Health` and the new `StatusEffectManager.status_applied/status_expired`; one shared quad + material with instance uniforms, no SubViewport/Control per enemy. Visibility is data (`always_alive` default, or `after_damage`). Ghost trail and Burn flame pip included; resistant enemies get a tinted thick frame + diamond pip (not color-only). qa PASS (83/83 tests, editor check, 20s headless run, bot-sim 20 rooms clean). Playtester: no blockers; bars readable in a 9-enemy cluster at 1280x720 (~70x9 px). Not yet seen live: damaged/ghost state, Burn pip, overlap with damage numbers/telegraphs/player, `after_damage` mode. Follow-ups (a)-(d) are listed under the item in `docs/ROADMAP.md`.
+Every enemy and the TrainingDummy now shows a world-space billboard HP bar (`scenes/ui/EnemyHpBar.tscn`, `src/ui/EnemyHpBar.gd`, shared shader `assets/shaders/enemy_hp_bar.gdshader`, config `data/ui.json` `hp_bars`). Signal-driven off `Health` and the new `StatusEffectManager.status_applied/status_expired`; one shared quad + material with instance uniforms, no SubViewport/Control per enemy. Visibility is data (`always_alive` default, or `after_damage`). Ghost trail and Burn flame pip included; resistant enemies get a tinted thick frame + diamond pip (not color-only). qa PASS (83/83 tests, editor check, 20s headless run, bot-sim 20 rooms clean). Playtester: no blockers; bars readable in a 9-enemy cluster at 1280x720 (~70x9 px). Not yet seen live: damaged/ghost state, Burn pip, overlap with damage numbers/telegraphs/player, `after_damage` mode. Follow-ups are listed under the item in `docs/ROADMAP.md`.
+
+Director answered the follow-up questions (logged in `docs/DECISIONS.md`): keep always-visible, size fine, the "armoured" reading of the resistance marker is OK for now, HP-as-number is a deferred idea. **Screenshot tooling is built** (f468959, 96ca1a1, 083a8cf; qa PASS, 91/91 tests). **Agents: use `powershell -File tools\capture_screenshot.ps1 -Scenario hp_bars -After "2.0,2.9,3.6"` (see README) to check visuals** instead of ad-hoc captures. A capture review showed damaged fills, Burn pips, and resistant frames read well. The ghost segment is subtle at 720p, bars stack in tight clusters, and damage numbers (~10 px) are hard to read; small ux follow-ups were added.
 
 ## In progress
 Nothing.
 
 ## Exact next step
-**Next: the director playtests** (unchanged). Nothing is queued for an agent until the director gives feedback, except optional follow-ups from the HP bar item: if the director wants agent work meanwhile, the cheapest useful one is follow-up (a), **gameplay-dev** adds screenshot tooling (`--screenshot-after N` plus a scripted damage/Burn scenario), so playtester can verify visuals headlessly.
+**Next: the director playtests** before Milestone 3 (unchanged). During that playtest, also glance at HP bars over/near the player (the remaining part of follow-up (b)). Optional agent work if the director wants it meanwhile: **ux-designer** on damage-number readability (follow-up (e)), then the config-only ghost-visibility tweak (f), each verified with the capture tool and qa.
 
 Director: re-playtest now that the world is visible - controls will feel different since movement/aim were camera-relative to a wrong camera. Then:
 Wait for the director's playtest and design feedback before starting Milestone 3. If asked to proceed anyway: Milestone 3's first real decision is the two open questions it inherits from GDD §14 item 1 (single-card reward offer vs. choice of several; whether shops/drops exist alongside post-battle rewards) - resolve those via the GDD's own `[PROPOSED]` defaults if no new director input arrives, log in `docs/DECISIONS.md`, then start with the room-graph/run-structure data model before the reward screen, since the reward screen needs somewhere to fire between rooms.
@@ -36,7 +38,5 @@ None blocking. Everything to actually look at and react to:
 - Are the enemy/card damage and cooldown numbers in the right neighborhood, or wildly off? They're placeholder tuning values, logged as such in `docs/DECISIONS.md`.
 - Is the Ctrl+number dead-card-swap binding comfortable, or does it want a different default?
 - Tone check on the card flavor text (dry/sarcastic, per GDD §11) - too much, too little, right amount?
-- HP bars: while playing, hit and Burn an enemy - do the ghost trail and flame pip read well, and do bars clash with damage numbers/telegraphs or the player?
-- HP bars: keep `always_alive` visibility, or switch to `after_damage` (data change in `data/ui.json`)? Bigger bars (~1.6 x 0.22)?
-- Resistance marker reads as "armoured", not "resists fire". OK until there's a tooltip/legend, or worth a clearer marker now?
-- Want screenshot tooling built now (follow-up (a)) so agents can check visuals without you?
+- HP bars: while playing, do bars clash with the player or with telegraphs? This is the only part of the visual check a capture couldn't cover.
+- Want the small ux follow-ups (damage-number readability, more visible ghost) done before Milestone 3, or folded into later polish?

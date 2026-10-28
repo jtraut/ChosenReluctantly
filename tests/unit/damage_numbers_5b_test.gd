@@ -58,6 +58,7 @@ func test_evict_count_keeps_room_for_one_more() -> void:
 
 func test_merge_hit_sums_and_extends_life() -> void:
 	var number: DamageNumber = auto_free(DamageNumber.new())
+	add_child(number)  # global_position needs a tree (qa: the suite logged an engine ERROR without this)
 	number.configure(UiConfig.damage_numbers())
 	number.show_amount(3.0, "physical", Color.WHITE, false)
 	number._elapsed = 0.7

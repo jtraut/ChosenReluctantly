@@ -2,7 +2,7 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-10-28 (Polish 1: Slice 4 skill visuals, Slice 3b attack rework, director open items)
+## 2026-10-28 (Polish 1: Slice 5 waves and readability, Slice 4 skill visuals, Slice 3b attack rework, director open items)
 
 ### Added
 - **Staged enemy waves (Slice 5a).** Up to 12 enemies at once, arriving in four stages. Each stage opens after a delay and only while few enough enemies are alive. The wave table is data in `data/waves.json`. Enemies can't attack for their first 1.5 s, and the first wave arrives after 3 s. Before, first contact came about 1 s after spawn. (3af4538, 8e05395)

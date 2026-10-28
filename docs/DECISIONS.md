@@ -124,3 +124,7 @@ These were already resolved by explicit instruction in the Milestone 2 kickoff p
 - **Schema warning:** `CardSchema.warnings(card)` returns advisory strings for names over `hud.name_warn_length` (25 chars; Healing Potion (Lukewarm) is exactly 25 and passes). `validate()` is unchanged, so it is never a failure. `CardDatabase` logs them via `push_warning` at load. No current card triggers it.
 - **HP bar (s1-d):** 22 px tall at 720p, white 2 px border, dark back, saturated red fill, white 16 px label with a dark outline (colors in `hud.hp_*`). Shape plus border carry the contrast, not color alone.
 - **Capture note:** this machine's display clamps the window height to 1061 px, so 1920x1080 and 2560x1440 captures are 1920x1061 and 2560x1061. The scale follows the real height, so these are not true 1080p/1440p. True sizes are covered by the layout tests.
+
+## 2026-10-27 - Raise "Next:" preview minimum font to 10 px (game-lead)
+- Playtester (Slice 2) found 9 px at 720p legible but the smallest text on screen. No current card shrinks that far, so raising it costs nothing now and leaves headroom.
+- Decision: `preview_min_font_size` 9 -> 10, done by ux-designer during Slice 3. Rejected: 11 px (would force ellipsis sooner on long next-card names in fixed 150 px slots).

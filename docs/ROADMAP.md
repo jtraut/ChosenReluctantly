@@ -104,7 +104,8 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
   - **qa tests:** death at exactly 0 and below 0; idempotent death (two hits same frame, hit + Burn tick); input blocked after death; enemies stop targeting; restart resets all state (HP, decks, cooldowns, enemy count, wave index, time_scale); no errors and no orphan growth across e.g. 5 repeated death/restart cycles.
   - **playtester:** smoke check; screenshots of death beat and Game Over screen; is "Try again" obvious?
 
-- [ ] **Slice 2: HUD text overflow and safe layout**
+- [x] **Slice 2: HUD text overflow and safe layout** - **Done** 2026-10-27 (game-lead). ux-designer f5b0c19, qa PASS 88732cf (`docs/reviews/2026-10-27-polish1-slice2-qa.md`), playtester no blocker 366eabd (`docs/playtests/2026-10-27-polish1-slice2-hud.md`).
+  - **Follow-ups:** (s2-a) raise `preview_min_font_size` 9 -> 10 (decided, see DECISIONS; ux-designer does it in Slice 3). (s2-b) slot cooldown/ready state not visible: ux-designer in Slice 3 alongside attack timer indicators. (s2-c) two-line "Next:" looks ragged; HP bar low-HP cue and colour distinct from enemy bars (nice-to-have). (s2-d) pale blue triangle top-left at 8 s, unknown (likely world/sky edge, seen by ux too at wide aspect) - check in Slice 4. (s2-e) no test for F3 overlay or slots ignoring mouse; qa adds in Slice 3 (left click attack must not be eaten by slots).
   - **Owner sequence:** ux-designer (lead; gameplay-dev only if a data hook is missing) -> qa -> playtester -> game-lead.
   - **GDD:** §4 (next card visible), §11.
   - **Files likely touched:** `scenes/ui/Hud.tscn`, `scenes/ui/CardSlotWidget.tscn`, `src/ui/CardSlotWidget.gd`, `src/ui/Hud.gd`, `src/ui/DebugOverlay.gd`, `data/ui.json` (font sizes, min size, margins), `src/cards/CardSchema.gd` (name-length warning), tests.
@@ -132,6 +133,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
     8. Bindings configurable via `data/input_bindings.json`, defaults left/right click.
     9. ux-designer: small, unobtrusive light and heavy timer indicators.
     10. Placeholder numbers logged in DECISIONS.md.
+  - **Also in this slice (from Slice 2 follow-ups):** ux-designer raises `preview_min_font_size` to 10 (s2-b) and adds a visible slot cooldown/ready state (s2-b); qa tests that HUD slots don't swallow left clicks (s2-e).
   - **qa tests:** auto interval math incl. modifiers; manual click resets timer; no double fire; no fire without a target in range/arc; no fire while dead; heavy cooldown; data flag switches heavy to auto.
   - **playtester:** does auto-fire feel good; is clicking worth doing; is heavy meaningfully different; is auto light too strong or weak versus cards. Screenshot of an auto light and a heavy attack.
 

@@ -43,6 +43,9 @@ var camera: Camera3D = null
 var stat_modifiers := StatModifiers.new()
 var card_slots: CardSlotController
 var attacks: AttackController
+## Card slot key model (press / hold / release). Fed from _unhandled_input only, so a UI
+## screen that consumes input blocks casting; read by the cast preview.
+var cast_input := CastInput.new()
 
 @onready var hurtbox: Hurtbox = $Hurtbox
 @onready var health: Health = $Health
@@ -61,6 +64,13 @@ var _aoe_targets: Dictionary = {}
 var _telegraphs: Dictionary = {}
 ## Reused every physics frame by _handle_attack (no per-frame Dictionary).
 var _manual_attack: Dictionary = {&"light": false, &"heavy": false}
+## Attack clicks latched by _unhandled_input until the next physics tick consumes them
+## (so a click is never lost to a frame with no physics tick, e.g. during hit-stop).
+var _attack_latch: Dictionary = {&"light": false, &"heavy": false}
+## Slot indices whose cast was requested (press in press mode, release in release mode),
+## waiting for the next physics tick. try_use refuses a slot that is not ready.
+var _cast_queue: Array[int] = []
+const CAST_QUEUE_LIMIT := 8
 ## The pool the telegraphs were drawn in, found once at wind-up start (not every frame).
 var _telegraph_pool: EffectPool = null
 var _telegraph_generations: Dictionary = {}
@@ -90,6 +100,7 @@ func _ready() -> void:
 	_setup_attacks()
 	health.damaged.connect(_on_damaged)
 	health.died.connect(_on_died)
+	Settings.changed.connect(_on_setting_changed)
 	# The body material lives in the scene as a surface override, so material_override
 	# is empty until we take a unique copy here. Every flash (hit, death) tweens this
 	# copy; before, nothing was found and none of them ever showed.
@@ -116,6 +127,11 @@ func _physics_process(delta: float) -> void:
 	_handle_attack(delta)
 	_handle_card_slot_input()
 	move_and_slide()
+
+
+func _exit_tree() -> void:
+	if Settings.changed.is_connected(_on_setting_changed):
+		Settings.changed.disconnect(_on_setting_changed)
 
 
 func is_dead() -> bool:
@@ -183,6 +199,7 @@ func _on_died() -> void:
 	_forced_move_invulnerable = false
 	_forced_move_look = {}
 	attacks.cancel_all()
+	cancel_cast_preview()
 	if hurtbox != null:
 		hurtbox.set_invulnerable(true)
 	_play_death_animation()
@@ -333,8 +350,10 @@ func _teardown_attacks() -> void:
 
 
 func _handle_attack(delta: float) -> void:
-	_manual_attack[&"light"] = Input.is_action_just_pressed("attack_light")
-	_manual_attack[&"heavy"] = Input.is_action_just_pressed("attack_heavy")
+	_manual_attack[&"light"] = _attack_latch[&"light"]
+	_manual_attack[&"heavy"] = _attack_latch[&"heavy"]
+	_attack_latch[&"light"] = false
+	_attack_latch[&"heavy"] = false
 	attacks.tick(delta, can_act(), _manual_attack, _attack_has_target)
 	for attack_id: StringName in attacks.ids():
 		if attacks.is_winding_up(attack_id) and _attack_visuals.has(attack_id):
@@ -491,15 +510,54 @@ func _on_attack_fired(attack_id: StringName) -> void:
 	attack_fired.emit(attack_id)
 
 
-## exact_match=true matters here: without it, Ctrl+1 would also register as
-## a plain "1" press and fire slot_1 and dead_card_swap_1 in the same frame.
-func _handle_card_slot_input() -> void:
+## Light/heavy clicks and card slot keys are latched here, not polled, so a UI screen
+## that consumes the event (pause or settings, later others) blocks them. Dodge and
+## movement still poll Input.
+##
+## Slot keys use exact_match=true on press: without it, Ctrl+1 would also register as
+## a plain "1" press and cast slot_1 as well as swap it. Release does NOT use exact
+## match (press 1, press Ctrl, release 1 must still end the hold). The dead-card swap
+## (Ctrl+N) acts at once and never casts or changes the preview.
+func _unhandled_input(event: InputEvent) -> void:
+	if _dead or event is InputEventMouseMotion:
+		return
+	if event.is_action_pressed(&"attack_light", false):
+		_attack_latch[&"light"] = true
+	if event.is_action_pressed(&"attack_heavy", false):
+		_attack_latch[&"heavy"] = true
 	for i in range(CardSlotController.SLOT_TYPE_ORDER.size()):
-		var slot_type := CardSlotController.slot_type_at_index(i)
-		if Input.is_action_just_pressed(SWAP_ACTIONS[i], true):
-			card_slots.try_swap(slot_type)
-		elif Input.is_action_just_pressed(USE_ACTIONS[i], true):
-			card_slots.try_use(slot_type)
+		if event.is_action_pressed(SWAP_ACTIONS[i], false, true):
+			card_slots.try_swap(CardSlotController.slot_type_at_index(i))
+		elif event.is_action_pressed(USE_ACTIONS[i], false, true):
+			_queue_cast(cast_input.press(i, Settings.casts_on_release()))
+		elif event.is_action_released(USE_ACTIONS[i]):
+			_queue_cast(cast_input.release(i))
+
+
+func _queue_cast(slot_index: int) -> void:
+	if slot_index != CastInput.NONE and _cast_queue.size() < CAST_QUEUE_LIMIT:
+		_cast_queue.append(slot_index)
+
+
+## Casts the slots whose key presses/releases were latched since the last tick.
+func _handle_card_slot_input() -> void:
+	if _cast_queue.is_empty():
+		return
+	for slot_index: int in _cast_queue:
+		card_slots.try_use(CardSlotController.slot_type_at_index(slot_index))
+	_cast_queue.clear()
+
+
+## Drops any held preview and pending cast without casting. Called on death, pause, and
+## when a screen that takes input opens.
+func cancel_cast_preview() -> void:
+	cast_input.cancel()
+	_cast_queue.clear()
+
+
+func _on_setting_changed(key: String, _value: Variant) -> void:
+	if key == Settings.CAST_TRIGGER:
+		cancel_cast_preview()
 
 
 func _movement_input_direction() -> Vector3:

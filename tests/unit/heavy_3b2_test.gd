@@ -10,8 +10,8 @@ const SHOOTER_PATH := "res://scenes/enemies/RangedShooter.tscn"
 
 func after_test() -> void:
 	Juice.reset()
-	Input.action_release("attack_heavy")
-	Input.action_release("attack_light")
+	TestInput.release(&"attack_heavy")
+	TestInput.release(&"attack_light")
 
 
 func _stun_def() -> Dictionary:
@@ -460,9 +460,9 @@ func test_player_slowed_during_wind_up_and_restored_on_death() -> void:
 	await _frames(2)
 	var player := main.player
 	assert_float(player.get_move_speed()).is_equal_approx(player.move_speed, 0.0001)
-	Input.action_press("attack_heavy")
+	TestInput.press(&"attack_heavy")
 	await _frames(3)
-	Input.action_release("attack_heavy")
+	TestInput.release(&"attack_heavy")
 	assert_bool(player.attacks.is_winding_up(&"heavy")).is_true()
 	assert_float(player.get_move_speed()).is_equal_approx(player.move_speed * 0.65, 0.0001)
 	player.health.take_damage(player.health.get_max_health() * 2.0)
@@ -473,9 +473,9 @@ func test_player_slowed_during_wind_up_and_restored_on_death() -> void:
 func test_player_slow_clears_after_the_swing_and_after_a_scene_reload() -> void:
 	var main := _spawn_main()
 	await _frames(2)
-	Input.action_press("attack_heavy")
+	TestInput.press(&"attack_heavy")
 	await _frames(3)
-	Input.action_release("attack_heavy")
+	TestInput.release(&"attack_heavy")
 	await _frames(45)
 	assert_float(main.player.get_move_speed()).is_equal_approx(main.player.move_speed, 0.0001)
 	var fresh := _spawn_main()
@@ -492,9 +492,9 @@ func test_rogue_heavy_hits_for_damage_and_stuns() -> void:
 	var enemy := _spawn_enemy(main, CHASER_PATH, Vector3(0.0, 0.0, -1.2))
 	await _frames(2)
 	var before := enemy.health.current_health
-	Input.action_press("attack_heavy")
+	TestInput.press(&"attack_heavy")
 	await _frames(3)
-	Input.action_release("attack_heavy")
+	TestInput.release(&"attack_heavy")
 	await _frames(40)
 	assert_float(before - enemy.health.current_health).is_greater_equal(8.5 - 0.001)
 	assert_bool(enemy.is_stunned()).is_true()
@@ -546,9 +546,9 @@ func test_wizard_heavy_hits_the_locked_target_telegraph_matches_hitbox() -> void
 	await _frames(2)
 	var hp_in := in_disc.health.current_health
 	var hp_out := out_disc.health.current_health
-	Input.action_press("attack_heavy")
+	TestInput.press(&"attack_heavy")
 	await _frames(3)
-	Input.action_release("attack_heavy")
+	TestInput.release(&"attack_heavy")
 	var target := player.get_aoe_target(&"heavy")
 	assert_float(target.distance_to(origin)).is_equal_approx(max_range, 0.001)
 	var pool := EffectPool.for_world(main)
@@ -569,9 +569,9 @@ func test_wizard_heavy_off_arena_target_and_cancel_clean_up() -> void:
 	var player := main.player
 	player.use_heavy_class("wizard")
 	player.aim_point_override = Vector3(900.0, 0.0, 900.0)
-	Input.action_press("attack_heavy")
+	TestInput.press(&"attack_heavy")
 	await _frames(3)
-	Input.action_release("attack_heavy")
+	TestInput.release(&"attack_heavy")
 	var target := player.get_aoe_target(&"heavy")
 	assert_bool(target.is_finite()).is_true()
 	assert_float(absf(target.x)).is_less_equal(20.0)

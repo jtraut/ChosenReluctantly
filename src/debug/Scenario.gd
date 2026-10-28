@@ -165,10 +165,10 @@ func _process(delta: float) -> void:
 	if not _heavy_press_done and _def.has("heavy_at") and _elapsed >= float(_def["heavy_at"]):
 		_heavy_press_done = true
 		_heavy_release_at = _elapsed + 0.1
-		Input.action_press("attack_heavy")
+		_send_action(&"attack_heavy", true)
 	if _heavy_release_at >= 0.0 and _elapsed >= _heavy_release_at:
 		_heavy_release_at = -1.0
-		Input.action_release("attack_heavy")
+		_send_action(&"attack_heavy", false)
 	_process_stuns()
 	_process_casts()
 	var late: Dictionary = _def.get("late_hit", {})
@@ -226,3 +226,12 @@ func _process_casts() -> void:
 		if not cooled:
 			push_error("Scenario: slot '%s' did not cool after casting '%s'" % [check["slot"], check["card"]])
 	_cooling_checks = remaining
+
+
+## A real InputEventAction through the viewport, so it reaches the Player's
+## _unhandled_input latch like a click would (Input.action_press emits no event).
+static func _send_action(action: StringName, pressed: bool) -> void:
+	var event := InputEventAction.new()
+	event.action = action
+	event.pressed = pressed
+	Input.parse_input_event(event)

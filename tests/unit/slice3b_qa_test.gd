@@ -23,8 +23,8 @@ func after_test() -> void:
 		_root_main.free()
 	_root_main = null
 	Juice.reset()
-	Input.action_release("attack_heavy")
-	Input.action_release("attack_light")
+	TestInput.release(&"attack_heavy")
+	TestInput.release(&"attack_light")
 
 
 func _stun_def() -> Dictionary:
@@ -144,11 +144,11 @@ func test_spam_click_through_the_real_player_with_haste() -> void:
 	for i in range(int(seconds * 60.0)):
 		# Press on even frames, release on odd ones, so every other frame is a fresh click.
 		if i % 2 == 0:
-			Input.action_press("attack_light")
+			TestInput.press(&"attack_light")
 		else:
-			Input.action_release("attack_light")
+			TestInput.release(&"attack_light")
 		await get_tree().physics_frame
-	Input.action_release("attack_light")
+	TestInput.release(&"attack_light")
 	var interval := player.attacks.get_interval(&"light")
 	assert_float(interval).is_equal_approx(0.36, 0.001)
 	assert_float(float(fired[0]) / seconds).is_less_equal(1.5 / interval + 0.1)
@@ -432,9 +432,9 @@ func test_stun_with_zero_negative_or_huge_base_duration() -> void:
 func test_wind_up_slow_dies_with_the_player_when_the_arena_is_freed_mid_windup() -> void:
 	var first := _spawn_main()
 	await _frames(2)
-	Input.action_press("attack_heavy")
+	TestInput.press(&"attack_heavy")
 	await _frames(3)
-	Input.action_release("attack_heavy")
+	TestInput.release(&"attack_heavy")
 	assert_bool(first.player.attacks.is_winding_up(&"heavy")).is_true()
 	assert_float(first.player.get_move_speed()).is_less(first.player.move_speed)
 	first.free()
@@ -463,9 +463,9 @@ func test_wizard_heavy_slow_applies_and_clears_on_the_same_paths() -> void:
 	player.use_heavy_class("wizard")
 	player.camera = null
 	player.rotation = Vector3.ZERO
-	Input.action_press("attack_heavy")
+	TestInput.press(&"attack_heavy")
 	await _frames(3)
-	Input.action_release("attack_heavy")
+	TestInput.release(&"attack_heavy")
 	assert_bool(player.attacks.is_winding_up(&"heavy")).is_true()
 	assert_float(player.get_move_speed()).is_equal_approx(player.move_speed * 0.65, 0.0001)
 	# Swapping class mid wind-up (a capture hook) must not leave the slow behind.
@@ -501,9 +501,9 @@ func test_wizard_heavy_at_the_arena_edge_aimed_outward_stays_inside_and_hits_cle
 	player.camera = null
 	player.global_position = Vector3(19.6, player.global_position.y, 19.6)
 	player.aim_point_override = Vector3(60.0, 0.0, 60.0)
-	Input.action_press("attack_heavy")
+	TestInput.press(&"attack_heavy")
 	await _frames(3)
-	Input.action_release("attack_heavy")
+	TestInput.release(&"attack_heavy")
 	var target := player.get_aoe_target(&"heavy")
 	assert_bool(target.is_finite()).is_true()
 	assert_float(target.x).is_less_equal(19.5 + 0.001)

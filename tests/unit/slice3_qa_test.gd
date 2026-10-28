@@ -13,8 +13,8 @@ var _fired: Array[StringName] = []
 
 func after_test() -> void:
 	Juice.reset()
-	Input.action_release("attack_light")
-	Input.action_release("attack_heavy")
+	TestInput.release(&"attack_light")
+	TestInput.release(&"attack_heavy")
 
 
 func _defs() -> Dictionary:
@@ -186,11 +186,11 @@ func test_dead_player_clicks_and_auto_do_nothing() -> void:
 	var enemy := _spawn_enemy(main, Vector3(0, 0, -1.2))
 	player.health.take_damage(player.health.get_max_health() * 2.0, "physical")
 	var hp := enemy.health.current_health
-	Input.action_press("attack_light")
-	Input.action_press("attack_heavy")
+	TestInput.press(&"attack_light")
+	TestInput.press(&"attack_heavy")
 	await _frames(60)
-	Input.action_release("attack_light")
-	Input.action_release("attack_heavy")
+	TestInput.release(&"attack_light")
+	TestInput.release(&"attack_heavy")
 	await _frames(60)
 	assert_float(enemy.health.current_health).is_equal(hp)
 

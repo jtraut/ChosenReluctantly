@@ -9,7 +9,7 @@ const MAIN_SCENE_PATH := "res://scenes/main/Main.tscn"
 
 func after_test() -> void:
 	Juice.reset()
-	Input.action_release("attack_heavy")
+	TestInput.release(&"attack_heavy")
 
 
 func _spawn_main() -> Main:
@@ -51,9 +51,9 @@ func test_meters_track_player_and_heavy_ready_state() -> void:
 	var light := main.hud.light_meter
 	assert_str(String(heavy.state())).is_equal("ready")
 	assert_float(heavy.progress_value()).is_equal(1.0)
-	Input.action_press("attack_heavy")
+	TestInput.press(&"attack_heavy")
 	await _frames(2)
-	Input.action_release("attack_heavy")
+	TestInput.release(&"attack_heavy")
 	await get_tree().process_frame
 	assert_str(String(heavy.state())).is_equal("windup")
 	assert_float(heavy.progress_value()).is_equal_approx(player.get_attack_progress(&"heavy"), 0.05)

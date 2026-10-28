@@ -9,8 +9,8 @@ const CHASER_PATH := "res://scenes/enemies/MeleeChaser.tscn"
 
 func after_test() -> void:
 	Juice.reset()
-	Input.action_release("attack_light")
-	Input.action_release("attack_heavy")
+	TestInput.release(&"attack_light")
+	TestInput.release(&"attack_heavy")
 
 
 func _spawn_main() -> Main:
@@ -71,9 +71,9 @@ func test_heavy_right_click_winds_up_then_hits() -> void:
 	var fired: Array[StringName] = []
 	player.attack_started.connect(func(attack_id: StringName) -> void: started.append(attack_id))
 	player.attack_fired.connect(func(attack_id: StringName) -> void: fired.append(attack_id))
-	Input.action_press("attack_heavy")
+	TestInput.press(&"attack_heavy")
 	await _frames(2)
-	Input.action_release("attack_heavy")
+	TestInput.release(&"attack_heavy")
 	assert_array(started).contains([&"heavy"])
 	assert_bool(fired.has(&"heavy")).is_false()
 	assert_bool(player.attacks.is_winding_up(&"heavy")).is_true()

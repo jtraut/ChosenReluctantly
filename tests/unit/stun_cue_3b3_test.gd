@@ -9,7 +9,7 @@ const CHASER_PATH := "res://scenes/enemies/MeleeChaser.tscn"
 
 func after_test() -> void:
 	Juice.reset()
-	Input.action_release("attack_heavy")
+	TestInput.release(&"attack_heavy")
 
 
 func _stun_def() -> Dictionary:
@@ -218,9 +218,9 @@ func test_wizard_telegraph_follows_the_wind_up_and_ends_at_the_hit_reach() -> vo
 	var def := player.attacks.get_def(&"heavy")
 	player.aim_point_override = player.global_position + Vector3(0.0, 0.0, -5.0)
 	var reach := VfxSizing.aoe_reach(float(def["radius"]))
-	Input.action_press("attack_heavy")
+	TestInput.press(&"attack_heavy")
 	await _frames(3)
-	Input.action_release("attack_heavy")
+	TestInput.release(&"attack_heavy")
 	var telegraph: Array[PooledEffect] = player.get_aoe_telegraph(&"heavy")
 	var fill := telegraph[0] as PooledEffect
 	var early := fill.scale.x

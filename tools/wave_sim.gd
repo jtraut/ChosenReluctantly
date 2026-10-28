@@ -165,7 +165,7 @@ func _run_one(run_seed: int) -> void:
 		var dt: float = now_time - _sim_time
 		_sim_time = now_time
 		for action in _release_next:
-			Input.action_release(action)
+			_release_action(action)
 		_release_next.clear()
 		var enemies := _enemies()
 		_check_world(enemies, cap, dt)
@@ -284,8 +284,32 @@ func _track_progress() -> void:
 # ---- The bot ----
 
 func _press(action: StringName, strength: float = 1.0) -> void:
-	Input.action_press(action, strength)
+	if _is_latched_action(action):
+		_send_action(action, true)
+	else:
+		Input.action_press(action, strength)
 	_release_next.append(action)
+
+
+## Light/heavy attacks and card slots are latched from input EVENTS in Player._unhandled_input;
+## Input.action_press emits none, so those go through parse_input_event. Movement and dodge poll.
+func _is_latched_action(action: StringName) -> bool:
+	var text := String(action)
+	return text.begins_with("slot_") or text.begins_with("attack_")
+
+
+func _send_action(action: StringName, pressed: bool) -> void:
+	var event := InputEventAction.new()
+	event.action = action
+	event.pressed = pressed
+	Input.parse_input_event(event)
+
+
+func _release_action(action: StringName) -> void:
+	if _is_latched_action(action):
+		_send_action(action, false)
+	else:
+		Input.action_release(action)
 
 
 func _hold(action: StringName, strength: float) -> void:

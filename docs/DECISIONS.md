@@ -259,3 +259,37 @@ These were already resolved by explicit instruction in the Milestone 2 kickoff p
   - heavy wind-up slow -35%
   - heavy burst >= 2.5x the light hit, with DPS slightly below light
   - current enemies are all rank "normal" unless gameplay-dev logs otherwise
+
+### 2026-10-28 - Slice 3b-1: click cap and cards-beat-light (gameplay-dev)
+- **Click cap:** light `manual_min_gap` (0.25 s) is replaced by `manual_click_max_rate_ratio` 1.5. Gap = resolved interval / ratio (0.4 s at 0.6 s), computed live from StatModifiers, so attack-speed boosts scale both auto and click rate. Max click rate = 2.5/s (was 4/s). Heavy has ratio 0, meaning click only when ready. The same-tick press + auto fires once because a manual start sets the cooldown before auto is checked, not because of the gap. The ratio is validated in `AttackDatabase`.
+- **Rule** (`src/combat/CardDamageRule.gd`): damage card = any card in `attack_single` or `attack_aoe`. (a) per-cast damage >= 1.5x light hit; (b) per-cast / (slot base cooldown + card modifier) strictly greater than light damage / light interval. Per-cast = direct cone/aoe/projectile damage plus whole Burn ticks over the card's `duration` (no resistance). Light DPS uses the base 0.6 s interval. Exemption: a non-empty `rule_exception` string on the card (none used). Enforced three ways: `CardDatabase.load_all()` on the shipped dir push_errors each break at boot, `CardDamageRule.check_shipped()` is asserted in `tests/unit/card_damage_rule_test.gd`, and the same test has failing fixtures (low cast, slow DPS, tie, bad exception).
+- **Numbers chosen:** light 8 -> 3 (auto DPS 13.3 -> 5.0). With light = 3 only two cards break the rule, and they are the only ones raised: Shrug Bomb 5 -> 12 (2.4x), Everyone Calm Down 8 -> 16 (2.0x). Light = 4 would force Shrug 15 and Fine, Burn Then 13 direct; light = 2.5 would force Shrug 10 but leaves the free attack near useless. Rejected: lowering light less (every AoE card balloons, because AoE slot base cooldown is 2.5 s), changing card cooldown modifiers (outside "raise damage").
+- **Before / after** (cast includes Burn; DPS = cast / (slot base + modifier); light DPS before 13.33, after 5.00):
+
+| Card | Slot | Cooldown | Cast before | Cast after | DPS before | DPS after | Rule before / after |
+|---|---|---|---|---|---|---|---|
+| Light (auto) | - | 0.6 | 8 | 3 | 13.33 | 5.00 | - |
+| Heavy (comparison, 3b-2 redesigns) | - | 1.8 (+0.45 wind-up) | 22 | 22 | 12.22 | 12.22 | - |
+| Quick, I Guess | single | 0.6 | 5 | 5 | 8.33 | 8.33 | fail (a,b) / ok |
+| Pointy Stick | single | 1.0 | 6 | 6 | 6.00 | 6.00 | fail / ok |
+| Ember, Whatever (5 + Burn 4s = 8) | single | 1.1 | 13 | 13 | 11.82 | 11.82 | fail (b) / ok |
+| Flaming Nonsense | single | 1.2 | 9 | 9 | 7.50 | 7.50 | fail (b) / ok |
+| Overhand, Whatever | single | 1.3 | 12 | 12 | 9.23 | 9.23 | fail (b) / ok |
+| Shrug Bomb | aoe | 2.2 | 5 | 12 | 2.27 | 5.45 | fail / ok |
+| Everyone Calm Down | aoe | 3.0 | 8 | 16 | 2.67 | 5.33 | fail / ok |
+| Fine, Burn Then (7 + Burn 5s = 10) | aoe | 3.3 | 17 | 17 | 5.15 | 5.15 | fail (b) / ok (thin margin, 0.15) |
+
+  Before the change every single-target card beat the old light on cast damage but none beat its DPS except none; the old light out-DPSed all eight cards.
+- **Rough time-to-kill, one target, seconds** (hits spaced by the interval, first hit at t=0; HP: Chaser 20, Shooter 14, Golem 50 with 50% fire resist, which affects only fire):
+
+| Source | Chaser before / after | Shooter | Golem |
+|---|---|---|---|
+| Light auto | 1.2 / 3.6 (3 hits -> 7) | 0.6 / 2.4 (2 -> 5) | 3.6 / 9.6 (7 -> 17) |
+| Heavy (22, unchanged) | 1 hit | 1 hit | 3 hits (3.6 s) |
+| Pointy Stick (unchanged) | 3.0 | 2.0 | 8.0 |
+| Overhand (unchanged) | 1.3 | 1.3 | 5.2 |
+| Shrug Bomb | 6.6 / 2.2 | 4.4 / 2.2 | 19.8 / 8.8 |
+| Everyone Calm Down | 6.0 / 3.0 | 3.0 / 3.0 | 18.0 / 12.0 |
+
+  The unchanged cards have identical TTK before and after; only light, Shrug Bomb and Everyone Calm Down moved. Shrug Bomb on a Golem is about 8.8 s, similar to light on a Golem, which is fine because the AoE value is the other enemies it hits.
+- **Flag for 3b-2:** the heavy (22 per 1.8 s, DPS 12.2) is now 2.4x the light DPS and beats every card's DPS except Quick and Ember, so it contradicts both "heavy DPS slightly below light" and "cards beat the free attack". 3b-2 must lower it. With light = 3 the 3b-2 default needs burst >= 7.5 and DPS just under 5, for example 8 to 9 per 1.8 s.

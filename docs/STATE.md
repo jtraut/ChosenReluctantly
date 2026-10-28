@@ -10,6 +10,8 @@ Last updated: 2026-10-28. **Milestone 2 is done.** Now running **Post-milestone 
 - **Polish 1, Slice 1 (death and game over) - done** (7ad85ee): `Player.player_died`, `Main.game_over_ready` / `restart_arena()` (scene reload), Game Over screen, "HP x / y" label, reload soak tool `tools/run_reload_cycle.ps1`.
 
 ## In progress
+**4a DONE by gameplay-dev (2026-10-28), awaiting game-lead to mark ROADMAP:** all five items committed (card_cast scenario; EffectPool + `data/vfx.json`; element `visual` in `data/pools.json`; `VfxSizing` + visual-vs-hitbox tests; s3-a wedge to effective reach). Only aoe (disc + cosmetic burst) and cone cards (wedge) are wired through the pool; projectile is sized correctly but not pooled/recolored yet. Remaining visuals are 4b. Tests 187/187, reload soak OK.
+
 **Slice 4 IN PROGRESS.** Split into 4a/4b/4c/4d (ROADMAP Slice 4 "Sub-steps", DECISIONS 2026-10-28). **4a (foundation) handed to gameplay-dev 2026-10-28.** Check `git log` for 4a commits; if 4a is not marked done in ROADMAP, it may be half done: read the latest gameplay-dev commit/STATE note before resuming. Criterion 6 (hold-to-preview) proposal logged, no code. Repo runs at the latest commit.
 
 ## Exact next step

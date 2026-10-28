@@ -318,3 +318,51 @@ func test_player_death_starts_the_cue_in_the_pool() -> void:
 	# The body starts white (flash) rather than its resting color.
 	var material := player.body_mesh.material_override as StandardMaterial3D
 	assert_float(material.albedo_color.g).is_greater(0.9)
+
+
+# ---- 5b: cone, heal, dash and projectile reads come from data ----
+
+func _longest_duration(pool: EffectPool) -> float:
+	var longest: float = 0.0
+	for child in pool.get_children():
+		var effect := child as PooledEffect
+		longest = maxf(longest, effect.delay + effect.duration)
+	return longest
+
+
+func test_cone_sweep_duration_is_data_and_enemy_impact_is_shorter() -> void:
+	var world := _world()
+	var pool := EffectPool.for_world(world)
+	TemplateVfx.cone_sweep(pool, Vector3.ZERO, 0.0, 2.0, 45.0, Color.WHITE)
+	assert_float(_longest_duration(pool)).is_equal_approx(VfxConfig.marker("cone_duration"), 0.0001)
+	var enemy_pool := EffectPool.for_world(_world())
+	TemplateVfx.cone_sweep(enemy_pool, Vector3.ZERO, 0.0, 2.0, 45.0, Color.WHITE, true)
+	assert_float(_longest_duration(enemy_pool)).is_equal_approx(VfxConfig.marker("cone_duration") * VfxConfig.marker("cone_enemy_duration_scale"), 0.0001)
+	assert_float(VfxConfig.marker("cone_duration")).is_greater(0.25)  # the old constant was easy to miss
+
+
+func test_heal_dash_and_trail_sizes_come_from_data() -> void:
+	var world := _world()
+	var pool := EffectPool.for_world(world)
+	var look := ElementVisuals.visual_for_damage_type("physical")
+	TemplateVfx.dash_trail(pool, Vector3.ZERO, look)
+	var trail := pool.get_child(0) as PooledEffect
+	assert_float(trail.base_size).is_equal_approx(VfxConfig.marker("dash_trail_size") * float(look["scale"]), 0.0001)
+	assert_float(trail.duration).is_equal_approx(VfxConfig.marker("dash_trail_duration"), 0.0001)
+	var heal_pool := EffectPool.for_world(_world())
+	TemplateVfx.heal(heal_pool, Vector3.ZERO)
+	assert_int(heal_pool.active_count()).is_equal(TemplateVfx.SPARKLE_COUNT + 1)
+	assert_float(_longest_duration(heal_pool)).is_greater_equal(VfxConfig.marker("heal_sparkle_duration"))
+
+
+func test_new_read_keys_validate() -> void:
+	assert_array(VfxConfig.validate(VfxConfig.DEFAULTS)).is_empty()
+	var bad: Dictionary = VfxConfig.DEFAULTS.duplicate()
+	bad["cone_duration"] = 0.0
+	assert_array(VfxConfig.validate(bad)).is_not_empty()
+	bad = VfxConfig.DEFAULTS.duplicate()
+	bad["heal_ring_alpha"] = 1.5
+	assert_array(VfxConfig.validate(bad)).is_not_empty()
+	bad = VfxConfig.DEFAULTS.duplicate()
+	bad["dash_trail_size"] = "big"
+	assert_array(VfxConfig.validate(bad)).is_not_empty()

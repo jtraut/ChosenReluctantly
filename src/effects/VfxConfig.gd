@@ -18,12 +18,36 @@ const DEFAULTS: Dictionary = {
 	"dash_path_alpha": 0.28,
 	"dash_path_duration": 0.3,
 	"dash_path_half_width": 0.25,
+	"cone_duration": 0.45,
+	"cone_alpha": 0.6,
+	"cone_blade_duration": 0.22,
+	"cone_blade_alpha": 1.0,
+	"cone_enemy_duration_scale": 0.55,
+	"heal_sparkle_size": 0.14,
+	"heal_sparkle_duration": 0.9,
+	"heal_sparkle_rise": 1.6,
+	"heal_ring_radius": 1.0,
+	"heal_ring_alpha": 0.85,
+	"heal_ring_duration": 0.6,
+	"dash_trail_size": 0.4,
+	"dash_trail_duration": 0.4,
+	"dash_trail_alpha": 0.7,
+	"dash_trail_lighten": 0.35,
+	"projectile_trail_duration": 0.35,
+	"projectile_trail_alpha": 0.8,
+	"projectile_trail_scale": 1.0,
+	"projectile_muzzle_scale": 1.6,
+	"projectile_muzzle_alpha": 1.0,
 	"team_tints": {"enemy": {"color": "#ff3d8b", "neutral_mix": 1.0, "element_mix": 0.4}},
 }
 
 ## Ground marker tuning (4c): alpha 0..1, durations in seconds, half width in meters.
 const MARKER_KEYS: Array[String] = ["enemy_shot_lane_alpha", "projectile_lane_alpha", "projectile_lane_duration",
-		"dash_path_alpha", "dash_path_duration", "dash_path_half_width"]
+		"dash_path_alpha", "dash_path_duration", "dash_path_half_width",
+		"cone_duration", "cone_alpha", "cone_blade_duration", "cone_blade_alpha", "cone_enemy_duration_scale",
+		"heal_sparkle_size", "heal_sparkle_duration", "heal_sparkle_rise", "heal_ring_radius", "heal_ring_alpha", "heal_ring_duration",
+		"dash_trail_size", "dash_trail_duration", "dash_trail_alpha", "dash_trail_lighten",
+		"projectile_trail_duration", "projectile_trail_alpha", "projectile_trail_scale", "projectile_muzzle_scale", "projectile_muzzle_alpha"]
 
 static var _cache: Dictionary = {}
 static var _loaded: bool = false
@@ -65,7 +89,7 @@ static func validate(config: Dictionary) -> Array[String]:
 			errors.append("'%s' must be a number" % key)
 		elif is_nan(float(value)) or float(value) <= 0.0:
 			errors.append("'%s' must be > 0" % key)
-		elif key.ends_with("_alpha") and float(value) > 1.0:
+		elif (key.ends_with("_alpha") or key == "dash_trail_lighten" or key == "cone_enemy_duration_scale") and float(value) > 1.0:
 			errors.append("'%s' must be <= 1" % key)
 	return errors
 
@@ -152,7 +176,8 @@ static func buff_color() -> Color:
 	return Color.html(String(get_config()["buff_color"]))
 
 
-## Cast ground marker numbers (data/vfx.json), see TemplateVfx.projectile_lane / dash_path.
+## Cast visual tuning numbers (data/vfx.json): ground markers (TemplateVfx.projectile_lane / dash_path)
+## and the cone, heal, dash and projectile reads (alpha 0..1, durations in seconds, sizes in meters).
 static func marker(key: String) -> float:
 	return float(get_config()[key])
 

@@ -289,5 +289,33 @@
             4,
             10
         ]
+    },
+    "pointy_shot": {
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "freeze_aim": true,
+        "aim_preview_distance": 5.0,
+        "enemy_max_health": 2000,
+        "enemies_idle": true,
+        "disable_auto_attack": true,
+        "origin_offset": [
+            0.0,
+            0.0,
+            -8.0
+        ],
+        "columns": 1,
+        "groups": [
+            {
+                "scene": "res://scenes/enemies/MeleeChaser.tscn",
+                "count": 1
+            }
+        ],
+        "casts": [
+            {
+                "at": 0.5,
+                "slot": "attack_single",
+                "card": "neutral_pointy_stick"
+            }
+        ]
     }
 }

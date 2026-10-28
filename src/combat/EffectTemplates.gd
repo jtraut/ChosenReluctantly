@@ -79,7 +79,7 @@ static func _play_cone_vfx(params: Dictionary, context: EffectContext, forward: 
 	var color: Color = ElementVisuals.visual_for_team(String(params.get("damage_type", "physical")), context.caster_team)["color"]
 	var yaw: float = atan2(-forward.x, -forward.z)
 	TemplateVfx.cone_sweep(pool, context.caster.global_position, yaw, VfxSizing.cone_reach(float(params["range"])),
-			float(params["half_angle_degrees"]), color)
+			float(params["half_angle_degrees"]), color, context.caster_team == "enemy")
 
 
 ## Optional code-only param "center" (Vector3) moves the disc off the caster, for

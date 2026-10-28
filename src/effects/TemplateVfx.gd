@@ -23,7 +23,7 @@ static func projectile_muzzle(pool: EffectPool, origin: Vector3, look: Dictionar
 	if pool == null:
 		return
 	var s: float = float(look["scale"])
-	pool.play(EffectPool.Shape.SPHERE, origin, 0.18 * s, lighter(look["color"], 0.6), 0.12, 0.6, 2.0, 0.9, 0.0)
+	pool.play(EffectPool.Shape.SPHERE, origin, 0.18 * s * VfxConfig.marker("projectile_muzzle_scale"), lighter(look["color"], 0.6), 0.14, 0.6, 2.0, VfxConfig.marker("projectile_muzzle_alpha"), 0.0)
 
 
 ## The projectile's ball as a held pooled sphere that follows the projectile, sized
@@ -48,7 +48,8 @@ static func projectile_trail_puff(pool: EffectPool, position: Vector3, hit_radiu
 	if pool == null:
 		return
 	var s: float = float(look["scale"])
-	pool.play(EffectPool.Shape.SPHERE, position, maxf(hit_radius, 0.1) * 0.8 * s, look["color"], 0.25, 1.0, 0.25, 0.55, 0.0)
+	pool.play(EffectPool.Shape.SPHERE, position, maxf(hit_radius, 0.1) * 0.8 * s * VfxConfig.marker("projectile_trail_scale"), look["color"],
+			VfxConfig.marker("projectile_trail_duration"), 1.0, 0.25, VfxConfig.marker("projectile_trail_alpha"), 0.0)
 
 
 static func projectile_impact(pool: EffectPool, position: Vector3, look: Dictionary) -> void:
@@ -86,14 +87,15 @@ static func enemy_shot_lane(pool: EffectPool, origin: Vector3, direction: Vector
 
 ## Static wedge at the true hit reach (fades) plus a brighter blade that sweeps
 ## across the arc. The blade stays inside the wedge, so nothing shows past reach.
-static func cone_sweep(pool: EffectPool, position: Vector3, yaw: float, reach: float, half_angle_degrees: float, color: Color) -> void:
+static func cone_sweep(pool: EffectPool, position: Vector3, yaw: float, reach: float, half_angle_degrees: float, color: Color, enemy: bool = false) -> void:
 	if pool == null:
 		return
-	pool.play(EffectPool.Shape.WEDGE, position, reach, color, 0.25, 1.0, 1.0, 0.45, 0.0, yaw, half_angle_degrees)
+	# An enemy's impact stays short: a long wedge after an enemy swing could read as a live telegraph.
+	var shorten: float = VfxConfig.marker("cone_enemy_duration_scale") if enemy else 1.0
+	pool.play(EffectPool.Shape.WEDGE, position, reach, color, VfxConfig.marker("cone_duration") * shorten, 1.0, 1.0, VfxConfig.marker("cone_alpha"), 0.0, yaw, half_angle_degrees)
 	var blade_half: float = minf(10.0, half_angle_degrees * 0.4)
 	var swing: float = deg_to_rad(half_angle_degrees - blade_half)
-	pool.play(EffectPool.Shape.WEDGE, position, reach, lighter(color, 0.55), 0.13, 1.0, 1.0, 0.95, 0.3, yaw + swing, blade_half) \
-			.sweeping_to(yaw - swing)
+	pool.play(EffectPool.Shape.WEDGE, position, reach, lighter(color, 0.55), VfxConfig.marker("cone_blade_duration") * shorten, 1.0, 1.0, VfxConfig.marker("cone_blade_alpha"), 0.3, yaw + swing, blade_half) 			.sweeping_to(yaw - swing)
 
 
 # --- aoe ---------------------------------------------------------------------
@@ -172,7 +174,8 @@ static func dash_trail(pool: EffectPool, position: Vector3, look: Dictionary) ->
 	if pool == null:
 		return
 	var s: float = float(look["scale"])
-	pool.play(EffectPool.Shape.SPHERE, position + Vector3(0.0, 0.5, 0.0), 0.28 * s, look["color"], 0.28, 1.0, 0.3, 0.5, 0.0)
+	pool.play(EffectPool.Shape.SPHERE, position + Vector3(0.0, 0.5, 0.0), VfxConfig.marker("dash_trail_size") * s, lighter(look["color"], VfxConfig.marker("dash_trail_lighten")),
+			VfxConfig.marker("dash_trail_duration"), 1.0, 0.3, VfxConfig.marker("dash_trail_alpha"), 0.0)
 
 
 static func dash_end(pool: EffectPool, position: Vector3, look: Dictionary) -> void:
@@ -193,9 +196,9 @@ static func heal(pool: EffectPool, position: Vector3) -> void:
 	for i in range(SPARKLE_COUNT):
 		var angle: float = TAU * float(i) / float(SPARKLE_COUNT)
 		var spot: Vector3 = position + Vector3(sin(angle) * 0.45, 0.2, cos(angle) * 0.45)
-		pool.play(EffectPool.Shape.SPHERE, spot, 0.09, lighter(color, 0.3), 0.6, 1.0, 0.5, 0.95, 0.0) \
-				.delayed(float(i) * 0.05).drifting(Vector3(0.0, 1.5, 0.0))
-	pool.play(EffectPool.Shape.RING, position + Vector3(0.0, 0.02, 0.0), 0.8, color, 0.4, 0.3, 1.0, 0.6, 0.0)
+		pool.play(EffectPool.Shape.SPHERE, spot, VfxConfig.marker("heal_sparkle_size"), lighter(color, 0.3), VfxConfig.marker("heal_sparkle_duration"), 1.0, 0.5, 0.95, 0.0) \
+				.delayed(float(i) * 0.05).drifting(Vector3(0.0, VfxConfig.marker("heal_sparkle_rise"), 0.0))
+	pool.play(EffectPool.Shape.RING, position + Vector3(0.0, 0.02, 0.0), VfxConfig.marker("heal_ring_radius"), color, VfxConfig.marker("heal_ring_duration"), 0.3, 1.0, VfxConfig.marker("heal_ring_alpha"), 0.0)
 
 
 static func buff(pool: EffectPool, position: Vector3) -> void:

@@ -409,13 +409,13 @@ These were already resolved by explicit instruction in the Milestone 2 kickoff p
 - *FireResistantGolem* (50 HP, 50% fire resist, speed 2, 9 dmg, cone 2.0 m, cooldown 1.8). Role: the tank that blanks fire builds, slow. Telegraph: same 0.45 s as the chaser although it hits nearly twice as hard (follow-up F-E1). Window: slow enough that it never catches a moving player. The wedge fix applies. Its box hurtbox made ground shapes under-report its hit area (N1, below).
 - Follow-ups, not done (balance or design, for game-lead): F-E1 the golem's wind-up should be longer than the chaser's (a tell proportional to the hit; proposal 0.7 s). F-E2 three types is thin for "distinct roles": nothing flanks, charges or blocks the dodge. F-E3 enemies stack into one line behind each other when chasing (visible in the 5 s waves capture); there is no separation steering. F-E4 no sound on tells (out of scope). F-E5 a stunned enemy gives no extra cue that its wedge is cancelled (ux).
 
-**Criterion 3: damage check (numbers from the scene values; unchanged, no balance edits).** Player 30 HP, move speed 6, dodge speed 14 for 0.25 s (3.5 m) with 0.25 s of invulnerability and a 0.8 s cooldown (at most 31 percent invulnerable time if rolling constantly). One attack cycle is wind-up 0.45 s plus cooldown:
+**Criterion 3: damage check (numbers from the scene values; unchanged, no balance edits).** Player 30 HP, move speed 6, dodge speed 14 for 0.25 s (3.5 m) with 0.25 s of invulnerability and a 0.8 s cooldown (at most 31 percent invulnerable time if rolling constantly). One attack cycle is wind-up 0.45 s plus cooldown (the golem is 0.7 s since D6, see 2026-10-28 "Slice 5 fix pass"):
 
 | Enemy | Damage per cycle | Cycle | DPS | Hits to kill the player | Free window after a swing |
 |---|---|---|---|---|---|
 | Chaser | 5 | 1.65 s | 3.0 | 6 | 1.2 s |
 | Shooter | 4 | 2.05 s | 1.95 | 8 | 1.6 s |
-| Golem | 9 | 2.25 s | 4.0 | 4 | 1.8 s |
+| Golem | 9 | 2.5 s (was 2.25, D6) | 3.6 (was 4.0) | 4 | 1.8 s |
 
 - A roll only avoids a hit if its 0.25 s of invulnerability covers the instant the attack lands, i.e. it is pressed in the last 0.25 s of the 0.45 s wind-up (55 percent of it). Catchable on reaction, but it is the narrow answer: sidestepping out of the cone or lane during the wind-up is the wide one (the enemy does not turn or re-aim while winding up; the player moves 2.7 m in 0.45 s).
 - At the new density the roll alone cannot cover a crowd: with N enemies winding up out of sync, one 0.25 s roll covers only the swings that land inside it, and it is on a 0.8 s cooldown. With 3 chasers in reach the damage rate is 9 per second, so 30 HP lasts about 3.3 s. That is the intended pressure: a player who stands still dies in 8 to 13 s in the sim (three seeds died at 8.5, 9.2 and 9.4 s with the shipped table, against the playtester's 14 s at the old density), which is why kiting (speed 6 against 4, 3, 2) and killing matter. A cap of 12 is a ceiling, not a typical state: the competent bot's mean alive count was about 7 with peaks at the cap, because the stage gates wait for kills.

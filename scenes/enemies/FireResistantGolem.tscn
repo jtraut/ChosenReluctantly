@@ -29,6 +29,7 @@ move_speed = 2.0
 attack_range = 2.0
 attack_damage = 9.0
 attack_cooldown = 1.8
+telegraph_duration = 0.7
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)

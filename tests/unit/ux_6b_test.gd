@@ -122,6 +122,29 @@ func test_toggling_changes_the_setting_and_saves_it_at_once() -> void:
 	assert_str(Settings.cast_trigger()).is_equal("release")
 
 
+func test_a_failed_save_shows_a_note_and_a_good_save_clears_it() -> void:
+	# EXPECTED ERROR line in the log: "Settings: could not save 'cast_trigger'..." (push_error).
+	var main := _main()
+	await _frames(2)
+	var screen := _screen(main)
+	# A directory that does not exist: ConfigFile.save cannot create the file.
+	Settings.use_store(SettingsStore.new(DEFAULTS, "user://tests/no_such_dir_ux6b/settings.cfg"))
+	screen.open()
+	assert_bool(screen.save_note_label.visible).is_false()
+	(screen.option_buttons["press"] as Button).button_pressed = true
+	assert_str(Settings.cast_trigger()).is_equal("press")
+	assert_bool(screen.save_note_label.visible).is_true()
+	assert_str(screen.save_note_label.text).is_equal(String(UiConfig.settings_screen()["save_failed"]))
+	# Closing and opening again clears the stale note.
+	screen.close()
+	screen.open()
+	assert_bool(screen.save_note_label.visible).is_false()
+	# A save that works hides it again.
+	Settings.use_store(SettingsStore.new(DEFAULTS, TEMP_SETTINGS))
+	(screen.option_buttons["release"] as Button).button_pressed = true
+	assert_bool(screen.save_note_label.visible).is_false()
+
+
 func test_opening_the_screen_does_not_save_anything() -> void:
 	var main := _main()
 	await _frames(2)

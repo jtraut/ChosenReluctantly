@@ -154,7 +154,9 @@
         "option_selected_bg": "#4a3a2a",
         "option_border": "#e8dfe3",
         "selected_marker": "(x) ",
-        "unselected_marker": "( ) "
+        "unselected_marker": "( ) ",
+        "save_failed": "Could not save this setting. It will be forgotten when you quit.",
+        "save_failed_color": "#ff9a8a"
     },
     "player_outline": {
         "enabled": true,

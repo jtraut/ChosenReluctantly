@@ -97,6 +97,8 @@ const DEFAULT_SETTINGS_SCREEN: Dictionary = {
 	"option_border": "#e8dfe3",
 	"selected_marker": "(x) ",
 	"unselected_marker": "( ) ",
+	"save_failed": "Could not save this setting. It will be forgotten when you quit.",
+	"save_failed_color": "#ff9a8a",
 }
 
 ## The see-through-enemies cue on the player (Slice 6b): drawn only where something hides them.

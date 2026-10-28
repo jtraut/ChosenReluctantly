@@ -30,12 +30,16 @@ const SETTING_KEYS: Array[String] = [Settings.CAST_TRIGGER]
 var option_buttons: Dictionary = {}
 var _setting_key: String = SETTING_KEYS[0]
 var _group := ButtonGroup.new()
+## Shown under the hint only after a failed Settings.save(); hidden otherwise. Built in code so the
+## scene file stays as it was. Text and colour: data/ui.json `settings_screen` save_failed*.
+var save_note_label: Label = null
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	visible = false
 	_build_options()
+	_build_save_note()
 	_apply_config()
 	resume_button.pressed.connect(close)
 	Settings.changed.connect(_on_setting_changed)
@@ -57,6 +61,7 @@ func open() -> bool:
 	if visible or not GamePause.pause():
 		return false
 	visible = true
+	save_note_label.visible = false
 	_sync_from_settings()
 	resume_button.grab_focus()
 	opened.emit()
@@ -120,8 +125,20 @@ func _on_option_toggled(pressed: bool, option: Variant) -> void:
 	if not pressed:
 		return
 	if Settings.set_value(_setting_key, option):
-		Settings.save()
+		var saved := Settings.save()
+		save_note_label.visible = not saved
+		if not saved:
+			# The choice holds for this session only; say so, loudly in the log and on the screen.
+			push_error("Settings: could not save '%s' to the settings file; the choice will not survive a restart" % _setting_key)
 	_sync_from_settings()
+
+
+func _build_save_note() -> void:
+	save_note_label = Label.new()
+	save_note_label.name = "SaveNote"
+	save_note_label.visible = false
+	save_note_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	column.add_child(save_note_label)
 
 
 func _on_setting_changed(key: String, _value: Variant) -> void:
@@ -136,6 +153,9 @@ func _apply_config() -> void:
 	line_label.text = cfg["line"]
 	resume_button.text = cfg["resume"]
 	hint_label.text = cfg["hint"]
+	save_note_label.text = cfg["save_failed"]
+	save_note_label.add_theme_color_override("font_color", Color.html(cfg["save_failed_color"]))
+	_set_font(save_note_label, int(cfg["hint_font_size"]), s)
 	for label: Label in [title_label, line_label, option_label, hint_label]:
 		label.add_theme_color_override("font_color", Color.html(cfg["line_color"]))
 	title_label.add_theme_color_override("font_color", Color.html(cfg["title_color"]))

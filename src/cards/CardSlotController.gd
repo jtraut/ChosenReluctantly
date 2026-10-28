@@ -5,6 +5,9 @@ extends RefCounted
 ## CardSlot) - Player owns one directly, no scene-tree wiring needed since
 ## only Player casts cards in this milestone.
 
+## Emitted after a slot's card was cast (cooldown started, effects run).
+signal card_cast(slot_type: String, card_id: String)
+
 const SLOT_TYPE_ORDER: Array[String] = ["attack_single", "attack_aoe", "utility", "movement", "recovery"]
 const DEFAULT_SWAP_PENALTY := 1.0
 
@@ -56,6 +59,7 @@ func try_use(slot_type: String) -> bool:
 	if used_id == "":
 		return false
 	_cast_card(card_data)
+	card_cast.emit(slot_type, used_id)
 	return true
 
 

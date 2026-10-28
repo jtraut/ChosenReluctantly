@@ -32,6 +32,7 @@ var _rng := RandomNumberGenerator.new()
 var _dodge_cooldown_until: float = 0.0
 var _heavy_until: float = 0.0
 var _kills: int = 0
+var _casts: int = 0
 var _damage_taken: float = 0.0
 var _last_hp: float = 0.0
 var _max_alive: int = 0
@@ -104,6 +105,7 @@ func _reset_run_state(run_seed: int) -> void:
 	_sim_time = 0.0
 	_clock = 0.0
 	_kills = 0
+	_casts = 0
 	_damage_taken = 0.0
 	_max_alive = 0
 	_alive_time_sum = 0.0
@@ -141,6 +143,7 @@ func _run_one(run_seed: int) -> void:
 		return
 	_main = main_node as Main
 	_player = _main.player
+	_player.card_slots.card_cast.connect(func(_slot_type: String, _card_id: String) -> void: _casts += 1)
 	_main.enemy_spawner.set_seed(run_seed)
 	if _god:
 		_player.health.set_max_health(9999.0)
@@ -394,10 +397,10 @@ func _report(run_seed: int, wall_ms: int) -> void:
 	var sorted_times := _frame_times_ms.duplicate()
 	sorted_times.sort()
 	var mean_alive: float = _alive_time_sum / maxf(_sim_time, 0.001)
-	print("  seed %d: sim %.0f s in %.1f s wall | %s | HP lost %.0f | kills %d | alive max %d mean %.1f | stages opened %d | max stall %.0f s" % [
+	print("  seed %d: sim %.0f s in %.1f s wall | %s | HP lost %.0f | kills %d | card casts %d | alive max %d mean %.1f | stages opened %d | max stall %.0f s" % [
 		run_seed, _sim_time, float(wall_ms) / 1000.0,
 		("died at %.1f s" % _died_at) if _died_at >= 0.0 else "survived",
-		_damage_taken, _kills, _max_alive, mean_alive, _main.enemy_spawner.plan.stages_started(), _max_stall])
+		_damage_taken, _kills, _casts, _max_alive, mean_alive, _main.enemy_spawner.plan.stages_started(), _max_stall])
 	print("    spacing (melee within %.0f m of player, %d frames with 2+): mean min-pair %.2f m, worst %.2f m, %.0f%% of frames >= %.1f m" % [
 		NEAR_RADIUS, _pair_frames, _pair_min_sum / maxf(float(_pair_frames), 1.0), (_pair_min_all if _pair_frames > 0 else 0.0), 100.0 * float(_pair_ok_frames) / maxf(float(_pair_frames), 1.0), SPACING_OK])
 	print("    headless frame ms (wall, each frame steps ~%.0fx physics): p50 %.2f p95 %.2f max %.2f | engine process %.2f ms, physics %.2f ms avg per frame | _attack_has_target %.1f us/call with %d enemies alive (%d calls)" % [

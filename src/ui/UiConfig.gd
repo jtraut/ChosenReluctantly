@@ -129,9 +129,29 @@ const DEFAULT_HUD: Dictionary = {
 const DEFAULT_POPUPS: Dictionary = {
 	"immune_text": "IMMUNE",
 	"immune_color": "#cfd8dc",
-	"immune_scale": 1.4,
-	"immune_height": 3.0,
+	"immune_scale": 0.9,
+	"immune_height": 3.3,
 	"immune_cooldown": 1.5,
+}
+
+## Floating damage numbers (and the popup words that reuse the same label). Sizes: `pixel_size` is
+## meters per font pixel, so a number's on-screen size follows the ortho camera (about 51 px per
+## meter at 720p). Anti-spam: a new same-type hit within `merge_radius` (m, on the ground plane) of a
+## number that has been idle less than `merge_window` (s) adds into it, and at most `max_alive` live.
+const DEFAULT_DAMAGE_NUMBERS: Dictionary = {
+	"font_size": 48,
+	"pixel_size": 0.011,
+	"outline_size": 14,
+	"outline_color": "#0d080b",
+	"color_lighten": 0.3,
+	"spawn_height": 1.9,
+	"rise_distance": 1.2,
+	"duration": 0.8,
+	"big_scale": 1.35,
+	"merge_radius": 0.8,
+	"merge_window": 0.3,
+	"max_alive": 16,
+	"render_priority": 20,
 }
 
 static var _table := JsonDataTable.new("res://data/ui.json")
@@ -220,6 +240,31 @@ static func validate_popups(block: Dictionary) -> Array[String]:
 		var value: Variant = block.get(key)
 		if not (value is float or value is int) or is_nan(float(value)) or float(value) < 0.0:
 			problems.append("%s must be a number >= 0" % key)
+	return problems
+
+
+static func damage_numbers() -> Dictionary:
+	var merged := merge_with_defaults(DEFAULT_DAMAGE_NUMBERS, _table.get_entry("damage_numbers"))
+	var problems := validate_damage_numbers(merged)
+	if problems.is_empty():
+		return merged
+	push_error("data/ui.json damage_numbers invalid: " + "; ".join(problems))
+	return DEFAULT_DAMAGE_NUMBERS.duplicate()
+
+
+static func validate_damage_numbers(block: Dictionary) -> Array[String]:
+	var problems: Array[String] = []
+	var color: Variant = block.get("outline_color")
+	if typeof(color) != TYPE_STRING or not String(color).is_valid_html_color():
+		problems.append("outline_color must be a hex color")
+	for key: String in DEFAULT_DAMAGE_NUMBERS:
+		if key == "outline_color":
+			continue
+		var value: Variant = block.get(key)
+		if not (value is float or value is int) or is_nan(float(value)) or float(value) <= 0.0:
+			problems.append("%s must be a number > 0" % key)
+		elif key == "color_lighten" and float(value) > 1.0:
+			problems.append("color_lighten must be <= 1")
 	return problems
 
 

@@ -11,6 +11,8 @@ var _camera_rig: CameraRig = null
 ## Popups requested so far and the last one's text (tests; no scene needed).
 var popup_count: int = 0
 var last_popup_text: String = ""
+## Live damage numbers, oldest first (merge and cap bookkeeping; cleared on reset).
+var _live_numbers: Array[DamageNumber] = []
 
 
 func _process(_delta: float) -> void:
@@ -24,6 +26,7 @@ func _process(_delta: float) -> void:
 func reset() -> void:
 	_hitstop_resume_msec = -1
 	_camera_rig = null
+	_live_numbers = []
 	Engine.time_scale = 1.0
 
 
@@ -71,17 +74,44 @@ func spawn_popup(world_pos: Vector3, words: String, color: Color, text_scale: fl
 		return
 	var scene: PackedScene = load(DAMAGE_NUMBER_SCENE_PATH)
 	var instance: DamageNumber = scene.instantiate()
+	instance.configure(UiConfig.damage_numbers())
 	tree.current_scene.add_child(instance)
 	instance.global_position = world_pos + Vector3(0.0, height, 0.0)
 	instance.show_text(words, color, text_scale)
 
 
+## Shows a damage number, or merges the hit into a young number of the same type right
+## next to it (so 12 enemies hit in one swing do not stack a pile of digits), and never
+## keeps more than `max_alive` numbers.
 func spawn_damage_number(world_pos: Vector3, amount: float, damage_type: String) -> void:
 	var tree := Engine.get_main_loop() as SceneTree
 	if tree == null or tree.current_scene == null:
 		return
+	var cfg: Dictionary = UiConfig.damage_numbers()
+	var spot: Vector3 = world_pos + Vector3(0.0, float(cfg["spawn_height"]), 0.0)
+	var is_big: bool = amount >= HEAVY_HIT_THRESHOLD
+	_prune_numbers()
+	var entries: Array = []
+	for live: DamageNumber in _live_numbers:
+		entries.append({"pos": live.global_position, "type": live.damage_type, "idle": live.idle_time()})
+	var merge_at: int = DamageNumber.find_merge_index(entries, spot, damage_type, float(cfg["merge_radius"]), float(cfg["merge_window"]))
+	if merge_at >= 0:
+		_live_numbers[merge_at].merge_hit(amount, is_big)
+		return
+	for _i in range(DamageNumber.evict_count(_live_numbers.size(), int(cfg["max_alive"]))):
+		_live_numbers.pop_front().queue_free()
 	var scene: PackedScene = load(DAMAGE_NUMBER_SCENE_PATH)
 	var instance: DamageNumber = scene.instantiate()
+	instance.configure(cfg)
 	tree.current_scene.add_child(instance)
-	instance.global_position = world_pos + Vector3(0.0, 1.6, 0.0)
-	instance.show_amount(amount, damage_type)
+	instance.global_position = spot
+	instance.show_amount(amount, damage_type, DamageNumber.color_for(damage_type, float(cfg["color_lighten"])), is_big)
+	_live_numbers.append(instance)
+
+
+func _prune_numbers() -> void:
+	var kept: Array[DamageNumber] = []
+	for live: DamageNumber in _live_numbers:
+		if is_instance_valid(live) and not live.is_queued_for_deletion():
+			kept.append(live)
+	_live_numbers = kept

@@ -96,11 +96,26 @@
         "meter_text_color": "#ffffff",
         "meter_text_outline_color": "#0d080b"
     },
+    "damage_numbers": {
+        "font_size": 48,
+        "pixel_size": 0.011,
+        "outline_size": 14,
+        "outline_color": "#0d080b",
+        "color_lighten": 0.3,
+        "spawn_height": 1.9,
+        "rise_distance": 1.2,
+        "duration": 0.8,
+        "big_scale": 1.35,
+        "merge_radius": 0.8,
+        "merge_window": 0.3,
+        "max_alive": 16,
+        "render_priority": 20
+    },
     "popups": {
         "immune_text": "IMMUNE",
         "immune_color": "#cfd8dc",
-        "immune_scale": 1.4,
-        "immune_height": 3.0,
+        "immune_scale": 0.9,
+        "immune_height": 3.3,
         "immune_cooldown": 1.5
     },
     "game_over": {

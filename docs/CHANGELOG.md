@@ -69,6 +69,7 @@ A plain-language history of the project for the director, grouped by date (from 
 - **DECISIONS.md had a stray non-UTF-8 character.** (cd60da8)
 
 ### Docs and process
+- **Slice 5 closed.** qa first failed it on a broken tool, then passed it after a fix pass. The playtest found no blocker: the opening is calm (first damage at about 5.4 s), enemy shots are clearly pink, and the numbers and IMMUNE read well. The top issue is chasers stacking into one blob on the player, which goes to new step 5d along with removing the training dummy from normal runs. The HP bar look waits on director call D7. (c13a43a, 45ae002, f79455f)
 - **Slices 4 and 3b closed.** The combined playtest found no blocker; the visuals and the stun read well. Should-fix items moved to Slice 5: tiny damage numbers, the faint Pointy Stick projectile, and weak reads on the cone, heal and dash. Balance questions went back to the director as D4 and D5. (68324d2)
 - qa checked this file against git on 2026-10-28 and corrected three wording errors (projectile marker is a half-width; light flash start colour is pale yellow, not tan; camera basis was transposed, not flipped). All hashes and dates verified. (see docs/reviews/2026-10-28-changelog-qa.md)
 - Slice 4 was split into four steps (4a-4d), and Slice 3b into four (3b-1 to 3b-4), so each step fits in one sitting. The Slice 4 playtest was folded into the 3b playtest. (0a8f929, 877a46c)

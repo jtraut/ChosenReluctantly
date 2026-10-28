@@ -208,7 +208,13 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
     - DoD: zero errors and warnings on startup and in a 20 s headless run; full suite passes; SceneSelfCheck passes.
   - **playtester:** the heavy (stun, slow, element status, area), light-vs-card balance, and the 1.5x click cap, plus the Slice 4 questions (can you tell what was cast, where it went, what it hit). Screenshots.
 
-- [ ] **Slice 5: Wave density, enemy readability, HP bars**
+- [x] **Slice 5: Wave density, enemy readability, HP bars** - **Done** 2026-10-28 (game-lead). 5a + 5b built; qa FAIL c13a43a -> fix pass -> re-check PASS 45ae002 (417/417); playtester no blocker f79455f (`docs/playtests/2026-10-28-polish1-slice5.md`). HP bar default: stays `always_alive` pending director D7 (playtester and ux both recommend B). Playtest should-fix items -> 5d.
+- [ ] **5d: Crowd readability follow-up (gameplay-dev -> qa, folded into the pass close-out playtest)**
+  - (1) Separation steering for chasers (F-E3). Chasers must not stack into one blob on the player; the overlapping wedges and the hidden player were the playtest's top finding. Parameters go in data. Make sure the wedge telegraphs still match the real hits.
+  - (2) Remove the TrainingDummy from the normal run (keep it available to scenarios). It reads as an enemy and clutters every run.
+  - (3) Move per-type enemy combat stats (wind-up, damage, speeds, cooldown) from scene exports into `data/enemies.json`, with values unchanged. Only if it fits in the sitting; otherwise list it as a follow-up.
+  - **qa:** no stacking (minimum pair distance over a seeded wave sim), telegraph/hit match, wave sim clean, DoD.
+- [ ] **Slice 5 original brief (kept for reference)**
   - **Owner sequence:** gameplay-dev (spawner, enemy fixes, bar rendering) -> ux-designer (bar visibility/size options) -> qa (incl. bot-sim) -> playtester (compare bar options, density screenshots) -> game-lead (pick bar default, close).
   - **GDD:** §1 density principle, §7.
   - **Sub-steps (game-lead, 2026-10-28):**

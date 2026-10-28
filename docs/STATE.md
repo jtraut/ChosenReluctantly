@@ -8,7 +8,7 @@ Last updated: 2026-10-27. **Milestone 2 is done.** Now running **Post-milestone 
 - "0 / 30" investigated: it is player HP; the player never handles `Health.died`, so it keeps acting at 0 HP. Fix is in Slice 1.
 
 ## In progress
-**Slice 1 (death and game over): gameplay-dev delegated** by game-lead (2026-10-27). Scope: gameplay half only (death handling, `player_died` signal, input/enemy lockout, death beat, `Main.restart_arena()` via scene reload). Game Over screen + HUD "HP" label are ux-designer's, after. If cut off here: check `git log` for a gameplay-dev Slice 1 commit; if none, re-run gameplay-dev on Slice 1. Repo ran at 64e10ac.
+**Slice 1 (death and game over):** gameplay half done (9744135: `Player.player_died`, `Main.game_over_ready`, `Main.restart_arena()`, `Main.is_game_over()`, 11 tests, suite green). **ux-designer delegated** for Game Over screen + HUD "HP" label. If cut off: check `git log` for a ux-designer Slice 1 commit; if none, re-run ux-designer. Then qa (must do a real windowed 5x death/restart cycle) -> playtester -> close. Known gaps carried to qa: in-flight projectiles still hit after death; enemies idle (no wander); Burn component keeps ticking on dead player (ignored by Health).
 
 ## Exact next step
 Run **gameplay-dev** on Slice 1 with the roadmap brief. Then ux-designer (Game Over screen + HUD "HP" label) -> qa -> playtester -> game-lead close. Then slices 2, 3, 4, 5 in order, then the whole-pass playtester report. After the pass: **Milestone 3a (run structure)**.

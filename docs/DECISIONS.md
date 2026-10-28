@@ -466,3 +466,7 @@ These were already resolved by explicit instruction in the Milestone 2 kickoff p
 **F-E5 (done, cheap).** When a stun cancels a live wind-up, a bright ring snaps inward at the enemy's feet in its team colour (`TemplateVfx.windup_cancelled`, keys `windup_cancel_size`, `_duration`, `_alpha`), so a vanished wedge or lane reads as "you stopped it", not "a glitch". One block in `Enemy._on_status_applied`, no behaviour change. Verified in the new `stun_cancel` scenario (`cancel_2.png`). Rejected: a popup word (more spam in a crowd).
 
 **Verification.** Full suite 378/378 (365 before), 0 orphans; 20 s headless run (`--quit-after 1200`) and five scenarios headless: no error, warning or BUG lines; reload soak (5 cycles, run because Juice and Enemy changed) OK. Not verified: anything in motion, 1080p or 1440p, a hand-played fight; stills only at 1280x720.
+
+### 2026-10-28 - After 5b (game-lead)
+- **HP bar default:** the brief let game-lead pick, but ux's candidate (`elite_boss_always`) overrides the director's 2026-10-27 answer (`always_alive`). It goes to the director as D7. The shipped value stays `always_alive` until answered, and the playtester compares both looks. Rejected: switching now (that would override a director answer without asking).
+- **Damage-taken vs damage-dealt numbers:** worth doing for readability. It's a small caller change, logged as follow-up 5-a for gameplay-dev after the pass. Not a director call.

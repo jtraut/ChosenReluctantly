@@ -219,7 +219,8 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
       - D3 default A: team tint for shots, so enemy shots look different from player physical shots. Code in `ElementVisuals`, colour in data.
       - Reuse the physics query in `Player._attack_has_target` if profiling at the new density shows a cost.
       - s1-f: first contact about 1 s after spawn; add a spawn grace.
-    - [ ] **5b, ux-designer:** bar visibility modes as data (criterion 4). Also:
+    - [x] **5b, ux-designer:** BUILT 2026-10-28 (058d3dd..642b1ee, 378/378, soak OK). Bar modes as data (shipped value still `always_alive`; director call D7), damage numbers ~12 -> ~20 px with merge/cap 16, IMMUNE above bars, cone/heal/dash/projectile reads in data, stun-cancel ring. Follow-up (5-a): the player's damage-taken numbers look like damage dealt (needs a caller change, gameplay-dev, later). qa at 5c.
+      bar visibility modes as data (criterion 4). Also:
       - S3B-2: the IMMUNE popup is drawn above HP bars.
       - Damage numbers readable at 720p (old follow-up (e), playtest should-fix).
       - Pointy Stick / neutral projectile clearly visible.

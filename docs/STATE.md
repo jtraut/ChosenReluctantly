@@ -13,6 +13,7 @@ Last updated: 2026-10-28. **Milestone 2 is done.** Now running **Post-milestone 
 - **Polish 1, Slice 1 (death and game over) - done** (7ad85ee): `Player.player_died`, `Main.game_over_ready` / `restart_arena()` (scene reload), Game Over screen, "HP x / y" label, reload soak tool `tools/run_reload_cycle.ps1`.
 
 ## In progress
+**5b BUILT (ux-designer, 2026-10-28), qa at 5c:** HP bar visibility modes as data (candidate default elite_boss_always, shipped value unchanged), damage numbers from data with merge/cap, IMMUNE on top, cone/heal/dash/projectile reads in data, stun-cancel cue; see DECISIONS "Slice 5b".
 **5a BUILT (gameplay-dev, 2026-10-28), qa not yet run:** data-driven staged waves (`data/waves.json`, cap 12), spawn grace, golem capsule hurtbox (N1), depth-tested smaller HP bars, enemy team tint, enemy wind-up wedge and shot lane, arena walls, `tools/run_wave_sim.ps1`; details and numbers in DECISIONS "Slice 5a"; next is 5b (ux-designer).
 **Slices 4 and 3b are DONE (closed 2026-10-28).** The director prompt's Parts A-C are complete, and the changelog exists. **Now: Slice 5, split into 5a/5b/5c (ROADMAP). 5a built (8e05395). 5b handed to ux-designer.** Pending: D6 default A (golem wind-up 0.45 -> 0.7 s) goes to gameplay-dev at the start of the capture-tooling task, if the director hasn't answered.
 

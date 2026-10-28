@@ -70,7 +70,10 @@ func _ready() -> void:
 	_setup_attacks()
 	health.damaged.connect(_on_damaged)
 	health.died.connect(_on_died)
-	var material := body_mesh.material_override
+	# The body material lives in the scene as a surface override, so material_override
+	# is empty until we take a unique copy here. Every flash (hit, death) tweens this
+	# copy; before, nothing was found and none of them ever showed.
+	var material: Material = body_mesh.get_active_material(0)
 	if material is StandardMaterial3D:
 		var unique_material: StandardMaterial3D = (material as StandardMaterial3D).duplicate()
 		body_mesh.material_override = unique_material

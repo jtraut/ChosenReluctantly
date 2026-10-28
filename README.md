@@ -22,7 +22,7 @@ godot --path . -- --screenshot-after=3.0 --screenshot-out=shots/a.png --scenario
 godot --path . -- --screenshot-count=3 --screenshot-interval=2.0          # shots at 2s, 4s, 6s
 godot --path . -- --scenario=hp_bars                                      # play the scenario by hand, no capture
 ```
-The game quits itself after the last shot. `screenshots/` is gitignored. Scenarios live in `data/scenarios.json` (`hp_bars`: 9 enemies near the player at mixed HP, 2 with Burn, 3 hit at 2.4s so the ghost trail drains, player has huge HP). Useful capture times for it: 2.0 to 3.6s. Scenario `attacks` shows the auto light attack and a scripted heavy click at 2.2s (wind-up telegraph, then hit); use `-Scenario attacks -After "0.75,2.4,2.7"`. Scenario `card_cast` casts one of each card type (projectile, cone, aoe, Burn, heal, buff, dash) and prints a slot-cooling check for each; use `-Scenario card_cast -After "0.9,1.9,3.2,4.4,5.5,6.1,6.8"`.
+The game quits itself after the last shot. `screenshots/` is gitignored. Scenarios live in `data/scenarios.json` (`hp_bars`: 9 enemies near the player at mixed HP, 2 with Burn, 3 hit at 2.4s so the ghost trail drains, player has huge HP). Useful capture times for it: 2.0 to 3.6s. Scenario `attacks` shows the auto light attack and a scripted heavy click at 2.2s (wind-up telegraph, then hit); use `-Scenario attacks -After "0.75,2.4,2.7"`. Scenario `card_cast` casts one of each card type (projectile, cone, aoe, Burn, heal, buff, dash) and prints a slot-cooling check for each; use `-Scenario card_cast -After "0.9,1.9,3.2,4.4,5.5,6.1,6.8,7.8"`.
 
 ## Running tests
 Tests use [gdUnit4](https://github.com/godot-gdunit-labs/gdUnit4), vendored in `addons/gdUnit4`. Run the full suite headless with:

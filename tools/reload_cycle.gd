@@ -116,7 +116,12 @@ func _run() -> void:
 		var reached := await _wait_game_over(main)
 		_check(reached, "cycle %d: game_over_ready never fired within %d ms" % [cycle, BEAT_TIMEOUT_MSEC])
 		_check((main.get_node("GameOverScreen") as CanvasLayer).visible, "cycle %d: Game Over screen not visible" % cycle)
-		await _frames(2)  # Juice resets time_scale in its own _process, right after the timer fires
+		# Juice resets time_scale by wall clock in its own _process; the Game Over timer can fire
+		# a frame earlier than that clock, so allow a short grace period (a real leak never ends).
+		var grace_deadline := Time.get_ticks_msec() + 250
+		await _frames(2)
+		while not is_equal_approx(Engine.time_scale, 1.0) and Time.get_ticks_msec() < grace_deadline:
+			await get_tree().process_frame
 		_check(is_equal_approx(Engine.time_scale, 1.0), "cycle %d: time_scale %s after beat" % [cycle, Engine.time_scale])
 		main.restart_arena()
 		main.restart_arena()  # double-call must be ignored

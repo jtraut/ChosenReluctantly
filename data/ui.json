@@ -95,6 +95,13 @@
         "meter_text_color": "#ffffff",
         "meter_text_outline_color": "#0d080b"
     },
+    "popups": {
+        "immune_text": "IMMUNE",
+        "immune_color": "#cfd8dc",
+        "immune_scale": 0.7,
+        "immune_height": 2.0,
+        "immune_cooldown": 1.5
+    },
     "game_over": {
         "title": "Well. That went badly.",
         "line": "The world is still cheerful about it. You are not.",

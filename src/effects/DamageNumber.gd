@@ -18,6 +18,14 @@ func show_amount(amount: float, damage_type: String) -> void:
 	_start_pos = global_position
 
 
+## A word instead of a damage number (the IMMUNE popup): smaller, same rise and fade.
+func show_text(words: String, color: Color, text_scale: float) -> void:
+	text = words
+	modulate = color
+	scale = Vector3.ONE * text_scale
+	_start_pos = global_position
+
+
 func _process(delta: float) -> void:
 	_elapsed += delta
 	var t := _elapsed / DURATION

@@ -34,6 +34,13 @@ var pulse_hz: float = 0.0
 var persistent: bool = false
 var follow_id: int = 0
 var follow_offset: Vector3 = Vector3.ZERO
+## Circles its follow point on the horizontal plane (radius 0 = off). Stun stars.
+var orbit_radius: float = 0.0
+var orbit_hz: float = 0.0
+var orbit_phase: float = 0.0
+## When >= 0 the animation time fraction is set from outside (set_progress), not by age:
+## a held telegraph that follows a wind-up. -1 = normal (age-driven).
+var driven_t: float = -1.0
 ## Incremented every time the pool hands this node out, so a holder of an old
 ## handle cannot stop somebody else's effect (see EffectPool.stop).
 var generation: int = 0
@@ -58,6 +65,9 @@ func step(delta: float) -> bool:
 		if target == null or not target.is_inside_tree():
 			return false
 		origin = target.global_position + follow_offset
+		if orbit_radius > 0.0:
+			var angle: float = orbit_phase + age * orbit_hz * TAU
+			origin += Vector3(cos(angle), 0.0, sin(angle)) * orbit_radius
 	_apply()
 	return persistent or age < delay + duration
 
@@ -69,6 +79,8 @@ func _apply() -> void:
 	visible = true
 	var local: float = age - delay
 	var t: float = 0.0 if persistent else clampf(local / duration, 0.0, 1.0)
+	if driven_t >= 0.0:
+		t = clampf(driven_t, 0.0, 1.0)
 	var s: float = base_size * lerpf(scale_from, scale_to, t)
 	if pulse_amount > 0.0:
 		s *= 1.0 + pulse_amount * sin(local * pulse_hz * TAU)
@@ -92,6 +104,10 @@ func begin() -> void:
 	persistent = false
 	follow_id = 0
 	follow_offset = Vector3.ZERO
+	orbit_radius = 0.0
+	orbit_hz = 0.0
+	orbit_phase = 0.0
+	driven_t = -1.0
 	strip_length = 0.0
 	yaw_to = yaw_from
 	_apply()
@@ -139,6 +155,27 @@ func lengthened(world_length: float) -> PooledEffect:
 	strip_length = maxf(world_length, 0.0)
 	_apply()
 	return self
+
+
+## Circles the follow point (use after following()).
+func orbiting(radius: float, hz: float, phase: float) -> PooledEffect:
+	orbit_radius = maxf(radius, 0.0)
+	orbit_hz = hz
+	orbit_phase = phase
+	return self
+
+
+## Held effect whose scale/alpha/yaw lerp is set by set_progress() (0..1) instead of time.
+func driven() -> PooledEffect:
+	persistent = true
+	driven_t = 0.0
+	_apply()
+	return self
+
+
+func set_progress(fraction: float) -> void:
+	driven_t = clampf(fraction, 0.0, 1.0)
+	_apply()
 
 
 func held() -> PooledEffect:

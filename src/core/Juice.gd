@@ -8,6 +8,9 @@ const HEAVY_HIT_THRESHOLD := 10.0
 
 var _hitstop_resume_msec: int = -1
 var _camera_rig: CameraRig = null
+## Popups requested so far and the last one's text (tests; no scene needed).
+var popup_count: int = 0
+var last_popup_text: String = ""
 
 
 func _process(_delta: float) -> void:
@@ -57,6 +60,20 @@ func on_hit_landed(world_pos: Vector3, amount: float, damage_type: String) -> vo
 		screen_shake(0.25, 0.18)
 	else:
 		hit_stop(0.03, 0.2)
+
+
+## A small floating word at `world_pos` (see UiConfig.popups). `height` is above the point.
+func spawn_popup(world_pos: Vector3, words: String, color: Color, text_scale: float, height: float) -> void:
+	popup_count += 1
+	last_popup_text = words
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree == null or tree.current_scene == null:
+		return
+	var scene: PackedScene = load(DAMAGE_NUMBER_SCENE_PATH)
+	var instance: DamageNumber = scene.instantiate()
+	tree.current_scene.add_child(instance)
+	instance.global_position = world_pos + Vector3(0.0, height, 0.0)
+	instance.show_text(words, color, text_scale)
 
 
 func spawn_damage_number(world_pos: Vector3, amount: float, damage_type: String) -> void:

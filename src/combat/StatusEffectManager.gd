@@ -27,6 +27,8 @@ var _stun_rules := StunRules.new()
 ## status_id -> PooledEffect and the generation it was handed out for.
 var _flames: Dictionary = {}
 var _flame_generations: Dictionary = {}
+## status_id -> extra [PooledEffect, generation] pairs of a multi-part cue (stun stars).
+var _extra_effects: Dictionary = {}
 
 
 class ActiveStatus:
@@ -133,7 +135,7 @@ func _vfx_pool() -> EffectPool:
 
 
 ## Persistent visual for statuses whose data has a "visual" block: a "flame" (Burn,
-## colored by the damage type's element) or a "halo" ring (Stun, colored by visual.color).
+## colored by the damage type's element) or "stars" circling the head (Stun, colored by visual.color).
 ## It follows the owner by instance id, so it also ends by itself if the owner is
 ## freed (an enemy dying never emits status_expired).
 func _ensure_flame(status_id: String, status_def: Dictionary) -> void:
@@ -142,17 +144,26 @@ func _ensure_flame(status_id: String, status_def: Dictionary) -> void:
 		return
 	var block: Dictionary = visual
 	var kind: String = String(block.get("kind", ""))
-	if kind != "flame" and kind != "halo":
+	if kind != "flame" and kind != "stars":
 		return
 	var pool := _vfx_pool()
 	var owner_node := get_parent() as Node3D
 	if pool == null or owner_node == null or not owner_node.is_inside_tree():
 		return
-	if _flames.has(status_id) and pool.is_running(_flames[status_id], int(_flame_generations[status_id])):
+	if _flames.has(status_id) and _cue_running(pool, status_id):
 		return
+	_stop_flame(status_id)
 	var effect: PooledEffect = null
-	if kind == "halo":
-		effect = TemplateVfx.status_halo(pool, owner_node, Color.html(String(block.get("color", "#ffe14a"))), float(block.get("size", 0.45)), TemplateVfx.body_top(owner_node))
+	if kind == "stars":
+		var stars: Array[PooledEffect] = TemplateVfx.status_stars(pool, owner_node, Color.html(String(block.get("color", "#ffe14a"))),
+				float(block.get("size", 0.15)), int(block.get("count", 3)), float(block.get("orbit_radius", 0.45)), float(block.get("orbit_hz", 1.2)),
+				TemplateVfx.body_top(owner_node))
+		if not stars.is_empty():
+			effect = stars[0]
+			var extras: Array = []
+			for i in range(1, stars.size()):
+				extras.append([stars[i], stars[i].generation])
+			_extra_effects[status_id] = extras
 	else:
 		var look := ElementVisuals.visual_for_damage_type(String(status_def.get("damage_type", "physical")))
 		effect = TemplateVfx.status_flame(pool, owner_node, look, float(block.get("size", 0.3)), TemplateVfx.body_top(owner_node))
@@ -161,12 +172,25 @@ func _ensure_flame(status_id: String, status_def: Dictionary) -> void:
 		_flame_generations[status_id] = effect.generation
 
 
+## True while every part of the status's cue is still the effect it was handed out as.
+func _cue_running(pool: EffectPool, status_id: String) -> bool:
+	if not pool.is_running(_flames[status_id], int(_flame_generations[status_id])):
+		return false
+	for pair: Array in _extra_effects.get(status_id, []):
+		if not pool.is_running(pair[0], int(pair[1])):
+			return false
+	return true
+
+
 func _stop_flame(status_id: String) -> void:
 	if not _flames.has(status_id):
 		return
 	var pool := _vfx_pool()
 	if pool != null:
 		pool.stop(_flames[status_id], int(_flame_generations[status_id]))
+		for pair: Array in _extra_effects.get(status_id, []):
+			pool.stop(pair[0], int(pair[1]))
+	_extra_effects.erase(status_id)
 	_flames.erase(status_id)
 	_flame_generations.erase(status_id)
 

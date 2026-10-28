@@ -334,6 +334,8 @@ func _handle_attack(delta: float) -> void:
 	for attack_id: StringName in attacks.ids():
 		if attacks.is_winding_up(attack_id) and _attack_visuals.has(attack_id):
 			(_attack_visuals[attack_id] as AttackArcVisual).show_windup(attacks.get_windup_progress(attack_id))
+		if attacks.is_winding_up(attack_id) and _telegraphs.has(attack_id):
+			_update_aoe_telegraph(attack_id, attacks.get_windup_progress(attack_id))
 
 
 ## True when at least one enemy is inside the attack's range and arc, facing
@@ -389,6 +391,19 @@ func _start_aoe_telegraph(attack_id: StringName, def: Dictionary) -> void:
 		generations.append(effect.generation)
 	_telegraphs[attack_id] = effects
 	_telegraph_generations[attack_id] = generations
+
+
+## Grows the ground telegraph with the wind-up (0..1), skipping any part the pool has
+## already recycled for something else.
+func _update_aoe_telegraph(attack_id: StringName, progress: float) -> void:
+	var pool := EffectPool.for_world(get_parent())
+	if pool == null:
+		return
+	var effects: Array = _telegraphs[attack_id]
+	var generations: Array = _telegraph_generations[attack_id]
+	for i in range(effects.size()):
+		if pool.is_running(effects[i], int(generations[i])):
+			(effects[i] as PooledEffect).set_progress(progress)
 
 
 func _stop_telegraph(attack_id: StringName) -> void:

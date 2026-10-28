@@ -124,6 +124,15 @@ const DEFAULT_HUD: Dictionary = {
 	"meter_text_outline_color": "#0d080b",
 }
 
+## Small floating words (not damage numbers). The "IMMUNE" popup when a stun bounces.
+const DEFAULT_POPUPS: Dictionary = {
+	"immune_text": "IMMUNE",
+	"immune_color": "#cfd8dc",
+	"immune_scale": 0.7,
+	"immune_height": 2.0,
+	"immune_cooldown": 1.5,
+}
+
 static var _table := JsonDataTable.new("res://data/ui.json")
 
 
@@ -173,6 +182,28 @@ static func validate_aim(block: Dictionary) -> Array[String]:
 	if block.get("dot_count") is float or block.get("dot_count") is int:
 		if float(block["dot_count"]) > 32.0:
 			problems.append("dot_count must be <= 32")
+	return problems
+
+
+static func popups() -> Dictionary:
+	var merged := merge_with_defaults(DEFAULT_POPUPS, _table.get_entry("popups"))
+	var problems := validate_popups(merged)
+	if problems.is_empty():
+		return merged
+	push_error("data/ui.json popups invalid: " + "; ".join(problems))
+	return DEFAULT_POPUPS.duplicate()
+
+
+static func validate_popups(block: Dictionary) -> Array[String]:
+	var problems: Array[String] = []
+	if typeof(block.get("immune_text")) != TYPE_STRING or String(block["immune_text"]).strip_edges().is_empty():
+		problems.append("immune_text must be a non-empty string")
+	if typeof(block.get("immune_color")) != TYPE_STRING or not String(block["immune_color"]).is_valid_html_color():
+		problems.append("immune_color must be a hex color")
+	for key: String in ["immune_scale", "immune_height", "immune_cooldown"]:
+		var value: Variant = block.get(key)
+		if not (value is float or value is int) or is_nan(float(value)) or float(value) < 0.0:
+			problems.append("%s must be a number >= 0" % key)
 	return problems
 
 

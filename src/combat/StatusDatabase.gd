@@ -9,8 +9,14 @@ const EFFECT_TYPES: Array[String] = ["damage_over_time", "stun"]
 ## Enemy ranks a stun rule must cover (see EnemyConfig.RANKS, which owns the list).
 const RANKS: Array[String] = ["normal", "elite", "boss"]
 ## Allowed "visual.kind" values (see StatusEffectManager._ensure_flame).
-const VISUAL_KINDS: Array[String] = ["flame", "halo"]
+const VISUAL_KINDS: Array[String] = ["flame", "stars"]
 const MAX_VISUAL_SIZE := 5.0
+## "stars" visual: how many, how wide they circle, how fast. field -> [min, max, min_inclusive].
+const STARS_RULES: Dictionary = {
+	"count": [1.0, 8.0, true],
+	"orbit_radius": [0.0, 3.0, false],
+	"orbit_hz": [0.0, 10.0, false],
+}
 
 ## Per effect_type required numbers. field -> [min, max, min_inclusive].
 const NUMBER_RULES_BY_TYPE: Dictionary = {
@@ -124,7 +130,24 @@ static func _validate_visual(visual: Variant) -> Array[String]:
 	# Optional color override (the flame currently takes its color from the element).
 	if block.has("color") and not (typeof(block["color"]) == TYPE_STRING and Color.html_is_valid(String(block["color"]))):
 		errors.append("'visual.color' must be a hex color like #ff7a1a")
+	if typeof(block.get("kind")) == TYPE_STRING and block["kind"] == "stars":
+		errors.append_array(_check_numbers(block, STARS_RULES, "visual."))
+	# Optional body tint while the status is active (desaturates toward tint_color).
+	if block.has("tint_color") != block.has("tint_amount"):
+		errors.append("'visual.tint_color' and 'visual.tint_amount' go together")
+	elif block.has("tint_color"):
+		if not (typeof(block["tint_color"]) == TYPE_STRING and Color.html_is_valid(String(block["tint_color"]))):
+			errors.append("'visual.tint_color' must be a hex color")
+		errors.append_array(_check_numbers(block, {"tint_amount": [0.0, 1.0, true]}, "visual."))
 	return errors
+
+
+## Body tint of a status as {color: Color, amount: float}, or {} when it has none.
+static func body_tint(status_id: String) -> Dictionary:
+	var visual: Variant = get_status(status_id).get("visual")
+	if typeof(visual) != TYPE_DICTIONARY or not (visual as Dictionary).has("tint_color"):
+		return {}
+	return {"color": Color.html(String(visual["tint_color"])), "amount": float(visual["tint_amount"])}
 
 
 ## Validates a whole statuses table (id -> entry).

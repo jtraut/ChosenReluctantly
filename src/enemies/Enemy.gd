@@ -11,9 +11,9 @@ const HIT_FLASH_COLOR := Color(1.0, 1.0, 1.0)
 const HIT_FLASH_DURATION := 0.12
 const KNOCKBACK_DECAY := 18.0
 const ARRIVAL_MARGIN := 0.3
-## Placeholder stun cue: the body tints toward this while stunned (ux replaces it in 3b-3).
-const STUN_TINT := Color(1.0, 0.92, 0.35)
-const STUN_TINT_AMOUNT := 0.6
+## Fallback stun tint (the real one is `visual.tint_color` / `tint_amount` in data/statuses.json).
+const DEFAULT_STUN_TINT := Color(0.74, 0.74, 0.69)
+const DEFAULT_STUN_TINT_AMOUNT := 0.55
 
 ## A stun began (seconds) / ended. For ux: the stunned cue hangs off these.
 signal stunned(duration: float)
@@ -49,6 +49,10 @@ var _attack_cooldown_remaining: float = 0.0
 var _telegraph_remaining: float = 0.0
 var _knockback_velocity: Vector3 = Vector3.ZERO
 var _was_stunned: bool = false
+var _stun_tint: Color = DEFAULT_STUN_TINT
+var _stun_tint_amount: float = DEFAULT_STUN_TINT_AMOUNT
+## Seconds until another "IMMUNE" popup may show on this enemy (keeps it quiet).
+var _immune_popup_cooldown: float = 0.0
 
 
 func _ready() -> void:
@@ -58,6 +62,7 @@ func _ready() -> void:
 		status_manager.rank = EnemyConfig.rank_for(enemy_id)
 		status_manager.status_applied.connect(_on_status_applied)
 		status_manager.status_expired.connect(_on_status_expired)
+		status_manager.status_resisted.connect(_on_status_resisted)
 	var material := body_mesh.material_override
 	if material is StandardMaterial3D:
 		var unique_material: StandardMaterial3D = (material as StandardMaterial3D).duplicate()
@@ -68,6 +73,7 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	_attack_cooldown_remaining = maxf(_attack_cooldown_remaining - delta, 0.0)
 	_knockback_velocity = _knockback_velocity.move_toward(Vector3.ZERO, KNOCKBACK_DECAY * delta)
+	_immune_popup_cooldown = maxf(_immune_popup_cooldown - delta, 0.0)
 
 	if is_stunned():
 		# Stunned: no chasing, turning or attacking, and any wind-up is dropped. Only
@@ -104,6 +110,9 @@ func is_stunned() -> bool:
 func _on_status_applied(status_id: String) -> void:
 	if is_stunned() and not _was_stunned:
 		_was_stunned = true
+		var tint := StatusDatabase.body_tint(status_id)
+		_stun_tint = tint.get("color", DEFAULT_STUN_TINT)
+		_stun_tint_amount = float(tint.get("amount", DEFAULT_STUN_TINT_AMOUNT))
 		_cancel_telegraph()
 		_set_body_color(_rest_color())
 		stunned.emit(status_manager.stun_time_remaining())
@@ -116,6 +125,16 @@ func _on_status_expired(_status_id: String) -> void:
 		stun_ended.emit()
 
 
+## A stun bounced off (boss, or diminishing returns): a small word above the head, at
+## most once per `immune_cooldown` per enemy so a rapid-hit crowd stays quiet.
+func _on_status_resisted(_status_id: String) -> void:
+	if _immune_popup_cooldown > 0.0 or health.is_dead():
+		return
+	var cfg: Dictionary = UiConfig.popups()
+	_immune_popup_cooldown = float(cfg["immune_cooldown"])
+	Juice.spawn_popup(global_position, String(cfg["immune_text"]), Color.html(String(cfg["immune_color"])), float(cfg["immune_scale"]), float(cfg["immune_height"]))
+
+
 func _cancel_telegraph() -> void:
 	if _telegraph_remaining > 0.0:
 		_telegraph_remaining = 0.0
@@ -124,7 +143,7 @@ func _cancel_telegraph() -> void:
 
 ## The body color at rest: base, or tinted while stunned.
 func _rest_color() -> Color:
-	return _base_color.lerp(STUN_TINT, STUN_TINT_AMOUNT) if _was_stunned else _base_color
+	return _base_color.lerp(_stun_tint, _stun_tint_amount) if _was_stunned else _base_color
 
 
 func _has_live_target() -> bool:

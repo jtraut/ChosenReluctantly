@@ -209,7 +209,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
   - **playtester:** the heavy (stun, slow, element status, area), light-vs-card balance, and the 1.5x click cap, plus the Slice 4 questions (can you tell what was cast, where it went, what it hit). Screenshots.
 
 - [x] **Slice 5: Wave density, enemy readability, HP bars** - **Done** 2026-10-28 (game-lead). 5a + 5b built; qa FAIL c13a43a -> fix pass -> re-check PASS 45ae002 (417/417); playtester no blocker f79455f (`docs/playtests/2026-10-28-polish1-slice5.md`). HP bar default: stays `always_alive` pending director D7 (playtester and ux both recommend B). Playtest should-fix items -> 5d.
-- [ ] **5d: Crowd readability follow-up** BUILT 2026-10-28 (6db688d..0ca0afb, 426/426): steering raises spread frames from about 33-48% to 84-96%, the dummy is out, stats are in data. qa FAIL 8751371 (`docs/reviews/2026-10-28-polish1-5d-qa.md`): blockers S5d-1 (the in-range slide isn't speed-clamped; flaky test) and S5d-2 (stats validator never called on load), should-fix F1 (swirl side from instance id, not seeded). Fix pass with gameplay-dev, then qa re-check. Original title: **5d (gameplay-dev -> qa, folded into the pass close-out playtest)**
+- [ ] **5d: Crowd readability follow-up** BUILT 2026-10-28 (6db688d..0ca0afb, 426/426): steering raises spread frames from about 33-48% to 84-96%, the dummy is out, stats are in data. qa FAIL 8751371 (`docs/reviews/2026-10-28-polish1-5d-qa.md`): blockers S5d-1 (the in-range slide isn't speed-clamped; flaky test) and S5d-2 (stats validator never called on load), should-fix F1 (swirl side from instance id, not seeded). Fix pass done c3d244f..b1383f0 (435/435, 3 consecutive runs; spacing 84-86%). The qa re-check is folded into 6c. Original title: **5d (gameplay-dev -> qa, folded into the pass close-out playtest)**
   - (1) Separation steering for chasers (F-E3). Chasers must not stack into one blob on the player; the overlapping wedges and the hidden player were the playtest's top finding. Parameters go in data. Make sure the wedge telegraphs still match the real hits.
   - (2) Remove the TrainingDummy from the normal run (keep it available to scenarios). It reads as an enemy and clutters every run.
   - (3) Move per-type enemy combat stats (wind-up, damage, speeds, cooldown) from scene exports into `data/enemies.json`, with values unchanged. Only if it fits in the sitting; otherwise list it as a follow-up.
@@ -260,7 +260,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
     - The preview look is distinct from the cast effect and from enemy telegraphs: an outline in the player's element colour, low fill.
     - **Apply D7:** set `hp_bars.visibility_mode` to `elite_boss_always`.
     - **Player occlusion cue (from 5d):** when enemies hide the player in the iso view, show a silhouette or outline of the player through them (e.g. a second material pass that draws only where the player is occluded). Colour and alpha go in data. It must not show when the player is visible.
-  - [ ] **6c, qa:**
+  - [ ] **6c, qa:** (also: the 5d re-check of S5d-1, S5d-2, F1, F3, which must PASS before 5d closes)
     - Preview size equals hitbox size for every shape.
     - Release casts exactly once; press mode casts on press.
     - No cast while on cooldown.

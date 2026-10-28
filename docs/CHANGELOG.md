@@ -44,6 +44,7 @@ A plain-language history of the project for the director, grouped by date (from 
 - **Balance (side effect of a bug fix): projectile hit size** now really reads its data. Flaming Nonsense hits at 0.3 (was 0.25), and ranged enemy shots at 0.3 (was 0.25). (1d87756)
 
 ### Fixed
+- **5d fixes from qa:** a crowded enemy waiting to swing could slide faster than its top speed (now capped). A broken enemy stats block is now caught when the game loads. Enemy sidestep direction now comes from spawn order, so a seed reproduces the same run. (c3d244f, 6e8c3e6, a23a960)
 - **The old bot-sim tool had been silently broken since 5b.** It stopped compiling but still printed "OK". It is fixed, and now fails loudly on any error. (c13a43a, e100f09)
 - **Slice 5 cleanups:**
   - Enemies can no longer spawn right next to a player standing in a corner (min 9 m).

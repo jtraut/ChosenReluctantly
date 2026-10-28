@@ -182,6 +182,12 @@ func test_real_mouse_clicks_on_the_open_settings_screen_never_reach_the_player()
 	_screen(main).close()
 	await _frames(6)
 	assert_array(started).is_empty()
+	# The tree pause (not only the screen) stops the clicks; once closed a fresh click works again.
+	await _frames(60)
+	_mouse(MOUSE_BUTTON_RIGHT, true)
+	_mouse(MOUSE_BUTTON_RIGHT, false)
+	await _frames(4)
+	assert_bool(started.has(&"heavy")).override_failure_message("a fresh RMB after closing the screen should start the heavy").is_true()
 
 
 func test_real_escape_key_toggles_exactly_once_per_press_and_ignores_echo() -> void:
@@ -580,6 +586,53 @@ func test_f1_spawner_numbers_enemies_in_spawn_order_and_resets_with_the_seed() -
 	var spawner_source := FileAccess.get_file_as_string("res://src/enemies/EnemySpawner.gd")
 	assert_bool(spawner_source.contains("spawn_index = _spawn_count")).is_true()
 	assert_bool(spawner_source.contains("_spawn_count = 0")).is_true()
+
+
+func _aligned_crowd(seed_value: int) -> Array[Vector3]:
+	await get_tree().physics_frame  # start every run on the same physics boundary
+	_spawn()
+	_main.player.process_mode = Node.PROCESS_MODE_DISABLED
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value
+	var list: Array[Enemy] = []
+	for i in range(10):
+		var enemy: Enemy = (load(CHASER_PATH) as PackedScene).instantiate()
+		enemy.spawn_index = i
+		_main.add_child(enemy)
+		var angle: float = rng.randf_range(-0.6, 0.6)
+		var dist: float = rng.randf_range(6.0, 9.0)
+		enemy.global_position = _main.player.global_position + Vector3(cos(angle), 0.0, sin(angle)) * dist
+		enemy.target = _main.player
+		enemy.begin_spawn_grace(99.0)  # no swings, so no wall-clock hit-stop
+		list.append(enemy)
+	for f in range(300):
+		await get_tree().physics_frame
+	var out: Array[Vector3] = []
+	for enemy in list:
+		out.append(enemy.global_position)
+	get_tree().current_scene = null
+	_main.free()
+	_main = null
+	return out
+
+
+func test_f1_same_seed_crowd_is_bit_identical_across_runs_and_shifted_instance_ids() -> void:
+	var first := await _aligned_crowd(11)
+	var junk: Array[Node] = []
+	for i in range(53):  # shifts every later instance id
+		junk.append(Node.new())
+	var second := await _aligned_crowd(11)
+	var third := await _aligned_crowd(11)
+	var other := await _aligned_crowd(12)
+	for node in junk:
+		node.free()
+	var different := false
+	for i in range(first.size()):
+		assert_float(first[i].distance_to(second[i])).override_failure_message("enemy %d: %s vs %s" % [i, first[i], second[i]]).is_less(0.000001)
+		assert_float(second[i].distance_to(third[i])).is_less(0.000001)
+		if first[i].distance_to(other[i]) > 0.01:
+			different = true
+	assert_bool(different).override_failure_message("a different seed gave the same crowd: the test is vacuous").is_true()
 
 
 func _screen(main: Main) -> SettingsScreen:

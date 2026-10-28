@@ -74,6 +74,7 @@ var _immune_popup_cooldown: float = 0.0
 
 func _ready() -> void:
 	_roster.append(self)
+	_apply_stats(EnemyConfig.stats_for(enemy_id))
 	_separation_radius = EnemyConfig.separation_radius()
 	_separation_strength = EnemyConfig.separation_strength()
 	health.damaged.connect(_on_damaged)
@@ -89,6 +90,23 @@ func _ready() -> void:
 		var unique_material: StandardMaterial3D = (material as StandardMaterial3D).duplicate()
 		body_mesh.material_override = unique_material
 		_base_color = unique_material.albedo_color
+
+
+## Per-type combat stats come from data/enemies.json "enemies.<id>.stats" (validated by EnemyConfig); the
+## exports above are only the fallback for an enemy with no data entry.
+func _apply_stats(stats: Dictionary) -> void:
+	if stats.is_empty():
+		return
+	move_speed = float(stats["move_speed"])
+	is_ranged = bool(stats["is_ranged"])
+	attack_range = float(stats["attack_range"])
+	preferred_range = float(stats["preferred_range"])
+	attack_damage = float(stats["attack_damage"])
+	attack_damage_type = String(stats["attack_damage_type"])
+	attack_cooldown = float(stats["attack_cooldown"])
+	telegraph_duration = float(stats["telegraph_duration"])
+	projectile_speed = float(stats["projectile_speed"])
+	projectile_max_range = float(stats["projectile_max_range"])
 
 
 func _exit_tree() -> void:

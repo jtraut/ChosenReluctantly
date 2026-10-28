@@ -22,10 +22,6 @@ collision_layer = 4
 collision_mask = 5
 script = ExtResource("1")
 enemy_id = "melee_chaser"
-move_speed = 4.0
-attack_range = 1.5
-attack_damage = 5.0
-attack_cooldown = 1.2
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)

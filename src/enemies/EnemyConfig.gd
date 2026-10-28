@@ -1,7 +1,7 @@
 class_name EnemyConfig
 extends RefCounted
 ## data/enemies.json: attack shape numbers shared by every enemy type, plus each enemy
-## type's rank and scene (the per-type combat stats are still exported scene values).
+## type's rank, scene and combat stats (speeds, ranges, damage, wind-up, cooldown).
 ## A missing or invalid file is a push_error and falls back to DEFAULTS.
 
 const PATH := "res://data/enemies.json"
@@ -21,6 +21,21 @@ static var _loaded: bool = false
 static var _ranks: Dictionary = {}
 ## enemy id -> scene path, from data/enemies.json "enemies" (the wave table spawns by id).
 static var _scenes: Dictionary = {}
+## enemy id -> combat stats dictionary (see STAT_KEYS), from data/enemies.json "enemies".
+static var _stats: Dictionary = {}
+
+## Per-type combat stats every enemy entry must carry: key -> [low, high] for numbers. Speeds, ranges,
+## damage and times; a wind-up of 0 is allowed (instant attack), the rest must be above 0.
+const STAT_NUMBERS: Dictionary = {
+	"move_speed": [0.0, 30.0],
+	"attack_range": [0.0, 30.0],
+	"preferred_range": [0.0, 60.0],
+	"attack_damage": [0.0, 1000.0],
+	"attack_cooldown": [0.0, 60.0],
+	"telegraph_duration": [0.0, 10.0],
+	"projectile_speed": [0.0, 100.0],
+	"projectile_max_range": [0.0, 200.0],
+}
 
 
 ## Returns human-readable problems; empty means valid.
@@ -78,6 +93,31 @@ static func validate_enemies(enemies: Variant) -> Array[String]:
 	return errors
 
 
+## One enemy's "stats" block: every STAT_NUMBERS key a finite number in range, "is_ranged" a bool,
+## "attack_damage_type" a non-empty string, nothing else.
+static func validate_stats(enemy_id: String, stats: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(stats) != TYPE_DICTIONARY:
+		errors.append("enemies.%s: 'stats' must be an object" % enemy_id)
+		return errors
+	var dict: Dictionary = stats
+	for key: String in STAT_NUMBERS.keys():
+		var value: Variant = dict.get(key)
+		var range_pair: Array = STAT_NUMBERS[key]
+		if typeof(value) != TYPE_INT and typeof(value) != TYPE_FLOAT:
+			errors.append("enemies.%s.stats: '%s' must be a number" % [enemy_id, key])
+		elif is_nan(float(value)) or float(value) < float(range_pair[0]) or float(value) > float(range_pair[1]):
+			errors.append("enemies.%s.stats: '%s' must be between %s and %s" % [enemy_id, key, range_pair[0], range_pair[1]])
+	if typeof(dict.get("is_ranged")) != TYPE_BOOL:
+		errors.append("enemies.%s.stats: 'is_ranged' must be true or false" % enemy_id)
+	if typeof(dict.get("attack_damage_type")) != TYPE_STRING or String(dict["attack_damage_type"]) == "":
+		errors.append("enemies.%s.stats: 'attack_damage_type' must be a non-empty string" % enemy_id)
+	for key: String in dict.keys():
+		if not STAT_NUMBERS.has(key) and key != "is_ranged" and key != "attack_damage_type":
+			errors.append("enemies.%s.stats: unknown key '%s'" % [enemy_id, key])
+	return errors
+
+
 ## True if the scene's root node carries a script that is, or extends, the global class Enemy. Reads
 ## the packed scene state only (no instancing, and no reference to the Enemy class: it would pull in the
 ## Juice autoload and break `-s` tools, see S5-1).
@@ -131,6 +171,7 @@ static func get_config() -> Dictionary:
 	for enemy_id: String in (parsed["enemies"] as Dictionary).keys():
 		_ranks[enemy_id] = String(parsed["enemies"][enemy_id]["rank"])
 		_scenes[enemy_id] = String(parsed["enemies"][enemy_id]["scene"])
+		_stats[enemy_id] = (parsed["enemies"][enemy_id]["stats"] as Dictionary).duplicate()
 	return _cache
 
 
@@ -141,6 +182,13 @@ static func rank_for(enemy_id: String) -> String:
 		push_error("EnemyConfig: enemy id '%s' has no entry in data/enemies.json 'enemies'" % enemy_id)
 		return DEFAULT_RANK
 	return String(_ranks[enemy_id])
+
+
+## Combat stats of an enemy type (read-only by convention), or {} if the id is unknown (no error: tests
+## build enemies with no id; the scene's own script defaults then apply).
+static func stats_for(enemy_id: String) -> Dictionary:
+	get_config()
+	return _stats.get(enemy_id, {})
 
 
 ## Scene path of an enemy type, or "" (with an error) if the id is unknown.

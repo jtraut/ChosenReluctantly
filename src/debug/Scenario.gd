@@ -14,6 +14,9 @@ var _late_hit_done: bool = false
 var _kill_done: bool = false
 var _heavy_press_done: bool = false
 var _heavy_release_at: float = -1.0
+var _cast_index: int = 0
+## Slot cooling checks queued by casts: {"at": float, "slot": String, "before": float, "card": String}.
+var _cooling_checks: Array[Dictionary] = []
 
 
 static func has_scenario(scenario_id: String) -> bool:
@@ -85,6 +88,15 @@ func _build() -> void:
 			_enemies.append(enemy)
 			index += 1
 
+	# Capture-only: tough enemies so the player's auto attack does not clear the stage.
+	if _def.has("enemy_max_health"):
+		for enemy in _enemies:
+			enemy.health.set_max_health(float(_def["enemy_max_health"]))
+			enemy.health.heal(enemy.health.get_max_health())
+	# Capture-only: start below full HP so a heal is observable.
+	if _def.has("player_start_damage"):
+		player.health.take_damage(float(_def["player_start_damage"]), "physical")
+
 	var fractions: Array = _def.get("hp_fractions", [])
 	for i in range(mini(fractions.size(), _enemies.size())):
 		var health: Health = _enemies[i].health
@@ -113,6 +125,7 @@ func _process(delta: float) -> void:
 	if _heavy_release_at >= 0.0 and _elapsed >= _heavy_release_at:
 		_heavy_release_at = -1.0
 		Input.action_release("attack_heavy")
+	_process_casts()
 	var late: Dictionary = _def.get("late_hit", {})
 	if late.is_empty() or _late_hit_done or _elapsed < float(late.get("at", 2.4)):
 		return
@@ -120,3 +133,40 @@ func _process(delta: float) -> void:
 	for hit_index: int in late.get("indices", []):
 		if hit_index < _enemies.size() and is_instance_valid(_enemies[hit_index]):
 			_enemies[hit_index].health.take_damage(float(late.get("amount", 5.0)), "physical")
+
+
+## Scripted card casts (scenario "casts": [{at, slot, card}]). The named card is
+## forced into the slot's revealed position (deck order is random otherwise), then
+## cast through the real CardSlotController. Half a second later the slot's
+## remaining cooldown is re-read and must have dropped, which verifies cooling
+## live; the result is printed ("Scenario: ...") and a failure is a push_error.
+func _process_casts() -> void:
+	var casts: Array = _def.get("casts", [])
+	var player: Player = _main.get_node("Player")
+	while _cast_index < casts.size() and _elapsed >= float((casts[_cast_index] as Dictionary)["at"]):
+		var cast: Dictionary = casts[_cast_index]
+		_cast_index += 1
+		var slot_type := String(cast["slot"])
+		var slot: CardSlot = player.card_slots.get_slot(slot_type)
+		if slot == null:
+			push_error("Scenario: unknown slot '%s'" % slot_type)
+			continue
+		slot.current_card_id = String(cast["card"])
+		slot.cooldown_remaining = 0.0
+		var ok: bool = player.card_slots.try_use(slot_type)
+		print("Scenario: t=%.2f cast %s in %s ok=%s cooldown=%.2f" % [_elapsed, cast["card"], slot_type, ok, slot.cooldown_remaining])
+		if not ok:
+			push_error("Scenario: cast of '%s' failed" % cast["card"])
+			continue
+		_cooling_checks.append({"at": _elapsed + 0.5, "slot": slot_type, "before": slot.cooldown_remaining, "card": cast["card"]})
+	var remaining: Array[Dictionary] = []
+	for check in _cooling_checks:
+		if _elapsed < float(check["at"]):
+			remaining.append(check)
+			continue
+		var now: float = player.card_slots.get_slot(String(check["slot"])).cooldown_remaining
+		var cooled: bool = now < float(check["before"])
+		print("Scenario: t=%.2f slot %s cooling %.2f -> %.2f %s" % [_elapsed, check["slot"], check["before"], now, "OK" if cooled else "FAIL"])
+		if not cooled:
+			push_error("Scenario: slot '%s' did not cool after casting '%s'" % [check["slot"], check["card"]])
+	_cooling_checks = remaining

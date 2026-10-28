@@ -72,14 +72,85 @@
         "disable_spawner": true,
         "player_max_health": 9999,
         "freeze_aim": true,
-        "origin_offset": [-0.6, 0.0, -1.5],
-        "spacing": [1.2, 1.0],
+        "origin_offset": [
+            -0.6,
+            0.0,
+            -1.5
+        ],
+        "spacing": [
+            1.2,
+            1.0
+        ],
         "columns": 2,
         "heavy_at": 2.2,
         "groups": [
             {
                 "scene": "res://scenes/enemies/FireResistantGolem.tscn",
                 "count": 2
+            }
+        ]
+    },
+    "card_cast": {
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "player_start_damage": 60,
+        "freeze_aim": true,
+        "enemy_max_health": 2000,
+        "origin_offset": [
+            -2.25,
+            0.0,
+            -6.0
+        ],
+        "spacing": [
+            1.5,
+            1.7
+        ],
+        "columns": 4,
+        "groups": [
+            {
+                "scene": "res://scenes/enemies/FireResistantGolem.tscn",
+                "count": 4
+            },
+            {
+                "scene": "res://scenes/enemies/MeleeChaser.tscn",
+                "count": 4
+            }
+        ],
+        "casts": [
+            {
+                "at": 0.6,
+                "slot": "attack_single",
+                "card": "neutral_pointy_stick"
+            },
+            {
+                "at": 1.8,
+                "slot": "attack_single",
+                "card": "rogue_overhand_whatever"
+            },
+            {
+                "at": 3.0,
+                "slot": "attack_aoe",
+                "card": "neutral_shrug_bomb"
+            },
+            {
+                "at": 4.2,
+                "slot": "attack_single",
+                "card": "fire_ember_whatever"
+            },
+            {
+                "at": 5.4,
+                "slot": "recovery",
+                "card": "neutral_healing_potion"
+            },
+            {
+                "at": 6.0,
+                "slot": "utility",
+                "card": "fire_hot_head"
+            },
+            {
+                "at": 6.6,
+                "slot": "movement",
+                "card": "rogue_ugh_fine_moving"
             }
         ]
     }

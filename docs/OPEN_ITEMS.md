@@ -42,7 +42,7 @@ Play a normal run (not a test scenario: scenarios give the player 9999 HP).
 
 ## FYI, no action needed
 
-- **Dash and dodge distance.** Dash cards and the dodge roll kept sliding after the move ended, travelling about twice their set distance (Blaze and Bail went about 8 m, not 4 m). They will now stop at the distance set in data, so the hit-area preview tells the truth. Dodge will feel shorter. If it feels too short, raise `distance` in the data; no code change needed.
+- **Dash and dodge distance.** Dash cards and the dodge roll kept sliding after the move ended, travelling about twice their set distance (Blaze and Bail went about 8 m, not 4 m). They will now stop at the distance set in data, so the hit-area preview tells the truth. Dodge went from about 7.1 m to 3.5 m (its intended distance), and Blaze and Bail from about 8.1 m to 4.0 m. If the dodge feels too short, tune `dodge_speed` or `dodge_duration`; no new code needed.
 
 - The training dummy (the dark-red cylinder next to you at the start) is being removed from normal runs. It was a test aid that reads as an enemy. Scenarios keep it.
 - The dark area at the top-left edge of the screen is the empty space past the arena floor (by design since 4b). It is not a bug.

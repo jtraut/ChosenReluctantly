@@ -262,7 +262,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
     - The preview look is distinct from the cast effect and from enemy telegraphs: an outline in the player's element colour, low fill.
     - **Apply D7:** set `hp_bars.visibility_mode` to `elite_boss_always`.
     - **Player occlusion cue (from 5d):** when enemies hide the player in the iso view, show a silhouette or outline of the player through them (e.g. a second material pass that draws only where the player is occluded). Colour and alpha go in data. It must not show when the player is visible.
-  - [ ] **6c, qa:** FAIL 957fa16/0d670df (`docs/reviews/2026-10-28-polish1-slice6-qa.md`): blockers S6-1 (attack latch survives a pause) and S6-2 (dash coasts about 8.1 m against the previewed 4.0 m). **Fix pass with gameplay-dev:** S6-1, S6-2, S6-3, S6-5, S6-6, S6-7. Then a qa re-check. S6-4 (seeded sims don't repeat) moves to the capture-tooling task. (also: the 5d re-check of S5d-1, S5d-2, F1, F3, which must PASS before 5d closes)
+  - [ ] **6c, qa:** FAIL 957fa16/0d670df (`docs/reviews/2026-10-28-polish1-slice6-qa.md`): blockers S6-1 (attack latch survives a pause) and S6-2 (dash coasts about 8.1 m against the previewed 4.0 m). **Fix pass done** 17b28a2..dcdb043 (540/540). Dodge is now 3.5 m and the dash 4.0 m, both frame-rate independent. qa re-check in progress. Follow-up (6-a): the enemy shot lane tip also understates, so apply `projectile_lane_length` padding in the capture-tooling task. S6-4 (seeded sims don't repeat) moves to the capture-tooling task. (also: the 5d re-check of S5d-1, S5d-2, F1, F3, which must PASS before 5d closes)
     - Preview size equals hitbox size for every shape.
     - Release casts exactly once; press mode casts on press.
     - No cast while on cooldown.
@@ -276,6 +276,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
 
 - [ ] **Tooling: true-size capture (gameplay-dev, before pass close-out)**
   - The OS window is clamped to the monitor (1061 px tall), so `capture_screenshot.ps1` can't produce real 1920x1080 / 2560x1440. qa's `tools/vp_capture.gd` (88732cf) renders into an oversized SubViewport but `current_scene` is null there, so spawner/card code errors ("add_child on null") and no waves spawn; abrupt exit leaks RIDs.
+  - **Also in this task:** S6-4 (seeded wave sims don't repeat: card shuffle RNG, status RNG, Juice wall-clock hit-stop) and the README reproduce claim; follow-up 6-a (enemy shot lane tip padding).
   - **Acceptance:** a documented command produces true-size PNGs at 1280x720, 1920x1080, 2560x1440 with waves spawning and scenarios working; no error lines; spawn code uses a world/arena reference instead of `get_tree().current_scene` where needed (no behaviour change in normal play); clean exit. qa verifies; reload soak still clean.
 
 - [ ] **Pass close-out:** whole-pass playtester report in `docs/playtests/`, DoD above verified, STATE.md points at Milestone 3a.

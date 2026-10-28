@@ -519,3 +519,7 @@ Fixes for the Slice 5 qa FAIL, one commit each. Choices and the alternative reje
 
 ### 2026-10-28 - After 5d (game-lead)
 - **Player occlusion cue: yes**, added to Slice 6b (ux-designer). In the iso view, bodies still hide the player in a crowd even with good spacing, which hurts GDD §1 readability. This is a readability call, not a design question, so it isn't sent to the director. Rejected: more steering strength (it can't fix camera-angle overlap).
+
+### 2026-10-28 - After the 5d qa FAIL (game-lead)
+- Fix pass to gameplay-dev: S5d-1, S5d-2, F1 (swirl side from spawn order, not from the instance id, so runs are reproducible from a seed), and F3 (.uid files). F2 (the roster only fills in `_ready`) stays a follow-up, because nothing reparents enemies. F4 (mean alive is a little higher) is checked at the close-out playtest.
+- Changelog corrected: spread-frame range "84-96%" -> "about 80-96% (depending on seed)", per the qa seeds.

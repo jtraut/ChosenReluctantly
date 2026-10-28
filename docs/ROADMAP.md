@@ -191,7 +191,8 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
        - Elites x0.5; bosses immune.
        - Enemy `rank` (normal/elite/boss) in `data/enemies.json`. Current enemies are all normal unless logged otherwise. Test fixtures cover elite and boss.
     6. Wind-up slow: -35% move speed via StatModifiers, for the wind-up only. Removed on release, death, cancel, and scene reload. Never a root.
-  - [ ] **3b-3, ux-designer:**
+  - [x] **3b-3, ux-designer:** BUILT 2026-10-28 (8a9c704..ad9ee04, 306/306, soak OK). Stun stars + desaturate tint, IMMUNE popup (rate-limited), growing targeted_aoe telegraph, DR window 1.5 s. Follow-up (3b-e): IMMUNE can sit behind HP bars in tight crowds -> Slice 5 bar work. qa at 3b-4.
+   
     - A clear stunned cue on enemies (for example spinning stars or a ring plus desaturation, via the shared pool).
     - A readable `targeted_aoe` ground telegraph that matches the hitbox via VfxSizing.
     - Heavy meter or labels updated if the heavy's shape or class matters to the player.

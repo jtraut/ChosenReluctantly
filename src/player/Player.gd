@@ -2,6 +2,9 @@ extends CharacterBody3D
 class_name Player
 ## WASD movement relative to the fixed camera, and continuous mouse-ground aim.
 
+## Emitted once when Health reaches 0. Main, the run system, and UI listen here.
+signal player_died()
+
 @export var move_speed: float = 6.0
 @export var acceleration: float = 24.0
 @export var friction: float = 28.0
@@ -37,6 +40,7 @@ var _attack_cooldown_remaining: float = 0.0
 var _dodge_cooldown_remaining: float = 0.0
 var _base_body_color: Color = Color.WHITE
 var _knockback_velocity: Vector3 = Vector3.ZERO
+var _dead: bool = false
 
 # Generic forced-motion override (dodge roll, and later any Movement-slot
 # "dash" card): while active, this drives velocity instead of normal input.
@@ -50,6 +54,7 @@ func _ready() -> void:
 	var team := hurtbox.team if hurtbox != null else "player"
 	card_slots = CardSlotController.new(self, get_tree().current_scene, team, stat_modifiers, owned_pools)
 	health.damaged.connect(_on_damaged)
+	health.died.connect(_on_died)
 	var material := body_mesh.material_override
 	if material is StandardMaterial3D:
 		var unique_material: StandardMaterial3D = (material as StandardMaterial3D).duplicate()
@@ -58,6 +63,9 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if _dead:
+		_tick_dead(delta)
+		return
 	_tick_cooldowns(delta)
 	_knockback_velocity = _knockback_velocity.move_toward(Vector3.ZERO, KNOCKBACK_DECAY * delta)
 	card_slots.advance(delta)
@@ -70,6 +78,52 @@ func _physics_process(delta: float) -> void:
 	_handle_attack()
 	_handle_card_slot_input()
 	move_and_slide()
+
+
+func is_dead() -> bool:
+	return _dead
+
+
+## False once dead: gates input, movement, cards, dodge, and basic attack.
+func can_act() -> bool:
+	return not _dead
+
+
+func _on_died() -> void:
+	if _dead:
+		return
+	_dead = true
+	_forced_move_time_remaining = 0.0
+	_forced_move_invulnerable = false
+	if hurtbox != null:
+		hurtbox.set_invulnerable(true)
+	_play_death_animation()
+	player_died.emit()
+
+
+## Dead bodies only settle: friction on any leftover slide, gravity, no input.
+func _tick_dead(delta: float) -> void:
+	_knockback_velocity = _knockback_velocity.move_toward(Vector3.ZERO, KNOCKBACK_DECAY * delta)
+	var horizontal := Vector3(velocity.x, 0.0, velocity.z).move_toward(Vector3.ZERO, friction * delta)
+	velocity.x = horizontal.x
+	velocity.z = horizontal.z
+	if is_on_floor():
+		velocity.y = 0.0
+	else:
+		velocity.y -= gravity * delta
+	move_and_slide()
+
+
+## Placeholder: grey out and topple the body mesh (primitives only).
+func _play_death_animation() -> void:
+	var config := UiConfig.death_beat()
+	var duration: float = config["collapse_duration"]
+	var material := body_mesh.material_override
+	var tween := create_tween().set_parallel(true).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
+	if material is StandardMaterial3D:
+		tween.tween_property(material, "albedo_color", Color(0.25, 0.25, 0.25), duration)
+	tween.tween_property(body_mesh, "rotation_degrees:x", -90.0, duration)
+	tween.tween_property(body_mesh, "position:y", body_mesh.position.y * 0.5, duration)
 
 
 func _on_damaged(amount: float, damage_type: String, knockback: Vector3) -> void:
@@ -108,6 +162,8 @@ func _handle_dodge_input() -> void:
 ## "dash" card effect template so Movement-slot cards can reuse the same
 ## motion/invulnerability machinery instead of duplicating it.
 func start_forced_move(direction: Vector3, speed: float, duration: float, invulnerable: bool = false) -> void:
+	if _dead:
+		return
 	var flat_direction := direction
 	flat_direction.y = 0.0
 	if flat_direction.length_squared() < 0.0001:

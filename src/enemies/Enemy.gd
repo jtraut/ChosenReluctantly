@@ -53,9 +53,13 @@ func _physics_process(delta: float) -> void:
 	_attack_cooldown_remaining = maxf(_attack_cooldown_remaining - delta, 0.0)
 	_knockback_velocity = _knockback_velocity.move_toward(Vector3.ZERO, KNOCKBACK_DECAY * delta)
 
-	if target == null or health.is_dead():
-		velocity.x = 0.0
-		velocity.z = 0.0
+	if not _has_live_target() or health.is_dead():
+		# No target, or the player is dead: stand down (and drop any wind-up).
+		if _telegraph_remaining > 0.0:
+			_telegraph_remaining = 0.0
+			_set_body_color(_base_color)
+		velocity.x = _knockback_velocity.x
+		velocity.z = _knockback_velocity.z
 	elif _telegraph_remaining > 0.0:
 		_telegraph_remaining -= delta
 		velocity.x = _knockback_velocity.x
@@ -70,6 +74,12 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y -= gravity * delta
 	move_and_slide()
+
+
+func _has_live_target() -> bool:
+	if target == null or not is_instance_valid(target):
+		return false
+	return not (target.has_method("is_dead") and bool(target.call("is_dead")))
 
 
 func _chase_and_attack(delta: float) -> void:
@@ -108,7 +118,7 @@ func _start_telegraph() -> void:
 func _execute_attack() -> void:
 	_set_body_color(_base_color)
 	_attack_cooldown_remaining = attack_cooldown
-	if target == null:
+	if not _has_live_target():
 		return
 	var context := EffectContext.new(self, get_tree().current_scene, hurtbox.team if hurtbox != null else "enemy")
 	if is_ranged:

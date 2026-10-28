@@ -17,8 +17,10 @@ var _rng := RandomNumberGenerator.new()
 
 
 func _process(delta: float) -> void:
-	if target == null or enemy_scenes.is_empty():
+	if target == null or not is_instance_valid(target) or enemy_scenes.is_empty():
 		return
+	if target.has_method("is_dead") and bool(target.call("is_dead")):
+		return  # player is dead: no more waves
 	_wave_timer -= delta
 	if _wave_timer <= 0.0:
 		_spawn_wave()

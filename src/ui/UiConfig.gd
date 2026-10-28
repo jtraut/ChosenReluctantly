@@ -25,12 +25,45 @@ const DEFAULT_HP_BARS: Dictionary = {
 	"resistance_tints": {"fire": "#ff8a3d", "water": "#4aa8ff"},
 }
 
+## Player death beat: slow_mo_scale in (0, 1], durations in real seconds > 0.
+const DEFAULT_DEATH_BEAT: Dictionary = {
+	"slow_mo_scale": 0.25,
+	"slow_mo_duration": 0.9,
+	"collapse_duration": 0.5,
+}
+
 static var _table := JsonDataTable.new("res://data/ui.json")
 
 
 ## The `hp_bars` block with defaults filled in (sub-dicts merged key by key).
 static func hp_bars() -> Dictionary:
 	return merge_with_defaults(DEFAULT_HP_BARS, _table.get_entry("hp_bars"))
+
+
+## The `death_beat` block, defaults filled in. Invalid values are reported with
+## push_error and replaced by the default, so bad data fails loudly but safely.
+static func death_beat() -> Dictionary:
+	var merged := merge_with_defaults(DEFAULT_DEATH_BEAT, _table.get_entry("death_beat"))
+	var problems := validate_death_beat(merged)
+	if problems.is_empty():
+		return merged
+	push_error("data/ui.json death_beat invalid: " + "; ".join(problems))
+	return DEFAULT_DEATH_BEAT.duplicate()
+
+
+static func validate_death_beat(block: Dictionary) -> Array[String]:
+	var problems: Array[String] = []
+	for key: String in DEFAULT_DEATH_BEAT:
+		var value: Variant = block.get(key)
+		if not (value is float or value is int):
+			problems.append("%s must be a number" % key)
+			continue
+		var number: float = value
+		if is_nan(number) or number <= 0.0:
+			problems.append("%s must be > 0" % key)
+		elif key == "slow_mo_scale" and number > 1.0:
+			problems.append("slow_mo_scale must be <= 1")
+	return problems
 
 
 static func merge_with_defaults(defaults: Dictionary, overrides: Dictionary) -> Dictionary:

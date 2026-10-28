@@ -16,6 +16,20 @@ func _process(_delta: float) -> void:
 		_hitstop_resume_msec = -1
 
 
+## Autoloads outlive scene reloads: clear timing state and the (soon freed)
+## camera rig and put time back to normal. Call before changing scenes.
+func reset() -> void:
+	_hitstop_resume_msec = -1
+	_camera_rig = null
+	Engine.time_scale = 1.0
+
+
+## Slow-motion beat. Same wall-clock mechanism as hit_stop, so it ends on time
+## despite the reduced time scale.
+func slow_mo(duration_sec: float, time_scale: float) -> void:
+	hit_stop(duration_sec, time_scale)
+
+
 func register_camera_rig(rig: CameraRig) -> void:
 	_camera_rig = rig
 

@@ -1,4 +1,9 @@
 {
+    "death_beat": {
+        "slow_mo_scale": 0.25,
+        "slow_mo_duration": 0.9,
+        "collapse_duration": 0.5
+    },
     "hp_bars": {
         "visibility_mode": "always_alive",
         "width": 1.4,

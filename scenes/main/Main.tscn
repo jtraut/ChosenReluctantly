@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://src/main/Main.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="2"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/Hud.tscn" id="9"]
 [ext_resource type="PackedScene" path="res://scenes/ui/GameOverScreen.tscn" id="99"]
 [ext_resource type="PackedScene" path="res://scenes/ui/DebugOverlay.tscn" id="10"]
+[ext_resource type="PackedScene" path="res://scenes/ui/SettingsScreen.tscn" id="11"]
 
 [sub_resource type="Environment" id="Environment_1"]
 background_mode = 1
@@ -69,5 +70,7 @@ script = ExtResource("5")
 [node name="Hud" parent="." instance=ExtResource("9")]
 
 [node name="GameOverScreen" parent="." instance=ExtResource("99")]
+
+[node name="SettingsScreen" parent="." instance=ExtResource("11")]
 
 [node name="DebugOverlay" parent="." instance=ExtResource("10")]

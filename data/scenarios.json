@@ -413,5 +413,17 @@
                 "card": "fire_ember_whatever"
             }
         ]
+    },
+    "settings_open": {
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "freeze_aim": true,
+        "enemies_idle": true,
+        "disable_auto_attack": true,
+        "open_settings_at": 1.0,
+        "origin_offset": [-1.5, 0.0, -2.0],
+        "spacing": [1.6, -1.6],
+        "columns": 2,
+        "groups": [{"scene": "res://scenes/enemies/MeleeChaser.tscn", "count": 4}]
     }
 }

@@ -216,9 +216,9 @@ func test_main_ui_does_not_swallow_clicks() -> void:
 	var stack: Array[Node] = [main]
 	while not stack.is_empty():
 		var n: Node = stack.pop_back()
-		# Game Over is modal on purpose. The F3 DebugOverlay Panel is STOP (dev-only, hidden by
+		# Game Over and the pause screen (hidden until Esc) are modal on purpose. The F3 DebugOverlay Panel is STOP (dev-only, hidden by
 		# default); attacks poll Input so it cannot block them. Logged as non-blocking in the review.
-		if n is GameOverScreen or n is DebugOverlay:
+		if n is GameOverScreen or n is DebugOverlay or n is SettingsScreen:
 			continue
 		stack.append_array(n.get_children())
 		if n is Control:

@@ -16,5 +16,6 @@
     "dead_card_swap_3": [{ "type": "key", "keycode": "3", "ctrl": true }],
     "dead_card_swap_4": [{ "type": "key", "keycode": "4", "ctrl": true }],
     "dead_card_swap_5": [{ "type": "key", "keycode": "5", "ctrl": true }],
+    "pause": [{ "type": "key", "keycode": "Escape" }],
     "debug_overlay": [{ "type": "key", "keycode": "F3" }]
 }

@@ -67,6 +67,9 @@ static func setup(main: Node3D, scenario_id: String) -> Scenario:
 	return scenario
 
 
+var _settings_opened: bool = false
+
+
 func enemies() -> Array[Enemy]:
 	return _enemies
 
@@ -178,6 +181,11 @@ func _process(delta: float) -> void:
 	_process_stuns()
 	_process_casts()
 	_process_previews()
+	if not _settings_opened and _def.has("open_settings_at") and _elapsed >= float(_def["open_settings_at"]):
+		_settings_opened = true
+		_send_action(&"pause", true)
+		_send_action(&"pause", false)
+		print("Scenario: t=%.2f pause key (settings screen)" % _elapsed)
 	var late: Dictionary = _def.get("late_hit", {})
 	if late.is_empty() or _late_hit_done or _elapsed < float(late.get("at", 2.4)):
 		return

@@ -40,3 +40,5 @@ None blocking. Everything to actually look at and react to:
 - Tone check on the card flavor text (dry/sarcastic, per GDD §11) - too much, too little, right amount?
 - HP bars: while playing, do bars clash with the player or with telegraphs? This is the only part of the visual check a capture couldn't cover.
 - Want the small ux follow-ups (damage-number readability, more visible ghost) done before Milestone 3, or folded into later polish?
+
+Latest playtest report: `docs/playtests/2026-10-27-idle-smoke-check.md` (idle smoke check only; input untested, scripted-input tool proposed).

@@ -1,5 +1,5 @@
 # Director scratch file, not part of the repo content
-KICKOFF_MILESTONE_2.md
+prompts/*
 
 # Godot 4+ specific ignores
 .godot/

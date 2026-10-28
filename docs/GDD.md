@@ -1,6 +1,7 @@
 # LegendsCards (working title): Game Design Document (v0.2)
 
 Status: v0.2, rebuilt from the director's design interview (2026-10-26). Engine, perspective, and slice classes and elements are now decided.
+Updated 2026-10-27 with director decisions: reward offer format (section 9), density principle (section 1), light/heavy attack controls (section 3), and a parked-ideas section (section 15).
 Items marked **[OPEN]** are undecided. Items marked **[PROPOSED]** are suggestions awaiting approval.
 This file is the source of truth. If it is not here, it is not decided.
 
@@ -18,6 +19,9 @@ Passion project. Targets: playable by the director, fiancee, family, and friends
 3. **A unique blend of ARPG and deck-builder.** Real-time combat driven by typed card slots.
 
 Story and lore are the lowest priority. Light flavor only until everything else works.
+
+### Density principle **[DIRECTOR DECISION]**
+Fewer, more impactful enemies. Telegraphed attacks, readable danger, and dodge skill over chaotic hordes.
 
 ### Reference games
 | Game | What we take from it |
@@ -43,7 +47,8 @@ Story and lore are the lowest priority. Light flavor only until everything else 
 - **Perspective:** 3D with a fixed isometric camera. **[DECIDED]**
 - **Movement:** WASD.
 - **Aim:** mouse.
-- **Basic attack:** left click. Always available, unaffected by card slots. Also used automatically as a fallback when slot cards are on cooldown or unused.
+- **Light attack:** fires automatically on a short timer toward the aim direction, and also fires immediately on left click (which restarts the timer). Always available, unaffected by card slots. **[DIRECTOR DECISION]**
+- **Heavy attack:** right click. Manual by default, with its own longer cooldown, a visible wind-up, a wider arc, more damage and knockback. Whether either attack is automatic is a data setting. **[DIRECTOR DECISION]**
 - **Card slots:** keys 1 to 5.
 - **Dodge roll:** Space bar. **[OPEN]** how this relates to the Movement slot (see section 4).
 - **Controller:** late stretch goal, not in scope.
@@ -161,10 +166,10 @@ Rather than a full strength/weakness wheel, elements apply status effects (for e
 - From the second run on, the player can tune their starting deck and save it as a **loadout**.
 
 ### Card rewards during a run **[DECIDED, details open]**
-- After each battle won, the player is offered a card and can **accept or reject** it.
-- Each run allows only **3 rejects total**, so deck noise builds up over a run.
+- After each won room, the player is offered **3 cards** and either **picks one** or **rejects the whole offer**. **[DIRECTOR DECISION]**
+- A reject token is spent only when the whole offer is declined. Each run allows only **3 rejects total**, so deck noise builds up over a run.
+- **Offer size is a data value** (default 3) so boons, passives, and gear can later raise it or add rerolls.
 - Rewards and path choices can offer ways to **clean the deck** (remove or swap cards), which creates meaningful routing decisions.
-- **[OPEN]** Is each win's offer a single card, or a choice among several (pick 1 of 3, or reject all)? Does a reject cost a reject token only when declining the whole offer?
 - **[OPEN]** Whether shops and enemy drops also exist alongside post-battle rewards.
 - Subclass choices (class and element) occur at milestone points. **[OPEN]** exact timing.
 
@@ -221,7 +226,7 @@ The director provides top-level design direction only. Roles are defined as docu
 ---
 
 ## 14. Open Questions Summary
-1. Card offer format per win (single card vs choice of several) and whether shops or drops exist.
+1. Whether shops or drops exist alongside post-battle rewards. (Offer format resolved: pick 1 of 3 or reject all, see section 9.)
 2. Space dodge roll vs the Movement slot.
 3. Attack split into Single and AoE for the prototype?
 4. Elementalist: all elements, or pick one extra?
@@ -232,4 +237,22 @@ The director provides top-level design direction only. Roles are defined as docu
 9. Game name. Front-runner: **Chosen, Reluctantly** (also fits the "choose your cards carefully" mechanic).
 10. Final tone: how far to push the satire.
 
-Resolved: engine (Godot), perspective (3D isometric), slice classes and elements (Rogue, Wizard, Fire, Water).
+Resolved: engine (Godot), perspective (3D isometric), slice classes and elements (Rogue, Wizard, Fire, Water), card offer format (pick 1 of 3 or reject all).
+
+---
+
+## 15. Ideas and Parked Concepts
+
+Nothing in this section is scheduled. **DO NOT IMPLEMENT** anything here without a director decision moving it into the main sections.
+
+### Survivor-style level-up layer **[IDEA, not scheduled]**
+- Inside each room the player earns XP and levels up, choosing 1 of 3 power-up options (damage, cooldown reduction, movement speed, gold or XP gain, and so on).
+- Card rewards still come only at the end of a won room.
+- Enemy density stays moderate. This is not Vampire Survivors-style hordes (see the density principle in section 1).
+- **[PROPOSED]** level-ups come mainly from room completion and key kills, about one or two per room.
+- Power-ups are generic stat boosts and stay distinct from cards (abilities) and the passive tree.
+- The Milestone 3b card reward screen should be built so it can be reused for level-up choices.
+- Open questions:
+  1. How do power-ups differ from passive-tree nodes, so the two do not feel redundant?
+  2. How often is a level-up pause acceptable in real-time combat?
+  3. Can the 3-choice screen be shared with the card reward screen?

@@ -82,3 +82,18 @@ These were already resolved by explicit instruction in the Milestone 2 kickoff p
 - **Deferred idea, not a task:** show HP as a number or % (e.g. "34/100") on or near the bar. Not scheduled. Revisit if the director asks or readability feedback calls for it.
 - **Screenshot tooling approved and built** (f468959, 96ca1a1, 083a8cf; qa PASS on 083a8cf after an earlier FAIL for malformed args hanging and an unknown scenario exiting 0). Agents now verify visuals with `tools/capture_screenshot.ps1 -Scenario <name> -After "<seconds,...>"` instead of ad-hoc `--script` captures.
 - **New follow-ups from the capture review** (game-lead call, small and reversible): damage-number readability (~10 px at 720p) and an optional, config-only, more visible ghost segment, both for ux-designer. Tight-cluster bar stacking is noted but not scheduled; it only shows in very dense clusters.
+
+### 2026-10-27 — Post-milestone polish 1, Slice 0: director decisions recorded in the GDD
+- **Authorization:** the director explicitly approved every item in the "Post-milestone polish 1" request and said not to ask about them. game-lead made these GDD edits under that approval; no design was invented.
+- **GDD §9 reward offer:** pick 1 of 3 or reject the whole offer. A reject token is spent only on a whole-offer reject (the director's wording "rejects the whole offer" plus the 3-per-run cap; the GDD's own open question asked exactly this). Offer size is a data value (default 3) so boons, passives, and gear can raise it or add rerolls. Shops and drops stay `[OPEN]` (GDD §14 item 1 narrowed). Reward screen is Milestone 3b, not built now.
+- **GDD §1:** density principle added verbatim, tagged `[DIRECTOR DECISION]`.
+- **GDD §3:** "Basic attack: left click ... fallback" replaced by the light attack (auto on a timer + left click) and heavy attack (right click). The old "used automatically as a fallback" wording is superseded by the auto light attack.
+- **New GDD §15 "Ideas and Parked Concepts":** appended at the end instead of inserted mid-document, so existing references to "§13" and "§14 item 1" in STATE/ROADMAP/DECISIONS stay valid. Rejected alternative: insert before §14 and renumber (breaks cross-references silently).
+- **Roadmap:** Milestone 3 split into 3a (run structure, next after this pass) and 3b (reward screen, reusable for future 3-choice screens).
+
+### 2026-10-27 — Post-milestone polish 1: "0 / 30" HUD investigation (game-lead, read-only)
+- It is **player HP**: `src/ui/Hud.gd:30` formats `player.health` as `"%d / %d"` (max HP 30). `Player.gd` connects `Health.damaged` but never `Health.died`, so at 0 HP nothing happens and the player keeps moving and casting. That matches the director's report of "0 with an empty bar while alive and moving". Fixed in Slice 1 by handling death and labelling the value "HP".
+- `Health` already guards against double death (`_is_dead`, `died` emitted once), so Slice 1 consumes that signal rather than adding a second guard.
+
+### 2026-10-27 — Post-milestone polish 1: how roles are run
+- This main session has no in-process subagent tool, so game-lead runs each role one at a time via the Claude Code CLI (`claude -p --agent <role> "<brief>"`) from Bash, waiting for each to finish before starting the next. Roles still only do work in their own scope; game-lead does not write game code. Rejected alternative: game-lead writing code itself (outside its role scope per `.claude/agents/game-lead.md`).

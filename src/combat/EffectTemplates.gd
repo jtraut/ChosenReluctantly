@@ -77,9 +77,19 @@ static func _execute_aoe(params: Dictionary, context: EffectContext) -> void:
 		CollisionLayers.HURTBOX
 	)
 	context.last_hits = hits
+	_play_aoe_vfx(params, context)
 	var knockback_strength: float = params.get("knockback_strength", 0.0)
 	for hurtbox: Hurtbox in hits:
 		hurtbox.receive_damage(params["damage"], params["damage_type"], _knockback_from(context.caster.global_position, hurtbox.global_position, knockback_strength))
+
+
+## Ground disc through the shared EffectPool, sized exactly to the hit radius.
+## No-op when there is no pool (caster/spawn_parent not in a tree).
+static func _play_aoe_vfx(params: Dictionary, context: EffectContext) -> void:
+	var pool := EffectPool.for_world(context.spawn_parent)
+	if pool == null or not is_instance_valid(context.caster):
+		return
+	pool.play(EffectPool.Shape.DISC, context.caster.global_position, float(params["radius"]), Color(1.0, 1.0, 1.0), 0.35)
 
 
 ## Horizontal-only impulse pointing from `origin` toward `target_pos`, scaled

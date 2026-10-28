@@ -7,6 +7,8 @@ const PATH := "res://data/vfx.json"
 const DEFAULTS: Dictionary = {
 	"max_simultaneous": 48,
 	"hurtbox_reach_radius": 0.45,
+	"heal_color": "#7dff9a",
+	"buff_color": "#ffd24a",
 }
 
 static var _cache: Dictionary = {}
@@ -26,6 +28,9 @@ static func validate(config: Dictionary) -> Array[String]:
 		errors.append("'hurtbox_reach_radius' must be a number")
 	elif float(reach) < 0.0 or float(reach) > 5.0:
 		errors.append("'hurtbox_reach_radius' must be between 0 and 5")
+	for key: String in ["heal_color", "buff_color"]:
+		if config.has(key) and not (typeof(config[key]) == TYPE_STRING and String(config[key]).is_valid_html_color()):
+			errors.append("'%s' must be a hex color like #7dff9a" % key)
 	return errors
 
 
@@ -58,3 +63,12 @@ static func hurtbox_reach_radius() -> float:
 
 static func max_simultaneous() -> int:
 	return int(get_config()["max_simultaneous"])
+
+
+## Template colors that no element owns (heal, buff). From data/vfx.json.
+static func heal_color() -> Color:
+	return Color.html(String(get_config()["heal_color"]))
+
+
+static func buff_color() -> Color:
+	return Color.html(String(get_config()["buff_color"]))

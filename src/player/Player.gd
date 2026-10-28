@@ -52,6 +52,11 @@ var _forced_move_direction: Vector3 = Vector3.FORWARD
 var _forced_move_speed: float = 0.0
 var _forced_move_time_remaining: float = 0.0
 var _forced_move_invulnerable: bool = false
+## Element look for the dash card's trail and end puff; empty (dodge roll) means no trail.
+var _forced_move_look: Dictionary = {}
+var _forced_move_trail_timer: float = 0.0
+
+const DASH_TRAIL_INTERVAL := 0.04
 
 
 func _ready() -> void:
@@ -115,6 +120,7 @@ func _on_died() -> void:
 	_dead = true
 	_forced_move_time_remaining = 0.0
 	_forced_move_invulnerable = false
+	_forced_move_look = {}
 	attacks.cancel_all()
 	if hurtbox != null:
 		hurtbox.set_invulnerable(true)
@@ -181,9 +187,11 @@ func _handle_dodge_input() -> void:
 ## directly along `direction` at `speed`. Used by the dodge roll, and by the
 ## "dash" card effect template so Movement-slot cards can reuse the same
 ## motion/invulnerability machinery instead of duplicating it.
-func start_forced_move(direction: Vector3, speed: float, duration: float, invulnerable: bool = false) -> void:
+func start_forced_move(direction: Vector3, speed: float, duration: float, invulnerable: bool = false, vfx_look: Dictionary = {}) -> void:
 	if _dead:
 		return
+	_forced_move_look = vfx_look
+	_forced_move_trail_timer = 0.0
 	var flat_direction := direction
 	flat_direction.y = 0.0
 	if flat_direction.length_squared() < 0.0001:
@@ -201,8 +209,17 @@ func _apply_forced_move(delta: float) -> void:
 	velocity.z = _forced_move_direction.z * _forced_move_speed
 	velocity.y = 0.0
 	_forced_move_time_remaining -= delta
+	if not _forced_move_look.is_empty():
+		_forced_move_trail_timer -= delta
+		if _forced_move_trail_timer <= 0.0:
+			_forced_move_trail_timer = DASH_TRAIL_INTERVAL
+			TemplateVfx.dash_trail(EffectPool.for_world(get_parent()), global_position, _forced_move_look)
 	if _forced_move_time_remaining <= 0.0:
 		_forced_move_time_remaining = 0.0
+		if not _forced_move_look.is_empty():
+			# Where the motion actually stopped (it may have been blocked short of the distance).
+			TemplateVfx.dash_end(EffectPool.for_world(get_parent()), global_position, _forced_move_look)
+			_forced_move_look = {}
 		if _forced_move_invulnerable and hurtbox != null:
 			hurtbox.set_invulnerable(false)
 		_forced_move_invulnerable = false

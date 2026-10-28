@@ -15,12 +15,14 @@ extends Node
 
 const NODE_NAME := "EffectPool"
 const GROUND_OFFSET := 0.05
+const RING_INNER := 0.8
 
-enum Shape { DISC, WEDGE, SPHERE }
+enum Shape { DISC, WEDGE, SPHERE, RING }
 
 static var _disc_mesh: CylinderMesh = null
 static var _sphere_mesh: SphereMesh = null
 static var _wedge_meshes: Dictionary = {}
+static var _ring_mesh: ArrayMesh = null
 
 var max_effects: int = 48
 
@@ -65,6 +67,29 @@ static func sphere_mesh() -> SphereMesh:
 	return _sphere_mesh
 
 
+## Flat annulus: outer radius 1, inner radius RING_INNER (scale it by the size).
+static func ring_mesh() -> ArrayMesh:
+	if _ring_mesh == null:
+		var segments: int = 40
+		var vertices := PackedVector3Array()
+		var normals := PackedVector3Array()
+		for i in range(segments):
+			var a0: float = TAU * float(i) / float(segments)
+			var a1: float = TAU * float(i + 1) / float(segments)
+			var o0 := Vector3(sin(a0), 0.0, -cos(a0))
+			var o1 := Vector3(sin(a1), 0.0, -cos(a1))
+			vertices.append_array([o0 * RING_INNER, o0, o1, o0 * RING_INNER, o1, o1 * RING_INNER])
+			for n in range(6):
+				normals.append(Vector3.UP)
+		var arrays: Array = []
+		arrays.resize(Mesh.ARRAY_MAX)
+		arrays[Mesh.ARRAY_VERTEX] = vertices
+		arrays[Mesh.ARRAY_NORMAL] = normals
+		_ring_mesh = ArrayMesh.new()
+		_ring_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	return _ring_mesh
+
+
 ## Unit-range fan (scale it by the range), cached per half angle (0.1 degree).
 static func wedge_mesh(half_angle_degrees: float) -> ArrayMesh:
 	var key: int = roundi(half_angle_degrees * 10.0)
@@ -105,9 +130,12 @@ func play(shape: Shape, position: Vector3, size: float, color: Color, duration: 
 		Shape.SPHERE:
 			effect.mesh = sphere_mesh()
 			effect.is_flat = false
+		Shape.RING:
+			effect.mesh = ring_mesh()
+			effect.is_flat = true
 	var flat: bool = shape != Shape.SPHERE
-	effect.position = Vector3(position.x, position.y + (GROUND_OFFSET if flat else 0.0), position.z)
-	effect.rotation = Vector3(0.0, yaw, 0.0)
+	effect.origin = Vector3(position.x, position.y + (GROUND_OFFSET if flat else 0.0), position.z)
+	effect.yaw_from = yaw
 	effect.base_size = size
 	effect.color = color
 	effect.duration = maxf(duration, 0.01)
@@ -115,6 +143,7 @@ func play(shape: Shape, position: Vector3, size: float, color: Color, duration: 
 	effect.scale_to = scale_to
 	effect.alpha_from = alpha_from
 	effect.alpha_to = alpha_to
+	effect.generation += 1
 	effect.begin()
 	_active.append(effect)
 	return effect
@@ -128,17 +157,45 @@ func _acquire() -> PooledEffect:
 		add_child(fresh)
 		_created += 1
 		return fresh
-	# At the cap: recycle the oldest running effect (largest age).
+	# At the cap: recycle the oldest running effect (largest age). Persistent
+	# effects (Burn flames) are only taken when nothing else is running, or a
+	# long-lived flame would always be the "oldest" and every burst would steal it.
 	if _active.is_empty():
 		return null
-	var oldest_index: int = 0
-	for i in range(1, _active.size()):
-		if _active[i].age > _active[oldest_index].age:
+	var oldest_index: int = -1
+	for i in range(_active.size()):
+		if _active[i].persistent:
+			continue
+		if oldest_index < 0 or _active[i].age > _active[oldest_index].age:
 			oldest_index = i
+	if oldest_index < 0:
+		oldest_index = 0
+		for i in range(1, _active.size()):
+			if _active[i].age > _active[oldest_index].age:
+				oldest_index = i
 	var oldest: PooledEffect = _active[oldest_index]
 	_active.remove_at(oldest_index)
 	oldest.finish()
 	return oldest
+
+
+## True while `effect` is still running the same play() it was handed out for.
+func is_running(effect: PooledEffect, generation: int) -> bool:
+	return effect != null and is_instance_valid(effect) and effect.active and effect.generation == generation
+
+
+## Ends a held effect early. A stale handle (the node was recycled for another
+## effect, generation differs) is ignored.
+func stop(effect: PooledEffect, generation: int) -> void:
+	if not is_running(effect, generation):
+		return
+	var index: int = _active.find(effect)
+	if index < 0:
+		return
+	effect.finish()
+	_free.append(effect)
+	_active[index] = _active[_active.size() - 1]
+	_active.pop_back()
 
 
 func _process(delta: float) -> void:

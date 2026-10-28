@@ -1,4 +1,6 @@
 {
-    "max_simultaneous": 48,
-    "hurtbox_reach_radius": 0.45
+    "max_simultaneous": 64,
+    "hurtbox_reach_radius": 0.45,
+    "heal_color": "#7dff9a",
+    "buff_color": "#ffd24a"
 }

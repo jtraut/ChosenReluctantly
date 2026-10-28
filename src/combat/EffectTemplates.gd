@@ -78,8 +78,8 @@ static func _play_cone_vfx(params: Dictionary, context: EffectContext, forward: 
 		return
 	var color: Color = ElementVisuals.color_for_damage_type(String(params.get("damage_type", "physical")))
 	var yaw: float = atan2(-forward.x, -forward.z)
-	pool.play(EffectPool.Shape.WEDGE, context.caster.global_position, VfxSizing.cone_reach(float(params["range"])), color,
-			0.25, 1.0, 1.0, 0.55, 0.0, yaw, float(params["half_angle_degrees"]))
+	TemplateVfx.cone_sweep(pool, context.caster.global_position, yaw, VfxSizing.cone_reach(float(params["range"])),
+			float(params["half_angle_degrees"]), color)
 
 
 static func _execute_aoe(params: Dictionary, context: EffectContext) -> void:
@@ -105,11 +105,9 @@ static func _play_aoe_vfx(params: Dictionary, context: EffectContext) -> void:
 	if pool == null or not is_instance_valid(context.caster):
 		return
 	var look := ElementVisuals.visual_for_damage_type(String(params.get("damage_type", "physical")))
-	var color: Color = look["color"]
-	var origin: Vector3 = context.caster.global_position
-	pool.play(EffectPool.Shape.DISC, origin, VfxSizing.aoe_reach(float(params["radius"])), color, 0.35)
-	# Cosmetic burst: the element "scale" resizes this, never the hit-area disc above.
-	pool.play(EffectPool.Shape.SPHERE, origin + Vector3(0.0, 0.5, 0.0), 0.4 * float(look["scale"]), color, 0.25, 0.6, 1.6, 0.8, 0.0)
+	# The disc and ring are the hit area (VfxSizing); the element "scale" only
+	# resizes the cosmetic flash and burst inside TemplateVfx.aoe.
+	TemplateVfx.aoe(pool, context.caster.global_position, VfxSizing.aoe_reach(float(params["radius"])), look)
 
 
 ## Horizontal-only impulse pointing from `origin` toward `target_pos`, scaled
@@ -132,10 +130,23 @@ static func _execute_projectile(params: Dictionary, context: EffectContext) -> v
 	var forward: Vector3 = -context.caster.global_transform.basis.z
 	var origin: Vector3 = context.caster.global_position + forward * 0.6
 	instance.set_hit_radius(params["hit_radius"])
+	instance.set_look(ElementVisuals.visual_for_damage_type(String(params["damage_type"])))
 	instance.knockback_strength = params.get("knockback_strength", 0.0)
 	instance.launch(origin, forward, params["damage"], params["damage_type"], params["speed"], params["max_range"], context.caster_team)
 	# Async flight: this effect's damage lands later, so it never populates last_hits.
 	context.last_hits = []
+
+
+## The effect pool, or null when the caster is not in the tree (orphan-node unit
+## tests) so visuals are skipped instead of erroring.
+static func _vfx_pool(context: EffectContext) -> EffectPool:
+	if context.caster == null or not is_instance_valid(context.caster) or not context.caster.is_inside_tree():
+		return null
+	return EffectPool.for_world(context.spawn_parent)
+
+
+static func _caster_pos(context: EffectContext) -> Vector3:
+	return context.caster.global_position if context.caster.is_inside_tree() else Vector3.ZERO
 
 
 static func _execute_dash(params: Dictionary, context: EffectContext) -> void:
@@ -145,14 +156,19 @@ static func _execute_dash(params: Dictionary, context: EffectContext) -> void:
 	var speed: float = params["speed"]
 	var distance: float = params["distance"]
 	var duration: float = distance / speed if speed > 0.0 else 0.0
-	context.caster.start_forced_move(forward, speed, duration, params.get("invulnerable", false))
+	var look := ElementVisuals.visual_for_damage_type(String(params.get("damage_type", "physical")))
+	TemplateVfx.dash_start(_vfx_pool(context), _caster_pos(context), look)
+	context.caster.start_forced_move(forward, speed, duration, params.get("invulnerable", false), look)
 
 
 static func _execute_heal(params: Dictionary, context: EffectContext) -> void:
 	if not context.caster.has_node("Health"):
 		return
 	var health: Health = context.caster.get_node("Health")
+	var was_hurt: bool = health.get_current_health() < health.get_max_health()
 	health.heal(params["amount"])
+	if was_hurt and not health.is_dead():
+		TemplateVfx.heal(_vfx_pool(context), _caster_pos(context))
 
 
 static func _execute_apply_status(params: Dictionary, context: EffectContext) -> void:
@@ -178,6 +194,7 @@ static func _execute_buff(params: Dictionary, context: EffectContext) -> void:
 	var modifier_type: String = params["modifier_type"]
 	var value: float = params["value"]
 	var duration: float = params["duration"]
+	TemplateVfx.buff(_vfx_pool(context), _caster_pos(context))
 	var modifier_id := "buff_%d" % Time.get_ticks_usec()
 	stat_modifiers.add_modifier(stat, modifier_id, modifier_type, value)
 	if context.caster.is_inside_tree():

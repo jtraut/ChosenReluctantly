@@ -13,7 +13,13 @@ signal status_expired(status_id: String)
 @export var health_path: NodePath
 
 var health: Health = null
+## Where visuals are drawn. Null means "the parent's parent" (the arena the
+## owner stands in), so no scene-root lookup is needed.
+var vfx_world: Node = null
 var _active: Dictionary = {}
+## status_id -> PooledEffect and the generation it was handed out for.
+var _flames: Dictionary = {}
+var _flame_generations: Dictionary = {}
 
 
 class ActiveStatus:
@@ -38,6 +44,7 @@ class ActiveStatus:
 func _ready() -> void:
 	if health_path != NodePath():
 		health = get_node(health_path) as Health
+	tree_exiting.connect(_stop_all_flames)
 
 
 ## Applying the same status_id again refreshes its duration (does not stack
@@ -47,6 +54,9 @@ func apply_status(status_id: String, status_def: Dictionary, duration: float) ->
 	_active[status_id] = ActiveStatus.new(status_id, status_def, duration)
 	if not was_active:
 		status_applied.emit(status_id)
+	# A refresh emits nothing, so check the flame is still alive (it could have
+	# been recycled) and restart it if not.
+	_ensure_flame(status_id, status_def)
 
 
 func has_status(status_id: String) -> bool:
@@ -72,9 +82,52 @@ func _process(delta: float) -> void:
 			expired.append(status_id)
 	for status_id: String in expired:
 		_active.erase(status_id)
+		_stop_flame(status_id)
 		status_expired.emit(status_id)
 
 
 func _tick(active: ActiveStatus) -> void:
 	if active.effect_type == "damage_over_time" and health != null:
 		health.take_damage(active.damage_per_tick, active.damage_type)
+
+
+func _vfx_pool() -> EffectPool:
+	var world: Node = vfx_world
+	if world == null and get_parent() != null:
+		world = get_parent().get_parent()
+	return EffectPool.for_world(world)
+
+
+## Persistent flame for statuses whose data has "visual": {"kind": "flame"}. It
+## follows the owner by instance id, so it also ends by itself if the owner is
+## freed (an enemy dying never emits status_expired).
+func _ensure_flame(status_id: String, status_def: Dictionary) -> void:
+	var visual: Variant = status_def.get("visual")
+	if typeof(visual) != TYPE_DICTIONARY or String((visual as Dictionary).get("kind", "")) != "flame":
+		return
+	var pool := _vfx_pool()
+	var owner_node := get_parent() as Node3D
+	if pool == null or owner_node == null or not owner_node.is_inside_tree():
+		return
+	if _flames.has(status_id) and pool.is_running(_flames[status_id], int(_flame_generations[status_id])):
+		return
+	var look := ElementVisuals.visual_for_damage_type(String(status_def.get("damage_type", "physical")))
+	var effect: PooledEffect = TemplateVfx.status_flame(pool, owner_node, look, float((visual as Dictionary).get("size", 0.3)))
+	if effect != null:
+		_flames[status_id] = effect
+		_flame_generations[status_id] = effect.generation
+
+
+func _stop_flame(status_id: String) -> void:
+	if not _flames.has(status_id):
+		return
+	var pool := _vfx_pool()
+	if pool != null:
+		pool.stop(_flames[status_id], int(_flame_generations[status_id]))
+	_flames.erase(status_id)
+	_flame_generations.erase(status_id)
+
+
+func _stop_all_flames() -> void:
+	for status_id: String in _flames.keys():
+		_stop_flame(status_id)

@@ -88,7 +88,7 @@ func test_aoe_template_plays_through_pool() -> void:
 	var context := EffectContext.new(caster, holder, "player")
 	EffectTemplates._play_aoe_vfx({"radius": 2.5}, context)
 	var pool := EffectPool.for_world(holder)
-	assert_int(pool.active_count()).is_equal(2)  # ground disc + cosmetic burst
+	assert_int(pool.active_count()).is_equal(4)  # disc + charge flash + burst + ring
 
 
 func test_vfx_config_validation() -> void:

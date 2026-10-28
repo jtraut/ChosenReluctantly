@@ -28,7 +28,7 @@ func test_cone_visual_size_equals_hit_size() -> void:
 	var pool: EffectPool = parts[0]
 	var context: EffectContext = parts[1]
 	EffectTemplates._play_cone_vfx(CONE_PARAMS, context, Vector3.FORWARD)
-	assert_int(pool.active_count()).is_equal(1)
+	assert_int(pool.active_count()).is_equal(2)  # true-shape wedge + sweeping blade
 	var wedge: PooledEffect = pool.get_child(0)
 	var aabb := wedge.mesh.get_aabb()
 	var reach: float = -aabb.position.z * wedge.scale.z

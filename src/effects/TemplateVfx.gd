@@ -122,12 +122,21 @@ static func buff(pool: EffectPool, position: Vector3) -> void:
 
 # --- status ------------------------------------------------------------------
 
+## Height of the top of `target`'s body (its "BodyMesh" child) so a flame sits on
+## the head and shows from the iso camera instead of hiding inside a tall body.
+static func body_top(target: Node3D) -> float:
+	var body := target.get_node_or_null("BodyMesh") as MeshInstance3D
+	if body == null or body.mesh == null:
+		return FLAME_HEIGHT
+	return body.position.y + body.mesh.get_aabb().end.y * body.scale.y
+
+
 ## A persistent flame that follows `target` until EffectPool.stop() or the
 ## target is gone. Returns the effect (hold its generation to stop it later).
-static func status_flame(pool: EffectPool, target: Node3D, look: Dictionary, size: float) -> PooledEffect:
+static func status_flame(pool: EffectPool, target: Node3D, look: Dictionary, size: float, height: float = FLAME_HEIGHT) -> PooledEffect:
 	if pool == null or target == null:
 		return null
 	var effect: PooledEffect = pool.play(EffectPool.Shape.SPHERE, target.global_position, size * float(look["scale"]), look["color"], 1.0, 1.0, 1.0, 0.8, 0.8)
 	if effect == null:
 		return null
-	return effect.held().stretched(1.6).pulsing(0.18, 6.0).following(target, Vector3(0.0, FLAME_HEIGHT, 0.0))
+	return effect.held().stretched(1.6).pulsing(0.18, 6.0).following(target, Vector3(0.0, height, 0.0))

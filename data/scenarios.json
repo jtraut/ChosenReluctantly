@@ -96,24 +96,26 @@
         "player_start_damage": 60,
         "freeze_aim": true,
         "enemy_max_health": 2000,
+        "enemies_idle": true,
+        "disable_auto_attack": true,
         "origin_offset": [
-            -2.25,
+            -0.7,
             0.0,
-            -6.0
+            -1.5
         ],
         "spacing": [
-            1.5,
-            1.7
+            1.4,
+            -1.5
         ],
-        "columns": 4,
+        "columns": 2,
         "groups": [
             {
-                "scene": "res://scenes/enemies/FireResistantGolem.tscn",
-                "count": 4
+                "scene": "res://scenes/enemies/MeleeChaser.tscn",
+                "count": 2
             },
             {
-                "scene": "res://scenes/enemies/MeleeChaser.tscn",
-                "count": 4
+                "scene": "res://scenes/enemies/FireResistantGolem.tscn",
+                "count": 2
             }
         ],
         "casts": [
@@ -151,6 +153,11 @@
                 "at": 6.6,
                 "slot": "movement",
                 "card": "rogue_ugh_fine_moving"
+            },
+            {
+                "at": 7.6,
+                "slot": "attack_single",
+                "card": "fire_flaming_nonsense"
             }
         ]
     }

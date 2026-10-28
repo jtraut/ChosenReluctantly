@@ -84,9 +84,15 @@ func _build() -> void:
 			_main.add_child(enemy)
 			enemy.global_position = player.global_position + origin + Vector3(
 				float(index % columns) * spacing.x, 0.0, float(index / columns) * spacing.y)
-			enemy.target = player
+			# Capture-only: idle enemies keep their spread positions for readable shots.
+			enemy.target = null if bool(_def.get("enemies_idle", false)) else player
 			_enemies.append(enemy)
 			index += 1
+
+	# Capture-only: no automatic light attack, so it neither knocks the enemies out
+	# of the cards' reach nor draws its own flash over the card visuals.
+	if bool(_def.get("disable_auto_attack", false)):
+		player.attacks.get_def(&"light")["auto"] = false
 
 	# Capture-only: tough enemies so the player's auto attack does not clear the stage.
 	if _def.has("enemy_max_health"):

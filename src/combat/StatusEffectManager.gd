@@ -112,7 +112,7 @@ func _ensure_flame(status_id: String, status_def: Dictionary) -> void:
 	if _flames.has(status_id) and pool.is_running(_flames[status_id], int(_flame_generations[status_id])):
 		return
 	var look := ElementVisuals.visual_for_damage_type(String(status_def.get("damage_type", "physical")))
-	var effect: PooledEffect = TemplateVfx.status_flame(pool, owner_node, look, float((visual as Dictionary).get("size", 0.3)))
+	var effect: PooledEffect = TemplateVfx.status_flame(pool, owner_node, look, float((visual as Dictionary).get("size", 0.3)), TemplateVfx.body_top(owner_node))
 	if effect != null:
 		_flames[status_id] = effect
 		_flame_generations[status_id] = effect.generation

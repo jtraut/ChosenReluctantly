@@ -24,6 +24,7 @@ A plain-language history of the project for the director, grouped by date (from 
 - **More tests.** qa added real-scene tests for Slice 4 and 3b, and the bot simulator is now seeded so its failures can be reproduced. (6f82a4b, 8cc7b92, 552ef04)
 
 ### Changed
+- **Balance: golem wind-up** 0.45 s -> 0.7 s (director item D6, default A applied). Its attack cycle goes 2.25 s -> 2.5 s and its damage per second 4.0 -> 3.6. Hit damage is unchanged at 9. (acc26a4)
 - **Damage numbers are bigger:** about 12 px -> 20 px at 720p, with an outline. Quick hits on the same spot merge into one number, and at most 16 show at once. **IMMUNE** now draws above HP bars. The cone, heal, dash and projectile trails read more strongly, and their timings are now data. A ring shows when a stun cancels an enemy's wind-up. Enemy HP bar visibility is now one data setting with four modes (still "always"; director call D7). (058d3dd, 3ae40b7, 39c03e6, b50aa0c, bff7581)
 - **Enemy HP bars** are slightly smaller (1.4 x 0.19 -> 1.2 x 0.16) and hidden behind models in front of them. Before, they drew over everything. (caab2c0, 8e05395)
 - **Golem shape.** Its hit area went from a box to a capsule (radius 0.45). Ground markers now show its true hit area; before, they understated it by about 20-30 cm. Its body went from a box to a capsule, and its movement collision is unchanged. (caab2c0)
@@ -42,6 +43,16 @@ A plain-language history of the project for the director, grouped by date (from 
 - **Balance (side effect of a bug fix): projectile hit size** now really reads its data. Flaming Nonsense hits at 0.3 (was 0.25), and ranged enemy shots at 0.3 (was 0.25). (1d87756)
 
 ### Fixed
+- **The old bot-sim tool had been silently broken since 5b.** It stopped compiling but still printed "OK". It is fixed, and now fails loudly on any error. (c13a43a, e100f09)
+- **Slice 5 cleanups:**
+  - Enemies can no longer spawn right next to a player standing in a corner (min 9 m).
+  - A fresh killing-blow number is never the one dropped when 16 are showing.
+  - Every HP bar setting is now checked on load.
+  - The arena size check matches the real walls.
+  - Less per-frame waste.
+  - Broken characters in the README commands are fixed.
+
+  (8634b2b, 24480cc, 6115702, 20483c7, c3c67f6, 1b6e725, c9925fb, 26c0c3a)
 - **Burn did less damage than intended.** Recasting a Burn card restarted Burn's tick timer, so Burn often ticked only once. A refresh now keeps the timer, and the card rule only credits Burn damage that really lands. (9d91d7a)
 - **Cleanups from the Slice 3b review:**
   - The heavy wind-up now sets its state before telling the rest of the game it started.

@@ -2,6 +2,8 @@
 
 A 3D isometric action RPG where your skills are cards: real-time combat driven by typed card slots, each with its own shuffled mini-deck. Built around deep class/element build combinations and roguelite runs with persistent between-run progression. Currently a placeholder-visuals combat prototype — see `docs/GDD.md` for full design and `docs/ROADMAP.md` for current status.
 
+Project history in plain language, newest first: `docs/CHANGELOG.md`.
+
 ## Running the project
 Requires [Godot 4.7+](https://godotengine.org/download). Open `project.godot` in the Godot editor and press Play, or run headless/windowed from the command line:
 

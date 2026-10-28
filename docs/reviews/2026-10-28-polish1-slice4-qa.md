@@ -85,3 +85,18 @@ Cap 64, oldest non-persistent effect is recycled, persistent only when nothing e
 - Windowed visuals, readability, feel, a real mouse, resolutions other than the capture sizes (headless only; playtester and director).
 - The earlier harness noise was not re-checked on commits before Slice 4 (cause is clear from the script arguments).
 - No mutation testing of the new tests against deliberately broken game code (I do not edit game source).
+
+## Re-check 2026-10-28 (targeted: S4-1, S4-2, S4-3)
+
+Commits checked: 5807412, ad3db20, b5180a8. Suite after adding my pins: 247/247 pass, exit 0 (run via `tools\run_tests.ps1`). `tools\run_reload_cycle.ps1 -Cycles 5`: RELOAD CYCLE OK (orphans 0, time_scale 1.0, no engine ERROR/WARNING lines).
+
+- **S4-1: RESOLVED.** `lateral_reach(0.3) = 0.60`; the existing physical pin now hits at 0.55 and misses at 0.65 (green). Added `tests/unit/slice4_recheck_test.gd`: real-physics pins for cone (range 1.8, drawn 2.205: hit at -0.05, miss at +0.05) and aoe (radius 2.5, drawn 2.9155: same). Both green. `git diff` of 5807412 touches no launch height and no hit query (only `VfxSizing`, `VfxConfig`, data/vfx.json cap, tests). Doc nit: DECISIONS says the aoe draws 2.906; the real value is 2.9155 (sqrt(2.95^2-0.45^2)). Code is right, the log number is a typo.
+- **Known limit, measured:** one global dy = 0.45 (MeleeChaser). RangedShooter (r 0.4, low centre 0.4): the lane for a 0.3 shot is drawn 0.600 vs real 0.574, i.e. 2.6 cm too wide (cone range 1.8: about 3 cm). Negligible. **FireResistantGolem is not a capsule: it is a 1.2 x 1.9 x 1.2 box whose bottom is at the floor**, so a floor-level query touches the box face directly. Real reach is about q + 0.6 (face), so the 0.3 shot lane is drawn 0.60 vs real about 0.90 (30 cm too narrow), cone range 1.8 drawn 2.205 vs real about 2.4 (about 20 cm too narrow), aoe 2.5 drawn 2.9155 vs real about 3.1. This UNDERSTATES the hit area against golems (safer direction than before, but still a visual that does not match the hit). Not blocking; logged as new finding N1 below.
+- **S4-2: RESOLVED.** `data/enemies.json` = 0.3 and 60.0 (unchanged); `EnemyConfig.validate` rejects missing/non-number/out-of-range values and falls back to DEFAULTS with push_error; `Enemy.gd` reads `EnemyConfig.projectile_hit_radius()` and `melee_half_angle_degrees()`; `enemy_config_test.gd` and the 0.3 pin test green.
+- **S4-3: RESOLVED.** `StatusDatabase.validate_entry/validate_table` check the `visual` block (kind in {flame}, size number in (0,5], color hex). Bad fixture (6 entries incl. `kind: "flam"`, string size, zero size, bad color) all fail with entry-prefixed messages; bad entries are treated as missing (fail loud, not silent defaults). Shipped `burn` validates and the Burn flame tests in `slice4_qa_test.gd` still pass.
+
+New findings (non-blocking):
+- N1: ground-shape reach understates the hit area against the Golem box hurtbox (above). Suggest a per-enemy or per-shape-kind dy, or accept and note in the Slice 5 balance pass.
+- N2: DECISIONS aoe example number typo (2.906 vs 2.9155).
+
+**Overall Slice 4 verdict: PASS.** All three should-fix items RESOLVED.

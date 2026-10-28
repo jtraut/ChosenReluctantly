@@ -77,6 +77,8 @@ const CAST_QUEUE_LIMIT := 8
 var _telegraph_pool: EffectPool = null
 var _telegraph_generations: Dictionary = {}
 var _dodge_cooldown_remaining: float = 0.0
+## Dodge presses are ignored until this physics frame (set when the game pauses or resumes).
+var _dodge_blocked_until_frame: int = -1
 var _base_body_color: Color = Color.WHITE
 var _knockback_velocity: Vector3 = Vector3.ZERO
 var _dead: bool = false
@@ -92,6 +94,8 @@ var _forced_move_invulnerable: bool = false
 var _forced_move_look: Dictionary = {}
 var _forced_move_trail_timer: float = 0.0
 
+## Physics ticks after a pause or resume in which a dodge press is ignored (S6-5).
+const DODGE_BLOCK_TICKS_AFTER_PAUSE := 2
 const DASH_TRAIL_INTERVAL := 0.04
 
 
@@ -291,6 +295,8 @@ func _tick_cooldowns(delta: float) -> void:
 
 func _handle_dodge_input() -> void:
 	if _forced_move_time_remaining > 0.0 or _dodge_cooldown_remaining > 0.0:
+		return
+	if Engine.get_physics_frames() <= _dodge_blocked_until_frame:
 		return
 	if not Input.is_action_just_pressed("dodge"):
 		return
@@ -595,6 +601,9 @@ func cancel_cast_preview() -> void:
 ## _unhandled_input), so the preview would otherwise stick. A fresh press is needed after resume.
 func _on_pause_changed(_is_paused: bool) -> void:
 	cancel_cast_preview()
+	# Dodge polls Input, so Space pressed on a focused settings button (ui_accept closes the
+	# screen) would roll on the first tick after resume. Ignore dodge for the next ticks.
+	_dodge_blocked_until_frame = Engine.get_physics_frames() + DODGE_BLOCK_TICKS_AFTER_PAUSE
 
 
 func _on_setting_changed(key: String, _value: Variant) -> void:

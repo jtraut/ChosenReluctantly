@@ -363,10 +363,9 @@ func test_s6_2_dash_ends_where_the_preview_says() -> void:
 	assert_float(result[1]).override_failure_message("came to rest %.2f m along the dash, preview path is %.2f m" % [result[1], result[2]]).is_equal_approx(result[2], 0.5)
 
 
-func test_pin_space_on_the_focused_resume_button_also_starts_a_dodge() -> void:
-	# PIN (finding S6-5, non-blocking): Resume has focus and Space is both ui_accept and dodge. The
-	# press closes the screen, and the dodge poll (Input.is_action_just_pressed) still sees the same
-	# press on the first tick after resume, so the player rolls. Flip when fixed.
+func test_space_on_the_focused_resume_button_closes_the_screen_and_does_not_dodge() -> void:
+	# Was a PIN for S6-5: Resume has focus and Space is both ui_accept and dodge; the press closed the
+	# screen and the dodge poll still saw the same press on the first tick after resume.
 	var main := _spawn()
 	await _frames(2)
 	var player := main.player
@@ -377,7 +376,12 @@ func test_pin_space_on_the_focused_resume_button_also_starts_a_dodge() -> void:
 	await _frames(4)
 	assert_bool(_screen(main).is_open()).is_false()
 	await _frames(3)
-	assert_bool(player._forced_move_time_remaining > 0.0 or player._dodge_cooldown_remaining > 0.0).override_failure_message("PIN: Space on Resume no longer starts a dodge; the finding may be fixed").is_true()
+	assert_bool(player._forced_move_time_remaining > 0.0 or player._dodge_cooldown_remaining > 0.0).override_failure_message("Space on Resume started a dodge").is_false()
+	# A later deliberate press does dodge.
+	_key(KEY_SPACE, true)
+	await _frames(3)
+	_key(KEY_SPACE, false)
+	assert_bool(player._forced_move_time_remaining > 0.0 or player._dodge_cooldown_remaining > 0.0).override_failure_message("a fresh Space press after closing did not dodge").is_true()
 
 
 func test_dodge_ends_at_its_drive_distance_and_does_not_coast() -> void:

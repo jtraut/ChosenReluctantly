@@ -1,9 +1,8 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://src/main/Main.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/player/Player.tscn" id="2"]
 [ext_resource type="PackedScene" path="res://scenes/camera/CameraRig.tscn" id="3"]
-[ext_resource type="PackedScene" path="res://scenes/debug/TrainingDummy.tscn" id="4"]
 [ext_resource type="Script" path="res://src/enemies/EnemySpawner.gd" id="5"]
 [ext_resource type="PackedScene" path="res://scenes/ui/Hud.tscn" id="9"]
 [ext_resource type="PackedScene" path="res://scenes/ui/GameOverScreen.tscn" id="99"]
@@ -63,9 +62,6 @@ shape = SubResource("BoxShape3D_wall_ew")
 [node name="Player" parent="." instance=ExtResource("2")]
 
 [node name="CameraRig" parent="." instance=ExtResource("3")]
-
-[node name="TrainingDummy" parent="." instance=ExtResource("4")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3)
 
 [node name="EnemySpawner" type="Node3D" parent="."]
 script = ExtResource("5")

@@ -30,3 +30,12 @@ func test_main_scene_has_visible_world() -> void:
 	assert_bool(camera.is_position_in_frustum(main.player.global_position)).is_true()
 
 	assert_array(SceneSelfCheck.find_problems(main)).is_empty()
+
+
+## 5d: the normal run has no TrainingDummy (a Milestone 2 test aid that reads as an enemy). The
+## scene stays in scenes/debug for tests and scenarios that want it.
+func test_main_scene_has_no_training_dummy() -> void:
+	var main := _spawn_main()
+	assert_object(main.get_node_or_null("TrainingDummy")).is_null()
+	assert_array(main.find_children("*", "", true, false).filter(func(n: Node) -> bool: return n is TrainingDummy)).is_empty()
+	assert_bool(ResourceLoader.exists("res://scenes/debug/TrainingDummy.tscn")).is_true()

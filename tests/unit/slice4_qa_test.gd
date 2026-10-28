@@ -27,8 +27,6 @@ func _spawn_main() -> Main:
 	(main.get_node("EnemySpawner") as Node).process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(main)
 	auto_free(main)
-	# The scene's TrainingDummy stands in the line of fire and would absorb test shots.
-	main.get_node("TrainingDummy").free()
 	main.player.camera = null
 	main.player.rotation = Vector3.ZERO
 	return main
@@ -264,7 +262,6 @@ func test_projectile_hit_radius_now_comes_from_data_for_cards_and_ranged_enemies
 	(main.get_node("EnemySpawner") as Node).process_mode = Node.PROCESS_MODE_DISABLED
 	get_tree().root.add_child(main)
 	get_tree().current_scene = main
-	main.get_node("TrainingDummy").free()
 	var shooter := _spawn_enemy(main, SHOOTER_PATH, Vector3(0.0, 0.0, -8.0))
 	shooter.target = main.player
 	await get_tree().process_frame

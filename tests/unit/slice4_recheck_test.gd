@@ -21,7 +21,6 @@ func _hit_at(template_id: String, params: Dictionary, offset: Vector3) -> bool:
 	(main.get_node("EnemySpawner") as Node).process_mode = Node.PROCESS_MODE_DISABLED
 	add_child(main)
 	auto_free(main)
-	main.get_node("TrainingDummy").free()
 	main.player.camera = null
 	main.player.rotation = Vector3.ZERO  # forward is -Z
 	var enemy: Enemy = (load(CHASER_PATH) as PackedScene).instantiate()

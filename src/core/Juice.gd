@@ -96,7 +96,12 @@ func spawn_damage_number(world_pos: Vector3, amount: float, damage_type: String)
 		entries.append({"pos": live.global_position, "type": live.damage_type, "idle": live.idle_time()})
 	var merge_at: int = DamageNumber.find_merge_index(entries, spot, damage_type, float(cfg["merge_radius"]), float(cfg["merge_window"]))
 	if merge_at >= 0:
-		_live_numbers[merge_at].merge_hit(amount, is_big)
+		var merged: DamageNumber = _live_numbers[merge_at]
+		merged.merge_hit(amount, is_big)
+		# A merged number is the freshest news on screen: send it to the back of the eviction order so
+		# a killing blow that just landed in it is never the first one freed at the cap (S5-5).
+		_live_numbers.remove_at(merge_at)
+		_live_numbers.append(merged)
 		return
 	for _i in range(DamageNumber.evict_count(_live_numbers.size(), int(cfg["max_alive"]))):
 		_live_numbers.pop_front().queue_free()

@@ -734,7 +734,7 @@ func test_damage_number_merge_cap_reset_and_no_mixing() -> void:
 	assert_array(texts).is_equal(["5", "7"])
 	# A killing blow merged into a young number is still counted in the total.
 	Juice.spawn_damage_number(spot, 1000.0, "physical")
-	var seven: DamageNumber = Juice._live_numbers[0]
+	var seven: DamageNumber = Juice._live_numbers[Juice._live_numbers.size() - 1]  # a merge moves it to the back (S5-5)
 	assert_str(seven.text).is_equal("1007")
 	# The cap: 100 far-apart hits leave at most max_alive numbers, in the tree and in the list.
 	var cap: int = int(UiConfig.damage_numbers()["max_alive"])
@@ -752,11 +752,9 @@ func test_damage_number_merge_cap_reset_and_no_mixing() -> void:
 	assert_int(Juice._live_numbers.size()).is_equal(0)
 
 
-func test_pin_cap_eviction_can_free_a_number_that_just_took_a_killing_blow() -> void:
-	# PIN (S5-5): Juice evicts oldest-CREATED first, and a merge does not reorder the list. With 16 numbers
-	# up, a big hit merged into the oldest and then one more number elsewhere frees that very number
-	# (and the killing blow on it) on the same frame. Fix: move a merged number to the back of the list,
-	# or evict the one idle longest; then flip this assert.
+func test_cap_eviction_never_frees_a_number_that_just_took_a_killing_blow() -> void:
+	# S5-5 (was a PIN): a merge moves the number to the back of the eviction order, so at the cap the
+	# number that just took a big hit survives and the oldest untouched one is freed instead.
 	var main := _spawn_root_main()
 	await _frames(1)
 	var cap: int = int(UiConfig.damage_numbers()["max_alive"])
@@ -764,10 +762,12 @@ func test_pin_cap_eviction_can_free_a_number_that_just_took_a_killing_blow() -> 
 		Juice.spawn_damage_number(Vector3(float(i) * 3.0, 0.0, 0.0), 2.0, "physical")
 	assert_int(Juice._live_numbers.size()).is_equal(cap)
 	var oldest: DamageNumber = Juice._live_numbers[0]
+	var second: DamageNumber = Juice._live_numbers[1]
 	Juice.spawn_damage_number(Vector3(0.0, 0.0, 0.0), 999.0, "physical")  # merges into the oldest
 	assert_str(oldest.text).is_equal("1001")
 	Juice.spawn_damage_number(Vector3(0.0, 0.0, 40.0), 1.0, "physical")  # one more, far away: evicts
-	assert_bool(oldest.is_queued_for_deletion()).override_failure_message("fixed? the merged number survived, flip the PIN").is_true()
+	assert_bool(oldest.is_queued_for_deletion()).is_false()
+	assert_bool(second.is_queued_for_deletion()).is_true()
 	assert_int(Juice._live_numbers.size()).is_equal(cap)
 	assert_object(main).is_not_null()
 

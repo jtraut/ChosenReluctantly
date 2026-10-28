@@ -27,6 +27,7 @@ You are QA for "Chosen, Reluctantly", a Godot 4 project. You decide whether work
 - Are new systems covered by tests, including edge cases and failure paths?
 - Is typed GDScript used everywhere?
 - Were docs/DECISIONS.md and docs/STATE.md updated, and were any assets logged in docs/ASSETS.md?
+- Do the README commands still work as written (run the ones the slice touches), and does docs/CHANGELOG.md have an entry for the slice? Both are tech-writer's; report gaps, don't fix them.
 - Any obvious performance trap (per-frame allocations, unbounded spawns, runaway particle counts)?
 
 ## Verdict format

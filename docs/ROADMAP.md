@@ -272,6 +272,8 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
     - Pausing restores time correctly.
     - DoD.
 
+- [ ] **Docs pass (tech-writer, first job):** create `docs/ARCHITECTURE.md` (about 400 lines max, links not code); verify the README commands by running them; fill `docs/ASSETS.md` from the repo, marking anything unverified; add CHANGELOG entries for the Slice 6 fix pass and the tech-writer [Director decision]. It runs after the Slice 6 qa re-check, and Slice 6 closes after it.
+
 - [ ] **Tooling: true-size capture (gameplay-dev, before pass close-out)**
   - The OS window is clamped to the monitor (1061 px tall), so `capture_screenshot.ps1` can't produce real 1920x1080 / 2560x1440. qa's `tools/vp_capture.gd` (88732cf) renders into an oversized SubViewport but `current_scene` is null there, so spawner/card code errors ("add_child on null") and no waves spawn; abrupt exit leaks RIDs.
   - **Acceptance:** a documented command produces true-size PNGs at 1280x720, 1920x1080, 2560x1440 with waves spawning and scenarios working; no error lines; spawn code uses a world/arena reference instead of `get_tree().current_scene` where needed (no behaviour change in normal play); clean exit. qa verifies; reload soak still clean.

@@ -1,5 +1,7 @@
 # Decisions Log
 
+> **Scope (director, 2026-10-28):** this log is for assumptions, defaults, and judgment calls that agents make on their own without an explicit director directive. Director directives live where they apply (GDD for design, CLAUDE.md for process, CHANGELOG with the [Director decision] tag) and need no entry here. Older entries are kept as written.
+
 Running log of assumptions, defaults, and technical choices made without stopping for director approval, per the working agreements in `CLAUDE.md`. Newest entries at the bottom. Anything here can be overridden by the director at any time.
 
 ---

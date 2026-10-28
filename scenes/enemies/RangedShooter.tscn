@@ -1,9 +1,10 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://src/enemies/Enemy.gd" id="1"]
 [ext_resource type="Script" path="res://src/combat/Health.gd" id="2"]
 [ext_resource type="Script" path="res://src/combat/StatusEffectManager.gd" id="3"]
 [ext_resource type="Script" path="res://src/combat/Hurtbox.gd" id="4"]
+[ext_resource type="PackedScene" path="res://scenes/ui/EnemyHpBar.tscn" id="hpbar"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
 radius = 0.4
@@ -56,3 +57,5 @@ status_manager_path = NodePath("../StatusEffectManager")
 [node name="HurtboxShape" type="CollisionShape3D" parent="Hurtbox"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
 shape = SubResource("CapsuleShape3D_1")
+
+[node name="EnemyHpBar" parent="." instance=ExtResource("hpbar")]

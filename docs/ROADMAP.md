@@ -40,7 +40,8 @@ Goal: one arena room where moving, aiming, and using card slots already feels go
 ## Post-milestone polish
 Small director-requested items between milestones. Not Milestone 3 scope.
 
-- [ ] **HP bars above enemies** — *in progress* (opened 2026-10-27)
+- [x] **HP bars above enemies** — **Done** 2026-10-27 (qa PASS e60e515, 83/83 tests; playtester: no blockers)
+  - **Shipped as:** `scenes/ui/EnemyHpBar.tscn`, `src/ui/EnemyHpBar.gd`, `src/ui/UiConfig.gd`, `assets/shaders/enemy_hp_bar.gdshader`, config in `data/ui.json` (`hp_bars`) - names differ from the brief's guesses below. Commits b31cbde, 0309f86, bcbfe34, e60e515. Ghost trail and Burn flame pip included; resistant enemies get a tinted thick frame + diamond pip.
   - **Goal:** every enemy shows a world-space health bar so the player can read fight state at a glance.
   - **Owner sequence:** gameplay-dev -> ux-designer -> qa -> playtester -> game-lead (close).
   - **Files likely touched:** new `scenes/ui/EnemyHealthBar.tscn` + `src/ui/EnemyHealthBar.gd`, `scenes/enemies/*.tscn`, `scenes/debug/TrainingDummy.tscn`, new data config (e.g. `data/enemy_health_bar.json`), `src/combat/Health.gd` (read-only unless a signal is missing), new tests in `tests/unit/`.
@@ -57,6 +58,11 @@ Small director-requested items between milestones. Not Milestone 3 scope.
   - **Done requires:**
     - qa PASS: tests for ratio math, clamping at 0 and at max, updates on damage and heal, hidden on death, no errors when an enemy spawns or is freed mid-frame; full suite green; 20-second headless run; zero errors and warnings.
     - playtester report with no blockers: smoke check, a screenshot of a wave, readability notes.
+  - **Follow-ups (not started):**
+    - [ ] (a) gameplay-dev: screenshot tooling, e.g. a `--screenshot-after N` flag, ideally with a scripted damage/Burn scenario, so the team can verify visuals without a human (the playtester had to use a scratch `--script` capture).
+    - [ ] (b) director/playtester: live visual check of the damaged state, ghost trail, Burn flame pip, interplay with damage numbers and telegraphs, bars overlapping the player, and `after_damage` mode. Only full bars were observed so far.
+    - [ ] (c) ux-designer (later): resistance marker reads as "armoured", not "resists fire" - needs a tooltip/legend once there's a place for one.
+    - [ ] (d) ux-designer (optional, data-only): bump bar size to ~1.6 wide x ~0.22 tall in `data/ui.json` if bars (~70x9 px at 720p) feel small below 720p.
 
 ## Milestone 3 — Card system and run loop (next, outlined only)
 Not started. Expected scope per GDD §13 milestone 3 and §9:

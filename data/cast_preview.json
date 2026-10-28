@@ -7,7 +7,10 @@
     "edge_thickness": 0.09,
     "edge_lighten": 0.35,
     "default_color": "#f4ece8",
-    "color_source": "card_element",
+    "color_source": "player_element",
     "self_ring_enabled": true,
-    "self_ring_radius": 0.9
+    "self_ring_radius": 0.9,
+    "over_enemies": true,
+    "not_ready_alpha_scale": 0.4,
+    "not_ready_desaturate": 0.7
 }

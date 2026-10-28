@@ -25,6 +25,11 @@ var _pivots: Array[Node3D] = []
 var _fills: Array[MeshInstance3D] = []
 var _edges: Array[MeshInstance3D] = []
 var _mesh_cache: Dictionary = {}
+## Per part: the colour at full strength (ready look); _apply_ready() derives the dimmed look.
+var _fill_colors: Array[Color] = []
+var _edge_colors: Array[Color] = []
+var _shown_ready: bool = true
+var _colors_dirty: bool = true
 
 
 func setup(player: Player) -> void:
@@ -44,6 +49,8 @@ func setup(player: Player) -> void:
 		_pivots.append(pivot)
 		_fills.append(fill)
 		_edges.append(edge)
+		_fill_colors.append(Color.WHITE)
+		_edge_colors.append(Color.WHITE)
 	set_process(bool(_config["enabled"]))
 
 
@@ -54,6 +61,10 @@ func _make_mesh_node() -> MeshInstance3D:
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	material.render_priority = int(_config["render_priority"])
+	# Drawn over everything in the 3D view (the targeted enemies included): it is a flat ground
+	# marking seen from above, and an enemy standing in it must not hide it. HP bars and
+	# damage numbers have a higher render priority, so they still sit on top of it.
+	material.no_depth_test = bool(_config["over_enemies"])
 	node.material_override = material
 	node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	return node
@@ -73,6 +84,7 @@ func _process(_delta: float) -> void:
 		pivot.position = Vector3(origin.x + forward.x * offset, y, origin.z + forward.z * offset)
 		pivot.rotation.y = yaw
 		pivot.visible = true
+	_apply_ready(_is_shown_slot_ready())
 
 
 ## Brings the built parts in line with what is being previewed. False when nothing is.
@@ -118,6 +130,7 @@ func _rebuild(slot_index: int, card_id: String) -> void:
 			_pivots[i].visible = false
 			continue
 		_style_part(i, _parts[i])
+	_apply_ready(_is_shown_slot_ready())
 
 
 func _style_part(index: int, part: Dictionary) -> void:
@@ -153,8 +166,40 @@ func _style_part(index: int, part: Dictionary) -> void:
 			var element_id: String = _player.character_element_id()
 			if not element_id.is_empty():
 				color = ElementVisuals.color_for_damage_type(element_id)
-	(fill.material_override as StandardMaterial3D).albedo_color = Color(color, float(_config["fill_alpha"]))
-	(edge.material_override as StandardMaterial3D).albedo_color = Color(color.lerp(Color.WHITE, float(_config["edge_lighten"])), float(_config["edge_alpha"]))
+	_fill_colors[index] = Color(color, float(_config["fill_alpha"]))
+	_edge_colors[index] = Color(color.lerp(Color.WHITE, float(_config["edge_lighten"])), float(_config["edge_alpha"]))
+	_colors_dirty = true
+
+
+## Ready: the full-strength colours. Not ready (the slot is cooling, so a release would not
+## cast): fainter and greyer, same size. Writes materials only when the state flips.
+func _apply_ready(is_ready: bool) -> void:
+	if is_ready == _shown_ready and not _colors_dirty:
+		return
+	_colors_dirty = false
+	_shown_ready = is_ready
+	var alpha_scale: float = 1.0 if is_ready else float(_config["not_ready_alpha_scale"])
+	var grey_mix: float = 0.0 if is_ready else float(_config["not_ready_desaturate"])
+	for i in range(_parts.size()):
+		(_fills[i].material_override as StandardMaterial3D).albedo_color = dimmed(_fill_colors[i], alpha_scale, grey_mix)
+		(_edges[i].material_override as StandardMaterial3D).albedo_color = dimmed(_edge_colors[i], alpha_scale, grey_mix)
+
+
+## `color` with its alpha times `alpha_scale` and `grey_mix` of the way to its own luminance grey.
+static func dimmed(color: Color, alpha_scale: float, grey_mix: float) -> Color:
+	var luminance: float = color.get_luminance()
+	var grey := Color(luminance, luminance, luminance)
+	var mixed := color.lerp(grey, grey_mix)
+	return Color(mixed.r, mixed.g, mixed.b, color.a * alpha_scale)
+
+
+## The colour a part's edge / fill is drawn with right now (tests and ux).
+func edge_color(index: int) -> Color:
+	return (_edges[index].material_override as StandardMaterial3D).albedo_color
+
+
+func fill_color(index: int) -> Color:
+	return (_fills[index].material_override as StandardMaterial3D).albedo_color
 
 
 func _cached(key: String, builder: Callable) -> Mesh:

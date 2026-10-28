@@ -17,12 +17,15 @@ const DEFAULTS: Dictionary = {
 	"color_source": "card_element",
 	"self_ring_enabled": true,
 	"self_ring_radius": 0.9,
+	"over_enemies": true,
+	"not_ready_alpha_scale": 0.4,
+	"not_ready_desaturate": 0.7,
 }
 ## Where a part's colour comes from: the card's own damage type (neutral for physical), the
 ## PLAYER's element (one colour for every card), or default_color for everything.
 const COLOR_SOURCES: Array[String] = ["card_element", "player_element", "fixed"]
-const BOOLS: Array[String] = ["enabled", "self_ring_enabled"]
-const ALPHAS: Array[String] = ["fill_alpha", "edge_alpha", "edge_lighten"]
+const BOOLS: Array[String] = ["enabled", "self_ring_enabled", "over_enemies"]
+const ALPHAS: Array[String] = ["fill_alpha", "edge_alpha", "edge_lighten", "not_ready_alpha_scale", "not_ready_desaturate"]
 
 static var _cache: Dictionary = {}
 
@@ -69,7 +72,7 @@ static func validate(block: Dictionary) -> Array[String]:
 		problems.append("default_color must be a hex color")
 	if not COLOR_SOURCES.has(String(block.get("color_source", ""))):
 		problems.append("color_source must be one of %s" % str(COLOR_SOURCES))
-	for key: String in ["ground_offset", "fill_alpha", "edge_alpha", "edge_thickness", "edge_lighten", "self_ring_radius"]:
+	for key: String in ["ground_offset", "fill_alpha", "edge_alpha", "edge_thickness", "edge_lighten", "self_ring_radius", "not_ready_alpha_scale", "not_ready_desaturate"]:
 		var value: Variant = block.get(key)
 		if not (value is float or value is int) or is_nan(float(value)) or float(value) < 0.0:
 			problems.append("%s must be a number >= 0" % key)

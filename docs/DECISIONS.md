@@ -271,15 +271,15 @@ These were already resolved by explicit instruction in the Milestone 2 kickoff p
 | Light (auto) | - | 0.6 | 8 | 3 | 13.33 | 5.00 | - |
 | Heavy (comparison, 3b-2 redesigns) | - | 1.8 (+0.45 wind-up) | 22 | 22 | 12.22 | 12.22 | - |
 | Quick, I Guess | single | 0.6 | 5 | 5 | 8.33 | 8.33 | fail (a,b) / ok |
-| Pointy Stick | single | 1.0 | 6 | 6 | 6.00 | 6.00 | fail / ok |
+| Pointy Stick | single | 1.0 | 6 | 6 | 6.00 | 6.00 | fail (a,b) / ok |
 | Ember, Whatever (5 + Burn 4s = 8) | single | 1.1 | 13 | 13 | 11.82 | 11.82 | fail (b) / ok |
-| Flaming Nonsense | single | 1.2 | 9 | 9 | 7.50 | 7.50 | fail (b) / ok |
+| Flaming Nonsense | single | 1.2 | 9 | 9 | 7.50 | 7.50 | fail (a,b) / ok |
 | Overhand, Whatever | single | 1.3 | 12 | 12 | 9.23 | 9.23 | fail (b) / ok |
 | Shrug Bomb | aoe | 2.2 | 5 | 12 | 2.27 | 5.45 | fail / ok |
 | Everyone Calm Down | aoe | 3.0 | 8 | 16 | 2.67 | 5.33 | fail / ok |
 | Fine, Burn Then (7 + Burn 5s = 10) | aoe | 3.3 | 17 | 17 | 5.15 | 5.15 | fail (b) / ok (thin margin, 0.15) |
 
-  Before the change every single-target card beat the old light on cast damage but none beat its DPS except none; the old light out-DPSed all eight cards.
+  Before the change the old light out-DPSed all eight cards, and only Ember, Overhand and Fine, Burn Then even met the 1.5x cast ratio.
 - **Rough time-to-kill, one target, seconds** (hits spaced by the interval, first hit at t=0; HP: Chaser 20, Shooter 14, Golem 50 with 50% fire resist, which affects only fire):
 
 | Source | Chaser before / after | Shooter | Golem |
@@ -289,7 +289,7 @@ These were already resolved by explicit instruction in the Milestone 2 kickoff p
 | Pointy Stick (unchanged) | 3.0 | 2.0 | 8.0 |
 | Overhand (unchanged) | 1.3 | 1.3 | 5.2 |
 | Shrug Bomb | 6.6 / 2.2 | 4.4 / 2.2 | 19.8 / 8.8 |
-| Everyone Calm Down | 6.0 / 3.0 | 3.0 / 3.0 | 18.0 / 12.0 |
+| Everyone Calm Down | 6.0 / 3.0 | 3.0 / 0 (one cast) | 18.0 / 9.0 |
 
   The unchanged cards have identical TTK before and after; only light, Shrug Bomb and Everyone Calm Down moved. Shrug Bomb on a Golem is about 8.8 s, similar to light on a Golem, which is fine because the AoE value is the other enemies it hits.
-- **Flag for 3b-2:** the heavy (22 per 1.8 s, DPS 12.2) is now 2.4x the light DPS and beats every card's DPS except Quick and Ember, so it contradicts both "heavy DPS slightly below light" and "cards beat the free attack". 3b-2 must lower it. With light = 3 the 3b-2 default needs burst >= 7.5 and DPS just under 5, for example 8 to 9 per 1.8 s.
+- **Flag for 3b-2:** the heavy (22 per 1.8 s, DPS 12.2) is now 2.4x the light DPS and beats every card's DPS, so it contradicts both "heavy DPS slightly below light" and "cards beat the free attack". 3b-2 must lower it. With light = 3 the 3b-2 default needs burst >= 7.5 and DPS just under 5, for example 8 to 9 per 1.8 s.

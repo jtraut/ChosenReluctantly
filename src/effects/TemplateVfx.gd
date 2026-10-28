@@ -62,14 +62,14 @@ static func projectile_impact(pool: EffectPool, position: Vector3, look: Diction
 
 
 ## Brief faint lane along a shot's path at cast time: from the launch point
-## `max_range` forward, as wide as the area that shot can hit (VfxSizing). Not
+## `max_range` plus the lateral reach forward (VfxSizing.projectile_lane_length), as wide as the area that shot can hit (VfxSizing). Not
 ## element-scaled: it shows a hit area.
 static func projectile_lane(pool: EffectPool, origin: Vector3, direction: Vector3, max_range: float, hit_radius: float, look: Dictionary) -> void:
 	if pool == null or direction.length_squared() < 0.0001:
 		return
 	var yaw: float = atan2(-direction.x, -direction.z)
 	pool.play(EffectPool.Shape.STRIP, origin, VfxSizing.projectile_lane_half_width(hit_radius), look["color"],
-			VfxConfig.marker("projectile_lane_duration"), 1.0, 1.0, VfxConfig.marker("projectile_lane_alpha"), 0.0, yaw) 			.lengthened(max_range)
+			VfxConfig.marker("projectile_lane_duration"), 1.0, 1.0, VfxConfig.marker("projectile_lane_alpha"), 0.0, yaw) 			.lengthened(VfxSizing.projectile_lane_length(max_range, hit_radius))
 
 
 ## A ranged enemy's wind-up lane: the strip its shot will fly along (as wide as the area the shot hits the

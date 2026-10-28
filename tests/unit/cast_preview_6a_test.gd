@@ -86,7 +86,7 @@ func test_every_card_in_data_previews_with_the_vfx_sizing_of_its_hit_params() ->
 					assert_float(part["size"]).is_equal_approx(VfxSizing.aoe_reach(float(params["radius"])), 0.0001)
 				"projectile":
 					assert_str(part["shape"]).is_equal("projectile_lane")
-					assert_float(part["size"]).is_equal_approx(float(params["max_range"]), 0.0001)
+					assert_float(part["size"]).is_equal_approx(VfxSizing.projectile_lane_length(float(params["max_range"]), float(params["hit_radius"])), 0.0001)
 					assert_float(part["half_width"]).is_equal_approx(VfxSizing.projectile_lane_half_width(float(params["hit_radius"])), 0.0001)
 					assert_float(part["start_offset"]).is_equal(EffectTemplates.PROJECTILE_MUZZLE_OFFSET)
 				"dash":
@@ -133,11 +133,11 @@ func test_held_key_draws_nodes_sized_to_the_hit_area_and_placed_on_the_facing() 
 	assert_str(state["slot"]).is_equal("attack_single")
 	assert_str(state["card_id"]).is_equal("neutral_pointy_stick")
 	assert_str(state["shape"]).is_equal("projectile_lane")
-	assert_float(state["size"]).is_equal_approx(12.0, 0.0001)
+	assert_float(state["size"]).is_equal_approx(VfxSizing.projectile_lane_length(12.0, 0.25), 0.0001)
 	var fill := player.cast_preview.fill_node(0)
 	var pivot := player.cast_preview.pivot_node(0)
 	assert_bool(pivot.visible).is_true()
-	assert_float(fill.scale.z).is_equal_approx(12.0, 0.0001)
+	assert_float(fill.scale.z).is_equal_approx(VfxSizing.projectile_lane_length(12.0, 0.25), 0.0001)
 	assert_float(fill.scale.x).is_equal_approx(VfxSizing.projectile_lane_half_width(0.25), 0.0001)
 	var forward := player.get_aim_direction()
 	var expected := player.global_position + forward * EffectTemplates.PROJECTILE_MUZZLE_OFFSET

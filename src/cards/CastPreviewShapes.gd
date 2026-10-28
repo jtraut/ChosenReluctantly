@@ -9,7 +9,7 @@ extends RefCounted
 ##   cone            size = VfxSizing.cone_reach(range), half_angle_degrees. At the caster.
 ##   aoe             size = VfxSizing.aoe_reach(radius). Centred on the caster (cards have no
 ##                   target point; only a targeted heavy does).
-##   projectile_lane size = lane LENGTH (max_range), half_width = VfxSizing.projectile_lane_half_width,
+##   projectile_lane size = lane LENGTH (VfxSizing.projectile_lane_length: max_range plus the lateral reach), half_width = VfxSizing.projectile_lane_half_width,
 ##                   start_offset = EffectTemplates.PROJECTILE_MUZZLE_OFFSET in front of the caster.
 ##   dash_path       size = lane LENGTH (distance), half_width = the dash path marker width. At the caster.
 ## Heal, buff and apply_status are not aimed: a card with no aimed part gets one small
@@ -37,7 +37,7 @@ static func parts_for_card(card_data: Dictionary, config: Dictionary) -> Array[D
 						"half_angle_degrees": 0.0, "half_width": 0.0, "start_offset": 0.0,
 						"damage_type": String(params.get("damage_type", "physical"))})
 			"projectile":
-				parts.append({"shape": PROJECTILE_LANE, "size": float(params["max_range"]),
+				parts.append({"shape": PROJECTILE_LANE, "size": VfxSizing.projectile_lane_length(float(params["max_range"]), float(params["hit_radius"])),
 						"half_angle_degrees": 0.0, "half_width": VfxSizing.projectile_lane_half_width(float(params["hit_radius"])),
 						"start_offset": EffectTemplates.PROJECTILE_MUZZLE_OFFSET, "damage_type": String(params["damage_type"])})
 			"dash":

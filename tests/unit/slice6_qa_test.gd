@@ -298,21 +298,31 @@ func test_projectile_lane_half_width_is_where_a_real_shot_stops_hitting() -> voi
 	assert_int(checked).is_greater_equal(1)
 
 
-func test_pin_projectile_lane_tip_understates_the_real_hit_by_the_lateral_reach() -> void:
-	# PIN (finding S6-3, non-blocking): the lane is drawn max_range long from the muzzle, but the
-	# shot's hit sphere keeps its radius beyond the last position, so a target centre a little
-	# past the drawn tip is still hit. Flip the expectation when the lane is lengthened.
+func test_projectile_lane_tip_is_where_a_real_shot_stops_hitting() -> void:
+	# Was a PIN for S6-3: the lane was drawn max_range long, but the hit sphere keeps its radius past
+	# the last position, so a target 0.3 past the tip was still hit. The lane now includes the
+	# lateral reach: a target 0.3 past the old tip (inside the new lane) is still hit, and one just past
+	# the new tip is not. The lane is an upper bound, not exact: a shot is freed on the tick it passes
+	# max_range, so its last tested position is up to one tick of travel short of max_range.
 	var main := _spawn()
 	await _frames(2)
 	var params: Dictionary = (CardDatabase.get_card("fire_flaming_nonsense")["effects"][0] as Dictionary)["params"]
 	var part: Dictionary = CastPreviewShapes.parts_for_card(CardDatabase.get_card("fire_flaming_nonsense"), CastPreviewConfig.get_config())[0]
 	var tip: float = float(part["start_offset"]) + float(part["size"])
-	var enemy := _enemy_at(Vector3(0.0, 0.0, -(tip + 0.3)))
+	var inside := _enemy_at(Vector3(0.0, 0.0, -(tip - 0.3)))
 	await _frames(2)
-	var before := enemy.health.current_health
+	var inside_before := inside.health.current_health
 	EffectTemplates.execute("projectile", params, EffectContext.new(main.player, main, "player"))
 	await _frames(int(ceil(tip / float(params["speed"]) * 60.0)) + 20)
-	assert_bool(enemy.health.current_health < before).override_failure_message("PIN: target 0.3 past the drawn tip was NOT hit; the finding may be fixed").is_true()
+	assert_bool(inside.health.current_health < inside_before).override_failure_message("target 0.3 inside the drawn tip was not hit").is_true()
+	inside.queue_free()
+	await _frames(3)
+	var outside := _enemy_at(Vector3(0.0, 0.0, -(tip + 0.1)))
+	await _frames(2)
+	var outside_before := outside.health.current_health
+	EffectTemplates.execute("projectile", params, EffectContext.new(main.player, main, "player"))
+	await _frames(int(ceil(tip / float(params["speed"]) * 60.0)) + 20)
+	assert_bool(outside.health.current_health < outside_before).override_failure_message("target 0.1 past the drawn tip was hit").is_false()
 
 
 func _dash_run() -> Array[float]:

@@ -57,3 +57,10 @@ static func projectile_radius(hit_radius: float) -> float:
 ## (0.60 for the 0.3 radius, not 0.75). The lane runs max_range from the launch point.
 static func projectile_lane_half_width(hit_radius: float) -> float:
 	return lateral_reach(hit_radius)
+
+
+## Length of the lane a projectile sweeps, from the launch point: the flight (max_range) plus the
+## same lateral reach the sides use, because the hit sphere keeps its radius past the last
+## position (a target centre up to that far beyond max_range is still hit).
+static func projectile_lane_length(max_range: float, hit_radius: float) -> float:
+	return max_range + lateral_reach(hit_radius)

@@ -288,13 +288,21 @@ static func validate_popups(block: Dictionary) -> Array[String]:
 	return problems
 
 
+## Cached after the first call (S5-7): it is read on every hit. Treat the result as read-only.
+static var _damage_numbers_cache: Dictionary = {}
+
+
 static func damage_numbers() -> Dictionary:
+	if not _damage_numbers_cache.is_empty():
+		return _damage_numbers_cache
 	var merged := merge_with_defaults(DEFAULT_DAMAGE_NUMBERS, _table.get_entry("damage_numbers"))
 	var problems := validate_damage_numbers(merged)
 	if problems.is_empty():
+		_damage_numbers_cache = merged
 		return merged
 	push_error("data/ui.json damage_numbers invalid: " + "; ".join(problems))
-	return DEFAULT_DAMAGE_NUMBERS.duplicate()
+	_damage_numbers_cache = DEFAULT_DAMAGE_NUMBERS.duplicate()
+	return _damage_numbers_cache
 
 
 static func validate_damage_numbers(block: Dictionary) -> Array[String]:

@@ -74,3 +74,10 @@ func test_color_follows_element_data() -> void:
 	var fire: Color = DamageNumber.color_for("fire", 0.0)
 	assert_object(fire).is_equal(ElementVisuals.color_for_damage_type("fire"))
 	assert_float(DamageNumber.color_for("fire", 1.0).g).is_equal_approx(1.0, 0.0001)
+
+
+func test_damage_numbers_config_is_cached_not_rebuilt_per_hit() -> void:
+	# S5-7: the same dictionary comes back on every call (no per-hit merge, validate or duplicate).
+	var first: Dictionary = UiConfig.damage_numbers()
+	assert_bool(UiConfig.damage_numbers() == first).is_true()
+	assert_bool(is_same(UiConfig.damage_numbers(), first)).is_true()

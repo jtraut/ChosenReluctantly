@@ -187,14 +187,15 @@ func _start(attack_id: StringName) -> void:
 	var state: State = _states[attack_id]
 	state.remaining = get_interval(attack_id)
 	state.since_start = 0.0
-	attack_started.emit(attack_id)
 	var wind_up: float = float(state.def["wind_up"])
+	# State and slow first, so a handler sees is_winding_up() and the slowed speed.
 	if wind_up > 0.0:
 		state.windup_left = wind_up
 		var slow: float = float(state.def.get("wind_up_move_slow", 0.0))
 		if slow != 0.0:
 			_modifiers.add_modifier(MOVE_SPEED_STAT, _slow_id(attack_id), StatModifiers.MULTIPLICATIVE, maxf(slow, -0.999))
-	else:
+	attack_started.emit(attack_id)
+	if wind_up <= 0.0:
 		attack_fired.emit(attack_id)
 
 

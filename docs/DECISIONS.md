@@ -367,3 +367,6 @@ These were already resolved by explicit instruction in the Milestone 2 kickoff p
 | All other damage cards | unchanged | unchanged | unchanged | unchanged | - |
 
   The test `test_decisions_balance_table_matches_the_data_files` carries the new numbers; the pin test became `test_burn_refresh_keeps_its_tick_phase_so_the_rule_credit_is_real`.
+
+### 2026-10-28 - S3B-3: attack_started order (gameplay-dev)
+- `AttackController._start` now sets the wind-up timer and applies the wind-up slow before emitting `attack_started`; an instant attack still emits `attack_fired` right after it. A handler therefore sees `is_winding_up()` true and the slowed move speed. Player's "test the wind_up from data" workaround comment was removed (the check itself stays, it is the cheaper test). The qa pin became `test_attack_started_is_emitted_after_the_wind_up_state_and_slow`. Rejected: leaving it pinned (a trap for the next consumer) and a second signal such as `wind_up_started` (two signals for one event).

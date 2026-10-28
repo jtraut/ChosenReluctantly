@@ -450,10 +450,9 @@ func test_wizard_heavy_slow_applies_and_clears_on_the_same_paths() -> void:
 	assert_float(player.get_move_speed()).is_equal_approx(player.move_speed, 0.0001)
 
 
-func test_pin_attack_started_is_emitted_before_the_wind_up_state() -> void:
-	# PIN (finding S3B-3, 3b-c): inside an attack_started handler the controller does not
-	# yet report the wind-up and the slow is not yet applied. Player compensates by reading
-	# data. If the order is fixed, flip these two asserts.
+func test_attack_started_is_emitted_after_the_wind_up_state_and_slow() -> void:
+	# S3B-3 (was a pin): inside an attack_started handler the controller already reports
+	# the wind-up and the slow is already applied.
 	var mods := StatModifiers.new()
 	var controller := _controller(mods)
 	var seen := {"winding": null, "speed": null}
@@ -464,8 +463,8 @@ func test_pin_attack_started_is_emitted_before_the_wind_up_state() -> void:
 	controller.tick(0.016, true, {&"heavy": true}, func(_id: StringName) -> bool: return false)
 	# Disconnect: the lambda captures the controller, which would otherwise be a reference cycle.
 	controller.attack_started.disconnect(probe)
-	assert_bool(bool(seen["winding"])).is_false()
-	assert_float(float(seen["speed"])).is_equal_approx(6.0, 0.0001)
+	assert_bool(bool(seen["winding"])).is_true()
+	assert_float(float(seen["speed"])).is_equal_approx(6.0 * 0.65, 0.0001)
 	assert_bool(controller.is_winding_up(&"heavy")).is_true()
 
 

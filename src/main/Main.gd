@@ -26,6 +26,7 @@ func _ready() -> void:
 	hud.set_player(player)
 	debug_overlay.player = player
 	AimIndicator.attach(self, player)
+	PlayerOcclusionCue.attach(player)
 	var problems := SceneSelfCheck.find_problems(self)
 	if not problems.is_empty():
 		push_error("Main scene self-check FAILED (world may render empty): " + "; ".join(problems))
@@ -91,6 +92,7 @@ func _setup_debug_capture() -> void:
 	if not times.is_empty():
 		var capture := ScreenshotCapture.new()
 		capture.name = "ScreenshotCapture"
+		capture.process_mode = Node.PROCESS_MODE_ALWAYS  # keeps timing shots while the settings screen pauses the tree
 		capture.times = times
 		capture.out = config["out"]
 		add_child(capture)

@@ -74,6 +74,36 @@ const DEFAULT_GAME_OVER: Dictionary = {
 	"line_color": "#e8dfe3",
 }
 
+## The pause / settings screen (Slice 6b). Same sizing rule as Game Over.
+const DEFAULT_SETTINGS_SCREEN: Dictionary = {
+	"title": "Paused",
+	"line": "The world will wait. It is very patient and very cheerful.",
+	"resume": "Resume",
+	"hint": "Esc also resumes",
+	"reference_height": 720,
+	"title_font_size": 48,
+	"line_font_size": 20,
+	"label_font_size": 24,
+	"option_font_size": 24,
+	"button_font_size": 32,
+	"hint_font_size": 18,
+	"button_min_size": [320, 64],
+	"option_min_size": [230, 52],
+	"backdrop_color": "#0d080bcc",
+	"title_color": "#ffd7a8",
+	"line_color": "#e8dfe3",
+	"selected_marker": "(x) ",
+	"unselected_marker": "( ) ",
+}
+
+## The see-through-enemies cue on the player (Slice 6b): drawn only where something hides them.
+const DEFAULT_PLAYER_OUTLINE: Dictionary = {
+	"enabled": true,
+	"color": "#8fd0ff",
+	"alpha": 0.75,
+	"depth_bias": 0.05,
+}
+
 ## Bottom/top HUD layout. Sizes are pixels at `reference_height`, scaled by
 ## window height (same rule as Game Over). Heights are fixed so slots never shift.
 const DEFAULT_HUD: Dictionary = {
@@ -323,6 +353,36 @@ static func validate_damage_numbers(block: Dictionary) -> Array[String]:
 
 static func game_over() -> Dictionary:
 	return merge_with_defaults(DEFAULT_GAME_OVER, _table.get_entry("game_over"))
+
+
+static func settings_screen() -> Dictionary:
+	return merge_with_defaults(DEFAULT_SETTINGS_SCREEN, _table.get_entry("settings_screen"))
+
+
+## Validated; a bad block is reported and the defaults are used.
+static func player_outline() -> Dictionary:
+	var merged := merge_with_defaults(DEFAULT_PLAYER_OUTLINE, _table.get_entry("player_outline"))
+	var problems := validate_player_outline(merged)
+	if problems.is_empty():
+		return merged
+	push_error("data/ui.json player_outline invalid: " + "; ".join(problems))
+	return DEFAULT_PLAYER_OUTLINE.duplicate()
+
+
+static func validate_player_outline(block: Dictionary) -> Array[String]:
+	var problems: Array[String] = []
+	if typeof(block.get("enabled")) != TYPE_BOOL:
+		problems.append("enabled must be true or false")
+	var color: Variant = block.get("color")
+	if typeof(color) != TYPE_STRING or not String(color).is_valid_html_color():
+		problems.append("color must be a hex color")
+	var alpha: Variant = block.get("alpha")
+	if not (alpha is float or alpha is int) or is_nan(float(alpha)) or float(alpha) < 0.0 or float(alpha) > 1.0:
+		problems.append("alpha must be a number from 0 to 1")
+	var bias: Variant = block.get("depth_bias")
+	if not (bias is float or bias is int) or is_nan(float(bias)) or float(bias) < 0.0:
+		problems.append("depth_bias must be a number >= 0")
+	return problems
 
 
 static func hud() -> Dictionary:

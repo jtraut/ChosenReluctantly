@@ -46,12 +46,27 @@ func _spawn_dummy() -> Node3D:
 	return dummy
 
 
+## The shipped mode is elite_boss_always (D7), which hides a full-HP normal. These tests are about
+## the bar following health, so they pin always_alive; restore with _restore_mode().
+func _pin_always_alive() -> Variant:
+	EnemyHpBar._ensure_shared()
+	var original: Variant = EnemyHpBar._shared_config.get("visibility_mode")
+	EnemyHpBar._shared_config["visibility_mode"] = "always_alive"
+	return original
+
+
+func _restore_mode(original: Variant) -> void:
+	EnemyHpBar._shared_config["visibility_mode"] = original
+
+
 func test_bar_follows_health_and_hides_on_death() -> void:
+	var original: Variant = _pin_always_alive()
 	var dummy := _spawn_dummy()
 	await get_tree().process_frame
 	var bar: EnemyHpBar = dummy.get_node("EnemyHpBar")
 	var health: Health = dummy.get_node("Health")
 	assert_bool(bar.visible).is_true()
+	_restore_mode(original)
 	health.take_damage(10.0)
 	assert_float(bar._fill).is_equal_approx(0.8, 0.0001)
 	assert_bool(bar.is_processing()).is_true()
@@ -85,6 +100,7 @@ func _spawn_scene(path: String) -> Node3D:
 
 
 func test_every_enemy_scene_has_a_bar_bound_to_its_health() -> void:
+	var original: Variant = _pin_always_alive()
 	for path: String in [
 		"res://scenes/enemies/MeleeChaser.tscn",
 		"res://scenes/enemies/RangedShooter.tscn",
@@ -99,6 +115,7 @@ func test_every_enemy_scene_has_a_bar_bound_to_its_health() -> void:
 		assert_bool(bar.visible).is_true()
 		health.take_damage(1.0)
 		assert_float(bar._fill).is_equal_approx(fill_expected(health), 0.0001)
+	_restore_mode(original)
 
 
 func fill_expected(health: Health) -> float:

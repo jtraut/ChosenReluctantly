@@ -52,7 +52,7 @@ powershell -File tools\run_wave_sim.ps1 -Seed 1 -Seconds 150 -Runs 3
 powershell -File tools\run_wave_sim.ps1 -Seed 1 -Seconds 120 -God
 powershell -File tools\run_wave_sim.ps1 -Seed 20 -Seconds 60 -Runs 3 -Idle -Scale 1
 ```
-The wave table and the simultaneous-enemy cap live in `data/waves.json` (validated by `WaveConfig`; enemy ids and scenes in `data/enemies.json`). Headless frame times exclude rendering.
+The wave table and the simultaneous-enemy cap live in `data/waves.json` (validated by `WaveConfig`; enemy ids and scenes in `data/enemies.json`). Headless frame times exclude rendering. Each run also prints a spacing line (mean, worst and share of frames where melee enemies near the player keep `separation.readable_spacing` between each other; see `data/enemies.json`).
 
 ## Death / restart soak (real scene reload)
 Kills the player in the real Main scene, waits for `game_over_ready`, calls `restart_arena()` (twice, on purpose), and repeats; also restarts mid slow-mo. Checks HP, `Engine.time_scale`, enemy count, wave timer, Game Over screen state, orphan/object/node counts, and fails on any engine ERROR/WARNING line in the output.

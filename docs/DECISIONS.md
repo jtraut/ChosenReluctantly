@@ -293,3 +293,7 @@ These were already resolved by explicit instruction in the Milestone 2 kickoff p
 
   The unchanged cards have identical TTK before and after; only light, Shrug Bomb and Everyone Calm Down moved. Shrug Bomb on a Golem is about 8.8 s, similar to light on a Golem, which is fine because the AoE value is the other enemies it hits.
 - **Flag for 3b-2:** the heavy (22 per 1.8 s, DPS 12.2) is now 2.4x the light DPS and beats every card's DPS, so it contradicts both "heavy DPS slightly below light" and "cards beat the free attack". 3b-2 must lower it. With light = 3 the 3b-2 default needs burst >= 7.5 and DPS just under 5, for example 8 to 9 per 1.8 s.
+
+### 2026-10-28 - After 3b-1 (game-lead)
+- Light at 3 is kept as the default. It is the smallest change that makes the rule hold with only two cards raised. The bigger feel question went to the director as D4. Rejected: changing the light interval now (the brief forbade it; it's option B in D4).
+- Heavy target for 3b-2: about 8.5 damage per 1.8 s, which is 4.7 direct DPS against light's 5.0, with burst 2.8x the light hit. Expected Burn from the 50% chance is extra, as element flavor, and does not count toward the "slightly below light" check, which is direct damage only. Rejected: keeping 22, which beats every card and contradicts both director decisions.

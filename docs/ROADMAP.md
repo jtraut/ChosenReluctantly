@@ -166,7 +166,8 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
 - [ ] **Slice 3b: Attack rework (director decisions 2026-10-28, resolves P1-P4)**
   - **GDD:** §3 "Role of basic attacks [DIRECTOR DECISION, 2026-10-28]", §7 (statuses), §4 (slot cooldowns). DECISIONS 2026-10-28 "[DIRECTOR DECISION] Role of basic attacks".
   - **Owner sequence:** 3b-1 gameplay-dev -> 3b-2 gameplay-dev -> 3b-3 ux-designer -> 3b-4 qa (whole 3b) -> playtester (one report covering Slice 4 visuals and 3b) -> game-lead closes Slice 4 and 3b.
-  - [ ] **3b-1, click cap and cards-beat-light (gameplay-dev):**
+  - [x] **3b-1, click cap and cards-beat-light (gameplay-dev):** BUILT 2026-10-28 (961d7c6..4fb5b57, 260/260). Light 8 -> 3; Shrug Bomb 5 -> 12, Everyone Calm Down 8 -> 16; table in DECISIONS. Director call D4 (OPEN_ITEMS). qa at 3b-4.
+   
     1. Replace light `manual_min_gap` with `manual_click_max_rate_ratio` (1.5). Min gap = resolved auto interval / ratio (0.4 s at 0.6 s), so it scales with attack-speed modifiers. Heavy keeps "click only when ready".
     2. Rule (game-lead default, logged): a **damage card** is any card in an `attack_single` or `attack_aoe` slot. Each must satisfy both:
        - (a) per-cast damage >= 1.5x the light hit.
@@ -181,7 +182,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
        - `arc`: wide melee, larger area than light.
        - `targeted_aoe`: centred on the mouse point, capped at `max_range`, with a ground telegraph during the wind-up. Clamp the target to the max range and the arena, with no errors when off the arena.
     2. Rogue heavy [PROPOSED]: wide arc, burst, a brief stun on hit. Wizard heavy [PROPOSED]: `targeted_aoe`, as a data definition only, proven by a test and a capture scenario. Do NOT build the Wizard class.
-    3. Heavy numbers (default): burst per hit clearly larger than light (>= 2.5x), area meaningfully larger, sustained single-target DPS slightly below light. Report the final numbers.
+    3. Heavy numbers (default, updated after 3b-1, light is now 3 / 0.6 s = 5 DPS): about 8.5 per 1.8 s (4.7 direct DPS, burst 2.8x light). The current 22 beats every card and must come down. Burst per hit clearly larger than light (>= 2.5x), area meaningfully larger, sustained single-target DPS slightly below light. Report the final numbers.
     4. Element flavour: element status (Burn for Fire), chance = element base chance x the attack's `status_chance_multiplier`. Defaults: base 0.2 (in element data), light multiplier 0.0, heavy 2.5 (= 50%), heavy Burn duration 3 s. All in data.
     5. Stun: a new generic status in `statuses.json`. Stunned enemies don't move or attack, and an active wind-up is cancelled. Defaults:
        - Base duration 0.6 s.

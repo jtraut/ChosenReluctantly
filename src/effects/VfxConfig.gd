@@ -38,6 +38,9 @@ const DEFAULTS: Dictionary = {
 	"projectile_trail_scale": 1.0,
 	"projectile_muzzle_scale": 1.6,
 	"projectile_muzzle_alpha": 1.0,
+	"windup_cancel_size": 0.9,
+	"windup_cancel_duration": 0.3,
+	"windup_cancel_alpha": 0.9,
 	"team_tints": {"enemy": {"color": "#ff3d8b", "neutral_mix": 1.0, "element_mix": 0.4}},
 }
 
@@ -47,7 +50,8 @@ const MARKER_KEYS: Array[String] = ["enemy_shot_lane_alpha", "projectile_lane_al
 		"cone_duration", "cone_alpha", "cone_blade_duration", "cone_blade_alpha", "cone_enemy_duration_scale",
 		"heal_sparkle_size", "heal_sparkle_duration", "heal_sparkle_rise", "heal_ring_radius", "heal_ring_alpha", "heal_ring_duration",
 		"dash_trail_size", "dash_trail_duration", "dash_trail_alpha", "dash_trail_lighten",
-		"projectile_trail_duration", "projectile_trail_alpha", "projectile_trail_scale", "projectile_muzzle_scale", "projectile_muzzle_alpha"]
+		"projectile_trail_duration", "projectile_trail_alpha", "projectile_trail_scale", "projectile_muzzle_scale", "projectile_muzzle_alpha",
+		"windup_cancel_size", "windup_cancel_duration", "windup_cancel_alpha"]
 
 static var _cache: Dictionary = {}
 static var _loaded: bool = false

@@ -131,6 +131,8 @@ func _on_status_applied(status_id: String) -> void:
 		var tint := StatusDatabase.body_tint(status_id)
 		_stun_tint = tint.get("color", DEFAULT_STUN_TINT)
 		_stun_tint_amount = float(tint.get("amount", DEFAULT_STUN_TINT_AMOUNT))
+		if _telegraph_remaining > 0.0 and telegraph_duration > 0.0:
+			TemplateVfx.windup_cancelled(EffectPool.for_world(get_parent()), global_position, ElementVisuals.visual_for_team(attack_damage_type, "enemy")["color"])
 		_cancel_telegraph()
 		_set_body_color(_rest_color())
 		stunned.emit(status_manager.stun_time_remaining())

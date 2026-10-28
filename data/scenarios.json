@@ -317,5 +317,34 @@
                 "card": "neutral_pointy_stick"
             }
         ]
+    },
+    "stun_cancel": {
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "freeze_aim": true,
+        "disable_auto_attack": true,
+        "origin_offset": [
+            1.1,
+            0.0,
+            -0.3
+        ],
+        "spacing": [
+            1.6,
+            1.4
+        ],
+        "columns": 2,
+        "groups": [
+            {
+                "scene": "res://scenes/enemies/MeleeChaser.tscn",
+                "count": 3
+            }
+        ],
+        "stun_indices": [
+            0,
+            1,
+            2
+        ],
+        "stun_at": 0.2,
+        "stun_duration": 3.0
     }
 }

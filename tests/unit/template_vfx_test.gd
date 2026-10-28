@@ -366,3 +366,13 @@ func test_new_read_keys_validate() -> void:
 	bad = VfxConfig.DEFAULTS.duplicate()
 	bad["dash_trail_size"] = "big"
 	assert_array(VfxConfig.validate(bad)).is_not_empty()
+
+
+func test_windup_cancelled_cue_is_one_ring_sized_from_data() -> void:
+	var pool := EffectPool.for_world(_world())
+	TemplateVfx.windup_cancelled(pool, Vector3.ZERO, Color.WHITE)
+	assert_int(pool.active_count()).is_equal(1)
+	var ring := pool.get_child(0) as PooledEffect
+	assert_float(ring.base_size).is_equal_approx(VfxConfig.marker("windup_cancel_size"), 0.0001)
+	assert_float(ring.duration).is_equal_approx(VfxConfig.marker("windup_cancel_duration"), 0.0001)
+	TemplateVfx.windup_cancelled(null, Vector3.ZERO, Color.WHITE)  # no pool: no-op

@@ -248,6 +248,15 @@ static func status_stars(pool: EffectPool, target: Node3D, color: Color, size: f
 	return effects
 
 
+## F-E5: a stun cut an enemy's wind-up short. A bright ring at its feet that snaps inward, in the enemy
+## team colour of the wedge or lane that just vanished. Cosmetic only (no hit area).
+static func windup_cancelled(pool: EffectPool, position: Vector3, color: Color) -> void:
+	if pool == null:
+		return
+	pool.play(EffectPool.Shape.RING, position + Vector3(0.0, 0.04, 0.0), VfxConfig.marker("windup_cancel_size"), lighter(color, 0.5),
+			VfxConfig.marker("windup_cancel_duration"), 1.0, 0.2, VfxConfig.marker("windup_cancel_alpha"), 0.0)
+
+
 # --- death -------------------------------------------------------------------
 
 ## The player's death cue: a white-hot burst and a red ring racing outward from

@@ -32,6 +32,9 @@
     "projectile_trail_scale": 1.0,
     "projectile_muzzle_scale": 1.6,
     "projectile_muzzle_alpha": 1.0,
+    "windup_cancel_size": 0.9,
+    "windup_cancel_duration": 0.3,
+    "windup_cancel_alpha": 0.9,
     "team_tints": {
         "enemy": { "color": "#ff3d8b", "neutral_mix": 1.0, "element_mix": 0.4 }
     }

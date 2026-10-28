@@ -37,6 +37,27 @@ Goal: one arena room where moving, aiming, and using card slots already feels go
 - [x] Headless bot-simulation stub in `/tools`
 - [x] QA pass over the milestone before marking done
 
+## Post-milestone polish
+Small director-requested items between milestones. Not Milestone 3 scope.
+
+- [ ] **HP bars above enemies** — *in progress* (opened 2026-10-27)
+  - **Goal:** every enemy shows a world-space health bar so the player can read fight state at a glance.
+  - **Owner sequence:** gameplay-dev -> ux-designer -> qa -> playtester -> game-lead (close).
+  - **Files likely touched:** new `scenes/ui/EnemyHealthBar.tscn` + `src/ui/EnemyHealthBar.gd`, `scenes/enemies/*.tscn`, `scenes/debug/TrainingDummy.tscn`, new data config (e.g. `data/enemy_health_bar.json`), `src/combat/Health.gd` (read-only unless a signal is missing), new tests in `tests/unit/`.
+  - **GDD sections:** §3 (fixed isometric camera), §7 (elemental resistance), combat-feel/readability notes. Visibility default logged in `docs/DECISIONS.md` (2026-10-27).
+  - **Acceptance criteria:**
+    1. Every enemy (melee chaser, ranged shooter, fire-resistant golem) and the TrainingDummy shows a health bar floating above it in world space.
+    2. The bar always faces the camera, has a consistent on-screen size under the fixed orthographic isometric camera, and stays readable when enemies are clustered.
+    3. Fill is proportional to current/max HP and updates immediately on damage, healing, and Burn ticks. Ghost trail (lighter segment draining after the main bar drops) is nice-to-have, only if cheap.
+    4. Visibility follows the config value (default: always visible while alive, hidden on death). Changing the rule (e.g. "show only after damage") must be a data change, not a code change.
+    5. Enemy types are distinguishable where it helps (e.g. a subtle tint or marker for elemental resistance), never relying on color alone. Kept simple.
+    6. Optional if trivial: a small Burn status indicator on the bar; otherwise logged as a follow-up item.
+    7. Performance: no per-frame allocations, no SubViewport per enemy, no Control node per enemy. Lightweight billboard approach (billboard quad meshes with an unshaded material or one small shared shader).
+    8. One reusable scene driven by `Health` signals (`health_changed`, `died`); no per-frame HP polling; no hardcoded enemy types inside the bar.
+  - **Done requires:**
+    - qa PASS: tests for ratio math, clamping at 0 and at max, updates on damage and heal, hidden on death, no errors when an enemy spawns or is freed mid-frame; full suite green; 20-second headless run; zero errors and warnings.
+    - playtester report with no blockers: smoke check, a screenshot of a wave, readability notes.
+
 ## Milestone 3 — Card system and run loop (next, outlined only)
 Not started. Expected scope per GDD §13 milestone 3 and §9:
 - Multi-room procedural run structure (room graph, not just one arena)

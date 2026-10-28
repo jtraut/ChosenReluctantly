@@ -19,9 +19,12 @@ Fixed the transform (now forward ~ (-0.58, -0.58, -0.58)). Added `SceneSelfCheck
 Lesson: "nodes exist" checks don't catch an empty world - the frustum checks are what matter.
 
 ## In progress
-Nothing. Milestone 2 is closed out. Milestone 3 (card system and run loop) hasn't been started - see `docs/ROADMAP.md` for its outline.
+**HP bars above enemies** (post-milestone polish, not Milestone 3) - brief and acceptance criteria in `docs/ROADMAP.md` "Post-milestone polish"; visibility default logged in `docs/DECISIONS.md` (2026-10-27). Step 1 (plan) done; no code written yet. Owner sequence: gameplay-dev -> ux-designer -> qa -> playtester -> game-lead. Milestone 3 (card system and run loop) still not started.
 
 ## Exact next step
+**Next role: gameplay-dev.** Confirm `src/combat/Health.gd` already emits what the bar needs (`health_changed(current, maximum)` on damage, heal, and Burn ticks; `died()`), and that the enemy scenes and TrainingDummy all have a `Health` node. Add a signal only if one is missing. Then build the reusable billboard bar scene + data config per the roadmap criteria, and hand off to ux-designer for look/readability.
+
+Previously (still applies after the HP bar item closes):
 Director: re-playtest now that the world is visible - controls will feel different since movement/aim were camera-relative to a wrong camera. Then:
 Wait for the director's playtest and design feedback before starting Milestone 3. If asked to proceed anyway: Milestone 3's first real decision is the two open questions it inherits from GDD §14 item 1 (single-card reward offer vs. choice of several; whether shops/drops exist alongside post-battle rewards) - resolve those via the GDD's own `[PROPOSED]` defaults if no new director input arrives, log in `docs/DECISIONS.md`, then start with the room-graph/run-structure data model before the reward screen, since the reward screen needs somewhere to fire between rooms.
 

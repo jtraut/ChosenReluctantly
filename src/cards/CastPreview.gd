@@ -145,8 +145,14 @@ func _style_part(index: int, part: Dictionary) -> void:
 	edge.scale = Vector3.ONE
 	edge.position.y = 0.005
 	var color := Color.html(String(_config["default_color"]))
-	if not String(part["damage_type"]).is_empty():
-		color = ElementVisuals.color_for_damage_type(String(part["damage_type"]))
+	match String(_config["color_source"]):
+		"card_element":
+			if not String(part["damage_type"]).is_empty():
+				color = ElementVisuals.color_for_damage_type(String(part["damage_type"]))
+		"player_element":
+			var element_id: String = _player.character_element_id()
+			if not element_id.is_empty():
+				color = ElementVisuals.color_for_damage_type(element_id)
 	(fill.material_override as StandardMaterial3D).albedo_color = Color(color, float(_config["fill_alpha"]))
 	(edge.material_override as StandardMaterial3D).albedo_color = Color(color.lerp(Color.WHITE, float(_config["edge_lighten"])), float(_config["edge_alpha"]))
 
@@ -159,10 +165,11 @@ func _cached(key: String, builder: Callable) -> Mesh:
 
 ## What is being previewed, for ux and tests. `active` false means nothing is shown (all
 ## other fields are empty). `slot` is the slot type id, `shape` and `size` those of the
-## first part (the card's main shape), `parts` every part (see CastPreviewShapes).
+## first part (the card's main shape), `parts` every part (see CastPreviewShapes), `ready`
+## whether releasing now would cast (false while the slot cools: ux may dim the preview).
 func get_state() -> Dictionary:
 	if not _sync():
-		return {"active": false, "slot": "", "card_id": "", "shape": "", "size": 0.0, "parts": []}
+		return {"active": false, "slot": "", "card_id": "", "shape": "", "size": 0.0, "parts": [], "ready": false}
 	return {
 		"active": true,
 		"slot": CardSlotController.slot_type_at_index(_shown_slot),
@@ -170,7 +177,13 @@ func get_state() -> Dictionary:
 		"shape": _parts[0]["shape"],
 		"size": _parts[0]["size"],
 		"parts": _parts.duplicate(true),
+		"ready": _is_shown_slot_ready(),
 	}
+
+
+func _is_shown_slot_ready() -> bool:
+	var slot: CardSlot = _player.card_slots.get_slot(CardSlotController.slot_type_at_index(_shown_slot))
+	return slot != null and slot.is_ready()
 
 
 ## The drawn nodes for part `index` (fill, edge, pivot), for sizing tests. Null when unused.

@@ -143,3 +143,11 @@ func test_autoload_forwards_changed_and_injection_is_hermetic() -> void:
 	assert_array(seen).is_equal([["cast_trigger", "press"]])
 	Settings.use_store(original)
 	assert_bool(Settings.store == original).is_true()
+
+
+func test_a_bad_user_file_is_reported_loudly_by_the_autoload() -> void:
+	var path := _temp_path()
+	_write(path, "this is not a config file\n")
+	var store := SettingsStore.new(DEFAULTS, path)
+	var assertion := await assert_error(func() -> void: Settings.report_problems(store))
+	assertion.is_push_error("Settings: " + store.problems[0])

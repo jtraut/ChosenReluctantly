@@ -60,6 +60,9 @@ static func setup(main: Node3D, scenario_id: String) -> Scenario:
 	scenario._main = main
 	scenario._def = def
 	main.add_child(scenario)
+	# Held-key captures need the release trigger whatever the dev saved (memory only, never saved).
+	if def.has("previews"):
+		Settings.set_value(Settings.CAST_TRIGGER, Settings.TRIGGER_RELEASE)
 	scenario._build()
 	return scenario
 

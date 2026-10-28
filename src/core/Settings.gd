@@ -22,7 +22,12 @@ func _init() -> void:
 
 
 func _enter_tree() -> void:
-	for problem: String in store.problems:
+	report_problems(store)
+
+
+## push_errors every problem found loading `of` (fail loud; the defaults are used anyway).
+func report_problems(of: SettingsStore) -> void:
+	for problem: String in of.problems:
 		push_error("Settings: " + problem)
 
 

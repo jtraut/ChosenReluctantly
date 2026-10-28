@@ -136,6 +136,13 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 
+## A key released while the window is out of focus may never reach us, so losing focus
+## ends a hold like a pause does (no cast; a fresh press is needed).
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+		cancel_cast_preview()
+
+
 func _exit_tree() -> void:
 	if Settings.changed.is_connected(_on_setting_changed):
 		Settings.changed.disconnect(_on_setting_changed)

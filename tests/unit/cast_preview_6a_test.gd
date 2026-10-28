@@ -300,3 +300,39 @@ func test_config_data_is_valid_and_bad_values_are_rejected() -> void:
 	bad["default_color"] = "nope"
 	bad["enabled"] = "yes"
 	assert_array(CastPreviewConfig.validate(bad)).has_size(3)
+
+
+func test_color_source_is_validated_and_player_element_colours_every_card() -> void:
+	var bad := CastPreviewConfig.DEFAULTS.duplicate()
+	bad["color_source"] = "rainbow"
+	assert_array(CastPreviewConfig.validate(bad)).has_size(1)
+	assert_array(CastPreviewConfig.validate(CastPreviewConfig.DEFAULTS)).is_empty()
+
+
+func test_state_reports_whether_a_release_would_cast() -> void:
+	var player := _player()
+	await _frames(2)
+	var index := _reveal(player, "fire_ember_whatever")
+	var action := StringName("slot_%d" % (index + 1))
+	TestInput.press(action)
+	await _frames(2)
+	assert_bool(player.get_preview_state()["ready"]).is_true()
+	player.card_slots.get_slot("attack_single").cooldown_remaining = 5.0
+	assert_bool(player.get_preview_state()["ready"]).is_false()
+
+
+func test_losing_window_focus_ends_a_hold_without_a_cast() -> void:
+	var player := _player()
+	await _frames(2)
+	var casts: Array[String] = []
+	player.card_slots.card_cast.connect(func(slot_type: String, _card: String) -> void: casts.append(slot_type))
+	var index := _reveal(player, "fire_ember_whatever")
+	var action := StringName("slot_%d" % (index + 1))
+	TestInput.press(action)
+	await _frames(2)
+	assert_bool(player.cast_input.is_previewing()).is_true()
+	player._notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+	assert_bool(player.cast_input.is_previewing()).is_false()
+	TestInput.release(action)
+	await _frames(3)
+	assert_array(casts).is_empty()

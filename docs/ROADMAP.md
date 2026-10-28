@@ -247,7 +247,8 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
 - [ ] **Slice 6: Hold-to-preview casting and a minimal settings screen (director D2 = C, 2026-10-28)**
   - **GDD:** §3 "Hold-to-preview casting [DIRECTOR DECISION, 2026-10-28]", §4. DECISIONS 2026-10-28 "Answers to D1-D7".
   - **Owner sequence:** 6a gameplay-dev -> 6b ux-designer -> 6c qa -> playtest folded into the pass close-out -> game-lead.
-  - [ ] **6a, gameplay-dev:**
+  - [x] **6a, gameplay-dev:** BUILT 2026-10-28 (37c42b6..4f5220e, 495/495). Settings store + `Settings` autoload, `CastInput` latched in `_unhandled_input` (s3-j closed), `CastPreview` sized via VfxSizing, `GamePause` with Juice freeze/thaw, `cast_preview` scenario. qa at 6c.
+   
     - Card slot input becomes press / hold / release. In `release` mode (default), pressing starts a preview and releasing casts.
     - Cancel rules: releasing while the slot isn't ready doesn't cast. Death, the Game Over screen, or the settings screen opening cancel the preview. Only one preview at a time; pressing a second key switches to it. Dead-card swap (Ctrl+N) is unaffected.
     - In `press` mode, behaviour is exactly as today.

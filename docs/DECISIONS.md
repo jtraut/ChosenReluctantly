@@ -212,3 +212,7 @@ These were already resolved by explicit instruction in the Milestone 2 kickoff p
 - Rejected: launching shots at body height (changes what hits, a balance change); keeping `q + R` for cone/aoe because the error is small (it is the same bug and one function now serves all three).
 - Limit: dy is one global number from data, tuned for the MeleeChaser capsule; Shooter (0.4/1.6, low centre 0.4) and Golem differ by a few cm and are not modelled per enemy.
 - `VfxConfig.DEFAULTS.max_simultaneous` is now 64, matching `data/vfx.json`.
+
+### 2026-10-28 - S4-2: enemy attack shapes moved to data (gameplay-dev)
+- There is no per-enemy data table yet (enemy stats are exported values in each scene), so the two hardcodes from `Enemy.gd` live in a new `data/enemies.json` under `attack_shapes`: `projectile_hit_radius` 0.3 and `melee_half_angle_degrees` 60.0, values unchanged. Loaded and validated by `EnemyConfig` (same pattern as `VfxConfig`: push_error and DEFAULTS on invalid data). Tests: `tests/unit/enemy_config_test.gd`; the qa pin test stays green. The cone knockback 2.0 in `Enemy.gd` was not asked for and is still hardcoded.
+- Rejected: a full per-enemy `enemies.json` keyed by scene (a larger refactor of exported values, out of scope for a fix pass); the values apply to all enemy types today, as the hardcodes did.

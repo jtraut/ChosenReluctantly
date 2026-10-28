@@ -127,14 +127,14 @@ func _execute_attack() -> void:
 			"damage_type": attack_damage_type,
 			"speed": projectile_speed,
 			"max_range": projectile_max_range,
-			"hit_radius": 0.3,
+			"hit_radius": EnemyConfig.projectile_hit_radius(),
 		}, context)
 	else:
 		EffectTemplates.execute("cone", {
 			"damage": attack_damage,
 			"damage_type": attack_damage_type,
 			"range": attack_range,
-			"half_angle_degrees": 60.0,
+			"half_angle_degrees": EnemyConfig.melee_half_angle_degrees(),
 			"knockback_strength": 2.0,
 		}, context)
 

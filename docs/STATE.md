@@ -12,22 +12,14 @@ Last updated: 2026-10-28. **Milestone 2 is done.** Now running **Post-milestone 
 - **Polish 1, Slice 1 (death and game over) - done** (7ad85ee): `Player.player_died`, `Main.game_over_ready` / `restart_arena()` (scene reload), Game Over screen, "HP x / y" label, reload soak tool `tools/run_reload_cycle.ps1`.
 
 ## In progress
-**qa S4 re-check DONE (2026-10-28): PASS.** S4-1/2/3 all RESOLVED, 247/247 (added `slice4_recheck_test.gd` cone+aoe physical pins), reload soak 5 cycles OK. Non-blocking: ground shapes understate reach vs the Golem box hurtbox (N1). Next: playtester. See review file "Re-check" section.
-
-**S4 qa fix pass DONE by gameplay-dev (2026-10-28), awaiting the targeted qa re-check:** S4-1 lane/cone/aoe use `VfxSizing.lateral_reach` (lane 0.75 to 0.60), S4-2 enemy shot radius and cone angle in `data/enemies.json` (`EnemyConfig`), S4-3 `StatusDatabase` validator, `VfxConfig` default cap 64. 245/245 tests. See DECISIONS 2026-10-28 S4-1/2/3.
-
-**qa 4d verdict (2026-10-28): PASS with should-fix.** 236/236, soak/bot-sim/scenario clean, soak flake pre-existing and benign (8/40 failures at 4c2bfef, lag now measured). Should-fix: S4-1 projectile lane 0.75 vs real 0.60 half-width, S4-2 ranged enemy hit radius 0.25 to 0.3 unlogged, S4-3 status visual unvalidated. See `docs/reviews/2026-10-28-polish1-slice4-qa.md`. Next: playtester, then game-lead close.
-
-**4c DONE by ux-designer (2026-10-28), awaiting game-lead to mark ROADMAP:** aim reticle + facing dots (`src/ui/AimIndicator.gd`, `data/ui.json` `aim`), read-only `Player.get_aim_point()/get_aim_direction()`, projectile lane and dash path ground markers (`EffectPool.Shape.STRIP`, `VfxSizing.projectile_lane_half_width`, `data/vfx.json` marker keys), capture-only `aim_preview_distance`. Tests 221/221, reload soak OK. Needs gameplay-dev: team tint so enemy and player shots differ (both cream). Not fixed: tall golems hide ground shapes and the reticle. Details: DECISIONS 2026-10-28 "Slice 4c". Next: 4d (qa, playtester, game-lead).
-
-**4b DONE by gameplay-dev (2026-10-28), awaiting game-lead to mark ROADMAP:** all seven template visuals through the one pool (projectile recolor + muzzle/trail/impact, cone sweep, aoe staged flash/burst/ring, dash trail + puffs, heal sparkles, buff rings, persistent Burn flame that ends on expiry or enemy death); s3-b light flash, s3-c heavy telegraph (pale outline + growing fill vs solid impact), s1-a death cue (white/red flash, ring, shake); blue triangle = sky color past the floor edge at wide aspect, fixed (dark void background; floor unchanged at 40x40). `card_cast` has `enemies_idle`/`disable_auto_attack` flags and a 2x2 layout. Details and rejected alternatives: DECISIONS 2026-10-28 "Slice 4b". Known gaps: enemy shots are neutral cream not orange (physical damage type); dodge roll has no trail; projectile Area3D itself is not pooled (its ball visual is); Scenario captures still show tall golems hiding ground shapes. Tests 208/208, reload soak OK. Next: 4c (aim reticle, ground markers; ux-designer).
-
-**4a DONE by gameplay-dev (2026-10-28), awaiting game-lead to mark ROADMAP:** all five items committed (card_cast scenario; EffectPool + `data/vfx.json`; element `visual` in `data/pools.json`; `VfxSizing` + visual-vs-hitbox tests; s3-a wedge to effective reach). Only aoe (disc + cosmetic burst) and cone cards (wedge) are wired through the pool; projectile is sized correctly but not pooled/recolored yet. Remaining visuals are 4b. Tests 187/187, reload soak OK.
-
-**Slice 4 IN PROGRESS.** Split into 4a/4b/4c/4d (ROADMAP Slice 4 "Sub-steps", DECISIONS 2026-10-28). **4a built (91587d5). 4b built (7755fbf). 4c built (51fc5b0). qa PASS 6f82a4b with should-fix S4-1/2/3; fix pass done (5807412..b5180a8, 245/245); qa re-check PASS 8cc7b92 (247/247); playtester in progress, then game-lead close.** Check `git log` for 4a commits; if 4a is not marked done in ROADMAP, it may be half done: read the latest gameplay-dev commit/STATE note before resuming. Criterion 6 (hold-to-preview) proposal logged, no code. Repo runs at the latest commit.
+**Director prompt 2026-10-28 (attack decisions + OPEN_ITEMS) is being executed.**
+- Part A (decisions recorded in GDD/DECISIONS): done.
+- Part C (`docs/OPEN_ITEMS.md`, CLAUDE.md rule): done.
+- **Part B is the new Slice 3b (ROADMAP). 3b-1 has been handed to gameplay-dev.**
+- Slice 4: built, qa PASS and re-check PASS (8cc7b92). Its playtest is folded into the Slice 3b playtest. Not closed yet.
 
 ## Exact next step
-4b is built (gameplay-dev) -> 4c (gameplay-dev aim data if missing, then ux-designer) -> 4d qa (whole slice) -> playtester -> game-lead close. Then slice 5, the capture tooling task, then the whole-pass playtester report. After the pass: **Milestone 3a (run structure)**. Re-run reload soak `tools/run_reload_cycle.ps1` whenever Main/Juice/Player/autoloads change.
+3b-1 (gameplay-dev) -> 3b-2 (gameplay-dev) -> 3b-3 (ux-designer) -> 3b-4 qa -> playtester (one report for Slice 4 + 3b) -> game-lead closes Slice 4 and 3b and updates OPEN_ITEMS. Then Slice 5 (full loop), the true-size capture tooling, and the pass close-out. After the pass: **Milestone 3a (run structure)**. Re-run the reload soak `tools/run_reload_cycle.ps1` whenever Main, Juice, Player or the autoloads change.
 
 **Orchestration:** game-lead now has the `Agent` tool (`.claude/agents/game-lead.md`). Restart with `claude --agent game-lead` and say "continue Post-milestone polish 1"; game-lead resumes the loop at the slice named above. Don't run the per-role sessions on the same slice at the same time (shared working tree and git).
 

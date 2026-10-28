@@ -247,3 +247,15 @@ These were already resolved by explicit instruction in the Milestone 2 kickoff p
   - "The blue shape": fixed in 4b.
   - "Dark cooldown bar": fixed in Slice 3.
 - Rejected: listing every follow-up. Only items that need the director appear; the rest stay in ROADMAP.
+
+### 2026-10-28 - Slice 3b scoping and defaults (game-lead)
+- **Part B is a new Slice 3b** (attack rework), split into 3b-1 (click cap, card rule), 3b-2 (heavy redesign), 3b-3 (ux), then qa. Rejected: a single gameplay-dev run (too large to finish in one sitting).
+- **Slice 4's playtest is folded into the 3b playtest**, as one report. Reason: 3b changes the heavy visuals and the attack numbers, so a Slice 4 playtest run first would be stale within the hour, and a second run costs usage. Slice 4 stays open until that report comes back with no blocker. Rejected: playtesting Slice 4 first.
+- **"Damage card" definition:** a card in an `attack_single` or `attack_aoe` slot. Its per-cast damage includes guaranteed status damage from the card (full duration, no resistance). DPS is single-target, as the director worded it. Movement, utility and recovery cards are exempt, because the director said not to change them. Rejected: counting AoE cards at an assumed multi-target count (that reinterprets the director's rule).
+- **Proposed defaults** (data, cheap to change):
+  - click ratio 1.5
+  - element status base chance 0.2; light multiplier 0.0, heavy 2.5 (50% Burn on heavy); heavy Burn lasts 3 s
+  - Stun: 0.6 s; a repeat within a 4 s window x0.5; immune after the third; elites x0.5; bosses immune
+  - heavy wind-up slow -35%
+  - heavy burst >= 2.5x the light hit, with DPS slightly below light
+  - current enemies are all rank "normal" unless gameplay-dev logs otherwise

@@ -148,7 +148,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
     - [x] **4b, template visuals (gameplay-dev):** BUILT 2026-10-28 (ba993b4..7755fbf, 208/208 tests, soak OK); qa at 4d. qa must check: soak flake (time_scale 0.25 ~1/8 runs, 250 ms grace added; pre-existing or not unverified), vfx cap 48 -> 64, projectile Area3D not pooled (visual is), enemy shots neutral-colored, player hit flash was dead code until now (now visible). Left: dodge roll has no trail.
       all seven template visuals from criterion 1; s3-b (stronger light flash), s3-c (distinct heavy telegraph look), s1-a (death flash/grey-out); s3-d/s2-d blue triangle, investigate and fix if cheap.
     - [x] **4c, aim and markers (gameplay-dev exposes aim point/direction if missing, then ux-designer draws):** aim reticle, direction line/arc, cast ground markers, readability tuning. BUILT 2026-10-28 (7d8817e..51fc5b0, 221/221, soak OK); qa at 4d. Follow-ups: (s4-a) enemy vs player physical shots both neutral cream, team tint needs code in `ElementVisuals` (gameplay-dev, later); (s4-b) tall golems occlude ground shapes and reticle -> Slice 5 enemy review; (s4-c) cone sweep duration 0.25 s is a constant in `TemplateVfx.cone_sweep`, move to data; (s4-d) dodge roll has no trail; (s4-e) director: check reticle with a real mouse and at 1440p.
-    - [ ] **4d:** qa (whole slice) PASS 6f82a4b (`docs/reviews/2026-10-28-polish1-slice4-qa.md`), with should-fix S4-1/2/3 -> gameplay-dev fix pass done 5807412..b5180a8 -> qa re-check RESOLVED/PASS 8cc7b92 -> playtester (in progress) -> playtester -> game-lead close. Follow-ups from review: S4-4 scenario flags unvalidated; DamageNumber only colors fire; CardDatabase fixture leak between suites (call `load_all()`).
+    - [ ] **4d:** qa (whole slice) PASS 6f82a4b (`docs/reviews/2026-10-28-polish1-slice4-qa.md`), with should-fix S4-1/2/3 -> gameplay-dev fix pass done 5807412..b5180a8 -> qa re-check RESOLVED/PASS 8cc7b92 -> playtester folded into the Slice 3b playtest (one report, see DECISIONS 2026-10-28) -> playtester -> game-lead close. Follow-ups from review: S4-4 scenario flags unvalidated; DamageNumber only colors fire; CardDatabase fixture leak between suites (call `load_all()`).
     - Criterion 6 (hold-to-preview): proposal logged by game-lead in DECISIONS.md 2026-10-28. Done, no code.
   - **GDD:** §11 (shared templates recolored/rescaled per element), CLAUDE.md "Content is data".
   - **Also in this slice (from earlier follow-ups):** s1-a (stronger death cue: flash/grey-out), s3-a (attack wedge vs real reach), s3-b (light flash readability), s3-c (distinct heavy telegraph), s3-d/s2-d (blue triangle), s3-f (a capture scenario that casts each card/skill type, needed for this slice's screenshots and to verify slot cooling live). Note: scenarios default player HP to 9999 (`Scenario.gd`), so scenario shots say nothing about danger.
@@ -162,6 +162,47 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
     6. Hold-to-preview mode: game-lead logs a proposal only. Don't build it.
   - **qa tests:** visual-vs-hitbox size test; pool cap and no leak over N casts; caster/target freed mid-effect; headless run clean.
   - **playtester:** from a screenshot or short capture, can you tell which skill was cast, where it went, what it hit? Screenshots of each template type.
+
+- [ ] **Slice 3b: Attack rework (director decisions 2026-10-28, resolves P1-P4)**
+  - **GDD:** §3 "Role of basic attacks [DIRECTOR DECISION, 2026-10-28]", §7 (statuses), §4 (slot cooldowns). DECISIONS 2026-10-28 "[DIRECTOR DECISION] Role of basic attacks".
+  - **Owner sequence:** 3b-1 gameplay-dev -> 3b-2 gameplay-dev -> 3b-3 ux-designer -> 3b-4 qa (whole 3b) -> playtester (one report covering Slice 4 visuals and 3b) -> game-lead closes Slice 4 and 3b.
+  - [ ] **3b-1, click cap and cards-beat-light (gameplay-dev):**
+    1. Replace light `manual_min_gap` with `manual_click_max_rate_ratio` (1.5). Min gap = resolved auto interval / ratio (0.4 s at 0.6 s), so it scales with attack-speed modifiers. Heavy keeps "click only when ready".
+    2. Rule (game-lead default, logged): a **damage card** is any card in an `attack_single` or `attack_aoe` slot. Each must satisfy both:
+       - (a) per-cast damage >= 1.5x the light hit.
+       - (b) single-target DPS while cycling (per-cast / (slot base cooldown + modifier)) > auto light DPS.
+
+       Per-cast damage includes guaranteed status damage from the card itself (e.g. Burn ticks over full duration, no resistance). Movement, utility and recovery cards are exempt and unchanged (Blaze and Bail is listed, but exempt). Fast, low-damage exceptions are allowed only with a logged `rule_exception` reason in the card data.
+    3. Lower the light per-hit damage (8) and raise damage cards until the rule holds. Do not change non-damage cards, enemy numbers, or the light interval. If the rule forces any card past ~2x its current damage, still apply the simplest compliant numbers, and put a proposal in the hand-back (for example, slowing the light interval).
+    4. A data validation check and a test that fail when any damage card breaks the rule.
+    5. A before/after table in DECISIONS: every damage card's cast damage, slot cooldown and DPS, plus light and heavy for comparison. Also report rough time-to-kill per enemy type, before and after.
+  - [ ] **3b-2, heavy redesign (gameplay-dev):**
+    1. Per-class heavy definitions in data (for example under `heavy`, keyed by class id; the current character's class picks one). Shapes:
+       - `arc`: wide melee, larger area than light.
+       - `targeted_aoe`: centred on the mouse point, capped at `max_range`, with a ground telegraph during the wind-up. Clamp the target to the max range and the arena, with no errors when off the arena.
+    2. Rogue heavy [PROPOSED]: wide arc, burst, a brief stun on hit. Wizard heavy [PROPOSED]: `targeted_aoe`, as a data definition only, proven by a test and a capture scenario. Do NOT build the Wizard class.
+    3. Heavy numbers (default): burst per hit clearly larger than light (>= 2.5x), area meaningfully larger, sustained single-target DPS slightly below light. Report the final numbers.
+    4. Element flavour: element status (Burn for Fire), chance = element base chance x the attack's `status_chance_multiplier`. Defaults: base 0.2 (in element data), light multiplier 0.0, heavy 2.5 (= 50%), heavy Burn duration 3 s. All in data.
+    5. Stun: a new generic status in `statuses.json`. Stunned enemies don't move or attack, and an active wind-up is cancelled. Defaults:
+       - Base duration 0.6 s.
+       - Diminishing returns: each repeat within a 4 s window x0.5; immune after the third stun until the window clears.
+       - Elites x0.5; bosses immune.
+       - Enemy `rank` (normal/elite/boss) in `data/enemies.json`. Current enemies are all normal unless logged otherwise. Test fixtures cover elite and boss.
+    6. Wind-up slow: -35% move speed via StatModifiers, for the wind-up only. Removed on release, death, cancel, and scene reload. Never a root.
+  - [ ] **3b-3, ux-designer:**
+    - A clear stunned cue on enemies (for example spinning stars or a ring plus desaturation, via the shared pool).
+    - A readable `targeted_aoe` ground telegraph that matches the hitbox via VfxSizing.
+    - Heavy meter or labels updated if the heavy's shape or class matters to the player.
+    - Any new bindings in `input_bindings.json`.
+  - **qa tests:**
+    - The click ratio never exceeds ratio x auto DPS, including under attack-speed modifiers.
+    - The card rule check (fails on a bad fixture).
+    - Stun: applies and expires; diminishing returns; elite and boss rules; stunned enemies don't move or attack.
+    - Status chance multiplier math (seeded).
+    - Wind-up slow is applied and removed, including on death and interruption.
+    - `targeted_aoe` range cap; no errors when the target is off the arena.
+    - DoD: zero errors and warnings on startup and in a 20 s headless run; full suite passes; SceneSelfCheck passes.
+  - **playtester:** the heavy (stun, slow, element status, area), light-vs-card balance, and the 1.5x click cap, plus the Slice 4 questions (can you tell what was cast, where it went, what it hit). Screenshots.
 
 - [ ] **Slice 5: Wave density, enemy readability, HP bars**
   - **Owner sequence:** gameplay-dev (spawner, enemy fixes, bar rendering) -> ux-designer (bar visibility/size options) -> qa (incl. bot-sim) -> playtester (compare bar options, density screenshots) -> game-lead (pick bar default, close).

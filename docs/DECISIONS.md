@@ -470,3 +470,8 @@ These were already resolved by explicit instruction in the Milestone 2 kickoff p
 ### 2026-10-28 - After 5b (game-lead)
 - **HP bar default:** the brief let game-lead pick, but ux's candidate (`elite_boss_always`) overrides the director's 2026-10-27 answer (`always_alive`). It goes to the director as D7. The shipped value stays `always_alive` until answered, and the playtester compares both looks. Rejected: switching now (that would override a director answer without asking).
 - **Damage-taken vs damage-dealt numbers:** worth doing for readability. It's a small caller change, logged as follow-up 5-a for gameplay-dev after the pass. Not a director call.
+
+### 2026-10-28 - After the Slice 5 qa FAIL (game-lead)
+- **One fix pass, owned by gameplay-dev**, covering S5-1 through S5-7, S5-10, S5-8 (README CR bytes) and the stray .uid files. Ownership is formally split: S5-1, S5-2, S5-5 and S5-7 belong to ux-designer. But S5-1 is a script dependency issue (an autoload referenced under `-s`), not UI, and one run is cheaper than two. Rejected: two sequential runs.
+- **D6 default A is applied in this pass** (golem wind-up 0.45 -> 0.7 s), as OPEN_ITEMS said would happen if the director hadn't answered. It's one data or scene value, and it's logged.
+- **Density:** a competent-bot mean of 6.0-6.6 alive, peaking at 11-12, meets "about 6 to 15". It sits at the low end, which matches the GDD §1 density principle (fewer, more impactful enemies). It's listed as FYI for the director; no change.

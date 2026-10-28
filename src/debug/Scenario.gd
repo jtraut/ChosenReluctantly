@@ -70,6 +70,10 @@ func _build() -> void:
 	# Capture-only: stop mouse aim so the player keeps facing -Z.
 	if bool(_def.get("freeze_aim", false)):
 		player.camera = null
+	# Capture-only: with frozen aim, still show the aim reticle this far ahead.
+	var indicator: AimIndicator = _main.get_node_or_null("AimIndicator")
+	if indicator != null:
+		indicator.preview_distance = float(_def.get("aim_preview_distance", 0.0))
 
 	var offset_values: Array = _def.get("origin_offset", [3.0, 0.0, -2.0])
 	var origin := Vector3(float(offset_values[0]), float(offset_values[1]), float(offset_values[2]))

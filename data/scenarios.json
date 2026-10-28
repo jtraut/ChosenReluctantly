@@ -72,6 +72,7 @@
         "disable_spawner": true,
         "player_max_health": 9999,
         "freeze_aim": true,
+        "aim_preview_distance": 5.0,
         "origin_offset": [
             -0.6,
             0.0,
@@ -95,6 +96,7 @@
         "player_max_health": 9999,
         "player_start_damage": 60,
         "freeze_aim": true,
+        "aim_preview_distance": 5.0,
         "enemy_max_health": 2000,
         "enemies_idle": true,
         "disable_auto_attack": true,

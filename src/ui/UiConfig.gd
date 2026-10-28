@@ -32,6 +32,25 @@ const DEFAULT_DEATH_BEAT: Dictionary = {
 	"collapse_duration": 0.5,
 }
 
+## Ground aim indicator (reticle at the mouse point, fading dots along the
+## facing direction). Sizes in world meters. Quiet on purpose: low alpha, below
+## every attack/telegraph shape (see AimIndicator).
+const DEFAULT_AIM: Dictionary = {
+	"enabled": true,
+	"color": "#f4ece8",
+	"ground_offset": 0.03,
+	"reticle_radius": 0.38,
+	"reticle_alpha": 0.55,
+	"center_dot_radius": 0.07,
+	"dot_count": 8,
+	"dot_radius": 0.06,
+	"dot_spacing": 0.7,
+	"dot_start_gap": 0.9,
+	"dot_alpha_near": 0.5,
+	"dot_alpha_far": 0.12,
+	"max_length": 6.0,
+}
+
 ## Game Over screen text and sizes. Font sizes and button_min_size are in pixels
 ## at `reference_height` and are scaled with the window height.
 const DEFAULT_GAME_OVER: Dictionary = {
@@ -122,6 +141,39 @@ static func death_beat() -> Dictionary:
 		return merged
 	push_error("data/ui.json death_beat invalid: " + "; ".join(problems))
 	return DEFAULT_DEATH_BEAT.duplicate()
+
+
+static func aim() -> Dictionary:
+	var merged := merge_with_defaults(DEFAULT_AIM, _table.get_entry("aim"))
+	var problems := validate_aim(merged)
+	if problems.is_empty():
+		return merged
+	push_error("data/ui.json aim invalid: " + "; ".join(problems))
+	return DEFAULT_AIM.duplicate()
+
+
+static func validate_aim(block: Dictionary) -> Array[String]:
+	var problems: Array[String] = []
+	if typeof(block.get("enabled")) != TYPE_BOOL:
+		problems.append("enabled must be true or false")
+	var color: Variant = block.get("color")
+	if typeof(color) != TYPE_STRING or not String(color).is_valid_html_color():
+		problems.append("color must be a hex color")
+	for key: String in DEFAULT_AIM:
+		if key == "enabled" or key == "color":
+			continue
+		var value: Variant = block.get(key)
+		if not (value is float or value is int) or is_nan(float(value)):
+			problems.append("%s must be a number" % key)
+		elif float(value) < 0.0:
+			problems.append("%s must be >= 0" % key)
+		elif key.ends_with("alpha") or key.contains("alpha_"):
+			if float(value) > 1.0:
+				problems.append("%s must be <= 1" % key)
+	if block.get("dot_count") is float or block.get("dot_count") is int:
+		if float(block["dot_count"]) > 32.0:
+			problems.append("dot_count must be <= 32")
+	return problems
 
 
 static func game_over() -> Dictionary:

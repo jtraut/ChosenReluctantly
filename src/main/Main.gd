@@ -25,6 +25,7 @@ func _ready() -> void:
 	player.player_died.connect(_on_player_died)
 	hud.set_player(player)
 	debug_overlay.player = player
+	AimIndicator.attach(self, player)
 	var problems := SceneSelfCheck.find_problems(self)
 	if not problems.is_empty():
 		push_error("Main scene self-check FAILED (world may render empty): " + "; ".join(problems))

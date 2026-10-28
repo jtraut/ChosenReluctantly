@@ -386,6 +386,27 @@ func _apply_aim(delta: float) -> void:
 	global_transform.basis = blended.orthonormalized()
 
 
+## Read-only, for UI (aim reticle). The ground point under the mouse at the
+## player's height, or null when there is no camera/viewport (frozen-aim
+## captures, orphan nodes) or the ray misses the plane. Changes nothing.
+func get_aim_point() -> Variant:
+	if camera == null or not is_inside_tree():
+		return null
+	return _ground_point_under_mouse()
+
+
+## Read-only, for UI. The flat unit direction the player FACES, which is the
+## direction every card (cone, projectile, dash) actually fires along. It trails
+## the mouse a few frames because the body turns with a slerp (turn_speed), so
+## draw "where this will go" from this, not from the aim point.
+func get_aim_direction() -> Vector3:
+	var forward := -global_transform.basis.z
+	forward.y = 0.0
+	if forward.length_squared() < 0.0001:
+		return Vector3.FORWARD
+	return forward.normalized()
+
+
 func _ground_point_under_mouse() -> Variant:
 	var viewport := get_viewport()
 	if viewport == null:

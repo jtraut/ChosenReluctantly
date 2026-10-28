@@ -4,6 +4,21 @@
         "slow_mo_duration": 0.9,
         "collapse_duration": 0.5
     },
+    "aim": {
+        "enabled": true,
+        "color": "#f4ece8",
+        "ground_offset": 0.03,
+        "reticle_radius": 0.38,
+        "reticle_alpha": 0.55,
+        "center_dot_radius": 0.07,
+        "dot_count": 8,
+        "dot_radius": 0.06,
+        "dot_spacing": 0.7,
+        "dot_start_gap": 0.9,
+        "dot_alpha_near": 0.5,
+        "dot_alpha_far": 0.12,
+        "max_length": 6.0
+    },
     "hp_bars": {
         "visibility_mode": "always_alive",
         "width": 1.4,

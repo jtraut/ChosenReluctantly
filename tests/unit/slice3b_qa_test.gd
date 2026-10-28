@@ -372,16 +372,39 @@ func test_stun_mid_telegraph_for_a_ranged_enemy_cancels_the_shot() -> void:
 	assert_int(shots[0]).is_equal(0)
 
 
-func test_re_stun_emits_no_enemy_signal_pin() -> void:
-	# PIN (follow-up S3B-4): a stun refreshed while active emits neither `stunned` nor
-	# `status_applied`; only the longer remaining time is kept. Cue stays up (fine), but
-	# a consumer cannot see re-stuns.
+func test_re_stun_emits_status_refreshed_not_status_applied() -> void:
+	# S3B-4 (was a pin). A stun refreshed while active emits `status_refreshed`; `status_applied`
+	# stays "began", so the cue (stars, tint, Enemy.stunned) is not restarted.
 	var manager: StatusEffectManager = auto_free(StatusEffectManager.new())
 	var applied := [0]
+	var refreshed := [0]
 	manager.status_applied.connect(func(_id: String) -> void: applied[0] += 1)
+	manager.status_refreshed.connect(func(_id: String) -> void: refreshed[0] += 1)
 	manager.apply_status("stun", _stun_def(), 0.6)
 	manager.apply_status("stun", _stun_def(), 0.6)
 	assert_int(applied[0]).is_equal(1)
+	assert_int(refreshed[0]).is_equal(1)
+
+
+func test_re_stun_on_an_enemy_emits_stun_refreshed_once_and_keeps_one_set_of_stars() -> void:
+	var main := _spawn_main()
+	await _frames(2)
+	var enemy: Enemy = (load(CHASER_PATH) as PackedScene).instantiate()
+	enemy.position = main.player.global_position + Vector3(0.0, 0.0, -9.0)
+	main.add_child(enemy)
+	enemy.target = null
+	await _frames(2)
+	var started := [0]
+	var refreshed: Array[float] = []
+	enemy.stunned.connect(func(_d: float) -> void: started[0] += 1)
+	enemy.stun_refreshed.connect(func(remaining: float) -> void: refreshed.append(remaining))
+	enemy.status_manager.apply_status("stun", StatusDatabase.get_status("stun"), 0.6)
+	var pool_before := enemy.status_manager._vfx_pool().active_count()
+	enemy.status_manager.apply_status("stun", StatusDatabase.get_status("stun"), 0.6)
+	assert_int(started[0]).is_equal(1)
+	assert_int(refreshed.size()).is_equal(1)
+	assert_float(refreshed[0]).is_greater(0.0)
+	assert_int(enemy.status_manager._vfx_pool().active_count()).is_equal(pool_before)
 
 
 func test_stun_clock_is_game_time_and_survives_many_stuns_without_growth() -> void:

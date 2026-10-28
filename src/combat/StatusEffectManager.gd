@@ -9,6 +9,9 @@ class_name StatusEffectManager
 
 signal status_applied(status_id: String)
 signal status_expired(status_id: String)
+## An already-active status was applied again (duration kept or extended, tick phase kept).
+## `status_applied` stays "began", so cues that start on it never double up.
+signal status_refreshed(status_id: String)
 ## A stun landed on an immune target (boss, or diminishing returns): nothing was applied.
 ## ux can show an "immune" popup from this.
 signal status_resisted(status_id: String)
@@ -83,6 +86,8 @@ func apply_status(status_id: String, status_def: Dictionary, duration: float) ->
 	# A refresh emits nothing, so check the flame is still alive (it could have
 	# been recycled) and restart it if not.
 	_ensure_flame(status_id, status_def)
+	if was_active:
+		status_refreshed.emit(status_id)
 
 
 func has_status(status_id: String) -> bool:

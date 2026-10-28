@@ -18,6 +18,9 @@ const DEFAULT_STUN_TINT_AMOUNT := 0.55
 ## A stun began (seconds) / ended. For ux: the stunned cue hangs off these.
 signal stunned(duration: float)
 signal stun_ended()
+## A stun landed while already stunned (seconds left now). `stunned` is only for the start,
+## so the stars and tint are not restarted; this is for a flash or sound on a re-stun.
+signal stun_refreshed(remaining: float)
 
 ## Key into data/enemies.json "enemies" (rank). Set per scene.
 @export var enemy_id: String = ""
@@ -63,6 +66,7 @@ func _ready() -> void:
 		status_manager.status_applied.connect(_on_status_applied)
 		status_manager.status_expired.connect(_on_status_expired)
 		status_manager.status_resisted.connect(_on_status_resisted)
+		status_manager.status_refreshed.connect(_on_status_refreshed)
 	var material := body_mesh.material_override
 	if material is StandardMaterial3D:
 		var unique_material: StandardMaterial3D = (material as StandardMaterial3D).duplicate()
@@ -116,6 +120,11 @@ func _on_status_applied(status_id: String) -> void:
 		_cancel_telegraph()
 		_set_body_color(_rest_color())
 		stunned.emit(status_manager.stun_time_remaining())
+
+
+func _on_status_refreshed(_status_id: String) -> void:
+	if _was_stunned and is_stunned():
+		stun_refreshed.emit(status_manager.stun_time_remaining())
 
 
 func _on_status_expired(_status_id: String) -> void:

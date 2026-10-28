@@ -2,5 +2,10 @@
     "attack_shapes": {
         "projectile_hit_radius": 0.3,
         "melee_half_angle_degrees": 60.0
+    },
+    "enemies": {
+        "melee_chaser": { "rank": "normal" },
+        "ranged_shooter": { "rank": "normal" },
+        "fire_resistant_golem": { "rank": "normal" }
     }
 }

@@ -82,32 +82,35 @@ static func _play_cone_vfx(params: Dictionary, context: EffectContext, forward: 
 			float(params["half_angle_degrees"]), color)
 
 
+## Optional code-only param "center" (Vector3) moves the disc off the caster, for
+## targeted heavies; cards leave it out and the disc is centred on the caster.
 static func _execute_aoe(params: Dictionary, context: EffectContext) -> void:
 	var space_state := context.world().direct_space_state
+	var center: Vector3 = params.get("center", context.caster.global_position)
 	var hits := MeleeQuery.find_hurtboxes_in_sphere(
 		space_state,
-		context.caster.global_position,
+		center,
 		params["radius"],
 		context.caster_team,
 		CollisionLayers.HURTBOX
 	)
 	context.last_hits = hits
-	_play_aoe_vfx(params, context)
+	_play_aoe_vfx(params, context, center)
 	var knockback_strength: float = params.get("knockback_strength", 0.0)
 	for hurtbox: Hurtbox in hits:
-		hurtbox.receive_damage(params["damage"], params["damage_type"], _knockback_from(context.caster.global_position, hurtbox.global_position, knockback_strength))
+		hurtbox.receive_damage(params["damage"], params["damage_type"], _knockback_from(center, hurtbox.global_position, knockback_strength))
 
 
 ## Ground disc through the shared EffectPool, sized exactly to the hit radius.
 ## No-op when there is no pool (caster/spawn_parent not in a tree).
-static func _play_aoe_vfx(params: Dictionary, context: EffectContext) -> void:
+static func _play_aoe_vfx(params: Dictionary, context: EffectContext, center: Variant = null) -> void:
 	var pool := EffectPool.for_world(context.spawn_parent)
 	if pool == null or not is_instance_valid(context.caster):
 		return
 	var look := ElementVisuals.visual_for_damage_type(String(params.get("damage_type", "physical")))
 	# The disc and ring are the hit area (VfxSizing); the element "scale" only
 	# resizes the cosmetic flash and burst inside TemplateVfx.aoe.
-	TemplateVfx.aoe(pool, context.caster.global_position, VfxSizing.aoe_reach(float(params["radius"])), look)
+	TemplateVfx.aoe(pool, center if typeof(center) == TYPE_VECTOR3 else context.caster.global_position, VfxSizing.aoe_reach(float(params["radius"])), look)
 
 
 ## Horizontal-only impulse pointing from `origin` toward `target_pos`, scaled

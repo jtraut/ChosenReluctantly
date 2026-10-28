@@ -3,7 +3,8 @@
     "fire": {
         "kind": "element",
         "display_name": "Fire",
-        "visual": { "color": "#ff6a1f", "scale": 1.0 }
+        "visual": { "color": "#ff6a1f", "scale": 1.0 },
+        "status": { "status_id": "burn", "base_chance": 0.2 }
     },
     "neutral": {
         "kind": "neutral",

@@ -13,6 +13,10 @@ extends RefCounted
 ##   Manual is processed before auto, so a same-tick press + auto fires once.
 ## - While any attack is winding up, no other attack may start.
 ## - can_act false cancels any wind-up and blocks everything.
+## - A wind-up with a "wind_up_move_slow" (e.g. -0.35) adds a multiplicative
+##   StatModifiers entry on MOVE_SPEED_STAT for the wind-up only; it is removed
+##   when the attack fires and when the wind-up is cancelled (death, can_act
+##   false). The slow is always > -1, so it never roots.
 
 ## Wind-up (or instant swing) begins. Fires for every attack.
 signal attack_started(attack_id: StringName)
@@ -23,6 +27,8 @@ signal attack_ready(attack_id: StringName)
 ## Wind-up aborted (death).
 signal attack_cancelled(attack_id: StringName)
 
+## Stat the wind-up slow is registered on (Player movement reads it).
+const MOVE_SPEED_STAT := "move_speed"
 const MIN_INTERVAL := 0.05
 const NEVER := 1000000.0
 
@@ -149,6 +155,7 @@ func cancel_all() -> void:
 		var state: State = _states[attack_id]
 		if state.windup_left >= 0.0:
 			state.windup_left = -1.0
+			_remove_slow(attack_id)
 			attack_cancelled.emit(attack_id)
 
 
@@ -163,6 +170,7 @@ func _advance(attack_id: StringName, delta: float) -> void:
 		state.windup_left -= delta
 		if state.windup_left <= 0.0:
 			state.windup_left = -1.0
+			_remove_slow(attack_id)
 			attack_fired.emit(attack_id)
 
 
@@ -183,5 +191,16 @@ func _start(attack_id: StringName) -> void:
 	var wind_up: float = float(state.def["wind_up"])
 	if wind_up > 0.0:
 		state.windup_left = wind_up
+		var slow: float = float(state.def.get("wind_up_move_slow", 0.0))
+		if slow != 0.0:
+			_modifiers.add_modifier(MOVE_SPEED_STAT, _slow_id(attack_id), StatModifiers.MULTIPLICATIVE, maxf(slow, -0.999))
 	else:
 		attack_fired.emit(attack_id)
+
+
+func _slow_id(attack_id: StringName) -> String:
+	return "wind_up_slow.%s" % attack_id
+
+
+func _remove_slow(attack_id: StringName) -> void:
+	_modifiers.remove_modifier(MOVE_SPEED_STAT, _slow_id(attack_id))

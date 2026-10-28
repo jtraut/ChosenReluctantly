@@ -5,15 +5,28 @@ extends RefCounted
 ## an invalid entry is treated as missing (get_status returns {}), so a typo
 ## cannot silently turn into a zero-damage or invisible status.
 
-const EFFECT_TYPES: Array[String] = ["damage_over_time"]
+const EFFECT_TYPES: Array[String] = ["damage_over_time", "stun"]
+## Enemy ranks a stun rule must cover (see EnemyConfig.RANKS, which owns the list).
+const RANKS: Array[String] = ["normal", "elite", "boss"]
 ## Allowed "visual.kind" values (see StatusEffectManager._ensure_flame).
-const VISUAL_KINDS: Array[String] = ["flame"]
+const VISUAL_KINDS: Array[String] = ["flame", "halo"]
 const MAX_VISUAL_SIZE := 5.0
 
-## field -> [min, max, min_inclusive]. All are numbers.
-const NUMBER_RULES: Dictionary = {
-	"damage_per_tick": [0.0, 100000.0, true],
-	"tick_interval": [0.0, 3600.0, false],
+## Per effect_type required numbers. field -> [min, max, min_inclusive].
+const NUMBER_RULES_BY_TYPE: Dictionary = {
+	"damage_over_time": {
+		"damage_per_tick": [0.0, 100000.0, true],
+		"tick_interval": [0.0, 3600.0, false],
+	},
+	"stun": {
+		"base_duration": [0.0, 60.0, false],
+	},
+}
+## Diminishing-returns block of a stun: field -> [min, max, min_inclusive].
+const DR_RULES: Dictionary = {
+	"window": [0.0, 3600.0, false],
+	"multiplier": [0.0, 1.0, false],
+	"immune_after": [1.0, 100.0, true],
 }
 
 static var _table := JsonDataTable.new("res://data/statuses.json")
@@ -36,24 +49,62 @@ static func has_status(status_id: String) -> bool:
 ## Returns human-readable problems; empty means valid.
 static func validate_entry(entry: Dictionary) -> Array[String]:
 	var errors: Array[String] = []
-	for key: String in ["display_name", "damage_type"]:
+	var effect_type: Variant = entry.get("effect_type")
+	var type_ok: bool = typeof(effect_type) == TYPE_STRING and EFFECT_TYPES.has(String(effect_type))
+	if not type_ok:
+		errors.append("'effect_type' must be one of %s" % str(EFFECT_TYPES))
+	var required_strings: Array[String] = ["display_name"]
+	if not type_ok or String(effect_type) == "damage_over_time":
+		required_strings.append("damage_type")
+	for key: String in required_strings:
 		if typeof(entry.get(key)) != TYPE_STRING or String(entry[key]).strip_edges().is_empty():
 			errors.append("'%s' must be a non-empty string" % key)
-	if typeof(entry.get("effect_type")) != TYPE_STRING or not EFFECT_TYPES.has(String(entry["effect_type"])):
-		errors.append("'effect_type' must be one of %s" % str(EFFECT_TYPES))
-	for key: String in NUMBER_RULES.keys():
-		var value: Variant = entry.get(key)
-		if typeof(value) != TYPE_FLOAT and typeof(value) != TYPE_INT:
-			errors.append("'%s' must be a number" % key)
-			continue
-		var rule: Array = NUMBER_RULES[key]
-		var number: float = float(value)
-		if is_nan(number) or is_inf(number):
-			errors.append("'%s' must be finite" % key)
-		elif number > float(rule[1]) or number < float(rule[0]) or (number == float(rule[0]) and not bool(rule[2])):
-			errors.append("'%s' out of range (%s)" % [key, str(number)])
+	var rules: Dictionary = NUMBER_RULES_BY_TYPE[String(effect_type)] if type_ok else NUMBER_RULES_BY_TYPE["damage_over_time"]
+	errors.append_array(_check_numbers(entry, rules, ""))
+	if type_ok and String(effect_type) == "stun":
+		errors.append_array(_validate_stun(entry))
 	if entry.has("visual"):
 		errors.append_array(_validate_visual(entry["visual"]))
+	return errors
+
+
+static func _check_numbers(block: Dictionary, rules: Dictionary, prefix: String) -> Array[String]:
+	var errors: Array[String] = []
+	for key: String in rules.keys():
+		var value: Variant = block.get(key)
+		if typeof(value) != TYPE_FLOAT and typeof(value) != TYPE_INT:
+			errors.append("'%s%s' must be a number" % [prefix, key])
+			continue
+		var rule: Array = rules[key]
+		var number: float = float(value)
+		if is_nan(number) or is_inf(number):
+			errors.append("'%s%s' must be finite" % [prefix, key])
+		elif number > float(rule[1]) or number < float(rule[0]) or (number == float(rule[0]) and not bool(rule[2])):
+			errors.append("'%s%s' out of range (%s)" % [prefix, key, str(number)])
+	return errors
+
+
+## Stun: diminishing returns (a repeat within `window` seconds multiplies the
+## duration by `multiplier`; after `immune_after` stuns in the window, immune) and
+## a duration multiplier per enemy rank (0 = immune). Every rank must be listed.
+static func _validate_stun(entry: Dictionary) -> Array[String]:
+	var errors: Array[String] = []
+	var dr: Variant = entry.get("diminishing_returns")
+	if typeof(dr) != TYPE_DICTIONARY:
+		errors.append("'diminishing_returns' must be an object")
+	else:
+		errors.append_array(_check_numbers(dr, DR_RULES, "diminishing_returns."))
+	var ranks: Variant = entry.get("rank_multipliers")
+	if typeof(ranks) != TYPE_DICTIONARY:
+		errors.append("'rank_multipliers' must be an object")
+	else:
+		for rank: String in RANKS:
+			var value: Variant = (ranks as Dictionary).get(rank)
+			if (typeof(value) != TYPE_FLOAT and typeof(value) != TYPE_INT) or is_nan(float(value)) or float(value) < 0.0 or float(value) > 1.0:
+				errors.append("'rank_multipliers.%s' must be a number 0..1 (0 = immune)" % rank)
+		for rank: String in (ranks as Dictionary).keys():
+			if not RANKS.has(rank):
+				errors.append("'rank_multipliers.%s' is not a known rank %s" % [rank, str(RANKS)])
 	return errors
 
 

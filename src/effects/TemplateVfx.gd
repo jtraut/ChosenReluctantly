@@ -102,6 +102,23 @@ static func aoe(pool: EffectPool, origin: Vector3, hit_reach: float, look: Dicti
 	pool.play(EffectPool.Shape.RING, origin + Vector3(0.0, 0.02, 0.0), hit_reach, lighter(color, 0.4), 0.3, 0.3, 1.0, 0.85, 0.0).delayed(0.1)
 
 
+## Held ground telegraph of a targeted_aoe heavy's wind-up: a faint disc at the true
+## hit reach plus a brighter ring on its edge, both sized from `hit_reach`
+## (VfxSizing), so it matches the hitbox. Held until each effect is passed to
+## EffectPool.stop(). Basic on purpose: ux-designer tunes the look in 3b-3.
+static func aoe_telegraph(pool: EffectPool, center: Vector3, hit_reach: float, color: Color) -> Array[PooledEffect]:
+	var effects: Array[PooledEffect] = []
+	if pool == null:
+		return effects
+	var disc: PooledEffect = pool.play(EffectPool.Shape.DISC, center, hit_reach, color, 1.0, 1.0, 1.0, 0.3, 0.3)
+	if disc != null:
+		effects.append(disc.held())
+	var ring: PooledEffect = pool.play(EffectPool.Shape.RING, center + Vector3(0.0, 0.02, 0.0), hit_reach, lighter(color, 0.6), 1.0, 1.0, 1.0, 0.9, 0.9)
+	if ring != null:
+		effects.append(ring.held())
+	return effects
+
+
 # --- dash --------------------------------------------------------------------
 
 static func dash_start(pool: EffectPool, position: Vector3, look: Dictionary) -> void:
@@ -179,6 +196,18 @@ static func status_flame(pool: EffectPool, target: Node3D, look: Dictionary, siz
 	if effect == null:
 		return null
 	return effect.held().stretched(1.6).pulsing(0.18, 6.0).following(target, Vector3(0.0, height, 0.0))
+
+
+## Stun placeholder cue: a pulsing flat halo ring that follows `target` above its
+## head until EffectPool.stop() or the target is gone. Cosmetic only (no hit area);
+## ux-designer replaces it in 3b-3.
+static func status_halo(pool: EffectPool, target: Node3D, color: Color, size: float, height: float = FLAME_HEIGHT) -> PooledEffect:
+	if pool == null or target == null:
+		return null
+	var effect: PooledEffect = pool.play(EffectPool.Shape.RING, target.global_position, size, color, 1.0, 1.0, 1.0, 0.95, 0.95)
+	if effect == null:
+		return null
+	return effect.held().pulsing(0.2, 5.0).following(target, Vector3(0.0, height + 0.1, 0.0))
 
 
 # --- death -------------------------------------------------------------------

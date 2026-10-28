@@ -11,6 +11,16 @@ const HIT_FLASH_COLOR := Color(1.0, 1.0, 1.0)
 const HIT_FLASH_DURATION := 0.12
 const KNOCKBACK_DECAY := 18.0
 const ARRIVAL_MARGIN := 0.3
+## Placeholder stun cue: the body tints toward this while stunned (ux replaces it in 3b-3).
+const STUN_TINT := Color(1.0, 0.92, 0.35)
+const STUN_TINT_AMOUNT := 0.6
+
+## A stun began (seconds) / ended. For ux: the stunned cue hangs off these.
+signal stunned(duration: float)
+signal stun_ended()
+
+## Key into data/enemies.json "enemies" (rank). Set per scene.
+@export var enemy_id: String = ""
 
 @export var move_speed: float = 3.5
 @export var gravity: float = 20.0
@@ -32,16 +42,22 @@ var target: Node3D = null
 @onready var health: Health = $Health
 @onready var hurtbox: Hurtbox = $Hurtbox
 @onready var body_mesh: MeshInstance3D = $BodyMesh
+@onready var status_manager: StatusEffectManager = $StatusEffectManager
 
 var _base_color: Color = Color.WHITE
 var _attack_cooldown_remaining: float = 0.0
 var _telegraph_remaining: float = 0.0
 var _knockback_velocity: Vector3 = Vector3.ZERO
+var _was_stunned: bool = false
 
 
 func _ready() -> void:
 	health.damaged.connect(_on_damaged)
 	health.died.connect(_on_died)
+	if status_manager != null:
+		status_manager.rank = EnemyConfig.rank_for(enemy_id)
+		status_manager.status_applied.connect(_on_status_applied)
+		status_manager.status_expired.connect(_on_status_expired)
 	var material := body_mesh.material_override
 	if material is StandardMaterial3D:
 		var unique_material: StandardMaterial3D = (material as StandardMaterial3D).duplicate()
@@ -53,11 +69,15 @@ func _physics_process(delta: float) -> void:
 	_attack_cooldown_remaining = maxf(_attack_cooldown_remaining - delta, 0.0)
 	_knockback_velocity = _knockback_velocity.move_toward(Vector3.ZERO, KNOCKBACK_DECAY * delta)
 
-	if not _has_live_target() or health.is_dead():
+	if is_stunned():
+		# Stunned: no chasing, turning or attacking, and any wind-up is dropped. Only
+		# knockback moves it.
+		_cancel_telegraph()
+		velocity.x = _knockback_velocity.x
+		velocity.z = _knockback_velocity.z
+	elif not _has_live_target() or health.is_dead():
 		# No target, or the player is dead: stand down (and drop any wind-up).
-		if _telegraph_remaining > 0.0:
-			_telegraph_remaining = 0.0
-			_set_body_color(_base_color)
+		_cancel_telegraph()
 		velocity.x = _knockback_velocity.x
 		velocity.z = _knockback_velocity.z
 	elif _telegraph_remaining > 0.0:
@@ -74,6 +94,37 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y -= gravity * delta
 	move_and_slide()
+
+
+## True while a stun status is active (placeholder cue + gameplay hook for ux).
+func is_stunned() -> bool:
+	return status_manager != null and status_manager.is_stunned()
+
+
+func _on_status_applied(status_id: String) -> void:
+	if is_stunned() and not _was_stunned:
+		_was_stunned = true
+		_cancel_telegraph()
+		_set_body_color(_rest_color())
+		stunned.emit(status_manager.stun_time_remaining())
+
+
+func _on_status_expired(_status_id: String) -> void:
+	if _was_stunned and not is_stunned():
+		_was_stunned = false
+		_set_body_color(_rest_color())
+		stun_ended.emit()
+
+
+func _cancel_telegraph() -> void:
+	if _telegraph_remaining > 0.0:
+		_telegraph_remaining = 0.0
+		_set_body_color(_rest_color())
+
+
+## The body color at rest: base, or tinted while stunned.
+func _rest_color() -> Color:
+	return _base_color.lerp(STUN_TINT, STUN_TINT_AMOUNT) if _was_stunned else _base_color
 
 
 func _has_live_target() -> bool:
@@ -116,7 +167,7 @@ func _start_telegraph() -> void:
 
 
 func _execute_attack() -> void:
-	_set_body_color(_base_color)
+	_set_body_color(_rest_color())
 	_attack_cooldown_remaining = attack_cooldown
 	if not _has_live_target():
 		return
@@ -152,7 +203,9 @@ func _on_died() -> void:
 func _flash_body(color: Color) -> void:
 	_set_body_color(color)
 	var tween := create_tween()
-	tween.tween_property(body_mesh, "material_override:albedo_color", _base_color, HIT_FLASH_DURATION)
+	tween.tween_property(body_mesh, "material_override:albedo_color", _rest_color(), HIT_FLASH_DURATION)
+	# A stun that lands in the same hit must keep its tint once the flash has faded.
+	tween.tween_callback(func() -> void: _set_body_color(_rest_color()))
 
 
 func _set_body_color(color: Color) -> void:

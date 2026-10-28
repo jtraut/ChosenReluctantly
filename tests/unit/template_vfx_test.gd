@@ -266,11 +266,11 @@ func test_projectile_ball_ends_with_the_projectile_and_ranged_out_shot_only_fizz
 
 
 func test_set_auto_does_not_mutate_the_shared_attack_table() -> void:
-	var defs := AttackDatabase.load_valid()
+	var defs := AttackDatabase.load_valid("rogue")
 	var controller := AttackController.new(defs, StatModifiers.new())
 	controller.set_auto(&"light", false)
 	assert_bool(bool(controller.get_def(&"light")["auto"])).is_false()
-	assert_bool(bool(AttackDatabase.load_valid()[&"light"]["auto"])).is_true()
+	assert_bool(bool(AttackDatabase.load_valid("rogue")[&"light"]["auto"])).is_true()
 
 
 func test_flying_projectile_emits_muzzle_trail_and_impact_within_cap() -> void:

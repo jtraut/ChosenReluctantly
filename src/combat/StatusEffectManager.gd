@@ -9,14 +9,21 @@ class_name StatusEffectManager
 
 signal status_applied(status_id: String)
 signal status_expired(status_id: String)
+## A stun landed on an immune target (boss, or diminishing returns): nothing was applied.
+## ux can show an "immune" popup from this.
+signal status_resisted(status_id: String)
 
 @export var health_path: NodePath
 
 var health: Health = null
+## Enemy rank ("normal" / "elite" / "boss"); decides how long a stun lasts. Set by the owner.
+var rank: String = "normal"
 ## Where visuals are drawn. Null means "the parent's parent" (the arena the
 ## owner stands in), so no scene-root lookup is needed.
 var vfx_world: Node = null
 var _active: Dictionary = {}
+var _clock: float = 0.0
+var _stun_rules := StunRules.new()
 ## status_id -> PooledEffect and the generation it was handed out for.
 var _flames: Dictionary = {}
 var _flame_generations: Dictionary = {}
@@ -51,6 +58,15 @@ func _ready() -> void:
 ## multiple instances of the same status).
 func apply_status(status_id: String, status_def: Dictionary, duration: float) -> void:
 	var was_active: bool = _active.has(status_id)
+	if String(status_def.get("effect_type", "")) == "stun":
+		# Rank and diminishing returns decide the real length; 0 means immune, which
+		# changes nothing at all (an active stun keeps running, nothing is cancelled).
+		duration = _stun_rules.resolve(_clock, duration, rank, status_def)
+		if duration <= 0.0:
+			status_resisted.emit(status_id)
+			return
+		if was_active:
+			duration = maxf(duration, (_active[status_id] as ActiveStatus).time_remaining)
 	_active[status_id] = ActiveStatus.new(status_id, status_def, duration)
 	if not was_active:
 		status_applied.emit(status_id)
@@ -63,11 +79,29 @@ func has_status(status_id: String) -> bool:
 	return _active.has(status_id)
 
 
+## True while any "stun" effect_type status is active (by effect, not by id).
+func is_stunned() -> bool:
+	for active: ActiveStatus in _active.values():
+		if active.effect_type == "stun":
+			return true
+	return false
+
+
+## Seconds left on the active stun (0 when not stunned).
+func stun_time_remaining() -> float:
+	var longest: float = 0.0
+	for active: ActiveStatus in _active.values():
+		if active.effect_type == "stun":
+			longest = maxf(longest, active.time_remaining)
+	return longest
+
+
 func active_status_ids() -> Array:
 	return _active.keys()
 
 
 func _process(delta: float) -> void:
+	_clock += delta
 	if _active.is_empty():
 		return
 	var expired: Array[String] = []
@@ -98,12 +132,17 @@ func _vfx_pool() -> EffectPool:
 	return EffectPool.for_world(world)
 
 
-## Persistent flame for statuses whose data has "visual": {"kind": "flame"}. It
-## follows the owner by instance id, so it also ends by itself if the owner is
+## Persistent visual for statuses whose data has a "visual" block: a "flame" (Burn,
+## colored by the damage type's element) or a "halo" ring (Stun, colored by visual.color).
+## It follows the owner by instance id, so it also ends by itself if the owner is
 ## freed (an enemy dying never emits status_expired).
 func _ensure_flame(status_id: String, status_def: Dictionary) -> void:
 	var visual: Variant = status_def.get("visual")
-	if typeof(visual) != TYPE_DICTIONARY or String((visual as Dictionary).get("kind", "")) != "flame":
+	if typeof(visual) != TYPE_DICTIONARY:
+		return
+	var block: Dictionary = visual
+	var kind: String = String(block.get("kind", ""))
+	if kind != "flame" and kind != "halo":
 		return
 	var pool := _vfx_pool()
 	var owner_node := get_parent() as Node3D
@@ -111,8 +150,12 @@ func _ensure_flame(status_id: String, status_def: Dictionary) -> void:
 		return
 	if _flames.has(status_id) and pool.is_running(_flames[status_id], int(_flame_generations[status_id])):
 		return
-	var look := ElementVisuals.visual_for_damage_type(String(status_def.get("damage_type", "physical")))
-	var effect: PooledEffect = TemplateVfx.status_flame(pool, owner_node, look, float((visual as Dictionary).get("size", 0.3)), TemplateVfx.body_top(owner_node))
+	var effect: PooledEffect = null
+	if kind == "halo":
+		effect = TemplateVfx.status_halo(pool, owner_node, Color.html(String(block.get("color", "#ffe14a"))), float(block.get("size", 0.45)), TemplateVfx.body_top(owner_node))
+	else:
+		var look := ElementVisuals.visual_for_damage_type(String(status_def.get("damage_type", "physical")))
+		effect = TemplateVfx.status_flame(pool, owner_node, look, float(block.get("size", 0.3)), TemplateVfx.body_top(owner_node))
 	if effect != null:
 		_flames[status_id] = effect
 		_flame_generations[status_id] = effect.generation

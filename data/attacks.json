@@ -1,5 +1,6 @@
 {
     "light": {
+        "shape": "arc",
         "auto": true,
         "stat": "attack_interval.light",
         "interval": 0.6,
@@ -9,6 +10,8 @@
         "range": 1.8,
         "half_angle_degrees": 50.0,
         "wind_up": 0.0,
+        "wind_up_move_slow": 0.0,
+        "status_chance_multiplier": 0.0,
         "knockback": 3.0,
         "hit_stop_duration": 0.03,
         "hit_stop_scale": 0.2,
@@ -18,21 +21,52 @@
         "flash_duration": 0.2
     },
     "heavy": {
-        "auto": false,
-        "stat": "attack_cooldown.heavy",
-        "interval": 1.8,
-        "manual_click_max_rate_ratio": 0.0,
-        "damage": 22.0,
-        "damage_type": "physical",
-        "range": 2.4,
-        "half_angle_degrees": 85.0,
-        "wind_up": 0.45,
-        "knockback": 8.0,
-        "hit_stop_duration": 0.1,
-        "hit_stop_scale": 0.03,
-        "shake_strength": 0.4,
-        "shake_duration": 0.25,
-        "color": "#ff5a2a",
-        "flash_duration": 0.2
+        "rogue": {
+            "shape": "arc",
+            "auto": false,
+            "stat": "attack_cooldown.heavy",
+            "interval": 1.8,
+            "manual_click_max_rate_ratio": 0.0,
+            "damage": 8.5,
+            "damage_type": "physical",
+            "range": 2.4,
+            "half_angle_degrees": 85.0,
+            "wind_up": 0.45,
+            "wind_up_move_slow": -0.35,
+            "status_chance_multiplier": 2.5,
+            "element_status_duration": 3.0,
+            "on_hit_statuses": [
+                { "status_id": "stun", "chance": 1.0 }
+            ],
+            "knockback": 8.0,
+            "hit_stop_duration": 0.1,
+            "hit_stop_scale": 0.03,
+            "shake_strength": 0.4,
+            "shake_duration": 0.25,
+            "color": "#ff5a2a",
+            "flash_duration": 0.2
+        },
+        "wizard": {
+            "shape": "targeted_aoe",
+            "auto": false,
+            "stat": "attack_cooldown.heavy",
+            "interval": 1.8,
+            "manual_click_max_rate_ratio": 0.0,
+            "damage": 8.5,
+            "damage_type": "physical",
+            "radius": 2.0,
+            "max_range": 7.0,
+            "wind_up": 0.6,
+            "wind_up_move_slow": -0.35,
+            "status_chance_multiplier": 2.5,
+            "element_status_duration": 3.0,
+            "knockback": 5.0,
+            "hit_stop_duration": 0.08,
+            "hit_stop_scale": 0.05,
+            "shake_strength": 0.3,
+            "shake_duration": 0.2,
+            "color": "#a070ff",
+            "flash_duration": 0.25
+        }
     }
 }

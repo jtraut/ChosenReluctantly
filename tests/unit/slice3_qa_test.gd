@@ -20,7 +20,7 @@ func after_test() -> void:
 func _defs() -> Dictionary:
 	return {
 		&"light": (AttackDatabase.get_attack("light") as Dictionary).duplicate(),
-		&"heavy": (AttackDatabase.get_attack("heavy") as Dictionary).duplicate(),
+		&"heavy": (AttackDatabase.get_heavy("rogue") as Dictionary).duplicate(),
 	}
 
 

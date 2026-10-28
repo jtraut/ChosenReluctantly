@@ -11,7 +11,7 @@ func _light_def() -> Dictionary:
 
 
 func _heavy_def() -> Dictionary:
-	return (AttackDatabase.get_attack("heavy") as Dictionary).duplicate()
+	return (AttackDatabase.get_heavy("rogue") as Dictionary).duplicate()
 
 
 func _make(light: Dictionary, heavy: Dictionary, mods: StatModifiers = null) -> AttackController:
@@ -36,7 +36,7 @@ func before_test() -> void:
 
 func test_shipped_data_is_valid() -> void:
 	assert_array(AttackDatabase.validate_table({
-		"light": _light_def(), "heavy": _heavy_def()})).is_empty()
+		"light": _light_def(), "heavy": {"rogue": _heavy_def()}})).is_empty()
 	assert_bool(bool(_light_def()["auto"])).is_true()
 	assert_bool(bool(_heavy_def()["auto"])).is_false()
 

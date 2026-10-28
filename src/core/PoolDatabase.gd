@@ -39,6 +39,26 @@ static func validate_entry(entry: Dictionary) -> Array[String]:
 		errors.append_array(_validate_visual(entry["visual"]))
 	elif kind == "element":
 		errors.append("element needs a 'visual' ({color, scale})")
+	if entry.has("status"):
+		if kind != "element":
+			errors.append("only an element can have a 'status'")
+		errors.append_array(_validate_status(entry["status"]))
+	return errors
+
+
+## An element's flavor status: {status_id, base_chance 0..1}. Attacks scale the
+## chance with their status_chance_multiplier (see AttackStatuses).
+static func _validate_status(status: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(status) != TYPE_DICTIONARY:
+		errors.append("'status' must be an object ({status_id, base_chance})")
+		return errors
+	var block: Dictionary = status
+	if typeof(block.get("status_id")) != TYPE_STRING or not StatusDatabase.has_status(String(block["status_id"])):
+		errors.append("status.status_id '%s' is not a status in statuses.json" % str(block.get("status_id")))
+	var chance: Variant = block.get("base_chance")
+	if (typeof(chance) != TYPE_FLOAT and typeof(chance) != TYPE_INT) or is_nan(float(chance)) or float(chance) < 0.0 or float(chance) > 1.0:
+		errors.append("status.base_chance must be a number 0..1")
 	return errors
 
 

@@ -21,6 +21,7 @@ albedo_color = Color(0.3, 0.25, 0.75, 1)
 collision_layer = 4
 collision_mask = 5
 script = ExtResource("1")
+enemy_id = "ranged_shooter"
 move_speed = 3.0
 is_ranged = true
 preferred_range = 7.0

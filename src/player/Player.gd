@@ -46,6 +46,17 @@ var attacks: AttackController
 @onready var body_mesh: MeshInstance3D = $BodyMesh
 
 var _attack_visuals: Dictionary = {}
+## Seedable RNG for element/status chances on hit (tests and captures set .seed).
+var status_rng := RandomNumberGenerator.new()
+## Capture/test only: a fixed ground point returned by get_aim_point() instead of the mouse.
+var aim_point_override: Variant = null
+## Capture/test only: use this class's heavy instead of the one the owned pools name.
+var _heavy_class_override: String = ""
+## targeted_aoe heavy: attack id -> locked ground target, and its held ground telegraph
+## (arrays of PooledEffect and the generations they were handed out for).
+var _aoe_targets: Dictionary = {}
+var _telegraphs: Dictionary = {}
+var _telegraph_generations: Dictionary = {}
 var _dodge_cooldown_remaining: float = 0.0
 var _base_body_color: Color = Color.WHITE
 var _knockback_velocity: Vector3 = Vector3.ZERO
@@ -67,6 +78,7 @@ const DASH_TRAIL_INTERVAL := 0.04
 
 func _ready() -> void:
 	var team := hurtbox.team if hurtbox != null else "player"
+	status_rng.randomize()
 	card_slots = CardSlotController.new(self, get_tree().current_scene, team, stat_modifiers, owned_pools)
 	_setup_attacks()
 	health.damaged.connect(_on_damaged)
@@ -106,6 +118,39 @@ func is_dead() -> bool:
 ## False once dead: gates input, movement, cards, dodge, and light/heavy attacks.
 func can_act() -> bool:
 	return not _dead
+
+
+## The character's class: the first owned pool whose kind is "class" (pools.json),
+## or "" when it has none. Picks which heavy (data/attacks.json "heavy") it uses.
+func character_class_id() -> String:
+	if not _heavy_class_override.is_empty():
+		return _heavy_class_override
+	return _first_pool_of_kind("class")
+
+
+## The character's element: the first owned pool whose kind is "element" (Fire), or "".
+func character_element_id() -> String:
+	return _first_pool_of_kind("element")
+
+
+func _first_pool_of_kind(kind: String) -> String:
+	for pool_id: String in owned_pools:
+		if PoolDatabase.has(pool_id) and String(PoolDatabase.get_definition(pool_id).get("kind", "")) == kind:
+			return pool_id
+	return ""
+
+
+## Capture/test hook: swap to another class's heavy (the Wizard targeted_aoe proof)
+## without building the class. Rebuilds the attack controller.
+func use_heavy_class(class_id: String) -> void:
+	_heavy_class_override = class_id
+	_teardown_attacks()
+	_setup_attacks()
+
+
+## Current move speed after StatModifiers (the heavy wind-up slow lives here).
+func get_move_speed() -> float:
+	return stat_modifiers.apply(AttackController.MOVE_SPEED_STAT, move_speed)
 
 
 ## 0..1 fraction of the attack's cooldown elapsed (1.0 = ready). `attack_id`
@@ -252,7 +297,7 @@ func _apply_forced_move(delta: float) -> void:
 
 
 func _setup_attacks() -> void:
-	var defs := AttackDatabase.load_valid()
+	var defs := AttackDatabase.load_valid(character_class_id())
 	attacks = AttackController.new(defs, stat_modifiers)
 	attacks.attack_started.connect(_on_attack_started)
 	attacks.attack_fired.connect(_on_attack_fired)
@@ -260,11 +305,24 @@ func _setup_attacks() -> void:
 	attacks.attack_cancelled.connect(_on_attack_cancelled)
 	for attack_id: StringName in attacks.ids():
 		var def := attacks.get_def(attack_id)
+		# Only arcs have a wedge on the player; a targeted_aoe draws its disc at the target.
+		if String(def["shape"]) != "arc":
+			continue
 		var visual := AttackArcVisual.new()
 		visual.name = "AttackVisual_%s" % attack_id
 		add_child(visual)
 		visual.setup(VfxSizing.cone_reach(float(def["range"])), float(def["half_angle_degrees"]), Color.html(String(def["color"])))
 		_attack_visuals[attack_id] = visual
+
+
+func _teardown_attacks() -> void:
+	if attacks != null:
+		attacks.cancel_all()
+	for attack_id: StringName in _attack_visuals.keys():
+		(_attack_visuals[attack_id] as Node).queue_free()
+	_attack_visuals.clear()
+	for attack_id: StringName in _telegraphs.keys():
+		_stop_telegraph(attack_id)
 
 
 func _handle_attack(delta: float) -> void:
@@ -274,7 +332,7 @@ func _handle_attack(delta: float) -> void:
 	}
 	attacks.tick(delta, can_act(), manual, _attack_has_target)
 	for attack_id: StringName in attacks.ids():
-		if attacks.is_winding_up(attack_id):
+		if attacks.is_winding_up(attack_id) and _attack_visuals.has(attack_id):
 			(_attack_visuals[attack_id] as AttackArcVisual).show_windup(attacks.get_windup_progress(attack_id))
 
 
@@ -297,30 +355,101 @@ func _attack_has_target(attack_id: StringName) -> bool:
 
 
 func _on_attack_started(attack_id: StringName) -> void:
+	var def := attacks.get_def(attack_id)
 	if attacks.is_winding_up(attack_id):
-		(_attack_visuals[attack_id] as AttackArcVisual).show_windup(0.0)
+		if String(def["shape"]) == "targeted_aoe":
+			_start_aoe_telegraph(attack_id, def)
+		else:
+			(_attack_visuals[attack_id] as AttackArcVisual).show_windup(0.0)
 	attack_started.emit(attack_id)
 
 
 func _on_attack_cancelled(attack_id: StringName) -> void:
-	(_attack_visuals[attack_id] as AttackArcVisual).hide_now()
+	if _attack_visuals.has(attack_id):
+		(_attack_visuals[attack_id] as AttackArcVisual).hide_now()
+	_stop_telegraph(attack_id)
+	_aoe_targets.erase(attack_id)
 	attack_cancelled.emit(attack_id)
+
+
+## The disc a targeted_aoe heavy will hit, locked where the mouse was when the
+## wind-up began: clamped to max_range and the arena, drawn through the shared pool
+## at the real hit reach (VfxSizing), so the telegraph IS the hitbox. Held until the
+## swing or a cancel. The player can step away; the disc stays put.
+func _start_aoe_telegraph(attack_id: StringName, def: Dictionary) -> void:
+	var target: Vector3 = AoeTargeting.clamp_target(global_position, get_aim_point(), get_aim_direction(), float(def["max_range"]), _arena_rect())
+	_aoe_targets[attack_id] = target
+	var pool := EffectPool.for_world(get_parent())
+	if pool == null:
+		return
+	var effects: Array[PooledEffect] = TemplateVfx.aoe_telegraph(pool, target, VfxSizing.aoe_reach(float(def["radius"])), Color.html(String(def["color"])))
+	var generations: Array[int] = []
+	for effect: PooledEffect in effects:
+		generations.append(effect.generation)
+	_telegraphs[attack_id] = effects
+	_telegraph_generations[attack_id] = generations
+
+
+func _stop_telegraph(attack_id: StringName) -> void:
+	if not _telegraphs.has(attack_id):
+		return
+	var pool := EffectPool.for_world(get_parent())
+	if pool != null:
+		var effects: Array = _telegraphs[attack_id]
+		var generations: Array = _telegraph_generations[attack_id]
+		for i in range(effects.size()):
+			pool.stop(effects[i], int(generations[i]))
+	_telegraphs.erase(attack_id)
+	_telegraph_generations.erase(attack_id)
+
+
+## The target a targeted_aoe heavy has locked right now (or Vector3.INF when none).
+func get_aoe_target(attack_id: StringName) -> Vector3:
+	return _aoe_targets.get(attack_id, Vector3.INF)
+
+
+## Walkable XZ rectangle from the Floor node (Rect2: x, z, width, depth), or an empty
+## Rect2 (unbounded) with an error when the arena has no Floor.
+func _arena_rect() -> Rect2:
+	var floor_node: CSGBox3D = null
+	if get_parent() != null:
+		floor_node = get_parent().get_node_or_null("Floor") as CSGBox3D
+	if floor_node == null:
+		push_error("Player: no Floor node to bound the targeted_aoe heavy; target is unbounded")
+		return Rect2()
+	var half := Vector2(floor_node.size.x, floor_node.size.z) * 0.5
+	var center := Vector2(floor_node.global_position.x, floor_node.global_position.z)
+	return Rect2(center - half, half * 2.0)
 
 
 func _on_attack_fired(attack_id: StringName) -> void:
 	var def := attacks.get_def(attack_id)
-	# Light and heavy are just "cone" effects with no card behind them, so
-	# they go through the same EffectTemplates path a Rogue card would.
 	var context := EffectContext.new(self, get_tree().current_scene, hurtbox.team if hurtbox != null else "neutral")
-	EffectTemplates.execute("cone", {
-		"damage": def["damage"],
-		"damage_type": def["damage_type"],
-		"range": def["range"],
-		"half_angle_degrees": def["half_angle_degrees"],
-		"knockback_strength": def["knockback"],
-		"vfx": false,
-	}, context)
-	(_attack_visuals[attack_id] as AttackArcVisual).flash(float(def["flash_duration"]))
+	if String(def["shape"]) == "targeted_aoe":
+		# The same "aoe" template cards use, centred on the locked target.
+		var target: Vector3 = _aoe_targets.get(attack_id, AoeTargeting.clamp_target(global_position, null, get_aim_direction(), float(def["max_range"]), _arena_rect()))
+		_stop_telegraph(attack_id)
+		_aoe_targets.erase(attack_id)
+		EffectTemplates.execute("aoe", {
+			"damage": def["damage"],
+			"damage_type": def["damage_type"],
+			"radius": def["radius"],
+			"center": target,
+			"knockback_strength": def["knockback"],
+		}, context)
+	else:
+		# Light and heavy arcs are just "cone" effects with no card behind them, so
+		# they go through the same EffectTemplates path a Rogue card would.
+		EffectTemplates.execute("cone", {
+			"damage": def["damage"],
+			"damage_type": def["damage_type"],
+			"range": def["range"],
+			"half_angle_degrees": def["half_angle_degrees"],
+			"knockback_strength": def["knockback"],
+			"vfx": false,
+		}, context)
+		(_attack_visuals[attack_id] as AttackArcVisual).flash(float(def["flash_duration"]))
+	AttackStatuses.apply_on_hit(def, character_element_id(), context.last_hits, status_rng)
 	if not context.last_hits.is_empty():
 		Juice.hit_stop(float(def["hit_stop_duration"]), float(def["hit_stop_scale"]))
 		Juice.screen_shake(float(def["shake_strength"]), float(def["shake_duration"]))
@@ -354,7 +483,7 @@ func _movement_input_direction() -> Vector3:
 
 func _apply_movement(delta: float) -> void:
 	var move_dir := _movement_input_direction()
-	var target_velocity := move_dir * move_speed
+	var target_velocity := move_dir * get_move_speed()
 	var horizontal_velocity := Vector3(velocity.x, 0.0, velocity.z)
 	var rate := acceleration if move_dir.length_squared() > 0.0 else friction
 	horizontal_velocity = horizontal_velocity.move_toward(target_velocity, rate * delta)
@@ -390,6 +519,8 @@ func _apply_aim(delta: float) -> void:
 ## player's height, or null when there is no camera/viewport (frozen-aim
 ## captures, orphan nodes) or the ray misses the plane. Changes nothing.
 func get_aim_point() -> Variant:
+	if aim_point_override != null:
+		return aim_point_override
 	if camera == null or not is_inside_tree():
 		return null
 	return _ground_point_under_mouse()

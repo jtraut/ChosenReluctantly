@@ -5,6 +5,10 @@ extends RefCounted
 ## A missing or invalid file is a push_error and falls back to DEFAULTS.
 
 const PATH := "res://data/enemies.json"
+## Enemy ranks: normal enemies take full status effects, elites reduced, bosses
+## are immune to some (a stun's rank_multipliers in data/statuses.json decide).
+const RANKS: Array[String] = ["normal", "elite", "boss"]
+const DEFAULT_RANK := "normal"
 const DEFAULTS: Dictionary = {
 	"projectile_hit_radius": 0.3,
 	"melee_half_angle_degrees": 60.0,
@@ -12,11 +16,14 @@ const DEFAULTS: Dictionary = {
 
 static var _cache: Dictionary = {}
 static var _loaded: bool = false
+## enemy id -> rank, from data/enemies.json "enemies".
+static var _ranks: Dictionary = {}
 
 
 ## Returns human-readable problems; empty means valid.
 static func validate(config: Dictionary) -> Array[String]:
 	var errors: Array[String] = []
+	errors.append_array(validate_enemies(config.get("enemies")))
 	var shapes: Variant = config.get("attack_shapes")
 	if typeof(shapes) != TYPE_DICTIONARY:
 		errors.append("'attack_shapes' must be an object")
@@ -24,6 +31,21 @@ static func validate(config: Dictionary) -> Array[String]:
 	var dict: Dictionary = shapes
 	_check_number(dict, "projectile_hit_radius", 0.0, 5.0, true, errors)
 	_check_number(dict, "melee_half_angle_degrees", 0.0, 180.0, true, errors)
+	return errors
+
+
+## Per-enemy data: each id maps to an object with a known "rank".
+static func validate_enemies(enemies: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(enemies) != TYPE_DICTIONARY:
+		errors.append("'enemies' must be an object (enemy id -> {rank})")
+		return errors
+	for enemy_id: String in (enemies as Dictionary).keys():
+		var entry: Variant = (enemies as Dictionary)[enemy_id]
+		if typeof(entry) != TYPE_DICTIONARY:
+			errors.append("enemies.%s must be an object" % enemy_id)
+		elif typeof((entry as Dictionary).get("rank")) != TYPE_STRING or not RANKS.has(String((entry as Dictionary)["rank"])):
+			errors.append("enemies.%s: 'rank' must be one of %s" % [enemy_id, str(RANKS)])
 	return errors
 
 
@@ -55,7 +77,18 @@ static func get_config() -> Dictionary:
 		push_error("EnemyConfig: invalid %s: %s" % [PATH, "; ".join(errors)])
 		return _cache
 	_cache.merge(parsed["attack_shapes"], true)
+	for enemy_id: String in (parsed["enemies"] as Dictionary).keys():
+		_ranks[enemy_id] = String(parsed["enemies"][enemy_id]["rank"])
 	return _cache
+
+
+## Rank of an enemy type (data/enemies.json). An unknown id is an error and counts as normal.
+static func rank_for(enemy_id: String) -> String:
+	get_config()
+	if not _ranks.has(enemy_id):
+		push_error("EnemyConfig: enemy id '%s' has no entry in data/enemies.json 'enemies'" % enemy_id)
+		return DEFAULT_RANK
+	return String(_ranks[enemy_id])
 
 
 static func projectile_hit_radius() -> float:

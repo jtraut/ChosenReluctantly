@@ -7,5 +7,14 @@
         "tick_interval": 1.0,
         "visual": { "kind": "flame", "size": 0.25 },
         "flavor_text": "Fine. It's fine. Everything's fine."
+    },
+    "stun": {
+        "display_name": "Stun",
+        "effect_type": "stun",
+        "base_duration": 0.6,
+        "diminishing_returns": { "window": 4.0, "multiplier": 0.5, "immune_after": 3 },
+        "rank_multipliers": { "normal": 1.0, "elite": 0.5, "boss": 0.0 },
+        "visual": { "kind": "halo", "size": 0.45, "color": "#ffe14a" },
+        "flavor_text": "Hold on, I need a second. Or 0.6 of one."
     }
 }

@@ -150,8 +150,27 @@ func _apply_config() -> void:
 	for button: Button in option_buttons.values():
 		_set_font(button, int(cfg["option_font_size"]), s)
 		button.custom_minimum_size = Vector2(float(option_min[0]), float(option_min[1])) * s
+	_style_options(cfg, s)
 	backdrop.color = Color.html(cfg["backdrop_color"])
 	column.add_theme_constant_override("separation", roundi(24.0 * s))
+
+
+## Every option gets a visible frame (selected ones a lighter fill as well as the (x) marker), so
+## the choices read as buttons and the selection never depends on colour alone.
+func _style_options(cfg: Dictionary, s: float) -> void:
+	var border_width: int = maxi(1, roundi(2.0 * s))
+	for button: Button in option_buttons.values():
+		for state: String in ["normal", "hover", "pressed", "hover_pressed", "focus"]:
+			var box := StyleBoxFlat.new()
+			var selected: bool = state == "pressed" or state == "hover_pressed"
+			box.bg_color = Color.html(cfg["option_selected_bg"] if selected else cfg["option_bg"])
+			box.border_color = Color.html(cfg["option_border"])
+			var widths: int = border_width * 2 if (state == "focus" or selected) else border_width
+			box.set_border_width_all(widths)
+			if state == "focus":
+				box.draw_center = false
+			box.set_content_margin_all(8.0 * s)
+			button.add_theme_stylebox_override(state, box)
 
 
 func _set_font(control: Control, base_size: int, s: float) -> void:

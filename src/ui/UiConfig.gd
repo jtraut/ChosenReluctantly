@@ -89,9 +89,12 @@ const DEFAULT_SETTINGS_SCREEN: Dictionary = {
 	"hint_font_size": 18,
 	"button_min_size": [320, 64],
 	"option_min_size": [230, 52],
-	"backdrop_color": "#0d080bcc",
+	"backdrop_color": "#0d080b99",
 	"title_color": "#ffd7a8",
 	"line_color": "#e8dfe3",
+	"option_bg": "#1c1218",
+	"option_selected_bg": "#4a3a2a",
+	"option_border": "#e8dfe3",
 	"selected_marker": "(x) ",
 	"unselected_marker": "( ) ",
 }

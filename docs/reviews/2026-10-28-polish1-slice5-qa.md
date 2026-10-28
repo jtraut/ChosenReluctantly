@@ -128,11 +128,11 @@ All blocker and should-fix items are resolved, the intentional red test is green
 - 20 s headless run (`--quit-after 1200`): 0 lines matching error, warning or bug. SceneSelfCheck runs on every Main._ready and is silent; `main_scene_smoke_test` is in the green suite.
 - Reload soak `-Cycles 5`: RELOAD CYCLE OK, orphans 0, objects 1843 (baseline 1826), nodes 93, time_scale 1.0.
 - `run_bot_sim.ps1 -Rooms 20`: OK, exit 0.
-- Wave sim, all exit 0, "WAVE SIM OK", no ERROR/WARNING: normal `-Seed 300 -Seconds 180 -Runs 3`: survived, alive max 12, mean 5.7 to 7.4, stages opened 14 to 16, max stall 14 s (HP lost 64 / 20 / 20-class; kills 74 / 85). God `-Seed 400 -Seconds 240 -Runs 2 -God`: alive max 12, mean 6.7, stages opened 20, max stall 11 s, kills 110. Idle `-Seed 500 -Seconds 60 -Runs 3 -Idle -Scale 1`: died at 7.7 / 8.6 / 7.5 s, 0 kills (unchanged from before; the idle player is not affected by the golem change since it dies to chasers and shooters first).
+- Wave sim, all exit 0, "WAVE SIM OK", no ERROR/WARNING: normal `-Seed 300 -Seconds 180 -Runs 3`: survived, alive max 12, mean 5.7 to 7.4, stages opened 14 to 16, max stall up to 14 s (last two seeds shown in the tail: HP lost 64 / 20, kills 74 / 85). God `-Seed 400 -Seconds 240 -Runs 2 -God`: alive max 12, mean 6.7, stages opened 20, max stall 11 s, kills 110. Idle `-Seed 500 -Seconds 60 -Runs 3 -Idle -Scale 1`: died at 7.7 / 8.6 / 7.5 s, 0 kills (unchanged from before; the idle player is not affected by the golem change since it dies to chasers and shooters first).
 - Changelog check: fix pass and D6 entries are present and accurate (D6 numbers 2.25 -> 2.5 s cycle and 4.0 -> 3.6 DPS match DECISIONS; "min 9 m" matches `waves.json`; hashes exist and touch the described files). No edit needed.
 
 ### New findings
-None blocking. Non-blocking: the D6 golem wind-up remains a scene export while every other combat number for enemies is... also a scene export (so no inconsistency); the fix pass already flags moving them to `data/enemies.json` as a later pass. S5-9 (bar rank change shows on next hit) is still open by design (ux, low).
+None blocking. Non-blocking: the golem wind-up is a scene export like the other per-type enemy combat numbers (consistent; the fix pass flags moving them to `data/enemies.json` as a later pass). S5-9 (bar rank change shows on next hit) is still open by design (ux, low).
 
 ### Still unverified
 Z-fighting in motion, 1080p+, and a human fighting 12 enemies (playtester / director), as before.

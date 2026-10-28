@@ -27,5 +27,20 @@
             "fire": "#ff8a3d",
             "water": "#4aa8ff"
         }
+    },
+    "game_over": {
+        "title": "Well. That went badly.",
+        "line": "The world is still cheerful about it. You are not.",
+        "button": "Try again",
+        "hint": "Enter or Space",
+        "reference_height": 720,
+        "title_font_size": 56,
+        "line_font_size": 24,
+        "button_font_size": 40,
+        "hint_font_size": 18,
+        "button_min_size": [360, 90],
+        "backdrop_color": "#0d080bcc",
+        "title_color": "#ffd7a8",
+        "line_color": "#e8dfe3"
     }
 }

@@ -27,7 +27,7 @@ offset_bottom = 60.0
 
 [node name="HealthLabel" type="Label" parent="Root/HealthPanel"]
 layout_mode = 2
-text = "30 / 30"
+text = "HP 30 / 30"
 
 [node name="HealthBar" type="ProgressBar" parent="Root/HealthPanel"]
 layout_mode = 2

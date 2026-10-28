@@ -2,17 +2,70 @@
     "hp_bars": {
         "disable_spawner": true,
         "player_max_health": 9999,
-        "origin_offset": [3.0, 0.0, -2.0],
-        "spacing": [1.3, 1.2],
+        "origin_offset": [
+            3.0,
+            0.0,
+            -2.0
+        ],
+        "spacing": [
+            1.3,
+            1.2
+        ],
         "columns": 3,
         "groups": [
-            {"scene": "res://scenes/enemies/MeleeChaser.tscn", "count": 3},
-            {"scene": "res://scenes/enemies/RangedShooter.tscn", "count": 3},
-            {"scene": "res://scenes/enemies/FireResistantGolem.tscn", "count": 3}
+            {
+                "scene": "res://scenes/enemies/MeleeChaser.tscn",
+                "count": 3
+            },
+            {
+                "scene": "res://scenes/enemies/RangedShooter.tscn",
+                "count": 3
+            },
+            {
+                "scene": "res://scenes/enemies/FireResistantGolem.tscn",
+                "count": 3
+            }
         ],
-        "hp_fractions": [1.0, 0.7, 0.4, 0.9, 0.25, 1.0, 0.55, 0.8, 0.1],
-        "burn_indices": [1, 7],
+        "hp_fractions": [
+            1.0,
+            0.7,
+            0.4,
+            0.9,
+            0.25,
+            1.0,
+            0.55,
+            0.8,
+            0.1
+        ],
+        "burn_indices": [
+            1,
+            7
+        ],
         "burn_duration": 8.0,
-        "late_hit": {"at": 2.4, "indices": [0, 3, 6], "amount": 5.0}
+        "late_hit": {
+            "at": 2.4,
+            "indices": [
+                0,
+                3,
+                6
+            ],
+            "amount": 5.0
+        }
+    },
+    "game_over": {
+        "disable_spawner": true,
+        "player_max_health": 30,
+        "groups": [
+            {
+                "scene": "res://scenes/enemies/MeleeChaser.tscn",
+                "count": 2
+            }
+        ],
+        "origin_offset": [
+            3.0,
+            0.0,
+            -2.0
+        ],
+        "kill_player_at": 1.0
     }
 }

@@ -27,7 +27,7 @@ func _process(_delta: float) -> void:
 	var health := player.health
 	health_bar.max_value = health.max_health
 	health_bar.value = health.current_health
-	health_label.text = "%d / %d" % [roundi(health.current_health), roundi(health.max_health)]
+	health_label.text = "HP %d / %d" % [roundi(health.current_health), roundi(health.max_health)]
 
 	if player.card_slots == null:
 		return

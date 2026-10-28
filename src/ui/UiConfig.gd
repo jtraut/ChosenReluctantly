@@ -32,6 +32,24 @@ const DEFAULT_DEATH_BEAT: Dictionary = {
 	"collapse_duration": 0.5,
 }
 
+## Game Over screen text and sizes. Font sizes and button_min_size are in pixels
+## at `reference_height` and are scaled with the window height.
+const DEFAULT_GAME_OVER: Dictionary = {
+	"title": "Well. That went badly.",
+	"line": "The world is still cheerful about it. You are not.",
+	"button": "Try again",
+	"hint": "Enter or Space",
+	"reference_height": 720,
+	"title_font_size": 56,
+	"line_font_size": 24,
+	"button_font_size": 40,
+	"hint_font_size": 18,
+	"button_min_size": [360, 90],
+	"backdrop_color": "#0d080bcc",
+	"title_color": "#ffd7a8",
+	"line_color": "#e8dfe3",
+}
+
 static var _table := JsonDataTable.new("res://data/ui.json")
 
 
@@ -49,6 +67,10 @@ static func death_beat() -> Dictionary:
 		return merged
 	push_error("data/ui.json death_beat invalid: " + "; ".join(problems))
 	return DEFAULT_DEATH_BEAT.duplicate()
+
+
+static func game_over() -> Dictionary:
+	return merge_with_defaults(DEFAULT_GAME_OVER, _table.get_entry("game_over"))
 
 
 static func validate_death_beat(block: Dictionary) -> Array[String]:

@@ -11,6 +11,7 @@ var _def: Dictionary = {}
 var _enemies: Array[Enemy] = []
 var _elapsed: float = 0.0
 var _late_hit_done: bool = false
+var _kill_done: bool = false
 
 
 static func has_scenario(scenario_id: String) -> bool:
@@ -94,6 +95,11 @@ func _build() -> void:
 
 func _process(delta: float) -> void:
 	_elapsed += delta
+	# Scenario-only death trigger (capture tooling; there is no debug key for it).
+	if not _kill_done and _def.has("kill_player_at") and _elapsed >= float(_def["kill_player_at"]):
+		_kill_done = true
+		var player: Player = _main.get_node("Player")
+		player.health.take_damage(player.health.get_max_health() * 2.0, "physical")
 	var late: Dictionary = _def.get("late_hit", {})
 	if late.is_empty() or _late_hit_done or _elapsed < float(late.get("at", 2.4)):
 		return

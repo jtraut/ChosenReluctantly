@@ -1,10 +1,11 @@
 # Windowed screenshot capture of the real game (needs a renderer; headless cannot capture).
-# Usage: powershell -File tools\capture_screenshot.ps1 [-After "3.0,5.0"] [-Out screenshots\shot.png] [-Scenario hp_bars]
+# Usage: powershell -File tools\capture_screenshot.ps1 [-After "3.0,5.0"] [-Out screenshots\shot.png] [-Scenario hp_bars] [-Resolution 1920x1080]
 # Resolves Godot like tools\run_tests.ps1 (GODOT_BIN, else godot_console/godot on PATH, preferring *_console.exe).
 param(
     [string]$After = "3.0",
     [string]$Out = "screenshots\shot.png",
-    [string]$Scenario = "hp_bars"
+    [string]$Scenario = "hp_bars",
+    [string]$Resolution = "1280x720"
 )
 
 $root = Split-Path -Parent $PSScriptRoot
@@ -31,7 +32,7 @@ if ($Scenario) { $userArgs += "--scenario=$Scenario" }
 
 Push-Location $root
 try {
-    & $godot --path . --resolution 1280x720 -- @userArgs
+    & $godot --path . --resolution $Resolution -- @userArgs
     exit $LASTEXITCODE
 } finally {
     Pop-Location

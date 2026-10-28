@@ -85,7 +85,8 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
   - GDD §15 (new, appended so existing §13/§14 references stay valid): survivor-style level-up layer `[IDEA, not scheduled]`, DO NOT IMPLEMENT.
   - GDD §14 item 1 narrowed to shops/drops only.
 
-- [ ] **Slice 1: Death and game over**
+- [x] **Slice 1: Death and game over** - **Done** 2026-10-27 (game-lead). gameplay-dev 9744135, ux-designer 99f6af2, qa PASS 1f24ceb (`docs/reviews/2026-10-27-polish1-slice1-qa.md`, real 5x reload soak via `tools/run_reload_cycle.ps1`), playtester no blocker d268f19 (`docs/playtests/2026-10-27-polish1-slice1-death.md`).
+  - **Follow-ups (not blocking):** (s1-a) death beat is subtle in stills: only the topple reads; add a flash/stronger grey-out cue, fold into Slice 4 (visuals); director to watch the slow-mo once. (s1-b) killing-blow damage number tiny/overlapping, joins follow-up (e). (s1-c) "Enter or Space" hint detached from button; world/HP bars show through backdrop (consider darker dim). (s1-d) HUD HP bar thin/low contrast, fold into Slice 2. (s1-e) in-flight projectiles still hit after death; enemies idle not wander; Burn ticks on dead player (harmless). (s1-f) first contact ~1 s after spawn, fold into Slice 5 density review.
   - **Owner sequence:** gameplay-dev -> ux-designer (Game Over screen) -> qa -> playtester -> game-lead.
   - **GDD:** §1 (density/readability), §11 (feel, tone), §3.
   - **Investigation result (game-lead, read-only):** the top-left "0 / 30" is **player HP** (`src/ui/Hud.gd:30`, `"%d / %d"` of `player.health`). `Player.gd` never connects `Health.died`, so when HP hits 0 nothing happens and the player keeps moving and casting at 0. That is what the director saw. Before the camera fix the unseen player died to wave 1 within ~7 s (STATE.md). Fix: handle death. Label the HUD value clearly (e.g. "HP 0 / 30").

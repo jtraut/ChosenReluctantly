@@ -8,7 +8,7 @@ Last updated: 2026-10-27. **Milestone 2 is done.** Now running **Post-milestone 
 - **Polish 1, Slice 1 (death and game over) - done** (7ad85ee): `Player.player_died`, `Main.game_over_ready` / `restart_arena()` (scene reload), Game Over screen, "HP x / y" label, reload soak tool `tools/run_reload_cycle.ps1`.
 
 ## In progress
-**Slice 1 done** (closed 2026-10-27; follow-ups s1-a..f in ROADMAP). **Slice 2 (HUD text overflow and safe layout):** ux-designer done (TextFit/HudLayout, fixed slots, HP bar restyle, 124 tests green). **qa delegated.** If cut off: check `docs/reviews/` for a Slice 2 qa review; if none, re-run qa on Slice 2. Known gap: capture tool can't produce true 1920x1080 / 2560x1440 (monitor clamps window height to 1061); pass DoD needs those shots, so a gameplay-dev tooling task (offscreen/SubViewport capture at true size) is needed before pass close-out. Repo runs at the latest commit.
+**Slice 1 done** (closed 2026-10-27; follow-ups s1-a..f in ROADMAP). **Slice 2 (HUD text overflow and safe layout):** ux-designer done (TextFit/HudLayout, fixed slots, HP bar restyle, 124 tests green). **qa PASS** (88732cf). **playtester delegated.** If cut off: check `docs/playtests/` for a Slice 2 report; if none, re-run playtester. True-size capture tooling task is now in ROADMAP (gameplay-dev, before pass close-out). Repo runs at the latest commit.
 
 ## Exact next step
 Slice 2 loop: ux-designer -> qa -> playtester -> game-lead close. Then slices 3, 4, 5, then the whole-pass playtester report. After the pass: **Milestone 3a (run structure)**. Re-run reload soak `tools/run_reload_cycle.ps1` whenever Main/Juice/Player/autoloads change.

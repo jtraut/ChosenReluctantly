@@ -243,8 +243,12 @@ func _chase_and_attack(delta: float) -> void:
 			# In range and waiting out the cooldown: slide sideways (never in or out) to make room.
 			var radial := to_target / distance
 			var slide := push - radial * push.dot(radial)
-			velocity.x += slide.x * move_speed * _separation_strength
-			velocity.z += slide.z * move_speed * _separation_strength
+			var slide_move := Vector3(slide.x, 0.0, slide.z) * (move_speed * _separation_strength)
+			var slide_speed := Vector2(slide_move.x, slide_move.z).length()
+			if slide_speed > move_speed:
+				slide_move *= move_speed / slide_speed  # same cap as the chase branch (S5d-1)
+			velocity.x += slide_move.x
+			velocity.z += slide_move.z
 
 	if distance > 0.01:
 		_face_direction(to_target.normalized(), delta)

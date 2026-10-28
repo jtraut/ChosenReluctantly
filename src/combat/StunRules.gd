@@ -11,7 +11,7 @@ extends RefCounted
 ##   are inside the window the target is immune until the oldest one ages out.
 ## - An immune result is a true no-op: it is not recorded, so it never extends the
 ##   immunity.
-## With the defaults (0.6 s, x0.5, window 4 s, immune after 3) a normal enemy gets
+## With the defaults (0.6 s, x0.5, window 1.5 s, immune after 3) a normal enemy gets
 ## 0.6, 0.3, 0.15, then immune.
 
 var _times: Array[float] = []

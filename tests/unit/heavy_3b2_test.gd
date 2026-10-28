@@ -154,11 +154,11 @@ func test_stun_diminishing_returns_normal() -> void:
 	assert_float(rules.resolve(0.0, 0.6, "normal", def)).is_equal_approx(0.6, 0.0001)
 	assert_float(rules.resolve(0.5, 0.6, "normal", def)).is_equal_approx(0.3, 0.0001)
 	assert_float(rules.resolve(1.0, 0.6, "normal", def)).is_equal_approx(0.15, 0.0001)
-	# Fourth inside the window: immune, and immunity does not extend itself.
-	assert_float(rules.resolve(1.5, 0.6, "normal", def)).is_equal(0.0)
-	assert_float(rules.resolve(3.9, 0.6, "normal", def)).is_equal(0.0)
-	# The first stun (t=0) has aged out at t=4.0: two remain in the window -> x0.25.
-	assert_float(rules.resolve(4.0, 0.6, "normal", def)).is_equal_approx(0.15, 0.0001)
+	# Fourth inside the 1.5 s window: immune, and immunity does not extend itself.
+	assert_float(rules.resolve(1.2, 0.6, "normal", def)).is_equal(0.0)
+	assert_float(rules.resolve(1.49, 0.6, "normal", def)).is_equal(0.0)
+	# The first stun (t=0) has aged out at t=1.5: two remain in the window -> x0.25.
+	assert_float(rules.resolve(1.5, 0.6, "normal", def)).is_equal_approx(0.15, 0.0001)
 
 
 func test_stun_window_clears_fully() -> void:
@@ -176,10 +176,46 @@ func test_stun_elite_halved_and_boss_immune() -> void:
 	assert_float(elite.resolve(0.0, 0.6, "elite", def)).is_equal_approx(0.3, 0.0001)
 	assert_float(elite.resolve(0.5, 0.6, "elite", def)).is_equal_approx(0.15, 0.0001)
 	assert_float(elite.resolve(1.0, 0.6, "elite", def)).is_equal_approx(0.075, 0.0001)
-	assert_float(elite.resolve(1.5, 0.6, "elite", def)).is_equal(0.0)
+	assert_float(elite.resolve(1.4, 0.6, "elite", def)).is_equal(0.0)
 	var boss := StunRules.new()
 	for t: float in [0.0, 10.0, 20.0]:
 		assert_float(boss.resolve(t, 0.6, "boss", def)).is_equal(0.0)
+
+
+func test_stun_window_is_shorter_than_the_rogue_heavy_cooldown() -> void:
+	# 3b-3 data change (game-lead): the window must be shorter than the heavy interval,
+	# or the heavy alone would decay its own stun.
+	var window := float((_stun_def()["diminishing_returns"] as Dictionary)["window"])
+	assert_float(window).is_equal_approx(1.5, 0.0001)
+	assert_float(window).is_less(float(AttackDatabase.get_heavy("rogue")["interval"]))
+
+
+func test_rogue_heavy_at_its_own_cooldown_stuns_the_full_length_every_swing() -> void:
+	var def := _stun_def()
+	var interval := float(AttackDatabase.get_heavy("rogue")["interval"])
+	var rules := StunRules.new()
+	for swing in range(12):
+		assert_float(rules.resolve(float(swing) * interval, 0.6, "normal", def)).override_failure_message("swing %d" % swing).is_equal_approx(0.6, 0.0001)
+	# Through the real manager and its clock too.
+	var manager := _manager("normal")
+	for swing in range(6):
+		manager.apply_status("stun", def, 0.6)
+		assert_float(manager.stun_time_remaining()).override_failure_message("swing %d" % swing).is_equal_approx(0.6, 0.0001)
+		manager._process(interval)
+
+
+func test_three_stuns_inside_the_window_decay_then_immune_then_recover() -> void:
+	var def := _stun_def()
+	var rules := StunRules.new()
+	assert_float(rules.resolve(0.0, 0.6, "normal", def)).is_equal_approx(0.6, 0.0001)
+	assert_float(rules.resolve(0.4, 0.6, "normal", def)).is_equal_approx(0.3, 0.0001)
+	assert_float(rules.resolve(0.8, 0.6, "normal", def)).is_equal_approx(0.15, 0.0001)
+	assert_float(rules.resolve(1.0, 0.6, "normal", def)).is_equal(0.0)
+	assert_float(rules.resolve(1.4, 0.6, "normal", def)).is_equal(0.0)
+	# Once the oldest has aged out (1.5 s after t=0) it can stun again, shortened.
+	assert_float(rules.resolve(1.6, 0.6, "normal", def)).is_greater(0.0)
+	# After a quiet gap longer than the window it is back to the full length.
+	assert_float(rules.resolve(10.0, 0.6, "normal", def)).is_equal_approx(0.6, 0.0001)
 
 
 # --- stun on the status manager ------------------------------------------------

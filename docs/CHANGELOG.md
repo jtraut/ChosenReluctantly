@@ -29,7 +29,7 @@ A plain-language history of the project for the director, grouped by date (from 
 
 ### Changed
 - **Balance: golem wind-up** 0.45 s -> 0.7 s (director item D6, default A applied). Its attack cycle goes 2.25 s -> 2.5 s and its damage per second 4.0 -> 3.6. Hit damage is unchanged at 9. (acc26a4)
-- **Damage numbers are bigger:** about 12 px -> 20 px at 720p, with an outline. Quick hits on the same spot merge into one number, and at most 16 show at once. **IMMUNE** now draws above HP bars. The cone, heal, dash and projectile trails read more strongly, and their timings are now data. A ring shows when a stun cancels an enemy's wind-up. Enemy HP bar visibility is now one data setting with four modes (still "always"; director call D7). (058d3dd, 3ae40b7, 39c03e6, b50aa0c, bff7581)
+- **Damage numbers are bigger:** about 12 px -> 20 px at 720p, with an outline. Quick hits on the same spot merge into one number, and at most 16 show at once. **IMMUNE** now draws above HP bars. The cone, heal, dash and projectile trails read more strongly, and their timings are now data. A ring shows when a stun cancels an enemy's wind-up. Enemy HP bar visibility is now one data setting with four modes (shipped as "always" at the time; switched by director call D7 in 6b, see efaf164). (058d3dd, 3ae40b7, 39c03e6, b50aa0c, bff7581)
 - **Enemy HP bars** are slightly smaller (1.4 x 0.19 -> 1.2 x 0.16) and hidden behind models in front of them. Before, they drew over everything. (caab2c0, 8e05395)
 - **Golem shape.** Its hit area went from a box to a capsule (radius 0.45). Ground markers now show its true hit area; before, they understated it by about 20-30 cm. Its body went from a box to a capsule, and its movement collision is unchanged. (caab2c0)
 - **Attack wedge size.** The light and heavy wedges are now drawn to where hits really land, about 0.45 past the old drawn edge. They were later trimmed 4-5 cm to the exact reach at floor height. The projectile path marker's half-width went from 0.75 to 0.60 (so the lane is 1.5 -> 1.2 wide). How attacks hit did not change. (1d87756, 5807412)
@@ -74,6 +74,8 @@ A plain-language history of the project for the director, grouped by date (from 
 - **DECISIONS.md had a stray non-UTF-8 character.** (cd60da8)
 
 ### Docs and process
+- game-lead corrected the 5b damage-numbers bullet: the HP bar mode note had gone stale after D7 (fact fix, qa S6-9).
+- **5d closed** (qa re-check PASS 957fa16). **Slice 6 qa FAIL** on two small blockers: an attack click latched before a pause fired after resume, and the dash preview showed 4 m while the dash really ends about 8 m away. A fix pass is in progress. (957fa16, 0d670df)
 - **[Director decision] Answers to D1-D7.**
   - D1 A: no Game Over stats yet.
   - D2 C: hold-to-preview casting becomes the default, with a setting to cast on press. It is added to GDD §3 and scheduled as Slice 6.

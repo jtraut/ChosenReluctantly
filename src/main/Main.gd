@@ -19,3 +19,22 @@ func _ready() -> void:
 	var problems := SceneSelfCheck.find_problems(self)
 	if not problems.is_empty():
 		push_error("Main scene self-check FAILED (world may render empty): " + "; ".join(problems))
+	_setup_debug_capture()
+
+
+## Screenshot/scenario tooling (see README). Costs one args lookup in normal play.
+func _setup_debug_capture() -> void:
+	var args := OS.get_cmdline_user_args()
+	if args.is_empty():
+		return
+	var config := CaptureArgs.parse(args)
+	var scenario_id: String = config["scenario"]
+	if scenario_id != "":
+		Scenario.setup(self, scenario_id)
+	var times: Array[float] = config["times"]
+	if not times.is_empty():
+		var capture := ScreenshotCapture.new()
+		capture.name = "ScreenshotCapture"
+		capture.times = times
+		capture.out = config["out"]
+		add_child(capture)

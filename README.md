@@ -12,6 +12,18 @@ godot --path .          # play it
 
 If `godot` isn't on your PATH, set `GODOT_BIN` to the full path of the Godot executable, or pass it explicitly: `"C:\path\to\Godot.exe" --path .`.
 
+## Screenshots and scripted scenarios
+Capture is built into the game and enabled only by user args after `--` (nothing runs in normal play). It needs a renderer, so it must run windowed; `--headless` cannot capture.
+
+```
+powershell -File tools\capture_screenshot.ps1                                  # hp_bars scenario, 1 shot at 3.0s -> screenshots\shot.png
+powershell -File tools\capture_screenshot.ps1 -After "2.0,2.9,3.6" -Out screenshots\hp.png   # several shots -> hp_0.png, hp_1.png, ...
+godot --path . -- --screenshot-after=3.0 --screenshot-out=C:	mp.png --scenario=hp_bars
+godot --path . -- --screenshot-count=3 --screenshot-interval=2.0          # shots at 2s, 4s, 6s
+godot --path . -- --scenario=hp_bars                                      # play the scenario by hand, no capture
+```
+The game quits itself after the last shot. `screenshots/` is gitignored. Scenarios live in `data/scenarios.json` (`hp_bars`: 9 enemies near the player at mixed HP, 2 with Burn, 3 hit at 2.4s so the ghost trail drains, player has huge HP). Useful capture times for it: 2.0 to 3.6s.
+
 ## Running tests
 Tests use [gdUnit4](https://github.com/godot-gdunit-labs/gdUnit4), vendored in `addons/gdUnit4`. Run the full suite headless with:
 

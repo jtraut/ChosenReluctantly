@@ -247,7 +247,7 @@ func test_wall_constant_matches_the_real_walls_in_main_tscn() -> void:
 func test_enemies_json_scene_bad_values() -> void:
 	var good: Dictionary = {"rank": "normal", "scene": "res://scenes/enemies/MeleeChaser.tscn"}
 	assert_array(EnemyConfig.validate_enemies({"a": good})).is_empty()
-	for bad_scene: Variant in [null, 7, "", "MeleeChaser.tscn", "res://scenes/enemies/Nope.tscn", "user://x.tscn", ["a"]]:
+	for bad_scene: Variant in [null, 7, "", "MeleeChaser.tscn", "res://scenes/enemies/Nope.tscn", "user://x.tscn", ["a"], "res://scenes/Main.tscn", "res://scenes/main/Main.tscn"]:
 		var entry: Dictionary = good.duplicate()
 		entry["scene"] = bad_scene
 		assert_array(EnemyConfig.validate_enemies({"a": entry})).override_failure_message("scene %s should be rejected" % str(bad_scene)).is_not_empty()

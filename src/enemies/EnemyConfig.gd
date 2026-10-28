@@ -53,7 +53,30 @@ static func validate_enemies(enemies: Variant) -> Array[String]:
 		var scene_path: Variant = entry_dict.get("scene")
 		if typeof(scene_path) != TYPE_STRING or not String(scene_path).begins_with("res://") or not ResourceLoader.exists(String(scene_path)):
 			errors.append("enemies.%s: 'scene' must be an existing res:// scene path" % enemy_id)
+		elif not _scene_root_is_enemy(String(scene_path)):
+			errors.append("enemies.%s: scene '%s' must have an Enemy (src/enemies/Enemy.gd) as its root" % [enemy_id, String(scene_path)])
 	return errors
+
+
+## True if the scene's root node carries a script that is, or extends, the global class Enemy. Reads
+## the packed scene state only (no instancing, and no reference to the Enemy class: it would pull in the
+## Juice autoload and break `-s` tools, see S5-1).
+static func _scene_root_is_enemy(path: String) -> bool:
+	var packed: PackedScene = load(path) as PackedScene
+	if packed == null:
+		return false
+	var state: SceneState = packed.get_state()
+	if state.get_node_count() == 0:
+		return false
+	var script: Script = null
+	for i in range(state.get_node_property_count(0)):
+		if state.get_node_property_name(0, i) == "script":
+			script = state.get_node_property_value(0, i) as Script
+	while script != null:
+		if script.get_global_name() == &"Enemy":
+			return true
+		script = script.get_base_script()
+	return false
 
 
 static func _check_number(dict: Dictionary, key: String, low: float, high: float, exclusive_low: bool, errors: Array[String]) -> void:

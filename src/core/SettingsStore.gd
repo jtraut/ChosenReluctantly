@@ -38,7 +38,7 @@ func load_all() -> Array[String]:
 	problems = []
 	_definitions = {}
 	_values = {}
-	var defs_text: Variant = _read_text(defaults_path)
+	var defs_text: Variant = read_text_file(defaults_path)
 	if defs_text == null:
 		problems.append("settings defaults '%s' could not be opened" % defaults_path)
 		return problems
@@ -168,7 +168,7 @@ func save() -> bool:
 
 
 func _load_user_file() -> void:
-	var text: Variant = _read_text(user_path)
+	var text: Variant = read_text_file(user_path)
 	if text == null:
 		return  # No user file yet: defaults.
 	var config_problem := _config_text_problem(String(text))
@@ -211,7 +211,7 @@ static func _config_text_problem(text: String) -> String:
 	return ""
 
 
-static func _read_text(path: String) -> Variant:
+static func read_text_file(path: String) -> Variant:
 	if not FileAccess.file_exists(path):
 		return null
 	var file := FileAccess.open(path, FileAccess.READ)

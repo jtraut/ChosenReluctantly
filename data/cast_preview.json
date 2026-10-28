@@ -1,0 +1,12 @@
+{
+    "enabled": true,
+    "ground_offset": 0.04,
+    "render_priority": -1,
+    "fill_alpha": 0.14,
+    "edge_alpha": 0.85,
+    "edge_thickness": 0.09,
+    "edge_lighten": 0.35,
+    "default_color": "#f4ece8",
+    "self_ring_enabled": true,
+    "self_ring_radius": 0.9
+}

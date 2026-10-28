@@ -46,6 +46,8 @@ var attacks: AttackController
 ## Card slot key model (press / hold / release). Fed from _unhandled_input only, so a UI
 ## screen that consumes input blocks casting; read by the cast preview.
 var cast_input := CastInput.new()
+## The held-key ground preview of the previewed card's hit area (child node, built in _ready).
+var cast_preview: CastPreview = null
 
 @onready var hurtbox: Hurtbox = $Hurtbox
 @onready var health: Health = $Health
@@ -98,6 +100,10 @@ func _ready() -> void:
 	status_rng.randomize()
 	card_slots = CardSlotController.new(self, get_tree().current_scene, team, stat_modifiers, owned_pools)
 	_setup_attacks()
+	cast_preview = CastPreview.new()
+	cast_preview.name = "CastPreview"
+	add_child(cast_preview)
+	cast_preview.setup(self)
 	health.damaged.connect(_on_damaged)
 	health.died.connect(_on_died)
 	Settings.changed.connect(_on_setting_changed)
@@ -532,6 +538,14 @@ func _unhandled_input(event: InputEvent) -> void:
 			_queue_cast(cast_input.press(i, Settings.casts_on_release()))
 		elif event.is_action_released(USE_ACTIONS[i]):
 			_queue_cast(cast_input.release(i))
+
+
+## What the held-key preview shows right now, for the HUD and tests:
+## {active: bool, slot: slot type id, card_id, shape, size, parts: [{shape, size, half_width,
+## half_angle_degrees, start_offset, damage_type}]}. `shape`/`size` are the first part's.
+## Shapes: cone, aoe, projectile_lane, dash_path, self_ring (see CastPreviewShapes).
+func get_preview_state() -> Dictionary:
+	return cast_preview.get_state()
 
 
 func _queue_cast(slot_index: int) -> void:

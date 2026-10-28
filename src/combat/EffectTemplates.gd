@@ -19,6 +19,8 @@ const REQUIRED_PARAMS: Dictionary = {
 }
 
 const PROJECTILE_SCENE_PATH := "res://scenes/effects/Projectile.tscn"
+## A shot leaves this far in front of the caster (the cast preview lane starts here too).
+const PROJECTILE_MUZZLE_OFFSET := 0.6
 
 
 static func is_known_template(template_id: String) -> bool:
@@ -131,7 +133,7 @@ static func _execute_projectile(params: Dictionary, context: EffectContext) -> v
 	var instance: Projectile = scene.instantiate()
 	context.spawn_parent.add_child(instance)
 	var forward: Vector3 = -context.caster.global_transform.basis.z
-	var origin: Vector3 = context.caster.global_position + forward * 0.6
+	var origin: Vector3 = context.caster.global_position + forward * PROJECTILE_MUZZLE_OFFSET
 	instance.set_hit_radius(params["hit_radius"])
 	instance.set_look(ElementVisuals.visual_for_team(String(params["damage_type"]), context.caster_team))
 	instance.knockback_strength = params.get("knockback_strength", 0.0)

@@ -1,0 +1,114 @@
+# Changelog: Chosen, Reluctantly
+
+A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
+
+## 2026-10-28 (Polish 1: Slice 4 skill visuals, Slice 3b attack rework, director open items)
+
+### Added
+- **Card-cast test scenario.** A capture scenario casts every card effect type in turn and confirms each slot really goes on cooldown, which is the first live check of slot cooling. Later it gained a fire projectile cast and a spread-out layout with idle enemies, so screenshots read clearly. (42f4599, 30d6d87)
+- **Shared effect pool.** Visual effects come from one reusable pool with a cap on how many can show at once. The cap was 48, raised to 64 to leave room for Burn flames. The pool uses simple shapes instead of particles because that is cheapest and runs headless. (57c874f, ba993b4)
+- **Element colours as data.** Fire is orange, and the neutral/physical look is cream. Adding Water later is a data entry only, and a test proves it. (993c6c8)
+- **Visuals that match hit areas.** Cone, area and projectile visuals take their size from the same data as the hit check, and tests enforce it. (1d87756)
+- **Visuals for every card effect.** Projectiles get a muzzle flash, trail and impact, and fizzle at max range. Cones sweep, area attacks charge then burst, dashes leave puffs and a trail, heals sparkle, buffs ring, and Burn puts a lasting flame on the enemy. (ba993b4, 7755fbf)
+- **Aim indicator.** A quiet ring follows the mouse on the ground, and fading dots show the direction you face. Player projectiles and dashes leave a brief ground marker of their path. (7d8817e, 6aaa203, 51fc5b0)
+- **Enemy data file.** `data/enemies.json` holds enemy shot size and cone angle (values unchanged), and later an enemy rank (normal/elite/boss). Every current enemy is normal. (ad3db20, 7192e13)
+- **Data checks for status effects.** A typo in a status such as Burn now raises an error on load instead of silently showing nothing. (b5180a8)
+- **Click cap as a ratio.** Spam-clicking the light attack is capped at 1.5x the automatic rate, so the minimum gap is 0.4 s at the current 0.6 s timer. It scales with any future attack-speed boost. (961d7c6)
+- **"Cards beat the free attack" rule check.** Every attack card must deal at least 1.5x a light hit per cast and more damage per second than the auto light attack. A check at load and a test fail if a card drifts below. (961d7c6)
+- **Heavy attack redesign.** Heavy attacks are defined per class in data, with two shapes: a wide melee arc, and a targeted area at the mouse point for casters. The Rogue heavy stuns on hit and has a 50% chance to Burn for 3 s. The Wizard's targeted area exists only as data plus a test scenario; no Wizard class was built. (7192e13, 5a45938, 89c9634, ee9adbe)
+- **Stun status.** Stunned enemies don't move or attack. Repeat stuns within a short window get shorter, then stop working after the third. Elites take half-length stuns and bosses are immune. (7192e13)
+- **Stun cue.** Three yellow stars orbit a stunned enemy and its body turns paler. A rate-limited "IMMUNE" popup shows when a stun doesn't land. The targeted-area telegraph now fills in as the wind-up charges. (7d58f95, ad9ee04)
+- **More tests.** qa added real-scene tests for Slice 4 and 3b, and the bot simulator is now seeded so its failures can be reproduced. (6f82a4b, 8cc7b92, 552ef04)
+
+### Changed
+- **Attack wedge size.** The light and heavy wedges are now drawn to where hits really land, about 0.45 past the old drawn edge. They were later trimmed 4-5 cm to the exact reach at floor height. The projectile path marker went from 0.75 to 0.60 wide. How attacks hit did not change. (1d87756, 5807412)
+- **Light attack and heavy telegraph look.** The light flash went from pale tan to saturated yellow and from 0.12 s to 0.2 s. The heavy wind-up is now a pale pulsing outline, clearly different from the solid impact flash. (0e2646d)
+- **Death cue.** Death now flashes white then red, greys and topples the player, with a burst, a ring and a camera shake. (e046cdd, 6583dbf)
+- **Arena background.** The pale-blue sky past the floor edge became a dark void. The floor stays 40x40; a trial 60x60 floor was reverted. (888e37b, 7755fbf)
+- **[Director decision] Basic attacks.** Clicking is an early-game crutch. Basic attacks are weaker than cards. Heavy trades sustained damage for burst and utility. The heavy wind-up slows and never roots. GDD §3 was updated; this resolves balance questions P1-P4. (5a3b998)
+- **Balance: light attack** damage per hit 8 -> 3, which is 13.3 -> 5.0 damage per second. (961d7c6)
+- **Balance: Shrug Bomb** 5 -> 12 damage. **Everyone Calm Down** 8 -> 16 damage. Both changes make them beat the new light attack. No other card changed. (961d7c6)
+- **Balance: spam-click advantage** 2.4x -> 1.5x the auto rate (minimum click gap 0.25 s -> 0.4 s). (961d7c6)
+- **Balance: Rogue heavy** 22 -> 8.5 damage per hit (1.8 s cooldown). Its area is 3x the light attack's. Direct damage per second is 12.2 -> 4.7, about 5.8 with Burn. (7192e13)
+- **Balance: heavy wind-up** now slows movement by 35%. Before, it neither slowed nor rooted. (7192e13)
+- **Balance: stun** is 0.6 s. The window in which repeat stuns shrink went 4 s -> 1.5 s, so every heavy swing gets the full stun. (7192e13, 8a9c704)
+- **Balance (side effect of a bug fix): projectile hit size** now really reads its data. Flaming Nonsense hits at 0.3 (was 0.25), and ranged enemy shots at 0.3 (was 0.25). (1d87756)
+
+### Fixed
+- **Projectiles ignored their hit-size data** and all used 0.25. They also shared one collision shape. (1d87756)
+- **The player's hit and death colour flashes never showed.** The code read the wrong material, so only the topple ran. (9ef095a, 6583dbf)
+- **The pale blue triangle in the top-left corner** was the sky colour showing past the floor edge on wide screens. (888e37b)
+- **The restart test failed about 1 run in 8.** It was a harmless one-frame timing gap that predated this work. The test now measures the gap and allows up to 50 ms. (9ef095a, 6f82a4b)
+- **DECISIONS.md had a stray non-UTF-8 character.** (cd60da8)
+
+### Docs and process
+- Slice 4 was split into four steps (4a-4d), and Slice 3b into four (3b-1 to 3b-4), so each step fits in one sitting. The Slice 4 playtest was folded into the 3b playtest. (0a8f929, 877a46c)
+- Hold-to-preview was logged as a proposal only; nothing was built. (0a8f929)
+- **New `docs/OPEN_ITEMS.md`**: one page listing everything waiting on the director. It became a standing rule in CLAUDE.md, with a pointer in STATE.md. (1d4a1fc)
+- Director questions D4 (light attack cut) and D5 (heavy attack damage with Burn) were added. (493c1a3, 3ebe6c9)
+- qa reviews: Slice 4 PASS, its re-check PASS, and Slice 3b PASS with should-fix items. A Burn bug found by the 3b review is being fixed before the playtest. (6f82a4b, 8cc7b92, 552ef04, 8501ce1)
+- Hand-offs and status notes were kept up to date throughout the day. (6ce6189, 8566242, ebd0f0f, 0ac753b, 3a1aba1, b7ec0d0)
+
+## 2026-10-27 (Camera fix, enemy HP bars, agent team, Polish 1 Slices 0-3)
+
+### Added
+- **Enemy HP bars.** Bars float above every enemy and show damage, a fading "ghost" segment, Burn and resistance markers. Settings live in `data/ui.json`. (b31cbde, 0309f86, bcbfe34, e60e515, 621cfa2)
+- **Screenshot tooling.** A capture command plus test scenarios, so the team can see the game without a person playing it. Bad arguments fail loudly. (f468959, 96ca1a1, 083a8cf)
+- **Startup self-check.** The game reports an error if the camera, player, floor, light or spawner is missing, or if the camera can't see the player. A smoke test covers it. (be64ea9)
+- **Player death and Game Over (Polish 1, Slice 1).** At 0 HP the player dies once, input stops, and a slow-mo beat plays. A Game Over screen offers "Try again", which reloads the arena fresh. The HUD now reads "HP x / y". qa added a restart soak tool. (9744135, 99f6af2, 1f24ceb, d268f19, 7ad85ee)
+- **Automatic light attack and manual heavy attack (Polish 1, Slice 3).** These replaced the old click-only basic attack. The light attack auto-fires at enemies in range and also fires on left click. The heavy is on right click, with a wind-up telegraph. Both are defined in `data/attacks.json`. The HUD gained LMB/RMB meters and slot ready/cooling states. (1c12fd9, de415be, b4011aa, ed0bf58, e8b7e45, 1fe89e5)
+- **The agent team is in place**: game-lead, gameplay-dev, qa, ux-designer and playtester are active; art, audio and story are dormant. playtester and ux-designer were added on this date, and game-lead got the ability to run the other roles itself. (d6a6546, 112f5f0, 64e10ac)
+
+### Changed
+- **HUD layout (Polish 1, Slice 2).** Slots are fixed-size and long card names wrap, shrink, then truncate. The HUD has safe margins and a higher-contrast HP bar. Card names over 25 characters raise a warning. (f5b0c19, 88732cf, 366eabd, 60cd11e)
+- **[Director decision] Polish 1 approved (Slice 0):**
+  - Card rewards: pick 1 of 3 or reject all, with 3 rejects per run.
+  - Density: fewer, more impactful enemies.
+  - Controls: light attack (auto + left click), heavy attack (right click).
+  - A survivor-style level-up idea was parked, with "do not implement".
+
+  Recorded in the GDD. (a941ddd)
+- **[Director decision] Enemy HP bars:** always visible while the enemy is alive, and the current size is fine. (edb92e4)
+- **Balance: new attack numbers.**
+  - Light: 8 damage every 0.6 s; clicks at most every 0.25 s.
+  - Heavy: 22 damage, 1.8 s cooldown, 0.45 s wind-up.
+  - Values before this are unclear from history; the old basic attack was a fixed-cooldown click arc.
+
+  (1c12fd9)
+
+### Fixed
+- **The game showed only sky.** The camera's rotation was stored flipped, so it looked upward and the world never appeared; movement and aim were also wrong. (be64ea9)
+- **Player kept moving and casting at 0 HP.** Death was never handled; fixed by Slice 1. (9744135)
+- **HUD slots swallowed mouse clicks.** (b4011aa)
+- **A flaky test** and a wrong README path. (ed0bf58)
+
+### Docs and process
+- Roadmap planning for HP bars and Polish 1 Slices 1-5, director answers logged, and balance questions P1-P4 raised for the director. (fe43425, edb92e4, b854bca, 1fe89e5, 4c2bfef)
+- A session where role hand-offs were blocked was logged. The cause was that game-lead lacked the tool to run other roles, and it was fixed. (07aff8c, 64e10ac)
+- Hand-off and status updates throughout. (43c8b48, bc5abb1, e34179e, afb47c8, 61d642c, 796542d, 612a0b6, 42c9d8c, 26d26f6, 9ec2e03, 7271aaa)
+
+## 2026-10-26 (Milestone 1 GDD, project scaffold, Milestone 2 combat prototype)
+
+### Added
+- **Repository created** (3f3edce, an empty README). **GDD added** (c3ebd6d): the design document from the director's design interview, which is Milestone 1 (engine, 3D isometric view, Rogue/Wizard and Fire/Water for the first slice).
+- **Project scaffold (Milestone 1.5).** Godot 4.7.2 project, gdUnit4 test framework, folder layout, working agreements, README, docs, and the first role agents: game-lead, gameplay-dev, qa, plus dormant art, audio and story. (5496508, 4fdcf86)
+- **Milestone 2: combat feel prototype**, in one arena room:
+  - Isometric camera, WASD movement and mouse aim. (4cb6e37)
+  - Click basic attack, dodge roll with i-frames, and the health/damage foundation. (479a755)
+  - Stat-modifier system for future passives and gear. (d6c266b)
+  - Status effect system with Burn. (d031edd)
+  - Seven reusable card effect templates: projectile, cone, area, dash, heal, apply status, buff. (f747a95)
+  - Card data format and loader; slot types and card pools as data. (bfd3361)
+  - The five card slots, each with a mini-deck, cooldowns and dead-card swap. (f613475, a82e756)
+  - Three enemy types (melee chaser, ranged shooter, fire-resistant golem) and a wave spawner. (d311d28)
+  - A 15-card Fire Rogue starter set. (4f27a16)
+  - Bottom HUD and an F3 debug overlay. (680be9a)
+  - Hit-stop, screen shake, damage numbers and hit flash. (1973fd1)
+  - Headless bot-sim stub. (b6d370d)
+  - Milestone 2 marked complete. (6c74bdc)
+
+### Fixed
+- **The test command could silently pass without running tests**, and a signal parameter shadowed a built-in name. (3432239)
+
+### Docs and process
+- Hand-off notes. (aed6cf9, 505ff8f) gitignore updates; the exact purpose of the second update is unclear from history. (5496508, 939e70b)

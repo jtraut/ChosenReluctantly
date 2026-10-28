@@ -23,6 +23,12 @@ This file governs how work happens in this repo. It applies to the main session 
 - Define role agents in `.claude/agents/` as short markdown files with a clear job and scope. Run roles one at a time, not in parallel, to conserve usage.
 - The `qa` role reviews every completed feature before it's marked done in `docs/ROADMAP.md`.
 - Never commit secrets or large binaries. Don't download assets or tools from untrusted sources.
+- **Changelog (standing rule, 2026-10-28):** game-lead updates `docs/CHANGELOG.md` at the end of every slice and every multi-agent prompt, and whenever a notable change lands (new feature, balance or design change, bug fix, process change).
+  - New entries go at the TOP, directly under the header. Insert them by editing at the header, never by appending to the end of the file.
+  - If the date already has a section, add to it instead of creating a duplicate heading.
+  - Never rewrite old dated entries except to fix a factual error, and note the fix when you do.
+  - Balance and design changes always state the old and new values. Director decisions are tagged `[Director decision]`.
+  - qa's review of any slice checks that the changelog has an entry for it.
 - **Director open items (standing rule, 2026-10-28):** `docs/OPEN_ITEMS.md` is the single place listing everything waiting on the director, in plain language. game-lead owns it, and updates it at the end of every slice, at the end of every multi-agent prompt, whenever a new director-facing question appears, and before stopping for any reason. Every role reports director-facing questions to game-lead in its hand-back, not buried in its own docs. When the director answers, game-lead records the answer in `docs/DECISIONS.md`, moves the item to "Recently resolved", updates the affected files, and unblocks dependent work. The final message of any session ends with a line like: "docs/OPEN_ITEMS.md: N need your decision, M need your eyes."
 
 ## Engine and language

@@ -58,12 +58,41 @@ func test_dps_must_be_strictly_above_light() -> void:
 
 func test_status_damage_counts_whole_ticks() -> void:
 	var card := _card("burny", "attack_single", 0.0, [_cone(1.0), {"template": "apply_status", "params": {"status_id": "burn", "duration": 4.5}}])
-	# 1 direct + 4 ticks x 2.
-	assert_float(CardDamageRule.cast_damage(card, STATUSES)).is_equal(9.0)
+	# 1 direct + 4 ticks x 2 when the card is recast no sooner than the Burn lasts.
+	assert_float(CardDamageRule.cast_damage(card, STATUSES, 10.0)).is_equal(9.0)
+
+
+func test_status_damage_is_capped_by_the_cycle_time() -> void:
+	var card := _card("burny", "attack_single", 0.0, [_cone(1.0), {"template": "apply_status", "params": {"status_id": "burn", "duration": 4.5}}])
+	# Recast every 1.1 s: only 1 tick lands before the refresh, the rest is not extra.
+	assert_float(CardDamageRule.cast_damage(card, STATUSES, 1.1)).is_equal(3.0)
+	# Recast every 2.0 s: 2 whole ticks (the cap is the cycle, not the duration).
+	assert_float(CardDamageRule.cast_damage(card, STATUSES, 2.0)).is_equal(5.0)
+
+
+func test_a_card_that_only_passed_on_full_duration_credit_now_fails() -> void:
+	# 7 direct + Burn 5 s on a 3.3 s cycle: 10 credited by the old rule (5.15 DPS), 6 now (3.94).
+	var card := _card("old_fine", "attack_aoe", 0.8, [{"template": "aoe", "params": {"damage": 7.0}}, {"template": "apply_status", "params": {"status_id": "burn", "duration": 5.0}}])
+	var problems := CardDamageRule.check_all([card], SLOTS, LIGHT, STATUSES)
+	assert_int(problems.size()).is_equal(1)
+	assert_str(problems[0]).contains("DPS")
+
+
+func test_nan_and_inf_values_are_rejected() -> void:
+	for bad: float in [NAN, INF, -INF]:
+		var card := _card("bad", "attack_single", 0.0, [_cone(bad)])
+		var problems := CardDamageRule.check_all([card], SLOTS, LIGHT, STATUSES)
+		assert_int(problems.size()).override_failure_message("damage %s" % bad).is_equal(1)
+		assert_str(problems[0]).contains("NaN or INF")
+	var bad_modifier := _card("badmod", "attack_single", NAN, [_cone(9.0)])
+	assert_int(CardDamageRule.check_all([bad_modifier], SLOTS, LIGHT, STATUSES).size()).is_equal(1)
+	var bad_duration := _card("baddur", "attack_single", 0.0, [_cone(1.0), {"template": "apply_status", "params": {"status_id": "burn", "duration": NAN}}])
+	assert_int(CardDamageRule.check_all([bad_duration], SLOTS, LIGHT, STATUSES).size()).is_equal(1)
 
 
 func test_status_damage_lets_a_low_direct_card_pass() -> void:
-	var card := _card("burny", "attack_single", 0.0, [_cone(1.0), {"template": "apply_status", "params": {"status_id": "burn", "duration": 4.0}}])
+	# Cycle 1.0 s credits 1 tick (2): 4 direct + 2 = 6 passes (>= 4.5 and 6 DPS > 5).
+	var card := _card("burny", "attack_single", 0.0, [_cone(4.0), {"template": "apply_status", "params": {"status_id": "burn", "duration": 4.0}}])
 	assert_array(CardDamageRule.check_all([card], SLOTS, LIGHT, STATUSES)).is_empty()
 
 

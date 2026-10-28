@@ -158,16 +158,16 @@ func test_spam_click_through_the_real_player_with_haste() -> void:
 # --- the balance table in DECISIONS vs the shipped data -----------------------------------
 
 func test_decisions_balance_table_matches_the_data_files() -> void:
-	# card id: [cast damage, cycle cooldown, dps], copied from DECISIONS "Slice 3b-1" (after).
+	# card id: [cast damage, cycle cooldown, dps], copied from DECISIONS "Slice 3b-1" (after), Burn cards re-credited by S3B-1 (ticks over min(duration, cycle)).
 	var table: Dictionary = {
 		"rogue_quick_slash": [5.0, 0.6, 8.33],
 		"neutral_pointy_stick": [6.0, 1.0, 6.00],
-		"fire_ember_whatever": [13.0, 1.1, 11.82],
+		"fire_ember_whatever": [7.0, 1.1, 6.36],
 		"fire_flaming_nonsense": [9.0, 1.2, 7.50],
 		"rogue_overhand_whatever": [12.0, 1.3, 9.23],
 		"neutral_shrug_bomb": [12.0, 2.2, 5.45],
 		"rogue_everyone_calm_down": [16.0, 3.0, 5.33],
-		"fire_fine_burn_then": [17.0, 3.3, 5.15],
+		"fire_fine_burn_then": [18.0, 3.3, 5.45],
 	}
 	var statuses: Dictionary = {}
 	for status_id: String in ["burn"]:
@@ -183,8 +183,8 @@ func test_decisions_balance_table_matches_the_data_files() -> void:
 		var id := String(card["id"])
 		assert_bool(table.has(id)).override_failure_message("card %s is a damage card but is not in the DECISIONS table" % id).is_true()
 		var base := float(slot_table.get_entry(String(card["slot_type"]))["base_cooldown"])
-		var cast := CardDamageRule.cast_damage(card, statuses)
 		var cycle := CardDamageRule.cycle_cooldown(card, base)
+		var cast := CardDamageRule.cast_damage(card, statuses, cycle)
 		assert_float(cast).override_failure_message("%s cast" % id).is_equal_approx(float((table[id] as Array)[0]), 0.001)
 		assert_float(cycle).override_failure_message("%s cycle" % id).is_equal_approx(float((table[id] as Array)[1]), 0.001)
 		assert_float(cast / cycle).override_failure_message("%s dps" % id).is_equal_approx(float((table[id] as Array)[2]), 0.01)
@@ -238,20 +238,72 @@ func _burn_per_cast(cycle: float, duration: float) -> float:
 	return (health.max_health - health.current_health - damage_at_second) / float(casts - 2)
 
 
-func test_pin_burn_refresh_resets_the_tick_timer_so_the_cards_credit_overstates_burn() -> void:
-	# PIN (finding S3B-1). Every cast refreshes Burn and restarts its 1 s tick timer, so a
-	# card recast before 2 ticks accrue gets fewer ticks than CardDamageRule credits.
-	# Ember (recast every 1.1 s, rule credits 4 ticks = 8): really 1 tick = 2.
-	assert_float(_burn_per_cast(1.1, 4.0)).is_equal_approx(2.0, 0.25)
-	# Fine, Burn Then (recast every 3.3 s, credited 5 ticks = 10): really 3 ticks = 6.
-	assert_float(_burn_per_cast(3.3, 5.0)).is_equal_approx(6.0, 0.25)
-	# Heavy Burn procs (hit every 1.8 s, 3 s duration): 1 tick = 2 per proc.
-	assert_float(_burn_per_cast(1.8, 3.0)).is_equal_approx(2.0, 0.25)
-	# Consequence: Fine, Burn Then's real cycling DPS vs the light's 5.0 (the rule says 5.15).
-	# (7 direct + 6 burn) / 3.3 = 3.94. When Burn keeps its tick phase on refresh this
-	# pin must be updated (expected: 10 per cast again).
-	var real_dps := (7.0 + _burn_per_cast(3.3, 5.0)) / 3.3
-	assert_float(real_dps).is_less(5.0)
+func test_burn_refresh_keeps_its_tick_phase_so_the_rule_credit_is_real() -> void:
+	# S3B-1 (was a pin of the old bug). A refresh keeps the tick phase, so Burn ticks once a
+	# second no matter how often it is recast, as long as it never expires in between.
+	# Ember (recast every 1.1 s): 1.1 ticks = 2.2 per cast (rule credits 1 tick = 2).
+	assert_float(_burn_per_cast(1.1, 4.0)).is_equal_approx(2.2, 0.25)
+	# Fine, Burn Then (every 3.3 s, 5 s Burn): 3.3 ticks = 6.6 per cast (rule credits 3 = 6).
+	assert_float(_burn_per_cast(3.3, 5.0)).is_equal_approx(6.6, 0.25)
+	# A Burn recast only after it expired gets only its own whole ticks.
+	assert_float(_burn_per_cast(10.0, 3.0)).is_equal_approx(6.0, 0.25)
+
+
+func test_real_sustained_dps_of_every_burn_card_is_at_least_what_the_rule_credits() -> void:
+	CardDatabase.load_all()
+	var statuses: Dictionary = {"burn": StatusDatabase.get_status("burn")}
+	var slot_table := JsonDataTable.new("res://data/slot_types.json")
+	var seen := 0
+	for card: Dictionary in CardDatabase.all_cards():
+		if not CardDamageRule.is_damage_card(card):
+			continue
+		var burn_duration := 0.0
+		var direct := 0.0
+		for effect: Dictionary in card["effects"]:
+			var params: Dictionary = effect["params"]
+			if effect["template"] == "apply_status":
+				burn_duration = float(params["duration"])
+			else:
+				direct += float(params.get("damage", 0.0))
+		if burn_duration <= 0.0:
+			continue
+		seen += 1
+		var cycle := CardDamageRule.cycle_cooldown(card, float(slot_table.get_entry(String(card["slot_type"]))["base_cooldown"]))
+		var credited := CardDamageRule.cast_damage(card, statuses, cycle) / cycle
+		var real := (direct + _burn_per_cast(cycle, burn_duration)) / cycle
+		assert_float(real).override_failure_message("%s real %.3f DPS < credited %.3f" % [card["id"], real, credited]).is_greater_equal(credited - 0.1)
+		# And it beats the light in real cycling play, not just on paper.
+		assert_float(real).override_failure_message("%s real DPS does not beat the light" % card["id"]).is_greater(5.0)
+	assert_int(seen).is_equal(2)
+
+
+func test_rogue_heavy_total_dps_with_burn_measured_by_a_seeded_sim() -> void:
+	# Heavy every 1.8 s, 50% Burn proc (3 s), seeded. Direct 8.5 + Burn, per second, over 600 swings.
+	var health: Health = auto_free(Health.new())
+	health.max_health = 1000000.0
+	health.current_health = 1000000.0
+	var manager: StatusEffectManager = auto_free(StatusEffectManager.new())
+	manager.health = health
+	var burn := StatusDatabase.get_status("burn") as Dictionary
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 424242
+	var step := 1.0 / 60.0
+	var swings := 600
+	var t := 0.0
+	var next_swing := 0.0
+	var done := 0
+	while done < swings or t < next_swing:
+		if done < swings and t >= next_swing - 0.000001:
+			if rng.randf() < 0.5:
+				manager.apply_status("burn", burn, 3.0)
+			done += 1
+			next_swing += 1.8
+		manager._process(step)
+		t += step
+	var burn_damage := health.max_health - health.current_health
+	var total_dps := (8.5 * swings + burn_damage) / (1.8 * swings)
+	# Direct 4.72 + about 1.25 Burn = 5.97 (was 5.8 before S3B-1): above the light's 5.0.
+	assert_float(total_dps).is_between(5.85, 6.1)
 
 
 func test_burn_without_refresh_still_deals_every_tick() -> void:

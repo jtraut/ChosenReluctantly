@@ -49,6 +49,10 @@ class ActiveStatus:
 		time_remaining = duration
 		time_to_next_tick = tick_interval
 
+	func refresh(status_def: Dictionary, duration: float) -> void:
+		damage_per_tick = status_def.get("damage_per_tick", damage_per_tick)
+		time_remaining = maxf(time_remaining, duration)
+
 
 func _ready() -> void:
 	if health_path != NodePath():
@@ -69,8 +73,12 @@ func apply_status(status_id: String, status_def: Dictionary, duration: float) ->
 			return
 		if was_active:
 			duration = maxf(duration, (_active[status_id] as ActiveStatus).time_remaining)
-	_active[status_id] = ActiveStatus.new(status_id, status_def, duration)
-	if not was_active:
+	if was_active:
+		# A refresh keeps the tick phase (time_to_next_tick) and takes the longer duration,
+		# so recasting before expiry never restarts the tick timer or shortens the status.
+		(_active[status_id] as ActiveStatus).refresh(status_def, duration)
+	else:
+		_active[status_id] = ActiveStatus.new(status_id, status_def, duration)
 		status_applied.emit(status_id)
 	# A refresh emits nothing, so check the flame is still alive (it could have
 	# been recycled) and restart it if not.

@@ -351,3 +351,19 @@ These were already resolved by explicit instruction in the Milestone 2 kickoff p
   - Rejected: accepting the gap until later (it breaks a director decision on a shipped card), and logging a `rule_exception` (it isn't a fast low-damage card).
 - **The heavy's total DPS** will be re-measured after the fix, and D5 updated with the new number.
 - **S3B-3..S3B-8 and S4-4** (scenario flag validation) go into the same fix pass. They're small, and S3B-7 (per-frame allocations) must land before Slice 5 raises enemy density. S3B-2 (IMMUNE clipped by HP bars) joins the Slice 5 bar work.
+
+### 2026-10-28 - S3B-1 fix pass: Burn refresh and the card rule (gameplay-dev)
+- **(a) Refresh keeps the tick phase.** `StatusEffectManager.apply_status` on an active status now updates it in place (`ActiveStatus.refresh`): `time_to_next_tick` is untouched, duration = max(remaining, new), tick damage re-read from the definition. Rejected: restarting the timer (the bug), and also resetting the phase "for fairness" to a fresh apply (it would re-open the bug for any card cast faster than the tick).
+- **(b) Rule credit.** `CardDamageRule.cast_damage(card, statuses, cycle_time)` credits whole ticks over min(status duration, cycle). Rejected: keeping a default for `cycle_time` (a forgotten argument would silently re-credit the full duration), and crediting `cycle / tick` without the floor (the first tick lands 1 s after the cast, so fractional ticks are not guaranteed; the real sim gives a slight surplus, never a deficit).
+- **(c) Retune:** only Fine, Burn Then fails (3.94 DPS). Its direct damage 7 -> **12**. 11 is the smallest that passes (5.15 vs 5.0, margin 0.15, the thin margin the old table already flagged); 12 gives 5.45 (same as Shrug Bomb) so one stray rounding or a light buff does not flip it. Ember passes unchanged (cast 7, 6.36 DPS). No other card, enemy, light or heavy number touched. Rejected: 11 (too thin), a `rule_exception` (not a fast low-damage card).
+- **(d) Real vs credited**, steady state, seeded 60 fps sim through the real manager (`slice3b_qa_test`): Ember Burn 2.2 per cast (credited 2), real DPS (5 + 2.2) / 1.1 = 6.55 vs credited 6.36. Fine, Burn Then Burn 6.6 per cast (credited 6), real (12 + 6.6) / 3.3 = 5.64 vs credited 5.45. Both real values are at or above credit and beat the light's 5.0.
+- **(e) Rogue heavy total DPS**, 600 swings at 1.8 s, 50% Burn of 3 s, seed 424242: direct 4.72 + Burn 1.25 = **5.97** (was about 5.8; the phase fix adds roughly 0.15). Still above light (5.0). Compare Fine, Burn Then 5.64, Shrug Bomb 5.45, Everyone Calm Down 5.33, Pointy Stick 6.0, Ember 6.55. D5 should quote 5.97.
+
+| Card | Cast before S3B-1 (3b-1 table) | Cast after S3B-1 | DPS 3b-1 table | Credited DPS after S3B-1 | Real sustained DPS after S3B-1 |
+|---|---|---|---|---|---|
+| Ember, Whatever | 13 | 7 (5 + 2) | 11.82 | 6.36 | 6.55 |
+| Fine, Burn Then | 17 (7 + 10) | 18 (12 + 6) | 5.15 | 5.45 | 5.64 |
+| Rogue heavy (direct + 50% Burn) | - | - | 5.8 | - | 5.97 |
+| All other damage cards | unchanged | unchanged | unchanged | unchanged | - |
+
+  The test `test_decisions_balance_table_matches_the_data_files` carries the new numbers; the pin test became `test_burn_refresh_keeps_its_tick_phase_so_the_rule_credit_is_real`.

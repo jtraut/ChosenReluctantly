@@ -6,7 +6,7 @@
     "cooldown_modifier": 0.8,
     "flavor_text": "If they insist on being difficult.",
     "effects": [
-        { "template": "aoe", "params": { "damage": 7, "damage_type": "fire", "radius": 3.2 } },
+        { "template": "aoe", "params": { "damage": 12, "damage_type": "fire", "radius": 3.2 } },
         { "template": "apply_status", "params": { "status_id": "burn", "duration": 5.0 } }
     ]
 }

@@ -8,8 +8,11 @@ extends RefCounted
 ##   (b) single-target DPS while cycling, cast / (slot base cooldown + card
 ##       modifier), strictly above the light's auto DPS (light damage / interval).
 ## Per-cast damage = direct damage of every cone/aoe/projectile effect plus the
-## guaranteed damage-over-time of every apply_status effect (full duration, no
-## resistance). A card may opt out with a non-empty `rule_exception` string.
+## damage-over-time that lands in sustained use: whole ticks over
+## min(status duration, card cycle time), no resistance. A recast refreshes a
+## still-running Burn instead of stacking it, so ticks past the next cast are not
+## extra. A card may opt out with a non-empty `rule_exception` string.
+## Non-finite (NaN / INF) numbers are reported as problems.
 
 const DAMAGE_SLOT_TYPES: Array[String] = ["attack_single", "attack_aoe"]
 const DIRECT_TEMPLATES: Array[String] = ["cone", "aoe", "projectile"]
@@ -21,8 +24,9 @@ static func is_damage_card(card: Dictionary) -> bool:
 	return DAMAGE_SLOT_TYPES.has(String(card.get("slot_type", "")))
 
 
-## Total guaranteed damage of one cast. `statuses`: status id -> definition.
-static func cast_damage(card: Dictionary, statuses: Dictionary) -> float:
+## Sustained damage of one cast. `statuses`: status id -> definition.
+## `cycle_time`: seconds until the card is cast again (see `cycle_cooldown`).
+static func cast_damage(card: Dictionary, statuses: Dictionary, cycle_time: float) -> float:
 	var total := 0.0
 	for effect: Dictionary in card.get("effects", []):
 		var template := String(effect.get("template", ""))
@@ -30,11 +34,12 @@ static func cast_damage(card: Dictionary, statuses: Dictionary) -> float:
 		if DIRECT_TEMPLATES.has(template):
 			total += float(params.get("damage", 0.0))
 		elif template == "apply_status":
-			total += status_damage(statuses.get(String(params.get("status_id", "")), {}), float(params.get("duration", 0.0)))
+			total += status_damage(statuses.get(String(params.get("status_id", "")), {}), minf(float(params.get("duration", 0.0)), cycle_time))
 	return total
 
 
 ## Whole ticks that fit in `duration` times damage per tick (damage_over_time only).
+## Callers pass min(status duration, cycle time).
 static func status_damage(status_def: Dictionary, duration: float) -> float:
 	if String(status_def.get("effect_type", "")) != "damage_over_time":
 		return 0.0
@@ -42,6 +47,21 @@ static func status_damage(status_def: Dictionary, duration: float) -> float:
 	if tick_interval <= 0.0:
 		return 0.0
 	return floorf(duration / tick_interval + 0.000001) * float(status_def.get("damage_per_tick", 0.0))
+
+
+static func _all_finite(values: Array) -> bool:
+	for value: float in values:
+		if is_nan(value) or is_inf(value):
+			return false
+	return true
+
+
+static func _effects_finite(card: Dictionary) -> bool:
+	for effect: Dictionary in card.get("effects", []):
+		for value: Variant in (effect.get("params", {}) as Dictionary).values():
+			if (typeof(value) == TYPE_FLOAT) and (is_nan(value) or is_inf(value)):
+				return false
+	return is_finite(float(card.get("cooldown_modifier", 0.0)))
 
 
 static func cycle_cooldown(card: Dictionary, slot_base_cooldown: float) -> float:
@@ -58,8 +78,12 @@ static func check_card(card: Dictionary, slot_base_cooldown: float, light: Dicti
 	var id := String(card.get("id", "?"))
 	var light_damage := float(light["damage"])
 	var light_dps := light_damage / float(light["interval"])
-	var cast := cast_damage(card, statuses)
-	var dps := cast / cycle_cooldown(card, slot_base_cooldown)
+	var cycle := cycle_cooldown(card, slot_base_cooldown)
+	var cast := cast_damage(card, statuses, cycle)
+	var dps := cast / cycle
+	if not _all_finite([cast, dps, cycle, light_damage, light_dps, slot_base_cooldown]) or not _effects_finite(card):
+		problems.append("%s: a damage, duration or cooldown value is NaN or INF" % id)
+		return problems
 	if cast < CAST_RATIO * light_damage:
 		problems.append("%s: cast damage %.2f is below %.1fx the light hit (%.2f)" % [id, cast, CAST_RATIO, CAST_RATIO * light_damage])
 	if dps <= light_dps:

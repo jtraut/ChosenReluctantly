@@ -166,3 +166,28 @@ func test_spawner_applies_grace_and_respects_cap_in_scene() -> void:
 func test_enemy_entry_needs_a_real_scene() -> void:
 	assert_array(EnemyConfig.validate_enemies({"a": {"rank": "normal"}})).is_not_empty()
 	assert_array(EnemyConfig.validate_enemies({"a": {"rank": "normal", "scene": "res://nope.tscn"}})).is_not_empty()
+
+
+func test_step_one_matches_step_and_returns_empty_when_nothing_spawns() -> void:
+	# S5-6: the per-frame call returns one id or "" (no array); step() is the same thing as a list.
+	var a := WavePlan.new(_cfg(), _rng(5))
+	var b := WavePlan.new(_cfg(), _rng(5))
+	var alive_a: int = 0
+	var alive_b: int = 0
+	for i in range(2000):
+		var one: String = a.step_one(0.05, alive_a)
+		var many: Array[String] = b.step(0.05, alive_b)
+		assert_int(many.size()).is_equal(0 if one == "" else 1)
+		if one != "":
+			assert_str(many[0]).is_equal(one)
+			alive_a += 1
+			alive_b += 1
+		if i % 40 == 0:
+			alive_a = maxi(alive_a - 2, 0)
+			alive_b = maxi(alive_b - 2, 0)
+
+
+func _rng(seed_value: int) -> RandomNumberGenerator:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value
+	return rng

@@ -48,7 +48,8 @@ func _process(delta: float) -> void:
 		return
 	if target.has_method("is_dead") and bool(target.call("is_dead")):
 		return  # player is dead: no more waves
-	for enemy_id: String in plan.step(delta, _alive):
+	var enemy_id: String = plan.step_one(delta, _alive)
+	if enemy_id != "":
 		_spawn_one(enemy_id)
 
 

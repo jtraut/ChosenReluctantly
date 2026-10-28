@@ -51,20 +51,31 @@ func stage_wait_left() -> float:
 	return _stage_wait
 
 
-func step(delta: float, alive: int) -> Array[String]:
-	var out: Array[String] = []
+## The enemy id to spawn right now, or "" for none. At most one per call, so the per-frame
+## path allocates no array (S5-6). EnemySpawner uses this.
+func step_one(delta: float, alive: int) -> String:
 	_gap_left = maxf(_gap_left - delta, 0.0)
 	if _pending.is_empty():
 		_stage_wait = maxf(_stage_wait - delta, 0.0)
 		var stage: Dictionary = _stage(_stage_index)
 		if _stage_wait <= 0.0 and alive <= int(stage.get("until_alive_at_most", max_alive())):
 			_open_stage(stage)
-	if not _pending.is_empty() and _gap_left <= 0.0 and alive < max_alive():
-		out.append(_pending.pop_front())
-		_gap_left = float(config["spawn_gap"])
-		if _pending.is_empty():
-			_stage_index = _next_index(_stage_index)
-			_stage_wait = float(_stage(_stage_index)["delay"])
+	if _pending.is_empty() or _gap_left > 0.0 or alive >= max_alive():
+		return ""
+	var enemy_id: String = _pending.pop_front()
+	_gap_left = float(config["spawn_gap"])
+	if _pending.is_empty():
+		_stage_index = _next_index(_stage_index)
+		_stage_wait = float(_stage(_stage_index)["delay"])
+	return enemy_id
+
+
+## Same as step_one, as a list (zero or one ids). Allocates; for tests and tools, not per-frame code.
+func step(delta: float, alive: int) -> Array[String]:
+	var out: Array[String] = []
+	var enemy_id: String = step_one(delta, alive)
+	if enemy_id != "":
+		out.append(enemy_id)
 	return out
 
 

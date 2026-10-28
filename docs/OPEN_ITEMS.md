@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-10-28
-**Status: Nothing is blocked.** The team is building your 2026-10-28 attack decisions, then finishing the polish pass.
+**Status: Nothing is blocked.** Slices 4 and 3b are done. The team is on Slice 5 (enemy density, readability, HP bars).
 
 Owned by game-lead. Answer in chat with the ID, for example "D1 = A".
 
@@ -12,10 +12,10 @@ Owned by game-lead. Answer in chat with the ID, for example "D1 = A".
 | D1 | Should the Game Over screen show run stats (time survived, kills)? | It's a small motivation hook. It becomes more useful once runs have rooms. | A: not now, revisit with the run structure (Milestone 3a). B: add time + kills now. | A | A | "D1 = A" or "D1 = B" |
 | D2 | Hold-to-preview: should holding a card key show its exact hit area and cast on release? (Proposal only, nothing built.) | It helps players aim area cards precisely, but it costs input complexity. | A: park it until after Milestone 3a. B: build it as a Settings option. C: build it as the default. | A | A | "D2 = A/B/C" |
 | D4 | The light attack dropped from 8 to 3 damage per hit so every damage card beats it. Is that the "crutch" feel you want? | Light alone now takes about 3x longer to kill (a golem goes from about 4 s to 10 s). Two area cards had to jump a lot: Shrug Bomb 5 to 12, Everyone Calm Down 8 to 16. | A: keep light 3 as built. B: light 4 and slow its auto timer (0.6 s to about 0.9 s), so cards need smaller bumps. C: lower the area slot's base cooldown (2.5 s) instead. | A (feel it first; B is a data-only change) | A | "D4 = A/B/C" |
-| D5 | The new heavy attack does slightly less direct damage per second than light (4.7 vs 5.0), but its 50% Burn chance brings it to about 6.0 (measured 5.97 after a Burn bug fix). That beats light and the three area cards in a single-target fight. OK? | You said heavy should trade damage-per-second for burst and flavour. Burn is the element flavour you asked for, but with it the free heavy edges past some area cards on a single target. Area cards still win when several enemies are hit. | A: keep as built. B: lower the Burn chance on heavy to 30%, which brings it to about 5.5. C: lower heavy damage instead. | A (Burn is the flavour you asked for; B is a one-number data change) | A | "D5 = A/B/C" |
+| D5 | The new heavy attack does slightly less direct damage per second than light (4.7 vs 5.0), but its 50% Burn chance brings it to about 6.0 (measured 5.97 after a Burn bug fix). That beats light and the three area cards in a single-target fight. OK? | You said heavy should trade damage-per-second for burst and flavour. Burn is the element flavour you asked for, but with it the free heavy edges past some area cards on a single target. Area cards still win when several enemies are hit. The playtester asks the same question: must every card always beat the free heavy? | A: keep as built. B: lower the Burn chance on heavy to 20%, so every card beats it (about 5.2). C: lower heavy damage instead. | A (Burn is the flavour you asked for; B is a one-number data change) | A | "D5 = A/B/C" |
 | D3 | Enemy shots and the player's physical shots are the same cream colour. Should shots be tinted by team (enemy = red-ish)? | You currently have to tell incoming from outgoing shots by position. Fixing it is a small code change. | A: tint by team, in Slice 5. B: leave as is. | A | A, in Slice 5 | "D3 = A/B" |
 
-More items may appear when the heavy-attack redesign lands. Its proposed numbers are already logged as defaults: a 0.6 s stun, a 50% Burn chance on heavy, a 35% wind-up slow, and heavy damage cut to fit under the new light.
+The heavy redesign is built with these defaults: a 0.6 s stun, a 50% Burn chance, a 35% wind-up slow, and 8.5 damage. If any of them feels wrong, it's a one-number data change.
 
 ## Needs your eyes in the game
 
@@ -24,9 +24,15 @@ Play a normal run (not a test scenario: scenarios give the player 9999 HP).
 1. **Death slow-motion.** Die once. Look for: you can clearly tell you died (white then red flash, grey-out, topple), and the slow-mo is long enough without dragging. Tell us "longer", "shorter" or "fine".
 2. **Aim reticle.** Move the mouse around fast, at your normal resolution and at 1440p if you can. Look for: the ring follows the mouse without lag, the dots trail slightly during fast turns, and everything vanishes when you die.
 3. **Enemy HP bars near the player.** Look for: bars over or next to your character never hide what you need to see.
-4. **Heavy attack** (after the redesign lands). Look for: the stun visibly freezes enemies, the wind-up slow feels like commitment without feeling sluggish, Burn procs more often on heavy, and the area feels bigger and worth pressing.
-5. **Light attack vs cards** (after the rebalance lands). Look for: every damage card feels clearly better than the free auto attack.
-6. **1.5x click cap** (after it lands). Look for: spam-clicking helps a bit early but doesn't feel mandatory, and holding back feels fine.
+4. **Heavy attack** (right click). Look for:
+   - Does the stun (yellow stars) visibly freeze enemies, and does 0.6 s feel worth it?
+   - Does the wind-up slow feel like commitment without being sluggish?
+   - Does the area feel bigger and worth pressing?
+   - About half of heavies set enemies on fire. Does that feel like a fun surprise or a letdown?
+5. **Light attack vs cards** (feeds D4). Look for:
+   - Does every damage card feel clearly better than the free auto attack?
+   - The three area cards are only about 7-10% better than light on a single enemy. Do they still feel worth casting on one?
+6. **1.5x click cap.** Look for: spam-clicking helps a bit early but doesn't feel mandatory, and holding back feels fine.
 7. **Light flash and heavy telegraph.** Look for: the light swing reads at full speed, and the heavy wind-up looks clearly different from its impact.
 
 ## FYI, no action needed

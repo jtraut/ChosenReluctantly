@@ -140,7 +140,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
   - **qa tests:** auto interval math incl. modifiers; manual click resets timer; no double fire; no fire without a target in range/arc; no fire while dead; heavy cooldown; data flag switches heavy to auto.
   - **playtester:** does auto-fire feel good; is clicking worth doing; is heavy meaningfully different; is auto light too strong or weak versus cards. Screenshot of an auto light and a heavy attack.
 
-- [ ] **Slice 4: Skill visuals and targeting readability**
+- [x] **Slice 4: Skill visuals and targeting readability** - **Done** 2026-10-28 (game-lead). 4a-4c built, qa PASS 6f82a4b + re-check 8cc7b92, playtester no blocker 68324d2 (`docs/playtests/2026-10-28-polish1-slice4-3b.md`).
   - **Owner sequence:** gameplay-dev (effect visuals, pooling, hitbox-driven sizing) -> ux-designer (aim indicator, ground markers, readability tuning) -> qa -> playtester -> game-lead.
   - **Sub-steps (scoping split, 2026-10-28; each one committed and runnable on its own):**
     - [x] **4a, foundation (gameplay-dev):** BUILT 2026-10-28 (42f4599..91587d5, 187/187 tests, reload soak clean); qa at 4d. Note for balance: projectile hit radius now really reads data (Flaming Nonsense 0.25 -> 0.3, bug fix). 4b hint: card_cast enemies clump on the player by ~1.5 s; consider stationary enemies for shots.
@@ -163,7 +163,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
   - **qa tests:** visual-vs-hitbox size test; pool cap and no leak over N casts; caster/target freed mid-effect; headless run clean.
   - **playtester:** from a screenshot or short capture, can you tell which skill was cast, where it went, what it hit? Screenshots of each template type.
 
-- [ ] **Slice 3b: Attack rework (director decisions 2026-10-28, resolves P1-P4)**
+- [x] **Slice 3b: Attack rework (director decisions 2026-10-28, resolves P1-P4)** - **Done** 2026-10-28 (game-lead). qa PASS 552ef04 + re-check 0d454ae, playtester no blocker 68324d2. Playtest follow-ups -> Slice 5 (damage numbers, Pointy Stick visibility, weak cone/heal/dash reads); balance calls D4/D5 for the director.
   - **GDD:** §3 "Role of basic attacks [DIRECTOR DECISION, 2026-10-28]", §7 (statuses), §4 (slot cooldowns). DECISIONS 2026-10-28 "[DIRECTOR DECISION] Role of basic attacks".
   - **Owner sequence:** 3b-1 gameplay-dev -> 3b-2 gameplay-dev -> 3b-3 ux-designer -> 3b-4 qa (whole 3b) -> playtester (one report covering Slice 4 visuals and 3b) -> game-lead closes Slice 4 and 3b.
   - [x] **3b-1, click cap and cards-beat-light (gameplay-dev):** BUILT 2026-10-28 (961d7c6..4fb5b57, 260/260). Light 8 -> 3; Shrug Bomb 5 -> 12, Everyone Calm Down 8 -> 16; table in DECISIONS. Director call D4 (OPEN_ITEMS). qa at 3b-4.
@@ -211,6 +211,20 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
 - [ ] **Slice 5: Wave density, enemy readability, HP bars**
   - **Owner sequence:** gameplay-dev (spawner, enemy fixes, bar rendering) -> ux-designer (bar visibility/size options) -> qa (incl. bot-sim) -> playtester (compare bar options, density screenshots) -> game-lead (pick bar default, close).
   - **GDD:** §1 density principle, §7.
+  - **Sub-steps (game-lead, 2026-10-28):**
+    - [ ] **5a, gameplay-dev:** criteria 1-3 and 5. Also:
+      - Rendering side of criterion 4 (bar depth/priority).
+      - N1: per-enemy reach for ground shapes vs the golem box hurtbox, or a capsule hurtbox.
+      - D3 default A: team tint for shots, so enemy shots look different from player physical shots. Code in `ElementVisuals`, colour in data.
+      - Reuse the physics query in `Player._attack_has_target` if profiling at the new density shows a cost.
+      - s1-f: first contact about 1 s after spawn; add a spawn grace.
+    - [ ] **5b, ux-designer:** bar visibility modes as data (criterion 4). Also:
+      - S3B-2: the IMMUNE popup is drawn above HP bars.
+      - Damage numbers readable at 720p (old follow-up (e), playtest should-fix).
+      - Pointy Stick / neutral projectile clearly visible.
+      - s4-c: cone sweep duration moves to data, with the cone, heal sparkle and dash trail reads strengthened.
+      - s4-b: golem occlusion of ground shapes (cheap fix or a note).
+    - [ ] **5c:** qa (incl. bot-sim at the new density) -> playtester -> game-lead picks the bar default and closes.
   - **Also in this slice:** (s4-b) tall golems occlude ground shapes; (N1) ground shapes understate hit area vs FireResistantGolem box hurtbox (~20-30 cm short; per-enemy reach or accept); s3-g (enemy HP bars clump into an unreadable cluster in crowds), s1-f (first contact ~1 s after spawn).
   - **Files likely touched:** `src/enemies/EnemySpawner.gd`, new wave table data (e.g. `data/waves.json`), `src/enemies/Enemy.gd`, `scenes/enemies/*.tscn`, `src/ui/EnemyHpBar.gd`, `assets/shaders/enemy_hp_bar.gdshader`, `data/ui.json`, `tools/bot_sim.gd`, tests.
   - **Acceptance criteria:**

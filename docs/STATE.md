@@ -13,19 +13,10 @@ Last updated: 2026-10-28. **Milestone 2 is done.** Now running **Post-milestone 
 - **Polish 1, Slice 1 (death and game over) - done** (7ad85ee): `Player.player_died`, `Main.game_over_ready` / `restart_arena()` (scene reload), Game Over screen, "HP x / y" label, reload soak tool `tools/run_reload_cycle.ps1`.
 
 ## In progress
-**qa re-check 2026-10-28 DONE: Slice 3b PASS (all S3B-1/3..8, S4-4 resolved; 337/337, soak and bot-sim clean); CHANGELOG checked against git, 3 wording fixes (docs/reviews/2026-10-28-changelog-qa.md). Next: the playtester.**
-**Fix pass for the 3b qa should-fix items DONE by gameplay-dev (S3B-1 Burn phase + card rule + Fine Burn Then 7->12, S3B-3..S3B-8, S4-4; 337/337 tests, soak/bot-sim clean). Next: qa targeted re-check, then the playtester. See DECISIONS 2026-10-28 S3B-* entries.**
-**3b-4 qa: PASS with should-fix (docs/reviews/2026-10-28-polish1-slice3b-qa.md). 326/326, soak and bot-sim clean. Should-fix S3B-1: Burn refresh resets the tick timer, so Fine, Burn Then really does 3.94 DPS vs light 5.0 (gameplay-dev; game-lead to re-check the heavy's 5.8 DPS and D5 after). Next: playtester (Slice 4 + 3b).**
-**3b-3 (ux) BUILT: orbiting stun stars + data tint, quiet IMMUNE popup, targeted_aoe telegraph grows with the wind-up, stun DR window 1.5 s; 306/306 tests, soak OK. Next: 3b-4 qa. See DECISIONS 2026-10-28 "Slice 3b-3".**
-**3b-2 (heavy redesign) BUILT by gameplay-dev: heavy 8.5 / 1.8 s, Rogue arc + stun + 50% Burn, Wizard targeted_aoe (data, test, scenario), generic Stun with rank and DR, wind-up slow; 292/292 tests. Next: 3b-3 ux-designer. See DECISIONS 2026-10-28 "Slice 3b-2".**
-**Director prompt 2026-10-28 (attack decisions + OPEN_ITEMS) is being executed.**
-- Part A (decisions recorded in GDD/DECISIONS): done.
-- Part C (`docs/OPEN_ITEMS.md`, CLAUDE.md rule): done.
-- **Part B is the new Slice 3b (ROADMAP). 3b-1 built (4fb5b57). 3b-2 built (ee9adbe). 3b-3 built (ad9ee04). 3b-4 qa PASS 552ef04 with should-fix items; fix pass done (cdcdf47, 337/337). qa re-check PASS 0d454ae. Playtester (one report for Slice 4 + 3b) in progress, then game-lead closes both, then Slice 5.**
-- Slice 4: built, qa PASS and re-check PASS (8cc7b92). Its playtest is folded into the Slice 3b playtest. Not closed yet.
+**Slices 4 and 3b are DONE (closed 2026-10-28).** The director prompt's Parts A-C are complete, and the changelog exists. **Now: Slice 5, split into 5a/5b/5c (ROADMAP). 5a handed to gameplay-dev.**
 
 ## Exact next step
-3b-1 (gameplay-dev) -> 3b-2 (gameplay-dev) -> 3b-3 (ux-designer) -> 3b-4 qa -> playtester (one report for Slice 4 + 3b) -> game-lead closes Slice 4 and 3b and updates OPEN_ITEMS. Then Slice 5 (full loop), the true-size capture tooling, and the pass close-out. After the pass: **Milestone 3a (run structure)**. Re-run the reload soak `tools/run_reload_cycle.ps1` whenever Main, Juice, Player or the autoloads change.
+5a (gameplay-dev) -> 5b (ux-designer) -> 5c qa (incl. bot-sim) -> playtester -> game-lead picks the HP bar default and closes. Then the true-size capture tooling task (gameplay-dev -> qa), then the pass close-out (whole-pass playtester report). Then **Milestone 3a (run structure)**. Re-run the reload soak whenever Main, Juice, Player or the autoloads change. Update OPEN_ITEMS and CHANGELOG at every slice end.
 
 **Orchestration:** game-lead now has the `Agent` tool (`.claude/agents/game-lead.md`). Restart with `claude --agent game-lead` and say "continue Post-milestone polish 1"; game-lead resumes the loop at the slice named above. Don't run the per-role sessions on the same slice at the same time (shared working tree and git).
 

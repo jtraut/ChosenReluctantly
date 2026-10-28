@@ -18,7 +18,7 @@ Capture is built into the game and enabled only by user args after `--` (nothing
 ```
 powershell -File tools\capture_screenshot.ps1                                  # hp_bars scenario, 1 shot at 3.0s -> screenshots\shot.png
 powershell -File tools\capture_screenshot.ps1 -After "2.0,2.9,3.6" -Out screenshots\hp.png   # several shots -> hp_0.png, hp_1.png, ...
-godot --path . -- --screenshot-after=3.0 --screenshot-out=C:	mp.png --scenario=hp_bars
+godot --path . -- --screenshot-after=3.0 --screenshot-out=shots/a.png --scenario=hp_bars
 godot --path . -- --screenshot-count=3 --screenshot-interval=2.0          # shots at 2s, 4s, 6s
 godot --path . -- --scenario=hp_bars                                      # play the scenario by hand, no capture
 ```

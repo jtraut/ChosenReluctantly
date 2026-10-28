@@ -126,7 +126,8 @@ func _physics_process(delta: float) -> void:
 	_knockback_velocity = _knockback_velocity.move_toward(Vector3.ZERO, KNOCKBACK_DECAY * delta)
 	card_slots.advance(delta)
 	_handle_dodge_input()
-	if _forced_move_time_remaining > 0.0:
+	var forced_this_tick := _forced_move_time_remaining > 0.0
+	if forced_this_tick:
 		_apply_forced_move(delta)
 	else:
 		_apply_movement(delta)
@@ -134,6 +135,11 @@ func _physics_process(delta: float) -> void:
 	_handle_attack(delta)
 	_handle_card_slot_input()
 	move_and_slide()
+	if forced_this_tick and _forced_move_time_remaining <= 0.0:
+		# The forced move is over: stop dead and hand back to normal movement, so it never
+		# coasts past its data distance (friction would carry it about twice as far).
+		velocity.x = 0.0
+		velocity.z = 0.0
 
 
 ## A key released while the window is out of focus may never reach us, so losing focus
@@ -316,8 +322,11 @@ func start_forced_move(direction: Vector3, speed: float, duration: float, invuln
 
 
 func _apply_forced_move(delta: float) -> void:
-	velocity.x = _forced_move_direction.x * _forced_move_speed
-	velocity.z = _forced_move_direction.z * _forced_move_speed
+	# The last tick only drives for the time that is left, so the move covers exactly
+	# speed * duration at any physics rate (no overshoot of up to one tick of travel).
+	var drive_scale := clampf(_forced_move_time_remaining / delta, 0.0, 1.0) if delta > 0.0 else 0.0
+	velocity.x = _forced_move_direction.x * _forced_move_speed * drive_scale
+	velocity.z = _forced_move_direction.z * _forced_move_speed * drive_scale
 	velocity.y = 0.0
 	_forced_move_time_remaining -= delta
 	if not _forced_move_look.is_empty():

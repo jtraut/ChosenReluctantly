@@ -344,9 +344,9 @@ func test_dash_drive_distance_is_the_previewed_distance() -> void:
 
 
 func test_s6_2_dash_ends_where_the_preview_says() -> void:
-	# RED ON PURPOSE (finding S6-2): after the forced move the player keeps the dash velocity and
-	# coasts to a stop (friction 28), so Blaze and Bail (distance 4) ends about 7.9 m away while the
-	# preview path is 4.0 m. Goes green when the dash ends at the previewed distance.
+	# Finding S6-2 (was red on purpose): the player used to keep the dash velocity and coast to a stop
+	# (friction 28), so Blaze and Bail (distance 4) ended about 8.1 m away while the preview path is
+	# 4.0 m. Green now that a forced move ends at its distance.
 	_spawn()
 	await _frames(2)
 	var result := await _dash_run()
@@ -370,9 +370,9 @@ func test_pin_space_on_the_focused_resume_button_also_starts_a_dodge() -> void:
 	assert_bool(player._forced_move_time_remaining > 0.0 or player._dodge_cooldown_remaining > 0.0).override_failure_message("PIN: Space on Resume no longer starts a dodge; the finding may be fixed").is_true()
 
 
-func test_pin_dodge_coasts_past_its_drive_distance_like_the_dash() -> void:
-	# PIN (part of S6-2): the dodge roll shares the forced-move code, so it also keeps its velocity
-	# after the drive and coasts to rest about twice as far (14 m/s for 0.25 s = 3.5 m driven).
+func test_dodge_ends_at_its_drive_distance_and_does_not_coast() -> void:
+	# Was a PIN for S6-2 (the dodge coasted to about twice its drive). Fixed: a forced move ends at
+	# speed * duration (14 m/s for 0.25 s = 3.5 m) and stops.
 	_spawn()
 	await _frames(2)
 	var player := _main.player
@@ -382,7 +382,7 @@ func test_pin_dodge_coasts_past_its_drive_distance_like_the_dash() -> void:
 	await _frames(100)
 	var rest := (player.global_position - start).dot(facing)
 	var driven := player.dodge_speed * player.dodge_duration
-	assert_float(rest).override_failure_message("PIN: dodge rest %.2f vs driven %.2f; the coast may be fixed" % [rest, driven]).is_greater(driven * 1.5)
+	assert_float(rest).override_failure_message("dodge rest %.2f vs driven %.2f" % [rest, driven]).is_equal_approx(driven, 0.05)
 
 
 # --- release casts once; press casts on press; cooldown --------------------------------------

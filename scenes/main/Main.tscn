@@ -5,9 +5,6 @@
 [ext_resource type="PackedScene" path="res://scenes/camera/CameraRig.tscn" id="3"]
 [ext_resource type="PackedScene" path="res://scenes/debug/TrainingDummy.tscn" id="4"]
 [ext_resource type="Script" path="res://src/enemies/EnemySpawner.gd" id="5"]
-[ext_resource type="PackedScene" path="res://scenes/enemies/MeleeChaser.tscn" id="6"]
-[ext_resource type="PackedScene" path="res://scenes/enemies/RangedShooter.tscn" id="7"]
-[ext_resource type="PackedScene" path="res://scenes/enemies/FireResistantGolem.tscn" id="8"]
 [ext_resource type="PackedScene" path="res://scenes/ui/Hud.tscn" id="9"]
 [ext_resource type="PackedScene" path="res://scenes/ui/GameOverScreen.tscn" id="99"]
 [ext_resource type="PackedScene" path="res://scenes/ui/DebugOverlay.tscn" id="10"]
@@ -46,11 +43,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -3)
 
 [node name="EnemySpawner" type="Node3D" parent="."]
 script = ExtResource("5")
-enemy_scenes = Array[PackedScene]([ExtResource("6"), ExtResource("7"), ExtResource("8")])
-wave_interval = 10.0
-enemies_per_wave = 2
-spawn_radius = 12.0
-min_spawn_distance = 6.0
 
 [node name="Hud" parent="." instance=ExtResource("9")]
 

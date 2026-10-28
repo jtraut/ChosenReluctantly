@@ -106,6 +106,12 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 
 
+## Spawn grace (s1-f): the enemy may not start an attack for `seconds`, so a fresh
+## spawn is never an instant hit. Only ever lengthens the attack cooldown.
+func begin_spawn_grace(seconds: float) -> void:
+	_attack_cooldown_remaining = maxf(_attack_cooldown_remaining, seconds)
+
+
 ## True while a stun status is active (placeholder cue + gameplay hook for ux).
 func is_stunned() -> bool:
 	return status_manager != null and status_manager.is_stunned()

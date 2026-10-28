@@ -139,7 +139,7 @@ func test_enemy_ranks_are_data_and_validated() -> void:
 	assert_str(EnemyConfig.rank_for("melee_chaser")).is_equal("normal")
 	assert_str(EnemyConfig.rank_for("ranged_shooter")).is_equal("normal")
 	assert_str(EnemyConfig.rank_for("fire_resistant_golem")).is_equal("normal")
-	assert_array(EnemyConfig.validate_enemies({"a": {"rank": "elite"}, "b": {"rank": "boss"}})).is_empty()
+	assert_array(EnemyConfig.validate_enemies({"a": {"rank": "elite", "scene": "res://scenes/enemies/MeleeChaser.tscn"}, "b": {"rank": "boss", "scene": "res://scenes/enemies/MeleeChaser.tscn"}})).is_empty()
 	assert_array(EnemyConfig.validate_enemies({"a": {"rank": "boos"}})).is_not_empty()
 	assert_array(EnemyConfig.validate_enemies({"a": {}})).is_not_empty()
 	assert_array(EnemyConfig.validate_enemies({"a": "normal"})).is_not_empty()

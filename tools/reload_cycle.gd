@@ -75,8 +75,10 @@ func _check_fresh(label: String) -> void:
 	_check(player.health.current_health > 0.0, "%s: HP not above 0" % label)
 	_check(is_equal_approx(Engine.time_scale, 1.0), "%s: time_scale %s" % [label, Engine.time_scale])
 	_check(not get_tree().paused, "%s: tree paused" % label)
-	_check(main.enemy_spawner.enemies_per_wave == _enemy_count(main), "%s: enemy count %d != first wave %d" % [label, _enemy_count(main), main.enemy_spawner.enemies_per_wave])
-	_check(float(main.enemy_spawner.get("_wave_timer")) > main.enemy_spawner.wave_interval - 1.0, "%s: wave timer %s not reset to interval" % [label, main.enemy_spawner.get("_wave_timer")])
+	var plan: WavePlan = main.enemy_spawner.plan
+	_check(_enemy_count(main) == 0, "%s: %d enemies in a fresh arena (first wave is delayed)" % [label, _enemy_count(main)])
+	_check(plan != null and plan.stages_started() == 0, "%s: wave table not reset (stages started)" % label)
+	_check(plan != null and plan.stage_wait_left() > float(plan.config["first_wave_delay"]) - 1.5, "%s: wave clock not reset (%s left)" % [label, plan.stage_wait_left() if plan != null else -1.0])
 	_check(is_instance_valid(main.camera_rig) and main.camera_rig.camera.current, "%s: no current camera" % label)
 	var go: Node = main.get_node_or_null("GameOverScreen")
 	_check(go != null and not (go as CanvasLayer).visible, "%s: Game Over screen missing or visible on fresh arena" % label)

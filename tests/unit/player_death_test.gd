@@ -118,11 +118,11 @@ func test_spawner_stops_after_death() -> void:
 	await get_tree().process_frame
 	var spawner: EnemySpawner = auto_free(EnemySpawner.new())
 	spawner.target = main.player
-	spawner.enemy_scenes = [load("res://scenes/enemies/MeleeChaser.tscn") as PackedScene]
-	spawner._wave_timer = 0.0
+	spawner.plan = WavePlan.new(WaveConfig.get_config())
+	var wait_before: float = spawner.plan.stage_wait_left()
 	main.player.health.take_damage(999.0)
 	spawner._process(1.0)
-	assert_float(spawner._wave_timer).is_equal(0.0)
+	assert_float(spawner.plan.stage_wait_left()).is_equal(wait_before)
 
 
 func test_game_over_announced_once_after_beat() -> void:

@@ -33,8 +33,13 @@ static func find_problems(main: Node) -> Array[String]:
 		problems.append("no Light3D")
 
 	var spawner := main.get_node_or_null("EnemySpawner") as EnemySpawner
-	if spawner == null or spawner.enemy_scenes.is_empty():
-		problems.append("no EnemySpawner with enemy scenes")
+	if spawner == null:
+		problems.append("no EnemySpawner")
+	else:
+		for stage: Dictionary in (WaveConfig.get_config()["stages"] as Array):
+			for entry: Dictionary in (stage["spawns"] as Array):
+				if EnemyConfig.scene_path_for(String(entry["enemy"])) == "":
+					problems.append("wave table names enemy '%s' with no scene" % entry["enemy"])
 
 	if camera != null:
 		if -camera.global_basis.z.y >= 0.0:

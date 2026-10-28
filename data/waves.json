@@ -1,0 +1,16 @@
+{
+    "max_alive": 12,
+    "first_wave_delay": 3.0,
+    "spawn_attack_grace": 1.5,
+    "spawn_gap": 0.5,
+    "spawn_distance_min": 9.0,
+    "spawn_distance_max": 13.0,
+    "arena_half_extent": 19.0,
+    "loop_from_stage": 2,
+    "stages": [
+        { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 3 } ] },
+        { "delay": 9.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "melee_chaser", "count": 2 }, { "enemy": "ranged_shooter", "count": 1 } ] },
+        { "delay": 9.0, "until_alive_at_most": 4, "spawns": [ { "enemy": "melee_chaser", "count": 3 }, { "enemy": "ranged_shooter", "count": 2 } ] },
+        { "delay": 10.0, "until_alive_at_most": 4, "spawns": [ { "enemy": "fire_resistant_golem", "count": 1 }, { "enemy": "ranged_shooter", "count": 2 }, { "enemy": "melee_chaser", "count": 2 } ] }
+    ]
+}

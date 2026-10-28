@@ -1,7 +1,7 @@
 class_name EnemyConfig
 extends RefCounted
-## data/enemies.json: attack shape numbers shared by every enemy type (the per-type
-## stats are still exported scene values; there is no per-enemy data table yet).
+## data/enemies.json: attack shape numbers shared by every enemy type, plus each enemy
+## type's rank and scene (the per-type combat stats are still exported scene values).
 ## A missing or invalid file is a push_error and falls back to DEFAULTS.
 
 const PATH := "res://data/enemies.json"
@@ -18,6 +18,8 @@ static var _cache: Dictionary = {}
 static var _loaded: bool = false
 ## enemy id -> rank, from data/enemies.json "enemies".
 static var _ranks: Dictionary = {}
+## enemy id -> scene path, from data/enemies.json "enemies" (the wave table spawns by id).
+static var _scenes: Dictionary = {}
 
 
 ## Returns human-readable problems; empty means valid.
@@ -44,8 +46,13 @@ static func validate_enemies(enemies: Variant) -> Array[String]:
 		var entry: Variant = (enemies as Dictionary)[enemy_id]
 		if typeof(entry) != TYPE_DICTIONARY:
 			errors.append("enemies.%s must be an object" % enemy_id)
-		elif typeof((entry as Dictionary).get("rank")) != TYPE_STRING or not RANKS.has(String((entry as Dictionary)["rank"])):
+			continue
+		var entry_dict: Dictionary = entry
+		if typeof(entry_dict.get("rank")) != TYPE_STRING or not RANKS.has(String(entry_dict["rank"])):
 			errors.append("enemies.%s: 'rank' must be one of %s" % [enemy_id, str(RANKS)])
+		var scene_path: Variant = entry_dict.get("scene")
+		if typeof(scene_path) != TYPE_STRING or not String(scene_path).begins_with("res://") or not ResourceLoader.exists(String(scene_path)):
+			errors.append("enemies.%s: 'scene' must be an existing res:// scene path" % enemy_id)
 	return errors
 
 
@@ -79,6 +86,7 @@ static func get_config() -> Dictionary:
 	_cache.merge(parsed["attack_shapes"], true)
 	for enemy_id: String in (parsed["enemies"] as Dictionary).keys():
 		_ranks[enemy_id] = String(parsed["enemies"][enemy_id]["rank"])
+		_scenes[enemy_id] = String(parsed["enemies"][enemy_id]["scene"])
 	return _cache
 
 
@@ -89,6 +97,24 @@ static func rank_for(enemy_id: String) -> String:
 		push_error("EnemyConfig: enemy id '%s' has no entry in data/enemies.json 'enemies'" % enemy_id)
 		return DEFAULT_RANK
 	return String(_ranks[enemy_id])
+
+
+## Scene path of an enemy type, or "" (with an error) if the id is unknown.
+static func scene_path_for(enemy_id: String) -> String:
+	get_config()
+	if not _scenes.has(enemy_id):
+		push_error("EnemyConfig: enemy id '%s' has no scene in data/enemies.json 'enemies'" % enemy_id)
+		return ""
+	return String(_scenes[enemy_id])
+
+
+## Every enemy id in data/enemies.json (empty if the file was invalid).
+static func enemy_ids() -> Array[String]:
+	get_config()
+	var ids: Array[String] = []
+	for key: Variant in _scenes.keys():
+		ids.append(String(key))
+	return ids
 
 
 static func projectile_hit_radius() -> float:

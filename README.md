@@ -48,9 +48,9 @@ powershell -File tools\run_bot_sim.ps1 -Rooms 20
 Plays the real Main scene (spawner, enemies, player) with a bot that uses the real input actions, then reports crashes, NaN, cap violations, enemies or player leaving the arena, stalls, damage taken, alive counts and rough CPU frame cost. Runs as a scene (autoloads), headless, seeded. `-Seconds` is game time, `-Scale` is `Engine.time_scale` (1 = real time and most faithful; 3 = quick), `-God` keeps the player alive to exercise the whole wave table, `-Idle` is a player who never moves.
 
 ```
-powershell -File toolsun_wave_sim.ps1 -Seed 1 -Seconds 150 -Runs 3
-powershell -File toolsun_wave_sim.ps1 -Seed 1 -Seconds 120 -God
-powershell -File toolsun_wave_sim.ps1 -Seed 20 -Seconds 60 -Runs 3 -Idle -Scale 1
+powershell -File tools\run_wave_sim.ps1 -Seed 1 -Seconds 150 -Runs 3
+powershell -File tools\run_wave_sim.ps1 -Seed 1 -Seconds 120 -God
+powershell -File tools\run_wave_sim.ps1 -Seed 20 -Seconds 60 -Runs 3 -Idle -Scale 1
 ```
 The wave table and the simultaneous-enemy cap live in `data/waves.json` (validated by `WaveConfig`; enemy ids and scenes in `data/enemies.json`). Headless frame times exclude rendering.
 

@@ -13,6 +13,7 @@ Last updated: 2026-10-28. **Milestone 2 is done.** Now running **Post-milestone 
 - **Polish 1, Slice 1 (death and game over) - done** (7ad85ee): `Player.player_died`, `Main.game_over_ready` / `restart_arena()` (scene reload), Game Over screen, "HP x / y" label, reload soak tool `tools/run_reload_cycle.ps1`.
 
 ## In progress
+**qa 5d (2026-10-28): FAIL, two small blockers (S5d-1 unclamped waiting-slide speed; S5d-2 `validate_stats` never called). Report `docs/reviews/2026-10-28-polish1-5d-qa.md`. 2 qa regression tests in `tests/unit/slice5d_qa_test.gd` are red on purpose; gameplay-dev fixes, then qa re-checks.**
 **5d built (gameplay-dev, 2026-10-28): separation steering (`data/enemies.json` `separation`), TrainingDummy out of Main, enemy combat stats in data; 426/426, soaks and sims clean; waiting on qa (targeted). Follow-up: the player can still be partly hidden behind bodies in the iso view (a player outline is not built).**
 **Slices 4, 3b and 5 are DONE (2026-10-28).** The director answered D1-D7 on 2026-10-28. D7 = B gets applied in 6b. **5d built (0ca0afb, 426/426). qa targeted 5d check handed to qa.**
 

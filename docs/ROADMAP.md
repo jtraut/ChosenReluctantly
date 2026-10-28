@@ -256,7 +256,8 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
     - The preview follows the aim live.
     - Settings store: defaults in `data/settings.json`, user overrides in `user://settings.cfg`, validated, with a getter API for the UI. The setting key is `cast_trigger: "release" | "press"`.
     - Input latched in `_unhandled_input` so UI screens can consume clicks and keys (also closes follow-up s3-j).
-  - [ ] **6b, ux-designer:**
+  - [x] **6b, ux-designer:** BUILT 2026-10-28 (efaf164..567cdc4, 512/512, soak OK). Esc settings screen, preview in player element colour drawn over enemies and dimmed when not ready, D7 applied, player occlusion silhouette. qa at 6c.
+   
     - A minimal settings screen: Esc pauses and opens it. One toggle, "Cast cards on: Release (preview) / Press", plus Resume. Keyboard and mouse, readable, dry tone.
     - The preview look is distinct from the cast effect and from enemy telegraphs: an outline in the player's element colour, low fill.
     - **Apply D7:** set `hp_bars.visibility_mode` to `elite_boss_always`.

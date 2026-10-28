@@ -32,6 +32,12 @@ Play a normal run (not a test scenario: scenarios give the player 9999 HP).
    - Can you read every enemy's warning: the red-pink ground wedge for chasers, and the lane strip for shooters?
    - Enemy shots are now pink, so they look different from yours.
 7. **1.5x click cap.** Look for: spam-clicking helps a bit early but doesn't feel mandatory, and holding back feels fine.
+9. **Hold-to-preview casting** (Slice 6, your D2 answer). Hold a card key, aim, and let go. Look for:
+   - Does it feel natural rather than slow?
+   - Is the outline (in your element colour) clear over enemies without being too loud?
+   - Esc opens the pause/settings screen; try switching to "Press" and back.
+10. **Your outline through enemies.** When enemies crowd in front of you, a pale blue silhouette of you shows through them. Look for: you can always find yourself, and the colour works against your blue body (it's `player_outline` in `data/ui.json` if it wants a warmer colour or lower alpha).
+11. **Pause screen text.** "Paused", "The world will wait. It is very patient and very cheerful.", "Esc also resumes". Is the tone right? (Placeholder; the story role is dormant.)
 8. **Light flash and heavy telegraph.** Look for: the light swing reads at full speed, and the heavy wind-up looks clearly different from its impact.
 
 ## FYI, no action needed

@@ -13,7 +13,7 @@ Nothing is half-built. Slice 1 (death and game over) is briefed in `docs/ROADMAP
 ## Exact next step
 Run **gameplay-dev** on Slice 1 with the roadmap brief. Then ux-designer (Game Over screen + HUD "HP" label) -> qa -> playtester -> game-lead close. Then slices 2, 3, 4, 5 in order, then the whole-pass playtester report. After the pass: **Milestone 3a (run structure)**.
 
-**Blocker for orchestration:** this session couldn't launch role agents (no subagent tool, and nested `claude -p --agent` was denied by the permission check; see DECISIONS.md). Until that changes, the director runs each role directly, e.g. `claude --agent gameplay-dev` with the prompt: "Implement Post-milestone polish 1, Slice 1 per its brief in docs/ROADMAP.md. Commit when done and update docs/STATE.md." Then the same for ux-designer, qa, and playtester, then `claude --agent game-lead` to close the slice and brief the next.
+**Orchestration:** game-lead now has the `Agent` tool (`.claude/agents/game-lead.md`). Restart with `claude --agent game-lead` and say "continue Post-milestone polish 1"; game-lead delegates gameplay-dev on Slice 1 and runs the loop. Don't run the per-role sessions on the same slice at the same time (shared working tree and git).
 
 ## Open questions for the director
 None blocking. Carried over from before: damage-number readability and ghost-segment visibility follow-ups (HP bars, ROADMAP follow-ups (e)/(f)) are unscheduled.

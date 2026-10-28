@@ -1,7 +1,7 @@
 ---
 name: game-lead
 description: Plans and scopes work against the GDD, owns docs/ROADMAP.md, docs/DECISIONS.md and docs/STATE.md, sequences tasks across the team, and decides what is done. Use for milestone planning, breaking a milestone into tasks, running the feature loop, and logging decisions.
-tools: Read, Grep, Glob, Edit, Write, Bash
+tools: Read, Grep, Glob, Edit, Write, Bash, Agent
 model: opus
 ---
 

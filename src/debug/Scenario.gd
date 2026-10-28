@@ -12,6 +12,8 @@ var _enemies: Array[Enemy] = []
 var _elapsed: float = 0.0
 var _late_hit_done: bool = false
 var _kill_done: bool = false
+var _heavy_press_done: bool = false
+var _heavy_release_at: float = -1.0
 
 
 static func has_scenario(scenario_id: String) -> bool:
@@ -62,6 +64,9 @@ func _build() -> void:
 	# Keep the player alive for the whole capture.
 	player.health.set_max_health(float(_def.get("player_max_health", 9999.0)))
 	player.health.heal(player.health.get_max_health())
+	# Capture-only: stop mouse aim so the player keeps facing -Z.
+	if bool(_def.get("freeze_aim", false)):
+		player.camera = null
 
 	var offset_values: Array = _def.get("origin_offset", [3.0, 0.0, -2.0])
 	var origin := Vector3(float(offset_values[0]), float(offset_values[1]), float(offset_values[2]))
@@ -100,6 +105,14 @@ func _process(delta: float) -> void:
 		_kill_done = true
 		var player: Player = _main.get_node("Player")
 		player.health.take_damage(player.health.get_max_health() * 2.0, "physical")
+	# Scenario-only scripted right click (heavy attack) for captures.
+	if not _heavy_press_done and _def.has("heavy_at") and _elapsed >= float(_def["heavy_at"]):
+		_heavy_press_done = true
+		_heavy_release_at = _elapsed + 0.1
+		Input.action_press("attack_heavy")
+	if _heavy_release_at >= 0.0 and _elapsed >= _heavy_release_at:
+		_heavy_release_at = -1.0
+		Input.action_release("attack_heavy")
 	var late: Dictionary = _def.get("late_hit", {})
 	if late.is_empty() or _late_hit_done or _elapsed < float(late.get("at", 2.4)):
 		return

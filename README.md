@@ -22,7 +22,7 @@ godot --path . -- --screenshot-after=3.0 --screenshot-out=shots/a.png --scenario
 godot --path . -- --screenshot-count=3 --screenshot-interval=2.0          # shots at 2s, 4s, 6s
 godot --path . -- --scenario=hp_bars                                      # play the scenario by hand, no capture
 ```
-The game quits itself after the last shot. `screenshots/` is gitignored. Scenarios live in `data/scenarios.json` (`hp_bars`: 9 enemies near the player at mixed HP, 2 with Burn, 3 hit at 2.4s so the ghost trail drains, player has huge HP). Useful capture times for it: 2.0 to 3.6s.
+The game quits itself after the last shot. `screenshots/` is gitignored. Scenarios live in `data/scenarios.json` (`hp_bars`: 9 enemies near the player at mixed HP, 2 with Burn, 3 hit at 2.4s so the ghost trail drains, player has huge HP). Useful capture times for it: 2.0 to 3.6s. Scenario `attacks` shows the auto light attack and a scripted heavy click at 2.2s (wind-up telegraph, then hit); use `-Scenario attacks -After "0.75,2.4,2.7"`.
 
 ## Running tests
 Tests use [gdUnit4](https://github.com/godot-gdunit-labs/gdUnit4), vendored in `addons/gdUnit4`. Run the full suite headless with:
@@ -46,6 +46,7 @@ powershell -File tools\run_bot_sim.ps1 -Rooms 20
 Kills the player in the real Main scene, waits for `game_over_ready`, calls `restart_arena()` (twice, on purpose), and repeats; also restarts mid slow-mo. Checks HP, `Engine.time_scale`, enemy count, wave timer, Game Over screen state, orphan/object/node counts, and fails on any engine ERROR/WARNING line in the output.
 
 ```
-powershell -File toolsun_reload_cycle.ps1 -Cycles 5
+powershell -File tools
+un_reload_cycle.ps1 -Cycles 5
 ```
 (Runs `tools/ReloadCycle.tscn` headless; it must be a scene so autoloads resolve.)

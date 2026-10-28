@@ -67,5 +67,20 @@
             -2.0
         ],
         "kill_player_at": 1.0
+    },
+    "attacks": {
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "freeze_aim": true,
+        "origin_offset": [-0.6, 0.0, -1.5],
+        "spacing": [1.2, 1.0],
+        "columns": 2,
+        "heavy_at": 2.2,
+        "groups": [
+            {
+                "scene": "res://scenes/enemies/FireResistantGolem.tscn",
+                "count": 2
+            }
+        ]
     }
 }

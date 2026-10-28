@@ -226,11 +226,22 @@ func test_waves_json_bad_values_fail_loudly_extra_cases() -> void:
 	assert_array(WaveConfig.validate({}, KNOWN)).is_not_empty()
 
 
-func test_pin_arena_half_extent_is_not_checked_against_the_walls() -> void:
-	# PIN (S5-3): waves.json arena_half_extent accepts anything up to 200 while the walls in Main.tscn sit at
-	# +-20, so a typo (say 40) validates and spawns enemies outside the walls, where they cannot reach
-	# the player. Fix: validate <= 19.5 or read the wall box from the scene; then flip this assert.
-	assert_array(WaveConfig.validate(_cfg({"arena_half_extent": 60.0}), KNOWN)).is_empty()
+func test_arena_half_extent_is_checked_against_the_walls() -> void:
+	# S5-3 (was a PIN): arena_half_extent may not pass the wall's inner face minus a clearance.
+	assert_array(WaveConfig.validate(_cfg({"arena_half_extent": 60.0}), KNOWN)).is_not_empty()
+	assert_array(WaveConfig.validate(_cfg({"arena_half_extent": 19.6}), KNOWN)).is_not_empty()
+	assert_array(WaveConfig.validate(_cfg({"arena_half_extent": 19.5}), KNOWN)).is_empty()
+	assert_float(float(WaveConfig.get_config()["arena_half_extent"])).is_less_equal(WaveConfig.WALL_INNER_HALF_EXTENT - WaveConfig.WALL_CLEARANCE)
+
+
+func test_wall_constant_matches_the_real_walls_in_main_tscn() -> void:
+	var main: Node = auto_free((load("res://scenes/main/Main.tscn") as PackedScene).instantiate())
+	for wall_name: String in ["WallN", "WallS", "WallW", "WallE"]:
+		var wall: CollisionShape3D = main.get_node("ArenaWalls/" + wall_name)
+		var box: BoxShape3D = wall.shape
+		var centre: float = maxf(absf(wall.position.x), absf(wall.position.z))
+		var half_thickness: float = minf(box.size.x, box.size.z) * 0.5
+		assert_float(centre - half_thickness).override_failure_message("%s inner face moved; update WaveConfig.WALL_INNER_HALF_EXTENT" % wall_name).is_equal_approx(WaveConfig.WALL_INNER_HALF_EXTENT, 0.001)
 
 
 func test_enemies_json_scene_bad_values() -> void:

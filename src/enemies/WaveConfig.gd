@@ -13,6 +13,10 @@ const PATH := "res://data/waves.json"
 ## GDD density principle / ROADMAP Slice 5 criterion 1: about 6 to 15 at once.
 const MAX_ALIVE_MIN := 6
 const MAX_ALIVE_MAX := 15
+## Inner face of the arena walls in scenes/main/Main.tscn (the ArenaWalls boxes). A test keeps this
+## equal to the scene. `arena_half_extent` may not exceed it minus a clearance for an enemy's body (S5-3).
+const WALL_INNER_HALF_EXTENT := 20.0
+const WALL_CLEARANCE := 0.5
 
 const DEFAULTS: Dictionary = {
 	"max_alive": 8,
@@ -46,7 +50,7 @@ static func validate(config: Dictionary, known_enemies: Array[String]) -> Array[
 	_check_number(config, "spawn_gap", 0.0, 10.0, errors)
 	_check_number(config, "spawn_distance_min", 1.0, 60.0, errors)
 	_check_number(config, "spawn_distance_max", 1.0, 60.0, errors)
-	_check_number(config, "arena_half_extent", 5.0, 200.0, errors)
+	_check_number(config, "arena_half_extent", 5.0, WALL_INNER_HALF_EXTENT - WALL_CLEARANCE, errors)
 	if errors.is_empty() and float(config["spawn_distance_max"]) < float(config["spawn_distance_min"]):
 		errors.append("'spawn_distance_max' must be >= 'spawn_distance_min'")
 	var stages_value: Variant = config.get("stages")

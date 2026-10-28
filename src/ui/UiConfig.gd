@@ -128,8 +128,8 @@ const DEFAULT_HUD: Dictionary = {
 const DEFAULT_POPUPS: Dictionary = {
 	"immune_text": "IMMUNE",
 	"immune_color": "#cfd8dc",
-	"immune_scale": 0.7,
-	"immune_height": 2.0,
+	"immune_scale": 1.4,
+	"immune_height": 3.0,
 	"immune_cooldown": 1.5,
 }
 

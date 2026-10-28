@@ -195,5 +195,43 @@
                 "count": 4
             }
         ]
+    },
+    "stun_crowd": {
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "freeze_aim": true,
+        "aim_preview_distance": 5.0,
+        "enemy_max_health": 100,
+        "enemies_idle": true,
+        "disable_auto_attack": true,
+        "origin_offset": [
+            -1.8,
+            0.0,
+            -3.2
+        ],
+        "spacing": [
+            1.5,
+            1.5
+        ],
+        "columns": 3,
+        "groups": [
+            {
+                "scene": "res://scenes/enemies/MeleeChaser.tscn",
+                "count": 9
+            }
+        ],
+        "boss_indices": [
+            8
+        ],
+        "stun_indices": [
+            0,
+            2,
+            4,
+            5,
+            7,
+            8
+        ],
+        "stun_at": 0.5,
+        "stun_duration": 6.0
     }
 }

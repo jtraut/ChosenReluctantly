@@ -11,6 +11,7 @@ var _def: Dictionary = {}
 var _enemies: Array[Enemy] = []
 var _elapsed: float = 0.0
 var _late_hit_done: bool = false
+var _stun_done: bool = false
 var _kill_done: bool = false
 var _heavy_press_done: bool = false
 var _heavy_release_at: float = -1.0
@@ -124,6 +125,11 @@ func _build() -> void:
 		if lost > 0.0:
 			health.take_damage(lost, "physical")
 
+	# Capture-only: ranks and a scripted stun (stun_indices at stun_at seconds), for the stun cue shots.
+	for boss_index: int in _def.get("boss_indices", []):
+		if boss_index < _enemies.size():
+			_enemies[boss_index].status_manager.rank = "boss"
+
 	for burn_index: int in _def.get("burn_indices", []):
 		if burn_index < _enemies.size():
 			var manager: StatusEffectManager = _enemies[burn_index].get_node("StatusEffectManager")
@@ -145,6 +151,7 @@ func _process(delta: float) -> void:
 	if _heavy_release_at >= 0.0 and _elapsed >= _heavy_release_at:
 		_heavy_release_at = -1.0
 		Input.action_release("attack_heavy")
+	_process_stuns()
 	_process_casts()
 	var late: Dictionary = _def.get("late_hit", {})
 	if late.is_empty() or _late_hit_done or _elapsed < float(late.get("at", 2.4)):
@@ -153,6 +160,17 @@ func _process(delta: float) -> void:
 	for hit_index: int in late.get("indices", []):
 		if hit_index < _enemies.size() and is_instance_valid(_enemies[hit_index]):
 			_enemies[hit_index].health.take_damage(float(late.get("amount", 5.0)), "physical")
+
+
+## Scripted stun (scenario "stun_indices" at "stun_at" seconds, base length "stun_duration"),
+## through the real status path, so rank and diminishing returns apply (a boss shows IMMUNE).
+func _process_stuns() -> void:
+	if _stun_done or not _def.has("stun_indices") or _elapsed < float(_def.get("stun_at", 0.5)):
+		return
+	_stun_done = true
+	for stun_index: int in _def["stun_indices"]:
+		if stun_index < _enemies.size() and is_instance_valid(_enemies[stun_index]):
+			_enemies[stun_index].status_manager.apply_status("stun", StatusDatabase.get_status("stun"), float(_def.get("stun_duration", 0.6)))
 
 
 ## Scripted card casts (scenario "casts": [{at, slot, card}]). The named card is

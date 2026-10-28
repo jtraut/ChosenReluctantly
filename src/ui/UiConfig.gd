@@ -5,8 +5,9 @@ extends RefCounted
 
 const DEFAULT_HP_BARS: Dictionary = {
 	"visibility_mode": "always_alive",
-	"width": 1.4,
-	"height": 0.19,
+	"width": 1.2,
+	"height": 0.16,
+	"render_priority": 10,
 	"border": 0.02,
 	"resist_border": 0.04,
 	"y_offset": 2.35,

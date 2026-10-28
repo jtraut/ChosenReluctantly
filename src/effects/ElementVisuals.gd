@@ -23,6 +23,20 @@ static func visual_for_damage_type(damage_type: String) -> Dictionary:
 	return {"color": Color.html(String(visual_dict["color"])), "scale": float(visual_dict["scale"])}
 
 
+## Same as visual_for_damage_type, pulled toward the caster team's tint (data/vfx.json
+## "team_tints"). A team without a tint (the player) gets the plain look, so an enemy
+## shot never reads as a player physical shot. The cosmetic scale is left alone.
+static func visual_for_team(damage_type: String, team: String) -> Dictionary:
+	var look: Dictionary = visual_for_damage_type(damage_type)
+	var tint: Dictionary = VfxConfig.team_tint(team)
+	if tint.is_empty():
+		return look
+	var is_element: bool = PoolDatabase.has(damage_type) and String(PoolDatabase.get_definition(damage_type).get("kind", "")) == "element"
+	var mix: float = float(tint["element_mix"] if is_element else tint["neutral_mix"])
+	var base: Color = look["color"]
+	return {"color": base.lerp(Color.html(String(tint["color"])), mix), "scale": look["scale"]}
+
+
 static func color_for_damage_type(damage_type: String) -> Color:
 	return visual_for_damage_type(damage_type)["color"]
 

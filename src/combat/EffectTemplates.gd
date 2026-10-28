@@ -76,7 +76,7 @@ static func _play_cone_vfx(params: Dictionary, context: EffectContext, forward: 
 	var pool := EffectPool.for_world(context.spawn_parent)
 	if pool == null or not is_instance_valid(context.caster):
 		return
-	var color: Color = ElementVisuals.color_for_damage_type(String(params.get("damage_type", "physical")))
+	var color: Color = ElementVisuals.visual_for_team(String(params.get("damage_type", "physical")), context.caster_team)["color"]
 	var yaw: float = atan2(-forward.x, -forward.z)
 	TemplateVfx.cone_sweep(pool, context.caster.global_position, yaw, VfxSizing.cone_reach(float(params["range"])),
 			float(params["half_angle_degrees"]), color)
@@ -107,7 +107,7 @@ static func _play_aoe_vfx(params: Dictionary, context: EffectContext, center: Va
 	var pool := EffectPool.for_world(context.spawn_parent)
 	if pool == null or not is_instance_valid(context.caster):
 		return
-	var look := ElementVisuals.visual_for_damage_type(String(params.get("damage_type", "physical")))
+	var look := ElementVisuals.visual_for_team(String(params.get("damage_type", "physical")), context.caster_team)
 	# The disc and ring are the hit area (VfxSizing); the element "scale" only
 	# resizes the cosmetic flash and burst inside TemplateVfx.aoe.
 	TemplateVfx.aoe(pool, center if typeof(center) == TYPE_VECTOR3 else context.caster.global_position, VfxSizing.aoe_reach(float(params["radius"])), look)
@@ -133,7 +133,7 @@ static func _execute_projectile(params: Dictionary, context: EffectContext) -> v
 	var forward: Vector3 = -context.caster.global_transform.basis.z
 	var origin: Vector3 = context.caster.global_position + forward * 0.6
 	instance.set_hit_radius(params["hit_radius"])
-	instance.set_look(ElementVisuals.visual_for_damage_type(String(params["damage_type"])))
+	instance.set_look(ElementVisuals.visual_for_team(String(params["damage_type"]), context.caster_team))
 	instance.knockback_strength = params.get("knockback_strength", 0.0)
 	# Player shots only: an enemy shot's lane would look like a telegraph it is not.
 	if context.caster_team == "player":

@@ -15,6 +15,7 @@ const DEFAULTS: Dictionary = {
 	"dash_path_alpha": 0.28,
 	"dash_path_duration": 0.3,
 	"dash_path_half_width": 0.25,
+	"team_tints": {"enemy": {"color": "#ff3d8b", "neutral_mix": 1.0, "element_mix": 0.4}},
 }
 
 ## Ground marker tuning (4c): alpha 0..1, durations in seconds, half width in meters.
@@ -47,6 +48,7 @@ static func validate(config: Dictionary) -> Array[String]:
 	for key: String in ["heal_color", "buff_color"]:
 		if config.has(key) and not (typeof(config[key]) == TYPE_STRING and String(config[key]).is_valid_html_color()):
 			errors.append("'%s' must be a hex color like #7dff9a" % key)
+	errors.append_array(validate_team_tints(config.get("team_tints", {})))
 	for key: String in MARKER_KEYS:
 		if not config.has(key):
 			continue  # optional: DEFAULTS fill it in
@@ -57,6 +59,28 @@ static func validate(config: Dictionary) -> Array[String]:
 			errors.append("'%s' must be > 0" % key)
 		elif key.ends_with("_alpha") and float(value) > 1.0:
 			errors.append("'%s' must be <= 1" % key)
+	return errors
+
+
+## Team tints: team name -> {color: hex, neutral_mix: 0..1, element_mix: 0..1}. The mix is how far a
+## shot or wedge of that team is pulled toward the tint (neutral/physical vs elemental looks).
+static func validate_team_tints(tints: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(tints) != TYPE_DICTIONARY:
+		errors.append("'team_tints' must be an object (team -> {color, neutral_mix, element_mix})")
+		return errors
+	for team: Variant in (tints as Dictionary).keys():
+		var entry: Variant = (tints as Dictionary)[team]
+		if typeof(entry) != TYPE_DICTIONARY:
+			errors.append("team_tints.%s must be an object" % str(team))
+			continue
+		var dict: Dictionary = entry
+		if typeof(dict.get("color")) != TYPE_STRING or not String(dict["color"]).is_valid_html_color():
+			errors.append("team_tints.%s.color must be a hex color like #ff3d8b" % str(team))
+		for key: String in ["neutral_mix", "element_mix"]:
+			var value: Variant = dict.get(key)
+			if (typeof(value) != TYPE_INT and typeof(value) != TYPE_FLOAT) or is_nan(float(value)) or float(value) < 0.0 or float(value) > 1.0:
+				errors.append("team_tints.%s.%s must be a number from 0 to 1" % [str(team), key])
 	return errors
 
 
@@ -90,6 +114,12 @@ static func hurtbox_reach_radius() -> float:
 ## Height of the lowest sphere centre of the target capsule above the floor.
 static func hurtbox_low_center_height() -> float:
 	return float(get_config()["hurtbox_low_center_height"])
+
+
+## The tint for a team's shots and wedges, or an empty dictionary for a team with none (the player).
+static func team_tint(team: String) -> Dictionary:
+	var tints: Dictionary = get_config()["team_tints"]
+	return tints.get(team, {})
 
 
 static func max_simultaneous() -> int:

@@ -29,6 +29,13 @@ var _ghost_enabled: bool = true
 var _was_damaged: bool = false
 var _dead: bool = false
 var _burn_id: String = "burn"
+var _rank: String = EnemyConfig.DEFAULT_RANK
+
+
+## The owner's enemy rank ("normal", "elite", "boss"), for visibility modes such as
+## "always for elites and bosses". "normal" when the parent is not an Enemy.
+func rank() -> String:
+	return _rank
 
 
 # ---- Pure logic (unit-tested) ----
@@ -95,6 +102,9 @@ func _ready() -> void:
 	_burn_id = str(config["burn_status_id"])
 	position = Vector3(0.0, float(config["y_offset"]), 0.0)
 	visible = false
+	var owner_enemy := get_parent() as Enemy
+	if owner_enemy != null and owner_enemy.enemy_id != "":
+		_rank = EnemyConfig.rank_for(owner_enemy.enemy_id)
 
 	_health = get_node_or_null(health_path) as Health
 	_status = get_node_or_null(status_path) as StatusEffectManager
@@ -198,7 +208,7 @@ static func _ensure_shared() -> void:
 	var colors: Dictionary = c["colors"]
 	var mat := ShaderMaterial.new()
 	mat.shader = load(SHADER_PATH) as Shader
-	mat.render_priority = 10
+	mat.render_priority = int(c["render_priority"])
 	mat.set_shader_parameter("total_size", total)
 	mat.set_shader_parameter("bar_width", width)
 	mat.set_shader_parameter("pip_width", pip)

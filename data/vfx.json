@@ -8,5 +8,8 @@
     "projectile_lane_duration": 0.3,
     "dash_path_alpha": 0.28,
     "dash_path_duration": 0.3,
-    "dash_path_half_width": 0.25
+    "dash_path_half_width": 0.25,
+    "team_tints": {
+        "enemy": { "color": "#ff3d8b", "neutral_mix": 1.0, "element_mix": 0.4 }
+    }
 }

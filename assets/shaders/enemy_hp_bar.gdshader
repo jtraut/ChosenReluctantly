@@ -2,7 +2,9 @@ shader_type spatial;
 // Enemy HP bar: one billboarded quad per enemy, one shared material.
 // The camera is orthographic, so a fixed world size is a fixed on-screen size.
 // Per-bar state is driven by instance uniforms (no per-bar material).
-render_mode unshaded, cull_disabled, depth_test_disabled, blend_mix;
+// Depth-tested (Slice 5a): a bar is hidden by a model standing in front of it
+// instead of being drawn over unrelated enemies. The quad is opaque (discard, no blend).
+render_mode unshaded, cull_disabled, depth_draw_opaque, blend_mix;
 
 uniform vec2 total_size = vec2(1.5, 0.15); // world units, whole quad
 uniform float bar_width = 1.1;

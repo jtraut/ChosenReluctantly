@@ -143,7 +143,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
 - [ ] **Slice 4: Skill visuals and targeting readability**
   - **Owner sequence:** gameplay-dev (effect visuals, pooling, hitbox-driven sizing) -> ux-designer (aim indicator, ground markers, readability tuning) -> qa -> playtester -> game-lead.
   - **GDD:** §11 (shared templates recolored/rescaled per element), CLAUDE.md "Content is data".
-  - **Also in this slice (from earlier follow-ups):** s1-a (stronger death cue: flash/grey-out), s3-a (attack wedge vs real reach), s3-b (light flash readability), s3-c (distinct heavy telegraph), s3-d/s2-d (blue triangle).
+  - **Also in this slice (from earlier follow-ups):** s1-a (stronger death cue: flash/grey-out), s3-a (attack wedge vs real reach), s3-b (light flash readability), s3-c (distinct heavy telegraph), s3-d/s2-d (blue triangle), s3-f (a capture scenario that casts each card/skill type, needed for this slice's screenshots and to verify slot cooling live). Note: scenarios default player HP to 9999 (`Scenario.gd`), so scenario shots say nothing about danger.
   - **Files likely touched:** `src/combat/EffectTemplates.gd`, `src/combat/Projectile.gd`, new `src/effects/*` (pooled visual nodes), `scenes/effects/*`, new element visual data (e.g. `data/elements.json` with color/scale; per-card overrides optional), `src/player/Player.gd` (aim indicator), `src/combat/StatusEffectManager.gd` (Burn visual hook), tests.
   - **Acceptance criteria:**
     1. Every template gets basic particles/animation, built once: projectile (trail, muzzle flash, impact burst); cone/melee arcs (sweep matching true shape and range); aoe (ground radius indicator, wind-up flash, impact burst); dash/movement (trail, start/end puffs); heal (rising sparkles); buff (short aura/ring); apply_status Burn (persistent flame on the enemy for the duration).
@@ -158,6 +158,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
 - [ ] **Slice 5: Wave density, enemy readability, HP bars**
   - **Owner sequence:** gameplay-dev (spawner, enemy fixes, bar rendering) -> ux-designer (bar visibility/size options) -> qa (incl. bot-sim) -> playtester (compare bar options, density screenshots) -> game-lead (pick bar default, close).
   - **GDD:** §1 density principle, §7.
+  - **Also in this slice:** s3-g (enemy HP bars clump into an unreadable cluster in crowds), s1-f (first contact ~1 s after spawn).
   - **Files likely touched:** `src/enemies/EnemySpawner.gd`, new wave table data (e.g. `data/waves.json`), `src/enemies/Enemy.gd`, `scenes/enemies/*.tscn`, `src/ui/EnemyHpBar.gd`, `assets/shaders/enemy_hp_bar.gdshader`, `data/ui.json`, `tools/bot_sim.gd`, tests.
   - **Acceptance criteria:**
     1. Spawner holds about 6 to 15 simultaneous enemies, waves arrive in stages; cap and wave table are data.

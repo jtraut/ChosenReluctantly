@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://src/ui/Hud.gd" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/ui/CardSlotWidget.tscn" id="2"]
+[ext_resource type="Script" path="res://src/ui/AttackMeter.gd" id="3"]
 
 [node name="Hud" type="CanvasLayer"]
 script = ExtResource("1")
@@ -32,6 +33,18 @@ text = "HP 30 / 30"
 [node name="HealthBar" type="ProgressBar" parent="Root/HealthPanel"]
 layout_mode = 2
 show_percentage = false
+
+[node name="LightMeter" type="Control" parent="Root"]
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+script = ExtResource("3")
+
+[node name="HeavyMeter" type="Control" parent="Root"]
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+script = ExtResource("3")
 
 [node name="SlotBar" type="HBoxContainer" parent="Root"]
 layout_mode = 1

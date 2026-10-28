@@ -18,11 +18,50 @@ var _cfg: Dictionary = {}
 var _scale: float = 1.0
 var _name_text: String = UNSET
 var _preview_text: String = UNSET
+var _ready_state: bool = false
 
 
 func _ready() -> void:
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for child in get_children():
+		(child as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if _cfg.is_empty():
 		apply_layout(UiConfig.hud(), 1.0)
+	_apply_state(false)
+
+
+## Pure: fraction of the slot cooldown elapsed, 0..1. 1.0 = ready.
+static func cooldown_progress(remaining: float, duration: float) -> float:
+	if remaining <= 0.0 or duration <= 0.0:
+		return 1.0
+	return clampf(1.0 - remaining / duration, 0.0, 1.0)
+
+
+func is_ready_state() -> bool:
+	return _ready_state
+
+
+## Ready: full brightness, bright border, full green-ish bar. Cooling: dimmed,
+## no border, partial grey-blue bar that fills as the cooldown elapses.
+func _apply_state(is_ready: bool) -> void:
+	_ready_state = is_ready
+	var cfg := _cfg if not _cfg.is_empty() else UiConfig.hud()
+	var dim := 1.0 if is_ready else float(cfg["slot_cooling_dim"])
+	modulate = Color(dim, dim, dim, 1.0)
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = Color.html(String(cfg["slot_ready_bar_color" if is_ready else "slot_cooling_bar_color"]))
+	var back := StyleBoxFlat.new()
+	back.bg_color = Color.html(String(cfg["slot_bar_back_color"]))
+	cooldown_bar.add_theme_stylebox_override("fill", fill)
+	cooldown_bar.add_theme_stylebox_override("background", back)
+	queue_redraw()
+
+
+func _draw() -> void:
+	if not _ready_state or _cfg.is_empty():
+		return
+	var bw := float(maxi(1, roundi(float(_cfg["slot_ready_border_width"]) * _scale)))
+	draw_rect(Rect2(Vector2.ZERO, size).grow(-bw * 0.5), Color.html(String(_cfg["slot_ready_border_color"])), false, bw)
 
 
 ## Sizes every row from config; `s` is the viewport-height scale.
@@ -40,6 +79,7 @@ func apply_layout(cfg: Dictionary, s: float) -> void:
 	_size_row(cooldown_bar, w, float(cfg["bar_height"]) * s)
 	_size_row(preview_label, w, float(cfg["preview_height"]) * s)
 	preview_label.max_lines_visible = int(cfg["preview_max_lines"])
+	queue_redraw()
 	# Force a refit at the new scale.
 	var n := _name_text
 	var p := _preview_text
@@ -65,6 +105,8 @@ func update_from_slot(slot: CardSlot) -> void:
 		_set_preview("")
 		cooldown_bar.max_value = 1.0
 		cooldown_bar.value = 0.0
+		if _ready_state:
+			_apply_state(false)
 		return
 
 	var card_data := CardDatabase.get_card(slot.current_card_id)
@@ -77,8 +119,12 @@ func update_from_slot(slot: CardSlot) -> void:
 		var preview_card := CardDatabase.get_card(preview_id)
 		_set_preview("Next: %s" % str(preview_card.get("name", preview_id)))
 
-	cooldown_bar.max_value = maxf(slot.last_cooldown_duration, 0.01)
-	cooldown_bar.value = slot.cooldown_remaining
+	# Bar fills left to right as the cooldown elapses; full = ready.
+	cooldown_bar.max_value = 1.0
+	cooldown_bar.value = cooldown_progress(slot.cooldown_remaining, slot.last_cooldown_duration)
+	var now_ready := slot.is_ready()
+	if now_ready != _ready_state:
+		_apply_state(now_ready)
 
 
 func _set_name(text: String) -> void:

@@ -35,3 +35,18 @@ static func health_rect(viewport_size: Vector2, cfg: Dictionary) -> Rect2:
 static func safe_area(viewport_size: Vector2, cfg: Dictionary) -> Rect2:
 	var m := float(cfg["safe_margin"]) * ui_scale(viewport_size, cfg)
 	return Rect2(Vector2(m, m), viewport_size - Vector2(m, m) * 2.0)
+
+
+## Light and heavy attack meter rows, stacked under the health panel (same left
+## edge). Returns {&"light": Rect2, &"heavy": Rect2}; each rect spans label + bar.
+static func attack_meter_rects(viewport_size: Vector2, cfg: Dictionary) -> Dictionary:
+	var s := ui_scale(viewport_size, cfg)
+	var hp := health_rect(viewport_size, cfg)
+	var light_sz: Array = cfg["light_meter_size"]
+	var heavy_sz: Array = cfg["heavy_meter_size"]
+	var x := hp.position.x
+	var y := hp.end.y + float(cfg["meter_top_gap"]) * s
+	var light := Rect2(Vector2(x, y), Vector2(float(light_sz[0]), float(light_sz[1])) * s)
+	y = light.end.y + float(cfg["meter_row_gap"]) * s
+	var heavy := Rect2(Vector2(x, y), Vector2(float(heavy_sz[0]), float(heavy_sz[1])) * s)
+	return {&"light": light, &"heavy": heavy}

@@ -9,10 +9,14 @@ class_name Hud
 	$Root/SlotBar/Slot1, $Root/SlotBar/Slot2, $Root/SlotBar/Slot3, $Root/SlotBar/Slot4, $Root/SlotBar/Slot5,
 ]
 
+@onready var light_meter: AttackMeter = $Root/LightMeter
+@onready var heavy_meter: AttackMeter = $Root/HeavyMeter
+
 var player: Player = null
 
 
 func _ready() -> void:
+	_ignore_mouse_recursive($Root)
 	for i in range(slot_widgets.size()):
 		slot_widgets[i].set_key_hint(str(i + 1))
 	_apply_layout()
@@ -34,6 +38,15 @@ func _apply_layout() -> void:
 	slot_bar.add_theme_constant_override("separation", roundi(float(cfg["slot_gap"]) * s))
 	for widget in slot_widgets:
 		widget.apply_layout(cfg, s)
+
+	var meters := HudLayout.attack_meter_rects(vp, cfg)
+	light_meter.configure(&"light", "LMB", false, cfg, s)
+	heavy_meter.configure(&"heavy", "RMB", true, cfg, s)
+	for pair in [[light_meter, &"light"], [heavy_meter, &"heavy"]]:
+		var m: AttackMeter = pair[0]
+		var r: Rect2 = meters[pair[1]]
+		m.position = r.position
+		m.size = r.size
 
 	var hp := HudLayout.health_rect(vp, cfg)
 	var panel: VBoxContainer = $Root/HealthPanel
@@ -62,6 +75,8 @@ func _apply_layout() -> void:
 
 func set_player(p: Player) -> void:
 	player = p
+	light_meter.set_player(p)
+	heavy_meter.set_player(p)
 
 
 func _process(_delta: float) -> void:
@@ -77,3 +92,12 @@ func _process(_delta: float) -> void:
 	for i in range(CardSlotController.SLOT_TYPE_ORDER.size()):
 		var slot_type := CardSlotController.slot_type_at_index(i)
 		slot_widgets[i].update_from_slot(player.card_slots.get_slot(slot_type))
+
+
+## HUD is display only: nothing here may swallow left/right clicks meant for the
+## world (attacks). Containers and bars default to STOP/PASS, so set it for all.
+func _ignore_mouse_recursive(node: Node) -> void:
+	if node is Control:
+		(node as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for child in node.get_children():
+		_ignore_mouse_recursive(child)

@@ -13,6 +13,7 @@ Last updated: 2026-10-28. **Milestone 2 is done.** Now running **Post-milestone 
 - **Polish 1, Slice 1 (death and game over) - done** (7ad85ee): `Player.player_died`, `Main.game_over_ready` / `restart_arena()` (scene reload), Game Over screen, "HP x / y" label, reload soak tool `tools/run_reload_cycle.ps1`.
 
 ## In progress
+**qa 6c (2026-10-28): 5d re-check PASS (S5d-1, S5d-2, F1, F3 resolved); Slice 6 FAIL on two small blockers: S6-1 (attack click latched before a pause fires on resume) and S6-2 (dash preview 4.0 m but the player coasts to about 8.1 m). Report `docs/reviews/2026-10-28-polish1-slice6-qa.md`; 2 qa tests in `tests/unit/slice6_qa_test.gd` are red on purpose until gameplay-dev fixes; also S6-4 (seeded sim runs do not repeat) for game-lead.**
 **6b built (ux-designer, 2026-10-28): Esc settings screen (cast-trigger toggle), preview look (player-element outline, dims when not ready, over enemies), D7 applied, player occlusion cue; suite green, soak and 20 s run clean; waiting on 6c (qa). See DECISIONS "Slice 6b".**
 **6a built (gameplay-dev, 2026-10-28): settings store (`Settings`, `data/settings.json`), press/hold/release card input latched in `_unhandled_input`, held cast preview (`CastPreview`, `get_preview_state()`), `GamePause` + Juice freeze/thaw; suite green, sims clean; waiting on 6b (ux) then 6c (qa). See DECISIONS "Slice 6a".**
 **5d qa-FAIL fix pass done (gameplay-dev, 2026-10-28): S5d-1, S5d-2, F1, F3 fixed in 5 commits; 435/435 green x3; sims clean; waiting on qa re-check. F2 still open.**

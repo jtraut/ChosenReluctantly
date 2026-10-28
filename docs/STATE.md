@@ -13,6 +13,7 @@ Last updated: 2026-10-28. **Milestone 2 is done.** Now running **Post-milestone 
 - **Polish 1, Slice 1 (death and game over) - done** (7ad85ee): `Player.player_died`, `Main.game_over_ready` / `restart_arena()` (scene reload), Game Over screen, "HP x / y" label, reload soak tool `tools/run_reload_cycle.ps1`.
 
 ## In progress
+**5a BUILT (gameplay-dev, 2026-10-28), qa not yet run:** data-driven staged waves (`data/waves.json`, cap 12), spawn grace, golem capsule hurtbox (N1), depth-tested smaller HP bars, enemy team tint, enemy wind-up wedge and shot lane, arena walls, `tools/run_wave_sim.ps1`; details and numbers in DECISIONS "Slice 5a"; next is 5b (ux-designer).
 **Slices 4 and 3b are DONE (closed 2026-10-28).** The director prompt's Parts A-C are complete, and the changelog exists. **Now: Slice 5, split into 5a/5b/5c (ROADMAP). 5a handed to gameplay-dev.**
 
 ## Exact next step

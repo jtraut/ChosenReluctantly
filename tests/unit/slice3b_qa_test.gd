@@ -527,3 +527,24 @@ func test_aoe_targeting_edge_values() -> void:
 	# A non-vector aim value (e.g. a string from a bad scenario) is ignored, not an error.
 	var junk := AoeTargeting.clamp_target(Vector3.ZERO, "oops", Vector3(0.0, 0.0, -1.0), 7.0, arena)
 	assert_vector(junk).is_equal_approx(Vector3(0.0, 0.0, -7.0), Vector3.ONE * 0.0001)
+
+
+# --- S3B-7: per-frame costs ---------------------------------------------------------------------
+
+func test_is_stunned_tracks_a_counter_through_apply_refresh_and_expiry() -> void:
+	var manager: StatusEffectManager = auto_free(StatusEffectManager.new())
+	var burn := StatusDatabase.get_status("burn") as Dictionary
+	manager.apply_status("burn", burn, 2.0)
+	assert_bool(manager.is_stunned()).is_false()
+	manager.apply_status("stun", _stun_def(), 0.6)
+	manager.apply_status("stun", _stun_def(), 0.6)
+	assert_bool(manager.is_stunned()).is_true()
+	manager._process(0.7)
+	assert_bool(manager.is_stunned()).is_false()
+	assert_bool(manager.has_status("burn")).is_true()
+	# A stun after the first expired counts again, and an immune one does not.
+	manager.apply_status("stun", _stun_def(), 0.6)
+	assert_bool(manager.is_stunned()).is_true()
+	manager._process(2.0)
+	assert_bool(manager.is_stunned()).is_false()
+	assert_int(manager._stun_count).is_equal(0)

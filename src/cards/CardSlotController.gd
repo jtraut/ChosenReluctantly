@@ -38,8 +38,9 @@ func get_slot(slot_type: String) -> CardSlot:
 
 
 func advance(delta: float) -> void:
-	for slot: CardSlot in slots.values():
-		slot.advance(delta)
+	# Iterating the dictionary directly allocates nothing (values() builds an Array every frame).
+	for slot_type: String in slots:
+		(slots[slot_type] as CardSlot).advance(delta)
 
 
 func try_use(slot_type: String) -> bool:

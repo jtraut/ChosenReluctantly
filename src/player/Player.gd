@@ -27,6 +27,9 @@ signal attack_cancelled(attack_id: StringName)
 ## yet, so this is a fixed export rather than real character creation.
 @export var owned_pools: Array[String] = ["rogue", "fire", "neutral"]
 
+## Input action names per slot index, built once (formatting them each frame allocates strings).
+const USE_ACTIONS: Array[StringName] = [&"slot_1", &"slot_2", &"slot_3", &"slot_4", &"slot_5"]
+const SWAP_ACTIONS: Array[StringName] = [&"dead_card_swap_1", &"dead_card_swap_2", &"dead_card_swap_3", &"dead_card_swap_4", &"dead_card_swap_5"]
 const HIT_FLASH_COLOR := Color(1.0, 0.3, 0.3)
 const HIT_FLASH_DURATION := 0.15
 const KNOCKBACK_DECAY := 18.0
@@ -56,6 +59,10 @@ var _heavy_class_override: String = ""
 ## (arrays of PooledEffect and the generations they were handed out for).
 var _aoe_targets: Dictionary = {}
 var _telegraphs: Dictionary = {}
+## Reused every physics frame by _handle_attack (no per-frame Dictionary).
+var _manual_attack: Dictionary = {&"light": false, &"heavy": false}
+## The pool the telegraphs were drawn in, found once at wind-up start (not every frame).
+var _telegraph_pool: EffectPool = null
 var _telegraph_generations: Dictionary = {}
 var _dodge_cooldown_remaining: float = 0.0
 var _base_body_color: Color = Color.WHITE
@@ -326,11 +333,9 @@ func _teardown_attacks() -> void:
 
 
 func _handle_attack(delta: float) -> void:
-	var manual: Dictionary = {
-		&"light": Input.is_action_just_pressed("attack_light"),
-		&"heavy": Input.is_action_just_pressed("attack_heavy"),
-	}
-	attacks.tick(delta, can_act(), manual, _attack_has_target)
+	_manual_attack[&"light"] = Input.is_action_just_pressed("attack_light")
+	_manual_attack[&"heavy"] = Input.is_action_just_pressed("attack_heavy")
+	attacks.tick(delta, can_act(), _manual_attack, _attack_has_target)
 	for attack_id: StringName in attacks.ids():
 		if attacks.is_winding_up(attack_id) and _attack_visuals.has(attack_id):
 			(_attack_visuals[attack_id] as AttackArcVisual).show_windup(attacks.get_windup_progress(attack_id))
@@ -382,6 +387,7 @@ func _start_aoe_telegraph(attack_id: StringName, def: Dictionary) -> void:
 	var target: Vector3 = AoeTargeting.clamp_target(global_position, get_aim_point(), get_aim_direction(), float(def["max_range"]), _arena_rect())
 	_aoe_targets[attack_id] = target
 	var pool := EffectPool.for_world(get_parent())
+	_telegraph_pool = pool
 	if pool == null:
 		return
 	var effects: Array[PooledEffect] = TemplateVfx.aoe_telegraph(pool, target, VfxSizing.aoe_reach(float(def["radius"])), Color.html(String(def["color"])))
@@ -395,8 +401,8 @@ func _start_aoe_telegraph(attack_id: StringName, def: Dictionary) -> void:
 ## Grows the ground telegraph with the wind-up (0..1), skipping any part the pool has
 ## already recycled for something else.
 func _update_aoe_telegraph(attack_id: StringName, progress: float) -> void:
-	var pool := EffectPool.for_world(get_parent())
-	if pool == null:
+	var pool := _telegraph_pool
+	if not is_instance_valid(pool):
 		return
 	var effects: Array = _telegraphs[attack_id]
 	var generations: Array = _telegraph_generations[attack_id]
@@ -408,7 +414,7 @@ func _update_aoe_telegraph(attack_id: StringName, progress: float) -> void:
 func _stop_telegraph(attack_id: StringName) -> void:
 	if not _telegraphs.has(attack_id):
 		return
-	var pool := EffectPool.for_world(get_parent())
+	var pool := _telegraph_pool if is_instance_valid(_telegraph_pool) else EffectPool.for_world(get_parent())
 	if pool != null:
 		var effects: Array = _telegraphs[attack_id]
 		var generations: Array = _telegraph_generations[attack_id]
@@ -490,9 +496,9 @@ func _on_attack_fired(attack_id: StringName) -> void:
 func _handle_card_slot_input() -> void:
 	for i in range(CardSlotController.SLOT_TYPE_ORDER.size()):
 		var slot_type := CardSlotController.slot_type_at_index(i)
-		if Input.is_action_just_pressed("dead_card_swap_%d" % (i + 1), true):
+		if Input.is_action_just_pressed(SWAP_ACTIONS[i], true):
 			card_slots.try_swap(slot_type)
-		elif Input.is_action_just_pressed("slot_%d" % (i + 1), true):
+		elif Input.is_action_just_pressed(USE_ACTIONS[i], true):
 			card_slots.try_use(slot_type)
 
 

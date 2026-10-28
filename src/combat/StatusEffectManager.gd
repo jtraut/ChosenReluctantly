@@ -25,6 +25,11 @@ var rank: String = "normal"
 ## owner stands in), so no scene-root lookup is needed.
 var vfx_world: Node = null
 var _active: Dictionary = {}
+## How many active statuses are stuns; is_stunned() is asked by every enemy every physics
+## frame, so it reads this instead of walking (and allocating from) _active.values().
+var _stun_count: int = 0
+## Reused each frame by _process so it does not build an Array while a status runs.
+var _expired: Array[String] = []
 var _clock: float = 0.0
 var _stun_rules := StunRules.new()
 ## status_id -> PooledEffect and the generation it was handed out for.
@@ -81,7 +86,10 @@ func apply_status(status_id: String, status_def: Dictionary, duration: float) ->
 		# so recasting before expiry never restarts the tick timer or shortens the status.
 		(_active[status_id] as ActiveStatus).refresh(status_def, duration)
 	else:
-		_active[status_id] = ActiveStatus.new(status_id, status_def, duration)
+		var created := ActiveStatus.new(status_id, status_def, duration)
+		_active[status_id] = created
+		if created.effect_type == "stun":
+			_stun_count += 1
 		status_applied.emit(status_id)
 	# A refresh emits nothing, so check the flame is still alive (it could have
 	# been recycled) and restart it if not.
@@ -96,10 +104,7 @@ func has_status(status_id: String) -> bool:
 
 ## True while any "stun" effect_type status is active (by effect, not by id).
 func is_stunned() -> bool:
-	for active: ActiveStatus in _active.values():
-		if active.effect_type == "stun":
-			return true
-	return false
+	return _stun_count > 0
 
 
 ## Seconds left on the active stun (0 when not stunned).
@@ -119,8 +124,8 @@ func _process(delta: float) -> void:
 	_clock += delta
 	if _active.is_empty():
 		return
-	var expired: Array[String] = []
-	for status_id: String in _active.keys():
+	_expired.clear()
+	for status_id: String in _active:
 		var active: ActiveStatus = _active[status_id]
 		active.time_remaining -= delta
 		active.time_to_next_tick -= delta
@@ -128,8 +133,10 @@ func _process(delta: float) -> void:
 			active.time_to_next_tick += active.tick_interval
 			_tick(active)
 		if active.time_remaining <= 0.0:
-			expired.append(status_id)
-	for status_id: String in expired:
+			_expired.append(status_id)
+	for status_id: String in _expired:
+		if (_active[status_id] as ActiveStatus).effect_type == "stun":
+			_stun_count -= 1
 		_active.erase(status_id)
 		_stop_flame(status_id)
 		status_expired.emit(status_id)

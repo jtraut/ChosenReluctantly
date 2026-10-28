@@ -5,6 +5,9 @@ A plain-language history of the project for the director, grouped by date (from 
 ## 2026-10-28 (Polish 1: Slice 4 skill visuals, Slice 3b attack rework, director open items)
 
 ### Added
+- **Staged enemy waves (Slice 5a).** Up to 12 enemies at once, arriving in four stages. Each stage opens after a delay and only while few enough enemies are alive. The wave table is data in `data/waves.json`. Enemies can't attack for their first 1.5 s, and the first wave arrives after 3 s. Before, first contact came about 1 s after spawn. (3af4538, 8e05395)
+- **Enemy warnings.** Chasers show a ground wedge during their wind-up, and shooters show a lane strip where the shot will go. Enemy shots and wedges are tinted pink so they look different from the player's (D3, default A). (caab2c0, 079e1f4)
+- **Arena walls.** Invisible walls stop the player and enemies falling off the floor edge, a bug found by the new wave simulator tool. (079e1f4)
 - **Card-cast test scenario.** A capture scenario casts every card effect type in turn and confirms each slot really goes on cooldown, which is the first live check of slot cooling. Later it gained a fire projectile cast and a spread-out layout with idle enemies, so screenshots read clearly. (42f4599, 30d6d87)
 - **Shared effect pool.** Visual effects come from one reusable pool with a cap on how many can show at once. The cap was 48, raised to 64 to leave room for Burn flames. The pool uses simple shapes instead of particles because that is cheapest and runs headless. (57c874f, ba993b4)
 - **Element colours as data.** Fire is orange, and the neutral/physical look is cream. Adding Water later is a data entry only, and a test proves it. (993c6c8)
@@ -21,6 +24,8 @@ A plain-language history of the project for the director, grouped by date (from 
 - **More tests.** qa added real-scene tests for Slice 4 and 3b, and the bot simulator is now seeded so its failures can be reproduced. (6f82a4b, 8cc7b92, 552ef04)
 
 ### Changed
+- **Enemy HP bars** are slightly smaller (1.4 x 0.19 -> 1.2 x 0.16) and hidden behind models in front of them. Before, they drew over everything. (caab2c0, 8e05395)
+- **Golem shape.** Its hit area went from a box to a capsule (radius 0.45). Ground markers now show its true hit area; before, they understated it by about 20-30 cm. Its body went from a box to a capsule, and its movement collision is unchanged. (caab2c0)
 - **Attack wedge size.** The light and heavy wedges are now drawn to where hits really land, about 0.45 past the old drawn edge. They were later trimmed 4-5 cm to the exact reach at floor height. The projectile path marker's half-width went from 0.75 to 0.60 (so the lane is 1.5 -> 1.2 wide). How attacks hit did not change. (1d87756, 5807412)
 - **Light attack and heavy telegraph look.** The light flash went from pale yellow (#ffe27a) to saturated yellow (#ffcf1a) and from 0.12 s to 0.2 s. The heavy wind-up is now a pale pulsing outline, clearly different from the solid impact flash. (0e2646d)
 - **Death cue.** Death now flashes white then red, greys and topples the player, with a burst, a ring and a camera shake. (e046cdd, 6583dbf)

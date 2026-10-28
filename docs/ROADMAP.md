@@ -212,7 +212,8 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
   - **Owner sequence:** gameplay-dev (spawner, enemy fixes, bar rendering) -> ux-designer (bar visibility/size options) -> qa (incl. bot-sim) -> playtester (compare bar options, density screenshots) -> game-lead (pick bar default, close).
   - **GDD:** §1 density principle, §7.
   - **Sub-steps (game-lead, 2026-10-28):**
-    - [ ] **5a, gameplay-dev:** criteria 1-3 and 5. Also:
+    - [x] **5a, gameplay-dev:** BUILT 2026-10-28 (3af4538..8e05395, 365/365, soak OK). Waves `data/waves.json` (cap 12, 4 stages), enemy wedge/lane telegraphs, 1.5 s spawn grace, depth-tested bars (1.4x0.19 -> 1.2x0.16), golem capsule hurtbox (N1), enemy team tint (D3-A), arena walls, `tools/run_wave_sim.ps1`. Director: D6 (golem wind-up). Follow-ups F-E2 (thin roles), F-E3 (no separation steering), F-E5 (stun cancel cue). qa at 5c.
+      criteria 1-3 and 5. Also:
       - Rendering side of criterion 4 (bar depth/priority).
       - N1: per-enemy reach for ground shapes vs the golem box hurtbox, or a capsule hurtbox.
       - D3 default A: team tint for shots, so enemy shots look different from player physical shots. Code in `ElementVisuals`, colour in data.

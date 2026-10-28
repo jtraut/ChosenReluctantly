@@ -13,6 +13,7 @@ Owned by game-lead. Answer in chat with the ID, for example "D1 = A".
 | D2 | Hold-to-preview: should holding a card key show its exact hit area and cast on release? (Proposal only, nothing built.) | It helps players aim area cards precisely, but it costs input complexity. | A: park it until after Milestone 3a. B: build it as a Settings option. C: build it as the default. | A | A | "D2 = A/B/C" |
 | D4 | The light attack dropped from 8 to 3 damage per hit so every damage card beats it. Is that the "crutch" feel you want? | Light alone now takes about 3x longer to kill (a golem goes from about 4 s to 10 s). Two area cards had to jump a lot: Shrug Bomb 5 to 12, Everyone Calm Down 8 to 16. | A: keep light 3 as built. B: light 4 and slow its auto timer (0.6 s to about 0.9 s), so cards need smaller bumps. C: lower the area slot's base cooldown (2.5 s) instead. | A (feel it first; B is a data-only change) | A | "D4 = A/B/C" |
 | D5 | The new heavy attack does slightly less direct damage per second than light (4.7 vs 5.0), but its 50% Burn chance brings it to about 6.0 (measured 5.97 after a Burn bug fix). That beats light and the three area cards in a single-target fight. OK? | You said heavy should trade damage-per-second for burst and flavour. Burn is the element flavour you asked for, but with it the free heavy edges past some area cards on a single target. Area cards still win when several enemies are hit. The playtester asks the same question: must every card always beat the free heavy? | A: keep as built. B: lower the Burn chance on heavy to 20%, so every card beats it (about 5.2). C: lower heavy damage instead. | A (Burn is the flavour you asked for; B is a one-number data change) | A | "D5 = A/B/C" |
+| D6 | The fire-resistant golem hits hard (9 damage) but warns you for only 0.45 s, the same as the small chaser. Give it a longer wind-up (0.7 s)? | Your density principle says danger should be readable and punishable. A hard hit with a short warning feels unfair. | A: 0.7 s wind-up. B: keep 0.45 s. | A | A, applied in the next gameplay task | "D6 = A/B" |
 | D3 | Enemy shots and the player's physical shots are the same cream colour. Should shots be tinted by team (enemy = red-ish)? | You currently have to tell incoming from outgoing shots by position. Fixing it is a small code change. | A: tint by team, in Slice 5. B: leave as is. | A | A, in Slice 5 | "D3 = A/B" |
 
 The heavy redesign is built with these defaults: a 0.6 s stun, a 50% Burn chance, a 35% wind-up slow, and 8.5 damage. If any of them feels wrong, it's a one-number data change.
@@ -32,10 +33,20 @@ Play a normal run (not a test scenario: scenarios give the player 9999 HP).
 5. **Light attack vs cards** (feeds D4). Look for:
    - Does every damage card feel clearly better than the free auto attack?
    - The three area cards are only about 7-10% better than light on a single enemy. Do they still feel worth casting on one?
-6. **1.5x click cap.** Look for: spam-clicking helps a bit early but doesn't feel mandatory, and holding back feels fine.
-7. **Light flash and heavy telegraph.** Look for: the light swing reads at full speed, and the heavy wind-up looks clearly different from its impact.
+6. **New wave density** (Slice 5). Up to 12 enemies at once, arriving in four stages. Look for:
+   - Is 12 at once too many for you? A perfect-aim test bot survives, but takes heavy damage.
+   - Is the first wave of 4 chasers too hard to start with? We can drop it to 2 or 3 (data).
+   - Can you read every enemy's warning: the red-pink ground wedge for chasers, and the lane strip for shooters?
+   - Enemy shots are now pink, so they look different from yours.
+7. **1.5x click cap.** Look for: spam-clicking helps a bit early but doesn't feel mandatory, and holding back feels fine.
+8. **Light flash and heavy telegraph.** Look for: the light swing reads at full speed, and the heavy wind-up looks clearly different from its impact.
 
 ## FYI, no action needed
+
+- **Slice 5 changes you'll notice:**
+  - The golem is now a capsule shape instead of a box, so its ground markers show its true hit area.
+  - Invisible walls stop anything falling off the arena edge. A test bot found that bug.
+  - Enemy HP bars are slightly smaller (width 1.4 to 1.2), as the Slice 5 brief asked, and are hidden behind enemies in front of them.
 
 - **P5:** a bug fix made projectile cards use their real hit size. Flaming Nonsense now hits at 0.3 (it was 0.25).
 - **P6:** the same fix made ranged enemy shots 20% wider (0.25 to 0.3). That was always the intended value; we kept it.

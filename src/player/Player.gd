@@ -356,7 +356,8 @@ func _attack_has_target(attack_id: StringName) -> bool:
 
 func _on_attack_started(attack_id: StringName) -> void:
 	var def := attacks.get_def(attack_id)
-	if attacks.is_winding_up(attack_id):
+	# attack_started fires just before the controller marks the wind-up, so test the data.
+	if float(def["wind_up"]) > 0.0:
 		if String(def["shape"]) == "targeted_aoe":
 			_start_aoe_telegraph(attack_id, def)
 		else:

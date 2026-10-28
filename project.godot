@@ -19,6 +19,7 @@ config/icon="res://assets/icon.svg"
 
 InputBindings="*res://src/core/InputBindings.gd"
 Juice="*res://src/core/Juice.gd"
+Settings="*res://src/core/Settings.gd"
 
 [editor_plugins]
 

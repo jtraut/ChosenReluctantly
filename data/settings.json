@@ -1,0 +1,12 @@
+{
+    "cast_trigger": {
+        "type": "enum",
+        "default": "release",
+        "options": ["release", "press"],
+        "label": "Cast cards on",
+        "option_labels": {
+            "release": "Release (preview)",
+            "press": "Press"
+        }
+    }
+}

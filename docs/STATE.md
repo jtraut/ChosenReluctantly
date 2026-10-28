@@ -13,6 +13,7 @@ Last updated: 2026-10-28. **Milestone 2 is done.** Now running **Post-milestone 
 - **Polish 1, Slice 1 (death and game over) - done** (7ad85ee): `Player.player_died`, `Main.game_over_ready` / `restart_arena()` (scene reload), Game Over screen, "HP x / y" label, reload soak tool `tools/run_reload_cycle.ps1`.
 
 ## In progress
+**Fix pass for the 3b qa should-fix items DONE by gameplay-dev (S3B-1 Burn phase + card rule + Fine Burn Then 7->12, S3B-3..S3B-8, S4-4; 337/337 tests, soak/bot-sim clean). Next: qa targeted re-check, then the playtester. See DECISIONS 2026-10-28 S3B-* entries.**
 **3b-4 qa: PASS with should-fix (docs/reviews/2026-10-28-polish1-slice3b-qa.md). 326/326, soak and bot-sim clean. Should-fix S3B-1: Burn refresh resets the tick timer, so Fine, Burn Then really does 3.94 DPS vs light 5.0 (gameplay-dev; game-lead to re-check the heavy's 5.8 DPS and D5 after). Next: playtester (Slice 4 + 3b).**
 **3b-3 (ux) BUILT: orbiting stun stars + data tint, quiet IMMUNE popup, targeted_aoe telegraph grows with the wind-up, stun DR window 1.5 s; 306/306 tests, soak OK. Next: 3b-4 qa. See DECISIONS 2026-10-28 "Slice 3b-3".**
 **3b-2 (heavy redesign) BUILT by gameplay-dev: heavy 8.5 / 1.8 s, Rogue arc + stun + 50% Burn, Wizard targeted_aoe (data, test, scenario), generic Stun with rank and DR, wind-up slow; 292/292 tests. Next: 3b-3 ux-designer. See DECISIONS 2026-10-28 "Slice 3b-2".**

@@ -37,7 +37,13 @@ static func load_def(scenario_id: String) -> Dictionary:
 	if typeof(parsed) != TYPE_DICTIONARY or not (parsed as Dictionary).has(scenario_id):
 		push_error("Scenario: unknown scenario '%s'" % scenario_id)
 		return {}
-	return (parsed as Dictionary)[scenario_id]
+	var def: Dictionary = (parsed as Dictionary)[scenario_id]
+	var problems := ScenarioSchema.validate(scenario_id, def)
+	if not problems.is_empty():
+		for problem in problems:
+			push_error("Scenario: " + problem)
+		return {}
+	return def
 
 
 ## Builds the scenario inside `main` (which must have a Player) and returns the

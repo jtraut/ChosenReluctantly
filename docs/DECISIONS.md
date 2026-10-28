@@ -376,3 +376,8 @@ These were already resolved by explicit instruction in the Milestone 2 kickoff p
 
 ### 2026-10-28 - S3B-5: Player telegraph accessor (gameplay-dev)
 - `Player.has_aoe_telegraph(attack_id) -> bool` and `Player.get_aoe_telegraph(attack_id) -> Array[PooledEffect]` (a copy, order [fill, edge, front]). The three suites that read `_telegraphs` now use them; no test touches the private dictionary any more. Rejected: exposing the dictionary itself (callers could mutate Player-owned state), and only a bool (the stun-cue test needs the parts to check sizes).
+
+### 2026-10-28 - S3B-6 + S4-4: scenario flag schema (gameplay-dev)
+- New pure `ScenarioSchema.validate(id, def)` (`src/debug/ScenarioSchema.gd`); `Scenario.load_def` runs it and push_errors every problem (key named, expected shape stated), then returns `{}` so `Main` refuses to build the scenario. Covers bool, number (with minimums), whole-number, string, fixed-length number arrays (`origin_offset` 3, `spacing` 2, `aim_point_offset` 2), enemy-index arrays, `hp_fractions` 0..1, `groups`, `late_hit`, `casts`. Unknown keys are errors (catches typos).
+- `aim_point_offset` must have **exactly 2** numbers ([x, z] from the player), not "2 or 3": the build code only reads x and z, so accepting a third would silently ignore it. Rejected: allowing 3 (a y that does nothing). Rejected: validating that group scenes / cards / slots exist in the schema (it stays pure; those fail at build with their own loud messages).
+- Tests: `tests/unit/scenario_schema_test.gd`, bad fixture `tests/fixtures/scenarios_bad/scenarios.json` (17 bad scenarios, each must be rejected with its id in the message), plus all shipped scenarios must validate.

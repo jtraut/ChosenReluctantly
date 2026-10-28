@@ -1,0 +1,19 @@
+{
+    "not_an_object": [1, 2],
+    "short_aim_offset": { "aim_point_offset": [1] },
+    "long_aim_offset": { "aim_point_offset": [1, 2, 3] },
+    "string_aim_offset": { "aim_point_offset": [1, "x"] },
+    "bool_as_string": { "enemies_idle": "yes" },
+    "negative_health": { "player_max_health": -5 },
+    "fractional_columns": { "columns": 2.5 },
+    "bad_stun_index": { "stun_indices": [0, -1] },
+    "bad_boss_type": { "boss_indices": "all" },
+    "empty_class": { "heavy_class": "" },
+    "typo_key": { "aim_point_ofset": [1, 2] },
+    "origin_two_numbers": { "origin_offset": [1, 2] },
+    "group_no_scene": { "groups": [{ "count": 2 }] },
+    "group_zero_count": { "groups": [{ "scene": "res://a.tscn", "count": 0 }] },
+    "fraction_out_of_range": { "hp_fractions": [1.5] },
+    "cast_missing_card": { "casts": [{ "at": 1.0, "slot": "utility" }] },
+    "late_hit_string": { "late_hit": "now" }
+}

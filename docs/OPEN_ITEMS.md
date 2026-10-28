@@ -43,7 +43,6 @@ Play a normal run (not a test scenario: scenarios give the player 9999 HP).
 ## FYI, no action needed
 
 - **Dash and dodge distance.** Dash cards and the dodge roll kept sliding after the move ended, travelling about twice their set distance (Blaze and Bail went about 8 m, not 4 m). They will now stop at the distance set in data, so the hit-area preview tells the truth. Dodge will feel shorter. If it feels too short, raise `distance` in the data; no code change needed.
-- A new `tech-writer` agent file appeared in `.claude/agents/`. I haven't committed or used it. Tell me if you want it active, and whether the changelog should move to it.
 
 - The training dummy (the dark-red cylinder next to you at the start) is being removed from normal runs. It was a test aid that reads as an enemy. Scenarios keep it.
 - The dark area at the top-left edge of the screen is the empty space past the arena floor (by design since 4b). It is not a bug.
@@ -64,6 +63,7 @@ Play a normal run (not a test scenario: scenarios give the player 9999 HP).
 
 | ID | Question | Your answer | Date |
 |---|---|---|---|
+| - | Add the tech-writer role? | Yes. It owns README, CHANGELOG, ASSETS and ARCHITECTURE, and does one docs pass per slice before close. | 2026-10-28 |
 | D1 | Run stats on the Game Over screen? | A: not now; revisit with the run structure. | 2026-10-28 |
 | D2 | Hold-to-preview casting? | C: build it as the default, with a setting to cast on press instead. Scheduled as Slice 6. | 2026-10-28 |
 | D3 | Tint shots by team? | A: yes (already built). | 2026-10-28 |

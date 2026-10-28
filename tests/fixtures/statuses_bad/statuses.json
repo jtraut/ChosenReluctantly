@@ -1,0 +1,26 @@
+{
+    "typo_kind": {
+        "display_name": "Typo", "effect_type": "damage_over_time", "damage_per_tick": 2.0,
+        "damage_type": "fire", "tick_interval": 1.0, "visual": { "kind": "flam", "size": 0.25 }
+    },
+    "string_size": {
+        "display_name": "Big", "effect_type": "damage_over_time", "damage_per_tick": 2.0,
+        "damage_type": "fire", "tick_interval": 1.0, "visual": { "kind": "flame", "size": "big" }
+    },
+    "zero_size": {
+        "display_name": "Zero", "effect_type": "damage_over_time", "damage_per_tick": 2.0,
+        "damage_type": "fire", "tick_interval": 1.0, "visual": { "kind": "flame", "size": 0 }
+    },
+    "bad_color": {
+        "display_name": "Color", "effect_type": "damage_over_time", "damage_per_tick": 2.0,
+        "damage_type": "fire", "tick_interval": 1.0, "visual": { "kind": "flame", "size": 0.2, "color": "not a color" }
+    },
+    "zero_interval": {
+        "display_name": "Zero tick", "effect_type": "damage_over_time", "damage_per_tick": 2.0,
+        "damage_type": "fire", "tick_interval": 0.0
+    },
+    "unknown_effect": {
+        "display_name": "Mystery", "effect_type": "teleport", "damage_per_tick": 2.0,
+        "damage_type": "fire", "tick_interval": 1.0
+    }
+}

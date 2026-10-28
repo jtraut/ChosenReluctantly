@@ -1,14 +1,102 @@
 class_name StatusDatabase
 extends RefCounted
 ## data/statuses.json: status effect definitions (Burn, and later Chill,
-## Soaked, ...).
+## Soaked, ...). Validated once on first use: every problem is push_error'd and
+## an invalid entry is treated as missing (get_status returns {}), so a typo
+## cannot silently turn into a zero-damage or invisible status.
+
+const EFFECT_TYPES: Array[String] = ["damage_over_time"]
+## Allowed "visual.kind" values (see StatusEffectManager._ensure_flame).
+const VISUAL_KINDS: Array[String] = ["flame"]
+const MAX_VISUAL_SIZE := 5.0
+
+## field -> [min, max, min_inclusive]. All are numbers.
+const NUMBER_RULES: Dictionary = {
+	"damage_per_tick": [0.0, 100000.0, true],
+	"tick_interval": [0.0, 3600.0, false],
+}
 
 static var _table := JsonDataTable.new("res://data/statuses.json")
+static var _bad_ids: Dictionary = {}
+static var _validated: bool = false
 
 
 static func get_status(status_id: String) -> Dictionary:
+	_ensure_validated()
+	if _bad_ids.has(status_id):
+		return {}
 	return _table.get_entry(status_id)
 
 
 static func has_status(status_id: String) -> bool:
-	return _table.has(status_id)
+	_ensure_validated()
+	return _table.has(status_id) and not _bad_ids.has(status_id)
+
+
+## Returns human-readable problems; empty means valid.
+static func validate_entry(entry: Dictionary) -> Array[String]:
+	var errors: Array[String] = []
+	for key: String in ["display_name", "damage_type"]:
+		if typeof(entry.get(key)) != TYPE_STRING or String(entry[key]).strip_edges().is_empty():
+			errors.append("'%s' must be a non-empty string" % key)
+	if typeof(entry.get("effect_type")) != TYPE_STRING or not EFFECT_TYPES.has(String(entry["effect_type"])):
+		errors.append("'effect_type' must be one of %s" % str(EFFECT_TYPES))
+	for key: String in NUMBER_RULES.keys():
+		var value: Variant = entry.get(key)
+		if typeof(value) != TYPE_FLOAT and typeof(value) != TYPE_INT:
+			errors.append("'%s' must be a number" % key)
+			continue
+		var rule: Array = NUMBER_RULES[key]
+		var number: float = float(value)
+		if is_nan(number) or is_inf(number):
+			errors.append("'%s' must be finite" % key)
+		elif number > float(rule[1]) or number < float(rule[0]) or (number == float(rule[0]) and not bool(rule[2])):
+			errors.append("'%s' out of range (%s)" % [key, str(number)])
+	if entry.has("visual"):
+		errors.append_array(_validate_visual(entry["visual"]))
+	return errors
+
+
+static func _validate_visual(visual: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(visual) != TYPE_DICTIONARY:
+		errors.append("'visual' must be an object")
+		return errors
+	var block: Dictionary = visual
+	if typeof(block.get("kind")) != TYPE_STRING or not VISUAL_KINDS.has(String(block["kind"])):
+		errors.append("'visual.kind' must be one of %s" % str(VISUAL_KINDS))
+	var size: Variant = block.get("size")
+	if typeof(size) != TYPE_FLOAT and typeof(size) != TYPE_INT:
+		errors.append("'visual.size' must be a number")
+	elif is_nan(float(size)) or float(size) <= 0.0 or float(size) > MAX_VISUAL_SIZE:
+		errors.append("'visual.size' must be > 0 and <= %s" % str(MAX_VISUAL_SIZE))
+	# Optional color override (the flame currently takes its color from the element).
+	if block.has("color") and not (typeof(block["color"]) == TYPE_STRING and Color.html_is_valid(String(block["color"]))):
+		errors.append("'visual.color' must be a hex color like #ff7a1a")
+	return errors
+
+
+## Validates a whole statuses table (id -> entry).
+static func validate_table(table: Dictionary) -> Array[String]:
+	var errors: Array[String] = []
+	for status_id: String in table.keys():
+		if typeof(table[status_id]) != TYPE_DICTIONARY:
+			errors.append("%s: entry must be an object" % status_id)
+			continue
+		for problem: String in validate_entry(table[status_id]):
+			errors.append("%s: %s" % [status_id, problem])
+	return errors
+
+
+static func _ensure_validated() -> void:
+	if _validated:
+		return
+	_validated = true
+	var table: Dictionary = {}
+	for status_id: String in _table.ids():
+		table[status_id] = _table.get_entry(status_id)
+	for problem: String in validate_table(table):
+		push_error("StatusDatabase: " + problem)
+	for status_id: String in table.keys():
+		if typeof(table[status_id]) != TYPE_DICTIONARY or not validate_entry(table[status_id]).is_empty():
+			_bad_ids[status_id] = true

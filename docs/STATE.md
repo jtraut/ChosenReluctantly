@@ -10,6 +10,8 @@ Last updated: 2026-10-28. **Milestone 2 is done.** Now running **Post-milestone 
 - **Polish 1, Slice 1 (death and game over) - done** (7ad85ee): `Player.player_died`, `Main.game_over_ready` / `restart_arena()` (scene reload), Game Over screen, "HP x / y" label, reload soak tool `tools/run_reload_cycle.ps1`.
 
 ## In progress
+**S4 qa fix pass DONE by gameplay-dev (2026-10-28), awaiting the targeted qa re-check:** S4-1 lane/cone/aoe use `VfxSizing.lateral_reach` (lane 0.75 to 0.60), S4-2 enemy shot radius and cone angle in `data/enemies.json` (`EnemyConfig`), S4-3 `StatusDatabase` validator, `VfxConfig` default cap 64. 245/245 tests. See DECISIONS 2026-10-28 S4-1/2/3.
+
 **qa 4d verdict (2026-10-28): PASS with should-fix.** 236/236, soak/bot-sim/scenario clean, soak flake pre-existing and benign (8/40 failures at 4c2bfef, lag now measured). Should-fix: S4-1 projectile lane 0.75 vs real 0.60 half-width, S4-2 ranged enemy hit radius 0.25 to 0.3 unlogged, S4-3 status visual unvalidated. See `docs/reviews/2026-10-28-polish1-slice4-qa.md`. Next: playtester, then game-lead close.
 
 **4c DONE by ux-designer (2026-10-28), awaiting game-lead to mark ROADMAP:** aim reticle + facing dots (`src/ui/AimIndicator.gd`, `data/ui.json` `aim`), read-only `Player.get_aim_point()/get_aim_direction()`, projectile lane and dash path ground markers (`EffectPool.Shape.STRIP`, `VfxSizing.projectile_lane_half_width`, `data/vfx.json` marker keys), capture-only `aim_preview_distance`. Tests 221/221, reload soak OK. Needs gameplay-dev: team tint so enemy and player shots differ (both cream). Not fixed: tall golems hide ground shapes and the reticle. Details: DECISIONS 2026-10-28 "Slice 4c". Next: 4d (qa, playtester, game-lead).

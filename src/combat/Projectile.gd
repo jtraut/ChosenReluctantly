@@ -22,9 +22,32 @@ func _ready() -> void:
 	monitoring = true
 	monitorable = false
 	area_entered.connect(_on_area_entered)
-	var shape := get_node("CollisionShape3D").shape as SphereShape3D
-	if shape != null:
-		shape.radius = hit_radius
+	set_hit_radius(hit_radius)
+
+
+## Sizes the hit sphere and the visible ball from the same number. The shape
+## resource is shared by every instance of the scene, so it is duplicated
+## before being resized. Call before launch().
+func set_hit_radius(radius: float) -> void:
+	hit_radius = radius
+	var shape_node: CollisionShape3D = get_node("CollisionShape3D")
+	var sphere := (shape_node.shape as SphereShape3D).duplicate() as SphereShape3D
+	sphere.radius = radius
+	shape_node.shape = sphere
+	var mesh_node: MeshInstance3D = get_node("Mesh")
+	var base_radius: float = (mesh_node.mesh as SphereMesh).radius
+	mesh_node.scale = Vector3.ONE * (radius / base_radius)
+
+
+## Radius of the visible ball in world units (mesh radius times node scale).
+func visual_radius() -> float:
+	var mesh_node: MeshInstance3D = get_node("Mesh")
+	return (mesh_node.mesh as SphereMesh).radius * mesh_node.scale.x
+
+
+## Radius of the hit sphere in world units.
+func hitbox_radius() -> float:
+	return ((get_node("CollisionShape3D") as CollisionShape3D).shape as SphereShape3D).radius
 
 
 func launch(origin: Vector3, direction: Vector3, damage: float, damage_type: String, speed: float, max_range: float, exclude_team: String) -> void:

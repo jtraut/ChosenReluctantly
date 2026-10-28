@@ -220,7 +220,7 @@ func _setup_attacks() -> void:
 		var visual := AttackArcVisual.new()
 		visual.name = "AttackVisual_%s" % attack_id
 		add_child(visual)
-		visual.setup(float(def["range"]), float(def["half_angle_degrees"]), Color.html(String(def["color"])))
+		visual.setup(VfxSizing.cone_reach(float(def["range"])), float(def["half_angle_degrees"]), Color.html(String(def["color"])))
 		_attack_visuals[attack_id] = visual
 
 
@@ -275,6 +275,7 @@ func _on_attack_fired(attack_id: StringName) -> void:
 		"range": def["range"],
 		"half_angle_degrees": def["half_angle_degrees"],
 		"knockback_strength": def["knockback"],
+		"vfx": false,
 	}, context)
 	(_attack_visuals[attack_id] as AttackArcVisual).flash(float(def["flash_duration"]))
 	if not context.last_hits.is_empty():

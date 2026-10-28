@@ -6,6 +6,7 @@ extends RefCounted
 const PATH := "res://data/vfx.json"
 const DEFAULTS: Dictionary = {
 	"max_simultaneous": 48,
+	"hurtbox_reach_radius": 0.45,
 }
 
 static var _cache: Dictionary = {}
@@ -20,6 +21,11 @@ static func validate(config: Dictionary) -> Array[String]:
 		errors.append("'max_simultaneous' must be a number")
 	elif float(cap) < 1.0 or float(cap) > 512.0 or float(cap) != floorf(float(cap)):
 		errors.append("'max_simultaneous' must be a whole number from 1 to 512")
+	var reach: Variant = config.get("hurtbox_reach_radius")
+	if typeof(reach) != TYPE_INT and typeof(reach) != TYPE_FLOAT:
+		errors.append("'hurtbox_reach_radius' must be a number")
+	elif float(reach) < 0.0 or float(reach) > 5.0:
+		errors.append("'hurtbox_reach_radius' must be between 0 and 5")
 	return errors
 
 
@@ -42,6 +48,12 @@ static func get_config() -> Dictionary:
 		return _cache
 	_cache.merge(parsed, true)
 	return _cache
+
+
+## How far past a hit query's range a target's centre can still be hit: the
+## target hurtbox radius (MeleeChaser capsule, 0.45). See VfxSizing.
+static func hurtbox_reach_radius() -> float:
+	return float(get_config()["hurtbox_reach_radius"])
 
 
 static func max_simultaneous() -> int:

@@ -62,9 +62,24 @@ static func _execute_cone(params: Dictionary, context: EffectContext) -> void:
 		CollisionLayers.HURTBOX
 	)
 	context.last_hits = hits
+	if bool(params.get("vfx", true)):
+		_play_cone_vfx(params, context, forward)
 	var knockback_strength: float = params.get("knockback_strength", 0.0)
 	for hurtbox: Hurtbox in hits:
 		hurtbox.receive_damage(params["damage"], params["damage_type"], _knockback_from(context.caster.global_position, hurtbox.global_position, knockback_strength))
+
+
+## Ground wedge through the shared EffectPool, sized by VfxSizing (the same
+## numbers as the hit query). Pass "vfx": false to skip (the player's basic
+## attacks draw their own telegraphed wedge).
+static func _play_cone_vfx(params: Dictionary, context: EffectContext, forward: Vector3) -> void:
+	var pool := EffectPool.for_world(context.spawn_parent)
+	if pool == null or not is_instance_valid(context.caster):
+		return
+	var color: Color = ElementVisuals.color_for_damage_type(String(params.get("damage_type", "physical")))
+	var yaw: float = atan2(-forward.x, -forward.z)
+	pool.play(EffectPool.Shape.WEDGE, context.caster.global_position, VfxSizing.cone_reach(float(params["range"])), color,
+			0.25, 1.0, 1.0, 0.55, 0.0, yaw, float(params["half_angle_degrees"]))
 
 
 static func _execute_aoe(params: Dictionary, context: EffectContext) -> void:
@@ -92,7 +107,7 @@ static func _play_aoe_vfx(params: Dictionary, context: EffectContext) -> void:
 	var look := ElementVisuals.visual_for_damage_type(String(params.get("damage_type", "physical")))
 	var color: Color = look["color"]
 	var origin: Vector3 = context.caster.global_position
-	pool.play(EffectPool.Shape.DISC, origin, float(params["radius"]), color, 0.35)
+	pool.play(EffectPool.Shape.DISC, origin, VfxSizing.aoe_reach(float(params["radius"])), color, 0.35)
 	# Cosmetic burst: the element "scale" resizes this, never the hit-area disc above.
 	pool.play(EffectPool.Shape.SPHERE, origin + Vector3(0.0, 0.5, 0.0), 0.4 * float(look["scale"]), color, 0.25, 0.6, 1.6, 0.8, 0.0)
 
@@ -116,7 +131,7 @@ static func _execute_projectile(params: Dictionary, context: EffectContext) -> v
 	context.spawn_parent.add_child(instance)
 	var forward: Vector3 = -context.caster.global_transform.basis.z
 	var origin: Vector3 = context.caster.global_position + forward * 0.6
-	instance.hit_radius = params["hit_radius"]
+	instance.set_hit_radius(params["hit_radius"])
 	instance.knockback_strength = params.get("knockback_strength", 0.0)
 	instance.launch(origin, forward, params["damage"], params["damage_type"], params["speed"], params["max_range"], context.caster_team)
 	# Async flight: this effect's damage lands later, so it never populates last_hits.

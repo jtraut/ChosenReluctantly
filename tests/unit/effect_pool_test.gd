@@ -92,7 +92,7 @@ func test_aoe_template_plays_through_pool() -> void:
 
 
 func test_vfx_config_validation() -> void:
-	assert_array(VfxConfig.validate({"max_simultaneous": 48})).is_empty()
+	assert_array(VfxConfig.validate({"max_simultaneous": 48, "hurtbox_reach_radius": 0.45})).is_empty()
 	assert_array(VfxConfig.validate({"max_simultaneous": 0})).is_not_empty()
 	assert_array(VfxConfig.validate({"max_simultaneous": 2.5})).is_not_empty()
 	assert_array(VfxConfig.validate({})).is_not_empty()

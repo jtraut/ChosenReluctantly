@@ -103,7 +103,8 @@ func test_wedge_mesh_matches_range_and_half_angle_data() -> void:
 			max_r = maxf(max_r, v.length())
 			if v.length() > 0.001:
 				max_angle = maxf(max_angle, absf(Vector3(0, 0, -1).angle_to(v)))
-		assert_float(max_r).is_equal_approx(float(def["range"]), 0.001)
+		# s3-a (Slice 4a): the wedge is drawn to the effective reach, range + hurtbox radius.
+		assert_float(max_r).is_equal_approx(float(def["range"]) + VfxConfig.hurtbox_reach_radius(), 0.001)
 		assert_float(rad_to_deg(max_angle)).is_equal_approx(float(def["half_angle_degrees"]), 0.01)
 
 

@@ -187,7 +187,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
     4. Element flavour: element status (Burn for Fire), chance = element base chance x the attack's `status_chance_multiplier`. Defaults: base 0.2 (in element data), light multiplier 0.0, heavy 2.5 (= 50%), heavy Burn duration 3 s. All in data.
     5. Stun: a new generic status in `statuses.json`. Stunned enemies don't move or attack, and an active wind-up is cancelled. Defaults:
        - Base duration 0.6 s.
-       - Diminishing returns: each repeat within a 4 s window x0.5; immune after the third stun until the window clears.
+       - Diminishing returns: each repeat within a 1.5 s window (was 4 s; changed by game-lead after 3b-2) x0.5; immune after the third stun until the window clears.
        - Elites x0.5; bosses immune.
        - Enemy `rank` (normal/elite/boss) in `data/enemies.json`. Current enemies are all normal unless logged otherwise. Test fixtures cover elite and boss.
     6. Wind-up slow: -35% move speed via StatModifiers, for the wind-up only. Removed on release, death, cancel, and scene reload. Never a root.
@@ -197,6 +197,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
     - A readable `targeted_aoe` ground telegraph that matches the hitbox via VfxSizing.
     - Heavy meter or labels updated if the heavy's shape or class matters to the player.
     - Any new bindings in `input_bindings.json`.
+  - [ ] **3b-4, qa:** PASS 552ef04 (`docs/reviews/2026-10-28-polish1-slice3b-qa.md`, 326/326, DoD clean) with should-fix items. **Fix pass (gameplay-dev, in progress):** S3B-1 (Burn keeps its tick phase on refresh, and the card rule credits only the Burn that really lands, then Fine, Burn Then is retuned to comply), S3B-3..S3B-8, S4-4. Then a qa targeted re-check, then the playtester (Slice 4 + 3b), then close. S3B-2 (IMMUNE clipped by HP bars) -> Slice 5.
   - **qa tests:**
     - The click ratio never exceeds ratio x auto DPS, including under attack-speed modifiers.
     - The card rule check (fails on a bad fixture).

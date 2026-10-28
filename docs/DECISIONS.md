@@ -341,3 +341,13 @@ These were already resolved by explicit instruction in the Milestone 2 kickoff p
 - **Capture scenario:** new `stun_crowd` (9 idle chasers, 6 stunned at 0.5 s, one of them a boss so it shows IMMUNE) with capture-only flags `stun_indices`, `stun_at`, `stun_duration`, `boss_indices`.
 - **Known weakness:** in a very tight crowd the IMMUNE word can sit partly behind neighbours' HP bars (HP bars draw over it). It is readable in the capture but not great; raising it or giving it a draw priority is a small follow-up if the playtester flags it. Stunned tint is subtle on enemies whose base colour is already grey (the Golem); the stars carry it there.
 - **Tests:** `tests/unit/stun_cue_3b3_test.gd`, 11 cases, plus 3 in `heavy_3b2_test.gd` (suite 292 -> 306).
+
+### 2026-10-28 - After the 3b qa review (game-lead)
+- **Doc correction:** the stun DR window is **1.5 s** (data). Older mentions of "4 s" in the 3b scoping and 3b-2 entries are superseded.
+- **S3B-1: fix before the playtest.** The playtester is asked to judge light vs cards, and a pre-existing Burn bug makes Fine, Burn Then really lose to the light (3.94 vs 5.0 DPS). That would poison the report.
+  - Fix 1: a Burn refresh keeps its tick phase.
+  - Fix 2: `CardDamageRule` credits only the status damage that actually lands in sustained use, i.e. ticks over min(status duration, card cycle time). It no longer credits the full duration. Even with the phase fixed, a recast that refreshes Burn before it expires doesn't stack it, so full-duration credit overstates.
+  - Then retune any damage card that fails, raising direct damage only. Fine, Burn Then is expected to fail; Ember should still pass.
+  - Rejected: accepting the gap until later (it breaks a director decision on a shipped card), and logging a `rule_exception` (it isn't a fast low-damage card).
+- **The heavy's total DPS** will be re-measured after the fix, and D5 updated with the new number.
+- **S3B-3..S3B-8 and S4-4** (scenario flag validation) go into the same fix pass. They're small, and S3B-7 (per-frame allocations) must land before Slice 5 raises enemy density. S3B-2 (IMMUNE clipped by HP bars) joins the Slice 5 bar work.

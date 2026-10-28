@@ -240,5 +240,54 @@
         "wave_seed": 4,
         "player_max_health": 9999,
         "groups": []
+    },
+    "bar_modes": {
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "freeze_aim": true,
+        "enemies_idle": true,
+        "disable_auto_attack": true,
+        "origin_offset": [
+            -2.0,
+            0.0,
+            -3.0
+        ],
+        "spacing": [
+            1.15,
+            1.0
+        ],
+        "columns": 4,
+        "groups": [
+            {
+                "scene": "res://scenes/enemies/MeleeChaser.tscn",
+                "count": 6
+            },
+            {
+                "scene": "res://scenes/enemies/RangedShooter.tscn",
+                "count": 3
+            },
+            {
+                "scene": "res://scenes/enemies/FireResistantGolem.tscn",
+                "count": 3
+            }
+        ],
+        "hp_fractions": [
+            1.0,
+            1.0,
+            0.6,
+            1.0,
+            1.0,
+            0.3,
+            1.0,
+            0.8,
+            1.0,
+            0.5,
+            1.0,
+            1.0
+        ],
+        "boss_indices": [
+            4,
+            10
+        ]
     }
 }

@@ -225,3 +225,11 @@ These were already resolved by explicit instruction in the Milestone 2 kickoff p
 ### 2026-10-28 - Correction and Slice 4 re-check calls (game-lead)
 - Correction to the S4-1 entry: the aoe radius 2.5 draws **2.9155** (sqrt(2.95^2 - 0.45^2)), not 2.906. The code is right.
 - N1 (ground shapes understate the hit area against the golem's box hurtbox by ~20-30 cm): accepted for now, because it errs the safe way. Moved to Slice 5's enemy review, which decides between per-enemy reach and a capsule hurtbox. Rejected: fixing it now (it needs per-enemy hurtbox data, which overlaps Slice 5).
+
+### 2026-10-28 - [DIRECTOR DECISION] Role of basic attacks (resolves P1-P4)
+- [DIRECTOR DECISION, 2026-10-28] Clicking is an early-game crutch. Manual attacks should feel underwhelming and unnecessary as the build and cards take shape, unless the player deliberately builds into basic or heavy attacks with boosters.
+- [DIRECTOR DECISION, 2026-10-28] Basic attacks are weaker than active card plays. Cards are the heart of the game; a card should always feel better than the free attack it competes with.
+- [DIRECTOR DECISION, 2026-10-28] Heavy attacks trade sustained damage for burst and utility: lower single-target DPS than light is allowed, in exchange for burst, a larger area, and class/element flavor (stun, boosted element status chance, ranged targeted area for casters).
+- [DIRECTOR DECISION, 2026-10-28] Heavy wind-up slows the player slightly. It never roots.
+- Resolutions: **P1** -> spam-click cap is 1.5x auto light DPS, as a data ratio `manual_click_max_rate_ratio` (min gap = auto_interval / ratio, 0.4 s at 0.6 s). **P2** -> heavy redesign: per-class heavy definitions, shapes `arc` and `targeted_aoe`, element status with a boosted chance, generic Stun status. **P3** -> minor wind-up slow through StatModifiers, never a root. **P4** -> lower light per-hit damage, raise cheap damage cards, plus a validation rule so cards cannot drift below the free attack.
+- GDD §3 updated with these (director-approved text).

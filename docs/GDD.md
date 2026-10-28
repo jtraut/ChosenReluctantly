@@ -49,6 +49,11 @@ Fewer, more impactful enemies. Telegraphed attacks, readable danger, and dodge s
 - **Aim:** mouse.
 - **Light attack:** fires automatically on a short timer toward the aim direction, and also fires immediately on left click (which restarts the timer). Always available, unaffected by card slots. **[DIRECTOR DECISION]**
 - **Heavy attack:** right click. Manual by default, with its own longer cooldown, a visible wind-up, a wider arc, more damage and knockback. Whether either attack is automatic is a data setting. **[DIRECTOR DECISION]**
+- **Role of basic attacks [DIRECTOR DECISION, 2026-10-28]:**
+  - **Clicking is an early-game crutch.** Manual attacks should feel underwhelming and unnecessary once the build and cards take shape, unless the player deliberately builds into light or heavy attacks with boosters. The spam-click advantage is capped as a ratio of the auto light rate (1.5x), so attack-speed boosts scale both.
+  - **Basic attacks are weaker than active card plays.** Cards are the heart of the game. A card should always feel better than the free attack it competes with.
+  - **Heavy attacks trade sustained damage for burst and utility.** A heavy attack may have lower single-target DPS than the light attack, but offers burst, a larger area, and class and element flavor (for example stun, a boosted element status chance, or a ranged targeted area for casters). Heavy attacks are defined per class in data and support different shapes (wide melee arc, targeted ranged area). **[PROPOSED]** Rogue heavy: wide arc, burst, brief stun on hit. **[PROPOSED]** Wizard heavy: targeted ranged area at the mouse point.
+  - **Heavy wind-up slows the player slightly. It never roots.**
 - **Card slots:** keys 1 to 5.
 - **Dodge roll:** Space bar. **[OPEN]** how this relates to the Movement slot (see section 4).
 - **Controller:** late stretch goal, not in scope.

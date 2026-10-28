@@ -552,13 +552,13 @@ func test_wizard_heavy_hits_the_locked_target_telegraph_matches_hitbox() -> void
 	assert_float(target.distance_to(origin)).is_equal_approx(max_range, 0.001)
 	var pool := EffectPool.for_world(main)
 	assert_int(pool.active_count()).is_greater(0)
-	var telegraph: Array = player._telegraphs[&"heavy"]
+	var telegraph: Array[PooledEffect] = player.get_aoe_telegraph(&"heavy")
 	assert_float((telegraph[0] as PooledEffect).base_size).is_equal_approx(VfxSizing.aoe_reach(float(def["radius"])), 0.0001)
 	assert_vector((telegraph[0] as PooledEffect).origin).is_equal_approx(Vector3(target.x, EffectPool.GROUND_OFFSET, target.z), Vector3.ONE * 0.001)
 	await _frames(50)
 	assert_float(hp_in - in_disc.health.current_health).is_greater_equal(float(def["damage"]) - 0.001)
 	assert_float(hp_out - out_disc.health.current_health).is_equal(0.0)
-	assert_bool(player._telegraphs.has(&"heavy")).is_false()
+	assert_bool(player.has_aoe_telegraph(&"heavy")).is_false()
 
 
 func test_wizard_heavy_off_arena_target_and_cancel_clean_up() -> void:
@@ -575,7 +575,7 @@ func test_wizard_heavy_off_arena_target_and_cancel_clean_up() -> void:
 	assert_bool(target.is_finite()).is_true()
 	assert_float(absf(target.x)).is_less_equal(20.0)
 	assert_float(absf(target.z)).is_less_equal(20.0)
-	assert_bool(player._telegraphs.has(&"heavy")).is_true()
+	assert_bool(player.has_aoe_telegraph(&"heavy")).is_true()
 	player.health.take_damage(player.health.get_max_health() * 2.0)
-	assert_bool(player._telegraphs.has(&"heavy")).is_false()
+	assert_bool(player.has_aoe_telegraph(&"heavy")).is_false()
 	assert_float(player.get_move_speed()).is_equal_approx(player.move_speed, 0.0001)

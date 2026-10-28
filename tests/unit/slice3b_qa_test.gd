@@ -509,7 +509,7 @@ func test_wizard_heavy_at_the_arena_edge_aimed_outward_stays_inside_and_hits_cle
 	assert_float(target.x).is_less_equal(19.5 + 0.001)
 	assert_float(target.z).is_less_equal(19.5 + 0.001)
 	await _frames(60)
-	assert_bool(player._telegraphs.has(&"heavy")).is_false()
+	assert_bool(player.has_aoe_telegraph(&"heavy")).is_false()
 	assert_bool(player.get_aoe_target(&"heavy").is_equal_approx(Vector3.INF)).is_true()
 
 

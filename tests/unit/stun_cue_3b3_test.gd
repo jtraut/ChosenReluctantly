@@ -221,7 +221,7 @@ func test_wizard_telegraph_follows_the_wind_up_and_ends_at_the_hit_reach() -> vo
 	Input.action_press("attack_heavy")
 	await _frames(3)
 	Input.action_release("attack_heavy")
-	var telegraph: Array = player._telegraphs[&"heavy"]
+	var telegraph: Array[PooledEffect] = player.get_aoe_telegraph(&"heavy")
 	var fill := telegraph[0] as PooledEffect
 	var early := fill.scale.x
 	assert_float(early).is_less(reach)
@@ -230,4 +230,4 @@ func test_wizard_telegraph_follows_the_wind_up_and_ends_at_the_hit_reach() -> vo
 	assert_float((telegraph[1] as PooledEffect).scale.x).is_equal_approx(reach, 0.0001)
 	# The edge ring is exactly the locked target, and the telegraph is gone after the swing.
 	await _frames(60)
-	assert_bool(player._telegraphs.has(&"heavy")).is_false()
+	assert_bool(player.has_aoe_telegraph(&"heavy")).is_false()

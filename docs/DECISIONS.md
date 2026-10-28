@@ -373,3 +373,6 @@ These were already resolved by explicit instruction in the Milestone 2 kickoff p
 
 ### 2026-10-28 - S3B-4: re-stun signal (gameplay-dev)
 - New `StatusEffectManager.status_refreshed(status_id)` (any status applied again while active) and `Enemy.stun_refreshed(remaining)` (a stun landed while already stunned). `status_applied` and `Enemy.stunned` keep meaning "began", so the stars and tint are never started twice (the existing cue check also still sees them running; a test counts pool effects before and after). Rejected: re-emitting `stunned` / `status_applied` (every existing listener treats them as "start the cue", which would restart or double the stars and re-cancel the telegraph). `stun_refreshed` carries the time left so ux can flash or play a sound without reading the manager. A resisted stun still emits only `status_resisted`.
+
+### 2026-10-28 - S3B-5: Player telegraph accessor (gameplay-dev)
+- `Player.has_aoe_telegraph(attack_id) -> bool` and `Player.get_aoe_telegraph(attack_id) -> Array[PooledEffect]` (a copy, order [fill, edge, front]). The three suites that read `_telegraphs` now use them; no test touches the private dictionary any more. Rejected: exposing the dictionary itself (callers could mutate Player-owned state), and only a bool (the stun-cue test needs the parts to check sizes).

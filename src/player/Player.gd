@@ -418,6 +418,20 @@ func _stop_telegraph(attack_id: StringName) -> void:
 	_telegraph_generations.erase(attack_id)
 
 
+## True while a ground telegraph (targeted_aoe wind-up) is up for this attack.
+func has_aoe_telegraph(attack_id: StringName) -> bool:
+	return _telegraphs.has(attack_id)
+
+
+## The telegraph parts in the fixed order [fill, edge, front] (a copy; empty when none).
+## Read-only for tests and ux; the Player still owns and stops them.
+func get_aoe_telegraph(attack_id: StringName) -> Array[PooledEffect]:
+	var parts: Array[PooledEffect] = []
+	for effect: PooledEffect in _telegraphs.get(attack_id, []):
+		parts.append(effect)
+	return parts
+
+
 ## The target a targeted_aoe heavy has locked right now (or Vector3.INF when none).
 func get_aoe_target(attack_id: StringName) -> Vector3:
 	return _aoe_targets.get(attack_id, Vector3.INF)

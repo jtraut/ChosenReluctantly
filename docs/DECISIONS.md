@@ -233,3 +233,17 @@ These were already resolved by explicit instruction in the Milestone 2 kickoff p
 - [DIRECTOR DECISION, 2026-10-28] Heavy wind-up slows the player slightly. It never roots.
 - Resolutions: **P1** -> spam-click cap is 1.5x auto light DPS, as a data ratio `manual_click_max_rate_ratio` (min gap = auto_interval / ratio, 0.4 s at 0.6 s). **P2** -> heavy redesign: per-class heavy definitions, shapes `arc` and `targeted_aoe`, element status with a boosted chance, generic Stun status. **P3** -> minor wind-up slow through StatModifiers, never a root. **P4** -> lower light per-hit damage, raise cheap damage cards, plus a validation rule so cards cannot drift below the free attack.
 - GDD §3 updated with these (director-approved text).
+
+### 2026-10-28 - Director open items file (process change, director request)
+- Created `docs/OPEN_ITEMS.md` (owned by game-lead), added the standing rule to CLAUDE.md under Process, and put a pointer at the top of STATE.md.
+- Items found in the scan and given IDs by game-lead:
+  - D1: Game Over run stats, from the Slice 1 playtest.
+  - D2: hold-to-preview, from the Slice 4 proposal.
+  - D3: team tint for shots, from the 4c ux finding.
+- Moved to "eyes": death slow-mo, aim reticle, HP bars near the player, and the light/heavy readability checks.
+- Treated as answered, so not re-asked:
+  - "Is death handling deferred?" Slice 1 was built.
+  - "Wave 1 grace": Slice 5 handles it as s1-f.
+  - "The blue shape": fixed in 4b.
+  - "Dark cooldown bar": fixed in Slice 3.
+- Rejected: listing every follow-up. Only items that need the director appear; the rest stay in ROADMAP.

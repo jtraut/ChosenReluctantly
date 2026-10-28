@@ -23,6 +23,7 @@ This file governs how work happens in this repo. It applies to the main session 
 - Define role agents in `.claude/agents/` as short markdown files with a clear job and scope. Run roles one at a time, not in parallel, to conserve usage.
 - The `qa` role reviews every completed feature before it's marked done in `docs/ROADMAP.md`.
 - Never commit secrets or large binaries. Don't download assets or tools from untrusted sources.
+- **Director open items (standing rule, 2026-10-28):** `docs/OPEN_ITEMS.md` is the single place listing everything waiting on the director, in plain language. game-lead owns it, and updates it at the end of every slice, at the end of every multi-agent prompt, whenever a new director-facing question appears, and before stopping for any reason. Every role reports director-facing questions to game-lead in its hand-back, not buried in its own docs. When the director answers, game-lead records the answer in `docs/DECISIONS.md`, moves the item to "Recently resolved", updates the affected files, and unblocks dependent work. The final message of any session ends with a line like: "docs/OPEN_ITEMS.md: N need your decision, M need your eyes."
 
 ## Engine and language
 - Godot 4.x (exact version recorded in `docs/DECISIONS.md`).

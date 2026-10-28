@@ -1,5 +1,7 @@
 # Handoff State
 
+> **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
+
 Last updated: 2026-10-28. **Milestone 2 is done.** Now running **Post-milestone polish 1** (director-approved, see `docs/ROADMAP.md`), slices 0-5. This is NOT Milestone 3.
 
 ## What's done

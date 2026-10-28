@@ -11,6 +11,8 @@ const HIT_FLASH_COLOR := Color(1.0, 1.0, 1.0)
 const HIT_FLASH_DURATION := 0.12
 const KNOCKBACK_DECAY := 18.0
 const ARRIVAL_MARGIN := 0.3
+## Sideways bias (fraction of the push length) so a queue of chasers fans out around the target.
+const SWIRL := 0.6
 ## Fallback stun tint (the real one is `visual.tint_color` / `tint_amount` in data/statuses.json).
 const DEFAULT_STUN_TINT := Color(0.74, 0.74, 0.69)
 const DEFAULT_STUN_TINT_AMOUNT := 0.55
@@ -42,6 +44,12 @@ signal stun_refreshed(remaining: float)
 
 var target: Node3D = null
 
+## Every live enemy in the tree, for separation steering (5d). A plain static array walked in place:
+## no per-frame allocation, and the order (spawn order) is deterministic.
+static var _roster: Array[Enemy] = []
+var _separation_radius: float = 0.0
+var _separation_strength: float = 0.0
+
 @onready var health: Health = $Health
 @onready var hurtbox: Hurtbox = $Hurtbox
 @onready var body_mesh: MeshInstance3D = $BodyMesh
@@ -65,6 +73,9 @@ var _immune_popup_cooldown: float = 0.0
 
 
 func _ready() -> void:
+	_roster.append(self)
+	_separation_radius = EnemyConfig.separation_radius()
+	_separation_strength = EnemyConfig.separation_strength()
 	health.damaged.connect(_on_damaged)
 	health.died.connect(_on_died)
 	if status_manager != null:
@@ -78,6 +89,10 @@ func _ready() -> void:
 		var unique_material: StandardMaterial3D = (material as StandardMaterial3D).duplicate()
 		body_mesh.material_override = unique_material
 		_base_color = unique_material.albedo_color
+
+
+func _exit_tree() -> void:
+	_roster.erase(self)
 
 
 func _physics_process(delta: float) -> void:
@@ -186,18 +201,60 @@ func _chase_and_attack(delta: float) -> void:
 	var distance := to_target.length()
 	var desired_range := preferred_range if is_ranged else attack_range
 
+	var push := _separation_push()
 	if distance > desired_range + ARRIVAL_MARGIN:
 		var dir := to_target.normalized()
-		velocity.x = dir.x * move_speed + _knockback_velocity.x
-		velocity.z = dir.z * move_speed + _knockback_velocity.z
+		# Only the sideways part of the push applies while closing in (the along-the-path part just cancels the
+		# chase and parks an enemy in a queue behind its neighbour). A fixed per-enemy swirl, scaled by how
+		# crowded it is, makes a queue fan out around the target instead of waiting in line.
+		var lateral := push - dir * push.dot(dir)
+		var side := 1.0 if get_instance_id() % 2 == 0 else -1.0
+		lateral += Vector3(-dir.z, 0.0, dir.x) * (push.length() * SWIRL * side)
+		var move := dir * move_speed + lateral * (move_speed * _separation_strength)
+		var speed := Vector2(move.x, move.z).length()
+		if speed > move_speed:
+			move *= move_speed / speed  # steering never makes an enemy faster than its own speed
+		velocity.x = move.x + _knockback_velocity.x
+		velocity.z = move.z + _knockback_velocity.z
 	else:
 		velocity.x = _knockback_velocity.x
 		velocity.z = _knockback_velocity.z
 		if _attack_cooldown_remaining <= 0.0:
 			_start_telegraph()
+		elif distance > 0.01:
+			# In range and waiting out the cooldown: slide sideways (never in or out) to make room.
+			var radial := to_target / distance
+			var slide := push - radial * push.dot(radial)
+			velocity.x += slide.x * move_speed * _separation_strength
+			velocity.z += slide.z * move_speed * _separation_strength
 
 	if distance > 0.01:
 		_face_direction(to_target.normalized(), delta)
+
+
+## Sum of pushes away from every other live enemy closer than the separation radius, each weighted
+## by how deep inside the radius it is (0 at the edge, 1 on top). Flat (y = 0); length may exceed 1.
+func _separation_push() -> Vector3:
+	var push := Vector3.ZERO
+	if _separation_radius <= 0.0 or _separation_strength <= 0.0:
+		return push
+	var mine := global_position
+	for other in _roster:
+		if other == self or other.health.is_dead():
+			continue
+		var dx := mine.x - other.global_position.x
+		var dz := mine.z - other.global_position.z
+		var d2 := dx * dx + dz * dz
+		if d2 >= _separation_radius * _separation_radius:
+			continue
+		if d2 < 0.0001:
+			# Exactly on top: a stable, per-enemy direction (instance id) rather than random.
+			var angle := float(get_instance_id() % 628) * 0.01
+			push += Vector3(cos(angle), 0.0, sin(angle))
+			continue
+		var d := sqrt(d2)
+		push += Vector3(dx, 0.0, dz) * ((1.0 - d / _separation_radius) / d)
+	return push
 
 
 func _face_direction(direction: Vector3, delta: float) -> void:

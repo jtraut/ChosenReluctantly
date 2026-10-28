@@ -45,6 +45,15 @@ var _physics_ms_sum: float = 0.0
 var _process_ms_sum: float = 0.0
 var _perf_samples: int = 0
 var _died_at: float = -1.0
+## Crowd spacing metric (5d): per frame with 2+ non-ranged enemies within NEAR_RADIUS of the player,
+## the smallest pairwise distance among them. Reported as the mean, the minimum, and the share of
+## those frames at or above SPACING_OK.
+var NEAR_RADIUS: float = EnemyConfig.near_player_radius()
+var SPACING_OK: float = EnemyConfig.readable_spacing()
+var _pair_frames: int = 0
+var _pair_ok_frames: int = 0
+var _pair_min_sum: float = 0.0
+var _pair_min_all: float = INF
 
 
 func _ready() -> void:
@@ -107,6 +116,10 @@ func _reset_run_state(run_seed: int) -> void:
 	_process_ms_sum = 0.0
 	_perf_samples = 0
 	_died_at = -1.0
+	_pair_frames = 0
+	_pair_ok_frames = 0
+	_pair_min_sum = 0.0
+	_pair_min_all = INF
 	_dodge_cooldown_until = 0.0
 	_heavy_until = 0.0
 	_profiled_alive = 0
@@ -157,6 +170,7 @@ func _run_one(run_seed: int) -> void:
 			_profiled_alive = enemies.size()
 			_profile_attack_query()  # keeps the busiest sample of the run
 		_count_kills(enemies, prev_enemies)
+		_sample_spacing(enemies)
 		_bot_step(enemies)
 		_track_progress()
 		_frame_times_ms.append(float(Time.get_ticks_usec() - frame_start) / 1000.0)
@@ -188,6 +202,31 @@ func _enemies() -> Array[Enemy]:
 		if child is Enemy and not (child as Enemy).health.is_dead():
 			list.append(child)
 	return list
+
+
+func _sample_spacing(enemies: Array[Enemy]) -> void:
+	if _player.is_dead():
+		return
+	var me := _player.global_position
+	var best: float = INF
+	var near: int = 0
+	for i in range(enemies.size()):
+		var a: Enemy = enemies[i]
+		if a.is_ranged or me.distance_to(a.global_position) > NEAR_RADIUS:
+			continue
+		near += 1
+		for j in range(i + 1, enemies.size()):
+			var b: Enemy = enemies[j]
+			if b.is_ranged or me.distance_to(b.global_position) > NEAR_RADIUS:
+				continue
+			best = minf(best, Vector2(a.global_position.x - b.global_position.x, a.global_position.z - b.global_position.z).length())
+	if near < 2:
+		return
+	_pair_frames += 1
+	_pair_min_sum += best
+	_pair_min_all = minf(_pair_min_all, best)
+	if best >= SPACING_OK:
+		_pair_ok_frames += 1
 
 
 func _check_world(enemies: Array[Enemy], cap: int, dt: float) -> void:
@@ -359,6 +398,8 @@ func _report(run_seed: int, wall_ms: int) -> void:
 		run_seed, _sim_time, float(wall_ms) / 1000.0,
 		("died at %.1f s" % _died_at) if _died_at >= 0.0 else "survived",
 		_damage_taken, _kills, _max_alive, mean_alive, _main.enemy_spawner.plan.stages_started(), _max_stall])
+	print("    spacing (melee within %.0f m of player, %d frames with 2+): mean min-pair %.2f m, worst %.2f m, %.0f%% of frames >= %.1f m" % [
+		NEAR_RADIUS, _pair_frames, _pair_min_sum / maxf(float(_pair_frames), 1.0), (_pair_min_all if _pair_frames > 0 else 0.0), 100.0 * float(_pair_ok_frames) / maxf(float(_pair_frames), 1.0), SPACING_OK])
 	print("    headless frame ms (wall, each frame steps ~%.0fx physics): p50 %.2f p95 %.2f max %.2f | engine process %.2f ms, physics %.2f ms avg per frame | _attack_has_target %.1f us/call with %d enemies alive (%d calls)" % [
 		_scale, _percentile(sorted_times, 0.5), _percentile(sorted_times, 0.95), _percentile(sorted_times, 0.999),
 		_process_ms_sum / maxf(float(_perf_samples), 1.0), _physics_ms_sum / maxf(float(_perf_samples), 1.0), _query_usec, _profiled_alive, _query_calls])

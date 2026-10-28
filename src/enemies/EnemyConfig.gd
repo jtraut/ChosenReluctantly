@@ -12,6 +12,7 @@ const DEFAULT_RANK := "normal"
 const DEFAULTS: Dictionary = {
 	"projectile_hit_radius": 0.3,
 	"melee_half_angle_degrees": 60.0,
+	"separation": {"radius": 1.8, "strength": 0.8, "readable_spacing": 1.2, "near_player_radius": 4.0},
 }
 
 static var _cache: Dictionary = {}
@@ -26,6 +27,7 @@ static var _scenes: Dictionary = {}
 static func validate(config: Dictionary) -> Array[String]:
 	var errors: Array[String] = []
 	errors.append_array(validate_enemies(config.get("enemies")))
+	errors.append_array(validate_separation(config.get("separation")))
 	var shapes: Variant = config.get("attack_shapes")
 	if typeof(shapes) != TYPE_DICTIONARY:
 		errors.append("'attack_shapes' must be an object")
@@ -33,6 +35,24 @@ static func validate(config: Dictionary) -> Array[String]:
 	var dict: Dictionary = shapes
 	_check_number(dict, "projectile_hit_radius", 0.0, 5.0, true, errors)
 	_check_number(dict, "melee_half_angle_degrees", 0.0, 180.0, true, errors)
+	return errors
+
+
+## Separation steering block: radius (m, pushes start inside it), strength (fraction of the enemy's own
+## move speed), readable_spacing and near_player_radius (the spacing metric the wave sim and tests use).
+static func validate_separation(block: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(block) != TYPE_DICTIONARY:
+		errors.append("'separation' must be an object")
+		return errors
+	var dict: Dictionary = block
+	_check_number(dict, "radius", 0.0, 10.0, true, errors)
+	_check_number(dict, "strength", 0.0, 2.0, false, errors)
+	_check_number(dict, "readable_spacing", 0.0, 10.0, true, errors)
+	_check_number(dict, "near_player_radius", 0.0, 20.0, true, errors)
+	for key: String in dict.keys():
+		if not ["radius", "strength", "readable_spacing", "near_player_radius"].has(key):
+			errors.append("separation: unknown key '%s'" % key)
 	return errors
 
 
@@ -107,6 +127,7 @@ static func get_config() -> Dictionary:
 		push_error("EnemyConfig: invalid %s: %s" % [PATH, "; ".join(errors)])
 		return _cache
 	_cache.merge(parsed["attack_shapes"], true)
+	_cache["separation"] = (parsed["separation"] as Dictionary).duplicate()
 	for enemy_id: String in (parsed["enemies"] as Dictionary).keys():
 		_ranks[enemy_id] = String(parsed["enemies"][enemy_id]["rank"])
 		_scenes[enemy_id] = String(parsed["enemies"][enemy_id]["scene"])
@@ -146,3 +167,21 @@ static func projectile_hit_radius() -> float:
 
 static func melee_half_angle_degrees() -> float:
 	return float(get_config()["melee_half_angle_degrees"])
+
+
+static func separation_radius() -> float:
+	return float((get_config()["separation"] as Dictionary)["radius"])
+
+
+static func separation_strength() -> float:
+	return float((get_config()["separation"] as Dictionary)["strength"])
+
+
+## The spacing (m) below which two nearby chasers read as a pile (metric threshold for the sim and tests).
+static func readable_spacing() -> float:
+	return float((get_config()["separation"] as Dictionary)["readable_spacing"])
+
+
+## How close to the player counts as "near the player" for that metric.
+static func near_player_radius() -> float:
+	return float((get_config()["separation"] as Dictionary)["near_player_radius"])

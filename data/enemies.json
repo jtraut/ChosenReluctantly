@@ -3,6 +3,12 @@
         "projectile_hit_radius": 0.3,
         "melee_half_angle_degrees": 60.0
     },
+    "separation": {
+        "radius": 2.5,
+        "strength": 1.5,
+        "readable_spacing": 1.2,
+        "near_player_radius": 4.0
+    },
     "enemies": {
         "melee_chaser": { "rank": "normal", "scene": "res://scenes/enemies/MeleeChaser.tscn" },
         "ranged_shooter": { "rank": "normal", "scene": "res://scenes/enemies/RangedShooter.tscn" },

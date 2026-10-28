@@ -5,8 +5,9 @@ extends RefCounted
 
 const PATH := "res://data/vfx.json"
 const DEFAULTS: Dictionary = {
-	"max_simultaneous": 48,
+	"max_simultaneous": 64,
 	"hurtbox_reach_radius": 0.45,
+	"hurtbox_low_center_height": 0.45,
 	"heal_color": "#7dff9a",
 	"buff_color": "#ffd24a",
 	"projectile_lane_alpha": 0.2,
@@ -37,6 +38,12 @@ static func validate(config: Dictionary) -> Array[String]:
 		errors.append("'hurtbox_reach_radius' must be a number")
 	elif float(reach) < 0.0 or float(reach) > 5.0:
 		errors.append("'hurtbox_reach_radius' must be between 0 and 5")
+	if config.has("hurtbox_low_center_height"):  # optional: DEFAULTS fill it in
+		var low: Variant = config["hurtbox_low_center_height"]
+		if typeof(low) != TYPE_INT and typeof(low) != TYPE_FLOAT:
+			errors.append("'hurtbox_low_center_height' must be a number")
+		elif is_nan(float(low)) or float(low) < 0.0 or float(low) > 5.0:
+			errors.append("'hurtbox_low_center_height' must be between 0 and 5")
 	for key: String in ["heal_color", "buff_color"]:
 		if config.has(key) and not (typeof(config[key]) == TYPE_STRING and String(config[key]).is_valid_html_color()):
 			errors.append("'%s' must be a hex color like #7dff9a" % key)
@@ -78,6 +85,11 @@ static func get_config() -> Dictionary:
 ## target hurtbox radius (MeleeChaser capsule, 0.45). See VfxSizing.
 static func hurtbox_reach_radius() -> float:
 	return float(get_config()["hurtbox_reach_radius"])
+
+
+## Height of the lowest sphere centre of the target capsule above the floor.
+static func hurtbox_low_center_height() -> float:
+	return float(get_config()["hurtbox_low_center_height"])
 
 
 static func max_simultaneous() -> int:

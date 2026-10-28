@@ -22,7 +22,7 @@ func test_projectile_lane_is_hit_width_by_max_range() -> void:
 	assert_int(pool.active_count()).is_equal(1)
 	var lane: PooledEffect = pool.get_child(0)
 	var aabb := lane.mesh.get_aabb()
-	var half_width: float = float(SHOT["hit_radius"]) + VfxConfig.hurtbox_reach_radius()
+	var half_width: float = sqrt(pow(float(SHOT["hit_radius"]) + 0.45, 2.0) - pow(0.45, 2.0))
 	assert_float(aabb.size.x * lane.scale.x).is_equal_approx(half_width * 2.0, 0.001)
 	assert_float(aabb.size.z * lane.scale.z).is_equal_approx(float(SHOT["max_range"]), 0.001)
 	assert_float(VfxSizing.projectile_lane_half_width(0.3)).is_equal_approx(half_width, 0.0001)

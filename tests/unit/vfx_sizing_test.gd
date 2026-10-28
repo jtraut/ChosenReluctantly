@@ -23,6 +23,22 @@ func test_reach_padding_matches_the_enemy_hurtbox_radius() -> void:
 	assert_float(VfxConfig.hurtbox_reach_radius()).is_equal_approx(capsule.radius, 0.0001)
 
 
+func test_low_center_height_matches_the_enemy_hurtbox_capsule() -> void:
+	var scene: PackedScene = load("res://scenes/enemies/MeleeChaser.tscn")
+	var enemy: Node = auto_free(scene.instantiate())
+	var shape_node: CollisionShape3D = enemy.get_node("Hurtbox/HurtboxShape")
+	var capsule := shape_node.shape as CapsuleShape3D
+	var low: float = shape_node.position.y + (capsule.height * 0.5 - capsule.radius) * -1.0
+	assert_float(VfxConfig.hurtbox_low_center_height()).is_equal_approx(low, 0.0001)
+
+
+func test_lateral_reach_formula() -> void:
+	# sqrt((q + 0.45)^2 - 0.45^2)
+	assert_float(VfxSizing.lateral_reach(0.3)).is_equal_approx(0.6, 0.0001)
+	assert_float(VfxSizing.lateral_reach(2.0)).is_equal_approx(sqrt(2.45 * 2.45 - 0.45 * 0.45), 0.0001)
+	assert_float(VfxSizing.lateral_reach(0.0)).is_equal_approx(0.0, 0.0001)
+
+
 func test_cone_visual_size_equals_hit_size() -> void:
 	var parts := _pool_and_context()
 	var pool: EffectPool = parts[0]
@@ -32,7 +48,7 @@ func test_cone_visual_size_equals_hit_size() -> void:
 	var wedge: PooledEffect = pool.get_child(0)
 	var aabb := wedge.mesh.get_aabb()
 	var reach: float = -aabb.position.z * wedge.scale.z
-	var hit_reach: float = float(CONE_PARAMS["range"]) + VfxConfig.hurtbox_reach_radius()
+	var hit_reach: float = VfxSizing.lateral_reach(float(CONE_PARAMS["range"]))
 	assert_float(reach).is_equal_approx(hit_reach, 0.001)
 	var half: float = deg_to_rad(float(CONE_PARAMS["half_angle_degrees"]))
 	assert_float(aabb.size.x * wedge.scale.x).is_equal_approx(2.0 * hit_reach * sin(half), 0.001)
@@ -57,7 +73,7 @@ func test_aoe_visual_size_equals_hit_size() -> void:
 	var disc: PooledEffect = pool.get_child(0)
 	assert_object(disc.mesh).is_same(EffectPool.disc_mesh())
 	var visual_radius: float = disc.mesh.get_aabb().size.x * 0.5 * disc.scale.x
-	var hit_reach: float = float(AOE_PARAMS["radius"]) + VfxConfig.hurtbox_reach_radius()
+	var hit_reach: float = VfxSizing.lateral_reach(float(AOE_PARAMS["radius"]))
 	assert_float(visual_radius).is_equal_approx(hit_reach, 0.001)
 
 
@@ -100,4 +116,4 @@ func test_player_attack_wedges_are_drawn_to_effective_reach() -> void:
 		var def := player.attacks.get_def(attack_id)
 		var visual: AttackArcVisual = player._attack_visuals[attack_id]
 		var reach: float = -visual.mesh.get_aabb().position.z
-		assert_float(reach).is_equal_approx(float(def["range"]) + VfxConfig.hurtbox_reach_radius(), 0.001)
+		assert_float(reach).is_equal_approx(VfxSizing.lateral_reach(float(def["range"])), 0.001)

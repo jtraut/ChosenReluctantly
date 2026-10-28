@@ -205,3 +205,10 @@ These were already resolved by explicit instruction in the Milestone 2 kickoff p
 - **S4-2 (enemy shots 20% wider since 4a):** keep 0.3. `Enemy.gd` always asked for 0.3; 4a only made the request take effect. Logged as balance info P6. Move the hardcoded enemy shot radius and cone angle into data with unchanged values. Rejected: reverting to 0.25 (that would freeze a bug in place as design).
 - **S4-3 (status `visual` block unvalidated):** fix now. It is cheap, and fail-loud on data typos is a project rule.
 - **Re-verification:** these are small, test-pinned fixes, so qa re-checks them in a short targeted pass (only the S4 items) rather than a second full review. Rejected: a full qa re-review (it costs the director's usage for nothing new).
+
+### 2026-10-28 - S4-1 fix: ground shapes use the real lateral reach (gameplay-dev)
+- All floor-level hit spheres (projectile launch y = 0, cone and aoe origin = caster origin y = 0) meet a capsule hurtbox whose lowest sphere centre is `hurtbox_low_center_height` = 0.45 up (new key in `data/vfx.json`, optional in `VfxConfig`, equals capsule height/2 - radius for MeleeChaser, pinned by a test). A target centre is hit out to `VfxSizing.lateral_reach(q) = sqrt((q + R)^2 - dy^2)`, R = `hurtbox_reach_radius` (0.45), dy = 0.45 - `QUERY_HEIGHT` (0.0).
+- Projectile lane half width for r = 0.3 goes 0.75 -> 0.60 (physical pin: hit at 0.55, miss at 0.65). The cone wedge and aoe disc had the same height issue (range + 0.45 was 0.04 to 0.05 m too generous: range 1.8 draws 2.205 instead of 2.25, aoe 2.5 draws 2.906 instead of 2.95), so `cone_reach`, `aoe_reach` and the lane all go through `lateral_reach`. Hit queries untouched.
+- Rejected: launching shots at body height (changes what hits, a balance change); keeping `q + R` for cone/aoe because the error is small (it is the same bug and one function now serves all three).
+- Limit: dy is one global number from data, tuned for the MeleeChaser capsule; Shooter (0.4/1.6, low centre 0.4) and Golem differ by a few cm and are not modelled per enemy.
+- `VfxConfig.DEFAULTS.max_simultaneous` is now 64, matching `data/vfx.json`.

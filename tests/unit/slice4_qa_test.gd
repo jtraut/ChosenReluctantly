@@ -241,18 +241,14 @@ func _shot_hits_enemy_at_lateral_offset(lateral: float, hit_radius: float) -> bo
 
 
 func test_projectile_lane_width_vs_real_lateral_hit_reach_is_pinned() -> void:
-	# FINDING (qa review Slice 4, should-fix): shots launch at the caster's origin height
-	# (y = 0, the floor) and the hurtbox is a capsule whose lowest sphere centre is 0.45 up,
-	# so the true lateral reach of a floor-level shot is sqrt((r + 0.45)^2 - 0.45^2), not
-	# r + 0.45. For r = 0.3 that is 0.60 while the lane (VfxSizing) draws 0.75.
-	# This test pins the measured reach so a fix (lane or launch height) must update it.
+	# S4-1 (fixed): shots launch at y = 0 and the hurtbox capsule's lowest sphere centre is
+	# 0.45 up, so the true lateral reach is sqrt((r + 0.45)^2 - 0.45^2) = 0.60 for r = 0.3.
+	# The lane now draws exactly that. Physical pin: hit at 0.55, miss at 0.65.
 	var lane := VfxSizing.projectile_lane_half_width(0.3)
-	var true_reach := sqrt(pow(0.3 + 0.45, 2.0) - pow(0.45, 2.0))
-	assert_float(lane).is_equal_approx(0.75, 0.0001)
-	assert_float(true_reach).is_equal_approx(0.6, 0.0001)
-	assert_bool(await _shot_hits_enemy_at_lateral_offset(true_reach - 0.05, 0.3)).is_true()
-	assert_bool(await _shot_hits_enemy_at_lateral_offset(true_reach + 0.05, 0.3)).is_false()
-	assert_float(lane - true_reach).override_failure_message("lane now lies by more than the known 0.15 m").is_less_equal(0.16)
+	assert_float(lane).is_equal_approx(0.6, 0.0001)
+	assert_bool(await _shot_hits_enemy_at_lateral_offset(0.55, 0.3)).is_true()
+	assert_bool(await _shot_hits_enemy_at_lateral_offset(0.65, 0.3)).is_false()
+	assert_bool(0.55 < lane and lane < 0.65).override_failure_message("lane must sit between the hit (0.55) and miss (0.65) offsets").is_true()
 
 
 # --- Behaviour pins for the "visual" commits ---------------------------------------

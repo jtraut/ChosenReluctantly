@@ -89,7 +89,8 @@
                 "scene": "res://scenes/enemies/FireResistantGolem.tscn",
                 "count": 2
             }
-        ]
+        ],
+        "status_seed": 5
     },
     "card_cast": {
         "disable_spawner": true,
@@ -160,6 +161,38 @@
                 "at": 7.6,
                 "slot": "attack_single",
                 "card": "fire_flaming_nonsense"
+            }
+        ]
+    },
+    "targeted_aoe": {
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "freeze_aim": true,
+        "aim_preview_distance": 5.0,
+        "enemy_max_health": 100,
+        "enemies_idle": true,
+        "disable_auto_attack": true,
+        "heavy_class": "wizard",
+        "status_seed": 5,
+        "aim_point_offset": [
+            0.0,
+            -6.6
+        ],
+        "heavy_at": 1.0,
+        "origin_offset": [
+            -0.6,
+            0.0,
+            -6.0
+        ],
+        "spacing": [
+            1.2,
+            1.2
+        ],
+        "columns": 2,
+        "groups": [
+            {
+                "scene": "res://scenes/enemies/MeleeChaser.tscn",
+                "count": 4
             }
         ]
     }

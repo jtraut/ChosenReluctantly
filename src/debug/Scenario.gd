@@ -70,6 +70,16 @@ func _build() -> void:
 	# Capture-only: stop mouse aim so the player keeps facing -Z.
 	if bool(_def.get("freeze_aim", false)):
 		player.camera = null
+	# Capture-only: fixed seed so the heavy's element-status rolls repeat between runs.
+	if _def.has("status_seed"):
+		player.status_rng.seed = int(_def["status_seed"])
+	# Capture-only: use another class's heavy (the Wizard targeted_aoe proof; no class is built).
+	if _def.has("heavy_class"):
+		player.use_heavy_class(String(_def["heavy_class"]))
+	# Capture-only: the heavy's ground aim point, as an [x, z] offset from the player.
+	if _def.has("aim_point_offset"):
+		var aim_values: Array = _def["aim_point_offset"]
+		player.aim_point_override = player.global_position + Vector3(float(aim_values[0]), 0.0, float(aim_values[1]))
 	# Capture-only: with frozen aim, still show the aim reticle this far ahead.
 	var indicator: AimIndicator = _main.get_node_or_null("AimIndicator")
 	if indicator != null:

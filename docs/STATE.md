@@ -12,7 +12,7 @@ Last updated: 2026-10-28. **Milestone 2 is done.** Now running **Post-milestone 
 - **Polish 1, Slice 1 (death and game over) - done** (7ad85ee): `Player.player_died`, `Main.game_over_ready` / `restart_arena()` (scene reload), Game Over screen, "HP x / y" label, reload soak tool `tools/run_reload_cycle.ps1`.
 
 ## In progress
-**3b-2 (heavy redesign, gameplay-dev) is being built now: per-class heavy data, Rogue arc + stun, Wizard targeted_aoe data only, element status chance, generic Stun, wind-up slow. See DECISIONS 2026-10-28 "Slice 3b-2".**
+**3b-2 (heavy redesign) BUILT by gameplay-dev: heavy 8.5 / 1.8 s, Rogue arc + stun + 50% Burn, Wizard targeted_aoe (data, test, scenario), generic Stun with rank and DR, wind-up slow; 292/292 tests. Next: 3b-3 ux-designer. See DECISIONS 2026-10-28 "Slice 3b-2".**
 **Director prompt 2026-10-28 (attack decisions + OPEN_ITEMS) is being executed.**
 - Part A (decisions recorded in GDD/DECISIONS): done.
 - Part C (`docs/OPEN_ITEMS.md`, CLAUDE.md rule): done.

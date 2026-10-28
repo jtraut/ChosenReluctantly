@@ -26,6 +26,24 @@ static func projectile_muzzle(pool: EffectPool, origin: Vector3, look: Dictionar
 	pool.play(EffectPool.Shape.SPHERE, origin, 0.18 * s, lighter(look["color"], 0.6), 0.12, 0.6, 2.0, 0.9, 0.0)
 
 
+## The projectile's ball as a held pooled sphere that follows the projectile, sized
+## exactly to its hit radius (VfxSizing, never element-scaled: it is the object).
+static func projectile_ball(pool: EffectPool, projectile: Node3D, hit_radius: float, look: Dictionary) -> PooledEffect:
+	if pool == null or projectile == null:
+		return null
+	var effect: PooledEffect = pool.play(EffectPool.Shape.SPHERE, projectile.global_position, VfxSizing.projectile_radius(hit_radius), look["color"], 1.0, 1.0, 1.0, 1.0, 1.0)
+	if effect == null:
+		return null
+	return effect.held().following(projectile, Vector3.ZERO)
+
+
+## Small faint puff where a shot ran out of range (not a hit, so no real burst).
+static func projectile_fizzle(pool: EffectPool, position: Vector3, look: Dictionary) -> void:
+	if pool == null:
+		return
+	pool.play(EffectPool.Shape.SPHERE, position, 0.12 * float(look["scale"]), look["color"], 0.2, 1.0, 0.3, 0.4, 0.0)
+
+
 static func projectile_trail_puff(pool: EffectPool, position: Vector3, hit_radius: float, look: Dictionary) -> void:
 	if pool == null:
 		return

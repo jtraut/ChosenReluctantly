@@ -92,7 +92,7 @@ func _build() -> void:
 	# Capture-only: no automatic light attack, so it neither knocks the enemies out
 	# of the cards' reach nor draws its own flash over the card visuals.
 	if bool(_def.get("disable_auto_attack", false)):
-		player.attacks.get_def(&"light")["auto"] = false
+		player.attacks.set_auto(&"light", false)
 
 	# Capture-only: tough enemies so the player's auto attack does not clear the stage.
 	if _def.has("enemy_max_health"):

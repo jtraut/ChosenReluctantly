@@ -216,25 +216,61 @@ func test_heal_sparkles_only_when_actually_hurt() -> void:
 	assert_int(pool.active_count()).is_greater(0)
 
 
-func test_projectile_recolor_is_per_projectile_not_shared() -> void:
+func test_projectile_ball_is_a_pooled_recolored_sphere_sized_to_the_hitbox() -> void:
 	var scene: PackedScene = load(EffectTemplates.PROJECTILE_SCENE_PATH)
+	var world := _world()
 	var fire_shot: Projectile = auto_free(scene.instantiate())
 	var plain_shot: Projectile = auto_free(scene.instantiate())
-	var world := _world()
 	world.add_child(fire_shot)
 	world.add_child(plain_shot)
+	fire_shot.set_hit_radius(0.3)
 	fire_shot.set_look(ElementVisuals.visual_for_damage_type("fire"))
 	plain_shot.set_look(ElementVisuals.visual_for_damage_type("physical"))
-	var fire_material := (fire_shot.get_node("Mesh") as MeshInstance3D).material_override as StandardMaterial3D
-	var plain_material := (plain_shot.get_node("Mesh") as MeshInstance3D).material_override as StandardMaterial3D
-	assert_object(fire_material).is_not_same(plain_material)
+	assert_float(fire_shot._ball.color.r).is_greater(0.9)
+	assert_bool(fire_shot._ball.color.is_equal_approx(plain_shot._ball.color)).is_false()
+	assert_bool((fire_shot.get_node("Mesh") as MeshInstance3D).visible).is_false()
+	assert_float(fire_shot.visual_radius()).is_equal_approx(fire_shot.hitbox_radius(), 0.0001)
+
+
+func test_projectile_without_a_pool_falls_back_to_a_shared_recolored_mesh() -> void:
+	var scene: PackedScene = load(EffectTemplates.PROJECTILE_SCENE_PATH)
+	var a: Projectile = auto_free(scene.instantiate())
+	var b: Projectile = auto_free(scene.instantiate())
+	var c: Projectile = auto_free(scene.instantiate())
+	a.set_look(ElementVisuals.visual_for_damage_type("fire"))
+	b.set_look(ElementVisuals.visual_for_damage_type("fire"))
+	c.set_look(ElementVisuals.visual_for_damage_type("physical"))
+	var fire_material := (a.get_node("Mesh") as MeshInstance3D).material_override as StandardMaterial3D
+	assert_object((b.get_node("Mesh") as MeshInstance3D).material_override).is_same(fire_material)
+	assert_object((c.get_node("Mesh") as MeshInstance3D).material_override).is_not_same(fire_material)
 	assert_float(fire_material.albedo_color.r).is_greater(0.9)
-	assert_bool(fire_material.albedo_color.is_equal_approx(plain_material.albedo_color)).is_false()
-	# Same color shares one material (no per-cast allocation).
-	var another: Projectile = auto_free(scene.instantiate())
-	world.add_child(another)
-	another.set_look(ElementVisuals.visual_for_damage_type("fire"))
-	assert_object((another.get_node("Mesh") as MeshInstance3D).material_override).is_same(fire_material)
+	assert_bool((a.get_node("Mesh") as MeshInstance3D).visible).is_true()
+
+
+func test_projectile_ball_ends_with_the_projectile_and_ranged_out_shot_only_fizzles() -> void:
+	var scene: PackedScene = load(EffectTemplates.PROJECTILE_SCENE_PATH)
+	var world := _world()
+	var pool := EffectPool.for_world(world)
+	var shot: Projectile = scene.instantiate()
+	world.add_child(shot)
+	shot.set_look(ElementVisuals.visual_for_damage_type("fire"))
+	shot.launch(Vector3.ZERO, Vector3.FORWARD, 5.0, "fire", 10.0, 1.0, "player")
+	for i in range(20):
+		if not is_instance_valid(shot) or shot.is_queued_for_deletion():
+			break
+		shot._physics_process(0.05)
+		pool.advance(0.05)
+	for i in range(10):
+		pool.advance(0.1)
+	assert_int(pool.active_count()).is_equal(0)
+
+
+func test_set_auto_does_not_mutate_the_shared_attack_table() -> void:
+	var defs := AttackDatabase.load_valid()
+	var controller := AttackController.new(defs, StatModifiers.new())
+	controller.set_auto(&"light", false)
+	assert_bool(bool(controller.get_def(&"light")["auto"])).is_false()
+	assert_bool(bool(AttackDatabase.load_valid()[&"light"]["auto"])).is_true()
 
 
 func test_flying_projectile_emits_muzzle_trail_and_impact_within_cap() -> void:
@@ -245,7 +281,7 @@ func test_flying_projectile_emits_muzzle_trail_and_impact_within_cap() -> void:
 	shot.set_look(ElementVisuals.visual_for_damage_type("fire"))
 	shot.launch(Vector3.ZERO, Vector3.FORWARD, 5.0, "fire", 10.0, 6.0, "player")
 	var pool := EffectPool.for_world(world)
-	assert_int(pool.active_count()).is_equal(1)  # muzzle flash
+	assert_int(pool.active_count()).is_equal(2)  # held ball + muzzle flash
 	var peak: int = 0
 	for i in range(80):
 		if not is_instance_valid(shot):

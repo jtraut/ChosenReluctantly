@@ -55,6 +55,17 @@ func has_attack(attack_id: StringName) -> bool:
 	return _states.has(attack_id)
 
 
+## Turns automatic firing on or off for one attack (capture scenarios). Works on a
+## private copy of the def, because the data table's dictionaries are cached and
+## shared by everything in the process.
+func set_auto(attack_id: StringName, enabled: bool) -> void:
+	if not _states.has(attack_id):
+		return
+	var state: State = _states[attack_id]
+	state.def = state.def.duplicate()
+	state.def["auto"] = enabled
+
+
 func get_def(attack_id: StringName) -> Dictionary:
 	if not _states.has(attack_id):
 		return {}

@@ -19,6 +19,10 @@ var _direction: Vector3 = Vector3.FORWARD
 var _look: Dictionary = {}
 var _pool: EffectPool = null
 var _trail_timer: float = 0.0
+## The pooled ball (held, follows this node); null without a pool (unit tests on
+## orphan nodes), in which case the scene's own Mesh stays visible, recolored.
+var _ball: PooledEffect = null
+var _ball_generation: int = 0
 
 ## Seconds between trail puffs (not every frame, so a few shots cannot flood the pool).
 const TRAIL_INTERVAL := 0.04
@@ -65,10 +69,16 @@ func set_look(look: Dictionary) -> void:
 		_ball_materials[color] = material
 	(get_node("Mesh") as MeshInstance3D).material_override = _ball_materials[color]
 	_pool = EffectPool.for_world(get_parent())
+	_ball = TemplateVfx.projectile_ball(_pool, self, hit_radius, look)
+	if _ball != null:
+		_ball_generation = _ball.generation
+		(get_node("Mesh") as MeshInstance3D).visible = false
 
 
 ## Radius of the visible ball in world units (mesh radius times node scale).
 func visual_radius() -> float:
+	if _ball != null and _pool != null and _pool.is_running(_ball, _ball_generation):
+		return _ball.base_size
 	var mesh_node: MeshInstance3D = get_node("Mesh")
 	return (mesh_node.mesh as SphereMesh).radius * mesh_node.scale.x
 
@@ -100,7 +110,9 @@ func _physics_process(delta: float) -> void:
 		_trail_timer = TRAIL_INTERVAL
 		TemplateVfx.projectile_trail_puff(_pool, global_position, hit_radius, _look)
 	if _traveled >= _max_range:
-		_burst()
+		_end_ball()
+		if not _look.is_empty():
+			TemplateVfx.projectile_fizzle(_pool, global_position, _look)
 		queue_free()
 
 
@@ -116,6 +128,13 @@ func _on_area_entered(area: Area3D) -> void:
 	queue_free()
 
 
+func _end_ball() -> void:
+	if _ball != null and _pool != null and is_instance_valid(_pool):
+		_pool.stop(_ball, _ball_generation)
+	_ball = null
+
+
 func _burst() -> void:
+	_end_ball()
 	if not _look.is_empty() and _pool != null and is_instance_valid(_pool):
 		TemplateVfx.projectile_impact(_pool, global_position, _look)

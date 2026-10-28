@@ -260,3 +260,25 @@ func test_flying_projectile_emits_muzzle_trail_and_impact_within_cap() -> void:
 func test_vfx_config_validates_template_colors() -> void:
 	assert_array(VfxConfig.validate({"max_simultaneous": 64, "hurtbox_reach_radius": 0.45, "heal_color": "#7dff9a", "buff_color": "#ffd24a"})).is_empty()
 	assert_array(VfxConfig.validate({"max_simultaneous": 64, "hurtbox_reach_radius": 0.45, "heal_color": "not a color"})).is_not_empty()
+
+
+func test_death_cue_plays_burst_ring_and_disc_and_is_null_safe() -> void:
+	TemplateVfx.death_cue(null, Vector3.ZERO)
+	var world := _world()
+	var pool := EffectPool.for_world(world)
+	TemplateVfx.death_cue(pool, Vector3.ZERO)
+	assert_int(pool.active_count()).is_equal(3)
+
+
+func test_player_death_starts_the_cue_in_the_pool() -> void:
+	var scene: PackedScene = load("res://scenes/player/Player.tscn")
+	var world := _world()
+	var player: Player = scene.instantiate()
+	world.add_child(player)
+	var pool := EffectPool.for_world(world)
+	player.health.take_damage(player.health.get_max_health() * 2.0, "physical")
+	assert_bool(player.is_dead()).is_true()
+	assert_int(pool.active_count()).is_greater(0)
+	# The body starts white (flash) rather than its resting color.
+	var material := player.body_mesh.material_override as StandardMaterial3D
+	assert_float(material.albedo_color.g).is_greater(0.9)

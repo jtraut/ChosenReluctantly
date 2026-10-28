@@ -41,3 +41,11 @@ A stub balance/crash-sim (will grow in a later milestone): drives a bot through 
 ```
 powershell -File tools\run_bot_sim.ps1 -Rooms 20
 ```
+
+## Death / restart soak (real scene reload)
+Kills the player in the real Main scene, waits for `game_over_ready`, calls `restart_arena()` (twice, on purpose), and repeats; also restarts mid slow-mo. Checks HP, `Engine.time_scale`, enemy count, wave timer, Game Over screen state, orphan/object/node counts, and fails on any engine ERROR/WARNING line in the output.
+
+```
+powershell -File toolsun_reload_cycle.ps1 -Cycles 5
+```
+(Runs `tools/ReloadCycle.tscn` headless; it must be a scene so autoloads resolve.)

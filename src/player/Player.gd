@@ -577,6 +577,9 @@ func _handle_card_slot_input() -> void:
 func cancel_cast_preview() -> void:
 	cast_input.cancel()
 	_cast_queue.clear()
+	# A click latched just before a pause, death or focus loss must not fire on resume.
+	_attack_latch[&"light"] = false
+	_attack_latch[&"heavy"] = false
 
 
 ## Pausing cancels a hold: the key release would arrive while the tree is paused (no

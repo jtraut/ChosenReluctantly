@@ -19,6 +19,18 @@ static func validate(card_data: Dictionary) -> Array[String]:
 	return errors
 
 
+## Non-fatal advisories (never part of validate()'s errors). Currently: card
+## names longer than data/ui.json hud.name_warn_length risk being shrunk or
+## truncated in the HUD slot widgets.
+static func warnings(card_data: Dictionary, max_name_length: int = -1) -> Array[String]:
+	var result: Array[String] = []
+	var limit := max_name_length if max_name_length >= 0 else int(UiConfig.hud()["name_warn_length"])
+	var card_name: Variant = card_data.get("name")
+	if typeof(card_name) == TYPE_STRING and (card_name as String).length() > limit:
+		result.append("name is %d characters (over %d); the HUD will shrink or truncate it" % [(card_name as String).length(), limit])
+	return result
+
+
 static func _validate_slot_type(card_data: Dictionary, errors: Array[String]) -> void:
 	var slot_type: Variant = card_data.get("slot_type")
 	if typeof(slot_type) != TYPE_STRING or not SlotTypeDatabase.has(slot_type):

@@ -50,6 +50,41 @@ const DEFAULT_GAME_OVER: Dictionary = {
 	"line_color": "#e8dfe3",
 }
 
+## Bottom/top HUD layout. Sizes are pixels at `reference_height`, scaled by
+## window height (same rule as Game Over). Heights are fixed so slots never shift.
+const DEFAULT_HUD: Dictionary = {
+	"reference_height": 720,
+	"safe_margin": 16,
+	"fit_padding": 2,
+	"slot_size": [150, 118],
+	"slot_gap": 12,
+	"slot_row_separation": 2,
+	"key_font_size": 13,
+	"key_height": 20,
+	"name_font_size": 15,
+	"name_min_font_size": 11,
+	"name_max_lines": 2,
+	"name_height": 48,
+	"bar_height": 10,
+	"preview_font_size": 11,
+	"preview_min_font_size": 9,
+	"preview_max_lines": 2,
+	"preview_height": 34,
+	"flavor_min_font_size": 11,
+	"flavor_max_lines": 3,
+	"flavor_box_width": 260,
+	"name_warn_length": 25,
+	"health_size": [220, 48],
+	"hp_label_font_size": 16,
+	"hp_label_height": 22,
+	"hp_bar_height": 22,
+	"hp_fill_color": "#e2483f",
+	"hp_back_color": "#1c1218",
+	"hp_border_color": "#f4ece8",
+	"hp_text_color": "#ffffff",
+	"hp_text_outline_color": "#0d080b",
+}
+
 static var _table := JsonDataTable.new("res://data/ui.json")
 
 
@@ -71,6 +106,10 @@ static func death_beat() -> Dictionary:
 
 static func game_over() -> Dictionary:
 	return merge_with_defaults(DEFAULT_GAME_OVER, _table.get_entry("game_over"))
+
+
+static func hud() -> Dictionary:
+	return merge_with_defaults(DEFAULT_HUD, _table.get_entry("hud"))
 
 
 static func validate_death_beat(block: Dictionary) -> Array[String]:

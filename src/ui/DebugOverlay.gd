@@ -36,8 +36,16 @@ func _process(_delta: float) -> void:
 					slot.last_cooldown_duration,
 					slot.draw_pile.size(),
 					slot.discard_pile.size(),
-					slot.current_card_id if slot.current_card_id != "" else "-",
-					slot.preview_card_id() if slot.preview_card_id() != "" else "-",
+					_card_label(slot.current_card_id),
+					_card_label(slot.preview_card_id()),
 				]
 			)
 	label.text = "\n".join(lines)
+
+
+## "id (Full Name)" so names the HUD had to shrink or truncate are still readable here.
+func _card_label(card_id: String) -> String:
+	if card_id == "":
+		return "-"
+	var card_name := str(CardDatabase.get_card(card_id).get("name", ""))
+	return "%s (%s)" % [card_id, card_name] if card_name != "" else card_id

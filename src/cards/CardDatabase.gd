@@ -72,6 +72,8 @@ static func _load_card_file(file_path: String) -> void:
 	if not errors.is_empty():
 		push_error("CardDatabase: '%s' is invalid: %s" % [file_path, ", ".join(errors)])
 		return
+	for warning in CardSchema.warnings(card_data):
+		push_warning("CardDatabase: '%s': %s" % [file_path, warning])
 	var card_id: String = card_data["id"]
 	if _cards.has(card_id):
 		push_error("CardDatabase: duplicate card id '%s' (in '%s')" % [card_id, file_path])

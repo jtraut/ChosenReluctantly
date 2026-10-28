@@ -9,6 +9,10 @@ class_name EnemyHpBar
 const SHADER_PATH := "res://assets/shaders/enemy_hp_bar.gdshader"
 const MODE_ALWAYS_ALIVE := "always_alive"
 const MODE_AFTER_DAMAGE := "after_damage"
+const MODE_HIDDEN_AT_FULL := "hidden_at_full"
+const MODE_ELITE_BOSS_ALWAYS := "elite_boss_always"
+## Every valid `hp_bars.visibility_mode` (validated in UiConfig).
+const MODES: Array[String] = [MODE_ALWAYS_ALIVE, MODE_AFTER_DAMAGE, MODE_HIDDEN_AT_FULL, MODE_ELITE_BOSS_ALWAYS]
 
 @export var health_path: NodePath = NodePath("../Health")
 @export var status_path: NodePath = NodePath("../StatusEffectManager")
@@ -35,6 +39,8 @@ var _rank: String = EnemyConfig.DEFAULT_RANK
 ## The owner's enemy rank ("normal", "elite", "boss"), for visibility modes such as
 ## "always for elites and bosses". "normal" when the parent is not an Enemy.
 func rank() -> String:
+	if _status != null and is_instance_valid(_status):
+		return _status.rank  # the live value (a scenario or later systems may change it after _ready)
 	return _rank
 
 
@@ -47,12 +53,22 @@ static func fill_ratio(current: float, maximum: float) -> float:
 	return clampf(current / maximum, 0.0, 1.0)
 
 
-## Whether the bar should be visible. Unknown modes behave as always_alive.
-static func should_show(mode: String, is_dead: bool, was_damaged: bool) -> bool:
+## Whether the bar should be visible. Dead enemies never show one. Modes:
+## - always_alive: always while alive.
+## - after_damage: from the first hit on, and it stays (sticky).
+## - hidden_at_full: only while below full HP (the same as after_damage until enemies can heal).
+## - elite_boss_always: elites and bosses always; normals only after damage.
+## Unknown modes behave as always_alive.
+static func should_show(mode: String, is_dead: bool, was_damaged: bool, fill: float = 1.0, rank_name: String = "normal") -> bool:
 	if is_dead:
 		return false
-	if mode == MODE_AFTER_DAMAGE:
-		return was_damaged
+	match mode:
+		MODE_AFTER_DAMAGE:
+			return was_damaged
+		MODE_HIDDEN_AT_FULL:
+			return fill < 1.0
+		MODE_ELITE_BOSS_ALWAYS:
+			return rank_name != EnemyConfig.DEFAULT_RANK or was_damaged
 	return true
 
 
@@ -191,7 +207,7 @@ func _set_burning(on: bool) -> void:
 
 
 func _update_visibility() -> void:
-	visible = should_show(_mode, _dead, _was_damaged)
+	visible = should_show(_mode, _dead, _was_damaged, _fill, rank())
 
 
 static func _ensure_shared() -> void:

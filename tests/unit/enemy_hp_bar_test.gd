@@ -217,3 +217,36 @@ func test_bar_without_health_sibling_does_not_error() -> void:
 	add_child(holder)
 	await get_tree().process_frame
 	assert_bool(is_instance_valid(bar)).is_true()
+
+
+# ---- 5b: visibility modes ----
+
+func test_mode_truth_table() -> void:
+	# [mode, dead, damaged, fill, rank, expected]
+	var cases: Array = [
+		["always_alive", false, false, 1.0, "normal", true],
+		["always_alive", true, true, 0.0, "boss", false],
+		["after_damage", false, false, 1.0, "boss", false],
+		["after_damage", false, true, 1.0, "normal", true],  # sticky: still shown after a heal to full
+		["after_damage", true, true, 0.0, "normal", false],
+		["hidden_at_full", false, true, 1.0, "normal", false],  # not sticky
+		["hidden_at_full", false, true, 0.6, "normal", true],
+		["hidden_at_full", false, false, 1.0, "boss", false],
+		["hidden_at_full", true, true, 0.0, "normal", false],
+		["elite_boss_always", false, false, 1.0, "normal", false],
+		["elite_boss_always", false, true, 0.5, "normal", true],
+		["elite_boss_always", false, false, 1.0, "elite", true],
+		["elite_boss_always", false, false, 1.0, "boss", true],
+		["elite_boss_always", true, true, 0.0, "boss", false],
+	]
+	for c: Array in cases:
+		var got: bool = EnemyHpBar.should_show(String(c[0]), bool(c[1]), bool(c[2]), float(c[3]), String(c[4]))
+		assert_bool(got).override_failure_message("case %s" % str(c)).is_equal(bool(c[5]))
+
+
+func test_every_listed_mode_validates_and_unknown_does_not() -> void:
+	for mode: String in EnemyHpBar.MODES:
+		assert_array(UiConfig.validate_hp_bars({"visibility_mode": mode})).is_empty()
+	assert_array(UiConfig.validate_hp_bars({"visibility_mode": "sometimes"})).is_not_empty()
+	assert_array(UiConfig.validate_hp_bars({"visibility_mode": 3})).is_not_empty()
+	assert_array(UiConfig.validate_hp_bars(UiConfig.DEFAULT_HP_BARS)).is_empty()

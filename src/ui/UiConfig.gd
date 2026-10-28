@@ -139,7 +139,22 @@ static var _table := JsonDataTable.new("res://data/ui.json")
 
 ## The `hp_bars` block with defaults filled in (sub-dicts merged key by key).
 static func hp_bars() -> Dictionary:
-	return merge_with_defaults(DEFAULT_HP_BARS, _table.get_entry("hp_bars"))
+	var merged := merge_with_defaults(DEFAULT_HP_BARS, _table.get_entry("hp_bars"))
+	var problems := validate_hp_bars(merged)
+	if problems.is_empty():
+		return merged
+	push_error("data/ui.json hp_bars invalid: " + "; ".join(problems))
+	merged["visibility_mode"] = DEFAULT_HP_BARS["visibility_mode"]
+	return merged
+
+
+## Only the keys a typo could silently break: today the visibility mode.
+static func validate_hp_bars(block: Dictionary) -> Array[String]:
+	var problems: Array[String] = []
+	var mode: Variant = block.get("visibility_mode")
+	if typeof(mode) != TYPE_STRING or not EnemyHpBar.MODES.has(String(mode)):
+		problems.append("visibility_mode must be one of %s" % str(EnemyHpBar.MODES))
+	return problems
 
 
 ## The `death_beat` block, defaults filled in. Invalid values are reported with

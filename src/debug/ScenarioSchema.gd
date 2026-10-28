@@ -5,7 +5,7 @@ extends RefCounted
 ## so a bad flag fails loudly with a clear message instead of an index error mid-build.
 ## An unknown key is a problem too (it catches typos such as "aim_point_ofset").
 
-const BOOLS: Array[String] = ["disable_spawner", "freeze_aim", "enemies_idle", "disable_auto_attack"]
+const BOOLS: Array[String] = ["disable_spawner", "freeze_aim", "enemies_idle", "disable_auto_attack", "dense_waves"]
 ## key -> minimum (inclusive) for a finite number.
 const NUMBERS: Dictionary = {
 	"player_max_health": 1.0, "player_start_damage": 0.0, "aim_preview_distance": 0.0,
@@ -13,7 +13,7 @@ const NUMBERS: Dictionary = {
 	"stun_at": 0.0, "stun_duration": 0.01,
 }
 ## key -> minimum (inclusive) for a whole number.
-const INTS: Dictionary = {"columns": 1, "status_seed": -2147483647}
+const INTS: Dictionary = {"columns": 1, "status_seed": -2147483647, "wave_seed": 0}
 const STRINGS: Array[String] = ["heavy_class"]
 ## key -> exact number of finite numbers in the array.
 const NUMBER_ARRAYS: Dictionary = {"origin_offset": 3, "spacing": 2, "aim_point_offset": 2}

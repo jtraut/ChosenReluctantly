@@ -30,6 +30,11 @@ func set_seed(seed_value: int) -> void:
 	plan = WavePlan.new(WaveConfig.get_config(), _rng)
 
 
+## The spawner's random generator (so a tool that builds its own WavePlan stays on the same seed).
+func rng() -> RandomNumberGenerator:
+	return _rng
+
+
 ## Enemies spawned by this spawner that are still in the tree.
 func alive_count() -> int:
 	return _alive

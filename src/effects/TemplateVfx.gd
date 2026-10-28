@@ -71,6 +71,16 @@ static func projectile_lane(pool: EffectPool, origin: Vector3, direction: Vector
 			VfxConfig.marker("projectile_lane_duration"), 1.0, 1.0, VfxConfig.marker("projectile_lane_alpha"), 0.0, yaw) 			.lengthened(max_range)
 
 
+## A ranged enemy's wind-up lane: the strip its shot will fly along (as wide as the area the shot hits the
+## PLAYER over), shown for the whole wind-up so the shot can be sidestepped. Tinted for the enemy team.
+static func enemy_shot_lane(pool: EffectPool, origin: Vector3, direction: Vector3, max_range: float, hit_radius: float, color: Color, duration: float) -> void:
+	if pool == null or direction.length_squared() < 0.0001 or duration <= 0.0:
+		return
+	var yaw: float = atan2(-direction.x, -direction.z)
+	pool.play(EffectPool.Shape.STRIP, origin, VfxSizing.lateral_reach_vs_player(hit_radius), color,
+			duration, 1.0, 1.0, VfxConfig.marker("enemy_shot_lane_alpha"), 0.0, yaw).lengthened(max_range)
+
+
 # --- cone / melee ------------------------------------------------------------
 
 ## Static wedge at the true hit reach (fades) plus a brighter blade that sweeps

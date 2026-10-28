@@ -52,6 +52,8 @@ var _attack_cooldown_remaining: float = 0.0
 var _telegraph_remaining: float = 0.0
 var _knockback_velocity: Vector3 = Vector3.ZERO
 var _was_stunned: bool = false
+## Ground wedge showing a melee wind-up (built on the first telegraph; ranged enemies have none).
+var _wedge: AttackArcVisual = null
 var _stun_tint: Color = DEFAULT_STUN_TINT
 var _stun_tint_amount: float = DEFAULT_STUN_TINT_AMOUNT
 ## Seconds until another "IMMUNE" popup may show on this enemy (keeps it quiet).
@@ -92,6 +94,8 @@ func _physics_process(delta: float) -> void:
 		velocity.z = _knockback_velocity.z
 	elif _telegraph_remaining > 0.0:
 		_telegraph_remaining -= delta
+		if _wedge != null and _telegraph_remaining > 0.0:
+			_update_wedge()
 		velocity.x = _knockback_velocity.x
 		velocity.z = _knockback_velocity.z
 		if _telegraph_remaining <= 0.0:
@@ -153,6 +157,8 @@ func _on_status_resisted(_status_id: String) -> void:
 func _cancel_telegraph() -> void:
 	if _telegraph_remaining > 0.0:
 		_telegraph_remaining = 0.0
+		if _wedge != null:
+			_wedge.hide_now()
 		_set_body_color(_rest_color())
 
 
@@ -198,10 +204,42 @@ func _face_direction(direction: Vector3, delta: float) -> void:
 func _start_telegraph() -> void:
 	_telegraph_remaining = telegraph_duration
 	_set_body_color(TELEGRAPH_COLOR)
+	if telegraph_duration <= 0.0:
+		return
+	if is_ranged:
+		_show_shot_lane()
+	else:
+		_update_wedge()
+
+
+## Ranged wind-up: a strip along the line the shot will take (the enemy does not turn while winding up).
+func _show_shot_lane() -> void:
+	if not is_inside_tree():
+		return
+	var pool := EffectPool.for_world(get_parent())
+	if pool == null:
+		return
+	var forward: Vector3 = -global_transform.basis.z
+	var color: Color = ElementVisuals.visual_for_team(attack_damage_type, "enemy")["color"]
+	TemplateVfx.enemy_shot_lane(pool, global_position + forward * 0.6, forward, projectile_max_range, EnemyConfig.projectile_hit_radius(), color, telegraph_duration)
+
+
+## Wind-up wedge on the ground, the same language as the player's heavy (pale outline, fill growing in),
+## sized to where the melee cone really lands on the player (VfxSizing) and tinted for the enemy team.
+func _update_wedge() -> void:
+	if _wedge == null:
+		_wedge = AttackArcVisual.new()
+		_wedge.name = "TelegraphWedge"
+		add_child(_wedge)
+		var color: Color = ElementVisuals.visual_for_team(attack_damage_type, "enemy")["color"]
+		_wedge.setup(VfxSizing.lateral_reach_vs_player(attack_range), EnemyConfig.melee_half_angle_degrees(), color)
+	_wedge.show_windup(1.0 - _telegraph_remaining / telegraph_duration)
 
 
 func _execute_attack() -> void:
 	_set_body_color(_rest_color())
+	if _wedge != null:
+		_wedge.hide_now()  # the cone template draws the impact itself
 	_attack_cooldown_remaining = attack_cooldown
 	if not _has_live_target():
 		return

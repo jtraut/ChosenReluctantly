@@ -30,6 +30,14 @@ static func lateral_reach(query_radius: float) -> float:
 	return sqrt(maxf(along * along - dy * dy, 0.0))
 
 
+## Same as lateral_reach, for an attack that hits the PLAYER's capsule instead of an enemy's
+## (enemy melee wedges): the player's hurtbox is 0.4 wide and its low centre is 0.4 up.
+static func lateral_reach_vs_player(query_radius: float) -> float:
+	var dy: float = maxf(VfxConfig.player_hurtbox_low_center_height() - QUERY_HEIGHT, 0.0)
+	var along: float = query_radius + VfxConfig.player_hurtbox_reach_radius()
+	return sqrt(maxf(along * along - dy * dy, 0.0))
+
+
 ## Distance the cone wedge extends to.
 static func cone_reach(attack_range: float) -> float:
 	return lateral_reach(attack_range)

@@ -134,3 +134,48 @@ func test_spawn_grace_delays_the_first_attack_and_never_shortens_a_cooldown() ->
 	assert_float(chaser._attack_cooldown_remaining).is_equal(1.5)
 	chaser.begin_spawn_grace(0.5)
 	assert_float(chaser._attack_cooldown_remaining).is_equal(1.5)
+
+
+# ---- Enemy melee telegraph wedge ----
+
+func test_melee_enemy_shows_a_wedge_during_wind_up_and_it_is_gone_after() -> void:
+	var chaser := _enemy("res://scenes/enemies/MeleeChaser.tscn")
+	chaser._start_telegraph()
+	assert_object(chaser._wedge).is_not_null()
+	assert_bool(chaser._wedge.visible).is_true()
+	chaser._telegraph_remaining = 0.2
+	chaser._update_wedge()
+	assert_bool(chaser._wedge.visible).is_true()
+	chaser._cancel_telegraph()
+	assert_bool(chaser._wedge.visible).is_false()
+
+
+func test_ranged_enemy_has_no_wedge() -> void:
+	var shooter := _enemy("res://scenes/enemies/RangedShooter.tscn")
+	shooter._start_telegraph()
+	assert_object(shooter._wedge).is_null()
+
+
+func test_wedge_reach_is_where_the_melee_cone_hits_the_player() -> void:
+	# Player hurtbox: capsule r 0.4, h 1.8 (low centre 0.4). A target centre is hit out to sqrt((q+0.4)^2 - 0.4^2).
+	var player_scene := load("res://scenes/player/Player.tscn") as PackedScene
+	var player: Player = auto_free(player_scene.instantiate())
+	var shape_node: CollisionShape3D = player.get_node("Hurtbox/HurtboxShape")
+	var capsule := shape_node.shape as CapsuleShape3D
+	assert_float(capsule.radius).is_equal_approx(VfxConfig.player_hurtbox_reach_radius(), 0.0001)
+	assert_float(shape_node.position.y - (capsule.height * 0.5 - capsule.radius)).is_equal_approx(VfxConfig.player_hurtbox_low_center_height(), 0.0001)
+	assert_float(VfxSizing.lateral_reach_vs_player(1.5)).is_equal_approx(sqrt(1.9 * 1.9 - 0.4 * 0.4), 0.0001)
+
+
+func test_ranged_enemy_shows_a_shot_lane_for_the_whole_wind_up() -> void:
+	var holder: Node3D = auto_free(Node3D.new())
+	add_child(holder)
+	var shooter: Enemy = auto_free((load("res://scenes/enemies/RangedShooter.tscn") as PackedScene).instantiate())
+	holder.add_child(shooter)
+	shooter.set_physics_process(false)
+	shooter._start_telegraph()
+	var pool := EffectPool.for_world(holder)
+	assert_object(pool).is_not_null()
+	assert_int(pool.get_child_count()).is_greater(0)
+	var lane: PooledEffect = pool.get_child(0)
+	assert_float(lane.duration).is_equal_approx(shooter.telegraph_duration, 0.001)

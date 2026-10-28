@@ -8,6 +8,9 @@ const DEFAULTS: Dictionary = {
 	"max_simultaneous": 64,
 	"hurtbox_reach_radius": 0.45,
 	"hurtbox_low_center_height": 0.45,
+	"enemy_shot_lane_alpha": 0.3,
+	"player_hurtbox_reach_radius": 0.4,
+	"player_hurtbox_low_center_height": 0.4,
 	"heal_color": "#7dff9a",
 	"buff_color": "#ffd24a",
 	"projectile_lane_alpha": 0.2,
@@ -19,7 +22,7 @@ const DEFAULTS: Dictionary = {
 }
 
 ## Ground marker tuning (4c): alpha 0..1, durations in seconds, half width in meters.
-const MARKER_KEYS: Array[String] = ["projectile_lane_alpha", "projectile_lane_duration",
+const MARKER_KEYS: Array[String] = ["enemy_shot_lane_alpha", "projectile_lane_alpha", "projectile_lane_duration",
 		"dash_path_alpha", "dash_path_duration", "dash_path_half_width"]
 
 static var _cache: Dictionary = {}
@@ -45,6 +48,11 @@ static func validate(config: Dictionary) -> Array[String]:
 			errors.append("'hurtbox_low_center_height' must be a number")
 		elif is_nan(float(low)) or float(low) < 0.0 or float(low) > 5.0:
 			errors.append("'hurtbox_low_center_height' must be between 0 and 5")
+	for key: String in ["player_hurtbox_reach_radius", "player_hurtbox_low_center_height"]:
+		if config.has(key):  # optional: DEFAULTS fill them in
+			var value: Variant = config[key]
+			if (typeof(value) != TYPE_INT and typeof(value) != TYPE_FLOAT) or is_nan(float(value)) or float(value) < 0.0 or float(value) > 5.0:
+				errors.append("'%s' must be a number between 0 and 5" % key)
 	for key: String in ["heal_color", "buff_color"]:
 		if config.has(key) and not (typeof(config[key]) == TYPE_STRING and String(config[key]).is_valid_html_color()):
 			errors.append("'%s' must be a hex color like #7dff9a" % key)
@@ -120,6 +128,15 @@ static func hurtbox_low_center_height() -> float:
 static func team_tint(team: String) -> Dictionary:
 	var tints: Dictionary = get_config()["team_tints"]
 	return tints.get(team, {})
+
+
+## The player's own hurtbox capsule (Player.tscn), for enemy attack shapes drawn against the player.
+static func player_hurtbox_reach_radius() -> float:
+	return float(get_config()["player_hurtbox_reach_radius"])
+
+
+static func player_hurtbox_low_center_height() -> float:
+	return float(get_config()["player_hurtbox_low_center_height"])
 
 
 static func max_simultaneous() -> int:

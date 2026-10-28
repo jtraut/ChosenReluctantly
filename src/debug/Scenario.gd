@@ -71,6 +71,18 @@ func _build() -> void:
 		var spawner: Node = _main.get_node_or_null("EnemySpawner")
 		if spawner != null:
 			spawner.process_mode = Node.PROCESS_MODE_DISABLED
+	# Capture-only: the real spawner at a fast, ungated pace (first wave at 0.5 s, every stage back to
+	# back) so a still shows the density cap without waiting on kills. The cap itself is unchanged.
+	if bool(_def.get("dense_waves", false)) and _main.get("enemy_spawner") != null:
+		var spawner: EnemySpawner = _main.enemy_spawner
+		var config: Dictionary = WaveConfig.get_config().duplicate(true)
+		config["first_wave_delay"] = 0.5
+		config["spawn_gap"] = 0.15
+		for stage: Dictionary in (config["stages"] as Array):
+			stage["delay"] = 0.0
+			stage.erase("until_alive_at_most")
+		spawner.set_seed(int(_def.get("wave_seed", 1)))
+		spawner.plan = WavePlan.new(config, spawner.rng())
 	# Keep the player alive for the whole capture.
 	player.health.set_max_health(float(_def.get("player_max_health", 9999.0)))
 	player.health.heal(player.health.get_max_health())

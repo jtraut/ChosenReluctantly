@@ -142,6 +142,12 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
 
 - [ ] **Slice 4: Skill visuals and targeting readability**
   - **Owner sequence:** gameplay-dev (effect visuals, pooling, hitbox-driven sizing) -> ux-designer (aim indicator, ground markers, readability tuning) -> qa -> playtester -> game-lead.
+  - **Sub-steps (scoping split, 2026-10-28; each one committed and runnable on its own):**
+    - [ ] **4a, foundation (gameplay-dev):** s3-f card-cast capture scenario first (casts each card/template type, verifies slot cooling live); shared pooled VFX node with a simultaneous-effect cap from data; element visual data (color/scale) added to the existing element entries in `data/pools.json` (no parallel `elements.json` unless logged why); hitbox-driven sizing for cone, aoe, projectile plus the visual-vs-hitbox test; s3-a fix (default: draw the wedge to the current effective reach, range + hurtbox radius; don't change the hit query).
+    - [ ] **4b, template visuals (gameplay-dev):** all seven template visuals from criterion 1; s3-b (stronger light flash), s3-c (distinct heavy telegraph look), s1-a (death flash/grey-out); s3-d/s2-d blue triangle, investigate and fix if cheap.
+    - [ ] **4c, aim and markers (gameplay-dev exposes aim point/direction if missing, then ux-designer draws):** aim reticle, direction line/arc, cast ground markers, readability tuning.
+    - [ ] **4d:** qa (whole slice) -> playtester -> game-lead close.
+    - Criterion 6 (hold-to-preview): proposal logged by game-lead in DECISIONS.md 2026-10-28. Done, no code.
   - **GDD:** §11 (shared templates recolored/rescaled per element), CLAUDE.md "Content is data".
   - **Also in this slice (from earlier follow-ups):** s1-a (stronger death cue: flash/grey-out), s3-a (attack wedge vs real reach), s3-b (light flash readability), s3-c (distinct heavy telegraph), s3-d/s2-d (blue triangle), s3-f (a capture scenario that casts each card/skill type, needed for this slice's screenshots and to verify slot cooling live). Note: scenarios default player HP to 9999 (`Scenario.gd`), so scenario shots say nothing about danger.
   - **Files likely touched:** `src/combat/EffectTemplates.gd`, `src/combat/Projectile.gd`, new `src/effects/*` (pooled visual nodes), `scenes/effects/*`, new element visual data (e.g. `data/elements.json` with color/scale; per-card overrides optional), `src/player/Player.gd` (aim indicator), `src/combat/StatusEffectManager.gd` (Burn visual hook), tests.

@@ -1,6 +1,6 @@
 # Handoff State
 
-Last updated: 2026-10-27. **Milestone 2 is done.** Now running **Post-milestone polish 1** (director-approved, see `docs/ROADMAP.md`), slices 0-5. This is NOT Milestone 3.
+Last updated: 2026-10-28. **Milestone 2 is done.** Now running **Post-milestone polish 1** (director-approved, see `docs/ROADMAP.md`), slices 0-5. This is NOT Milestone 3.
 
 ## What's done
 - Milestone 2 (combat feel prototype), the camera fix, HP bars above enemies, screenshot tooling (`tools/capture_screenshot.ps1`). Details in `git log`, `docs/ROADMAP.md`, `docs/DECISIONS.md`.
@@ -10,10 +10,10 @@ Last updated: 2026-10-27. **Milestone 2 is done.** Now running **Post-milestone 
 - **Polish 1, Slice 1 (death and game over) - done** (7ad85ee): `Player.player_died`, `Main.game_over_ready` / `restart_arena()` (scene reload), Game Over screen, "HP x / y" label, reload soak tool `tools/run_reload_cycle.ps1`.
 
 ## In progress
-**Slice 1 done** (closed 2026-10-27; follow-ups s1-a..f in ROADMAP). **Slice 2 done** (closed 2026-10-27). **Slice 3 done** (closed 2026-10-27). **Next: Slice 4 (skill visuals and targeting readability), gameplay-dev first.** Brief in ROADMAP incl. folded follow-ups s1-a, s3-a..d, s3-f (card-cast capture scenario). No code started on Slice 4. Paused here for a director feel check (see Open questions); Slice 4 does not need to wait for the answers. True-size capture tooling task is in ROADMAP (gameplay-dev, before pass close-out). Repo runs at the latest commit.
+**Slice 4 IN PROGRESS.** Split into 4a/4b/4c/4d (ROADMAP Slice 4 "Sub-steps", DECISIONS 2026-10-28). **4a (foundation) handed to gameplay-dev 2026-10-28.** Check `git log` for 4a commits; if 4a is not marked done in ROADMAP, it may be half done: read the latest gameplay-dev commit/STATE note before resuming. Criterion 6 (hold-to-preview) proposal logged, no code. Repo runs at the latest commit.
 
 ## Exact next step
-Slice 4 loop: gameplay-dev -> ux-designer (aim indicator, ground markers) -> qa -> playtester -> game-lead close. Then slice 5, the capture tooling task, then the whole-pass playtester report. After the pass: **Milestone 3a (run structure)**. Re-run reload soak `tools/run_reload_cycle.ps1` whenever Main/Juice/Player/autoloads change.
+Finish 4a (gameplay-dev) -> 4b (gameplay-dev) -> 4c (gameplay-dev aim data if missing, then ux-designer) -> 4d qa (whole slice) -> playtester -> game-lead close. Then slice 5, the capture tooling task, then the whole-pass playtester report. After the pass: **Milestone 3a (run structure)**. Re-run reload soak `tools/run_reload_cycle.ps1` whenever Main/Juice/Player/autoloads change.
 
 **Orchestration:** game-lead now has the `Agent` tool (`.claude/agents/game-lead.md`). Restart with `claude --agent game-lead` and say "continue Post-milestone polish 1"; game-lead resumes the loop at the slice named above. Don't run the per-role sessions on the same slice at the same time (shared working tree and git).
 

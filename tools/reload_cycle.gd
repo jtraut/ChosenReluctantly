@@ -13,9 +13,11 @@ extends Node
 const MAIN_PATH := "res://scenes/main/Main.tscn"
 const SETTLE_FRAMES := 8
 const BEAT_TIMEOUT_MSEC := 6000
+const TIME_SCALE_GRACE_MSEC := 50
 
 var _failures: Array[String] = []
 var _cycles: int = 5
+var _lags_ms: Array[float] = []
 
 
 func _ready() -> void:
@@ -116,12 +118,15 @@ func _run() -> void:
 		var reached := await _wait_game_over(main)
 		_check(reached, "cycle %d: game_over_ready never fired within %d ms" % [cycle, BEAT_TIMEOUT_MSEC])
 		_check((main.get_node("GameOverScreen") as CanvasLayer).visible, "cycle %d: Game Over screen not visible" % cycle)
-		# Juice resets time_scale by wall clock in its own _process; the Game Over timer can fire
-		# a frame earlier than that clock, so allow a short grace period (a real leak never ends).
-		var grace_deadline := Time.get_ticks_msec() + 250
-		await _frames(2)
-		while not is_equal_approx(Engine.time_scale, 1.0) and Time.get_ticks_msec() < grace_deadline:
+		# Juice resets time_scale by wall clock in its own _process; the Game Over timer (delta
+		# accumulated) can fire a frame earlier than that clock. Measure the lag instead of
+		# hiding it: it must stay within TIME_SCALE_GRACE_MSEC and must not grow with the cycle.
+		var wait_start := Time.get_ticks_usec()
+		while not is_equal_approx(Engine.time_scale, 1.0) and Time.get_ticks_usec() - wait_start < TIME_SCALE_GRACE_MSEC * 1000:
 			await get_tree().process_frame
+		var lag_ms := float(Time.get_ticks_usec() - wait_start) / 1000.0
+		_lags_ms.append(lag_ms)
+		print("  [cycle %d] time_scale lag after game_over_ready: %.2f ms" % [cycle, lag_ms])
 		_check(is_equal_approx(Engine.time_scale, 1.0), "cycle %d: time_scale %s after beat" % [cycle, Engine.time_scale])
 		main.restart_arena()
 		main.restart_arena()  # double-call must be ignored

@@ -46,6 +46,7 @@ func test_light_auto_hits_enemy_in_front_and_not_behind() -> void:
 	var main := _spawn_main()
 	await get_tree().process_frame
 	main.player.camera = null
+	main.player.rotation = Vector3.ZERO  # qa: aim may already have turned the player before camera=null (timing flake)
 	var behind := _spawn_enemy(main, Vector3(0.0, 0.0, 1.2))
 	await _frames(4)
 	assert_float(behind.health.current_health).is_equal(behind.health.get_max_health())
@@ -63,6 +64,7 @@ func test_heavy_right_click_winds_up_then_hits() -> void:
 	await get_tree().process_frame
 	var player := main.player
 	player.camera = null
+	player.rotation = Vector3.ZERO
 	var front := _spawn_enemy(main, Vector3(0.0, 0.0, -2.0))
 	await _frames(3)
 	var started: Array[StringName] = []
@@ -90,6 +92,7 @@ func test_death_cancels_wind_up() -> void:
 	await get_tree().process_frame
 	var player := main.player
 	player.camera = null
+	player.rotation = Vector3.ZERO
 	var cancelled: Array[StringName] = []
 	var fired: Array[StringName] = []
 	player.attack_cancelled.connect(func(attack_id: StringName) -> void: cancelled.append(attack_id))

@@ -41,8 +41,10 @@ func _on_player_died() -> void:
 	var duration: float = beat["slow_mo_duration"]
 	Juice.slow_mo(duration, beat["slow_mo_scale"])
 	Juice.screen_shake(0.35, 0.3)
-	# Real-time timer (ignore_time_scale = true) so slow-mo doesn't stretch it.
-	get_tree().create_timer(duration, true, false, true).timeout.connect(_announce_game_over)
+	# Real-time timer (ignore_time_scale = true) so slow-mo doesn't stretch it. Not process_always:
+	# a pause during the beat holds it (Juice remembers the slow-mo left), so Game Over never
+	# appears over a pause screen.
+	get_tree().create_timer(duration, false, false, true).timeout.connect(_announce_game_over)
 
 
 func _announce_game_over() -> void:
@@ -66,6 +68,7 @@ func restart_arena() -> void:
 ## Engine.time_scale and Juice state are global and survive a reload.
 func _prepare_for_restart() -> void:
 	Juice.reset()
+	GamePause.reset()
 	get_tree().paused = false
 
 

@@ -54,6 +54,8 @@ static func validate(scenario_id: String, def: Variant) -> Array[String]:
 			problems.append_array(_late_hit(where, value))
 		elif name == "casts":
 			problems.append_array(_casts(where, value))
+		elif name == "previews":
+			problems.append_array(_previews(where, value))
 		else:
 			problems.append("%s is not a known scenario flag" % where)
 	return problems
@@ -135,6 +137,28 @@ static func _late_hit(where: String, value: Variant) -> Array[String]:
 			problems.append("%s '%s' must be a number >= 0" % [where, key])
 	if entry.has("indices"):
 		problems.append_array(_index_array(where + " 'indices'", entry["indices"]))
+	return problems
+
+
+## previews: [{at, slot, card, release_at?}] - a key held from `at` to `release_at` (never
+## released when omitted), sent as real input events so the capture shows the live preview.
+static func _previews(where: String, value: Variant) -> Array[String]:
+	var problems: Array[String] = []
+	if typeof(value) != TYPE_ARRAY:
+		problems.append("%s must be an array of {at, slot, card, release_at}" % where)
+		return problems
+	for preview: Variant in value as Array:
+		if typeof(preview) != TYPE_DICTIONARY:
+			problems.append("%s entries must be objects" % where)
+			continue
+		var entry: Dictionary = preview
+		if not _is_number(entry.get("at")) or float(entry["at"]) < 0.0:
+			problems.append("%s entry needs 'at' (a number >= 0)" % where)
+		elif entry.has("release_at") and (not _is_number(entry["release_at"]) or float(entry["release_at"]) < float(entry["at"])):
+			problems.append("%s entry 'release_at' must be a number >= 'at'" % where)
+		for key: String in ["slot", "card"]:
+			if typeof(entry.get(key)) != TYPE_STRING or String(entry[key]).is_empty():
+				problems.append("%s entry needs a non-empty string '%s'" % [where, key])
 	return problems
 
 

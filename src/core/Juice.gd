@@ -7,6 +7,11 @@ const DAMAGE_NUMBER_SCENE_PATH := "res://scenes/effects/DamageNumber.tscn"
 const HEAVY_HIT_THRESHOLD := 10.0
 
 var _hitstop_resume_msec: int = -1
+## Pause support (freeze_time / thaw_time): while frozen, time runs at 1.0 for the pause
+## screen and the unfinished part of a hit-stop or slow-mo is remembered, not lost.
+var _frozen: bool = false
+var _frozen_remaining_msec: int = 0
+var _frozen_scale: float = 1.0
 var _camera_rig: CameraRig = null
 ## Popups requested so far and the last one's text (tests; no scene needed).
 var popup_count: int = 0
@@ -25,6 +30,9 @@ func _process(_delta: float) -> void:
 ## camera rig and put time back to normal. Call before changing scenes.
 func reset() -> void:
 	_hitstop_resume_msec = -1
+	_frozen = false
+	_frozen_remaining_msec = 0
+	_frozen_scale = 1.0
 	_camera_rig = null
 	_live_numbers = []
 	Engine.time_scale = 1.0
@@ -36,6 +44,37 @@ func slow_mo(duration_sec: float, time_scale: float) -> void:
 	hit_stop(duration_sec, time_scale)
 
 
+## Pausing: puts Engine.time_scale back to 1.0 (so a pause screen is not in slow-mo) and
+## remembers how much of the current hit-stop or slow-mo was left, and at what scale.
+## Idempotent. GamePause calls this; thaw_time() undoes it.
+func freeze_time() -> void:
+	if _frozen:
+		return
+	_frozen = true
+	_frozen_remaining_msec = 0
+	if _hitstop_resume_msec >= 0:
+		_frozen_remaining_msec = maxi(_hitstop_resume_msec - Time.get_ticks_msec(), 0)
+		_frozen_scale = Engine.time_scale
+	_hitstop_resume_msec = -1
+	Engine.time_scale = 1.0
+
+
+## Resuming: the unfinished hit-stop or slow-mo continues for exactly the time it had
+## left when time was frozen, at the scale it had. Idempotent.
+func thaw_time() -> void:
+	if not _frozen:
+		return
+	_frozen = false
+	if _frozen_remaining_msec > 0:
+		_hitstop_resume_msec = Time.get_ticks_msec() + _frozen_remaining_msec
+		Engine.time_scale = _frozen_scale
+	_frozen_remaining_msec = 0
+
+
+func is_time_frozen() -> bool:
+	return _frozen
+
+
 func register_camera_rig(rig: CameraRig) -> void:
 	_camera_rig = rig
 
@@ -43,6 +82,8 @@ func register_camera_rig(rig: CameraRig) -> void:
 ## A longer hit-stop always wins over a shorter one already running; it
 ## never "resets" a longer one that's still counting down.
 func hit_stop(duration_sec: float, time_scale: float = 0.05) -> void:
+	if _frozen:
+		return  # Nothing hits while paused; never slow the pause screen.
 	var resume_at := Time.get_ticks_msec() + int(duration_sec * 1000.0)
 	if resume_at > _hitstop_resume_msec:
 		_hitstop_resume_msec = resume_at

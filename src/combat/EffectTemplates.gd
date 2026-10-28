@@ -209,4 +209,4 @@ static func _execute_buff(params: Dictionary, context: EffectContext) -> void:
 	stat_modifiers.add_modifier(stat, modifier_id, modifier_type, value)
 	if context.caster.is_inside_tree():
 		var tree := context.caster.get_tree()
-		tree.create_timer(duration).timeout.connect(func() -> void: stat_modifiers.remove_modifier(stat, modifier_id))
+		tree.create_timer(duration, false).timeout.connect(func() -> void: stat_modifiers.remove_modifier(stat, modifier_id))

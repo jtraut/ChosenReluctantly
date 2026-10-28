@@ -20,6 +20,7 @@ config/icon="res://assets/icon.svg"
 InputBindings="*res://src/core/InputBindings.gd"
 Juice="*res://src/core/Juice.gd"
 Settings="*res://src/core/Settings.gd"
+GamePause="*res://src/core/GamePause.gd"
 
 [editor_plugins]
 

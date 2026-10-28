@@ -107,6 +107,7 @@ func _ready() -> void:
 	health.damaged.connect(_on_damaged)
 	health.died.connect(_on_died)
 	Settings.changed.connect(_on_setting_changed)
+	GamePause.paused_changed.connect(_on_pause_changed)
 	# The body material lives in the scene as a surface override, so material_override
 	# is empty until we take a unique copy here. Every flash (hit, death) tweens this
 	# copy; before, nothing was found and none of them ever showed.
@@ -138,6 +139,8 @@ func _physics_process(delta: float) -> void:
 func _exit_tree() -> void:
 	if Settings.changed.is_connected(_on_setting_changed):
 		Settings.changed.disconnect(_on_setting_changed)
+	if GamePause.paused_changed.is_connected(_on_pause_changed):
+		GamePause.paused_changed.disconnect(_on_pause_changed)
 
 
 func is_dead() -> bool:
@@ -567,6 +570,12 @@ func _handle_card_slot_input() -> void:
 func cancel_cast_preview() -> void:
 	cast_input.cancel()
 	_cast_queue.clear()
+
+
+## Pausing cancels a hold: the key release would arrive while the tree is paused (no
+## _unhandled_input), so the preview would otherwise stick. A fresh press is needed after resume.
+func _on_pause_changed(_is_paused: bool) -> void:
+	cancel_cast_preview()
 
 
 func _on_setting_changed(key: String, _value: Variant) -> void:

@@ -16,6 +16,9 @@ var _kill_done: bool = false
 var _heavy_press_done: bool = false
 var _heavy_release_at: float = -1.0
 var _cast_index: int = 0
+var _preview_index: int = 0
+## Scripted key releases still to send: {"at": float, "action": StringName}.
+var _preview_releases: Array[Dictionary] = []
 ## Slot cooling checks queued by casts: {"at": float, "slot": String, "before": float, "card": String}.
 var _cooling_checks: Array[Dictionary] = []
 
@@ -171,6 +174,7 @@ func _process(delta: float) -> void:
 		_send_action(&"attack_heavy", false)
 	_process_stuns()
 	_process_casts()
+	_process_previews()
 	var late: Dictionary = _def.get("late_hit", {})
 	if late.is_empty() or _late_hit_done or _elapsed < float(late.get("at", 2.4)):
 		return
@@ -189,6 +193,38 @@ func _process_stuns() -> void:
 	for stun_index: int in _def["stun_indices"]:
 		if stun_index < _enemies.size() and is_instance_valid(_enemies[stun_index]):
 			_enemies[stun_index].status_manager.apply_status("stun", StatusDatabase.get_status("stun"), float(_def.get("stun_duration", 0.6)))
+
+
+## Scripted held keys (scenario "previews": [{at, slot, card, release_at}]): the named card is
+## forced into the slot, then the slot's key is pressed and (at release_at) released as real
+## input events, so the Player's latch, the preview and the release cast all run for real.
+func _process_previews() -> void:
+	var previews: Array = _def.get("previews", [])
+	var player: Player = _main.get_node("Player")
+	while _preview_index < previews.size() and _elapsed >= float((previews[_preview_index] as Dictionary)["at"]):
+		var preview: Dictionary = previews[_preview_index]
+		_preview_index += 1
+		var slot_type := String(preview["slot"])
+		var slot: CardSlot = player.card_slots.get_slot(slot_type)
+		var slot_number: int = CardSlotController.SLOT_TYPE_ORDER.find(slot_type) + 1
+		if slot == null or slot_number <= 0:
+			push_error("Scenario: unknown slot '%s'" % slot_type)
+			continue
+		slot.current_card_id = String(preview["card"])
+		slot.cooldown_remaining = 0.0
+		var action := StringName("slot_%d" % slot_number)
+		_send_action(action, true)
+		print("Scenario: t=%.2f hold %s (%s) in %s" % [_elapsed, action, preview["card"], slot_type])
+		if preview.has("release_at"):
+			_preview_releases.append({"at": float(preview["release_at"]), "action": action})
+	var pending: Array[Dictionary] = []
+	for release in _preview_releases:
+		if _elapsed >= float(release["at"]):
+			_send_action(release["action"], false)
+			print("Scenario: t=%.2f release %s" % [_elapsed, release["action"]])
+		else:
+			pending.append(release)
+	_preview_releases = pending
 
 
 ## Scripted card casts (scenario "casts": [{at, slot, card}]). The named card is

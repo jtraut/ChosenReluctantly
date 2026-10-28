@@ -8,7 +8,7 @@ const REQUIRED_IDS: Array[String] = ["light", "heavy"]
 ## field -> [min, max, min_inclusive]. All are numbers.
 const NUMBER_RULES: Dictionary = {
 	"interval": [0.0, 3600.0, false],
-	"manual_min_gap": [-1.0, 3600.0, true],
+	"manual_click_max_rate_ratio": [0.0, 100.0, true],
 	"damage": [0.0, 100000.0, false],
 	"range": [0.0, 100.0, false],
 	"half_angle_degrees": [0.0, 180.0, false],

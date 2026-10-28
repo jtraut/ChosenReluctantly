@@ -26,6 +26,9 @@ static func load_all(dir_path: String = DEFAULT_CARDS_DIR) -> void:
 			_load_card_file(dir_path.path_join(file_name))
 		file_name = dir.get_next()
 	dir.list_dir_end()
+	if dir_path == DEFAULT_CARDS_DIR:
+		for problem: String in CardDamageRule.check_shipped():
+			push_error("CardDatabase: damage-card rule broken: " + problem)
 
 
 static func get_card(card_id: String) -> Dictionary:

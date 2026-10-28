@@ -119,7 +119,7 @@ func test_click_on_same_tick_as_auto_fires_once() -> void:
 func test_manual_spam_respects_min_gap() -> void:
 	_target_present = false
 	var controller := _make(_light_def(), _heavy_def())
-	var gap := float(_light_def()["manual_min_gap"])
+	var gap := controller.get_manual_min_gap(&"light")
 	_tick(controller, 0.016, {&"light": true})
 	_tick(controller, gap * 0.5, {&"light": true})
 	assert_array(_fired).has_size(1)
@@ -243,3 +243,38 @@ func test_validation_rejects_bad_entries() -> void:
 func test_validation_requires_light_and_heavy() -> void:
 	assert_array(AttackDatabase.validate_table({"light": _light_def()})).is_not_empty()
 	assert_array(AttackDatabase.validate_table({"light": _light_def(), "heavy": "oops"})).is_not_empty()
+
+
+func test_click_gap_is_interval_over_ratio() -> void:
+	var controller := _make(_light_def(), _heavy_def())
+	assert_float(float(_light_def()["manual_click_max_rate_ratio"])).is_equal(1.5)
+	assert_float(controller.get_manual_min_gap(&"light")).is_equal_approx(0.4, 0.0001)
+
+
+func test_heavy_ratio_zero_means_click_only_when_ready() -> void:
+	var controller := _make(_light_def(), _heavy_def())
+	assert_float(controller.get_manual_min_gap(&"heavy")).is_equal_approx(controller.get_interval(&"heavy"), 0.0001)
+
+
+func _spam_count(controller: AttackController, seconds: float) -> int:
+	_target_present = false
+	var step := 0.01
+	var elapsed := 0.0
+	while elapsed < seconds:
+		_tick(controller, step, {&"light": true})
+		elapsed += step
+	return _fired.size()
+
+
+func test_spam_click_never_exceeds_ratio_times_auto_rate() -> void:
+	var light := _light_def()
+	var ratio := float(light["manual_click_max_rate_ratio"])
+	for cut: float in [0.0, -0.5, -0.75]:
+		var mods := StatModifiers.new()
+		mods.add_modifier("attack_interval.light", "haste", StatModifiers.MULTIPLICATIVE, cut)
+		var controller := _make(light, _heavy_def(), mods)
+		var seconds := 20.0
+		var clicks := _spam_count(controller, seconds)
+		var auto_rate := 1.0 / controller.get_interval(&"light")
+		assert_float(float(clicks) / seconds).is_less_equal(auto_rate * ratio + 0.05)
+		assert_float(float(clicks) / seconds).is_greater(auto_rate * 1.2)

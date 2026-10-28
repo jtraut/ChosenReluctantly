@@ -67,7 +67,7 @@ func test_heavy_cooldown_resolves_through_modifier_in_real_timing() -> void:
 	assert_bool(controller.is_winding_up(&"heavy")).is_true()
 
 
-func test_manual_light_spam_is_capped_at_four_per_second() -> void:
+func test_manual_light_spam_is_capped_at_one_and_a_half_times_auto_rate() -> void:
 	var controller := AttackController.new(_defs(), StatModifiers.new())
 	var count: Array[int] = [0]
 	controller.attack_fired.connect(func(id: StringName) -> void:
@@ -75,8 +75,9 @@ func test_manual_light_spam_is_capped_at_four_per_second() -> void:
 			count[0] += 1)
 	for i in range(600):  # 10 s at 60 Hz, click held every tick
 		controller.tick(1.0 / 60.0, true, {&"light": true}, _no_target)
-	assert_int(count[0]).is_less_equal(41)
-	assert_int(count[0]).is_greater_equal(38)
+	# 1.5 x the 1.667/s auto rate = 2.5 clicks/s -> about 25 in 10 s.
+	assert_int(count[0]).is_less_equal(26)
+	assert_int(count[0]).is_greater_equal(23)
 
 
 func test_cooldown_does_not_bank_while_cannot_act() -> void:

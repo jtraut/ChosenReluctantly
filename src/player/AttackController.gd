@@ -7,8 +7,9 @@ extends RefCounted
 ## Rules:
 ## - Each attack has a cooldown ("interval") resolved through StatModifiers.
 ## - Auto attacks start when ready AND has_target(id) is true (never whiff).
-## - A manual press starts an attack when ready, or (manual_min_gap >= 0)
-##   whenever at least that long since the last start; it restarts the timer.
+## - A manual press starts an attack when ready, or (ratio > 1) whenever at
+##   least interval / manual_click_max_rate_ratio since the last start; it
+##   restarts the timer, so spam-clicking tops out at ratio x the auto rate.
 ##   Manual is processed before auto, so a same-tick press + auto fires once.
 ## - While any attack is winding up, no other attack may start.
 ## - can_act false cancels any wind-up and blocks everything.
@@ -78,6 +79,19 @@ func get_interval(attack_id: StringName) -> float:
 		return 0.0
 	var def: Dictionary = (_states[attack_id] as State).def
 	return maxf(_modifiers.apply(String(def["stat"]), float(def["interval"])), MIN_INTERVAL)
+
+
+## Shortest time between manual starts: resolved interval / manual_click_max_rate_ratio,
+## so attack-speed modifiers scale it. A ratio of 0 means "click only when ready"
+## (returns the full interval, which is when the cooldown ends anyway).
+func get_manual_min_gap(attack_id: StringName) -> float:
+	if not _states.has(attack_id):
+		return NEVER
+	var ratio: float = float((_states[attack_id] as State).def["manual_click_max_rate_ratio"])
+	var interval: float = get_interval(attack_id)
+	if ratio <= 1.0:
+		return interval
+	return interval / ratio
 
 
 ## 0..1 fraction of the cooldown elapsed; 1.0 means ready.
@@ -158,8 +172,7 @@ func _can_start_manual(attack_id: StringName) -> bool:
 	var state: State = _states[attack_id]
 	if state.remaining <= 0.0:
 		return true
-	var gap: float = float(state.def["manual_min_gap"])
-	return gap >= 0.0 and state.since_start >= gap
+	return state.since_start >= get_manual_min_gap(attack_id)
 
 
 func _start(attack_id: StringName) -> void:

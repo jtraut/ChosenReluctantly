@@ -50,6 +50,7 @@ var _dodge_cooldown_remaining: float = 0.0
 var _base_body_color: Color = Color.WHITE
 var _knockback_velocity: Vector3 = Vector3.ZERO
 var _dead: bool = false
+var _flash_tween: Tween = null
 
 # Generic forced-motion override (dodge roll, and later any Movement-slot
 # "dash" card): while active, this drives velocity instead of normal input.
@@ -157,6 +158,9 @@ func _play_death_animation() -> void:
 	var config := UiConfig.death_beat()
 	var duration: float = config["collapse_duration"]
 	var material := body_mesh.material_override
+	# The lethal hit's own red-to-base flash tween must not fight the death colors.
+	if _flash_tween != null and _flash_tween.is_valid():
+		_flash_tween.kill()
 	TemplateVfx.death_cue(EffectPool.for_world(get_parent()), global_position)
 	Juice.screen_shake(DEATH_SHAKE_STRENGTH, DEATH_SHAKE_DURATION)
 	var topple := create_tween().set_parallel(true).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUAD)
@@ -184,8 +188,10 @@ func _flash_body(color: Color) -> void:
 	if not (material is StandardMaterial3D):
 		return
 	(material as StandardMaterial3D).albedo_color = color
-	var tween := create_tween()
-	tween.tween_property(material, "albedo_color", _base_body_color, HIT_FLASH_DURATION)
+	if _flash_tween != null and _flash_tween.is_valid():
+		_flash_tween.kill()
+	_flash_tween = create_tween()
+	_flash_tween.tween_property(material, "albedo_color", _base_body_color, HIT_FLASH_DURATION)
 
 
 func _tick_cooldowns(delta: float) -> void:

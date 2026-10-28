@@ -85,6 +85,7 @@ static func validate_enemies(enemies: Variant) -> Array[String]:
 		var entry_dict: Dictionary = entry
 		if typeof(entry_dict.get("rank")) != TYPE_STRING or not RANKS.has(String(entry_dict["rank"])):
 			errors.append("enemies.%s: 'rank' must be one of %s" % [enemy_id, str(RANKS)])
+		errors.append_array(validate_stats(enemy_id, entry_dict.get("stats")))
 		var scene_path: Variant = entry_dict.get("scene")
 		if typeof(scene_path) != TYPE_STRING or not String(scene_path).begins_with("res://") or not ResourceLoader.exists(String(scene_path)):
 			errors.append("enemies.%s: 'scene' must be an existing res:// scene path" % enemy_id)

@@ -21,7 +21,7 @@ Play a normal run (not a test scenario: scenarios give the player 9999 HP).
    - Does the wind-up slow feel like commitment without being sluggish?
    - Does the area feel bigger and worth pressing?
    - About half of heavies set enemies on fire. Does that feel like a fun surprise or a letdown?
-5. **Light attack vs cards** (feeds D4). Look for:
+5. **Light attack vs cards** (your D4 playtest; light damage is one value in `data/attacks.json`). Look for:
    - Does every damage card feel clearly better than the free auto attack?
    - The three area cards are only about 7-10% better than light on a single enemy. Do they still feel worth casting on one?
 6. **New wave density** (Slice 5). Up to 12 enemies at once, arriving in four stages. Look for:

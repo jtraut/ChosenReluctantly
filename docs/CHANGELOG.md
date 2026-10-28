@@ -69,6 +69,14 @@ A plain-language history of the project for the director, grouped by date (from 
 - **DECISIONS.md had a stray non-UTF-8 character.** (cd60da8)
 
 ### Docs and process
+- **[Director decision] Answers to D1-D7.**
+  - D1 A: no Game Over stats yet.
+  - D2 C: hold-to-preview casting becomes the default, with a setting to cast on press. It is added to GDD §3 and scheduled as Slice 6.
+  - D3 A: team tint confirmed.
+  - D4 A: light stays at 3.
+  - D5 A: heavy Burn stays at 50%.
+  - D6 A: golem wind-up 0.7 s confirmed.
+  - D7 B: HP bars are switching from always visible to damaged-only plus elites and bosses (applied in Slice 6).
 - **Slice 5 closed.** qa first failed it on a broken tool, then passed it after a fix pass. The playtest found no blocker: the opening is calm (first damage at about 5.4 s), enemy shots are clearly pink, and the numbers and IMMUNE read well. The top issue is chasers stacking into one blob on the player, which goes to new step 5d along with removing the training dummy from normal runs. The HP bar look waits on director call D7. (c13a43a, 45ae002, f79455f)
 - **Slices 4 and 3b closed.** The combined playtest found no blocker; the visuals and the stun read well. Should-fix items moved to Slice 5: tiny damage numbers, the faint Pointy Stick projectile, and weak reads on the cone, heal and dash. Balance questions went back to the director as D4 and D5. (68324d2)
 - qa checked this file against git on 2026-10-28 and corrected three wording errors (projectile marker is a half-width; light flash start colour is pale yellow, not tan; camera basis was transposed, not flipped). All hashes and dates verified. (see docs/reviews/2026-10-28-changelog-qa.md)

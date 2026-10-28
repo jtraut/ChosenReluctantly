@@ -55,6 +55,7 @@ Fewer, more impactful enemies. Telegraphed attacks, readable danger, and dodge s
   - **Heavy attacks trade sustained damage for burst and utility.** A heavy attack may have lower single-target DPS than the light attack, but offers burst, a larger area, and class and element flavor (for example stun, a boosted element status chance, or a ranged targeted area for casters). Heavy attacks are defined per class in data and support different shapes (wide melee arc, targeted ranged area). **[PROPOSED]** Rogue heavy: wide arc, burst, brief stun on hit. **[PROPOSED]** Wizard heavy: targeted ranged area at the mouse point.
   - **Heavy wind-up slows the player slightly. It never roots.**
 - **Card slots:** keys 1 to 5.
+- **Hold-to-preview casting [DIRECTOR DECISION, 2026-10-28]:** by default, holding a card's key shows its exact hit area on the ground (drawn from the same data as the hitbox), and the card casts on release. A setting switches casting to trigger on press instead.
 - **Dodge roll:** Space bar. **[OPEN]** how this relates to the Movement slot (see section 4).
 - **Controller:** late stretch goal, not in scope.
 

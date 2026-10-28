@@ -13,10 +13,10 @@ Last updated: 2026-10-28. **Milestone 2 is done.** Now running **Post-milestone 
 - **Polish 1, Slice 1 (death and game over) - done** (7ad85ee): `Player.player_died`, `Main.game_over_ready` / `restart_arena()` (scene reload), Game Over screen, "HP x / y" label, reload soak tool `tools/run_reload_cycle.ps1`.
 
 ## In progress
-**Slices 4, 3b and 5 are DONE (2026-10-28).** HP bars stay `always_alive` pending director D7. **Now: 5d (chaser separation steering, TrainingDummy out of the normal run, optionally enemy stats to data), handed to gameplay-dev.**
+**Slices 4, 3b and 5 are DONE (2026-10-28).** The director answered D1-D7 on 2026-10-28. D7 = B gets applied in 6b. **Now: 5d (chaser separation steering, TrainingDummy out of the normal run, optionally enemy stats to data), handed to gameplay-dev.**
 
 ## Exact next step
-5d gameplay-dev -> qa (targeted) -> then the true-size capture tooling task (gameplay-dev -> qa) -> pass close-out: one whole-pass playtester report (covering 5d too), DoD verified, OPEN_ITEMS/CHANGELOG updated, STATE pointed at **Milestone 3a (run structure)**. Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
+5d gameplay-dev -> qa (targeted) -> **Slice 6 (hold-to-preview + settings, director D2 = C; 6b also applies D7 = B)** -> the true-size capture tooling task (gameplay-dev -> qa) -> pass close-out: one whole-pass playtester report (covering 5d too), DoD verified, OPEN_ITEMS/CHANGELOG updated, STATE pointed at **Milestone 3a (run structure)**. Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
 **Orchestration:** game-lead now has the `Agent` tool (`.claude/agents/game-lead.md`). Restart with `claude --agent game-lead` and say "continue Post-milestone polish 1"; game-lead resumes the loop at the slice named above. Don't run the per-role sessions on the same slice at the same time (shared working tree and git).
 

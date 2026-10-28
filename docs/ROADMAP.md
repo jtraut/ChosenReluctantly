@@ -244,6 +244,31 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
   - **qa tests:** spawner cap never exceeded; wave staging from data; bar config modes; bot-sim clean.
   - **playtester:** screenshots comparing bar options at the new density; a wave screenshot; explicitly say whether any single enemy feels unfair or unreadable. game-lead picks and logs the bar default.
 
+- [ ] **Slice 6: Hold-to-preview casting and a minimal settings screen (director D2 = C, 2026-10-28)**
+  - **GDD:** §3 "Hold-to-preview casting [DIRECTOR DECISION, 2026-10-28]", §4. DECISIONS 2026-10-28 "Answers to D1-D7".
+  - **Owner sequence:** 6a gameplay-dev -> 6b ux-designer -> 6c qa -> playtest folded into the pass close-out -> game-lead.
+  - [ ] **6a, gameplay-dev:**
+    - Card slot input becomes press / hold / release. In `release` mode (default), pressing starts a preview and releasing casts.
+    - Cancel rules: releasing while the slot isn't ready doesn't cast. Death, the Game Over screen, or the settings screen opening cancel the preview. Only one preview at a time; pressing a second key switches to it. Dead-card swap (Ctrl+N) is unaffected.
+    - In `press` mode, behaviour is exactly as today.
+    - The preview shows the exact hit area for every aimed shape, sized via `VfxSizing` from the same data as the hitbox: cone wedge, aoe disc (centred where it really lands), projectile lane, dash path. Non-aimed cards (heal, buff) show a small self ring or nothing; log which.
+    - The preview follows the aim live.
+    - Settings store: defaults in `data/settings.json`, user overrides in `user://settings.cfg`, validated, with a getter API for the UI. The setting key is `cast_trigger: "release" | "press"`.
+    - Input latched in `_unhandled_input` so UI screens can consume clicks and keys (also closes follow-up s3-j).
+  - [ ] **6b, ux-designer:**
+    - A minimal settings screen: Esc pauses and opens it. One toggle, "Cast cards on: Release (preview) / Press", plus Resume. Keyboard and mouse, readable, dry tone.
+    - The preview look is distinct from the cast effect and from enemy telegraphs: an outline in the player's element colour, low fill.
+    - **Apply D7:** set `hp_bars.visibility_mode` to `elite_boss_always`.
+  - [ ] **6c, qa:**
+    - Preview size equals hitbox size for every shape.
+    - Release casts exactly once; press mode casts on press.
+    - No cast while on cooldown.
+    - Cancel cases: death, settings open, switching key.
+    - The settings value persists across reload.
+    - A bad settings file fails loud and falls back to defaults.
+    - Pausing restores time correctly.
+    - DoD.
+
 - [ ] **Tooling: true-size capture (gameplay-dev, before pass close-out)**
   - The OS window is clamped to the monitor (1061 px tall), so `capture_screenshot.ps1` can't produce real 1920x1080 / 2560x1440. qa's `tools/vp_capture.gd` (88732cf) renders into an oversized SubViewport but `current_scene` is null there, so spawner/card code errors ("add_child on null") and no waves spawn; abrupt exit leaks RIDs.
   - **Acceptance:** a documented command produces true-size PNGs at 1280x720, 1920x1080, 2560x1440 with waves spawning and scenarios working; no error lines; spawn code uses a world/arena reference instead of `get_tree().current_scene` where needed (no behaviour change in normal play); clean exit. qa verifies; reload soak still clean.

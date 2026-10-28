@@ -244,9 +244,15 @@ func test_mode_truth_table() -> void:
 		assert_bool(got).override_failure_message("case %s" % str(c)).is_equal(bool(c[5]))
 
 
+func _bars_with_mode(mode: Variant) -> Dictionary:
+	var block: Dictionary = UiConfig.DEFAULT_HP_BARS.duplicate(true)
+	block["visibility_mode"] = mode
+	return block
+
+
 func test_every_listed_mode_validates_and_unknown_does_not() -> void:
 	for mode: String in EnemyHpBar.MODES:
-		assert_array(UiConfig.validate_hp_bars({"visibility_mode": mode})).is_empty()
-	assert_array(UiConfig.validate_hp_bars({"visibility_mode": "sometimes"})).is_not_empty()
-	assert_array(UiConfig.validate_hp_bars({"visibility_mode": 3})).is_not_empty()
+		assert_array(UiConfig.validate_hp_bars(_bars_with_mode(mode))).is_empty()
+	assert_array(UiConfig.validate_hp_bars(_bars_with_mode("sometimes"))).is_not_empty()
+	assert_array(UiConfig.validate_hp_bars(_bars_with_mode(3))).is_not_empty()
 	assert_array(UiConfig.validate_hp_bars(UiConfig.DEFAULT_HP_BARS)).is_empty()

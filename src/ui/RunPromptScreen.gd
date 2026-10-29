@@ -180,10 +180,10 @@ func show_content(content: Dictionary) -> void:
 	var delay: float = float(UiConfig.run_ui().get("prompt_option_arm_delay", 0.4))
 	_armed_at_msec = Time.get_ticks_msec() + roundi(delay * 1000.0)
 	_fit_panel()
+	_dim_until_armed(delay)
 	if _options.is_empty():
 		button.grab_focus()
 	else:
-		_dim_until_armed(delay)
 		_last_focus = _first_enabled()
 		_focus_option(_last_focus)
 		_debug_auto_choose()
@@ -237,21 +237,22 @@ func _restore_focus() -> void:
 	_focus_option(index)
 
 
-## The cards look a little dim until the arm delay has passed, so a press that does nothing is not a mystery.
+## The cards (or the Continue / New run button) look a little dim until the arm delay has passed, so a press that
+## does nothing is not a mystery.
 func _dim_until_armed(delay: float) -> void:
 	_arm_generation += 1
 	var generation: int = _arm_generation
 	var dimmed: float = 0.55
-	options_box.modulate.a = dimmed
-	footer_box.modulate.a = dimmed
+	for dimmable: Control in [options_box, footer_box, button]:
+		dimmable.modulate.a = dimmed
 	if delay <= 0.0:
-		options_box.modulate.a = 1.0
-		footer_box.modulate.a = 1.0
+		for dimmable: Control in [options_box, footer_box, button]:
+			dimmable.modulate.a = 1.0
 		return
 	await get_tree().create_timer(delay, true, false, true).timeout
 	if generation == _arm_generation:
-		options_box.modulate.a = 1.0
-		footer_box.modulate.a = 1.0
+		for dimmable: Control in [options_box, footer_box, button]:
+			dimmable.modulate.a = 1.0
 
 
 func _fill(content: Dictionary) -> void:
@@ -265,8 +266,8 @@ func _fill(content: Dictionary) -> void:
 	button.text = String(content.get("button", ""))
 	_fill_options(content.get("options", []), content)
 	button.visible = _options.is_empty()
-	if not _options.is_empty() and _layout == "grid":
-		subtitle_label.visible = false  # the room indicator at the top already says it; a long list needs the height
+	if not _options.is_empty():
+		subtitle_label.visible = false  # the room indicator at the top already says it; the cards need the height
 	var hint: String = String(content.get("hint", ""))
 	hint_label.text = hint
 	hint_label.visible = hint != ""
@@ -483,13 +484,17 @@ func _focus_option(index: int) -> void:
 ## dodge key, the player is mashing it as the panel opens, and a focused button would otherwise confirm on it.
 ## Accidental picks are also held off by the short arm delay after opening (`options_armed`). Does nothing while paused.
 func _input(event: InputEvent) -> void:
-	if not visible or _options.is_empty() or GamePause.is_paused():
+	if not visible or GamePause.is_paused():
 		return
 	var key := event as InputEventKey
 	if key == null or not key.pressed:
 		return
 	if key.keycode == KEY_SPACE:
+		# Never confirms anything here (a focused Button would take it as ui_accept), with options or with the lone
+		# Continue / New run button: the player is mashing Space (dodge) as the panel opens.
 		get_viewport().set_input_as_handled()
+		return
+	if _options.is_empty():
 		return
 	var number: int = key.keycode - KEY_1
 	var is_digit: bool = (key.keycode >= KEY_0 and key.keycode <= KEY_9) or (key.keycode >= KEY_KP_0 and key.keycode <= KEY_KP_9)
@@ -595,16 +600,34 @@ func _fit_panel() -> void:
 	if scroll.visible:
 		# The options scroll when they would not fit: give the scroll area what the rest of the panel leaves.
 		var rest_h: float = panel.get_combined_minimum_size().y - scroll.get_combined_minimum_size().y
-		var room: float = get_viewport().get_visible_rect().size.y * float(cfg["option_fit_margin"]) - rest_h
+		var room: float = _avail_height(cfg) - rest_h
 		var content_h: float = options_box.get_combined_minimum_size().y
 		var wanted: float = minf(content_h, maxf(room, 120.0 * _scale(cfg)))
 		if not is_equal_approx(scroll.custom_minimum_size.y, wanted):
 			scroll.custom_minimum_size.y = wanted
 	var needed: Vector2 = panel.get_combined_minimum_size()
 	var avail: Vector2 = get_viewport().get_visible_rect().size * float(cfg["option_fit_margin"])
+	avail.y = _avail_height(cfg)
 	var factor: float = clampf(minf(avail.y / maxf(needed.y, 1.0), avail.x / maxf(needed.x, 1.0)), float(cfg["option_min_fit_scale"]), 1.0)
 	panel.pivot_offset = needed * 0.5
 	panel.scale = Vector2(factor, factor)
+
+
+## Height the panel may use. The panel is centred in the area under the top HUD band (health panel and meters), so
+## its top edge never covers the HP label or the meters at any resolution; the band is only given up, not mirrored
+## at the bottom, so the cards keep their height.
+func _avail_height(cfg: Dictionary) -> float:
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	var band: float = _band_end()
+	($Root/Center as Control).offset_top = band
+	return (vp.y - band) * float(cfg["option_fit_margin"])
+
+
+func _band_end() -> float:
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	var hud_cfg := UiConfig.hud()
+	var meters: Dictionary = HudLayout.attack_meter_rects(vp, hud_cfg)
+	return (meters[&"heavy"] as Rect2).end.y + HudLayout.ui_scale(vp, hud_cfg) * float(hud_cfg["meter_top_gap"])
 
 
 ## The panel's natural size (tests and screenshots); `fit_factor` is the shrink applied to it.
@@ -621,7 +644,7 @@ func _font(control: Control, key: String, s: float, cfg: Dictionary) -> void:
 
 
 func _on_pressed() -> void:
-	if not visible:
+	if not visible or not options_armed():
 		return
 	visible = false
 	confirmed.emit()

@@ -326,7 +326,7 @@ func test_starter_cards_are_all_blocked_from_removal_with_a_reason() -> void:
 	for i in range(list.size() - 1):
 		assert_str(list[i]["kind"]).is_equal("remove")
 		assert_bool(list[i]["enabled"]).is_false()
-		assert_str(list[i]["reason"]).contains("needs 3 unique")
+		assert_str(list[i]["reason"]).contains("minimum 3 different")
 	assert_str(list[list.size() - 1]["kind"]).is_equal("back")
 	var refused := RunChoices.apply(state, list[0]["id"], ctx)
 	assert_bool(refused["ok"]).is_false()

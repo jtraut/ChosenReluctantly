@@ -41,7 +41,12 @@ static func shipped_context(pools: Array) -> Dictionary:
 	var slot_base: Dictionary = {}
 	for slot_type: String in SlotTypeDatabase.known_ids():
 		slot_base[slot_type] = float(SlotTypeDatabase.get_definition(slot_type).get("base_cooldown", 1.0))
+	var statuses: Dictionary = {}
+	for card: Variant in cards:
+		for status_id: String in CardSummary.status_ids(card as Dictionary):
+			statuses[status_id] = StatusDatabase.get_status(status_id)
 	return {
+		"statuses": statuses,
 		"cards": cards,
 		"by_id": by_id,
 		"pools": pools.duplicate(),
@@ -168,7 +173,7 @@ static func options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 				var problems: Array[String] = removal_problems(state, card_id, ctx)
 				if not problems.is_empty():
 					option["enabled"] = false
-					option["reason"] = "; ".join(problems)
+					option["reason"] = removal_reason(state, card_id, problems, ctx)
 				out.append(option)
 			var back: Dictionary = _blank("back", "back")
 			back["label"] = String((ui["rest"] as Dictionary)["back_label"])
@@ -237,6 +242,25 @@ static func heal_amount(state: RunState, fraction: float) -> float:
 	return maxf(minf(state.max_hp * fraction, state.max_hp - state.hp), 0.0)
 
 
+## What to do about a locked removal, in the words of data/run.json `ui.rest.remove_locked`. The unique-card minimum
+## counts DIFFERENT cards (GDD section 4), so this is the only copy of a card the slot needs, and the way out is another
+## card for that slot (never "own N copies"). A block from a slot group says so with `remove_locked_group`.
+static func removal_reason(state: RunState, card_id: String, problems: Array[String], ctx: Dictionary) -> String:
+	var t: Dictionary = (ctx["ui"] as Dictionary)["rest"]
+	var slot_type: String = String(((ctx["by_id"] as Dictionary).get(card_id, {}) as Dictionary).get("slot_type", ""))
+	var slot_name: String = String((ctx["slot_names"] as Dictionary).get(slot_type, slot_type))
+	var minimum: int = DeckRules.min_for_slot(ctx["deck_rules"], slot_type)
+	var distinct: Array[String] = []
+	for owned_id: String in state.deck:
+		if String(((ctx["by_id"] as Dictionary).get(owned_id, {}) as Dictionary).get("slot_type", "")) == slot_type and not distinct.has(owned_id):
+			distinct.append(owned_id)
+	if problems.is_empty():
+		return ""
+	if distinct.size() - 1 < minimum:
+		return String(t["remove_locked"]) % [slot_name, minimum]
+	return String(t["remove_locked_group"]) % slot_name
+
+
 ## Deck-rule shortfalls that removing one copy of the card would cause (empty = allowed).
 static func removal_problems(state: RunState, card_id: String, ctx: Dictionary) -> Array[String]:
 	return DeckRules.can_remove(state.deck, card_id, ctx["deck_rules"], ctx["slot_of"], ctx["known_slots"], ctx["slot_names"])
@@ -278,6 +302,7 @@ static func card_option(option_id: String, kind: String, card_id: String, ctx: D
 	option["slot_name"] = String((ctx["slot_names"] as Dictionary).get(slot_type, slot_type))
 	var effect_text: Dictionary = ((ctx["ui"] as Dictionary).get("effect", {}) as Dictionary).duplicate()
 	effect_text["slot_names"] = ctx["slot_names"]
+	effect_text["statuses"] = ctx.get("statuses", {})
 	option["detail"] = CardSummary.effect_line(card, float((ctx["slot_base"] as Dictionary).get(slot_type, -1.0)), effect_text)
 	return option
 

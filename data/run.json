@@ -57,15 +57,24 @@
         ]
     },
     "ui": {
-        "effect": { "slot_cooldown": "%s cooldown %s s", "for": "for %s s" },
-        "option": { "unavailable": "Unavailable: %s", "owned": "You own %d", "copies": "x%d", "slot_key": "Slot %d", "pick_hint": "Enter to pick", "act_hint": "Enter to choose", "remove_hint": "Enter to remove", "list_hint": "Keys 1-%d highlight, Enter or click confirms", "remove_list_hint": "Keys 1-%d jump to that slot column, Enter confirms" },
+        "effect": {
+            "damage": "%s %s damage", "hits": "%s %s damage x %d hits", "shape": "%s (%s)",
+            "shapes": { "cone": "cone", "aoe": "area", "projectile": "shot", "zone": "zone" },
+            "zone": "%s every %s s for %s s (%s)", "zone_status": "%d%% chance of %s for %s s",
+            "heal": "Heal %s HP", "dash": "Dash %s m", "dash_modes": { "away_from_aim": " away from your aim" }, "dash_damage": "%s %s damage",
+            "pass_through": "Walk through enemies for %s s",
+            "status_plain": "%s for %s s", "status_lifesteal": "%s %d%% for %s s",
+            "status_damage_over_time": "%s %s damage/s for %s s", "status_heal_over_time": "%s %s HP/s for %s s",
+            "cooldown": "Cooldown %s s", "slot_cooldown": "%s cooldown %s s", "for": "for %s s"
+        },
+        "option": { "unavailable": "Unavailable: %s", "owned": "You own %d", "slot_now": "Slot %d now: %s", "copies": "x%d", "slot_key": "Slot %d", "pick_hint": "Enter to pick", "act_hint": "Enter to choose", "remove_hint": "Enter to remove", "list_hint": "Keys 1-%d highlight, Enter or click confirms", "remove_list_hint": "Keys 1-%d jump to that slot column, Enter confirms" },
         "room_label": "Room %d of %d",
         "type_names": { "combat": "Combat", "elite": "Elite", "rest": "Rest", "boss": "Boss" },
-        "room_cleared": { "title": "Room cleared", "button": "Continue", "hint": "Enter or Space", "rest_line": "You rest. It helps a little (healed %d).", "rest_full_line": "You rest. Nothing needed healing.", "stat_hp": "HP", "stat_time": "Time", "stat_healed": "Healed" },
+        "room_cleared": { "title": "Room cleared", "button": "Continue", "hint": "Enter to continue", "rest_line": "You rest. It helps a little (healed %d).", "rest_full_line": "You rest. Nothing needed healing.", "stat_hp": "HP", "stat_time": "Time", "stat_healed": "Healed" },
         "next_line": "Next: Room %d of %d - %s",
         "reward": { "title": "Room cleared", "line": "Pick a card, or reject the offer.", "skip_label": "Reject the offer", "skip_detail": "Spends one reject. Rejects left: %d of %d", "skip_disabled": "No rejects left. Pick a card.", "rejects_label": "Rejects left" },
-        "rest": { "title": "Rest", "line": "Heal a little, or get rid of a card.", "heal_label": "Rest and heal", "heal_detail": "Heal %d HP (%d%% of max)", "heal_full_detail": "HP is already full", "remove_label": "Remove a card", "remove_detail": "Take one card out of your deck", "remove_none": "Every card is needed to meet the deck minimums", "remove_title": "Remove which card?", "remove_line": "Pick a card to remove. Greyed cards would break a deck minimum.", "remove_option": "Remove %s", "copies": "x%d", "back_label": "Back" },
-        "win": { "title": "Run complete", "line": "Somehow, you finished. Nobody is more surprised than you.", "button": "New run", "hint": "Enter or Space", "stat_rooms": "Rooms cleared", "stat_time": "Total time", "stat_hp": "HP left" },
+        "rest": { "title": "Rest", "line": "Heal a little, or get rid of a card.", "heal_label": "Rest and heal", "heal_detail": "Heal %d HP (%d%% of max)", "heal_full_detail": "HP is already full", "remove_label": "Remove a card", "remove_detail": "Take one card out of your deck", "remove_none": "Every card is needed to meet the deck minimums", "remove_locked": "Get another card for the %s slot first (minimum %d different)", "remove_locked_group": "Get another card for %s first", "remove_title": "Remove which card?", "remove_line": "Pick a card to remove. Greyed cards would break a deck minimum.", "remove_option": "Remove %s", "copies": "x%d", "back_label": "Back" },
+        "win": { "title": "Run complete", "line": "Somehow, you finished. Nobody is more surprised than you.", "button": "New run", "hint": "Enter to start over", "stat_rooms": "Rooms cleared", "stat_time": "Total time", "stat_hp": "HP left" },
         "lose": { "run_line": "Reached room %d of %d." }
     }
 }

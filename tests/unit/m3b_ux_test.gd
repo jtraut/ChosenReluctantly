@@ -25,8 +25,8 @@ func _full_opt(id: String, kind: String) -> Dictionary:
 func test_buff_effect_line_is_readable_and_data_driven() -> void:
 	var text: Dictionary = {"slot_cooldown": "%s cooldown %s s", "for": "for %s s", "slot_names": {"attack_single": "Attack: Single"}}
 	var params: Dictionary = {"stat": "slot_cooldown.attack_single", "modifier_type": "additive", "value": -0.5, "duration": 6.0}
-	assert_str(CardSummary.buff_text(params, text)).is_equal("Attack: Single cooldown -0.5 s for 6.0 s")
-	assert_str(CardSummary.buff_text({"stat": "move_speed", "value": 0.2, "duration": 4.0}, text)).is_equal("Move Speed +0.2 for 4.0 s")
+	assert_str(CardSummary.buff_text(params, text)).is_equal("Attack: Single cooldown -0.5 s for 6 s")
+	assert_str(CardSummary.buff_text({"stat": "move_speed", "value": 0.2, "duration": 4.0}, text)).is_equal("Move Speed +0.2 for 4 s")
 	assert_str(CardSummary.buff_text({"stat": "slot_cooldown.odd_slot", "value": -1.0, "duration": 2.0})).contains("Odd Slot")
 	var ctx: Dictionary = RunChoices.shipped_context([])
 	for card: Dictionary in CardDatabase.all_cards():

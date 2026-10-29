@@ -127,7 +127,8 @@ func test_cleared_prompt_opens_focused_and_the_button_confirms() -> void:
 	assert_int(prompt.root.mouse_filter).is_equal(Control.MOUSE_FILTER_STOP)
 	var confirmed: Array[bool] = []
 	prompt.confirmed.connect(func() -> void: confirmed.append(true))
-	prompt.button.pressed.emit()  # a mouse click and Enter or Space both end in pressed
+	prompt.disarm()  # presses in the first moments are ignored (3c)
+	prompt.button.pressed.emit()  # a mouse click and Enter both end in pressed
 	assert_array(confirmed).has_size(1)
 	assert_bool(prompt.visible).is_false()
 

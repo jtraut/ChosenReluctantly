@@ -186,7 +186,7 @@ func test_rest_room_shows_heal_and_remove_and_remove_is_greyed_with_the_reason()
 	assert_int(screen.options_box.get_child_count()).is_equal(2)
 	var remove_button := screen.options_box.get_child(1) as Button
 	assert_bool(remove_button.disabled).is_true()
-	assert_str(remove_button.text).contains("Unavailable")
+	assert_str((remove_button as RunOptionCard).reason_label.text).contains("Unavailable")
 	assert_bool((screen.options_box.get_child(0) as Button).disabled).is_false()
 	assert_str(state.pending).is_equal(RunState.PENDING_REST)
 	assert_int(state.history.size()).is_equal(1)

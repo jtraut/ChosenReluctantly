@@ -69,14 +69,43 @@ layout_mode = 2
 mouse_filter = 2
 columns = 2
 
-[node name="Options" type="VBoxContainer" parent="Root/Center/Panel/Column"]
+[node name="Scroll" type="ScrollContainer" parent="Root/Center/Panel/Column"]
+layout_mode = 2
+size_flags_horizontal = 4
+follow_focus = true
+horizontal_scroll_mode = 0
+
+[node name="Options" type="GridContainer" parent="Root/Center/Panel/Column/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 4
+mouse_filter = 2
+
+[node name="Footer" type="HBoxContainer" parent="Root/Center/Panel/Column"]
 layout_mode = 2
 mouse_filter = 2
+alignment = 1
 
 [node name="Action" type="Button" parent="Root/Center/Panel/Column"]
 layout_mode = 2
 size_flags_horizontal = 4
 
-[node name="Hint" type="Label" parent="Root/Center/Panel/Column"]
+[node name="Keys" type="Label" parent="Root/Center/Panel/Column"]
+layout_mode = 2
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="NextRow" type="HBoxContainer" parent="Root/Center/Panel/Column"]
+layout_mode = 2
+mouse_filter = 2
+alignment = 1
+
+[node name="NextIcon" type="Control" parent="Root/Center/Panel/Column/NextRow"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+script = ExtResource("2")
+
+[node name="Hint" type="Label" parent="Root/Center/Panel/Column/NextRow"]
 layout_mode = 2
 horizontal_alignment = 1

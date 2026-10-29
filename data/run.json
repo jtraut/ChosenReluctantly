@@ -58,6 +58,8 @@
         ]
     },
     "ui": {
+        "effect": { "slot_cooldown": "%s cooldown %s s", "for": "for %s s" },
+        "option": { "unavailable": "Unavailable: %s", "owned": "You own %d", "copies": "x%d", "slot_key": "Slot %d", "pick_hint": "Enter to pick", "act_hint": "Enter to choose", "remove_hint": "Enter to remove", "list_hint": "Keys 1-%d highlight, Enter or click confirms", "remove_list_hint": "Keys 1-%d jump to that slot column, Enter confirms" },
         "room_label": "Room %d of %d",
         "type_names": { "combat": "Combat", "elite": "Elite", "rest": "Rest", "boss": "Boss" },
         "room_cleared": { "title": "Room cleared", "button": "Continue", "hint": "Enter or Space", "rest_line": "You rest. It helps a little (healed %d).", "rest_full_line": "You rest. Nothing needed healing.", "stat_hp": "HP", "stat_time": "Time", "stat_healed": "Healed" },

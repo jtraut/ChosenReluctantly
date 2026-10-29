@@ -7,13 +7,7 @@ Owned by game-lead. Answer in chat with the ID, for example "D1 = A".
 
 ## Needs your decision
 
-| ID | Question | Why it matters | Options | Recommended | If you don't answer | How to answer |
-|---|---|---|---|---|---|---|
-| D9 | Should Stealth (Shadow Step) also make enemies lose track of you, or only let you pass through them? | Losing aggro is much stronger and needs enemy AI work. Pass-through alone is cheap. | A: pass-through only. B: also drop aggro for its duration. | A | A | "D9 = A/B" |
-| D10 | Allow duplicate copies of a card in a deck? (Copies never count toward the unique minimum.) | Later rewards may grant copies. Banning them would limit reward design. | A: allow. B: one copy per card id. | A | A | "D10 = A/B" |
-| D11 | Neutral cards (Backward Leap, Leech, Regeneration): neutral colours, or your element's colour? | Neutral cards work for every class and element. Owner colour makes them feel like yours; neutral colour makes them recognisable as neutral. | A: neutral palette. B: owner's element colour. | A (simplest; one data value later) | A | "D11 = A/B" |
-| D12 | Order: your note said "ahead of Slice 5", but Slice 5 is already done. Plan: finish the tooling task in progress, then C1, then one end-of-pass playtest that covers C1 too. OK? | It avoids interrupting a task midway, and saves a separate playtest run. | A: as planned. B: C1 first, then pause the tooling task. | A | A | "D12 = A/B" |
-| D8 | A bug fix halved the dodge roll. It used to slide about 7 m; now it stops at its set 3.5 m. Which do you want? | Our test bot now takes about 2.5x more damage with the same seed. Dodge is your main defence against telegraphs. The safe window (0.25 s) is the same either way. | A: keep 3.5 m (as originally set). B: restore about 7 m by doubling dodge speed (same safe window). C: about 5 m, in between. | B (keeps the feel you've been testing; one value) | B, applied in the next gameplay task (dodge values also move into data) | "D8 = A/B/C" |
+Nothing waiting. D8-D12 were answered on 2026-10-28 (see Recently resolved).
 
 ## Needs your eyes in the game
 
@@ -54,7 +48,7 @@ Play a normal run (not a test scenario: scenarios give the player 9999 HP).
 - **Pool note:** after C1, the Neutral pool gives 3 Recovery cards (Healing Potion, Leech, Regeneration) and 1 Movement card (Backward Leap). So any future class + element combination needs at least 2 Movement cards of its own to meet 3 per slot. Content validation will flag it automatically.
 - **Temporary:** the first-run preset deck will contain every Fire Rogue card, so you can test everything. Unlock rules come with the run loop.
 
-- **Dash and dodge distance.** Dash cards and the dodge roll kept sliding after the move ended, travelling about twice their set distance (Blaze and Bail went about 8 m, not 4 m). They will now stop at the distance set in data, so the hit-area preview tells the truth. Dodge went from about 7.1 m to 3.5 m (its intended distance), and Blaze and Bail from about 8.1 m to 4.0 m. If the dodge feels too short, tune `dodge_speed` or `dodge_duration`; no new code needed.
+- **Dash and dodge distance (dodge set to about 5 m per your D8 answer, applied in C1).** Dash cards and the dodge roll kept sliding after the move ended, travelling about twice their set distance (Blaze and Bail went about 8 m, not 4 m). They will now stop at the distance set in data, so the hit-area preview tells the truth. Dodge went from about 7.1 m to 3.5 m (its intended distance), and Blaze and Bail from about 8.1 m to 4.0 m. If the dodge feels too short, tune `dodge_speed` or `dodge_duration`; no new code needed.
 
 - The training dummy (the dark-red cylinder next to you at the start) is being removed from normal runs. It was a test aid that reads as an enemy. Scenarios keep it.
 - The dark area at the top-left edge of the screen is the empty space past the arena floor (by design since 4b). It is not a bug.
@@ -75,6 +69,11 @@ Play a normal run (not a test scenario: scenarios give the player 9999 HP).
 
 | ID | Question | Your answer | Date |
 |---|---|---|---|
+| D8 | How far should the dodge go? | C: about 5 m. It may go lower later, so keep it easy to tune. Critical survival moves should come from Movement cards. | 2026-10-28 |
+| D9 | Should Stealth also drop enemy aggro? | A: pass-through only for this pass. Aggro drop is planned for later. | 2026-10-28 |
+| D10 | Duplicate cards in a deck? | A: allowed (they never count toward the unique minimum). | 2026-10-28 |
+| D11 | Neutral card colours? | A: neutral palette. | 2026-10-28 |
+| D12 | Order: tooling task, then C1, then the end-of-pass playtest? | A: as planned. | 2026-10-28 |
 | - | Add the tech-writer role? | Yes. It owns README, CHANGELOG, ASSETS and ARCHITECTURE, and does one docs pass per slice before close. | 2026-10-28 |
 | D1 | Run stats on the Game Over screen? | A: not now; revisit with the run structure. | 2026-10-28 |
 | D2 | Hold-to-preview casting? | C: build it as the default, with a setting to cast on press instead. Scheduled as Slice 6. | 2026-10-28 |
@@ -82,9 +81,3 @@ Play a normal run (not a test scenario: scenarios give the player 9999 HP).
 | D4 | Light attack cut to 3? | A: keep it; you will playtest, and it stays easily tunable. | 2026-10-28 |
 | D5 | Heavy's 50% Burn beats some area cards? | A: keep as built. | 2026-10-28 |
 | D6 | Golem wind-up 0.7 s? | A: yes (already applied). | 2026-10-28 |
-| D7 | HP bar visibility? | B: damaged enemies only, plus elites and bosses always. Applied in Slice 6. | 2026-10-28 |
-| P1 | Spam-click gave 2.4x auto damage. Lower it? | Cap at 1.5x the auto rate, as a data ratio. | 2026-10-28 |
-| P2 | Heavy attack DPS is below light. Give it a reason? | Heavy trades DPS for burst, area, stun and element flavour; heavy attacks are defined per class. | 2026-10-28 |
-| P3 | Root or slow during the heavy wind-up? | A slight slow, never a root. | 2026-10-28 |
-| P4 | Auto light beats cheap cards. Intended? | No. Cards must always beat the free attack: lower light, raise cheap damage cards. | 2026-10-28 |
-| - | Clicking's role overall | An early-game crutch; it should feel unnecessary once the build takes shape. | 2026-10-28 |

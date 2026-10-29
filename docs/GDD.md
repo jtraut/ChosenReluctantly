@@ -57,6 +57,7 @@ Fewer, more impactful enemies. Telegraphed attacks, readable danger, and dodge s
 - **Card slots:** keys 1 to 5.
 - **Hold-to-preview casting [DIRECTOR DECISION, 2026-10-28]:** by default, holding a card's key shows its exact hit area on the ground (drawn from the same data as the hitbox), and the card casts on release. A setting switches casting to trigger on press instead.
 - **Dodge roll:** Space bar. **[OPEN]** how this relates to the Movement slot (see section 4).
+  - **[DIRECTOR DECISION, 2026-10-28]** The dodge is a modest escape, about 5 m, and may be lowered later. Its distance must stay easy to tune (data). Critical survival manoeuvres should come from Movement cards, not the dodge.
 - **Controller:** late stretch goal, not in scope.
 
 ---
@@ -94,7 +95,8 @@ Notes:
   - Every deck that can start a run (preset starting deck, saved loadouts, the deck at run start) must satisfy every active rule. A deck that fails cannot start a run.
   - Any in-run removal or swap (for example a deck-clean reward) is blocked if it would break a rule. The reward reject mechanic (§9) is unaffected.
   - Content validation checks that every class + element combination, together with the neutral pool, can satisfy the rules.
-- **[PROPOSED]** Duplicate copies of a card are allowed in a deck, since later rewards may grant copies.
+- **[DIRECTOR DECISION, 2026-10-28]** Duplicate copies of a card are allowed in a deck, since later rewards may grant copies. Copies never count toward a unique minimum.
+- **[DIRECTOR DECISION, 2026-10-28]** Neutral cards use the neutral colour palette, not the owner's element colour.
 - **Temporary testing default:** for the prototype, the preset first-run deck contains every available Fire Rogue card (class, element, neutral). Unlock and tuning rules come with the run loop.
 
 ### Open items
@@ -263,6 +265,9 @@ Resolved: engine (Godot), perspective (3D isometric), slice classes and elements
 ## 15. Ideas and Parked Concepts
 
 Nothing in this section is scheduled. **DO NOT IMPLEMENT** anything here without a director decision moving it into the main sections.
+
+### Stealth drops enemy aggro **[PLANNED, later]**
+- **[DIRECTOR DECISION, 2026-10-28]** For now, Stealth (Shadow Step) only lets the player pass through enemies. Later, stealth should also make enemies lose track of the player for its duration. That needs enemy targeting/aggro work, so plan it with the enemy AI pass.
 
 ### Slot cooldown reset effects **[IDEA, not scheduled]**
 - Utility cards that force-reset another slot's cooldown, for synergy with Recovery (the slot with the longest base cooldown).

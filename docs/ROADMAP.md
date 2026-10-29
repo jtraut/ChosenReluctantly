@@ -293,6 +293,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
     - The F3 overlay shows counts ("Movement 4/3", plus the group line only when a group exists), with shortfalls highlighted. Expose the data; ux styles it in C1-e.
     - Shuffle bag: verify the current behaviour, fix it if needed, add the no-back-to-back rule across a reshuffle, add tests, and log what you found.
     - Test fixture with the director's example (attack group of 10, 3 per attack slot, utility 5, movement 3, recovery 3). Shipped data stays at 3 per slot.
+    - **D8 = C (director):** dodge about 5 m. The tooling task applies default B (`dodge_speed` 28, 7 m) and moves the dodge values to data. C1-a changes the data value to 20 (20 x 0.25 s = 5.0 m) and updates tests. If the tooling task didn't land the data move, do it here.
     - Recovery gets the longest base cooldown: check `data/slot_types.json`, check no other slot's default effective cooldown is longer, and log old/new.
   - [ ] **C1-b1, generic capabilities part 1 (gameplay-dev):**
     - `chance` on `apply_status`, reusing the 3b element-chance code.
@@ -325,6 +326,9 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
   - [ ] **C1-h, tech-writer:** the docs pass (ARCHITECTURE adds deck rules, the example config and the new templates; README; CHANGELOG).
 
 - [ ] **Pass close-out:** whole-pass playtester report in `docs/playtests/`, DoD above verified, STATE.md points at Milestone 3a.
+
+## Later (director, 2026-10-28)
+- Stealth makes enemies drop aggro (GDD §15 "Stealth drops enemy aggro [PLANNED, later]"). Do it with the enemy targeting/AI pass.
 
 ## Milestone 3 — Card system and run loop (next, outlined only)
 Not started. Expected scope per GDD §13 milestone 3 and §9:

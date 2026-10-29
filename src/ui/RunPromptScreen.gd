@@ -50,6 +50,7 @@ var _auto_chosen: int = 0
 ## Real time (ms ticks) before which option presses are ignored: the panel opens right after a fight, while
 ## the player is still mashing the card keys, Space (dodge) and LMB. Length: data/ui.json run_ui.prompt_option_arm_delay.
 var _armed_at_msec: int = 0
+var _fit_scale: float = 1.0
 
 
 func _ready() -> void:
@@ -57,7 +58,8 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS  # keeps the focus restore alive across a pause; nothing here ticks
 	_apply_style()
 	get_viewport().size_changed.connect(_apply_style)
-	panel.minimum_size_changed.connect(_fit_panel)  # the cards settle a pass after they are added
+	panel.minimum_size_changed.connect(_fit_panel)
+	($Root/Center as Container).sort_children.connect(_apply_fit_scale)  # the cards settle a pass after they are added
 	button.pressed.connect(_on_pressed)
 	GamePause.paused_changed.connect(_on_pause_changed)
 	_controller = get_parent().get_node_or_null("RunController") as RunController
@@ -351,6 +353,10 @@ func _fill_options(options: Array, content: Dictionary = {}) -> void:
 	footer_box.visible = false
 	if options.is_empty():
 		return
+	_layout = layout_for(options)
+	# Only the removal grid may scroll; an offer (cards, reject, rest choices) always shows whole and the panel scales.
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO if _layout == "grid" else ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var cfg := UiConfig.run_ui()
 	var s := _scale(cfg)
 	var texts: Dictionary = RunConfig.ui().get("option", {})
@@ -596,21 +602,35 @@ func _apply_style() -> void:
 ## still be taller than the screen, so the panel shrinks (down to run_ui.option_min_fit_scale) rather than clip.
 func _fit_panel() -> void:
 	var cfg := UiConfig.run_ui()
-	panel.scale = Vector2.ONE
-	if scroll.visible:
-		# The options scroll when they would not fit: give the scroll area what the rest of the panel leaves.
+	panel.scale = Vector2.ONE  # measure at natural size
+	var floor_scale: float = float(cfg["option_min_fit_scale"])
+	if scroll.visible and _layout == "grid":
+		# The removal grid scrolls when it would not fit: give the scroll area what the rest of the panel leaves.
 		var rest_h: float = panel.get_combined_minimum_size().y - scroll.get_combined_minimum_size().y
 		var room: float = _avail_height(cfg) - rest_h
 		var content_h: float = options_box.get_combined_minimum_size().y
 		var wanted: float = minf(content_h, maxf(room, 120.0 * _scale(cfg)))
 		if not is_equal_approx(scroll.custom_minimum_size.y, wanted):
 			scroll.custom_minimum_size.y = wanted
+	elif scroll.visible:
+		# An offer never scrolls: the area is exactly as tall as its content and the whole panel shrinks to fit.
+		var whole_h: float = options_box.get_combined_minimum_size().y
+		if not is_equal_approx(scroll.custom_minimum_size.y, whole_h):
+			scroll.custom_minimum_size.y = whole_h
+		floor_scale = float(cfg["offer_min_fit_scale"])
 	var needed: Vector2 = panel.get_combined_minimum_size()
 	var avail: Vector2 = get_viewport().get_visible_rect().size * float(cfg["option_fit_margin"])
 	avail.y = _avail_height(cfg)
-	var factor: float = clampf(minf(avail.y / maxf(needed.y, 1.0), avail.x / maxf(needed.x, 1.0)), float(cfg["option_min_fit_scale"]), 1.0)
-	panel.pivot_offset = needed * 0.5
-	panel.scale = Vector2(factor, factor)
+	var factor: float = clampf(minf(avail.y / maxf(needed.y, 1.0), avail.x / maxf(needed.x, 1.0)), floor_scale, 1.0)
+	_fit_scale = factor
+	_apply_fit_scale()
+
+
+## A container resets its child's scale to 1 every time it sorts (after a size change), which silently undid the
+## fit and let the panel overflow the window. So the fit is kept here and re-applied after every sort.
+func _apply_fit_scale() -> void:
+	panel.pivot_offset = panel.size * 0.5
+	panel.scale = Vector2(_fit_scale, _fit_scale)
 
 
 ## Height the panel may use. The panel is centred in the area under the top HUD band (health panel and meters), so

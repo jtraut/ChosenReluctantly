@@ -12,11 +12,11 @@ Last updated: 2026-10-29. The director is away until the evening with an autonom
 
 ## In progress
 - **Milestone 3b closed** 2026-10-29 (tag `playtest-2026-10-29-3b`, 826/826).
-- **Milestone 3c, boss encounter:** the brief is in ROADMAP Gameplay built a35501d..2234dc8 (875/875). ux b8af93f..5245779 (894/894). Next role: qa.
+- **Milestone 3c, boss encounter:** the brief is in ROADMAP Gameplay built a35501d..2234dc8 (875/875). ux b8af93f..5245779; qa PASS 64df947 (903/903). Next role: playtester. The 3d brief is written in ROADMAP.
 
 ## Exact next step
-1. **3c qa.** **On resume:** check `docs/reviews/` for a 3c review.
-2. Then playtester -> tech-writer -> close, tag `playtest-2026-10-29-3c`.
+1. **3c playtest.** **On resume:** check `docs/playtests/` for a 3c report.
+2. Then tech-writer -> close, tag `playtest-2026-10-29-3c`.
 3. Then 3d (loadouts). Write its brief at the 3c close.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.

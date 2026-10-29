@@ -385,7 +385,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     Reward-only at start: Flaming Nonsense, Pointy Stick, Slash Then Bleed, Four Quick Stabs, Fireball, Wall of Mild Fire, Walk Through Everyone, Reluctant Lunge, Heal By Hurting.
   - **Known limit:** Utility has exactly 3 cards in the whole pool, so it can never be cleaned or grow until more Utility cards exist. Accepted for the prototype.
   - **Owner sequence:** gameplay-dev (logic, data, a placeholder screen) -> ux-designer (the choice screen) -> qa -> playtester -> tech-writer -> close, tag `playtest-2026-10-29-3b`.
-- [ ] **3c, boss encounter** — gameplay BUILT a35501d..2234dc8 (875/875; bot boss fight mean 61 s, 8/8 won); ux BUILT b8af93f..5245779 (894/894, including the 3b follow-ups). qa next.
+- [ ] **3c, boss encounter** — gameplay BUILT a35501d..2234dc8 (875/875; bot boss fight mean 61 s, 8/8 won); ux BUILT b8af93f..5245779 (894/894, including the 3b follow-ups); qa PASS 64df947 (903/903). playtester next.
   - **Goal:** the last room ends the run with a real fight: one boss with readable phases and telegraphed attacks, replacing the 3a placeholder (a golem with HP x7). GDD §7 (final boss: 50% resistance to every element, equal), §11 (telegraphs, feel).
   - **Acceptance:**
     1. **Data-driven boss** (`data/bosses.json` or a `boss` block in `data/enemies.json`, schema-validated): HP, move speed, 50% resistance to every element (physical ignores resistance as usual), and a phase list with HP thresholds (default 3 phases: 100-66%, 66-33%, 33-0%).
@@ -406,7 +406,25 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     - the Continue / New run button gets the arm delay, and its hint drops "Space".
     - Gameplay side: `RunState.from_dict` rejects an unknown `pending`; the choice model carries `owned` and `next_room_type`.
   - **Owner sequence:** gameplay-dev -> ux-designer (boss bar, telegraph readability) -> qa -> playtester -> tech-writer -> close, tag `playtest-2026-10-29-3c`.
-- [ ] **3d, loadouts** (brief written at 3c close). From run 2 on: build, save and load a starting deck, validated by the deck rules. Persisted in `user://`.
+- [ ] **3d, loadouts**
+  - **Goal:** from the second run on, you can build a starting deck, save it as a loadout and start runs with it. GDD §9 ("Starting decks and loadouts [DECIDED]"), §4 (deck rules).
+  - **Acceptance:**
+    1. **Profile:** a small persisted profile (`user://profile.json`, versioned, validated) counts finished runs (won or lost). Run 1 starts straight away with the preset (today's behaviour). The path is injectable so tests never touch the real user folder.
+    2. **Start screen (from run 2):** before a run, a screen offers: Start with the preset; start with a saved loadout; edit or create a loadout. The last-used choice is preselected, so one Enter starts a run. Try again and New run go to this screen from run 2 on.
+    3. **Loadout editor:** pick cards from the available collection into a deck, grouped by slot, with live deck-rule counts ("Movement 4/3") and the exact shortfall messages from the existing checker. Saving is blocked while the deck breaks a rule, with the reasons shown. Name and save it.
+    4. **Rules (data, `data/loadouts.json` or a `loadouts` block in `run.json`):** collection = every card in the character's pools; at most 2 copies per card; deck size from the deck-rule minimum (15 today) to 20; 3 loadout save slots.
+    5. **Persistence:** `user://loadouts.json`, versioned. A corrupt, outdated or rule-breaking file never crashes or blocks a run: bad loadouts are flagged and skipped with a message, and the preset is always available.
+    6. **Run start:** the chosen deck goes into RunState through the existing validation (the run-start block still applies). `--full-deck` and the debug args still work. Scenarios and sims are unaffected (they ignore the profile).
+    6a. **Save robustness (from 3c qa):** `RunState.from_dict` must not crash on wrongly-typed `offer`, `deck` or `choice_log` entries (use `str()` or validate types); clear a stale `offer` when `pending` is empty; `BossConfig.validate` must not throw a script error on a non-object attack (qa repro: `attacks.smash = "hit"`); remove the unused `tiers.boss` from `run.json`.
+    7. **Coupling:** loadout code handles card ids, slots and pools through the deck APIs only.
+    8. **Gates:** suite green (round trips, a corrupt file, rule enforcement, run-count gating, the injectable path); zero errors on startup and in the 20 s headless run; reload soak clean; SceneSelfCheck; capture scenarios and the sim hashes unchanged.
+  - **Defaults (game-lead calls, logged):**
+    - Every card in the character's pools is available. Unlock rules are [OPEN] and come with meta-progression.
+    - At most 2 copies per card.
+    - Deck size 15-20.
+    - 3 save slots.
+    - A finished run counts whether it was won or lost.
+  - **Owner sequence:** gameplay-dev (profile, storage, rules, placeholder screens) -> ux-designer (start screen and editor) -> qa -> playtester -> tech-writer -> close, tag `playtest-2026-10-29-3d`. **This closes Milestone 3** except the out-of-scope items below.
 - Later in M3 or after: shops and drops (GDD §14 item 1, [OPEN], not started); branching routes.
 
 ## Milestone 4 — Second class/element, subclasses, passive tree prototype, balance sim

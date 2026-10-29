@@ -823,3 +823,15 @@ Commits b8af93f..5245779; 894/894. Rejected alternatives in brackets.
   - Continue and New run get the arm delay, Space is swallowed, and the hints say Enter;
   - the reward panel sits below the HUD band.
 - **Backlog:** the Game Over screen still accepts Space and says "Enter or Space". One unreproduced reload-soak failure happened before a `disarm()` fix; qa watches for it.
+
+### 2026-10-29 - 3c qa PASS; 3d defaults (game-lead)
+- 3c qa PASS 64df947, 903/903 (`docs/reviews/2026-10-29-m3c-qa.md`). Soak 5/5; ux's single soak failure is treated as a fixed flake (New run pressed inside the arm delay).
+- **qa's save-robustness findings** (`from_dict` type crashes, stale offer, BossConfig script error, unused `tiers.boss`) go into 3d, because 3d adds real persistence. Cosmetic items (boss body over the resist text, a doubled cooldown in buff lines, Game Over accepts Space) go to the backlog.
+- **3d defaults** (also in "Calls I made"):
+  - every card in the character's pools is available (unlock rules are [OPEN] for meta-progression);
+  - at most 2 copies per card;
+  - deck size 15-20;
+  - 3 save slots;
+  - any finished run counts toward "from run 2".
+
+  [Unlock-gated collections, which need meta-progression design; unlimited copies, which make a degenerate one-card deck plausible within the unique-count rule.]

@@ -67,8 +67,14 @@ func _spawn_one(enemy_id: String) -> void:
 	_spawn_count += 1
 	# The arena is the spawner's parent (Main); only a parentless spawner falls back to the scene root.
 	var world: Node = get_parent() if get_parent() != null else WorldRef.get_world(get_tree())
+	var spawn_position := _random_spawn_position()
+	if PlayerConfig.collide_with_enemies() and world is Node3D:
+		# Solid bodies: in place before it enters the tree. An enemy that first appears at the origin overlaps a
+		# player standing there and pops it up onto its head for a few frames. (With the flag off the old order
+		# is kept so that setting restores the earlier behaviour exactly, even seed for seed.)
+		instance.position = (world as Node3D).to_local(spawn_position)
 	world.add_child(instance)
-	instance.global_position = _random_spawn_position()
+	instance.global_position = spawn_position
 	instance.target = target
 	instance.begin_spawn_grace(float(plan.config["spawn_attack_grace"]))
 	_alive += 1

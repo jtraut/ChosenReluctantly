@@ -98,6 +98,14 @@ var _base_body_color: Color = Color.WHITE
 var _knockback_velocity: Vector3 = Vector3.ZERO
 ## Pass-through buff: how many grants are running, and the collision mask the body had before the first.
 var _pass_through_count: int = 0
+## Pass-through ended while the body still overlaps an enemy: the masks stay off until it is clear (or the cap
+## runs out), so solid bodies never pop the player out of a crowd (and up onto an enemy's head).
+var _restore_pending: bool = false
+var _restore_wait: float = 0.0
+const PASS_THROUGH_RESTORE_CAP := 3.0
+const PLAYER_BODY_RADIUS := 0.4
+## Overlapping by more than this counts as inside (bodies in contact stand 0.85 apart, so 0.05 of slack).
+const CLEAR_MARGIN := -0.05
 var _mask_before_pass_through: int = 0
 ## Damage along a dash path (EffectTemplates dash with `damage`): the spec, the enemies already hit this
 ## dash (instance ids) and where the last tick sampled from.
@@ -136,6 +144,9 @@ func _ready() -> void:
 		# Solid enemies (data/player.json body.collide_with_enemies): the player's body is blocked by enemy bodies.
 		# The scene's mask is world only; Enemy adds the player's layer to its own mask under the same flag.
 		collision_mask |= CollisionLayers.ENEMY_BODY
+		# Never carried by, or standing on the motion of, an enemy body.
+		platform_floor_layers = CollisionLayers.WORLD
+		platform_wall_layers = CollisionLayers.WORLD
 	var dodge_cfg: Dictionary = PlayerConfig.dodge()
 	dodge_speed = float(dodge_cfg["speed"])
 	dodge_duration = float(dodge_cfg["duration"])
@@ -168,6 +179,8 @@ func _physics_process(delta: float) -> void:
 		_tick_dead(delta)
 		return
 	_tick_cooldowns(delta)
+	if _restore_pending:
+		_tick_restore(delta)
 	_knockback_velocity = _knockback_velocity.move_toward(Vector3.ZERO, KNOCKBACK_DECAY * delta)
 	card_slots.advance(delta)
 	_handle_dodge_input()
@@ -438,12 +451,16 @@ func grant_pass_through(duration: float) -> void:
 		return
 	_pass_through_count += 1
 	if _pass_through_count == 1:
-		_set_pass_through(true)
+		if _restore_pending:
+			_restore_pending = false  # still passing through; the new grant simply continues it
+		else:
+			_set_pass_through(true)
 	get_tree().create_timer(duration, false).timeout.connect(_release_pass_through, CONNECT_ONE_SHOT)
 
 
+## True while the body passes through enemies, including the short wait after the buff ended while still inside one.
 func is_pass_through() -> bool:
-	return _pass_through_count > 0
+	return _pass_through_count > 0 or _restore_pending
 
 
 func _release_pass_through() -> void:
@@ -451,12 +468,24 @@ func _release_pass_through() -> void:
 		return
 	_pass_through_count -= 1
 	if _pass_through_count == 0:
+		if PlayerConfig.collide_with_enemies() and Enemy.any_body_overlaps(global_position, PLAYER_BODY_RADIUS + CLEAR_MARGIN):
+			_restore_pending = true
+			_restore_wait = 0.0
+		else:
+			_set_pass_through(false)
+
+
+func _tick_restore(delta: float) -> void:
+	_restore_wait += delta
+	if _restore_wait >= PASS_THROUGH_RESTORE_CAP or not Enemy.any_body_overlaps(global_position, PLAYER_BODY_RADIUS + CLEAR_MARGIN):
+		_restore_pending = false
 		_set_pass_through(false)
 
 
 func _end_all_pass_through() -> void:
-	if _pass_through_count > 0:
+	if _pass_through_count > 0 or _restore_pending:
 		_pass_through_count = 0
+		_restore_pending = false
 		_set_pass_through(false)
 
 

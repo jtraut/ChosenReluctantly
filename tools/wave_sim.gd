@@ -65,6 +65,10 @@ var _pin_frames: int = 0
 var _pin_streak: int = 0
 var _pin_streak_max: int = 0
 var _pin_frames_total: int = 0
+## Highest the player's feet got and the frames above CLIMB_Y: solid enemies must never let it stand on a head.
+const CLIMB_Y := 0.3
+var _max_player_y: float = 0.0
+var _climb_frames: int = 0
 
 
 ## --trace: print the state hash once per sim second (find where two runs of a seed diverge).
@@ -142,6 +146,8 @@ func _reset_run_state(run_seed: int) -> void:
 	_pin_streak = 0
 	_pin_streak_max = 0
 	_pin_frames_total = 0
+	_max_player_y = 0.0
+	_climb_frames = 0
 	_pair_ok_frames = 0
 	_pair_min_sum = 0.0
 	_pair_min_all = INF
@@ -243,6 +249,10 @@ func _enemies() -> Array[Enemy]:
 
 func _sample_pin(dt: float) -> void:
 	var here := _player.global_position
+	if not _player.is_dead():
+		_max_player_y = maxf(_max_player_y, here.y)
+		if here.y > CLIMB_Y:
+			_climb_frames += 1
 	if _player.is_dead() or dt <= 0.0:
 		_pin_streak = 0
 	elif _pin_want.length_squared() > 0.0001:
@@ -491,6 +501,7 @@ func _report(run_seed: int, wall_ms: int) -> void:
 		run_seed, _damage_taken, _kills, _casts, _max_alive, _main.enemy_spawner.plan.stages_started(), _sim_time, _state_hash()])
 	print("    pinned: %d of %d move-commanded frames (%.1f%%), longest stretch %d frames (%.2f s)" % [
 		_pin_frames, _pin_frames_total, 100.0 * float(_pin_frames) / maxf(float(_pin_frames_total), 1.0), _pin_streak_max, float(_pin_streak_max) / 60.0])
+	print("    climb: player feet max y %.3f m, %d frames above %.1f m" % [_max_player_y, _climb_frames, CLIMB_Y])
 	print("    spacing (melee within %.0f m of player, %d frames with 2+): mean min-pair %.2f m, worst %.2f m, %.0f%% of frames >= %.1f m" % [
 		NEAR_RADIUS, _pair_frames, _pair_min_sum / maxf(float(_pair_frames), 1.0), (_pair_min_all if _pair_frames > 0 else 0.0), 100.0 * float(_pair_ok_frames) / maxf(float(_pair_frames), 1.0), SPACING_OK])
 	print("    headless frame ms (wall, each frame steps ~%.0fx physics): p50 %.2f p95 %.2f max %.2f | engine process %.2f ms, physics %.2f ms avg per frame | _attack_has_target %.1f us/call with %d enemies alive (%d calls)" % [

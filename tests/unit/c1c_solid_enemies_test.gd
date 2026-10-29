@@ -35,8 +35,8 @@ func _enemy_at(main: Main, position: Vector3, chase: bool = false) -> Enemy:
 	var enemy: Enemy = (load(CHASER_PATH) as PackedScene).instantiate()
 	if chase:
 		enemy.target = main.player
+	enemy.position = position  # before add_child, like the spawner: an enemy added at the origin would pop a player standing there
 	main.add_child(enemy)
-	enemy.global_position = position
 	return enemy
 
 
@@ -190,13 +190,17 @@ func test_pass_through_ending_inside_a_crowd_in_the_corner_keeps_the_player_in_t
 	player.grant_pass_through(0.3)
 	for i in range(3):
 		_enemy_at(main, corner + Vector3(0.3 * i, 0.0, 0.3), true)  # all overlapping the player
-	await _frames(60)  # the buff ends at frame ~18 with everyone inside everyone
-	assert_bool(player.is_pass_through()).is_false()
-	for i in range(120):
+	await _frames(20)
+	assert_bool(player.is_pass_through()).override_failure_message("the buff ended inside the crowd: masks stay off until clear").is_true()
+	var max_y := 0.0
+	for i in range(240):
 		await _frames(1)
+		max_y = maxf(max_y, player.global_position.y)
 		var p := player.global_position
 		assert_bool(rect.grow(0.05).has_point(Vector2(p.x, p.z))).override_failure_message("left the arena at frame %d: %s" % [i, str(p)]).is_true()
 		assert_bool(is_nan(p.x) or is_nan(p.z)).is_false()
+	assert_bool(player.is_pass_through()).override_failure_message("solid again once clear").is_false()
+	assert_float(max_y).override_failure_message("never popped up onto an enemy (max y %.2f)" % max_y).is_less(0.3)
 
 
 func test_separation_steering_still_spreads_a_crowd_that_chases_a_solid_player() -> void:
@@ -212,3 +216,76 @@ func test_separation_steering_still_spreads_a_crowd_that_chases_a_solid_player()
 		for j in range(i + 1, enemies.size()):
 			worst = minf(worst, enemies[i].global_position.distance_to(enemies[j].global_position))
 	assert_float(worst).override_failure_message("closest pair %.2f m" % worst).is_greater(0.8)
+
+
+# --- standing on bodies (the player must never climb, ride or be carried by an enemy) --------------
+
+func _settle(player: Player) -> void:
+	for i in range(90):
+		await _frames(1)
+		if player.is_on_floor() and absf(player.global_position.y) < 0.05:
+			return
+
+
+func test_dodge_and_backward_leap_into_a_solid_enemy_stay_on_the_floor_and_stop_short() -> void:
+	_set_flag(true)
+	var main := _spawn_main()
+	var player := main.player
+	await _settle(player)
+	var facing := player.get_aim_direction()
+	_enemy_at(main, player.global_position + facing * 2.0)
+	await _frames(3)
+	var start := player.global_position
+	var max_y := 0.0
+	player.start_forced_move(facing, 20.0, 0.25, true)  # the dodge
+	for i in range(40):
+		await _frames(1)
+		max_y = maxf(max_y, player.global_position.y)
+	assert_float((player.global_position - start).dot(facing)).override_failure_message("dodge travelled through").is_less(1.3)
+	assert_float(max_y).override_failure_message("player climbed onto the enemy (max y %.2f)" % max_y).is_less(0.3)
+	# A fast Movement dash (Backward Leap speed, forward here) is blocked the same way.
+	player.global_position = start
+	await _frames(2)
+	max_y = 0.0
+	player.start_forced_move(facing, 26.0, 0.25)
+	for i in range(40):
+		await _frames(1)
+		max_y = maxf(max_y, player.global_position.y)
+	assert_float((player.global_position - start).dot(facing)).is_less(1.3)
+	assert_float(max_y).is_less(0.3)
+
+
+func test_the_real_lunge_strike_hits_the_enemy_in_front_once_and_stops_short() -> void:
+	_set_flag(true)
+	var main := _spawn_main()
+	var player := main.player
+	await _settle(player)
+	var facing := player.get_aim_direction()
+	var enemy := _enemy_at(main, player.global_position + facing * 2.0)
+	await _frames(3)
+	var before := enemy.health.current_health
+	var start := player.global_position
+	var card := CardDatabase.get_card("rogue_lunge_strike")
+	var context := EffectContext.new(player, main, "player")
+	for effect: Dictionary in card["effects"]:
+		EffectTemplates.execute(effect["template"], effect["params"], context)
+	for i in range(30):
+		await _frames(1)
+	assert_float(before - enemy.health.current_health).override_failure_message("8 damage, once").is_equal_approx(8.0, 0.01)
+	assert_float((player.global_position - start).dot(facing)).override_failure_message("knocks the enemy back and stops short of the full 3 m: travelled %.2f" % (player.global_position - start).dot(facing)).is_between(0.5, 2.6)
+	assert_float(player.global_position.y).is_less(0.3)
+
+
+func test_a_spawned_enemy_never_pops_the_player_standing_at_the_origin() -> void:
+	_set_flag(true)
+	var main := _spawn_main()
+	var player := main.player
+	await _settle(player)
+	main.enemy_spawner.target = player
+	for i in range(4):
+		main.enemy_spawner._spawn_one("melee_chaser")
+	var max_y := 0.0
+	for i in range(30):
+		await _frames(1)
+		max_y = maxf(max_y, player.global_position.y)
+	assert_float(max_y).override_failure_message("spawning popped the player up to y %.2f" % max_y).is_less(0.3)

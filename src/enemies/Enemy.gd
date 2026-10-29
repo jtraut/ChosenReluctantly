@@ -88,6 +88,8 @@ func _ready() -> void:
 	if PlayerConfig.collide_with_enemies():
 		_default_collision_mask |= CollisionLayers.PLAYER_BODY  # solid enemies (data/player.json body.collide_with_enemies)
 		collision_mask = _default_collision_mask
+		platform_floor_layers = CollisionLayers.WORLD  # never carried by the player's body either
+		platform_wall_layers = CollisionLayers.WORLD
 	if _player_body_suppressed:
 		collision_mask = _default_collision_mask & ~CollisionLayers.PLAYER_BODY
 	_apply_stats(EnemyConfig.stats_for(enemy_id))
@@ -135,6 +137,21 @@ static func set_player_body_suppressed(suppressed: bool) -> void:
 	_player_body_suppressed = suppressed
 	for enemy: Enemy in _roster:
 		enemy.collision_mask = (enemy._default_collision_mask & ~CollisionLayers.PLAYER_BODY) if suppressed else enemy._default_collision_mask
+
+
+## Enemy body radius used for "is the player still inside an enemy" (the chaser and shooter capsules).
+const BODY_RADIUS := 0.45
+
+
+## True when a live enemy's body overlaps a horizontal circle at `position` with `radius` (the player's body).
+static func any_body_overlaps(position: Vector3, radius: float) -> bool:
+	for enemy: Enemy in _roster:
+		if enemy.health != null and enemy.health.is_dead():
+			continue
+		var flat := Vector2(enemy.global_position.x - position.x, enemy.global_position.z - position.z)
+		if flat.length() < radius + BODY_RADIUS:
+			return true
+	return false
 
 
 static func is_player_body_suppressed() -> bool:

@@ -761,3 +761,13 @@ Commits fd2f644..b8564cd; 802/802. Wave-sim seed 1 30 s hash unchanged. Rejected
 - **The card effect line comes from the effect params,** never from the card id (coupling rule).
 - **Consequence of the deck rules:** every starter card is unremovable until you own a duplicate or a 4th unique card in that slot (3 per slot exactly). Early rest rooms are therefore mostly "heal". Accepted; it's the GDD rule working.
 - **Sim, 10 seeds, scale 8:** 9 won, 1 lost (elite room). The lowest HP inside a room often reaches 1-12 of 30, but carried attrition is mild (mean room-end HP 78-93%). Final decks are 17-19 cards.
+
+### 2026-10-29 - 3b UX (ux-designer, logged by game-lead)
+Commits 56a76f0..d2cd00a. Rejected alternatives in brackets.
+- **Reward = a horizontal row of cards plus a narrower reject tile** inside `options_box`. [A separate reject footer button.] Card tiles show a number badge, name, a "Slot N" pill with the slot name (the HUD's own language, so no new slot colours), effect line, flavor and "You own N". The reject tile shows the rejects left as pips.
+- **Rest = two action tiles; removal = a per-slot grid that scrolls,** where keys 1-5 jump to a slot column. [One vertical list, which doesn't fit 20+ cards at 720p.] Greyed cells show the deck-rule reason.
+- **Effect wording comes from data** (`run.json` `ui.effect`); unknown stats become words, never raw ids.
+- **Safety fixes:** Space (dodge) is swallowed while options are open (it used to confirm the focused option); focus returns to the highlighted option after pause.
+- **New debug arg `--run-auto-choose=<ids>`,** for screenshots.
+- **Process:** subagent commits carry their own session's model attribution (Sonnet), not the "Opus" line in the briefs. That's fine: the attribution should name the model that wrote the commit. Briefs now say "use your session's attribution line".
+- **Follow-up (backlog):** put `owned` and `next_room_type` in the choice model so the screen is self-contained for level-up reuse.

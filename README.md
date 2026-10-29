@@ -94,10 +94,10 @@ A small crash/NaN check on the card and deck system (not a balance tool). It dri
 ```
 powershell -File tools\run_bot_sim.ps1 -Rooms 20      # verified: prints "Bot-sim OK", exit 0
 ```
-The script's only parameter is `-Rooms`. Its output suggests `--seed=1` to reproduce, but the wrapper does not pass a seed, so that hint cannot be followed through `run_bot_sim.ps1` (see `tools/bot_sim.gd` to run it by hand).
+The script's only parameter is `-Rooms`. Its output suggests `--seed=1` to reproduce, but the wrapper does not pass a seed (the default is 1), so that hint cannot be followed through `run_bot_sim.ps1`. `tools/bot_sim.gd` itself reads a `--seed=N` user arg and seeds its own RNG from it; whether a rerun is then fully identical was not tested.
 
 ## Wave density sim
-Plays the real Main scene (spawner, enemies, player) with a bot that uses the real input actions, then reports crashes, NaN, cap violations, enemies or player leaving the arena, stalls, damage taken, alive counts, spacing, and rough CPU frame cost. It runs as a scene (so autoloads exist), headless. `-Seconds` is game time, `-Scale` is `Engine.time_scale` (1 = real time and most faithful, default 3), `-God` keeps the player alive to exercise the whole wave table, `-Idle` is a player who never moves, `-Runs` repeats with consecutive seeds, `-Seed` sets the first seed.
+Plays the real Main scene (spawner, enemies, player) with a bot that uses the real input actions, then reports crashes, NaN, cap violations, enemies or player leaving the arena, stalls, damage taken, alive counts, spacing, and rough CPU frame cost. It runs as a scene (so autoloads exist), headless. `-Seconds` is game time, `-Scale` is `Engine.time_scale` (1 = real time and most faithful, default 3), `-God` keeps the player alive to exercise the whole wave table, `-Idle` is a player who never moves, `-Runs` repeats with consecutive seeds (verified: `-Seed 20 -Runs 2` ran seeds 20 and 21), `-Seed` sets the first seed.
 
 ```
 powershell -File tools\run_wave_sim.ps1 -Seed 1 -Seconds 150 -Runs 3
@@ -117,4 +117,4 @@ powershell -File tools\run_reload_cycle.ps1 -Cycles 5     # verified: prints "RE
 It runs `tools/ReloadCycle.tscn` headless; it must be a scene so autoloads resolve. Re-run it whenever `Main`, `Juice`, `Player` or the autoloads change.
 
 ## Last verification
-Commands above were run on 2026-10-28 on Windows with Godot 4.7.2 (console build via `GODOT_BIN`). Not run interactively: plain `godot --path .` and `-- --scenario=hp_bars` without capture (they open a window and wait for a person; the same code path ran under capture).
+Commands above were run on 2026-10-28 (screenshot and sim forms with the listed scenarios; some with shorter durations or other output paths than shown) on Windows with Godot 4.7.2 (console build via `GODOT_BIN`). Not run interactively: plain `godot --path .` and `-- --scenario=hp_bars` without capture (they open a window and wait for a person; the same code path ran under capture).

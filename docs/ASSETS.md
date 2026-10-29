@@ -6,11 +6,11 @@ Tracks every non-original asset or library in the repo: source, author, license,
 
 | Asset | Source | Author | License | Date added | Files | Used for | Status |
 |---|---|---|---|---|---|---|---|
-| gdUnit4 v6.2.2 | https://github.com/godot-gdunit-labs/gdUnit4 (release tag v6.2.2, per the scaffold commit and `docs/DECISIONS.md`) | Mike Schulze (`addons/gdUnit4/plugin.cfg`) | MIT, Copyright (c) 2023 Mike Schulze (`addons/gdUnit4/LICENSE`) | 2026-10-26 (4fdcf86) | `addons/gdUnit4/` (GDScript source, plus `.tscn`, `.html`, `.css`, `.png` and a C# API stub that ship inside the addon) | Headless unit tests (`tools/run_tests.ps1`); enabled as an editor plugin in `project.godot` | License and version verified from the files in the repo. Source URL not re-checked online. The addon's bundled images (`src/core/assets/touch-button.png`, `src/ui/settings/logo.png`, `src/reporters/html/template/css/logo.png`) are assumed covered by the addon's MIT license: unverified. Not shipped in a game build (test-only). |
+| gdUnit4 v6.2.2 | https://github.com/godot-gdunit-labs/gdUnit4 (release tag v6.2.2, per the scaffold commit and `docs/DECISIONS.md`) | Mike Schulze (`addons/gdUnit4/plugin.cfg`) | MIT, Copyright (c) 2023 Mike Schulze (`addons/gdUnit4/LICENSE`) | 2026-10-26 (4fdcf86) | `addons/gdUnit4/` (GDScript source, plus `.tscn`, `.html`, `.css`, `.png` and a C# API stub that ship inside the addon) | Headless unit tests (`tools/run_tests.ps1`); enabled as an editor plugin in `project.godot` | License and version verified from the files in the repo. Source URL not re-checked online. The addon's bundled images (`src/core/assets/touch-button.png`, `src/ui/settings/logo.png`, `src/reporters/html/template/css/logo.png`) are assumed covered by the addon's MIT license: unverified. Export inclusion unverified: there is no export preset yet. |
 
 ## Not vendored
 
-- **Godot Engine** 4.7.2 stable (official build) is installed on the developer machine (`docs/DECISIONS.md` records the version and the winget install). It is not in the repo. Godot is MIT licensed; a shipped game will carry the engine, so its license text must be included then. Not audited yet.
+- **Godot Engine** 4.7.2 stable (official build) is installed on the developer machine (`docs/DECISIONS.md` records the version and the winget install). It is not in the repo. A shipped game will carry the engine, so its license terms must be checked and included then. Engine license not verified in this pass.
 - **Fonts:** none in the repo. All text uses Godot's built-in default theme font (`get_theme_default_font()` in `src/ui/AttackMeter.gd`; no font files or theme resources are referenced). The default font's own license is unverified here and should be checked before a Steam release.
 - **Audio:** none.
 - **Art / textures / models:** none. All visuals are Godot primitives, CSG shapes and flat colors.
@@ -27,5 +27,6 @@ Listed so the inventory is complete. Authorship is from the git history and file
 
 ## Flags for game-lead
 - Nothing in the repo is known to forbid commercial use or redistribution. The only third-party code is MIT.
-- Two items are unverified: the origin of `assets/icon.svg`, and the default engine font's license (not in the repo, but present in any build).
+- Unverified: the origin of `assets/icon.svg`, the default engine font license and the Godot engine license (neither is in the repo, but both ship in any build), and the gdUnit4 bundled images and export inclusion.
+- When an export preset is created, decide whether to exclude `addons/gdUnit4` from the build and where the MIT notices go.
 - No third-party art or audio has been added. When one is, record source, author, license and URL here before it is committed.

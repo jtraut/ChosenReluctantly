@@ -104,7 +104,7 @@ A `StatusEffectManager` node on every body that can be affected. `StatusDatabase
 - `Hud` polls the player each frame (no signals): five `CardSlotWidget`s, a health bar with "HP x / y", `AttackMeter`s for light and heavy. Layout comes from `data/ui.json` `hud` through `HudLayout`/`TextFit`.
 - `EnemyHpBar` is a billboard per enemy using `assets/shaders/enemy_hp_bar.gdshader`; visibility mode is `data/ui.json` `hp_bars.visibility_mode`.
 - `GameOverScreen` (listens to `Main.game_over_ready`), `SettingsScreen` (Esc; one setting; calls `GamePause`), `DebugOverlay` (F3), `AimIndicator`.
-- All UI numbers, colors and strings go through `UiConfig` (`data/ui.json`), which validates on load.
+- All UI numbers, colors and strings go through `UiConfig` (`data/ui.json`), which validates the `hp_bars`, `death_beat`, `aim`, `popups` and `damage_numbers` blocks on load (others are read as is: unverified).
 
 ## 5. Data flow: card key to applied effect
 
@@ -144,7 +144,7 @@ Data is validated at first use and fails loudly (`push_error`) on bad content; s
 ## 7. Signals worth knowing
 
 - `Player.player_died` -> `Main._on_player_died`.
-- `Main.game_over_ready` -> `GameOverScreen`. `GameOverScreen.retry_requested` -> `Main.restart_arena`.
+- `Main.game_over_ready` -> `GameOverScreen`. `GameOverScreen` emits `retry_requested` and then calls `Main.restart_arena()` itself (no signal connection).
 - `Health.damaged / healed / health_changed / died`.
 - `CardSlotController.card_cast(slot_type, card_id)`.
 - `Player.attack_started / attack_fired / attack_ready / attack_cancelled` (from `AttackController`).
@@ -184,7 +184,7 @@ Add an entry in `data/scenarios.json`; unknown or misspelled keys fail on load (
 
 ## 9. Tests and tools
 
-- **Tests:** gdUnit4 suites in `tests/unit/*_test.gd`. Names with `slice*_qa_test`, `*_recheck_test` are qa regression tests; some pin a bug as red-on-purpose until fixed. `tests/fixtures/` holds bad-data samples for schema tests. Run all: `powershell -File tools\run_tests.ps1`. See `README.md`.
+- **Tests:** gdUnit4 suites in `tests/unit/*_test.gd`. Names with `slice*_qa_test`, `*_recheck_test` are qa regression tests; qa sometimes adds a test that is red on purpose until the fix lands. `tests/fixtures/` holds bad-data samples for schema tests. Run all: `powershell -File tools\run_tests.ps1`. See `README.md`.
 - **Sending input in tests:** use `TestInput.press/release/tap` (`tests/support/test_input.gd`). `Input.action_press` emits no event, so `_unhandled_input` never sees it.
 - **Tools** (all in `tools/`, commands and verification in `README.md`):
   - `run_tests.ps1` -> gdUnit4 headless.

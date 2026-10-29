@@ -386,7 +386,7 @@ func test_space_on_the_focused_resume_button_closes_the_screen_and_does_not_dodg
 
 func test_dodge_ends_at_its_drive_distance_and_does_not_coast() -> void:
 	# Was a PIN for S6-2 (the dodge coasted to about twice its drive). Fixed: a forced move ends at
-	# speed * duration and stops (3.5 m at the old 14 m/s; data/player.json now has 28 m/s = 7.0 m, D8 default B).
+	# speed * duration and stops (3.5 m at the old 14 m/s; data/player.json now has 20 m/s = 5.0 m, D8 = C).
 	_spawn()
 	await _frames(2)
 	var player := _main.player

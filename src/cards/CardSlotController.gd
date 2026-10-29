@@ -31,6 +31,29 @@ func _init(p_caster: Node3D, p_spawn_parent: Node, p_caster_team: String, p_stat
 		slots[slot_type] = CardSlot.new(slot_type, base_cooldown, owned_card_ids, DEFAULT_SWAP_PENALTY, rng)
 
 
+## Every card id in the deck (copies included), across all slots.
+func owned_card_ids() -> Array[String]:
+	var ids: Array[String] = []
+	for slot_type: String in SLOT_TYPE_ORDER:
+		ids.append_array((slots[slot_type] as CardSlot).owned_card_ids)
+	return ids
+
+
+## Shortfalls that removing one copy of `card_id` would cause; empty means allowed (future deck-clean rewards).
+func can_remove(card_id: String) -> Array[String]:
+	return DeckRules.can_remove(owned_card_ids(), card_id, DeckRules.shipped_config(), DeckRules.slot_map_from_database(), SlotTypeDatabase.known_ids(), DeckRules.slot_names_from_database())
+
+
+## Shortfalls that swapping `remove_id` for `add_id` would cause; empty means allowed.
+func can_swap(remove_id: String, add_id: String) -> Array[String]:
+	return DeckRules.can_swap(owned_card_ids(), remove_id, add_id, DeckRules.shipped_config(), DeckRules.slot_map_from_database(), SlotTypeDatabase.known_ids(), DeckRules.slot_names_from_database())
+
+
+## Unique-card counts and shortfalls for the deck as it stands (see DeckRules).
+func deck_check() -> DeckCheck:
+	return DeckRules.check_shipped(owned_card_ids())
+
+
 static func slot_type_at_index(index: int) -> String:
 	if index < 0 or index >= SLOT_TYPE_ORDER.size():
 		return ""

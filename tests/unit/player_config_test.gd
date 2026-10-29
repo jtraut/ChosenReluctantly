@@ -1,6 +1,6 @@
 class_name PlayerConfigTest
 extends GdUnitTestSuite
-## data/player.json: dodge values come from data (D8 default B: 28 m/s x 0.25 s = 7.0 m).
+## data/player.json: dodge values come from data (D8 = C: 20 m/s x 0.25 s = 5.0 m).
 
 var _main: Main = null
 
@@ -13,14 +13,14 @@ func after_test() -> void:
 	PlayerConfig.reload()
 
 
-func test_shipped_data_is_valid_and_dodge_travels_7_metres() -> void:
+func test_shipped_data_is_valid_and_dodge_travels_5_metres() -> void:
 	assert_array(PlayerConfig.validate(JSON.parse_string(FileAccess.get_file_as_string(PlayerConfig.PATH)))).is_empty()
 	var dodge: Dictionary = PlayerConfig.dodge()
-	assert_float(float(dodge["speed"])).is_equal(28.0)
+	assert_float(float(dodge["speed"])).is_equal(20.0)
 	assert_float(float(dodge["duration"])).is_equal(0.25)
 	assert_float(float(dodge["cooldown"])).is_equal(0.8)
 	assert_int(int(dodge["block_ticks_after_pause"])).is_equal(2)
-	assert_float(float(dodge["speed"]) * float(dodge["duration"])).is_equal_approx(7.0, 0.0001)
+	assert_float(float(dodge["speed"]) * float(dodge["duration"])).is_equal_approx(5.0, 0.0001)
 
 
 func test_player_takes_dodge_values_from_data_and_travels_the_data_distance() -> void:

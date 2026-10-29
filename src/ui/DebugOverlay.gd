@@ -40,6 +40,9 @@ func _process(_delta: float) -> void:
 					_card_label(slot.preview_card_id()),
 				]
 			)
+		var deck_check := player.card_slots.deck_check()
+		lines.append("Unique cards (have/need):")
+		lines.append_array(deck_check.summary_lines())
 	label.text = "\n".join(lines)
 
 

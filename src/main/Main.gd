@@ -17,6 +17,9 @@ var _restarting: bool = false
 @onready var debug_overlay: DebugOverlay = $DebugOverlay
 
 
+static var _deck_warned: bool = false
+
+
 func _enter_tree() -> void:
 	WorldRef.register(self)
 
@@ -35,10 +38,24 @@ func _ready() -> void:
 	debug_overlay.player = player
 	AimIndicator.attach(self, player)
 	PlayerOcclusionCue.attach(player)
+	_check_starting_deck()
 	var problems := SceneSelfCheck.find_problems(self)
 	if not problems.is_empty():
 		push_error("Main scene self-check FAILED (world may render empty): " + "; ".join(problems))
 	_setup_debug_capture()
+
+
+## Run-start deck validation (GDD section 4 unique minimums). Warns, not blocks, until the
+## C1-c cards exist: the preset deck is short on some slots today. See DECISIONS.
+func _check_starting_deck() -> void:
+	var problems := DeckRules.validate_config(DeckRules.shipped_config(), SlotTypeDatabase.known_ids())
+	if not problems.is_empty():
+		push_error("deck_rules.json is invalid: " + "; ".join(problems))
+	if _deck_warned:
+		return
+	_deck_warned = true  # once per process; scene reloads would repeat the same lines
+	for problem: String in player.card_slots.deck_check().problems:
+		push_warning("Starting deck breaks a unique-card minimum: " + problem)
 
 
 func is_game_over() -> bool:

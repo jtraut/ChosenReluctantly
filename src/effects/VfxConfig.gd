@@ -41,6 +41,31 @@ const DEFAULTS: Dictionary = {
 	"windup_cancel_size": 0.9,
 	"windup_cancel_duration": 0.3,
 	"windup_cancel_alpha": 0.9,
+	"ghost_body_alpha": 0.45,
+	"ghost_ring_radius": 0.85,
+	"ghost_ring_alpha": 0.7,
+	"ghost_ring_pulse": 0.12,
+	"ghost_ring_hz": 1.6,
+	"ghost_color": "#b9c8ff",
+	"heal_number_interval": 0.25,
+	"heal_number_offset_x": 0.7,
+	"drain_pulse_duration": 0.28,
+	"drain_pulse_size": 0.17,
+	"drain_pulse_alpha": 0.95,
+	"drain_min_interval": 0.1,
+	"drain_color": "#c64bd9",
+	"bleed_drop_duration": 0.5,
+	"bleed_drop_fall": 1.1,
+	"bleed_drop_alpha": 0.95,
+	"heal_mote_duration": 0.7,
+	"heal_mote_rise": 1.1,
+	"heal_mote_size": 0.1,
+	"reticle_range_alpha": 0.35,
+	"reticle_range_thickness": 0.05,
+	"reticle_marker_size": 0.45,
+	"reticle_marker_alpha": 0.9,
+	"dash_arrow_length": 0.6,
+	"dash_arrow_half_width": 0.45,
 	"team_tints": {"enemy": {"color": "#ff3d8b", "neutral_mix": 1.0, "element_mix": 0.4}},
 }
 
@@ -51,7 +76,13 @@ const MARKER_KEYS: Array[String] = ["enemy_shot_lane_alpha", "projectile_lane_al
 		"heal_sparkle_size", "heal_sparkle_duration", "heal_sparkle_rise", "heal_ring_radius", "heal_ring_alpha", "heal_ring_duration",
 		"dash_trail_size", "dash_trail_duration", "dash_trail_alpha", "dash_trail_lighten",
 		"projectile_trail_duration", "projectile_trail_alpha", "projectile_trail_scale", "projectile_muzzle_scale", "projectile_muzzle_alpha",
-		"windup_cancel_size", "windup_cancel_duration", "windup_cancel_alpha"]
+		"windup_cancel_size", "windup_cancel_duration", "windup_cancel_alpha",
+		"ghost_body_alpha", "ghost_ring_radius", "ghost_ring_alpha", "ghost_ring_pulse", "ghost_ring_hz",
+		"heal_number_interval", "heal_number_offset_x", "drain_pulse_duration", "drain_pulse_size", "drain_pulse_alpha", "drain_min_interval",
+		"bleed_drop_duration", "bleed_drop_fall", "bleed_drop_alpha", "heal_mote_duration", "heal_mote_rise", "heal_mote_size",
+		"reticle_range_alpha", "reticle_range_thickness", "reticle_marker_size", "reticle_marker_alpha", "dash_arrow_length", "dash_arrow_half_width"]
+## Colours of the cues that no element owns (hex strings).
+const COLOR_KEYS: Array[String] = ["heal_color", "buff_color", "ghost_color", "drain_color"]
 
 static var _cache: Dictionary = {}
 static var _loaded: bool = false
@@ -81,7 +112,7 @@ static func validate(config: Dictionary) -> Array[String]:
 			var value: Variant = config[key]
 			if (typeof(value) != TYPE_INT and typeof(value) != TYPE_FLOAT) or is_nan(float(value)) or float(value) < 0.0 or float(value) > 5.0:
 				errors.append("'%s' must be a number between 0 and 5" % key)
-	for key: String in ["heal_color", "buff_color"]:
+	for key: String in COLOR_KEYS:
 		if config.has(key) and not (typeof(config[key]) == TYPE_STRING and String(config[key]).is_valid_html_color()):
 			errors.append("'%s' must be a hex color like #7dff9a" % key)
 	errors.append_array(validate_team_tints(config.get("team_tints", {})))
@@ -178,6 +209,11 @@ static func heal_color() -> Color:
 
 static func buff_color() -> Color:
 	return Color.html(String(get_config()["buff_color"]))
+
+
+## Any of the COLOR_KEYS as a Color.
+static func color_of(key: String) -> Color:
+	return Color.html(String(get_config()[key]))
 
 
 ## Cast visual tuning numbers (data/vfx.json): ground markers (TemplateVfx.projectile_lane / dash_path)

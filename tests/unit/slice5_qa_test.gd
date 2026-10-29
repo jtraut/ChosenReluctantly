@@ -666,8 +666,9 @@ func test_hp_bar_block_validates_every_key() -> void:
 		"render_priority": ["x", 10.5, 127, -128, null],
 		"ghost_enabled": ["yes", 1],
 		"burn_status_id": ["", 4],
+		"bleed_status_id": ["", 4],
 		"default_resistance_tint": ["zzz", 5],
-		"colors": ["x", {"fill": "#e2483f"}, {"fill": "nope", "ghost": "#fff", "back": "#fff", "frame": "#fff", "burn": "#fff"}],
+		"colors": ["x", {"fill": "#e2483f"}, {"fill": "nope", "ghost": "#fff", "back": "#fff", "frame": "#fff", "burn": "#fff", "bleed": "#fff"}],
 		"resistance_tints": ["x", {"fire": "nope"}],
 	}
 	for key: String in bad_values:

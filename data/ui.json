@@ -31,12 +31,14 @@
         "ghost_delay": 0.35,
         "ghost_drain_per_sec": 1.5,
         "burn_status_id": "burn",
+        "bleed_status_id": "bleed",
         "colors": {
             "fill": "#e2483f",
             "ghost": "#ffd7a8",
             "back": "#1c1218",
             "frame": "#0d080b",
-            "burn": "#ff9a1f"
+            "burn": "#ff9a1f",
+            "bleed": "#e0123f"
         },
         "default_resistance_tint": "#cfd8dc",
         "resistance_tints": {

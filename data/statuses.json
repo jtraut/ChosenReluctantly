@@ -14,6 +14,7 @@
         "damage_per_tick": 1.0,
         "damage_type": "physical",
         "tick_interval": 0.5,
+        "visual": { "kind": "drips", "size": 0.14, "color": "#e0123f", "offset": 0.55 },
         "flavor_text": "Small cut. Big commitment."
     },
     "regeneration": {
@@ -21,6 +22,7 @@
         "effect_type": "heal_over_time",
         "heal_per_tick": 2.0,
         "tick_interval": 1.0,
+        "visual": { "kind": "ring", "size": 0.8, "color": "#7dff9a" },
         "flavor_text": "Heals slowly. Like everything else, eventually."
     },
     "leech": {
@@ -28,6 +30,7 @@
         "effect_type": "lifesteal",
         "fraction": 0.4,
         "max_heal_per_hit": 3.0,
+        "visual": { "kind": "orbs", "size": 0.11, "color": "#c64bd9", "count": 2, "orbit_radius": 0.55, "orbit_hz": 0.9, "height": 0.7 },
         "flavor_text": "Their health, now yours. They'll cope."
     },
     "stun": {

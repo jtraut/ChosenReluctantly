@@ -5,6 +5,8 @@ extends Node
 
 const DAMAGE_NUMBER_SCENE_PATH := "res://scenes/effects/DamageNumber.tscn"
 const HEAVY_HIT_THRESHOLD := 10.0
+## The merge type of heal numbers (not a damage type: its colour is passed in).
+const HEAL_TYPE := "heal"
 
 var _hitstop_resume_msec: int = -1
 ## Sims set this false: hit-stop and slow-mo then never touch Engine.time_scale, because their end is
@@ -132,7 +134,13 @@ func spawn_popup(world_pos: Vector3, words: String, color: Color, text_scale: fl
 ## Shows a damage number, or merges the hit into a young number of the same type right
 ## next to it (so 12 enemies hit in one swing do not stack a pile of digits), and never
 ## keeps more than `max_alive` numbers.
-func spawn_damage_number(world_pos: Vector3, amount: float, damage_type: String) -> void:
+## A heal number: "+N" in the heal colour, kept apart from damage numbers (its own merge type "heal"), so a Flurry's
+## leech heals fold into one number instead of stacking.
+func spawn_heal_number(world_pos: Vector3, amount: float) -> void:
+	spawn_damage_number(world_pos, amount, HEAL_TYPE, VfxConfig.heal_color().lerp(Color.WHITE, 0.25), "+")
+
+
+func spawn_damage_number(world_pos: Vector3, amount: float, damage_type: String, color_override: Variant = null, prefix: String = "") -> void:
 	var tree := Engine.get_main_loop() as SceneTree
 	if tree == null or WorldRef.get_world(tree) == null:
 		return
@@ -159,7 +167,8 @@ func spawn_damage_number(world_pos: Vector3, amount: float, damage_type: String)
 	instance.configure(cfg)
 	WorldRef.get_world(tree).add_child(instance)
 	instance.global_position = spot
-	instance.show_amount(amount, damage_type, DamageNumber.color_for(damage_type, float(cfg["color_lighten"])), is_big)
+	var color: Color = color_override if color_override is Color else DamageNumber.color_for(damage_type, float(cfg["color_lighten"]))
+	instance.show_amount(amount, damage_type, color, is_big, prefix)
 	_live_numbers.append(instance)
 
 

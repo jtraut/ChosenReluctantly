@@ -16,6 +16,8 @@ var _total: float = 0.0
 var _base_scale: float = 1.0
 var _big_scale: float = 1.35
 var _is_word: bool = false
+## Shown before the digits ("+" on a heal number: a cue that does not rely on colour).
+var _prefix: String = ""
 
 
 # ---- Pure rules (unit-tested) ----
@@ -67,10 +69,11 @@ func configure(cfg: Dictionary) -> void:
 ## Called after global_position is already set to the spawn point - this is
 ## also where _start_pos is captured, not _ready(), since _ready() runs
 ## during add_child(), before the caller has had a chance to position us.
-func show_amount(amount: float, type: String, color: Color, is_big: bool) -> void:
+func show_amount(amount: float, type: String, color: Color, is_big: bool, prefix: String = "") -> void:
 	damage_type = type
+	_prefix = prefix
 	_total = amount
-	text = str(roundi(_total))
+	text = _prefix + str(roundi(_total))
 	modulate = color
 	_base_scale = _big_scale if is_big else 1.0
 	scale = Vector3.ONE * _base_scale
@@ -80,7 +83,7 @@ func show_amount(amount: float, type: String, color: Color, is_big: bool) -> voi
 ## Adds another hit of the same type into this number and keeps it on screen a little longer.
 func merge_hit(amount: float, is_big: bool) -> void:
 	_total += amount
-	text = str(roundi(_total))
+	text = _prefix + str(roundi(_total))
 	_elapsed = minf(_elapsed, _duration * MERGE_REFRESH)
 	if is_big:
 		_base_scale = _big_scale

@@ -257,6 +257,70 @@ static func status_stars(pool: EffectPool, target: Node3D, color: Color, size: f
 	return effects
 
 
+## Bleed cue: a small tall drop hanging at the side of `target`'s chest, following it until EffectPool.stop() or the
+## target is gone. A teardrop (a stretched sphere) beside the body reads differently from Burn's flame above the head
+## and Stun's circling dots, with or without its colour. One pooled node.
+static func status_drip(pool: EffectPool, target: Node3D, color: Color, size: float, height: float, offset: float = 0.5) -> PooledEffect:
+	if pool == null or target == null:
+		return null
+	var effect: PooledEffect = pool.play(EffectPool.Shape.SPHERE, target.global_position, size, color, 1.0, 1.0, 1.0, 0.95, 0.95)
+	if effect == null:
+		return null
+	return effect.held().stretched(2.0).pulsing(0.1, 3.0).following(target, Vector3(offset, height, 0.0))
+
+
+## One drop falling off a bleeding body on a damage tick: the same teardrop, dropping away and fading.
+static func bleed_drop(pool: EffectPool, position: Vector3, color: Color, size: float) -> void:
+	if pool == null:
+		return
+	pool.play(EffectPool.Shape.SPHERE, position, size, color, VfxConfig.marker("bleed_drop_duration"), 1.0, 0.6, VfxConfig.marker("bleed_drop_alpha"), 0.0) 			.stretched(2.2).drifting(Vector3(0.0, -VfxConfig.marker("bleed_drop_fall"), 0.0))
+
+
+## Regeneration cue: a soft ring on the ground around `target`, held until stopped. A ground ring is the
+## "aura" shape (nothing else is persistent at the feet), so it reads without colour.
+static func status_ring(pool: EffectPool, target: Node3D, color: Color, radius: float) -> PooledEffect:
+	if pool == null or target == null:
+		return null
+	var effect: PooledEffect = pool.play(EffectPool.Shape.RING, target.global_position, radius, color, 1.0, 1.0, 1.0, 0.8, 0.8)
+	if effect == null:
+		return null
+	return effect.held().pulsing(0.12, 1.2).following(target, Vector3(0.0, 0.03, 0.0))
+
+
+## One mote rising off a healing body on a heal tick.
+static func heal_mote(pool: EffectPool, position: Vector3) -> void:
+	if pool == null:
+		return
+	pool.play(EffectPool.Shape.SPHERE, position + Vector3(0.0, 0.4, 0.0), VfxConfig.marker("heal_mote_size"), lighter(VfxConfig.heal_color(), 0.3),
+			VfxConfig.marker("heal_mote_duration"), 1.0, 0.5, 0.95, 0.0).drifting(Vector3(0.0, VfxConfig.marker("heal_mote_rise"), 0.0))
+
+
+# --- player cues (PlayerCues) ----------------------------------------------------
+
+## Ghost cue while pass-through is active: a ring at the feet, held until stopped (the body itself is faded by
+## PlayerCues). A ring that breathes in and out says "not solid right now" without relying on the fade or colour.
+static func ghost_ring(pool: EffectPool, target: Node3D) -> PooledEffect:
+	if pool == null or target == null:
+		return null
+	var effect: PooledEffect = pool.play(EffectPool.Shape.RING, target.global_position, VfxConfig.marker("ghost_ring_radius"), VfxConfig.color_of("ghost_color"),
+			1.0, 1.0, 1.0, VfxConfig.marker("ghost_ring_alpha"), VfxConfig.marker("ghost_ring_alpha"))
+	if effect == null:
+		return null
+	return effect.held().pulsing(VfxConfig.marker("ghost_ring_pulse"), VfxConfig.marker("ghost_ring_hz")).following(target, Vector3(0.0, 0.04, 0.0))
+
+
+## Leech drain: a bead that travels from the damaged target to the player, so "their health, now yours" is visible.
+static func drain_pulse(pool: EffectPool, from: Vector3, to: Vector3) -> void:
+	if pool == null:
+		return
+	var duration: float = VfxConfig.marker("drain_pulse_duration")
+	var color: Color = VfxConfig.color_of("drain_color")
+	var size: float = VfxConfig.marker("drain_pulse_size")
+	pool.play(EffectPool.Shape.SPHERE, from, size, lighter(color, 0.2), duration, 1.0, 0.6, VfxConfig.marker("drain_pulse_alpha"), 0.5) 			.drifting((to - from) / duration)
+	# A small flash where the bead lands, so the arrival (and the heal number that follows) reads.
+	pool.play(EffectPool.Shape.SPHERE, to, size * 1.6, lighter(color, 0.5), 0.2, 0.5, 1.6, 0.8, 0.0).delayed(duration)
+
+
 ## F-E5: a stun cut an enemy's wind-up short. A bright ring at its feet that snaps inward, in the enemy
 ## team colour of the wedge or lane that just vanished. Cosmetic only (no hit area).
 static func windup_cancelled(pool: EffectPool, position: Vector3, color: Color) -> void:

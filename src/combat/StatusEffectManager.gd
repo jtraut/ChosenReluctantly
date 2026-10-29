@@ -59,6 +59,8 @@ class ActiveStatus:
 	## Who applied it (damage_over_time ticks are credited to them), as an object id so a freed
 	## applier cannot be passed around by accident. Latest applier wins on refresh. 0 = none.
 	var source_id: int = 0
+	## The status's "visual" block from data (a reference, not a copy); {} when it has none. Read by the tick cues.
+	var cue: Dictionary = {}
 
 	func source_node() -> Node:
 		return instance_from_id(source_id) as Node if source_id != 0 else null
@@ -75,6 +77,9 @@ class ActiveStatus:
 		lifesteal_fraction = status_def.get("fraction", 0.0)
 		lifesteal_cap = status_def.get("max_heal_per_hit", 0.0)
 		source_id = p_source.get_instance_id() if p_source != null else 0
+		var visual: Variant = status_def.get("visual")
+		if typeof(visual) == TYPE_DICTIONARY:
+			cue = visual
 
 	func refresh(status_def: Dictionary, duration: float, p_source: Node = null) -> void:
 		damage_per_tick = status_def.get("damage_per_tick", damage_per_tick)
@@ -177,10 +182,25 @@ func _tick(active: ActiveStatus) -> void:
 		return
 	if active.effect_type == "damage_over_time":
 		health.take_damage(active.damage_per_tick, active.damage_type, Vector3.ZERO, active.source_node(), Health.KIND_DOT)
+		if String(active.cue.get("kind", "")) == "drips":
+			_tick_cue_drop(active.cue)
 	elif active.effect_type == "heal_over_time":
 		# A tick at full HP does nothing (no popup, no cue).
 		if not health.is_dead() and health.get_current_health() < health.get_max_health():
 			health.heal(active.heal_per_tick)
+			if String(active.cue.get("kind", "")) == "ring":
+				var owner_node := get_parent() as Node3D
+				if owner_node != null and owner_node.is_inside_tree():
+					TemplateVfx.heal_mote(_vfx_pool(), owner_node.global_position)
+
+
+## Bleed's tick look: a drop falls off the body, on the same beat as the damage number.
+func _tick_cue_drop(block: Dictionary) -> void:
+	var owner_node := get_parent() as Node3D
+	if owner_node == null or not owner_node.is_inside_tree():
+		return
+	var spot: Vector3 = owner_node.global_position + Vector3(float(block.get("offset", 0.5)), TemplateVfx.body_top(owner_node) * 0.6, 0.0)
+	TemplateVfx.bleed_drop(_vfx_pool(), spot, Color.html(String(block.get("color", "#d4163c"))), float(block.get("size", 0.09)))
 
 
 ## The owner dealt `amount` damage (the owner's `damage_dealt` signal, from any source:
@@ -222,7 +242,7 @@ func _ensure_flame(status_id: String, status_def: Dictionary) -> void:
 		return
 	var block: Dictionary = visual
 	var kind: String = String(block.get("kind", ""))
-	if kind != "flame" and kind != "stars":
+	if not StatusDatabase.VISUAL_KINDS.has(kind):
 		return
 	var pool := _vfx_pool()
 	var owner_node := get_parent() as Node3D
@@ -232,10 +252,16 @@ func _ensure_flame(status_id: String, status_def: Dictionary) -> void:
 		return
 	_stop_flame(status_id)
 	var effect: PooledEffect = null
-	if kind == "stars":
+	if kind == "drips":
+		effect = TemplateVfx.status_drip(pool, owner_node, Color.html(String(block.get("color", "#d4163c"))), float(block.get("size", 0.09)),
+				TemplateVfx.body_top(owner_node) * 0.6, float(block.get("offset", 0.5)))
+	elif kind == "ring":
+		effect = TemplateVfx.status_ring(pool, owner_node, Color.html(String(block.get("color", "#7dff9a"))), float(block.get("size", 0.75)))
+	elif kind == "stars" or kind == "orbs":
+		var cue_height: float = float(block["height"]) if block.has("height") else TemplateVfx.body_top(owner_node)
 		var stars: Array[PooledEffect] = TemplateVfx.status_stars(pool, owner_node, Color.html(String(block.get("color", "#ffe14a"))),
 				float(block.get("size", 0.15)), int(block.get("count", 3)), float(block.get("orbit_radius", 0.45)), float(block.get("orbit_hz", 1.2)),
-				TemplateVfx.body_top(owner_node))
+				cue_height)
 		if not stars.is_empty():
 			effect = stars[0]
 			var extras: Array = []

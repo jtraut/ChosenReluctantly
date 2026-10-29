@@ -33,6 +33,9 @@ var _ghost_enabled: bool = true
 var _was_damaged: bool = false
 var _dead: bool = false
 var _burn_id: String = "burn"
+var _bleed_id: String = "bleed"
+var _burning: bool = false
+var _bleeding: bool = false
 var _rank: String = EnemyConfig.DEFAULT_RANK
 
 
@@ -116,6 +119,7 @@ func _ready() -> void:
 	_ghost_delay = float(config["ghost_delay"])
 	_ghost_speed = float(config["ghost_drain_per_sec"])
 	_burn_id = str(config["burn_status_id"])
+	_bleed_id = str(config["bleed_status_id"])
 	position = Vector3(0.0, float(config["y_offset"]), 0.0)
 	visible = false
 	var owner_enemy := get_parent() as Enemy
@@ -150,6 +154,7 @@ func _initialize() -> void:
 	else:
 		set_instance_shader_parameter("resist_tint", Color(0.0, 0.0, 0.0, 0.0))
 	_set_burning(_status != null and _status.has_status(_burn_id))
+	_set_bleeding(_status != null and _status.has_status(_bleed_id))
 	_update_visibility()
 
 
@@ -188,11 +193,15 @@ func _on_died() -> void:
 func _on_status_applied(status_id: String) -> void:
 	if status_id == _burn_id:
 		_set_burning(true)
+	elif status_id == _bleed_id:
+		_set_bleeding(true)
 
 
 func _on_status_expired(status_id: String) -> void:
 	if status_id == _burn_id:
 		_set_burning(false)
+	elif status_id == _bleed_id:
+		_set_bleeding(false)
 
 
 # ---- Helpers ----
@@ -203,7 +212,19 @@ func _push_fill() -> void:
 
 
 func _set_burning(on: bool) -> void:
-	set_instance_shader_parameter("status_flags", Color(1.0 if on else 0.0, 0.0, 0.0, 0.0))
+	_burning = on
+	_push_status_flags()
+
+
+func _set_bleeding(on: bool) -> void:
+	_bleeding = on
+	_push_status_flags()
+
+
+## status_flags: x = burning (an upward flame), y = bleeding (a downward drop). One pip slot: when both
+## are on, the shader alternates between them every few seconds, so neither is hidden for long.
+func _push_status_flags() -> void:
+	set_instance_shader_parameter("status_flags", Color(1.0 if _burning else 0.0, 1.0 if _bleeding else 0.0, 0.0, 0.0))
 
 
 func _update_visibility() -> void:
@@ -235,4 +256,5 @@ static func _ensure_shared() -> void:
 	mat.set_shader_parameter("back_color", Color.html(str(colors["back"])))
 	mat.set_shader_parameter("frame_color", Color.html(str(colors["frame"])))
 	mat.set_shader_parameter("burn_color", Color.html(str(colors["burn"])))
+	mat.set_shader_parameter("bleed_color", Color.html(str(colors["bleed"])))
 	_shared_material = mat

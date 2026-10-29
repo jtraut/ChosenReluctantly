@@ -19,12 +19,14 @@ const DEFAULT_HP_BARS: Dictionary = {
 	"ghost_delay": 0.35,
 	"ghost_drain_per_sec": 1.5,
 	"burn_status_id": "burn",
+	"bleed_status_id": "bleed",
 	"colors": {
 		"fill": "#e2483f",
 		"ghost": "#ffd7a8",
 		"back": "#1c1218",
 		"frame": "#0d080b",
 		"burn": "#ff9a1f",
+		"bleed": "#e0123f",
 	},
 	"default_resistance_tint": "#cfd8dc",
 	"resistance_tints": {"fire": "#ff8a3d", "water": "#4aa8ff"},
@@ -229,6 +231,9 @@ static func validate_hp_bars(block: Dictionary) -> Array[String]:
 	var burn_id: Variant = block.get("burn_status_id")
 	if typeof(burn_id) != TYPE_STRING or String(burn_id).strip_edges().is_empty():
 		problems.append("burn_status_id must be a non-empty string")
+	var bleed_id: Variant = block.get("bleed_status_id")
+	if typeof(bleed_id) != TYPE_STRING or String(bleed_id).strip_edges().is_empty():
+		problems.append("bleed_status_id must be a non-empty string")
 	var tint: Variant = block.get("default_resistance_tint")
 	if typeof(tint) != TYPE_STRING or not String(tint).is_valid_html_color():
 		problems.append("default_resistance_tint must be a hex color")

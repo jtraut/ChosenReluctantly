@@ -51,6 +51,7 @@ func _ready() -> void:
 	debug_overlay.player = player
 	AimIndicator.attach(self, player)
 	PlayerOcclusionCue.attach(player)
+	PlayerCues.attach(player)
 	_check_starting_deck()
 	var problems := SceneSelfCheck.find_problems(self)
 	if not problems.is_empty():

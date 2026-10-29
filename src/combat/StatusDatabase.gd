@@ -11,7 +11,12 @@ const EFFECT_TYPES: Array[String] = ["damage_over_time", "heal_over_time", "life
 ## Enemy ranks a stun rule must cover (see EnemyConfig.RANKS, which owns the list).
 const RANKS: Array[String] = ["normal", "elite", "boss"]
 ## Allowed "visual.kind" values (see StatusEffectManager._ensure_flame).
-const VISUAL_KINDS: Array[String] = ["flame", "stars"]
+## flame: Burn (a pulsing flame on the head, coloured by the damage type). stars: Stun (orbiting dots at head height).
+## drips: Bleed (a hanging drop at the chest, and a falling drop on every damage tick). ring: Regeneration (a pulsing ring at
+## the feet, and a rising mote on every heal tick). orbs: Leech (a few dots orbiting at hip height; `height` sets how high).
+const VISUAL_KINDS: Array[String] = ["flame", "stars", "drips", "ring", "orbs"]
+## Kinds that circle their owner, so they share STARS_RULES.
+const ORBITING_KINDS: Array[String] = ["stars", "orbs"]
 const MAX_VISUAL_SIZE := 5.0
 ## "stars" visual: how many, how wide they circle, how fast. field -> [min, max, min_inclusive].
 const STARS_RULES: Dictionary = {
@@ -140,8 +145,11 @@ static func _validate_visual(visual: Variant) -> Array[String]:
 	# Optional color override (the flame currently takes its color from the element).
 	if block.has("color") and not (typeof(block["color"]) == TYPE_STRING and Color.html_is_valid(String(block["color"]))):
 		errors.append("'visual.color' must be a hex color like #ff7a1a")
-	if typeof(block.get("kind")) == TYPE_STRING and block["kind"] == "stars":
+	if typeof(block.get("kind")) == TYPE_STRING and ORBITING_KINDS.has(String(block["kind"])):
 		errors.append_array(_check_numbers(block, STARS_RULES, "visual."))
+	for optional_key: String in ["height", "offset"]:
+		if block.has(optional_key):
+			errors.append_array(_check_numbers(block, {optional_key: [0.0, 5.0, true]}, "visual."))
 	# Optional body tint while the status is active (desaturates toward tint_color).
 	if block.has("tint_color") != block.has("tint_amount"):
 		errors.append("'visual.tint_color' and 'visual.tint_amount' go together")

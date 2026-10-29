@@ -16,9 +16,10 @@ uniform vec4 ghost_color : source_color = vec4(1.0, 0.84, 0.66, 1.0);
 uniform vec4 back_color : source_color = vec4(0.11, 0.07, 0.09, 1.0);
 uniform vec4 frame_color : source_color = vec4(0.05, 0.03, 0.04, 1.0);
 uniform vec4 burn_color : source_color = vec4(1.0, 0.6, 0.12, 1.0);
+uniform vec4 bleed_color : source_color = vec4(0.88, 0.07, 0.25, 1.0);
 
 instance uniform float fill = 1.0;
-instance uniform vec4 status_flags = vec4(0.0); // x = burning
+instance uniform vec4 status_flags = vec4(0.0); // x = burning, y = bleeding
 instance uniform float ghost = 1.0;
 // rgb = resistance tint, a > 0.5 means "resistant" (thicker frame + diamond pip).
 instance uniform vec4 resist_tint = vec4(0.0);
@@ -63,15 +64,22 @@ void fragment() {
 			inside = true;
 			col = m < h * 0.32 ? vec4(resist_tint.rgb, 1.0) : frame_color;
 		}
-	} else if (p.x > bar_x1 && status_flags.x > 0.5) {
-		// Right pip: upward flame triangle.
+	} else if (p.x > bar_x1 && (status_flags.x > 0.5 || status_flags.y > 0.5)) {
+		// Right pip: one slot for both statuses. Burn = upward flame triangle. Bleed = downward drop triangle
+		// (the opposite point), so the two differ by shape as well as colour. With both on, they alternate.
+		bool burning = status_flags.x > 0.5;
+		bool bleeding = status_flags.y > 0.5;
+		bool show_bleed = bleeding && (!burning || fract(TIME / 1.6) > 0.5);
 		float u = (p.x - bar_x1) / pip_width;
 		float v = p.y / h;
+		if (show_bleed) {
+			v = 1.0 - v;
+		}
 		float half_w = clamp((v - 0.05) / 0.9, 0.0, 1.0) * 0.45;
 		float du = abs(u - 0.5);
 		if (v > 0.05 && v < 0.95 && du < half_w + 0.06) {
 			inside = true;
-			col = du < half_w - 0.04 && v < 0.88 ? burn_color : frame_color;
+			col = du < half_w - 0.04 && v < 0.88 ? (show_bleed ? bleed_color : burn_color) : frame_color;
 		}
 	}
 

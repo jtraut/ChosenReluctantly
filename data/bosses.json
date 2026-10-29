@@ -1,0 +1,41 @@
+{
+    "rules": {
+        "min_telegraph": 0.6,
+        "max_transition": 1.5,
+        "max_adds_cap": 6,
+        "min_attacks": 3
+    },
+    "bosses": {
+        "boss_guardian": {
+            "display_name": "The Overly Enthusiastic Guardian",
+            "max_health": 520.0,
+            "resistance": 0.5,
+            "knockback_taken": 0.0,
+            "body_radius": 1.0,
+            "max_adds_alive": 3,
+            "spawn_grace": 1.5,
+            "transition": { "duration": 1.2, "shake": 0.7, "shake_duration": 0.6, "hit_stop": 0.12, "ring_size": 7.0 },
+            "death": { "beat_seconds": 1.6, "slow_mo_scale": 0.25, "shake": 0.9, "shake_duration": 0.8 },
+            "attacks": {
+                "smash": { "kind": "cone", "label": "Overhead smash", "windup": 0.9, "recover": 0.5, "damage": 7.0, "damage_type": "physical", "knockback": 9.0,
+                    "range": 3.4, "half_angle_degrees": 65.0, "min_range": 0.0, "max_range": 4.2, "shake": 0.3, "shake_duration": 0.2, "hit_stop": 0.07 },
+                "slam": { "kind": "aoe", "label": "Ground pound", "windup": 1.1, "recover": 0.6, "damage": 8.0, "damage_type": "physical", "knockback": 10.0,
+                    "radius": 3.2, "place": "target", "min_range": 0.0, "max_range": 14.0, "shake": 0.45, "shake_duration": 0.3, "hit_stop": 0.08 },
+                "volley": { "kind": "volley", "label": "Fan of regrets", "windup": 0.9, "recover": 0.6, "damage": 4.0, "damage_type": "physical", "knockback": 3.0,
+                    "count": 5, "spread_degrees": 48.0, "speed": 9.0, "shot_range": 16.0, "hit_radius": 0.35, "min_range": 4.0, "max_range": 18.0, "shake": 0.2, "shake_duration": 0.15, "hit_stop": 0.04 },
+                "charge": { "kind": "charge", "label": "Reluctant stampede", "windup": 1.0, "recover": 0.9, "damage": 9.0, "damage_type": "physical", "knockback": 12.0,
+                    "distance": 11.0, "speed": 16.0, "hit_radius": 1.2, "min_range": 5.0, "max_range": 18.0, "shake": 0.4, "shake_duration": 0.3, "hit_stop": 0.09 }
+            },
+            "phases": [
+                { "name": "Warming up", "enters_at": 1.0, "move_speed": 2.6, "attack_gap": 1.4, "windup_scale": 1.0,
+                    "attacks": [ { "id": "smash", "weight": 3 }, { "id": "volley", "weight": 2 }, { "id": "slam", "weight": 1 } ] },
+                { "name": "Getting into it", "enters_at": 0.66, "move_speed": 3.0, "attack_gap": 1.1, "windup_scale": 1.0,
+                    "summon": { "enemy": "melee_chaser", "count": 2 },
+                    "attacks": [ { "id": "smash", "weight": 2 }, { "id": "slam", "weight": 3 }, { "id": "charge", "weight": 2 }, { "id": "volley", "weight": 1 } ] },
+                { "name": "Far too into it", "enters_at": 0.33, "move_speed": 3.4, "attack_gap": 0.8, "windup_scale": 0.85,
+                    "summon": { "enemy": "ranged_shooter", "count": 2 },
+                    "attacks": [ { "id": "smash", "weight": 2 }, { "id": "slam", "weight": 2 }, { "id": "charge", "weight": 2 }, { "id": "volley", "weight": 2 } ] }
+            ]
+        }
+    }
+}

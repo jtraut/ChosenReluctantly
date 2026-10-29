@@ -21,6 +21,9 @@ const KIND_DOT := &"dot"
 @export var resistances: Dictionary = {}
 @export var resistance_cap: float = 0.5
 
+## HP the damage cannot take it below (default 0 = none). The boss raises it to the next phase threshold, so one big
+## hit stops there and the transition runs instead of skipping the phase (or killing it before its last one).
+var hp_floor: float = 0.0
 var current_health: float = 0.0
 ## While true, take_damage does nothing. The run system sets it when a room is cleared, so an arrow still in
 ## the air or a status tick cannot kill a player who already won the room.
@@ -45,8 +48,11 @@ func take_damage(amount: float, damage_type: String = "physical", knockback: Vec
 	var final_amount := CombatMath.apply_resistance(amount, damage_type, resistance_fraction, resistance_cap)
 	if final_amount <= 0.0:
 		return
-	var removed: float = minf(final_amount, current_health)
-	current_health = maxf(current_health - final_amount, 0.0)
+	var lowest: float = minf(hp_floor, current_health)
+	var removed: float = minf(final_amount, current_health - lowest)
+	current_health = maxf(current_health - final_amount, lowest)
+	if removed <= 0.0:
+		return  # held at the floor: nothing was taken
 	last_kind = kind
 	damaged.emit(final_amount, damage_type, knockback)
 	health_changed.emit(current_health, max_health)

@@ -16,6 +16,8 @@ var plan: WavePlan = null
 var tier_configs: Dictionary = {}
 
 var _rng := RandomNumberGenerator.new()
+## The seed last given to set_seed / configure_room (a boss seeds its own attack picks from it, so it never draws from `_rng`).
+var _seed_value: int = 0
 var _alive: int = 0
 var _scenes: Dictionary = {}
 
@@ -35,6 +37,7 @@ func _ready() -> void:
 ## Seeds every random choice (spawn order within a stage and positions) for repeatable runs.
 ## Call before the first wave; it rebuilds the plan from the current config.
 func set_seed(seed_value: int) -> void:
+	_seed_value = seed_value
 	_rng.seed = seed_value
 	_spawn_count = 0
 	plan = WavePlan.new(WaveConfig.get_config(), _rng)
@@ -42,6 +45,7 @@ func set_seed(seed_value: int) -> void:
 
 ## Replaces the wave table with one room's finite table (RunConfig.room_wave_config) and seeds it.
 func configure_room(room_config: Dictionary, seed_value: int) -> void:
+	_seed_value = seed_value
 	_rng.seed = seed_value
 	_spawn_count = 0
 	plan = WavePlan.new(room_config, _rng)
@@ -82,6 +86,8 @@ func _spawn_one(queued: String) -> void:
 	var instance: Enemy = scene.instantiate()
 	instance.spawn_index = _spawn_count
 	_spawn_count += 1
+	if instance is Boss:
+		(instance as Boss).set_seed((_seed_value * 2654435761 + instance.spawn_index * 40503 + 12345) & 0x7fffffff)
 	# The arena is the spawner's parent (Main); only a parentless spawner falls back to the scene root.
 	var world: Node = get_parent() if get_parent() != null else WorldRef.get_world(get_tree())
 	var spawn_position := _random_spawn_position()

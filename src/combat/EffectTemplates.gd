@@ -41,6 +41,8 @@ const STATUS_TARGETS: Array[String] = ["last_hits", "self"]
 ##     (+ knockback_strength) hit each enemy along the path at most once per dash.
 ##   aoe (optional): max_range places the disc at the aim point clamped to that range (a card version of
 ##     the targeted_aoe heavy); without it the disc is centred on the caster.
+##   projectile (optional, 3c): yaw_degrees turns the shot's direction about the vertical axis (a fan of shots).
+##   aoe (optional, 3c): vfx false skips the impact visual, for a caller that draws its own at the right reach (the boss).
 ##   aoe (optional, C1-c): delay (seconds, 0..MAX_AOE_DELAY) locks the disc where it is at cast, shows the shared
 ##     ground telegraph growing for `delay`, then hits. A caster that dies or is freed in that time cancels the hit.
 const ZONE_KEYS: Array[String] = ["shape", "duration", "tick_interval", "damage", "damage_type", "max_range", "radius", "length", "width",
@@ -373,7 +375,8 @@ static func _aoe_hit(params: Dictionary, context: EffectContext, index: int) -> 
 		CollisionLayers.HURTBOX
 	)
 	context.last_hits = hits
-	_play_aoe_vfx(params, context, center)
+	if bool(params.get("vfx", true)):
+		_play_aoe_vfx(params, context, center)
 	var knockback_strength: float = params.get("knockback_strength", 0.0)
 	for hurtbox: Hurtbox in hits:
 		hurtbox.receive_damage(params["damage"], params["damage_type"], knockback_from(center, hurtbox.global_position, knockback_strength), context.caster, _kind_for(index))
@@ -413,6 +416,8 @@ static func _projectile_shot(params: Dictionary, context: EffectContext, index: 
 	var instance: Projectile = scene.instantiate()
 	context.spawn_parent.add_child(instance)
 	var forward: Vector3 = -context.caster.global_transform.basis.z
+	if params.has("yaw_degrees"):
+		forward = forward.rotated(Vector3.UP, deg_to_rad(float(params["yaw_degrees"])))  # a fan of shots (boss volley)
 	var origin: Vector3 = context.caster.global_position + forward * PROJECTILE_MUZZLE_OFFSET
 	instance.set_hit_radius(params["hit_radius"])
 	instance.set_look(ElementVisuals.visual_for_team(String(params["damage_type"]), context.caster_team))

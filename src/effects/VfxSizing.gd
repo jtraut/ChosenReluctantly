@@ -97,3 +97,14 @@ static func dash_path_half_width(hit_radius: float) -> float:
 ## The same sweep also reaches that far behind the start and beyond the end of the dash.
 static func dash_path_length(distance: float, hit_radius: float) -> float:
 	return distance + 2.0 * lateral_reach(hit_radius)
+
+
+## An enemy charge hits the PLAYER with a sphere of `hit_radius` swept along the boss's path, so the lane is as wide as
+## that sphere reaches sideways into the player's capsule.
+static func charge_lane_half_width(hit_radius: float) -> float:
+	return lateral_reach_vs_player(hit_radius)
+
+
+## The sweep also reaches that far behind the start and beyond the end of the run.
+static func charge_lane_length(distance: float, hit_radius: float) -> float:
+	return distance + 2.0 * lateral_reach_vs_player(hit_radius)

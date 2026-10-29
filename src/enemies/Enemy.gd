@@ -145,13 +145,17 @@ static func set_player_body_suppressed(suppressed: bool) -> void:
 const BODY_RADIUS := 0.45
 
 
+## This enemy's own body radius for that test (the boss is bigger; BossConfig sets it).
+var body_radius: float = BODY_RADIUS
+
+
 ## True when a live enemy's body overlaps a horizontal circle at `position` with `radius` (the player's body).
 static func any_body_overlaps(position: Vector3, radius: float) -> bool:
 	for enemy: Enemy in _roster:
 		if enemy.health != null and enemy.health.is_dead():
 			continue
 		var flat := Vector2(enemy.global_position.x - position.x, enemy.global_position.z - position.z)
-		if flat.length() < radius + BODY_RADIUS:
+		if flat.length() < radius + enemy.body_radius:
 			return true
 	return false
 

@@ -48,6 +48,19 @@
             "telegraph_duration": 0.7,
             "projectile_speed": 10.0,
             "projectile_max_range": 20.0
+        } },
+        "boss_guardian": { "rank": "boss", "scene": "res://scenes/enemies/BossGuardian.tscn",
+        "stats": {
+            "move_speed": 2.6,
+            "is_ranged": false,
+            "attack_range": 3.0,
+            "preferred_range": 6.0,
+            "attack_damage": 7.0,
+            "attack_damage_type": "physical",
+            "attack_cooldown": 1.4,
+            "telegraph_duration": 0.9,
+            "projectile_speed": 9.0,
+            "projectile_max_range": 16.0
         } }
     }
 }

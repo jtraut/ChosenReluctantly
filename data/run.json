@@ -51,9 +51,8 @@
             ] }
         ],
         "boss": [
-            { "id": "boss_placeholder", "first_wave_delay": 2.0, "stages": [
-                { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 4 } ] },
-                { "delay": 6.0, "until_alive_at_most": 2, "spawns": [ { "enemy": "fire_resistant_golem", "count": 1, "tier": "boss" }, { "enemy": "ranged_shooter", "count": 2 } ] }
+            { "id": "boss_guardian", "first_wave_delay": 2.0, "stages": [
+                { "delay": 0.0, "spawns": [ { "enemy": "boss_guardian", "count": 1 } ] }
             ] }
         ]
     },

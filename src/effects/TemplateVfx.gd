@@ -83,6 +83,19 @@ static func enemy_shot_lane(pool: EffectPool, origin: Vector3, direction: Vector
 	return lane.lengthened(VfxSizing.enemy_shot_lane_length(max_range, hit_radius)) if lane != null else null
 
 
+## A charging enemy's wind-up lane: the strip it will run along, as wide as the sphere it sweeps reaches into the player
+## (VfxSizing.charge_lane_*), starting that reach behind the start point. Shown for the whole wind-up.
+static func enemy_charge_lane(pool: EffectPool, start: Vector3, direction: Vector3, distance: float, hit_radius: float, color: Color, duration: float) -> PooledEffect:
+	if pool == null or direction.length_squared() < 0.0001 or duration <= 0.0:
+		return null
+	var dir: Vector3 = direction.normalized()
+	var yaw: float = atan2(-dir.x, -dir.z)
+	var origin: Vector3 = start - dir * VfxSizing.lateral_reach_vs_player(hit_radius)
+	var lane: PooledEffect = pool.play(EffectPool.Shape.STRIP, origin, VfxSizing.charge_lane_half_width(hit_radius), color,
+			duration, 1.0, 1.0, VfxConfig.marker("enemy_shot_lane_alpha"), 0.0, yaw)
+	return lane.lengthened(VfxSizing.charge_lane_length(distance, hit_radius)) if lane != null else null
+
+
 # --- cone / melee ------------------------------------------------------------
 
 ## Static wedge at the true hit reach (fades) plus a brighter blade that sweeps
@@ -341,3 +354,27 @@ static func death_cue(pool: EffectPool, position: Vector3) -> void:
 	pool.play(EffectPool.Shape.SPHERE, position + Vector3(0.0, 0.9, 0.0), 0.5, Color.WHITE, 0.35, 0.6, 2.2, 0.95, 0.0)
 	pool.play(EffectPool.Shape.RING, position + Vector3(0.0, 0.03, 0.0), 1.0, red, 0.6, 0.5, 3.2, 0.9, 0.0)
 	pool.play(EffectPool.Shape.DISC, position, 1.4, red, 0.8, 1.0, 1.0, 0.45, 0.0)
+
+
+# --- boss ----------------------------------------------------------------------
+
+## Phase-change roar: a pale ring that races out to `size` and a bright flash on the chest. Cosmetic only, never a
+## hit area (white-gold, not the orange of an enemy telegraph, so it cannot read as one).
+static func boss_roar(pool: EffectPool, position: Vector3, size: float, duration: float) -> void:
+	if pool == null:
+		return
+	var gold := Color(1.0, 0.92, 0.55)
+	pool.play(EffectPool.Shape.SPHERE, position + Vector3(0.0, 1.9, 0.0), 1.2, Color.WHITE, duration * 0.5, 0.6, 2.2, 0.9, 0.0)
+	pool.play(EffectPool.Shape.RING, position + Vector3(0.0, 0.04, 0.0), size, gold, duration, 0.1, 1.0, 0.85, 0.0)
+	pool.play(EffectPool.Shape.RING, position + Vector3(0.0, 0.05, 0.0), size * 0.6, lighter(gold, 0.5), duration * 0.7, 0.1, 1.0, 0.8, 0.0).delayed(duration * 0.2)
+
+
+## The boss's death burst: a white-hot core, a big ring and a lingering disc. Cosmetic only.
+static func boss_death(pool: EffectPool, position: Vector3, size: float) -> void:
+	if pool == null:
+		return
+	var warm := Color(1.0, 0.55, 0.2)
+	pool.play(EffectPool.Shape.SPHERE, position + Vector3(0.0, 1.9, 0.0), size * 0.5, Color.WHITE, 0.6, 0.5, 2.4, 0.95, 0.0)
+	pool.play(EffectPool.Shape.SPHERE, position + Vector3(0.0, 1.9, 0.0), size * 0.35, warm, 0.9, 0.5, 3.0, 0.8, 0.0).delayed(0.1)
+	pool.play(EffectPool.Shape.RING, position + Vector3(0.0, 0.05, 0.0), size, lighter(warm, 0.4), 0.9, 0.1, 1.0, 0.9, 0.0)
+	pool.play(EffectPool.Shape.DISC, position, size * 0.6, warm, 1.2, 1.0, 1.0, 0.4, 0.0)

@@ -2,9 +2,67 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
+## 2026-10-29 (Content slice C1: deck rules, nine Fire Rogue cards, solid enemies, status cues)
+
+Slice C1 ran 2026-10-28 to 2026-10-29 (commits 2a985e4..d94676a; C1-a, C1-b1 and C1-t were built on 10-28). qa passed it at 696 of 696 tests (76bca75). The tooling task (true-size capture, seeded sims, dodge values in data) is listed under 2026-10-28.
+
+### Added
+- **Deck rules (C1-a).** `data/deck_rules.json` sets how many different cards each slot needs: 3 by default, with optional per-slot overrides and named slot groups with a combined minimum. A checker (`DeckRules`, `DeckCheck`) counts unique cards. Copies never count twice ([Director decision] D10: duplicates are allowed). Removing or swapping a card is refused when it would drop a slot below its minimum (`can_remove`, `can_swap`). The F3 overlay shows each slot's count and shortfalls. The director's example (attack group 10, utility 5, movement 3, recovery 3 = a 21-card minimum) exists only as a test fixture. (2a985e4, 73c8e72)
+- **A run with a short deck is blocked (C1-c).** At run start, a deck that misses the minimums logs an error, switches the spawner off and emits `Main.run_start_blocked`. In C1-a it only warned, because the shipped deck was short. The shipped deck now passes. (22c8321)
+- **New generic card abilities (C1-b1, C1-b2), all driven by data:**
+  - `apply_status` can have a `chance`, and `hits`/`hit_interval`; cone, aoe and projectile can repeat `hits` times, `hit_interval` apart. (4236e5a)
+  - Three statuses: **Bleed** (damage over time), **Regeneration** (heal over time) and **Leech** (lifesteal: a share of the damage you deal comes back as HP, with a per-hit cap). A `damage_dealt` event feeds Leech. (4236e5a, 87dbb87)
+  - New `zone` template: a circle or line on the ground that ticks damage and an optional status chance for a set time. `data/zones.json` caps live zones (`max_live`) and holds the look. (b60fbe6)
+  - New `pass_through` template: for a time, the player walks through enemy bodies. (114a1b3)
+  - Dash gets `direction_mode` (`forward` or `away_from_aim`) and optional path damage (each enemy hit once). (114a1b3)
+  - aoe gets `max_range` (placed at the aim point, clamped) and `delay` (the centre locks at cast and the telegraph grows). (114a1b3, 22c8321)
+  - Placed skills draw a range reticle, with its look in data. (114a1b3, 3079dc7)
+- **Nine new cards (C1-c; names and flavor by story in C1-d).** The preset Fire Rogue deck is now the whole rogue + fire + neutral pool. Slots hold attack_single 7, attack_aoe 5, utility 3, movement 5 and recovery 4 cards. Numbers live in `data/cards/`. (22c8321, 1b35908)
+  - Slash, Then Bleed (single): a direct hit plus Bleed.
+  - Four Quick Stabs (single): four small hits in a row.
+  - Fireball, Incoming (aoe): aimed, delayed, with Burn.
+  - Wall of Mild Fire (aoe): a line zone that burns whoever stands in it.
+  - Walk Through Everyone (movement): pass through enemies for a few seconds. [Director decision] D9: Stealth is pass-through only for now; dropping enemy aggro comes later.
+  - Reluctant Lunge (movement): a short dash that damages the first enemy it meets and stops there.
+  - Nope, Leaping Away (movement, neutral pool): a long dash away from the aim, not invulnerable.
+  - Heal By Hurting (recovery, neutral pool): Leech.
+  - Eventual Healing (recovery, neutral pool): Regeneration.
+- **Status and skill cues (C1-e).** Bleed shows a droplet pip on the enemy HP bar (alternating with the Burn pip); Regeneration a green ring; Leech a ring and a drain bead on hits. Heals on the player show "+N" numbers, batched every 0.25 s. Shadow Step makes the player see-through with a pale ring (a ghost). The Fire Wall has a burn-down timer bar that empties as the zone ends and blinks near the end. Dashes preview with arrowheads. Placed skills show a range ring and a marker where the aim lands (a diamond with a link line when clamped to max range). The F3 overlay is styled. A new `PlayerCues` node, attached from Main, holds the player cues. [Director decision] D11: the neutral cards use the neutral palette. (31fece2, 3079dc7, 353070f)
+- **New capture scenarios:** `c1_status`, `c1_status_crowd`, `c1_placed`, `c1_placed_near`, `c1_moves`, `c1_names`, `c1_overlay` (see the README). (3079dc7)
+- **Test helpers and sim lines:** `tests/support/body_flag.gd`, `test_caster.gd` and `test_clock.gd`; the wave sim prints pinned-frame and max-feet-height lines. (de9f916, 87ede1f)
+
+### Changed
+- **[Director decision] D8 = C: dodge speed 28 -> 20** (distance 7.0 m -> 5.0 m; the 0.25 s duration and i-frames are unchanged). It is one number in `data/player.json`. The code fallbacks were aligned to 20 too. History: 3.5 m intended, about 7.1 m in practice (slide bug), 3.5 m after S6-2, 7.0 m under the D8 default, now 5.0 m. (73c8e72, 4b1820a)
+- **Enemies are now solid bodies.** `data/player.json` `body.collide_with_enemies` is true; before, player and enemy bodies effectively never collided. Neither body can ride the other, and enemies spawn in place. This is game-lead's call, not a director decision (logged in `docs/DECISIONS.md`, kept on pending the playtest). In the seeded sim (seeds 1/2/3, 150 s) HP lost about doubled: 49/47/41 with the flag off and the new cards, 86/91/83 with it on. The bot never uses Shadow Step on purpose, so this overstates the cost for a human. Set the flag to false to restore the old behaviour. (fcc72af, de9f916)
+- **Hit-stop and screen shake now fire only on direct hits.** Before, every damage event did, including Burn ticks. Burn, Bleed, zone ticks and follow-up hits now show the number and flash only. A multi-hit dash hit-stops once per enemy. (4236e5a, 114a1b3)
+- **Status tuning:** Regeneration `heal_per_tick` 1.0 -> 2.0 (14 HP over 7 s). Leech `fraction` 0.3 -> 0.4 and `max_heal_per_hit` 2.0 -> 3.0. Bleed unchanged. (22c8321)
+- **A one-card slot's "next" preview** now shows that card instead of being blank (side effect of the shuffle fix). (741816c)
+- **Card name rows** use `fit_padding` 12 (was 2) and line spacing 0, so a two-line name fits. (16eecd9)
+
+### Fixed
+- **Shuffle bag.** The old shuffle ran while the last-drawn card was still in hand, so that card was missing from the next cycle (a 3-card deck could cycle c1, c1, c2). The bag now refills from all owned copies, and the first card of a new bag is never the card just drawn (when another unique card exists). (741816c)
+- **Game Over beat was too short** (869 of 900 ms under slow-mo). It is now counted from `Time.get_ticks_usec()`, with paused time excluded. (4b1820a)
+- **Card name rows clipped their second line** (found on "Walk Through Everyone"). A test now pins every card name at 720p, 1080p and 1440p. (16eecd9)
+- **Lifesteal no longer heals at full HP,** and counts HP actually removed (no overkill). (87dbb87)
+- **A player standing at the arena origin was popped onto a spawning enemy.** Enemies now spawn in place, and a Shadow Step that ends inside an enemy restores collision only once the player is clear (3 s cap). (de9f916)
+- **Flaky tests (C1-t):** the pause and crowd-determinism tests used timers that Godot overcounts after a hit-stop (a 0.1 s timer fired after 76 ms) and unisolated hit-stop. They now wait with `TestClock.wait_real`; 597 of 597 passed in 3 of 3 runs. (da1115a)
+- **Reload soak** now places a Fire Wall and a pass-through grant, reloads with the buff live, and checks the static pass-through flag and mask. The attack_meter and slice4 node-growth tests were hardened. (76bca75)
+
+### Docs and process
+- **C1-t test gate repair (qa).** Flaky tests were fixed before more content landed. (da1115a)
+- **qa C1-f PASS** (76bca75, 696 of 696): review in `docs/reviews/2026-10-29-c1f-qa.md`. Known gap: the Lunge preview shows the full 3 m path even when a body will stop it short.
+- **Playtest C1-g / Polish 1 close-out** (d94676a): `docs/playtests/2026-10-29-c1-and-polish1-closeout.md`.
+- **[Director decision] D12:** the order of work was the tooling task, then C1, then the end-of-pass playtest.
+- game-lead housekeeping (fe3c785): `docs/OPEN_ITEMS.md` restructured; `.claude/settings.local.json` added to `.gitignore`.
+- **Docs pass C1-h** also covers the tooling task: README, ARCHITECTURE and this file updated. There are no new third-party assets, so `docs/ASSETS.md` got no new entries.
+
 ## 2026-10-28 (Polish 1: Slice 6 fix pass, Slice 5 waves and readability, Slice 4 skill visuals, Slice 3b attack rework, director open items)
 
 ### Added
+- **Tooling task: true-size capture.** `capture_screenshot.ps1 -TrueSize WxH` runs the real game inside a SubViewport of exactly that size (`tools/VpCapture.tscn`), so 1920x1080 and 2560x1440 captures are no longer clamped to the monitor. A new `WorldRef` helper tells effects, popups and screens where the arena is when `current_scene` is null. Normal play and tests are unchanged. (c4a3747; qa PASS b5a796a, 552 of 552 tests)
+- **Tooling task: seeded sims repeat exactly.** The same `-Seed` now gives the same wave-sim and bot-sim result on the same machine and build. This closes qa finding S6-4. Fixes: card shuffles, the player's status RNG and the camera-shake RNG are seeded, the sims run at a fixed 60 fps (`--fixed-fps 60`), hit-stop is off in the wave sim, and buff ids use a counter. `run_bot_sim.ps1` gained `-Seed` and prints a checksum. (3402446)
+- **Dodge values are data.** New `data/player.json` holds dodge speed, duration, cooldown and the post-pause block ticks, read and checked by `PlayerConfig`. (3e9e02a)
+
 - **Pause and settings screen (Slice 6b).** Esc pauses and opens a small screen with one toggle, "Cast cards on: Release (preview) / Press", which saves at once. It never opens over Game Over. The cast preview now uses the player's element colour, draws over the enemies it targets, and dims while the card is cooling down. When enemies hide the player, a pale silhouette shows through them. (9ff60d8, 98ee2ea, 2f44346, 567cdc4)
 - **[Director decision] D7 applied:** enemy HP bars now show only on damaged enemies; elites and bosses always show theirs. Before, every bar was always visible. (efaf164)
 - **Hold-to-preview casting (Slice 6a, director D2 = C).** Holding a card key shows its exact hit area on the ground (cone, area, projectile lane, dash path, or a small ring for self cards). The area follows your aim, and the card casts when you let go. A `cast_trigger` setting (`release` or `press`) switches back to casting on press. Settings now have a store (defaults in `data/settings.json`, your choices in `user://settings.cfg`), and the game can pause without breaking hit-stop or the death slow-mo. Attack and card keys are now read through input events, so an open screen can block them. (aecde4f, d2463f0, 7bfdb6f, 29656c2, 4f5220e)
@@ -28,7 +86,9 @@ A plain-language history of the project for the director, grouped by date (from 
 - **More tests.** qa added real-scene tests for Slice 4 and 3b, and the bot simulator is now seeded so its failures can be reproduced. (6f82a4b, 8cc7b92, 552ef04)
 
 ### Changed
-- **Feel change (S6-2): dash and dodge now stop at their data distance.** Before, a forced move kept sliding after it ended (friction carried it about twice as far, and the extra depended on frame rate). Now it ends exactly at speed x duration and stops, at any frame rate. Dodge roll: about 7.1 m -> 3.5 m (`dodge_speed` and `dodge_duration` are Player exports, not data). Blaze and Bail dash: about 8.1 m -> 4.0 m. Ugh, Fine, Moving (data distance 4.5 m) uses the same code and shortened too; its old distance was not measured (unverified). Dodge i-frame time and cooldown are unchanged. In qa's seeded wave sim the bot lost about 2.5x more HP after this. The preview and the data distance already said 4.0 m, so the fix moved the player, not the preview. **Open:** the director is asked in D8 whether to restore the old dodge feel (game-lead's recommended default is `dodge_speed` 14 -> 28 at the same 0.25 s). (7b7a471)
+- **Dodge speed 14 -> 28 (distance 3.5 m -> 7.0 m)** in the tooling task, as the director-question D8 default while it was open. It was changed again on 2026-10-29 (see there). (3e9e02a)
+- **Enemy shot lane tip padding.** The pink lane strip an enemy shooter draws now extends by the real reach against the player's capsule, matching its sides (it ended a few cm short). (968e9f0)
+- **Feel change (S6-2): dash and dodge now stop at their data distance.** Before, a forced move kept sliding after it ended (friction carried it about twice as far, and the extra depended on frame rate). Now it ends exactly at speed x duration and stops, at any frame rate. Dodge roll: about 7.1 m -> 3.5 m (*correction 2026-10-29: the dodge values were Player exports at the time; they moved to `data/player.json` in the tooling task, see below*). Blaze and Bail dash: about 8.1 m -> 4.0 m. Ugh, Fine, Moving (data distance 4.5 m) uses the same code and shortened too; its old distance was not measured (unverified). Dodge i-frame time and cooldown are unchanged. In qa's seeded wave sim the bot lost about 2.5x more HP after this. The preview and the data distance already said 4.0 m, so the fix moved the player, not the preview. **D8 was open then** (*correction 2026-10-29: the director answered D8 = C; the final dodge is 5.0 m, see the 2026-10-29 entry*). (7b7a471)
 - **Balance: golem wind-up** 0.45 s -> 0.7 s (director item D6, default A applied). Its attack cycle goes 2.25 s -> 2.5 s and its damage per second 4.0 -> 3.6. Hit damage is unchanged at 9. (acc26a4)
 - **Damage numbers are bigger:** about 12 px -> 20 px at 720p, with an outline. Quick hits on the same spot merge into one number, and at most 16 show at once. **IMMUNE** now draws above HP bars. The cone, heal, dash and projectile trails read more strongly, and their timings are now data. A ring shows when a stun cancels an enemy's wind-up. Enemy HP bar visibility is now one data setting with four modes (shipped as "always" at the time; switched by director call D7 in 6b, see efaf164). (058d3dd, 3ae40b7, 39c03e6, b50aa0c, bff7581)
 - **Enemy HP bars** are slightly smaller (1.4 x 0.19 -> 1.2 x 0.16) and hidden behind models in front of them. Before, they drew over everything. (caab2c0, 8e05395)
@@ -54,7 +114,7 @@ A plain-language history of the project for the director, grouped by date (from 
   - **S6-5:** pressing Space on the focused Resume button no longer also dodges. Dodge is ignored for 2 physics ticks after a pause or resume (a code constant, `DODGE_BLOCK_TICKS_AFTER_PAUSE`). (6738109)
   - **S6-6 (test-only):** removed four stray engine error lines (`Parameter "material" is null`) from full test runs. Nothing changed in play. (1ed76f4, 5095be9)
   - **S6-7:** if the settings file can't be saved, the settings screen shows a note and logs an error instead of forgetting the choice silently. New `data/ui.json` keys `settings_screen.save_failed` and `settings_screen.save_failed_color`. (9e6c417)
-  - **S6-4 is still open:** a seeded sim run does not repeat (see the README). It is a non-blocking item for a later capture and sim tooling task.
+  - **S6-4 is still open:** a seeded sim run does not repeat (see the README). It is a non-blocking item for a later capture and sim tooling task. *(Correction 2026-10-29: fixed in the tooling task, listed above; the same seed now repeats exactly.)*
 - **5d fixes from qa:** a crowded enemy waiting to swing could slide faster than its top speed (now capped). A broken enemy stats block is now caught when the game loads. Enemy sidestep direction now comes from spawn order instead of an internal object id, so the steering itself repeats (a whole simulated run still does not repeat from a seed; see the 6c review). (c3d244f, 6e8c3e6, a23a960)
 - **The old bot-sim tool had been silently broken since 5b.** It stopped compiling but still printed "OK". It is fixed, and now fails loudly on any error. (c13a43a, e100f09)
 - **Slice 5 cleanups:**

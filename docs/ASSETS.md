@@ -1,6 +1,6 @@
 # Third-Party Assets
 
-Tracks every non-original asset or library in the repo: source, author, license, where it is used. Required before committing anything not authored in this project (per root `CLAUDE.md`). Last audited against the repo: 2026-10-28 (tech-writer, first pass).
+Tracks every non-original asset or library in the repo: source, author, license, where it is used. Required before committing anything not authored in this project (per root `CLAUDE.md`). Last audited against the repo: 2026-10-29 (tech-writer, C1-h pass: no new third-party assets since 2026-10-28; Content slice C1 and the tooling task added only placeholder primitives and data, no art, audio, fonts or libraries).
 
 ## Third-party
 

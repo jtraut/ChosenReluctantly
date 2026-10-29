@@ -13,11 +13,13 @@ const REAL_POOLS := "res://data/pools.json"
 
 
 func before_test() -> void:
+	BodyFlag.set_collide(false)  # these tests park enemies on the player; solid bodies have c1c_solid_enemies_test
 	# Other suites point CardDatabase at fixture folders; use the shipped cards here.
 	CardDatabase.load_all()
 
 
 func after_test() -> void:
+	BodyFlag.reset()
 	Juice.reset()
 	PoolDatabase._table = JsonDataTable.new(REAL_POOLS)
 

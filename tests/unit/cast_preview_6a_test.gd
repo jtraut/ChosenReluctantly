@@ -6,7 +6,7 @@ extends GdUnitTestSuite
 
 const MAIN_SCENE_PATH := "res://scenes/main/Main.tscn"
 const DEFAULTS := "res://data/settings.json"
-const AIMED: Array[String] = ["cone", "aoe", "projectile", "dash"]
+const AIMED: Array[String] = ["cone", "aoe", "projectile", "dash", "zone"]
 
 var _original_store: SettingsStore = null
 var _root_main: Main = null
@@ -90,9 +90,20 @@ func test_every_card_in_data_previews_with_the_vfx_sizing_of_its_hit_params() ->
 					assert_float(part["half_width"]).is_equal_approx(VfxSizing.projectile_lane_half_width(float(params["hit_radius"])), 0.0001)
 					assert_float(part["start_offset"]).is_equal(EffectTemplates.PROJECTILE_MUZZLE_OFFSET)
 				"dash":
-					assert_str(part["shape"]).is_equal("dash_path")
-					assert_float(part["size"]).is_equal_approx(float(params["distance"]), 0.0001)
-					assert_float(part["half_width"]).is_equal(VfxConfig.marker("dash_path_half_width"))
+					if params.has("damage"):
+						assert_str(part["shape"]).is_equal("dash_path")
+						assert_float(part["size"]).is_equal_approx(VfxSizing.dash_path_length(float(params["distance"]), float(params["hit_radius"])), 0.0001)
+					else:
+						assert_str(part["shape"]).is_equal("dash_path")
+						assert_float(part["size"]).is_equal_approx(float(params["distance"]), 0.0001)
+						assert_float(part["half_width"]).is_equal(VfxConfig.marker("dash_path_half_width"))
+				"zone":
+					assert_bool(bool(part["placed"])).is_true()
+					assert_float(float(part["range"])).is_equal(float(params["max_range"]))
+					if String(params["shape"]) == "line":
+						assert_str(part["shape"]).is_equal("zone_line")
+					else:
+						assert_str(part["shape"]).is_equal("aoe")
 	# The starter set has all four aimed shapes, so this loop must have seen them.
 	assert_int(checked).is_greater_equal(4)
 

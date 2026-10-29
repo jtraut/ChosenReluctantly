@@ -259,6 +259,8 @@ func test_every_cone_and_aoe_card_hits_out_to_the_previewed_reach_and_not_beyond
 			var reach: float = parts[0]["size"]
 			var params: Dictionary = (effect["params"] as Dictionary).duplicate()
 			params["vfx"] = false
+			params.erase("delay")  # a delayed aoe (Fireball) hits later; the reach is the same
+			params.erase("max_range")  # a placed aoe lands at the aim point; centre it on the caster to measure the radius
 			for case: Array in [[reach - 0.05, true], [reach + 0.1, false]]:
 				var enemy := _enemy_at(Vector3(0.0, 0.0, -float(case[0])))
 				await _frames(2)

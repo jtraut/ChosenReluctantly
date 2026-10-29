@@ -75,6 +75,8 @@ func _run_room(room_index: int) -> void:
 
 	var owned_pools: Array[String] = ["rogue", "fire", "neutral"]
 	var controller := CardSlotController.new(caster, caster, "player", StatModifiers.new(), owned_pools, _card_rng)
+	controller.status_rng = RandomNumberGenerator.new()  # own stream, so the bot's choices stay as they were. Cards with a status chance (Fire Wall) roll on it; without one the zone refuses to apply
+	controller.status_rng.seed = 7
 
 	for tick in range(TICKS_PER_ROOM):
 		controller.advance(DT)

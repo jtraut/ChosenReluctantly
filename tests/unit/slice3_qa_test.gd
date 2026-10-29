@@ -11,7 +11,12 @@ const CHASER_HURTBOX_RADIUS := 0.45
 var _fired: Array[StringName] = []
 
 
+func before_test() -> void:
+	BodyFlag.set_collide(false)  # these tests park enemies on the player; solid bodies have c1c_solid_enemies_test
+
+
 func after_test() -> void:
+	BodyFlag.reset()
 	Juice.reset()
 	TestInput.release(&"attack_light")
 	TestInput.release(&"attack_heavy")

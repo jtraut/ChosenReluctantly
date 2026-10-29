@@ -7,7 +7,12 @@ const MAIN_SCENE_PATH := "res://scenes/main/Main.tscn"
 const CHASER_PATH := "res://scenes/enemies/MeleeChaser.tscn"
 
 
+func before_test() -> void:
+	BodyFlag.set_collide(false)  # these tests park enemies on the player; solid bodies have c1c_solid_enemies_test
+
+
 func after_test() -> void:
+	BodyFlag.reset()
 	Juice.reset()
 	Engine.time_scale = 1.0
 

@@ -46,7 +46,7 @@ func test_player_takes_dodge_values_from_data_and_travels_the_data_distance() ->
 
 
 func test_validation_rejects_bad_dodge_data() -> void:
-	var good: Dictionary = {"dodge": {"speed": 28.0, "duration": 0.25, "cooldown": 0.8, "block_ticks_after_pause": 2}}
+	var good: Dictionary = {"dodge": {"speed": 20.0, "duration": 0.25, "cooldown": 0.8, "block_ticks_after_pause": 2}}
 	assert_array(PlayerConfig.validate(good)).is_empty()
 	assert_array(PlayerConfig.validate("nope")).is_not_empty()
 	assert_array(PlayerConfig.validate({})).is_not_empty()

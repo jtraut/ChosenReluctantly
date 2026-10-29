@@ -1,12 +1,12 @@
 class_name PlayerConfig
 extends RefCounted
 ## data/player.json: player tuning that is not a card or attack. Today the dodge roll.
-## dodge.speed x dodge.duration is the roll distance in metres (28 x 0.25 = 7.0 m). A missing or
+## dodge.speed x dodge.duration is the roll distance in metres (20 x 0.25 = 5.0 m). A missing or
 ## invalid file push_errors and falls back to DEFAULTS (never a crash).
 
 const PATH := "res://data/player.json"
 const DEFAULTS: Dictionary = {
-	"dodge": {"speed": 28.0, "duration": 0.25, "cooldown": 0.8, "block_ticks_after_pause": 2},
+	"dodge": {"speed": 20.0, "duration": 0.25, "cooldown": 0.8, "block_ticks_after_pause": 2},
 }
 ## key -> [min, max, must_be_integer]
 const DODGE_RULES: Dictionary = {

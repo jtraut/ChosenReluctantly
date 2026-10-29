@@ -9,6 +9,13 @@ signal game_over_ready()
 
 var _game_over_announced: bool = false
 var _restarting: bool = false
+## Real seconds left of the death beat before Game Over (< 0 = no beat running), and the wall-clock time of
+## the last count. Counted from the wall clock, not from Godot's timers or the frame delta: both are
+## rescaled by the time scale, and the frame the slow-mo starts in gets the wrong scale (C1-t).
+var _beat_left: float = -1.0
+var _beat_last_usec: int = 0
+## A frame longer than this counts as this long (a debugger stop must not eat the beat).
+const MAX_BEAT_STEP := 0.5
 
 @onready var player: Player = $Player
 @onready var camera_rig: CameraRig = $CameraRig
@@ -26,9 +33,12 @@ func _enter_tree() -> void:
 
 func _exit_tree() -> void:
 	WorldRef.unregister(self)
+	if GamePause.paused_changed.is_connected(_on_pause_changed):
+		GamePause.paused_changed.disconnect(_on_pause_changed)
 
 
 func _ready() -> void:
+	set_process(false)
 	camera_rig.target = player
 	camera_rig.global_position = player.global_position
 	player.camera = camera_rig.camera
@@ -67,10 +77,32 @@ func _on_player_died() -> void:
 	var duration: float = beat["slow_mo_duration"]
 	Juice.slow_mo(duration, beat["slow_mo_scale"])
 	Juice.screen_shake(0.35, 0.3)
-	# Real-time timer (ignore_time_scale = true) so slow-mo doesn't stretch it. Not process_always:
-	# a pause during the beat holds it (Juice remembers the slow-mo left), so Game Over never
-	# appears over a pause screen.
-	get_tree().create_timer(duration, false, false, true).timeout.connect(_announce_game_over)
+	# Real time, so slow-mo doesn't stretch it (see _process). _process stops while the tree is paused,
+	# so a pause during the beat holds it (Juice remembers the slow-mo left) and Game Over never
+	# appears over a pause screen; the count restarts from the resume (GamePause.paused_changed).
+	_beat_left = duration
+	_beat_last_usec = Time.get_ticks_usec()
+	if not GamePause.paused_changed.is_connected(_on_pause_changed):
+		GamePause.paused_changed.connect(_on_pause_changed)
+	set_process(true)
+
+
+func _process(_delta: float) -> void:
+	if _beat_left < 0.0:
+		set_process(false)
+		return
+	var now: int = Time.get_ticks_usec()
+	_beat_left -= minf(float(now - _beat_last_usec) / 1000000.0, MAX_BEAT_STEP)
+	_beat_last_usec = now
+	if _beat_left <= 0.0:
+		_beat_left = -1.0
+		set_process(false)
+		_announce_game_over()
+
+
+## Time spent paused does not count towards the beat.
+func _on_pause_changed(_is_paused: bool) -> void:
+	_beat_last_usec = Time.get_ticks_usec()
 
 
 func _announce_game_over() -> void:

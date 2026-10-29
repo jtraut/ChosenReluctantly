@@ -201,7 +201,7 @@ func begin_spawn_grace(seconds: float) -> void:
 
 
 ## Makes this enemy an elite or boss from a data/run.json `tiers` entry: HP multiplier (and full HP), rank,
-## every element's resistance = max(own, floor) capped, a larger body mesh and a coloured marker above it.
+## every element's resistance = max(own, floor) capped, a body scale and a marker above it.
 ## Call after the enemy is in the tree (its own _ready has set its base stats).
 func apply_tier(tier_id: String, cfg: Dictionary) -> void:
 	tier = tier_id
@@ -214,18 +214,7 @@ func apply_tier(tier_id: String, cfg: Dictionary) -> void:
 		status_manager.rank = String(cfg["rank"])
 	var factor: float = float(cfg["scale"])
 	body_mesh.scale = Vector3.ONE * factor  # the body mesh only: _face_direction rebuilds the root basis every frame, and hit shapes keep their data size
-	var marker := MeshInstance3D.new()
-	marker.name = "TierMarker"
-	var mesh := SphereMesh.new()
-	mesh.radius = 0.22
-	mesh.height = 0.44
-	var material := StandardMaterial3D.new()
-	material.albedo_color = Color.html(String(cfg["marker_color"]))
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mesh.material = material
-	marker.mesh = mesh
-	marker.position = Vector3(0.0, 2.3, 0.0)
-	add_child(marker)
+	TierMarker.attach(self, tier_id, cfg)  # a flat shape above the HP bar (src/ui/TierMarker.gd), not a body change
 	health.health_changed.emit(health.current_health, health.max_health)
 
 

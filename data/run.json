@@ -15,8 +15,8 @@
         "neutral_healing_potion", "neutral_leech", "neutral_regeneration", "rogue_nap_time"
     ],
     "tiers": {
-        "elite": { "hp_multiplier": 2.5, "resistance_floor": 0.25, "resistance_cap": 0.5, "rank": "elite", "scale": 1.0, "marker_color": "#ffd23f" },
-        "boss":  { "hp_multiplier": 7.0, "resistance_floor": 0.25, "resistance_cap": 0.5, "rank": "boss",  "scale": 1.0,  "marker_color": "#ff3f6c" }
+        "elite": { "hp_multiplier": 2.5, "resistance_floor": 0.25, "resistance_cap": 0.5, "rank": "elite", "scale": 1.0, "marker_color": "#ffd23f", "marker_size": 0.26, "marker_height": 2.85 },
+        "boss":  { "hp_multiplier": 7.0, "resistance_floor": 0.25, "resistance_cap": 0.5, "rank": "boss",  "scale": 1.0,  "marker_color": "#ff3f6c", "marker_size": 0.34, "marker_height": 2.85 }
     },
     "rooms": {
         "combat": [
@@ -53,7 +53,8 @@
     "ui": {
         "room_label": "Room %d of %d",
         "type_names": { "combat": "Combat", "elite": "Elite", "rest": "Rest", "boss": "Boss" },
-        "room_cleared": { "title": "Room cleared", "button": "Continue", "rest_line": "You rest. It helps a little (healed %d)." },
-        "win": { "title": "Run complete", "line": "Somehow, you finished. Nobody is more surprised than you.", "button": "New run" }
+        "room_cleared": { "title": "Room cleared", "button": "Continue", "hint": "Enter or Space", "rest_line": "You rest. It helps a little (healed %d).", "stat_hp": "HP", "stat_time": "Time", "stat_healed": "Healed" },
+        "win": { "title": "Run complete", "line": "Somehow, you finished. Nobody is more surprised than you.", "button": "New run", "hint": "Enter or Space", "stat_rooms": "Rooms cleared", "stat_time": "Total time", "stat_hp": "HP left" },
+        "lose": { "run_line": "Reached room %d of %d." }
     }
 }

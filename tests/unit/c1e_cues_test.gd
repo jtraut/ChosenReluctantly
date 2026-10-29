@@ -184,6 +184,27 @@ func test_pass_through_ghosts_the_body_and_survives_a_hit_flash() -> void:
 	assert_object(cues._ghost_ring).is_null()
 
 
+func test_the_ghost_look_lasts_until_the_player_is_clear_of_enemies() -> void:
+	var main: Main = _main()
+	var blocker: Enemy = _enemy_at(main, Vector3(0.2, 0, 0))  # standing inside the player
+	await _frames(2)
+	var player: Player = main.player
+	var cues: PlayerCues = _cues(main)
+	player.grant_pass_through(0.2)
+	assert_bool(cues.is_ghosted()).is_true()
+	await get_tree().create_timer(0.6, false).timeout
+	await _frames(3)
+	# The buff ended, but the body is still inside an enemy, so it is still non-solid and still drawn ghosted.
+	assert_bool(player.is_pass_through()).is_true()
+	assert_float(player.body_mesh.transparency).is_greater(0.0)
+	assert_object(cues._ghost_ring).is_not_null()
+	blocker.free()
+	await _frames(4)
+	assert_bool(player.is_pass_through()).is_false()
+	assert_float(player.body_mesh.transparency).is_equal(0.0)
+	assert_object(cues._ghost_ring).is_null()
+
+
 # --- heal numbers ----------------------------------------------------------------------------------------
 
 func test_heals_batch_into_one_plus_number_and_damage_shows_none() -> void:

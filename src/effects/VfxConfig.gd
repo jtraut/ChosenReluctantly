@@ -42,7 +42,7 @@ const DEFAULTS: Dictionary = {
 	"windup_cancel_duration": 0.3,
 	"windup_cancel_alpha": 0.9,
 	"ghost_body_alpha": 0.45,
-	"ghost_ring_radius": 0.85,
+	"ghost_ring_radius": 1.15,
 	"ghost_ring_alpha": 0.7,
 	"ghost_ring_pulse": 0.12,
 	"ghost_ring_hz": 1.6,

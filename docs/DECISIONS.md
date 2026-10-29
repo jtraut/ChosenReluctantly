@@ -684,3 +684,16 @@ Slots now hold attack_single 7, attack_aoe 5, utility 3, movement 5, recovery 4.
 - **Rejected:**
   - Flipping it off now, which leaves Shadow Step a no-op.
   - Letting the dodge pass through bodies, which would make Shadow Step redundant.
+
+### 2026-10-29 - C1-e visuals (ux-designer, logged by game-lead)
+Commits 16eecd9..353070f; 688/688. Rejected alternatives in brackets.
+- **Burn and Bleed share the HP bar's one pip slot,** alternating every 1.6 s. [Widen the bar; or Burn always wins.]
+- **Status cues stay inside the pool budget:** one held node each for Bleed and Regeneration, two for Leech. [Multi-drop persistent cues.]
+- **"+N" heal numbers cover every heal on the player,** batched every 0.25 s. [Per-source numbers.]
+- **Ghost via `GeometryInstance3D.transparency`.** [Albedo alpha, which the hit flash breaks.] Cues live in a new `PlayerCues` node attached from Main, so `Player.gd` is untouched.
+- **Fire Wall timer** is a third mesh that empties from both ends, and the outline blinks in the last quarter. The fill never shrinks, so it keeps matching the hit area. The look constants moved to `data/zones.json` `look`.
+- **Range reticle:** a ring at the range cap, plus a circle marker when the aim is in range, or a diamond with a link line to the cursor when clamped.
+- **F3 colours** are code constants (it's a dev tool).
+- **Name fit:** `fit_padding` 2 -> 12 and line spacing 0 (the second line of "Walk Through Everyone" was being clipped).
+- **Known gap:** the Lunge preview shows the full 3 m path even when a body will stop it short.
+- **Process:** the CLAUDE.md rule says qa checks README commands and the CHANGELOG entry, but the docs pass comes after qa. So in C1-f qa lists README and CHANGELOG gaps as inputs for C1-h, and game-lead confirms the CHANGELOG entry exists before closing. [Running qa twice.]

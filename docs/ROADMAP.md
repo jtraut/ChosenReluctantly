@@ -320,7 +320,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
     - **Solid enemies (game-lead call 2026-10-29):** new data flag `data/player.json` `body.collide_with_enemies` (default true, validated) that turns on player-vs-enemy body collision both ways, so Shadow Step's pass-through means something. The dodge does NOT pass through bodies (escaping a crowd is the Movement cards' job, per D8). Guard against soft-pinning: separation steering keeps working, and enemies must not shove the player through arena walls. Rerun the seeded wave sim and report before/after HP lost and any stuck frames. False restores today's feel.
     - Rerun the seeded sims now that cards use `hits`/`chance` (C1-b1 note). Report numbers.
   - [x] **C1-d, story:** DONE 1b35908 (9 card names and flavor, plus 3 status flavor lines; the JSON parses; no test pins the names). names (25 characters or fewer) and flavor (80 characters or fewer) for the 9 new cards, in the dry weary-hero voice. Data text only.
-  - [ ] **C1-e, ux-designer:**
+  - [ ] **C1-e, ux-designer:** BUILT 16eecd9..353070f (688/688 on 3079dc7; the last commit ran only the targeted suites). Bleed, Regeneration and Leech cues; the Shadow Step ghost; the Fire Wall timer; dash arrowheads; the range reticle; F3 styling; names fit at 720p/1080p/1440p. New scenarios: c1_status, c1_status_crowd, c1_placed, c1_placed_near, c1_moves, c1_names, c1_overlay.
     - Readable visuals via the shared VFX for Fireball (telegraph and burst), Fire Wall (line plus a duration indicator), Bleed, Regeneration, Stealth (ghosted player), Lunge, Backward Leap and Leech (drain plus heal cue).
     - Range-clamped reticle for placed skills.
     - F3 counts styling.

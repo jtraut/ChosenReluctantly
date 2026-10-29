@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-10-29
-**Status: 2 small balance questions (D13, D14), nothing blocked.** Done: C1, Polish 1, **3a (runs of 8 rooms)** and **3b (card rewards and deck-clean)**. In progress: 3c, a real boss fight.
+**Status: 4 small balance questions (D13-D16), nothing blocked.** Done: C1, Polish 1, **3a (runs of 8 rooms)** and **3b (card rewards and deck-clean)**. In progress: 3c, a real boss fight.
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
@@ -51,6 +51,8 @@ _Updated at every slice close._
 Neither blocks work. Until you answer, I keep the current values.
 
 - **D13. Is healing too strong?** The playtester estimates the Recovery slot is ready 5-6 times a minute. With a 30 HP pool that out-heals what the waves deal, so slow chip damage can't kill you. Options: **A** keep it (judge it in play first; my default); **B** Recovery cooldown 8 s -> 12 s; **C** smaller heals (e.g. the potion 16 -> 10). This matters more once runs are several rooms long (3a), because HP carries over.
+- **D15. Fire against the boss.** The boss resists every element 50% (GDD §7: equal resistance for the final boss), but physical damage ignores resistance. With only Fire in the game, fire cards are strictly weaker than physical ones against the boss. Options: **A** keep it, since it stops mattering once more elements exist (my default); **B** give the final boss a matching physical armour; **C** lower its elemental resistance to 25% for now.
+- **D16. Should the boss ever stagger?** Right now nothing you do staggers it during the 60 s fight, which may make your hits feel weightless. Options: **A** keep it unstaggerable (my default); **B** a short stagger at each phase threshold; **C** a stagger meter that fills from heavy attacks.
 - **D14. Wall of Mild Fire on a single enemy.** It only hurts while enemies stand in it, so a lone enemy walks out. Options: **A** keep it as a crowd card (my default); **B** it also slows enemies inside it; **C** raise its tick damage 2.5 -> 3.5.
 
 ## Calls I made while you were away (easy to change)

@@ -734,3 +734,8 @@ Commits 8b54b25..0f4e317; 740/740. Rejected alternatives in brackets.
 - **Prompt panel is generic** (`show_content`, `options_box`), so 3b's reward screen reuses it. The rest room shows "Healed +N" instead of the time.
 - **Game Over in run mode adds one line,** "Reached room X of Y." This is the minimal part of D1's deferred run stats.
 - **Recurring flake:** `slice6_qa_test` same-seed crowd test failed in one full run each in C1-c, 3a and 3a-ux, and passes alone. Sent to qa in the 3a review.
+
+### 2026-10-29 - 3a qa PASS (qa, logged by game-lead)
+- PASS a6a5d68, 766/766 (`docs/reviews/2026-10-29-m3a-qa.md`).
+- **Flake fix:** `slice6_qa_test` same-seed crowd test tolerance 1e-6 -> 0.01 m. The 1e-4 drift comes from physics-engine sensitivity to allocation history (one unrelated StaticBody3D shifted it 7.8e-4 m), not from non-deterministic game code. The strict id-dependence pin stays in the sibling steering test (1e-5). [Keeping 1e-6 and hunting the engine internals.]
+- Non-blocking follow-ups go to the backlog: run-mode sim results depend on earlier runs in the same process; the LOST line shows a stale HP; the `--run-room` win count is wrong; objects rise +1 per soak cycle; `-RoomTimeout` clamps silently.

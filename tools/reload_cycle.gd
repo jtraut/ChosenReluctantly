@@ -322,7 +322,7 @@ func _run_mode_soak(snaps: Array[Dictionary]) -> void:
 	_check(RunSession.current.outcome == "won", "win: outcome %s" % RunSession.current.outcome)
 	var win_seed := RunSession.current.seed_value
 	var win_id := boss_main.get_instance_id()
-	((boss_main.get_node("WinScreen") as Node).get_node("Root/Center/Column/Action") as Button).pressed.emit()
+	(boss_main.get_node("WinScreen") as RunPromptScreen).button.pressed.emit()
 	await _frames(SETTLE_FRAMES)
 	_check(_main().get_instance_id() != win_id, "win: New run did not replace the scene")
 	_check(RunSession.current.seed_value != win_seed and RunSession.current.room_index == 0 and RunSession.current.outcome == "", "win: the new run leaked state")

@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://src/ui/RunPromptScreen.gd" id="1"]
+[ext_resource type="Script" path="res://src/ui/RunTypeIcon.gd" id="2"]
 
 [node name="RunPromptScreen" type="CanvasLayer"]
 layer = 9
@@ -29,23 +30,53 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 
-[node name="Column" type="VBoxContainer" parent="Root/Center"]
+[node name="Panel" type="PanelContainer" parent="Root/Center"]
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/separation = 20
 
-[node name="Title" type="Label" parent="Root/Center/Column"]
+[node name="Column" type="VBoxContainer" parent="Root/Center/Panel"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 48
+mouse_filter = 2
+theme_override_constants/separation = 16
+
+[node name="Header" type="HBoxContainer" parent="Root/Center/Panel/Column"]
+layout_mode = 2
+mouse_filter = 2
+alignment = 1
+
+[node name="Icon" type="Control" parent="Root/Center/Panel/Column/Header"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+script = ExtResource("2")
+
+[node name="Title" type="Label" parent="Root/Center/Panel/Column/Header"]
+layout_mode = 2
 horizontal_alignment = 1
 
-[node name="Line" type="Label" parent="Root/Center/Column"]
+[node name="Subtitle" type="Label" parent="Root/Center/Panel/Column"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
 horizontal_alignment = 1
 
-[node name="Action" type="Button" parent="Root/Center/Column"]
-custom_minimum_size = Vector2(280, 70)
+[node name="Line" type="Label" parent="Root/Center/Panel/Column"]
+layout_mode = 2
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Stats" type="GridContainer" parent="Root/Center/Panel/Column"]
+layout_mode = 2
+mouse_filter = 2
+columns = 2
+
+[node name="Options" type="VBoxContainer" parent="Root/Center/Panel/Column"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Action" type="Button" parent="Root/Center/Panel/Column"]
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 32
+
+[node name="Hint" type="Label" parent="Root/Center/Panel/Column"]
+layout_mode = 2
+horizontal_alignment = 1

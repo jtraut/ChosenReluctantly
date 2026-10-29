@@ -116,6 +116,7 @@ const DEFAULT_PLAYER_OUTLINE: Dictionary = {
 const DEFAULT_HUD: Dictionary = {
 	"reference_height": 720,
 	"safe_margin": 16,
+	"room_indicator_size": [280, 36],
 	"fit_padding": 12,
 	"slot_size": [150, 118],
 	"slot_gap": 12,
@@ -393,6 +394,38 @@ static func validate_player_outline(block: Dictionary) -> Array[String]:
 	if not (bias is float or bias is int) or is_nan(float(bias)) or float(bias) < 0.0:
 		problems.append("depth_bias must be a number >= 0")
 	return problems
+
+
+## Run UI styling (3a): the room indicator, the generic run prompt panel and the tier marker colours.
+## Texts live in data/run.json `ui`; this block is sizes and colours only.
+const DEFAULT_RUN_UI: Dictionary = {
+	"reference_height": 720,
+	"indicator_font_size": 18,
+	"indicator_icon_size": 20,
+	"indicator_bg_color": "#0d080bcc",
+	"indicator_border_color": "#f4ece8",
+	"indicator_text_color": "#ffffff",
+	"type_colors": {"combat": "#f4ece8", "elite": "#ffd23f", "rest": "#8fe388", "boss": "#ff3f6c"},
+	"prompt_title_font_size": 44,
+	"prompt_subtitle_font_size": 22,
+	"prompt_stat_font_size": 22,
+	"prompt_hint_font_size": 16,
+	"prompt_button_font_size": 36,
+	"prompt_button_min_size": [320, 80],
+	"prompt_panel_min_width": 520,
+	"prompt_panel_padding": 28,
+	"prompt_panel_color": "#1a1218f2",
+	"prompt_panel_border_color": "#f4ece8",
+	"prompt_backdrop_color": "#0d080bb3",
+	"prompt_title_color": "#ffd7a8",
+	"prompt_text_color": "#e8dfe3",
+	"prompt_value_color": "#ffffff",
+	"prompt_icon_size": 40,
+}
+
+
+static func run_ui() -> Dictionary:
+	return merge_with_defaults(DEFAULT_RUN_UI, _table.get_entry("run_ui"))
 
 
 static func hud() -> Dictionary:

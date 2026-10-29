@@ -50,3 +50,13 @@ static func attack_meter_rects(viewport_size: Vector2, cfg: Dictionary) -> Dicti
 	y = light.end.y + float(cfg["meter_row_gap"]) * s
 	var heavy := Rect2(Vector2(x, y), Vector2(float(heavy_sz[0]), float(heavy_sz[1])) * s)
 	return {&"light": light, &"heavy": heavy}
+
+
+## The "Room X of Y - Type" indicator: top centre, at the safe margin. Clear of the health panel and meters (top
+## left, which are far narrower than half the screen), the slots (bottom) and the F3 overlay (starts lower).
+static func room_indicator_rect(viewport_size: Vector2, cfg: Dictionary) -> Rect2:
+	var s := ui_scale(viewport_size, cfg)
+	var sz: Array = cfg["room_indicator_size"]
+	var size := Vector2(float(sz[0]), float(sz[1])) * s
+	var margin := float(cfg["safe_margin"]) * s
+	return Rect2(Vector2((viewport_size.x - size.x) * 0.5, margin), size)

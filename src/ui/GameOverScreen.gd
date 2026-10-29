@@ -50,8 +50,21 @@ func _already_over() -> bool:
 func show_screen() -> void:
 	if not is_node_ready():
 		return
+	line_label.text = String(UiConfig.game_over()["line"]) + run_line()
 	visible = true
 	try_again.grab_focus()
+
+
+## In a run: a newline and "Reached room X of Y." (text from data/run.json ui.lose.run_line). Empty in the endless arena.
+func run_line() -> String:
+	var controller: Node = _main.get_node_or_null("RunController") if _main != null else null
+	if controller == null or not controller.has_method("room_number"):
+		return ""
+	var template: String = String(RunConfig.ui().get("lose", {}).get("run_line", ""))
+	if template == "":
+		return ""
+	return "
+" + template % [int(controller.call("room_number")), int(controller.call("room_total"))]
 
 
 ## Pixel scale for a viewport height, relative to the config's reference height.
@@ -65,7 +78,7 @@ func _apply_config() -> void:
 	var cfg := UiConfig.game_over()
 	var s := ui_scale(get_viewport().get_visible_rect().size.y, float(cfg["reference_height"]))
 	title_label.text = cfg["title"]
-	line_label.text = cfg["line"]
+	line_label.text = String(cfg["line"]) + run_line()
 	try_again.text = cfg["button"]
 	hint_label.text = cfg["hint"]
 	_set_font(title_label, int(cfg["title_font_size"]), s)

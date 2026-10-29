@@ -243,7 +243,9 @@ static func card_option(option_id: String, kind: String, card_id: String, ctx: D
 	option["flavor"] = String(card.get("flavor_text", ""))
 	option["slot_type"] = slot_type
 	option["slot_name"] = String((ctx["slot_names"] as Dictionary).get(slot_type, slot_type))
-	option["detail"] = CardSummary.effect_line(card, float((ctx["slot_base"] as Dictionary).get(slot_type, -1.0)))
+	var effect_text: Dictionary = ((ctx["ui"] as Dictionary).get("effect", {}) as Dictionary).duplicate()
+	effect_text["slot_names"] = ctx["slot_names"]
+	option["detail"] = CardSummary.effect_line(card, float((ctx["slot_base"] as Dictionary).get(slot_type, -1.0)), effect_text)
 	return option
 
 

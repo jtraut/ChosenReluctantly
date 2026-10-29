@@ -385,7 +385,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     Reward-only at start: Flaming Nonsense, Pointy Stick, Slash Then Bleed, Four Quick Stabs, Fireball, Wall of Mild Fire, Walk Through Everyone, Reluctant Lunge, Heal By Hurting.
   - **Known limit:** Utility has exactly 3 cards in the whole pool, so it can never be cleaned or grow until more Utility cards exist. Accepted for the prototype.
   - **Owner sequence:** gameplay-dev (logic, data, a placeholder screen) -> ux-designer (the choice screen) -> qa -> playtester -> tech-writer -> close, tag `playtest-2026-10-29-3b`.
-- [ ] **3c, boss encounter** — gameplay BUILT a35501d..2234dc8 (875/875; bot boss fight mean 61 s, 8/8 won). ux next.
+- [ ] **3c, boss encounter** — gameplay BUILT a35501d..2234dc8 (875/875; bot boss fight mean 61 s, 8/8 won); ux BUILT b8af93f..5245779 (894/894, including the 3b follow-ups). qa next.
   - **Goal:** the last room ends the run with a real fight: one boss with readable phases and telegraphed attacks, replacing the 3a placeholder (a golem with HP x7). GDD §7 (final boss: 50% resistance to every element, equal), §11 (telegraphs, feel).
   - **Acceptance:**
     1. **Data-driven boss** (`data/bosses.json` or a `boss` block in `data/enemies.json`, schema-validated): HP, move speed, 50% resistance to every element (physical ignores resistance as usual), and a phase list with HP thresholds (default 3 phases: 100-66%, 66-33%, 33-0%).

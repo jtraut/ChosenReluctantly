@@ -809,3 +809,17 @@ Commits a35501d..2234dc8; 875/875. The arena hash and the bot-sim checksum are u
 - **Pacing** (seeds 1-8, 15-card starter, real HP): boss fight 52-67 s, mean 61 (was 80 with the placeholder). The bot won 8/8; its lowest HP in the fight was 12-26 of 30. Tuned HP 520 -> 280.
 - **Follow-ups done:** `RunState.from_dict` rejects bad `pending` values; the choice model has `owned`, `next_room_type` and per-option `slot_contents`.
 - **Known:** player card visuals are drawn against the 0.45 m enemy radius, so they understate reach on the boss (1.05 m). That's the safe direction, so it's accepted.
+
+### 2026-10-29 - 3c UX (ux-designer, logged by game-lead)
+Commits b8af93f..5245779; 894/894. Rejected alternatives in brackets.
+- **Boss bar at top centre:** name, fill with ghost, threshold notches, "Phase N of 3: name", striped "Invulnerable" during the roar, "Resists all elements 50%", and the current attack label with a draining wind-up strip. **The room indicator moved to the top right.** [Boss bar below the indicator, which collides with F3 at 720p.]
+- The bar finds the boss by class via `node_added`, so it works in capture scenarios too. [`RunController.boss_spawned`, which the arena doesn't have.] Equal resistance across elements uses the neutral tint.
+- **Boss telegraphs are bolder:** lanes at alpha 0.5 vs 0.3, and the slam gets an inner ring. Sizes are unchanged.
+- **3b follow-ups done:**
+  - "Slot N now: A, B, C";
+  - effect lines with units, from data (status numbers come from `statuses.json` via context);
+  - Reject tile 188 -> 216 px;
+  - the locked-removal reason is "Get another card for the Utility slot first (minimum 3 different)";
+  - Continue and New run get the arm delay, Space is swallowed, and the hints say Enter;
+  - the reward panel sits below the HUD band.
+- **Backlog:** the Game Over screen still accepts Space and says "Enter or Space". One unreproduced reload-soak failure happened before a `disarm()` fix; qa watches for it.

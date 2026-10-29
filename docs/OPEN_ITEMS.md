@@ -66,7 +66,7 @@ Play a normal run, not a test scenario. Reply with the item number and a word or
 **C. Try the cards**
 10. **Hold-to-preview.** Hold a card key, aim, let go. Look for: it feels natural rather than slow, and the outline is clear over enemies without being loud.
 11. **Cards vs the free light attack.** Look for: every damage card feels clearly better than the auto attack. The three area cards are only about 7-10% better than light on a single enemy: do they still feel worth casting on one?
-12. **Every new card (after C1).** Try each one: Bleed Slash, Flurry, Fireball, Fire Wall, Shadow Step, Lunge Strike, Backward Leap, Leech, Regeneration (names may change in C1-d). Look for: which feel great, which feel dull, and which to cut or rework.
+12. **Every new card (after C1).** Try each one: Slash, Then Bleed · Four Quick Stabs · Fireball, Incoming · Wall of Mild Fire · Walk Through Everyone (Shadow Step) · Reluctant Lunge · Nope, Leaping Away · Heal By Hurting (Leech) · Eventual Healing (Regeneration). Also check the names and flavor lines fit the voice. Look for: which feel great, which feel dull, and which to cut or rework.
 12a. **Solid enemies (after C1).** Look for: you never get stuck or pinned with no way out, and Shadow Step feels like a real escape through a crowd. If it feels worse than walking through enemies, say so (one data flag).
 13. **Recovery slot (after C1).** Look for: is it ready often enough to matter, without being something you can lean on?
 14. **Dead-card swap.** Press Ctrl+1-5 to throw away a card you don't want right now. Look for: is it useful, or a chore? (This feeds Vision check question 4.)

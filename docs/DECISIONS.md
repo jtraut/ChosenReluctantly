@@ -622,3 +622,11 @@ Commits 4236e5a..87dbb87. Rejected alternatives in brackets.
 - **Follow-up hits stop if the caster is freed, dead or out of the tree** (reload-safe). Source ids are stored as object ids.
 - **Bleed, Regeneration and Leech ship in `statuses.json` with placeholder numbers.** [Test-only fixtures.] C1-c tunes them.
 - **Feel change:** only direct hits (`KIND_HIT`) trigger hit-stop and shake. DoT ticks (including Burn) and follow-up hits show the number and flash only. Before, every damage event, including Burn ticks, triggered hit-stop. [Keep hit-stop on every tick, which would spam hit-stop with multi-hit and DoTs.] Playtester checks this in C1-g; CHANGELOG notes it.
+
+### 2026-10-29 - OPEN_ITEMS cleanup (game-lead)
+- **Notes moved out of OPEN_ITEMS FYI** (already in CHANGELOG or DECISIONS, so just deleted there): restart-test flake, dark area past the arena edge, projectile hit size P5/P6, golem capsule and Slice 5 changes, training dummy removal, S6-2 dodge and dash stop.
+- **Kept here as a record, since they weren't anywhere else:**
+  - The director's example minimum config (attack group 10, utility 5, movement 3, recovery 3) means a 21-card minimum deck, which would limit deck-clean rewards. It exists only as a test fixture.
+  - After C1, the Neutral pool gives 3 Recovery cards (Healing Potion, Leech, Regeneration) and 1 Movement card (Backward Leap). Any future class + element pair needs at least 2 Movement cards of its own to meet 3 per slot. Content validation flags it.
+- **Dodge note corrected.** OPEN_ITEMS said "7.1 m to 3.5 m", which was the S6-2 step only. The full history: 3.5 m set (speed 14 x 0.25 s), 7.1 m in practice because of the slide bug; S6-2 fixed it to 3.5 m; D8 default B made it 7.0 m (speed 28); D8 = C made it 5.0 m (`data/player.json` speed 20). The code fallbacks in `PlayerConfig.gd` and the `Player.gd` export still say 28 (they're used only if data is missing). C1-b2 aligns them to 20.
+- **`.claude/settings.local.json` is local-only** (Claude Code's per-machine permissions file, already ignored by the director's global git ignore). Added to the repo `.gitignore` so it is never committed from another machine. Rejected: sharing it (it holds machine-specific allowances).

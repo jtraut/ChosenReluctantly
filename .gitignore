@@ -33,3 +33,6 @@ ChosenReluctantly_Notes
 
 # Screenshot capture output
 /screenshots/
+
+# Claude Code per-machine settings (local only)
+.claude/settings.local.json

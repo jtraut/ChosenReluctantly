@@ -1,69 +1,90 @@
 # Director open items
 
-Last updated: 2026-10-28
-**Status: Nothing is blocked.** Your card-expansion request is queued as Content slice C1, right after the tooling task now in progress. Slices 4, 3b and 5 are done. Next: chaser crowding (5d), then hold-to-preview casting plus a small settings screen (Slice 6, your D2 answer), then the screenshot tool and the end-of-pass check.
+Last updated: 2026-10-29
+**Status: Nothing is waiting on a decision.** Milestone 2 and Polish 1 slices 0-6 are done, including chaser crowding (5d) and hold-to-preview casting (Slice 6). In progress: Content slice C1 (new Fire Rogue cards, unique-card minimums). C1-a, C1-b1 and the test-gate repair are built; C1-b2 (zones, dash path damage, pass-through) is next. Then C1 closes along with the tooling task and Polish 1, and work goes straight on into Milestone 3 (the run loop).
 
-Owned by game-lead. Answer in chat with the ID, for example "D1 = A".
+Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
+
+## How to playtest
+
+- **Play the latest known-good build:** `git checkout <tag>` (the tag is named in "While you were away" below), play, then `git checkout main` when you're done. If there's no tag yet, `main` runs too.
+- **Normal run:** `godot --path .` (or open `project.godot` and press Play). Play normal runs for the checklist. Test scenarios give you 9999 HP.
+- **Keys:** WASD move · mouse aims · left click = light attack (it also fires on its own) · right click = heavy attack · Space = dodge · 1-5 = cast the card in that slot · Ctrl+1-5 = dead-card swap (throw away that slot's card and draw the next one, with a short cooldown) · Esc = pause and settings · F3 = debug overlay.
+- **Hold-to-preview (the default):** hold a card key to see its hit area in your element colour, aim with the mouse, and let go to cast.
+- **Settings:** press Esc. The pause screen has the "Cast cards on: Release (preview) / Press" toggle. It saves at once.
+- **Test scenarios** (9999 HP, for looking at one thing): `godot --path . -- --scenario=<name>` with `waves`, `attacks`, `card_cast`, `cast_preview`, `targeted_aoe`, `stun_crowd`, `hp_bars`, `bar_modes`, `game_over`, `settings_open`, and others in `data/scenarios.json`.
+
+## While you were away
+
+_Updated at every slice close._
+
+- **Latest playtest tag:** none yet. The first one will be `playtest-2026-10-29-C1`, made when C1 closes. Until then, `main` runs.
+- **Built since your last session:** (filled in as slices close)
+- **What to try first:** (filled in as slices close)
+
+## Vision check (answer after playing)
+
+1. Does moment-to-moment combat feel good?
+2. Do the five card slots create interesting decisions in real time, or do you mostly ignore them?
+3. Does the same deck feel different from fight to fight, and from run to run? Which slots feel samey?
+4. Do you use the dead-card swap (Ctrl+1-5), and does it feel good or like a chore?
+5. Which cards are great, which are dull, and what is missing?
+6. Is the game fun enough to keep building on, or does something need to change first? (The run-loop work is kept loosely coupled to specific cards, so a card-system change won't strand it.)
 
 ## Needs your decision
 
 Nothing waiting. D8-D12 were answered on 2026-10-28 (see Recently resolved).
 
-## Needs your eyes in the game
+## Calls I made while you were away (easy to change)
 
-Play a normal run (not a test scenario: scenarios give the player 9999 HP).
+(None yet. Each entry says what I chose and the one-line way to change it.)
 
-0. **New cards (after C1 lands).** Try every new card: Bleed Slash, Flurry, Fireball, Fire Wall, Shadow Step, Lunge Strike, Backward Leap, Leech and Regeneration (working names). Tell us which feel great, which feel dull, and which to cut or rework. Also: does the full deck feel different from run to run?
+## Needs your eyes: play-session checklist (about 20-30 minutes)
 
-1. **Death slow-motion.** Die once. Look for: you can clearly tell you died (white then red flash, grey-out, topple), and the slow-mo is long enough without dragging. Tell us "longer", "shorter" or "fine".
-2. **Aim reticle.** Move the mouse around fast, at your normal resolution and at 1440p if you can. Look for: the ring follows the mouse without lag, the dots trail slightly during fast turns, and everything vanishes when you die.
-3. **Enemy HP bars near the player.** Look for: bars over or next to your character never hide what you need to see.
-4. **Heavy attack** (right click). Look for:
-   - Does the stun (yellow stars) visibly freeze enemies, and does 0.6 s feel worth it?
-   - Does the wind-up slow feel like commitment without being sluggish?
-   - Does the area feel bigger and worth pressing?
-   - About half of heavies set enemies on fire. Does that feel like a fun surprise or a letdown?
-5. **Light attack vs cards** (your D4 playtest; light damage is one value in `data/attacks.json`). Look for:
-   - Does every damage card feel clearly better than the free auto attack?
-   - The three area cards are only about 7-10% better than light on a single enemy. Do they still feel worth casting on one?
-6. **New wave density** (Slice 5). Up to 12 enemies at once, arriving in four stages. Look for:
-   - Is 12 at once too many for you? A perfect-aim test bot survives, but takes heavy damage.
-   - Is the first wave of 4 chasers too hard to start with? We can drop it to 2 or 3 (data).
-   - Is the golem's 0.7 s warning fair? Our captures never caught it attacking.
-   - Can you always find yourself when enemies crowd you? Chaser spacing is being fixed next.
-   - Can you read every enemy's warning: the red-pink ground wedge for chasers, and the lane strip for shooters?
-   - Enemy shots are now pink, so they look different from yours.
-7. **1.5x click cap.** Look for: spam-clicking helps a bit early but doesn't feel mandatory, and holding back feels fine.
-9. **Hold-to-preview casting** (Slice 6, your D2 answer). Hold a card key, aim, and let go. Look for:
-   - Does it feel natural rather than slow?
-   - Is the outline (in your element colour) clear over enemies without being too loud?
-   - Esc opens the pause/settings screen; try switching to "Press" and back.
-10. **Your outline through enemies.** When enemies crowd in front of you, a pale blue silhouette of you shows through them. Look for: you can always find yourself, and the colour works against your blue body (it's `player_outline` in `data/ui.json` if it wants a warmer colour or lower alpha).
-11. **Pause screen text.** "Paused", "The world will wait. It is very patient and very cheerful.", "Esc also resumes". Is the tone right? (Placeholder; the story role is dormant.)
-8. **Light flash and heavy telegraph.** Look for: the light swing reads at full speed, and the heavy wind-up looks clearly different from its impact.
+Play a normal run, not a test scenario. Reply with the item number and a word or two ("3: fine", "8: too short").
+
+**A. Start a run and fight**
+1. **Opening wave.** The first wave is 4 chasers. Look for: is it a fair start, or too hard? (It can drop to 2 or 3 in data.)
+2. **Busy waves.** Up to 12 enemies at once, arriving in four stages. Look for: is 12 at once too many for you?
+3. **Enemy warnings.** Look for: you can read every warning before the hit. Chasers show a red-pink ground wedge, shooters a lane strip, and the golem has a 0.7 s wind-up. Enemy shots are pink, so they don't look like yours.
+4. **Finding yourself in a crowd.** Enemies now spread around you instead of stacking in a line. When they're in front of you, a pale blue silhouette of you shows through them. Look for: you can always find yourself, and the colour works against your blue body.
+5. **Enemy HP bars near you.** Look for: bars over or next to your character never hide anything you need to see.
+6. **Aim reticle.** Move the mouse fast (at 1440p too, if you can). Look for: the ring follows without lag, and the dots trail slightly in fast turns.
+
+**B. Try the attacks**
+7. **Light attack.** It fires on its own; clicking speeds it up to 1.5x at most. Look for: the swing flash reads at full speed, and spam-clicking helps a bit but doesn't feel mandatory.
+8. **Heavy attack (right click).** Look for:
+   - the wind-up slow feels like commitment, not sluggishness;
+   - the wind-up looks clearly different from the impact;
+   - the area feels big enough to be worth pressing;
+   - the 0.6 s stun (yellow stars) visibly freezes enemies;
+   - about half of heavies set enemies on fire: a fun surprise or a letdown?
+9. **Dodge (Space).** It now goes 5 m (your D8 answer). Look for: too short, too long, or fine?
+
+**C. Try the cards**
+10. **Hold-to-preview.** Hold a card key, aim, let go. Look for: it feels natural rather than slow, and the outline is clear over enemies without being loud.
+11. **Cards vs the free light attack.** Look for: every damage card feels clearly better than the auto attack. The three area cards are only about 7-10% better than light on a single enemy: do they still feel worth casting on one?
+12. **Every new card (after C1).** Try each one: Bleed Slash, Flurry, Fireball, Fire Wall, Shadow Step, Lunge Strike, Backward Leap, Leech, Regeneration (names may change in C1-d). Look for: which feel great, which feel dull, and which to cut or rework.
+13. **Recovery slot (after C1).** Look for: is it ready often enough to matter, without being something you can lean on?
+14. **Dead-card swap.** Press Ctrl+1-5 to throw away a card you don't want right now. Look for: is it useful, or a chore? (This feeds Vision check question 4.)
+
+**D. Die once**
+15. **Death.** Let yourself die. Look for: you can clearly tell you died (white then red flash, grey-out, topple), the reticle vanishes, and the slow-mo feels "longer", "shorter" or "fine". Then press "Try again": the restart is clean.
+
+**E. Settings and pause**
+16. **Pause screen.** Press Esc, switch "Cast cards on" to Press, play a moment, then switch it back. Look for: it works both ways, and pressing Space on Resume doesn't make you dodge.
+17. **Pause text tone.** "Paused" / "The world will wait. It is very patient and very cheerful." / "Esc also resumes". Is the tone right? (Placeholder text.)
+
+**F. The run loop (only after each Milestone 3 slice lands; see "While you were away")**
+18. **Full run (after 3a).** Play several rooms in a row. Look for: "Room X of Y" is clear, your HP and deck carry over, and the win and lose screens make sense.
+19. **Card rewards (after 3b).** After each won room: pick 1 of 3, or reject the offer (3 rejects per run). Look for: offers fit your build, and the deck-clean option is clear.
+20. **Boss (after 3c).** Look for: the phases and telegraphs are readable, and it's fair.
+21. **Loadouts (after 3d).** On run 2, save and pick a starting deck. Look for: it's easy to understand.
 
 ## FYI, no action needed
 
-- **Example minimum config (not active):** an attack group of 10, utility 5, movement 3 and recovery 3 would mean a 21-card minimum deck. That would limit deck-clean rewards if it were ever adopted. It lives only as a test fixture.
-- **Pool note:** after C1, the Neutral pool gives 3 Recovery cards (Healing Potion, Leech, Regeneration) and 1 Movement card (Backward Leap). So any future class + element combination needs at least 2 Movement cards of its own to meet 3 per slot. Content validation will flag it automatically.
-- **Temporary:** the first-run preset deck will contain every Fire Rogue card, so you can test everything. Unlock rules come with the run loop.
-
-- **Dash and dodge distance (dodge set to about 5 m per your D8 answer, applied in C1).** Dash cards and the dodge roll kept sliding after the move ended, travelling about twice their set distance (Blaze and Bail went about 8 m, not 4 m). They will now stop at the distance set in data, so the hit-area preview tells the truth. Dodge went from about 7.1 m to 3.5 m (its intended distance), and Blaze and Bail from about 8.1 m to 4.0 m. If the dodge feels too short, tune `dodge_speed` or `dodge_duration`; no new code needed.
-
-- The training dummy (the dark-red cylinder next to you at the start) is being removed from normal runs. It was a test aid that reads as an enemy. Scenarios keep it.
-- The dark area at the top-left edge of the screen is the empty space past the arena floor (by design since 4b). It is not a bug.
-
-- **Slice 5 changes you'll notice:**
-  - The golem is now a capsule shape instead of a box, so its ground markers show its true hit area.
-  - Invisible walls stop anything falling off the arena edge. A test bot found that bug.
-  - Enemy HP bars are slightly smaller (width 1.4 to 1.2), as the Slice 5 brief asked, and are hidden behind enemies in front of them.
-
-- **P5:** a bug fix made projectile cards use their real hit size. Flaming Nonsense now hits at 0.3 (it was 0.25).
-- **P6:** the same fix made ranged enemy shots 20% wider (0.25 to 0.3). That was always the intended value; we kept it.
-- Against the big golem, ground markers show about 20-30 cm less reach than the attack really has. It errs the safe way, and gets reviewed in Slice 5.
-- The restart test used to fail about 1 run in 8. It was a harmless one-frame timing gap; the test now measures the gap and is stable.
-- The GDD still has 10 long-term open design questions (section 14). None block current work; they come back as their milestones approach.
-- A parked idea: show enemy HP as a number on the bar. Not scheduled.
+- **Dodge distance (corrected note).** Before Slice 6 the dodge was set to 3.5 m (speed 14 x 0.25 s) but slid on to about 7.1 m because of a bug. The S6-2 fix made it stop at its set distance (3.5 m). Your D8 answer set it to about 5 m: `data/player.json` `dodge.speed` 20 x `dodge.duration` 0.25 s = **5.0 m**, with no slide. To tune it, change `dodge.speed` (no code needed).
+- **Temporary:** the first-run deck holds every Fire Rogue card so you can try them all. Unlock rules come with the run loop.
 
 ## Recently resolved
 

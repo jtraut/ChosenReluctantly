@@ -244,7 +244,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
   - **qa tests:** spawner cap never exceeded; wave staging from data; bar config modes; bot-sim clean.
   - **playtester:** screenshots comparing bar options at the new density; a wave screenshot; explicitly say whether any single enemy feels unfair or unreadable. game-lead picks and logs the bar default.
 
-- [ ] **Slice 6: Hold-to-preview casting and a minimal settings screen (director D2 = C, 2026-10-28)**
+- [x] **Slice 6: Hold-to-preview casting and a minimal settings screen (director D2 = C, 2026-10-28)** - **Done** 2026-10-28 (game-lead). 6a + 6b built; qa FAIL 957fa16 -> fix pass -> re-check PASS 57be0a1 (542/542); tech-writer docs pass 6f67367..af47c91. The playtest folds into the pass close-out.
   - **GDD:** §3 "Hold-to-preview casting [DIRECTOR DECISION, 2026-10-28]", §4. DECISIONS 2026-10-28 "Answers to D1-D7".
   - **Owner sequence:** 6a gameplay-dev -> 6b ux-designer -> 6c qa -> playtest folded into the pass close-out -> game-lead.
   - [x] **6a, gameplay-dev:** BUILT 2026-10-28 (37c42b6..4f5220e, 495/495). Settings store + `Settings` autoload, `CastInput` latched in `_unhandled_input` (s3-j closed), `CastPreview` sized via VfxSizing, `GamePause` with Juice freeze/thaw, `cast_preview` scenario. qa at 6c.
@@ -272,11 +272,11 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
     - Pausing restores time correctly.
     - DoD.
 
-- [ ] **Docs pass (tech-writer, first job):** create `docs/ARCHITECTURE.md` (about 400 lines max, links not code); verify the README commands by running them; fill `docs/ASSETS.md` from the repo, marking anything unverified; add CHANGELOG entries for the Slice 6 fix pass and the tech-writer [Director decision]. It runs after the Slice 6 qa re-check, and Slice 6 closes after it.
+- [x] **Docs pass (tech-writer, first job):** Done 6f67367..af47c91 (ARCHITECTURE.md 212 lines, README commands verified, ASSETS filled: gdUnit4 MIT, the rest project-authored or unverified). create `docs/ARCHITECTURE.md` (about 400 lines max, links not code); verify the README commands by running them; fill `docs/ASSETS.md` from the repo, marking anything unverified; add CHANGELOG entries for the Slice 6 fix pass and the tech-writer [Director decision]. It runs after the Slice 6 qa re-check, and Slice 6 closes after it.
 
 - [ ] **Tooling: true-size capture (gameplay-dev, before pass close-out)**
   - The OS window is clamped to the monitor (1061 px tall), so `capture_screenshot.ps1` can't produce real 1920x1080 / 2560x1440. qa's `tools/vp_capture.gd` (88732cf) renders into an oversized SubViewport but `current_scene` is null there, so spawner/card code errors ("add_child on null") and no waves spawn; abrupt exit leaks RIDs.
-  - **Also in this task:** D8 (dodge distance; default B = `dodge_speed` 14 -> 28, same 0.25 s) with dodge values (`dodge_speed`, `dodge_duration`, cooldown, `DODGE_BLOCK_TICKS_AFTER_PAUSE`) moved from Player exports into data; S6-4 (seeded wave sims don't repeat: card shuffle RNG, status RNG, Juice wall-clock hit-stop) and the README reproduce claim; follow-up 6-a (enemy shot lane tip padding).
+  - **Also in this task:** D8 (dodge distance; default B = `dodge_speed` 14 -> 28, same 0.25 s) with dodge values (`dodge_speed`, `dodge_duration`, cooldown, `DODGE_BLOCK_TICKS_AFTER_PAUSE`) moved from Player exports into data; S6-4 (seeded wave sims don't repeat: card shuffle RNG, status RNG, Juice wall-clock hit-stop) and the README reproduce claim; follow-up 6-a (enemy shot lane tip padding); `tools/run_bot_sim.ps1` passes a `-Seed`; the stale header comment in `src/enemies/Enemy.gd` (per-scene exports -> `data/enemies.json`).
   - **Acceptance:** a documented command produces true-size PNGs at 1280x720, 1920x1080, 2560x1440 with waves spawning and scenarios working; no error lines; spawn code uses a world/arena reference instead of `get_tree().current_scene` where needed (no behaviour change in normal play); clean exit. qa verifies; reload soak still clean.
 
 - [ ] **Pass close-out:** whole-pass playtester report in `docs/playtests/`, DoD above verified, STATE.md points at Milestone 3a.

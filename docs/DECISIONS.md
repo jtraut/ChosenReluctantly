@@ -572,3 +572,6 @@ Fixes for the Slice 5 qa FAIL, one commit each. Choices and the alternative reje
 
 ### 2026-10-28 - Dodge distance after S6-2 (game-lead)
 - The S6-2 fix made forced moves stop at speed x duration. The dodge went from about 7.1 m effective to 3.5 m, and the wave-sim bot's HP lost rose about 2.5x on the same seed. I didn't decide it silently: it's a feel and difficulty change on the player's main defence, so it goes to the director as D8. Recommended and default B: `dodge_speed` 14 -> 28, the same 0.25 s duration and i-frames, which restores the tested feel. It's applied in the next gameplay task, together with moving the dodge values into data (CLAUDE.md "content is data"). Rejected: leaving 3.5 m in place unasked (it would silently change difficulty).
+
+### 2026-10-28 - Note on seeds (game-lead)
+- The 5d F1 entries say steering comes "from spawn order, so a seed reproduces the run". Only the steering repeats; whole wave and bot sim runs do not yet (S6-4: card shuffle RNG, status RNG, Juice wall-clock hit-stop). This is fixed or documented in the tooling task. The older entries stay as written.

@@ -283,7 +283,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
   - **Order:** this was queued "after the current slice closes, ahead of Slice 5". Slice 5 had already closed, so C1 runs right after the tooling task (the one in flight) and before the pass close-out. The close-out playtest then covers C1. The reasoning is in OPEN_ITEMS (D12).
   - **GDD:** §4 "Shuffle bag" and "Unique-card minimums [DIRECTOR DECISION, 2026-10-28]", §15 "Slot cooldown reset effects [IDEA]", §3 (cards beat basic attacks), §7. The full director text is in the 2026-10-28 request (Parts 1-7). Number values are [PROPOSED] and get tuned to the card rule.
   - **Owner sequence:** C1-a, C1-b1, C1-b2, C1-c (gameplay-dev) -> C1-d (story: names and flavor) -> C1-e (ux-designer) -> C1-f (qa) -> C1-g (playtester, merged with the pass close-out report) -> C1-h (tech-writer) -> game-lead closes.
-  - [ ] **C1-a, deck rules plumbing (gameplay-dev):**
+  - [ ] **C1-a, deck rules plumbing (gameplay-dev):** BUILT 2a985e4..73c8e72 (571/571, soak OK). Shuffle bag bug fixed; dodge 28 -> 20; recovery cooldown unchanged. Shipped deck short Movement 2/3, Recovery 2/3, so run start warns for now (DECISIONS). qa reviews in C1-f. Flaky tests to investigate in C1-f: `pause_6a_test > test_a_hit_stop_that_ended_during_the_pause_does_not_come_back` (fails intermittently on baseline too) and `slice6_qa_test > test_f1_same_seed_crowd_is_bit_identical...` (failed once in a full run).
     - `data/deck_rules.json`: global `min_unique_per_slot` 3, optional per-slot `min_unique`, optional `slot_groups` [{name, slots, min_unique_total}]. Shipped with no overrides and no groups.
     - Validation fails loudly when a group minimum is below the sum of its members' minimums, when a slot name is unknown, or when any minimum is <= 0.
     - One reusable checker returns per-slot and per-group counts and shortfalls, with clear messages (e.g. "Utility needs 5 unique cards, deck has 4", "Attack group needs 10, has 8"). It is used by:
@@ -313,7 +313,8 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
     - Neutral cards must not reference class or element data.
     - Tune the numbers to the card-beats-basic rule, and put a balance table in DECISIONS.
     - The preset deck contains all Fire Rogue cards.
-    - Content validation passes at 3 per slot.
+    - Content validation passes at 3 per slot (fixes Movement 2/3 and Recovery 2/3 from C1-a).
+    - Then switch the run-start deck check from warn to block (fail loud), and delete the tripwire branch in `test_shipped_content_meets_the_minimums_PENDING_C1C`.
   - [ ] **C1-d, story:** names (25 characters or fewer) and flavor (80 characters or fewer) for the 9 new cards, in the dry weary-hero voice. Data text only.
   - [ ] **C1-e, ux-designer:**
     - Readable visuals via the shared VFX for Fireball (telegraph and burst), Fire Wall (line plus a duration indicator), Bleed, Regeneration, Stealth (ghosted player), Lunge, Backward Leap and Leech (drain plus heal cue).

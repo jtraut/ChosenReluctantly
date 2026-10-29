@@ -24,6 +24,7 @@ vertical_alignment = 1
 autowrap_mode = 3
 clip_text = true
 max_lines_visible = 2
+theme_override_constants/line_spacing = 0
 
 [node name="CooldownBar" type="ProgressBar" parent="."]
 layout_mode = 2
@@ -37,3 +38,4 @@ vertical_alignment = 0
 autowrap_mode = 3
 clip_text = true
 max_lines_visible = 2
+theme_override_constants/line_spacing = 0

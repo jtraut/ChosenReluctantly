@@ -7,6 +7,9 @@ const DAMAGE_NUMBER_SCENE_PATH := "res://scenes/effects/DamageNumber.tscn"
 const HEAVY_HIT_THRESHOLD := 10.0
 
 var _hitstop_resume_msec: int = -1
+## Sims set this false: hit-stop and slow-mo then never touch Engine.time_scale, because their end is
+## decided by the wall clock (Time.get_ticks_msec) and so would make a seeded run differ between reruns.
+var hit_stop_enabled: bool = true
 ## Pause support (freeze_time / thaw_time): while frozen, time runs at 1.0 for the pause
 ## screen and the unfinished part of a hit-stop or slow-mo is remembered, not lost.
 var _frozen: bool = false
@@ -82,7 +85,7 @@ func register_camera_rig(rig: CameraRig) -> void:
 ## A longer hit-stop always wins over a shorter one already running; it
 ## never "resets" a longer one that's still counting down.
 func hit_stop(duration_sec: float, time_scale: float = 0.05) -> void:
-	if _frozen:
+	if _frozen or not hit_stop_enabled:
 		return  # Nothing hits while paused; never slow the pause screen.
 	var resume_at := Time.get_ticks_msec() + int(duration_sec * 1000.0)
 	if resume_at > _hitstop_resume_msec:

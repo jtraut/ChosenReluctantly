@@ -57,6 +57,11 @@ var _pair_min_sum: float = 0.0
 var _pair_min_all: float = INF
 
 
+## --trace: print the state hash once per sim second (find where two runs of a seed diverge).
+var _trace: bool = false
+var _trace_next: float = 1.0
+
+
 func _ready() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--seed="):
@@ -71,6 +76,8 @@ func _ready() -> void:
 			_idle = true
 		elif arg == "--god":
 			_god = true
+		elif arg == "--trace":
+			_trace = true
 	_run_all.call_deferred()
 
 
@@ -131,6 +138,9 @@ func _reset_run_state(run_seed: int) -> void:
 
 func _run_one(run_seed: int) -> void:
 	_reset_run_state(run_seed)
+	# Status rolls and card shuffles repeat from the seed (S6-4); the spawner and bot RNGs already did.
+	Player.default_rng_seed = run_seed
+	Juice.hit_stop_enabled = false  # wall-clock hit-stop would break repeatability
 	# The real scene-change path (as restart_arena does), so every node sees a proper current_scene.
 	get_tree().change_scene_to_packed(load(MAIN_PATH) as PackedScene)
 	for i in range(30):
@@ -176,6 +186,12 @@ func _run_one(run_seed: int) -> void:
 		_sample_spacing(enemies)
 		_bot_step(enemies)
 		_track_progress()
+		if _trace and _sim_time >= _trace_next:
+			_trace_next += 1.0
+			print("TRACE t=%.2f hash %d hp %.1f enemies %d casts %d" % [_sim_time, _state_hash(), _player.health.current_health, enemies.size(), _casts])
+			for e: Enemy in enemies:
+				print("   E %s pos %s vel %s hp %.2f" % [e.name, e.global_position, e.velocity, e.health.current_health])
+			print("   P pos %s vel %s" % [_player.global_position, _player.velocity])
 		_frame_times_ms.append(float(Time.get_ticks_usec() - frame_start) / 1000.0)
 		_physics_ms_sum += Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS) * 1000.0
 		_process_ms_sum += Performance.get_monitor(Performance.TIME_PROCESS) * 1000.0
@@ -191,6 +207,7 @@ func _run_one(run_seed: int) -> void:
 		_died_at = _sim_time
 	Engine.time_scale = 1.0
 	_release_all()
+	Player.default_rng_seed = -1
 	_report(run_seed, Time.get_ticks_msec() - wall_start)
 	Juice.reset()
 
@@ -417,6 +434,14 @@ func _percentile(sorted_values: Array[float], q: float) -> float:
 	return sorted_values[clampi(int(float(sorted_values.size()) * q), 0, sorted_values.size() - 1)]
 
 
+## Hash of where the player and every enemy stand at the end of the run (rounded to 1 mm).
+func _state_hash() -> int:
+	var parts: Array = [snappedf(_player.global_position.x, 0.001), snappedf(_player.global_position.z, 0.001), snappedf(_player.health.current_health, 0.001)]
+	for enemy: Enemy in _enemies():
+		parts.append([snappedf(enemy.global_position.x, 0.001), snappedf(enemy.global_position.z, 0.001), snappedf(enemy.health.current_health, 0.001)])
+	return hash(parts)
+
+
 func _report(run_seed: int, wall_ms: int) -> void:
 	var sorted_times := _frame_times_ms.duplicate()
 	sorted_times.sort()
@@ -425,6 +450,8 @@ func _report(run_seed: int, wall_ms: int) -> void:
 		run_seed, _sim_time, float(wall_ms) / 1000.0,
 		("died at %.1f s" % _died_at) if _died_at >= 0.0 else "survived",
 		_damage_taken, _kills, _casts, _max_alive, mean_alive, _main.enemy_spawner.plan.stages_started(), _max_stall])
+	print("    result: seed %d hp_lost %.3f kills %d casts %d alive_max %d stages %d sim_time %.3f state_hash %d" % [
+		run_seed, _damage_taken, _kills, _casts, _max_alive, _main.enemy_spawner.plan.stages_started(), _sim_time, _state_hash()])
 	print("    spacing (melee within %.0f m of player, %d frames with 2+): mean min-pair %.2f m, worst %.2f m, %.0f%% of frames >= %.1f m" % [
 		NEAR_RADIUS, _pair_frames, _pair_min_sum / maxf(float(_pair_frames), 1.0), (_pair_min_all if _pair_frames > 0 else 0.0), 100.0 * float(_pair_ok_frames) / maxf(float(_pair_frames), 1.0), SPACING_OK])
 	print("    headless frame ms (wall, each frame steps ~%.0fx physics): p50 %.2f p95 %.2f max %.2f | engine process %.2f ms, physics %.2f ms avg per frame | _attack_has_target %.1f us/call with %d enemies alive (%d calls)" % [

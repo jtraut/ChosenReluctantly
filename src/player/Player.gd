@@ -19,6 +19,10 @@ signal attack_cancelled(attack_id: StringName)
 @export var turn_speed: float = 14.0
 @export var gravity: float = 20.0
 
+## Sim and test hook: when >= 0, every Player created afterwards seeds its status RNG and card
+## shuffles from this value (see docs/DECISIONS.md, S6-4). -1 (the default) is normal random play.
+static var default_rng_seed: int = -1
+
 ## Dodge roll tuning, loaded from data/player.json (PlayerConfig) in _ready.
 var dodge_speed: float = 28.0
 var dodge_duration: float = 0.25
@@ -102,13 +106,20 @@ const DASH_TRAIL_INTERVAL := 0.04
 
 func _ready() -> void:
 	var team := hurtbox.team if hurtbox != null else "player"
-	status_rng.randomize()
+	var card_rng: RandomNumberGenerator = null
+	if default_rng_seed >= 0:
+		# Repeatable run (sims, tests): status rolls and card shuffles come from this seed.
+		status_rng.seed = default_rng_seed
+		card_rng = RandomNumberGenerator.new()
+		card_rng.seed = default_rng_seed + 1
+	else:
+		status_rng.randomize()
 	var dodge_cfg: Dictionary = PlayerConfig.dodge()
 	dodge_speed = float(dodge_cfg["speed"])
 	dodge_duration = float(dodge_cfg["duration"])
 	dodge_cooldown = float(dodge_cfg["cooldown"])
 	dodge_block_ticks_after_pause = int(dodge_cfg["block_ticks_after_pause"])
-	card_slots = CardSlotController.new(self, WorldRef.get_world(get_tree()), team, stat_modifiers, owned_pools)
+	card_slots = CardSlotController.new(self, WorldRef.get_world(get_tree()), team, stat_modifiers, owned_pools, card_rng)
 	_setup_attacks()
 	cast_preview = CastPreview.new()
 	cast_preview.name = "CastPreview"

@@ -18,6 +18,8 @@ var _rng := RandomNumberGenerator.new()
 
 
 func _ready() -> void:
+	if Player.default_rng_seed >= 0:
+		_rng.seed = Player.default_rng_seed + 2  # shake jitter moves the camera, which moves the mouse aim
 	_camera_base_position = camera.position
 	Juice.register_camera_rig(self)
 

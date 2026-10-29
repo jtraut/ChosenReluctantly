@@ -18,7 +18,8 @@ var stat_modifiers: StatModifiers
 var slots: Dictionary = {}
 
 
-func _init(p_caster: Node3D, p_spawn_parent: Node, p_caster_team: String, p_stat_modifiers: StatModifiers, owned_pools: Array[String]) -> void:
+## `rng` (optional) is shared by every slot's shuffles, so a seeded one makes decks repeat.
+func _init(p_caster: Node3D, p_spawn_parent: Node, p_caster_team: String, p_stat_modifiers: StatModifiers, owned_pools: Array[String], rng: RandomNumberGenerator = null) -> void:
 	caster = p_caster
 	spawn_parent = p_spawn_parent
 	caster_team = p_caster_team
@@ -27,7 +28,7 @@ func _init(p_caster: Node3D, p_spawn_parent: Node, p_caster_team: String, p_stat
 		var definition := SlotTypeDatabase.get_definition(slot_type)
 		var base_cooldown: float = definition.get("base_cooldown", 1.0)
 		var owned_card_ids := _owned_card_ids_for_slot(slot_type, owned_pools)
-		slots[slot_type] = CardSlot.new(slot_type, base_cooldown, owned_card_ids, DEFAULT_SWAP_PENALTY)
+		slots[slot_type] = CardSlot.new(slot_type, base_cooldown, owned_card_ids, DEFAULT_SWAP_PENALTY, rng)
 
 
 static func slot_type_at_index(index: int) -> String:

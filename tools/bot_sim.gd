@@ -17,7 +17,11 @@ const ACT_CHANCE := 0.1
 const SWAP_CHANCE := 0.2
 
 var _rng := RandomNumberGenerator.new()
+## Card shuffles, seeded per room so the whole sim repeats from --seed.
+var _card_rng := RandomNumberGenerator.new()
 var _issues: Array[String] = []
+## Rolling hash of every card used, so two runs of one seed can be compared at a glance.
+var _checksum: int = 0
 
 
 func _initialize() -> void:
@@ -26,11 +30,13 @@ func _initialize() -> void:
 	print("Headless bot-sim: %d rooms x %d ticks, seed %d (rerun with --seed=%d to reproduce)" % [rooms, TICKS_PER_ROOM, seed_value, seed_value])
 	for room_index in range(rooms):
 		_rng.seed = seed_value + room_index
+		_card_rng.seed = seed_value + 200000 + room_index
 		await _run_room(room_index)
 		_rng.seed = seed_value + 100000 + room_index
 		_run_attack_room(room_index)
 	if _issues.is_empty():
 		print("Bot-sim OK: no NaN detected across %d rooms (%d ticks each)." % [rooms, TICKS_PER_ROOM])
+		print("Bot-sim checksum: %d (same seed and rooms give the same checksum)" % _checksum)
 		quit(0)
 	else:
 		print("Bot-sim FAILED - %d issue(s):" % _issues.size())
@@ -68,7 +74,7 @@ func _run_room(room_index: int) -> void:
 	caster.add_child(health)
 
 	var owned_pools: Array[String] = ["rogue", "fire", "neutral"]
-	var controller := CardSlotController.new(caster, caster, "player", StatModifiers.new(), owned_pools)
+	var controller := CardSlotController.new(caster, caster, "player", StatModifiers.new(), owned_pools, _card_rng)
 
 	for tick in range(TICKS_PER_ROOM):
 		controller.advance(DT)
@@ -82,9 +88,12 @@ func _run_room(room_index: int) -> void:
 func _act_randomly(controller: CardSlotController) -> void:
 	var slot_type := CardSlotController.slot_type_at_index(_rng.randi_range(0, CardSlotController.SLOT_TYPE_ORDER.size() - 1))
 	if _rng.randf() < SWAP_CHANCE:
-		controller.try_swap(slot_type)
+		if controller.try_swap(slot_type):
+			_checksum = hash([_checksum, "swap", slot_type, controller.get_slot(slot_type).current_card_id])
 	else:
-		controller.try_use(slot_type)
+		var used_before: String = controller.get_slot(slot_type).current_card_id
+		if controller.try_use(slot_type):
+			_checksum = hash([_checksum, slot_type, used_before])
 
 
 func _check_for_nan(controller: CardSlotController, room_index: int, tick: int) -> void:
@@ -170,5 +179,6 @@ func _run_attack_room(room_index: int) -> void:
 	var max_heavy := seconds / controller.get_interval(&"heavy") + 2.0
 	if int(fired[&"heavy"]) > int(max_heavy):
 		_issues.append("attack room %d: heavy fired %d times in %.0f s, cap is %.0f" % [room_index, int(fired[&"heavy"]), seconds, max_heavy])
+	_checksum = hash([_checksum, int(fired[&"light"]), int(fired[&"heavy"]), snappedf(health.current_health, 0.001)])
 	manager.free()
 	health.free()

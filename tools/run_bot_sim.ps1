@@ -1,10 +1,11 @@
-# Headless bot-sim stub. Usage: powershell -File tools\run_bot_sim.ps1 [-Rooms 20]
+# Headless bot-sim stub. Usage: powershell -File tools\run_bot_sim.ps1 [-Rooms 20] [-Seed 1]
 # Resolves the Godot 4 binary the same way tools/run_tests.ps1 does, and
 # prefers the console-subsystem binary for a reliable exit code (see
 # docs/DECISIONS.md).
 
 param(
-    [int]$Rooms = 20
+    [int]$Rooms = 20,
+    [int]$Seed = 1
 )
 
 $root = Split-Path -Parent $PSScriptRoot
@@ -29,7 +30,7 @@ if ($godot -notmatch "_console\.exe$") {
 
 Push-Location $root
 try {
-    $out = & $godot --headless --path . -s res://tools/bot_sim.gd -- "--rooms=$Rooms" 2>&1 | Out-String
+    $out = & $godot --headless --path . -s res://tools/bot_sim.gd -- "--rooms=$Rooms" "--seed=$Seed" 2>&1 | Out-String
     $code = $LASTEXITCODE
     Write-Host $out
     # qa (Slice 5): the sim used to print "Bot-sim OK" and exit 0 while the script had failed to compile

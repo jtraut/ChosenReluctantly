@@ -196,6 +196,10 @@ static func _execute_apply_status(params: Dictionary, context: EffectContext) ->
 			hurtbox.status_manager.apply_status(status_id, status_def, duration)
 
 
+## Counter for unique buff modifier ids (not the clock, so seeded sim runs repeat).
+static var _buff_serial: int = 0
+
+
 static func _execute_buff(params: Dictionary, context: EffectContext) -> void:
 	if not ("stat_modifiers" in context.caster):
 		return
@@ -205,7 +209,8 @@ static func _execute_buff(params: Dictionary, context: EffectContext) -> void:
 	var value: float = params["value"]
 	var duration: float = params["duration"]
 	TemplateVfx.buff(_vfx_pool(context), _caster_pos(context))
-	var modifier_id := "buff_%d" % Time.get_ticks_usec()
+	_buff_serial += 1
+	var modifier_id := "buff_%d" % _buff_serial
 	stat_modifiers.add_modifier(stat, modifier_id, modifier_type, value)
 	if context.caster.is_inside_tree():
 		var tree := context.caster.get_tree()

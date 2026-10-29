@@ -140,4 +140,5 @@ func test_swap_on_a_single_card_deck_returns_the_same_card_without_crashing() ->
 	var ok := slot.swap_card()
 	assert_bool(ok).is_true()
 	assert_str(slot.current_card_id).is_equal("only")
-	assert_str(slot.preview_card_id()).is_equal("")
+	# The bag refills at once, so the next card is the only card again (it used to show "").
+	assert_str(slot.preview_card_id()).is_equal("only")

@@ -12,10 +12,13 @@ extends RefCounted
 ##   zero/negative cooldown and infinite-chain the slot.
 ## - Swapping is blocked while the slot is already on cooldown - "busy" is
 ##   "busy" whether that's from casting or from a previous swap.
-## - The draw pile is reshuffled from the discard pile the instant it would
-##   otherwise be empty, including right after drawing the card that empties
-##   it - so preview_card_id() is never stale/wrong, even across the
-##   reshuffle boundary.
+## - Shuffle bag (GDD section 4): every owned card is drawn once per cycle
+##   before any repeats, and a new cycle never opens with the card that
+##   ended the last one (when the slot has another unique card). The bag is
+##   refilled from the owned list the instant it empties, including right
+##   after drawing the card that empties it, so preview_card_id() is never
+##   stale across the boundary. discard_pile only tracks what was used or
+##   swapped away this cycle.
 ## - A 1-card-deck (or an entirely empty one) never crashes or loops: using
 ##   or swapping a 1-card deck just hands the same card straight back.
 
@@ -109,19 +112,36 @@ func _reset_deck() -> void:
 
 
 func _draw_next_card() -> void:
-	_reshuffle_if_needed()
+	if draw_pile.is_empty():
+		_refill_bag("")
 	if draw_pile.is_empty():
 		current_card_id = ""
 		return
 	current_card_id = draw_pile.pop_back()
-	_reshuffle_if_needed()
+	# Refill the instant the bag runs dry so preview_card_id() is never stale. The card just
+	# drawn is the "last" one of the old cycle, so the new cycle can't open with it.
+	if draw_pile.is_empty():
+		_refill_bag(current_card_id)
 
 
-func _reshuffle_if_needed() -> void:
-	if draw_pile.is_empty() and not discard_pile.is_empty():
-		draw_pile = discard_pile.duplicate()
-		discard_pile.clear()
-		_shuffle(draw_pile)
+## Starts a new cycle: a full shuffled copy of the owned cards (every copy once). The next card
+## drawn (the top, drawn with pop_back) is never `last_card_id` while the slot has another
+## unique card to open with.
+func _refill_bag(last_card_id: String) -> void:
+	draw_pile = owned_card_ids.duplicate()
+	discard_pile.clear()
+	_shuffle(draw_pile)
+	if draw_pile.is_empty() or last_card_id == "":
+		return
+	var top := draw_pile.size() - 1
+	if draw_pile[top] != last_card_id:
+		return
+	for i in range(top - 1, -1, -1):
+		if draw_pile[i] != last_card_id:
+			var tmp := draw_pile[i]
+			draw_pile[i] = draw_pile[top]
+			draw_pile[top] = tmp
+			return
 
 
 func _shuffle(array: Array[String]) -> void:

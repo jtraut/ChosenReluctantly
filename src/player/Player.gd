@@ -132,6 +132,10 @@ func _ready() -> void:
 		card_rng.seed = default_rng_seed + 1
 	else:
 		status_rng.randomize()
+	if PlayerConfig.collide_with_enemies():
+		# Solid enemies (data/player.json body.collide_with_enemies): the player's body is blocked by enemy bodies.
+		# The scene's mask is world only; Enemy adds the player's layer to its own mask under the same flag.
+		collision_mask |= CollisionLayers.ENEMY_BODY
 	var dodge_cfg: Dictionary = PlayerConfig.dodge()
 	dodge_speed = float(dodge_cfg["speed"])
 	dodge_duration = float(dodge_cfg["duration"])

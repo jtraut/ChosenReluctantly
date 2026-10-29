@@ -7,7 +7,11 @@ extends RefCounted
 const PATH := "res://data/player.json"
 const DEFAULTS: Dictionary = {
 	"dodge": {"speed": 20.0, "duration": 0.25, "cooldown": 0.8, "block_ticks_after_pause": 2},
+	"body": {"collide_with_enemies": true},
 }
+## body keys (all booleans). collide_with_enemies: player and enemy bodies block each other (both ways).
+## false = bodies pass through each other, as before C1-c. A missing "body" block means the defaults.
+const BODY_KEYS: Array[String] = ["collide_with_enemies"]
 ## key -> [min, max, must_be_integer]
 const DODGE_RULES: Dictionary = {
 	"speed": [0.1, 200.0, false],
@@ -26,6 +30,13 @@ static func dodge() -> Dictionary:
 	return _cache["dodge"]
 
 
+## True when the player and enemy bodies collide (data/player.json body.collide_with_enemies).
+static func collide_with_enemies() -> bool:
+	if _cache.is_empty():
+		_cache = load_from(PATH)
+	return bool(_cache["body"]["collide_with_enemies"])
+
+
 static func reload() -> void:
 	_cache = {}
 
@@ -40,7 +51,10 @@ static func load_from(path: String) -> Dictionary:
 	if not problems.is_empty():
 		push_error("PlayerConfig: '%s' invalid: %s; using defaults" % [path, "; ".join(problems)])
 		return DEFAULTS.duplicate(true)
-	return parsed as Dictionary
+	var loaded: Dictionary = (parsed as Dictionary).duplicate(true)
+	if not loaded.has("body"):
+		loaded["body"] = (DEFAULTS["body"] as Dictionary).duplicate()
+	return loaded
 
 
 ## Human-readable problems; empty means valid.
@@ -67,4 +81,15 @@ static func validate(data: Variant) -> Array[String]:
 	for key: Variant in (block as Dictionary).keys():
 		if not DODGE_RULES.has(String(key)):
 			errors.append("dodge.%s is not a known key" % key)
+	if (data as Dictionary).has("body"):
+		var body: Variant = (data as Dictionary)["body"]
+		if typeof(body) != TYPE_DICTIONARY:
+			errors.append("'body' must be an object")
+		else:
+			for key: String in BODY_KEYS:
+				if typeof((body as Dictionary).get(key)) != TYPE_BOOL:
+					errors.append("body.%s must be true or false" % key)
+			for key: Variant in (body as Dictionary).keys():
+				if not BODY_KEYS.has(String(key)):
+					errors.append("body.%s is not a known key" % key)
 	return errors

@@ -85,6 +85,9 @@ func _ready() -> void:
 		spawn_index = _roster.size()
 	_roster.append(self)
 	_default_collision_mask = collision_mask
+	if PlayerConfig.collide_with_enemies():
+		_default_collision_mask |= CollisionLayers.PLAYER_BODY  # solid enemies (data/player.json body.collide_with_enemies)
+		collision_mask = _default_collision_mask
 	if _player_body_suppressed:
 		collision_mask = _default_collision_mask & ~CollisionLayers.PLAYER_BODY
 	_apply_stats(EnemyConfig.stats_for(enemy_id))

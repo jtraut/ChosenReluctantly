@@ -22,6 +22,7 @@ const TELEGRAPH_WHITEN := 0.75
 const FILL_START_SCALE := 0.15
 const FILL_ALPHA := 0.3
 const EDGE_PULSE_CYCLES := 3.0
+const ON_TOP_PRIORITY := 10
 
 var _material := StandardMaterial3D.new()
 var _color: Color = Color.WHITE
@@ -143,6 +144,14 @@ func flash(duration: float) -> void:
 	_tween.tween_property(_material, "albedo_color:a", 0.0, duration - hold).set_delay(hold)
 	_tween.tween_property(_edge_material, "albedo_color:a", 0.0, duration - hold).set_delay(hold)
 	_tween.chain().tween_callback(hide_now)
+
+
+## Draws the outline over everything (no depth test), so a body standing on the wedge cannot hide where the hit
+## area ends. Only the outline: the fill stays depth-tested, so it never tints the player or an enemy. The outline
+## is drawn at the true reach, so this changes visibility only, never the size shown.
+func set_outline_on_top(on_top: bool) -> void:
+	_edge_material.no_depth_test = on_top
+	_edge_material.render_priority = ON_TOP_PRIORITY if on_top else 0
 
 
 func hide_now() -> void:

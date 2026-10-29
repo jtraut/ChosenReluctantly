@@ -109,6 +109,8 @@ func begin() -> void:
 	orbit_phase = 0.0
 	driven_t = -1.0
 	strip_length = 0.0
+	material.no_depth_test = false
+	material.render_priority = 0
 	yaw_to = yaw_from
 	_apply()
 
@@ -121,6 +123,13 @@ func finish() -> void:
 
 
 ## Chainable setters (call right after EffectPool.play).
+## Draws over bodies (no depth test): for thin outlines that must stay readable behind enemies. Reset by begin().
+func drawn_over() -> PooledEffect:
+	material.no_depth_test = true
+	material.render_priority = 10
+	return self
+
+
 func delayed(seconds: float) -> PooledEffect:
 	delay = maxf(seconds, 0.0)
 	_apply()

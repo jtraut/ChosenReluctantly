@@ -159,6 +159,8 @@ static func aoe_telegraph(pool: EffectPool, center: Vector3, hit_reach: float, c
 		effects.append(disc.driven())
 	var edge: PooledEffect = pool.play(EffectPool.Shape.RING, center + Vector3(0.0, 0.02, 0.0), hit_reach, lighter(color, 0.6), 1.0, 1.0, 1.0, AOE_TELEGRAPH_EDGE_ALPHA, AOE_TELEGRAPH_EDGE_ALPHA_END)
 	if edge != null:
+		if boss:
+			edge.drawn_over()
 		effects.append(edge.driven())
 	var front: PooledEffect = pool.play(EffectPool.Shape.RING, center + Vector3(0.0, 0.03, 0.0), hit_reach, Color.WHITE, 1.0, AOE_TELEGRAPH_START, 1.0, 0.8, 0.0)
 	if front != null:
@@ -167,6 +169,7 @@ static func aoe_telegraph(pool: EffectPool, center: Vector3, hit_reach: float, c
 		# A second outline just inside the hit edge (a bolder edge; nothing is drawn past the real reach).
 		var inner: PooledEffect = pool.play(EffectPool.Shape.RING, center + Vector3(0.0, 0.025, 0.0), hit_reach * BOSS_EDGE_INNER, lighter(color, 0.6), 1.0, 1.0, 1.0, AOE_TELEGRAPH_EDGE_ALPHA, AOE_TELEGRAPH_EDGE_ALPHA_END)
 		if inner != null:
+			inner.drawn_over()
 			effects.append(inner.driven())
 	return effects
 

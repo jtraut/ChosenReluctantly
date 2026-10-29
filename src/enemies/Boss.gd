@@ -423,6 +423,7 @@ func _wedge_for(attack_id: String, color: Color) -> AttackArcVisual:
 		wedge.name = "TelegraphWedge_" + attack_id
 		add_child(wedge)
 		wedge.setup(BossRules.cone_reach(_attack), float(_attack["half_angle_degrees"]), color)
+		wedge.set_outline_on_top(true)  # adds standing on the cone must not hide its edge
 		_wedges[attack_id] = wedge
 	return _wedges[attack_id]
 

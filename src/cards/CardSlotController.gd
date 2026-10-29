@@ -19,6 +19,7 @@ var slots: Dictionary = {}
 ## RNG for apply_status chances (the owner's status RNG; Player sets it). Not the shuffle RNG,
 ## so deck order never depends on how many status rolls happened.
 var status_rng: RandomNumberGenerator = null
+var _shuffle_rng: RandomNumberGenerator = null
 
 
 ## `rng` (optional) is shared by every slot's shuffles, so a seeded one makes decks repeat.
@@ -27,11 +28,34 @@ func _init(p_caster: Node3D, p_spawn_parent: Node, p_caster_team: String, p_stat
 	spawn_parent = p_spawn_parent
 	caster_team = p_caster_team
 	stat_modifiers = p_stat_modifiers
+	_shuffle_rng = rng
 	for slot_type: String in SLOT_TYPE_ORDER:
 		var definition := SlotTypeDatabase.get_definition(slot_type)
 		var base_cooldown: float = definition.get("base_cooldown", 1.0)
 		var owned_card_ids := _owned_card_ids_for_slot(slot_type, owned_pools)
 		slots[slot_type] = CardSlot.new(slot_type, base_cooldown, owned_card_ids, DEFAULT_SWAP_PENALTY, rng)
+
+
+## Replaces the deck with exactly these card ids (copies allowed), sorted into their slots by each card's
+## slot_type. Every slot restarts: fresh shuffle bag, cooldown 0. Unknown ids are skipped with a push_error.
+## Returns the ids that were placed. Used by the run system to load RunState.deck; it never looks inside a card.
+func set_deck(card_ids: Array[String]) -> Array[String]:
+	var placed: Array[String] = []
+	var by_slot: Dictionary = {}
+	for slot_type: String in SLOT_TYPE_ORDER:
+		by_slot[slot_type] = [] as Array[String]
+	for card_id: String in card_ids:
+		var card_data := CardDatabase.get_card(card_id)
+		var slot_type: String = String(card_data.get("slot_type", ""))
+		if not by_slot.has(slot_type):
+			push_error("CardSlotController.set_deck: unknown card '%s' (skipped)" % card_id)
+			continue
+		(by_slot[slot_type] as Array[String]).append(card_id)
+		placed.append(card_id)
+	for slot_type: String in SLOT_TYPE_ORDER:
+		var definition := SlotTypeDatabase.get_definition(slot_type)
+		slots[slot_type] = CardSlot.new(slot_type, float(definition.get("base_cooldown", 1.0)), by_slot[slot_type] as Array[String], DEFAULT_SWAP_PENALTY, _shuffle_rng)
+	return placed
 
 
 ## Every card id in the deck (copies included), across all slots.

@@ -22,6 +22,9 @@ const KIND_DOT := &"dot"
 @export var resistance_cap: float = 0.5
 
 var current_health: float = 0.0
+## While true, take_damage does nothing. The run system sets it when a room is cleared, so an arrow still in
+## the air or a status tick cannot kill a player who already won the room.
+var damage_immune: bool = false
 var _is_dead: bool = false
 ## Kind of the damage event being delivered right now. Valid inside `damaged` handlers
 ## (the signal signature stays fixed; handlers read this instead).
@@ -36,7 +39,7 @@ func _ready() -> void:
 ## signal it is emitted once per event with the HP actually removed (overkill is not
 ## counted), so lifesteal and similar listeners cover every damage source.
 func take_damage(amount: float, damage_type: String = "physical", knockback: Vector3 = Vector3.ZERO, source: Node = null, kind: StringName = KIND_HIT) -> void:
-	if _is_dead or amount <= 0.0:
+	if _is_dead or damage_immune or amount <= 0.0:
 		return
 	var resistance_fraction: float = resistances.get(damage_type, 0.0)
 	var final_amount := CombatMath.apply_resistance(amount, damage_type, resistance_fraction, resistance_cap)

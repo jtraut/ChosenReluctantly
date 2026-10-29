@@ -7,10 +7,13 @@ extends RefCounted
 ## Shape: global numbers (max_alive, first_wave_delay, spawn_attack_grace,
 ## spawn_gap, spawn_distance_min/max, arena_half_extent, loop_from_stage) and
 ## "stages": ordered objects {delay, until_alive_at_most (optional), spawns:
-## [{enemy, count}]}. Enemy ids are keys of data/enemies.json "enemies".
+## [{enemy, count, tier?}]}. Enemy ids are keys of data/enemies.json "enemies".
+## Optional "finite": true (3a rooms) makes the table end after its last stage instead of looping;
+## optional spawn "tier": "elite" | "boss" marks those spawns (the spawner applies the tier's stats).
 
 const PATH := "res://data/waves.json"
 ## GDD density principle / ROADMAP Slice 5 criterion 1: about 6 to 15 at once.
+const TIERS: Array[String] = ["elite", "boss"]
 const MAX_ALIVE_MIN := 6
 const MAX_ALIVE_MAX := 15
 ## Inner face of the arena walls in scenes/main/Main.tscn (the ArenaWalls boxes). A test keeps this
@@ -53,6 +56,8 @@ static func validate(config: Dictionary, known_enemies: Array[String]) -> Array[
 	_check_number(config, "arena_half_extent", 5.0, WALL_INNER_HALF_EXTENT - WALL_CLEARANCE, errors)
 	if errors.is_empty() and float(config["spawn_distance_max"]) < float(config["spawn_distance_min"]):
 		errors.append("'spawn_distance_max' must be >= 'spawn_distance_min'")
+	if config.has("finite") and typeof(config["finite"]) != TYPE_BOOL:
+		errors.append("'finite' must be true or false")
 	var stages_value: Variant = config.get("stages")
 	if typeof(stages_value) != TYPE_ARRAY or (stages_value as Array).is_empty():
 		errors.append("'stages' must be a non-empty array")
@@ -97,6 +102,8 @@ static func _validate_stage(index: int, stage: Variant, known_enemies: Array[Str
 		var spawn: Dictionary = entry
 		if typeof(spawn.get("enemy")) != TYPE_STRING or (not known_enemies.is_empty() and not known_enemies.has(String(spawn["enemy"]))):
 			errors.append("%s: 'enemy' must be an id from data/enemies.json (got %s)" % [label, str(spawn.get("enemy"))])
+		if spawn.has("tier") and (typeof(spawn["tier"]) != TYPE_STRING or not TIERS.has(String(spawn["tier"]))):
+			errors.append("%s: 'tier' must be one of %s (got %s)" % [label, str(TIERS), str(spawn["tier"])])
 		var count: Variant = spawn.get("count")
 		if (typeof(count) != TYPE_INT and typeof(count) != TYPE_FLOAT) or float(count) < 1.0 or float(count) > 30.0 or float(count) != floorf(float(count)):
 			errors.append("%s: 'count' must be a whole number in [1, 30]" % label)

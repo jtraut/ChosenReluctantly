@@ -4,10 +4,14 @@ class_name Main
 ## the death beat and restart for this arena.
 
 ## Emitted once, after the death beat (slow-mo) finishes. The Game Over screen
-## listens for this (find Main via the scene root: `get_tree().current_scene`).
+## listens for this (it is a child of Main and binds to its parent).
 signal game_over_ready()
 ## Emitted once from _ready when the starting deck breaks a minimum; the run does not start.
 signal run_start_blocked(message: String)
+
+## True in scenes/main/RunMain.tscn (a normal launch): the player fights through a seeded run of rooms.
+## Main.tscn leaves it false: the endless arena that tests, scenarios, wave_sim and the soak use.
+@export var run_mode: bool = false
 
 var _game_over_announced: bool = false
 var _restarting: bool = false
@@ -25,6 +29,9 @@ const MAX_BEAT_STEP := 0.5
 @onready var hud: Hud = $Hud
 @onready var debug_overlay: DebugOverlay = $DebugOverlay
 
+
+## The RunController when this scene is playing a run, else null (the endless arena).
+var run_controller: RunController = null
 
 ## True when the starting deck broke a unique-card minimum and the run was refused (see _check_starting_deck).
 var run_blocked: bool = false
@@ -52,11 +59,37 @@ func _ready() -> void:
 	AimIndicator.attach(self, player)
 	PlayerOcclusionCue.attach(player)
 	PlayerCues.attach(player)
+	_setup_run_mode()
 	_check_starting_deck()
 	var problems := SceneSelfCheck.find_problems(self)
 	if not problems.is_empty():
 		push_error("Main scene self-check FAILED (world may render empty): " + "; ".join(problems))
 	_setup_debug_capture()
+
+
+## A scenario capture keeps the endless arena even on a normal launch (their seeded baselines and scripted
+## setups assume it). `args` are the user args after `--`. Pure, so a test can check every combination.
+static func uses_run_mode(run_mode_flag: bool, args: PackedStringArray) -> bool:
+	if not run_mode_flag:
+		return false
+	return String(CaptureArgs.parse(args)["scenario"]) == ""
+
+
+## Run mode: hand this scene to its RunController. Otherwise (endless arena) the run nodes are removed so
+## nothing of the run system is on screen or ticking.
+func _setup_run_mode() -> void:
+	var controller := get_node_or_null("RunController") as RunController
+	if uses_run_mode(run_mode, OS.get_cmdline_user_args()) and controller != null:
+		if RunConfig.is_valid():
+			run_controller = controller
+			controller.begin(self)
+			return
+		push_error("Run mode needs a valid data/run.json; falling back to the endless arena. " + "; ".join(RunConfig.load_problems()))
+	for run_node_name: String in ["RunController", "RunHud", "RoomClearedScreen", "WinScreen"]:
+		var run_node := get_node_or_null(run_node_name)
+		if run_node != null:
+			remove_child(run_node)
+			run_node.queue_free()
 
 
 ## Run-start deck validation (GDD section 4 unique minimums). A deck that breaks a minimum cannot start a
@@ -119,15 +152,44 @@ func _announce_game_over() -> void:
 	game_over_ready.emit()
 
 
-## Public restart entry point for the Game Over screen's "Try again".
-## A scene reload resets everything (HP, decks, cooldowns, enemies, waves,
-## statuses, timers) in one move; see DECISIONS.md.
+## Public restart entry point for the Game Over screen's "Try again" (and the win screen's "New run").
+## In a run this starts a brand-new run with a new seed (nothing carries over); in the endless arena it
+## restarts the arena. Either way the scene is replaced by a fresh one (see swap_to_fresh_scene).
 func restart_arena() -> void:
+	if _restarting:
+		return
+	if run_controller != null:
+		RunSession.begin_new_run()
+	swap_to_fresh_scene()
+
+
+## Replaces this scene with a fresh copy of itself, in the same place in the tree. A fresh scene resets
+## everything in one move (HP, decks, cooldowns, shuffle bags, enemies, waves, statuses, timers); the
+## RunState (a static, see RunSession) is what carries over. Does not rely on `current_scene`, so it also works
+## inside tools/VpCapture.tscn (qa N5). Deferred, because it is usually called from a button's signal.
+func swap_to_fresh_scene() -> void:
 	if _restarting:
 		return
 	_restarting = true
 	_prepare_for_restart()
-	get_tree().reload_current_scene()
+	_replace_self.call_deferred()
+
+
+func _replace_self() -> void:
+	var parent: Node = get_parent()
+	var tree: SceneTree = get_tree()
+	if parent == null or tree == null or scene_file_path == "":
+		if tree != null:
+			tree.reload_current_scene()
+		return
+	var packed := load(scene_file_path) as PackedScene
+	var fresh: Node = packed.instantiate()
+	var was_current: bool = tree.current_scene == self
+	parent.remove_child(self)
+	queue_free()
+	parent.add_child(fresh)
+	if was_current:
+		tree.current_scene = fresh
 
 
 ## Engine.time_scale and Juice state are global and survive a reload.

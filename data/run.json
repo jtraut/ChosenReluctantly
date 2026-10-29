@@ -1,0 +1,59 @@
+{
+    "composition": { "combat": 5, "elite": 1, "rest": 1, "boss": 1 },
+    "placement": {
+        "boss_last": true,
+        "first_room": "combat",
+        "ranges": { "elite": [3, 6], "rest": [2, 6] }
+    },
+    "rest_heal_fraction": 0.3,
+    "rejects_per_run": 3,
+    "starting_deck": [
+        "fire_ember_whatever", "fire_flaming_nonsense", "neutral_pointy_stick", "rogue_bleed_slash", "rogue_flurry", "rogue_overhand_whatever", "rogue_quick_slash",
+        "fire_fine_burn_then", "fire_fireball", "fire_wall", "neutral_shrug_bomb", "rogue_everyone_calm_down",
+        "fire_hot_head", "neutral_deep_sigh", "rogue_not_my_problem",
+        "fire_blaze_and_bail", "neutral_backward_leap", "rogue_lunge_strike", "rogue_shadow_step", "rogue_ugh_fine_moving",
+        "neutral_healing_potion", "neutral_leech", "neutral_regeneration", "rogue_nap_time"
+    ],
+    "tiers": {
+        "elite": { "hp_multiplier": 2.5, "resistance_floor": 0.25, "resistance_cap": 0.5, "rank": "elite", "scale": 1.25, "marker_color": "#ffd23f" },
+        "boss":  { "hp_multiplier": 7.0, "resistance_floor": 0.25, "resistance_cap": 0.5, "rank": "boss",  "scale": 1.4,  "marker_color": "#ff3f6c" }
+    },
+    "rooms": {
+        "combat": [
+            { "id": "combat_intro", "max_index": 1, "first_wave_delay": 2.0, "stages": [
+                { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 4 } ] },
+                { "delay": 6.0, "until_alive_at_most": 2, "spawns": [ { "enemy": "melee_chaser", "count": 3 }, { "enemy": "ranged_shooter", "count": 1 } ] }
+            ] },
+            { "id": "combat_mixed", "min_index": 1, "first_wave_delay": 2.0, "stages": [
+                { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 4 }, { "enemy": "ranged_shooter", "count": 2 } ] },
+                { "delay": 7.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "melee_chaser", "count": 3 }, { "enemy": "ranged_shooter", "count": 2 } ] }
+            ] },
+            { "id": "combat_swarm", "min_index": 2, "first_wave_delay": 2.0, "stages": [
+                { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 6 } ] },
+                { "delay": 8.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "melee_chaser", "count": 4 }, { "enemy": "ranged_shooter", "count": 3 } ] }
+            ] },
+            { "id": "combat_stonewall", "min_index": 3, "first_wave_delay": 2.0, "stages": [
+                { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 3 }, { "enemy": "ranged_shooter", "count": 2 } ] },
+                { "delay": 8.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "fire_resistant_golem", "count": 1 }, { "enemy": "melee_chaser", "count": 3 } ] }
+            ] }
+        ],
+        "elite": [
+            { "id": "elite_brutes", "first_wave_delay": 2.0, "stages": [
+                { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 3 } ] },
+                { "delay": 5.0, "until_alive_at_most": 2, "spawns": [ { "enemy": "melee_chaser", "count": 1, "tier": "elite" }, { "enemy": "fire_resistant_golem", "count": 1, "tier": "elite" }, { "enemy": "ranged_shooter", "count": 2 } ] }
+            ] }
+        ],
+        "boss": [
+            { "id": "boss_placeholder", "first_wave_delay": 2.0, "stages": [
+                { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 4 } ] },
+                { "delay": 6.0, "until_alive_at_most": 2, "spawns": [ { "enemy": "fire_resistant_golem", "count": 1, "tier": "boss" }, { "enemy": "ranged_shooter", "count": 2 } ] }
+            ] }
+        ]
+    },
+    "ui": {
+        "room_label": "Room %d of %d",
+        "type_names": { "combat": "Combat", "elite": "Elite", "rest": "Rest", "boss": "Boss" },
+        "room_cleared": { "title": "Room cleared", "button": "Continue", "rest_line": "You rest. It helps a little (healed %d)." },
+        "win": { "title": "Run complete", "line": "Somehow, you finished. Nobody is more surprised than you.", "button": "New run" }
+    }
+}

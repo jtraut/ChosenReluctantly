@@ -47,6 +47,8 @@ var target: Node3D = null
 ## the swirl side and the on-top push direction so behaviour repeats from a seed. -1 = not assigned: _ready
 ## then uses how many enemies are already alive (still deterministic for a given scene, never the instance id).
 var spawn_index: int = -1
+## "normal", "elite" or "boss" (3a). Set by apply_tier; ux reads it for the marker.
+var tier: String = "normal"
 
 ## Every live enemy in the tree, for separation steering (5d). A plain static array walked in place:
 ## no per-frame allocation, and the order (spawn order) is deterministic.
@@ -196,6 +198,39 @@ func _physics_process(delta: float) -> void:
 ## spawn is never an instant hit. Only ever lengthens the attack cooldown.
 func begin_spawn_grace(seconds: float) -> void:
 	_attack_cooldown_remaining = maxf(_attack_cooldown_remaining, seconds)
+
+
+## Makes this enemy an elite or boss from a data/run.json `tiers` entry: HP multiplier (and full HP), rank,
+## every element's resistance = max(own, floor) capped, a larger body mesh and a coloured marker above it.
+## Call after the enemy is in the tree (its own _ready has set its base stats).
+func apply_tier(tier_id: String, cfg: Dictionary) -> void:
+	tier = tier_id
+	var new_max: float = TierRules.scaled_health(health.max_health, float(cfg["hp_multiplier"]))
+	health.max_health = new_max
+	health.current_health = new_max
+	health.resistance_cap = maxf(health.resistance_cap, float(cfg["resistance_cap"]))
+	health.resistances = TierRules.resistances(health.resistances, TierRules.element_ids(), float(cfg["resistance_floor"]), float(cfg["resistance_cap"]))
+	if status_manager != null:
+		status_manager.rank = String(cfg["rank"])
+	var factor: float = float(cfg["scale"])
+	body_mesh.scale = Vector3.ONE * factor  # the body mesh only: _face_direction rebuilds the root basis every frame, and hit shapes keep their data size
+	var marker := MeshInstance3D.new()
+	marker.name = "TierMarker"
+	var mesh := SphereMesh.new()
+	mesh.radius = 0.22
+	mesh.height = 0.44
+	var material := StandardMaterial3D.new()
+	material.albedo_color = Color.html(String(cfg["marker_color"]))
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mesh.material = material
+	marker.mesh = mesh
+	marker.position = Vector3(0.0, 2.3, 0.0)
+	add_child(marker)
+	health.health_changed.emit(health.current_health, health.max_health)
+
+
+func is_elite() -> bool:
+	return tier != "normal"
 
 
 ## True while a stun status is active (placeholder cue + gameplay hook for ux).

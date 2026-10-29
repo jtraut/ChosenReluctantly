@@ -25,7 +25,7 @@ static func get_world(tree: SceneTree) -> Node:
 		return null
 	# current_scene first: normal play and the test runner behave exactly as before. The
 	# registered Main only fills in where current_scene is null (VpCapture's SubViewport).
-	if tree.current_scene != null:
+	if tree.current_scene != null and tree.current_scene.is_inside_tree():
 		return tree.current_scene
 	if _world != null and is_instance_valid(_world) and _world.is_inside_tree():
 		return _world

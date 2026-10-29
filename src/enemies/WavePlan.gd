@@ -19,6 +19,12 @@ var _stage_wait: float = 0.0
 var _gap_left: float = 0.0
 var _pending: Array[String] = []
 var _started_stages: int = 0
+## Finite tables (config "finite": true, the 3a room waves) stop after the last stage; endless ones loop.
+var _finished: bool = false
+
+## A queued spawn is the enemy id, or "<tier>|<enemy id>" for an elite or boss spawn. Encoding the tier in
+## the string keeps the shuffle's random calls identical to the plain-id case (seeded baselines).
+const TIER_SEPARATOR := "|"
 
 
 func _init(wave_config: Dictionary, rng: RandomNumberGenerator = null) -> void:
@@ -54,6 +60,8 @@ func stage_wait_left() -> float:
 ## The enemy id to spawn right now, or "" for none. At most one per call, so the per-frame
 ## path allocates no array (S5-6). EnemySpawner uses this.
 func step_one(delta: float, alive: int) -> String:
+	if _finished:
+		return ""
 	_gap_left = maxf(_gap_left - delta, 0.0)
 	if _pending.is_empty():
 		_stage_wait = maxf(_stage_wait - delta, 0.0)
@@ -66,7 +74,10 @@ func step_one(delta: float, alive: int) -> String:
 	_gap_left = float(config["spawn_gap"])
 	if _pending.is_empty():
 		_stage_index = _next_index(_stage_index)
-		_stage_wait = float(_stage(_stage_index)["delay"])
+		if _stage_index >= (config["stages"] as Array).size():
+			_finished = true
+		else:
+			_stage_wait = float(_stage(_stage_index)["delay"])
 	return enemy_id
 
 
@@ -82,8 +93,11 @@ func step(delta: float, alive: int) -> Array[String]:
 func _open_stage(stage: Dictionary) -> void:
 	_started_stages += 1
 	for entry: Dictionary in (stage["spawns"] as Array):
+		var queued: String = String(entry["enemy"])
+		if entry.has("tier"):
+			queued = String(entry["tier"]) + TIER_SEPARATOR + queued
 		for i in range(int(entry["count"])):
-			_pending.append(String(entry["enemy"]))
+			_pending.append(queued)
 	# Shuffle so a stage is not "all chasers, then all shooters" (seeded by the caller's rng).
 	for i in range(_pending.size() - 1, 0, -1):
 		var j: int = _rng.randi_range(0, i)
@@ -96,8 +110,23 @@ func _stage(index: int) -> Dictionary:
 	return (config["stages"] as Array)[index]
 
 
+## True once a finite table has handed out its last enemy (always false for an endless table).
+func is_finished() -> bool:
+	return _finished
+
+
+## Splits a queued spawn into {enemy, tier}; tier is "" for a normal enemy.
+static func decode(queued: String) -> Dictionary:
+	var cut: int = queued.find(TIER_SEPARATOR)
+	if cut < 0:
+		return {"enemy": queued, "tier": ""}
+	return {"enemy": queued.substr(cut + 1), "tier": queued.substr(0, cut)}
+
+
 func _next_index(index: int) -> int:
 	var next: int = index + 1
 	if next >= (config["stages"] as Array).size():
+		if bool(config.get("finite", false)):
+			return next  # past the end: step_one marks the table finished
 		return int(config["loop_from_stage"])
 	return next

@@ -23,7 +23,10 @@ func _ready() -> void:
 	try_again.pressed.connect(_on_try_again_pressed)
 	get_viewport().size_changed.connect(_apply_config)
 	if _main == null:
-		bind(get_tree().current_scene)
+		# Main owns this screen, so its parent is the Main to bind to (works in a SubViewport and while a scene
+		# swap is under way, where current_scene is null or stale). WorldRef covers a screen added elsewhere.
+		var host: Node = get_parent()
+		bind(host if host != null and host.has_signal("game_over_ready") else WorldRef.get_world(get_tree()))
 	elif _already_over():
 		show_screen()
 

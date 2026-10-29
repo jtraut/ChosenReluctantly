@@ -12,6 +12,8 @@ signal enemy_spawned(enemy: Enemy, alive: int)
 var target: Node3D = null
 ## The wave table state (built from data/waves.json; tests and tools may replace it).
 var plan: WavePlan = null
+## Elite/boss stats by tier id (data/run.json `tiers`); set by the run controller. Empty = tiers are ignored.
+var tier_configs: Dictionary = {}
 
 var _rng := RandomNumberGenerator.new()
 var _alive: int = 0
@@ -38,6 +40,18 @@ func set_seed(seed_value: int) -> void:
 	plan = WavePlan.new(WaveConfig.get_config(), _rng)
 
 
+## Replaces the wave table with one room's finite table (RunConfig.room_wave_config) and seeds it.
+func configure_room(room_config: Dictionary, seed_value: int) -> void:
+	_rng.seed = seed_value
+	_spawn_count = 0
+	plan = WavePlan.new(room_config, _rng)
+
+
+## True when the room's finite table has spawned everything and nothing is left alive.
+func room_cleared() -> bool:
+	return plan != null and plan.is_finished() and _alive == 0
+
+
 ## The spawner's random generator (so a tool that builds its own WavePlan stays on the same seed).
 func rng() -> RandomNumberGenerator:
 	return _rng
@@ -58,7 +72,10 @@ func _process(delta: float) -> void:
 		_spawn_one(enemy_id)
 
 
-func _spawn_one(enemy_id: String) -> void:
+func _spawn_one(queued: String) -> void:
+	var decoded: Dictionary = WavePlan.decode(queued)
+	var enemy_id: String = decoded["enemy"]
+	var tier_id: String = decoded["tier"]
 	var scene: PackedScene = _scene_for(enemy_id)
 	if scene == null:
 		return
@@ -77,6 +94,8 @@ func _spawn_one(enemy_id: String) -> void:
 	instance.global_position = spawn_position
 	instance.target = target
 	instance.begin_spawn_grace(float(plan.config["spawn_attack_grace"]))
+	if tier_id != "" and tier_configs.has(tier_id):
+		instance.apply_tier(tier_id, tier_configs[tier_id])
 	_alive += 1
 	instance.tree_exited.connect(_on_enemy_gone, CONNECT_ONE_SHOT)
 	enemy_spawned.emit(instance, _alive)

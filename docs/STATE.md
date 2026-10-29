@@ -11,10 +11,10 @@ Last updated: 2026-10-29. The director is away until the evening with an autonom
 - The repo runs. Suite 696/696.
 
 ## In progress
-- **Milestone 3a, run structure.** Gameplay built a7731e2..c560d83 (726/726). Next role: ux-designer.
+- **Milestone 3a, run structure.** Gameplay built a7731e2..c560d83; ux 8b54b25..0f4e317 (740/740). Next role: qa.
 
 ## Exact next step
-1. **3a ux** with ux-designer (RunHud, room-cleared prompt, win screen, tier markers). **On resume:** check `git log` for 3a ux commits.
+1. **3a qa.** **On resume:** check `docs/reviews/` for a 3a review.
 2. Then qa -> playtester -> tech-writer -> game-lead close, tag `playtest-2026-10-29-3a`.
 3. Then 3b, 3c, 3d in order (write each brief at the previous slice's close).
 

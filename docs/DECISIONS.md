@@ -725,3 +725,12 @@ Commits a7731e2..c560d83; 726/726. The wave-sim seed 1 hash and the bot-sim chec
 - **Placement:** elite in rooms 4-7 and rest in rooms 3-7 (seeded), the first room is combat, the boss is last.
 - **Bot change in run mode only:** it hunts the last 2 enemies or a lone shooter. Without that, a lone shooter stalls a room.
 - **Sim, seeds 1-12 at real time:** 12/12 won, 0 soft locks. A run is about 260-290 s, the boss room 65-98 s. **The bot ends every room at 30/30 HP:** with the full deck, Recovery out-heals everything, so attrition is nil (feeds D13 and the 3b starter shrink). The N3 checks are clean (pick rate 0.93-1.06x, which shows no bag bug, not balance).
+
+### 2026-10-29 - 3a UX (ux-designer, logged by game-lead)
+Commits 8b54b25..0f4e317; 740/740. Rejected alternatives in brackets.
+- **One shape per room type** (circle combat, diamond elite, plus rest, star boss), reused in the room indicator, the prompt icon and the world tier sign. Colours come from `data/run.json`, so the HUD and world agree.
+- **Indicator at top centre.** [Top right.]
+- **Tier cue is a flat billboard sign above the HP bar.** [A rank frame on the HP bar, which would clash with the resistance frame that the 25% floor already triggers; a larger body.]
+- **Prompt panel is generic** (`show_content`, `options_box`), so 3b's reward screen reuses it. The rest room shows "Healed +N" instead of the time.
+- **Game Over in run mode adds one line,** "Reached room X of Y." This is the minimal part of D1's deferred run stats.
+- **Recurring flake:** `slice6_qa_test` same-seed crowd test failed in one full run each in C1-c, 3a and 3a-ux, and passes alone. Sent to qa in the 3a review.

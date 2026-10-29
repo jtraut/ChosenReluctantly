@@ -406,6 +406,16 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     - the Continue / New run button gets the arm delay, and its hint drops "Space".
     - Gameplay side: `RunState.from_dict` rejects an unknown `pending`; the choice model carries `owned` and `next_room_type`.
   - **Owner sequence:** gameplay-dev -> ux-designer (boss bar, telegraph readability) -> qa -> playtester -> tech-writer -> close, tag `playtest-2026-10-29-3c`.
+- [ ] **P-dodge, dodge charges and indicator (director request 2026-10-29; runs after the 3c close, before 3d)**
+  - **Goal:** the dodge has charges and the player can see them. GDD §3 [DIRECTOR DECISION, 2026-10-29].
+  - **Acceptance:**
+    1. `data/player.json` `dodge.charges` (default 3, validated 1-5) and `dodge.cooldown` is the per-charge recharge time. Charges recharge one at a time while below max. Each dodge spends one charge. A dodge can't start during another dodge (the roll lasts 0.25 s). Distance stays 5 m.
+    2. **Cooldown default (game-lead call):** 0.8 s -> 1.2 s per charge ("slightly longer"). It's one data value.
+    3. **HUD (ux-designer):** a dodge indicator near the LMB/RMB meters: one pip per charge (filled = ready) with the recharging pip filling over time, plus a "Space" label. It's readable at 720p, 1080p and 1440p and works for 1-5 charges. Charges reset each room and on Try again.
+    4. Pause, death, reload and the 2-tick post-pause block still work. Tests for the charge logic and the recharge timing.
+    5. Rerun the seeded wave sim and the whole-run sim and report the HP lost before/after (3 charges is a big survival buff, which may feed D13 and the solid-enemies call).
+  - **Owner sequence:** gameplay-dev -> ux-designer -> qa -> playtester (short) -> tech-writer (folded into the next docs pass if small) -> close.
+
 - [ ] **3d, loadouts**
   - **Goal:** from the second run on, you can build a starting deck, save it as a loadout and start runs with it. GDD §9 ("Starting decks and loadouts [DECIDED]"), §4 (deck rules).
   - **Acceptance:**

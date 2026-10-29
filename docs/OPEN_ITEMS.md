@@ -46,6 +46,8 @@ _Updated at every slice close._
 
 - **2026-10-29: "No scrolling by default on the round-end reward selection."** Accepted. ux-designer fixes it right after the current boss playtest, before 3c is tagged. Reward offers will fit without scrolling down to about 1024x600; only the rest-room removal list may scroll.
 
+- **2026-10-29: "No cooldown indicator for the dodge; dodge should have 3 charges (maybe 2) and a slightly longer cooldown."** Recorded in GDD §3 as your decision. It's scheduled right after the boss slice closes and before loadouts. I'm setting each charge's recharge to **1.2 s** (was 0.8 s); the charge count and cooldown are both data values (`data/player.json` `dodge.charges`, `dodge.cooldown`). There will be a pip indicator near the attack meters.
+
 ## Needs your decision
 
 Neither blocks work. Until you answer, I keep the current values.

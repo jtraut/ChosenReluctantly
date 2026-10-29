@@ -17,7 +17,7 @@ Last updated: 2026-10-29. The director is away until the evening with an autonom
 ## Exact next step
 1. **ux-designer: the director's no-scroll reward fix plus cheap 3c playtest items** (running; playtest 81b03d8 done). **On resume:** check `git log` for the ux fix commits.
 2. Then qa quick check -> tech-writer -> close, tag `playtest-2026-10-29-3c`.
-3. Then 3d (loadouts). Write its brief at the 3c close.
+3. Then **P-dodge** (director request: dodge charges plus a HUD indicator; brief in ROADMAP), then 3d (loadouts; brief in ROADMAP).
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 

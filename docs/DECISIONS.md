@@ -835,3 +835,14 @@ Commits b8af93f..5245779; 894/894. Rejected alternatives in brackets.
   - any finished run counts toward "from run 2".
 
   [Unlock-gated collections, which need meta-progression design; unlimited copies, which make a degenerate one-card deck plausible within the unique-count rule.]
+
+### 2026-10-29 - Dodge charges defaults (game-lead)
+- **Director directive:** 3 charges (maybe 2), a slightly longer cooldown, and a HUD indicator (recorded in GDD §3).
+- **My calls:**
+  - the per-charge recharge goes 0.8 s -> 1.2 s;
+  - charges recharge one at a time;
+  - charges reset each room;
+  - the indicator is pips near the LMB/RMB meters.
+
+  [Recharging all charges at once; a 1.0 s recharge.]
+- **Note:** 3 x 5 m of i-frame rolls is a large survival buff against the GDD line that critical escapes should come from Movement cards. The director chose it knowingly, and the sim before/after will show the size of the effect.

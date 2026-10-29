@@ -89,6 +89,10 @@ var _run_results: Array[Dictionary] = []
 var _card_casts: Dictionary = {}
 var _slot_stuck_since: Dictionary = {}
 var _room_min_hp: float = INF
+## 3b: the reward bot's own stream (seeded per run, so the picks repeat from --seed and never touch the combat bot).
+var _policy_rng := RandomNumberGenerator.new()
+const REJECT_CHANCE := 0.25
+const HEAL_BELOW_FRACTION := 0.7
 
 
 func _ready() -> void:
@@ -558,6 +562,7 @@ func _run_whole(run_seed: int) -> void:
 	if _god:
 		RunSession.current.max_hp = 9999.0
 		RunSession.current.hp = 9999.0
+	_policy_rng.seed = run_seed * 977 + 13
 	var result: Dictionary = {"seed": run_seed, "rooms_total": rooms.size(), "rooms_reached": 0, "outcome": "unfinished", "types": [], "wall_ms": 0, "sim_s": 0.0, "room_s": [], "room_min_hp": []}
 	for room: Dictionary in rooms:
 		(result["types"] as Array).append(String(room["type"]))
@@ -591,11 +596,22 @@ func _run_whole(run_seed: int) -> void:
 		if controller.is_last_room():
 			result["outcome"] = "won"
 			break
-		controller.continue_to_next_room()
+		if controller.has_choice():
+			var guard: int = 0
+			while controller.has_choice() and guard < 8:
+				guard += 1
+				var choice_id: String = _policy_choose(controller)
+				var outcome: Dictionary = controller.choose(choice_id)
+				if not bool(outcome["ok"]):
+					_fail("run %d room %d: the bot choice '%s' was refused: %s" % [run_seed, room_index + 1, choice_id, str(outcome.get("reason", ""))])
+					break
+		else:
+			controller.continue_to_next_room()
 		room_index += 1
 	result["wall_ms"] = Time.get_ticks_msec() - wall_start
 	result["sim_s"] = run_sim_total
 	result["hp_end"] = snappedf(RunSession.current.hp, 0.1) if RunSession.current != null else -1.0
+	_record_deck_and_hp(result)
 	Engine.time_scale = 1.0
 	_release_all()
 	Player.default_rng_seed = -1
@@ -606,12 +622,97 @@ func _run_whole(run_seed: int) -> void:
 		type_letters.append(t.substr(0, 1))
 	print("  run seed %d: %s | rooms reached %d of %d | sim %.0f s in %.1f s wall | types %s | room seconds %s | lowest HP in each room %s | HP at last room clear %s" % [
 		run_seed, String(result["outcome"]).to_upper(), int(result["rooms_reached"]), rooms.size(), float(result["sim_s"]), float(result["wall_ms"]) / 1000.0, ",".join(type_letters), str(result["room_s"]), str(result["room_min_hp"]), str(result["hp_end"])])
+	print("    HP at each room end %s (max %s) | deck %d cards %s | picks %d, rejects used %d, removals %d, rest heals %d" % [
+		str(result["room_hp_end"]), str(result["max_hp"]), int(result["deck_size"]), str(result["deck_slots"]), int(result["picks"]), int(result["rejects_used"]), int(result["removals"]), int(result["heals"])])
 	# Leave nothing of this run behind for the next one.
 	var last: Node = get_tree().current_scene
 	if last != null and last is Main:
 		get_tree().current_scene = null
 		last.queue_free()
 	RunSession.clear()
+
+
+## The seeded reward policy. It reads the choice model (option kinds and the state HP and deck counts), never a
+## card content: a reject 25% of the time while any are left, else a random not-yet-owned card (any if all are
+## owned); at a rest room it heals under 70% HP, else removes a duplicate (any removable card if none), else heals.
+func _policy_choose(controller: RunController) -> String:
+	var model: Dictionary = controller.current_choice()
+	var options: Array = model["options"]
+	var state: RunState = controller.state()
+	match String(model["choice"]):
+		RunState.PENDING_REWARD:
+			var skip_id: String = ""
+			var cards: Array[Dictionary] = []
+			var unowned: Array[Dictionary] = []
+			for option: Dictionary in options:
+				if String(option["kind"]) == "skip" and bool(option["enabled"]):
+					skip_id = String(option["id"])
+				elif String(option["kind"]) == "card" and bool(option["enabled"]):
+					cards.append(option)
+					if not state.deck.has(String(option["card_id"])):
+						unowned.append(option)
+			if skip_id != "" and (_policy_rng.randf() < REJECT_CHANCE or cards.is_empty()):
+				return skip_id
+			var pool: Array[Dictionary] = unowned if not unowned.is_empty() else cards
+			return String(pool[_policy_rng.randi_range(0, pool.size() - 1)]["id"])
+		RunState.PENDING_REST:
+			var heal_id: String = ""
+			var menu_id: String = ""
+			for option: Dictionary in options:
+				if String(option["kind"]) == "heal":
+					heal_id = String(option["id"])
+				elif bool(option["opens_list"]) and bool(option["enabled"]):
+					menu_id = String(option["id"])
+			if state.hp_fraction() >= HEAL_BELOW_FRACTION and menu_id != "":
+				return menu_id
+			return heal_id
+		RunState.PENDING_REST_REMOVE:
+			var best: String = ""
+			var any: String = ""
+			var back_id: String = ""
+			for option: Dictionary in options:
+				if String(option["kind"]) == "back":
+					back_id = String(option["id"])
+				elif String(option["kind"]) == "remove" and bool(option["enabled"]):
+					if any == "":
+						any = String(option["id"])
+					if best == "" and int(option["count"]) > 1:
+						best = String(option["id"])
+			return best if best != "" else (any if any != "" else back_id)
+	return ""
+
+
+## Run end report data: HP at each room end, the final deck size and per-slot composition, and what the policy did.
+func _record_deck_and_hp(result: Dictionary) -> void:
+	var state: RunState = RunSession.current
+	var hp_ends: Array[float] = []
+	var slots: Dictionary = {}
+	var picks: int = 0
+	var rejects_used: int = 0
+	var removals: int = 0
+	var heals: int = 0
+	if state != null:
+		for entry: Dictionary in state.history:
+			hp_ends.append(snappedf(float(entry["hp_end"]), 0.1))
+		for card_id: String in state.deck:
+			var slot_type: String = String(CardDatabase.get_card(card_id).get("slot_type", "?"))
+			slots[slot_type] = int(slots.get(slot_type, 0)) + 1
+		for entry: Dictionary in state.choice_log:
+			match String(entry["kind"]):
+				"pick": picks += 1
+				"reject": rejects_used += 1
+				"remove": removals += 1
+				"heal": heals += 1
+	result["room_hp_end"] = hp_ends
+	result["max_hp"] = snappedf(state.max_hp, 0.1) if state != null else -1.0
+	result["deck_size"] = state.deck.size() if state != null else 0
+	result["deck_slots"] = slots
+	result["picks"] = picks
+	result["rejects_used"] = rejects_used
+	result["removals"] = removals
+	result["heals"] = heals
+	if state != null and state.deck.is_empty():
+		_fail("run %d: the deck ended empty" % int(result["seed"]))
 
 
 ## Waits for a Main that is not `old` to become the current scene (the scene swap is deferred).
@@ -712,6 +813,7 @@ func _run_summary() -> void:
 			played_types[t] = int(played_types.get(t, 0)) + 1
 	print("RUN SUMMARY over %d run(s): outcomes %s | rooms reached (rooms: runs) %s" % [_run_results.size(), str(outcomes), str(reached)])
 	print("  room types in the played runs: %s" % str(played_types))
+	_print_attrition()
 	# Distribution of the generator alone over many seeds (cheap and pure).
 	var counts: Dictionary = {}
 	var index_counts: Dictionary = {}
@@ -733,6 +835,29 @@ func _run_summary() -> void:
 				parts.append("room %d: %.0f%%" % [index, 100.0 * float(n) / float(seeds)])
 		print("    %s position: %s" % [room_type, ", ".join(parts)])
 	_print_pick_rates()
+
+
+## 3b: HP at the end of each room, averaged over the runs that got that far (is there attrition?), and the deck sizes.
+func _print_attrition() -> void:
+	var sums: Array[float] = []
+	var counts: Array[int] = []
+	var sizes: Array[int] = []
+	for result: Dictionary in _run_results:
+		sizes.append(int(result.get("deck_size", 0)))
+		var ends: Array = result.get("room_hp_end", [])
+		for i in range(ends.size()):
+			while sums.size() <= i:
+				sums.append(0.0)
+				counts.append(0)
+			sums[i] += float(ends[i]) / maxf(float(result.get("max_hp", 30.0)), 1.0)
+			counts[i] += 1
+	var parts: Array[String] = []
+	for i in range(sums.size()):
+		parts.append("room %d: %.0f%% (%d runs)" % [i + 1, 100.0 * sums[i] / float(counts[i]), counts[i]])
+	print("  mean HP at room end, as a share of max: %s" % ", ".join(parts))
+	sizes.sort()
+	if not sizes.is_empty():
+		print("  final deck sizes: %s (min %d, max %d)" % [str(sizes), sizes[0], sizes[sizes.size() - 1]])
 
 
 ## N3: per-card pick rates. Within one slot type the bot presses at random, so cards should be cast at similar

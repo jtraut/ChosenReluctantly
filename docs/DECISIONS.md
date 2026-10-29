@@ -749,3 +749,15 @@ Commits 8b54b25..0f4e317; 740/740. Rejected alternatives in brackets.
   - Run length: 8 rooms stays.
 - **3b starter deck = 15 cards, 3 per slot** (listed in the ROADMAP 3b brief). The full pool is reachable via `--full-deck`. [Keeping the full pool, which makes every reward a duplicate and every unique card unremovable.] The escape card (Backward Leap) is in the starter because enemies are solid.
 - **"Does nothing for the build" filter** is a generic optional card field `requires`. No shipped card needs it yet. [Hardcoded per-card rules.]
+
+### 2026-10-29 - 3b rewards and deck-clean, gameplay side (gameplay-dev, logged by game-lead)
+Commits fd2f644..b8564cd; 802/802. Wave-sim seed 1 30 s hash unchanged. Rejected alternatives in brackets.
+- **Reject skips the offer and gives no card,** per the GDD wording. [Reroll.] At 0 rejects you must pick.
+- **Offers are seeded from (run seed, room index) plus the current deck,** on their own RNG stream. Unowned:owned weight is 4:1. The offer shrinks if fewer cards are eligible. Boss rooms aren't reward rooms (data `reward_room_types`).
+- **Rest is two steps:** Heal or "Remove a card", then a card list with Back. [One flat list.] Heal stays enabled at full HP with "HP is already full", which fixes "Healed +0".
+- **A reload mid-reward resumes the same offer** (`RunState.pending` and `offer`; save format v2, v1 still loads). [Regenerating the offer.]
+- **Input safety:** number keys only move the highlight; Enter or a click confirms. Presses are ignored for 0.4 s after the panel opens (`data/ui.json`), and while paused.
+- **`--full-deck`** applies for the whole launch, including Try again. `run.json` `character_pools` duplicates `Player.owned_pools` until there's a character data entry.
+- **The card effect line comes from the effect params,** never from the card id (coupling rule).
+- **Consequence of the deck rules:** every starter card is unremovable until you own a duplicate or a 4th unique card in that slot (3 per slot exactly). Early rest rooms are therefore mostly "heal". Accepted; it's the GDD rule working.
+- **Sim, 10 seeds, scale 8:** 9 won, 1 lost (elite room). The lowest HP inside a room often reaches 1-12 of 30, but carried attrition is mild (mean room-end HP 78-93%). Final decks are 17-19 cards.

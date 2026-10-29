@@ -326,7 +326,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
     - F3 counts styling.
     - Names fit the HUD.
     - Visuals match hitboxes.
-  - [ ] **C1-f, qa:** everything in the director's Part 5, plus the README and CHANGELOG checks.
+  - [x] **C1-f, qa:** PASS 76bca75 (696/696; soak extended to zones and pass-through; `docs/reviews/2026-10-29-c1f-qa.md`). Non-blocking N1-N6; N3 (bot-sim charter checks) goes into M3a. Docs inputs go to C1-h. everything in the director's Part 5, plus the README and CHANGELOG checks.
   - [ ] **C1-g, playtester:** the director's Part 6, merged into the pass close-out report.
   - [ ] **C1-h, tech-writer:** the docs pass (ARCHITECTURE adds deck rules, the example config and the new templates; README; CHANGELOG).
 

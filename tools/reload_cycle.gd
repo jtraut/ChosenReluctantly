@@ -11,6 +11,7 @@ extends Node
 ## errors) are NOT caught here; the wrapper script scans the output for them.
 
 const MAIN_PATH := "res://scenes/main/Main.tscn"
+const ENEMY_PATH := "res://scenes/enemies/MeleeChaser.tscn"
 const SETTLE_FRAMES := 8
 const BEAT_TIMEOUT_MSEC := 6000
 const TIME_SCALE_GRACE_MSEC := 50
@@ -82,6 +83,35 @@ func _check_fresh(label: String) -> void:
 	_check(is_instance_valid(main.camera_rig) and main.camera_rig.camera.current, "%s: no current camera" % label)
 	var go: Node = main.get_node_or_null("GameOverScreen")
 	_check(go != null and not (go as CanvasLayer).visible, "%s: Game Over screen missing or visible on fresh arena" % label)
+	# C1-f: zone and pass-through state must not leak from the previous arena.
+	_check(not Enemy.is_player_body_suppressed(), "%s: the static pass-through flag leaked into the new arena" % label)
+	_check(not player.is_pass_through(), "%s: new player is already passing through enemies" % label)
+	if PlayerConfig.collide_with_enemies():
+		_check((player.collision_mask & CollisionLayers.ENEMY_BODY) != 0, "%s: player mask lost the enemy-body bit" % label)
+	var zones: Node = main.get_node_or_null(ZoneManager.NODE_NAME)
+	_check(zones == null or (zones as ZoneManager).live_count() == 0, "%s: live zones in a fresh arena" % label)
+
+
+## C1-f: puts the real zone and pass-through paths into the arena that is about to be killed and
+## reloaded: a Fire Wall placed through the real template, and a pass-through grant taken while an
+## enemy overlaps the player (so the restore is the deferred kind). Casts through the real
+## EffectTemplates, not through input, so the soak stays deterministic.
+func _arm_zone_and_pass_through(main: Main, label: String) -> void:
+	var enemy: Enemy = (load(ENEMY_PATH) as PackedScene).instantiate()
+	main.add_child(enemy)
+	enemy.global_position = main.player.global_position + Vector3(0.0, 0.0, -0.3)
+	await _frames(2)
+	var wall: Dictionary = CardDatabase.get_card("fire_wall")
+	var context := EffectContext.new(main.player, main, "player")
+	context.rng = main.player.status_rng
+	for effect: Dictionary in wall["effects"]:
+		EffectTemplates.execute(effect["template"], effect["params"], context)
+	var zones := ZoneManager.for_world(main)
+	_check(zones != null and zones.live_count() >= 1, "%s: Fire Wall did not place a zone" % label)
+	main.player.grant_pass_through(30.0)
+	_check(main.player.is_pass_through(), "%s: pass-through grant did not start" % label)
+	_check(Enemy.is_player_body_suppressed(), "%s: static pass-through flag not set" % label)
+	await _frames(2)
 
 func _wait_game_over(main: Main) -> bool:
 	var deadline := Time.get_ticks_msec() + BEAT_TIMEOUT_MSEC
@@ -112,7 +142,10 @@ func _run() -> void:
 	for cycle in range(1, _cycles + 1):
 		var main := _main()
 		var old_id := main.get_instance_id()
+		await _arm_zone_and_pass_through(main, "cycle %d" % cycle)
 		_kill(main)
+		_check(not main.player.is_pass_through(), "cycle %d: pass-through survived the death" % cycle)
+		_check(not Enemy.is_player_body_suppressed(), "cycle %d: static pass-through flag survived the death" % cycle)
 		_check(main.player.is_dead(), "cycle %d: player not dead after lethal damage" % cycle)
 		_check(is_equal_approx(Engine.time_scale, 0.25), "cycle %d: slow-mo not active (time_scale %s)" % [cycle, Engine.time_scale])
 		# Hit again while dead: must not die twice or restart anything.
@@ -141,6 +174,7 @@ func _run() -> void:
 	# Restart issued mid slow-mo, before game_over_ready.
 	var mid := _main()
 	var mid_id := mid.get_instance_id()
+	await _arm_zone_and_pass_through(mid, "mid-slow-mo")
 	_kill(mid)
 	await _frames(3)
 	_check(is_equal_approx(Engine.time_scale, 0.25), "mid-slow-mo: time_scale %s, expected 0.25" % Engine.time_scale)
@@ -156,6 +190,16 @@ func _run() -> void:
 	_check(not _main().is_game_over(), "stale beat timer announced game over on the new arena")
 	_check(is_equal_approx(Engine.time_scale, 1.0), "stale beat: time_scale %s" % Engine.time_scale)
 	snaps.append(_snapshot("after mid-slow-mo"))
+
+	# Reload while the buff and a zone are live and the player is NOT dead (leaving the tree mid-grant).
+	var live := _main()
+	var live_id := live.get_instance_id()
+	await _arm_zone_and_pass_through(live, "live reload")
+	live.restart_arena()
+	await _frames(SETTLE_FRAMES)
+	_check(_main().get_instance_id() != live_id, "live reload: scene not replaced")
+	_check_fresh("live reload")
+	snaps.append(_snapshot("after live reload"))
 
 	# Orphan / object growth: compare last full cycle to the first.
 	if snaps.size() >= 2:

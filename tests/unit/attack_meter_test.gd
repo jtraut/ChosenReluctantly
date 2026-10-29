@@ -42,6 +42,12 @@ func test_slot_cooldown_progress_math() -> void:
 
 
 func test_meters_track_player_and_heavy_ready_state() -> void:
+	# C1-f hardening: this flaked once in a loaded full run (C1-t). Every assertion is kept; what changed is
+	# that no check depends on one frame landing at one wall-clock moment. The wind-up and the ready pulse
+	# are observed frame by frame (a pulse lasts 0.4 s and a frame stall could skip right over it), and the
+	# progress comparison allows for the player moving on by one frame between the two reads.
+	Engine.time_scale = 1.0
+	Juice.reset()
 	var main := _spawn_main()
 	await get_tree().process_frame
 	await get_tree().process_frame
@@ -54,18 +60,35 @@ func test_meters_track_player_and_heavy_ready_state() -> void:
 	TestInput.press(&"attack_heavy")
 	await _frames(2)
 	TestInput.release(&"attack_heavy")
-	await get_tree().process_frame
-	assert_str(String(heavy.state())).is_equal("windup")
-	assert_float(heavy.progress_value()).is_equal_approx(player.get_attack_progress(&"heavy"), 0.05)
-	assert_float(heavy.progress_value()).is_less(1.0)
-	# Wait for the cooldown to end: heavy is ready again and pulses once.
-	var deadline := Time.get_ticks_msec() + 4000
+	# Wait (bounded, in frames) for the meter to show the wind-up; it ends after 0.45 s of game time.
+	var windup_seen := false
+	for i in range(30):
+		await get_tree().process_frame
+		if String(heavy.state()) == "windup":
+			windup_seen = true
+			var before: float = player.get_attack_progress(&"heavy")
+			var shown: float = heavy.progress_value()
+			var after: float = player.get_attack_progress(&"heavy")
+			assert_float(shown).override_failure_message("meter %.3f is outside the player's progress %.3f..%.3f" % [shown, before, after]).is_between(minf(before, after) - 0.08, maxf(before, after) + 0.08)
+			assert_float(shown).is_less(1.0)
+			break
+	assert_bool(windup_seen).override_failure_message("the heavy meter never showed the wind-up").is_true()
+	# Wait for the cooldown to end: heavy is ready again and pulses once. Sample the pulse every frame.
+	var max_heavy_pulse := 0.0
+	var max_light_pulse := 0.0
+	var deadline := Time.get_ticks_msec() + 6000
 	while not player.is_attack_ready(&"heavy") and Time.get_ticks_msec() < deadline:
 		await _frames(1)
-	await get_tree().process_frame
+		max_heavy_pulse = maxf(max_heavy_pulse, heavy.pulse_value())
+		max_light_pulse = maxf(max_light_pulse, light.pulse_value())
+	for i in range(3):
+		await get_tree().process_frame
+		max_heavy_pulse = maxf(max_heavy_pulse, heavy.pulse_value())
+		max_light_pulse = maxf(max_light_pulse, light.pulse_value())
+	assert_bool(player.is_attack_ready(&"heavy")).is_true()
 	assert_str(String(heavy.state())).is_equal("ready")
-	assert_float(heavy.pulse_value()).is_greater(0.0)
-	assert_float(light.pulse_value()).is_equal(0.0)
+	assert_float(max_heavy_pulse).override_failure_message("the heavy meter never pulsed on becoming ready").is_greater(0.0)
+	assert_float(max_light_pulse).is_equal(0.0)
 
 
 func test_slot_widget_ready_vs_cooling_state() -> void:

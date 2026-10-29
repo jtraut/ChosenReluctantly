@@ -332,7 +332,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
 
 - [x] **Pass close-out:** DONE 2026-10-29 (C1-g report covers the whole pass). **Post-milestone polish 1 is closed.** (Original: whole-pass playtester report, DoD verified, STATE points at 3a.)
 
-- [ ] **Backlog from the C1 playtest (not scheduled; small UX/content items, game-lead picks them up between M3 slices if cheap):** real-cast C1 scenarios in `data/scenarios.json`; a brief card-name pop-up on cast; a stronger Bleed cue and four distinct Flurry flashes; a brighter enemy projectile and stronger player outline in dense crowds; the Lunge preview shows the full path even when a body stops it; `Main.gd:74`/`GameOverScreen.gd:26` use `current_scene` (qa N5); bot-sim charter checks (qa N3, folded into 3a).
+- [ ] **Backlog (C1 and 3a playtests, qa follow-ups) (not scheduled; small UX/content items, game-lead picks them up between M3 slices if cheap):** real-cast C1 scenarios in `data/scenarios.json`; a brief card-name pop-up on cast; a stronger Bleed cue and four distinct Flurry flashes; a brighter enemy projectile and stronger player outline in dense crowds; the Lunge preview shows the full path even when a body stops it; `Main.gd:74`/`GameOverScreen.gd:26` use `current_scene` (qa N5); bot-sim charter checks (qa N3, done in 3a). From 3a: keep elites from spawning under the card row; the LOST line shows a stale HP; the `--run-room` win count; run-mode sim results depend on earlier runs in the same process; +1 object per soak cycle; `-RoomTimeout` clamps silently.
 
 ## Later (director, 2026-10-28)
 - Stealth makes enemies drop aggro (GDD §15 "Stealth drops enemy aggro [PLANNED, later]"). Do it with the enemy targeting/AI pass.
@@ -341,7 +341,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
 Director run order 2026-10-29: start right after C1 and Polish 1 close; one slice at a time, each with the full loop (build -> ux where seen/clicked -> qa -> playtester -> tech-writer docs pass -> game-lead close), then a `playtest-YYYY-MM-DD-<slice>` tag. GDD §2, §4, §5, §7, §9, §13. No art, audio, passive tree, Wizard or Water.
 **Coupling rule for every M3 slice:** run-loop code must not know specific cards. It handles card ids, slot types and pools through the existing deck/card APIs, so a card-system change after the director's vision check doesn't strand it.
 
-- [ ] **3a, run structure** — gameplay BUILT a7731e2..c560d83 (726/726). ux BUILT 8b54b25..0f4e317 (740/740): shape-coded room types (circle combat, diamond elite, plus rest, star boss), a generic prompt panel (`show_content`, `options_box` for 3b), a win screen with stats, "Reached room X of Y" on Game Over, and flat tier signs. qa PASS a6a5d68 (766/766). playtester next.
+- [x] **3a, run structure** — **DONE 2026-10-29.** Gameplay a7731e2..c560d83; ux 8b54b25..0f4e317; qa PASS a6a5d68 (766/766); playtest 013e7d7 (no blocker); docs 15250c4. Tag `playtest-2026-10-29-3a`. The playtest found the boss room drags (65-98 s, fixed by 3c) and no attrition (3b starter shrink plus D13); the next-room preview and the rest text are in 3b.
   - **Goal:** a run is a seeded sequence of rooms you fight through, carrying your state, ending in a win or a loss.
   - **Acceptance:**
     1. **Run generation:** seeded generator builds a room sequence from data (`data/run.json` or similar): room count, the type mix and placement rules. Types: `combat`, `elite`, `rest` (placeholder: heal a data % of max HP, or a "deck-clean coming in 3b" note), `boss` (placeholder until 3c: a beefed-up elite). The same seed gives the same sequence.
@@ -362,7 +362,29 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
   - **Files likely touched:** new `src/run/` (generator, RunState, room controller), `data/run.json` and room/wave data, `src/main/Main.gd`, the spawner, new HUD bits under `src/ui/`, `tools/bot_sim.gd`, and tests.
   - **Defaults (game-lead calls, logged in DECISIONS and "Calls I made"):** a linear sequence, no branching map (routing comes later); 8 rooms (5 combat, 1 elite, 1 rest, 1 boss last); rest heals 30% of max HP; short prototype runs (GDD §9 [PROPOSED]).
 
-- [ ] **3b, reward screen** (brief written at 3a close). After each won room: offer N cards (`offer_size` from data, default 3); pick one or reject the whole offer (rejects capped at 3 per run, from RunState). Offers come only from the character's pools (class, element, neutral) and skip cards that do nothing for the build. Deck-clean options use the existing `can_remove` guard, so no removal can break a slot minimum. The screen is generic (a list of options of any kind), so level-up choices can reuse it later.
+- [ ] **3b, reward screen and deck-clean**
+  - **Goal:** after each won room you choose how your deck grows: pick 1 of N cards or reject the whole offer. Rest rooms let you trade the heal for removing a card. GDD §4 (deck rules, unique minimums), §5 (pools), §9 (rewards), §15 (the level-up idea reuses the screen).
+  - **Acceptance:**
+    1. **Offer:** after every won combat or elite room (not the last room, and not the rest room) the reward screen offers `offer_size` cards (data, default 3; distinct within an offer). Seeded from the run seed and room index, so the same seed gives the same offers.
+    2. **Pools:** offers come only from the character's pools (class + element + neutral, read from data, never hardcoded). Cards that "do nothing for the build" are filtered by a generic data hook: an optional card field `requires` (for example a slot type the character lacks, or a status source), checked against the current deck and character. No shipped card needs it yet, so test it with fixtures. Weighting: cards not yet owned are preferred (data weight); duplicates are allowed (D10).
+    3. **Pick or reject:** picking adds the card to RunState's deck. Rejecting spends 1 reject (`rejects_per_run` 3 from RunState). At 0 the Reject button is disabled with the reason shown. The rejects left are visible on the screen.
+    4. **Deck-clean at rest rooms:** the rest room offers two options: heal (30% of max HP) or remove 1 card. Removal goes through the existing `can_remove` guard: cards that can't be removed are shown disabled with the reason (e.g. "Utility needs 3 unique cards"). No removal can break a slot minimum (tested).
+    5. **Generic screen:** one reusable choice screen built on RunPromptScreen's `options_box`. It takes a list of options of any kind (card, remove, heal, skip), so level-up choices can reuse it later. Card options show name, slot, flavor and a short effect line. Keyboard (1-N, Enter) and mouse both work.
+    6. **Starter deck shrink:** `data/run.json` `starting_deck` becomes 15 cards, 3 per slot (below). The full pool stays reachable with the launch arg `--full-deck` (and in scenarios), so every card is still testable by hand.
+    7. **Room-cleared panel fixes from the 3a playtest:** a "Next: Room N of 8 - Type" line with its shape, and a rest-room text that doesn't say "Healed +0".
+    8. **Bot sim:** picks rewards (a seeded simple policy), uses rejects and deck-clean, and reports deck size and composition at run end, plus HP at each room end. Soft-lock and N3 checks still pass.
+    9. **Coupling:** reward and run code handles card ids and pools only, never specific card content.
+    10. **Gates:** suite green; zero errors on startup and in the 20 s headless run; reload soak clean (mid-reward reload, Try again from a reward state); SceneSelfCheck; capture scenarios unchanged.
+  - **Starter deck (game-lead call):** the original Polish starters plus one escape card and one regen card, 3 per slot:
+    - single: Quick, I Guess; Overhand, Whatever; Ember, Whatever;
+    - aoe: Fine, Burn Then; Everyone Calm Down; Shrug Bomb;
+    - utility: all 3;
+    - movement: Blaze and Bail; Ugh, Fine, Moving; Nope, Leaping Away (the escape, needed with solid enemies);
+    - recovery: Healing Potion; Nap Time; Eventual Healing.
+
+    Reward-only at start: Flaming Nonsense, Pointy Stick, Slash Then Bleed, Four Quick Stabs, Fireball, Wall of Mild Fire, Walk Through Everyone, Reluctant Lunge, Heal By Hurting.
+  - **Known limit:** Utility has exactly 3 cards in the whole pool, so it can never be cleaned or grow until more Utility cards exist. Accepted for the prototype.
+  - **Owner sequence:** gameplay-dev (logic, data, a placeholder screen) -> ux-designer (the choice screen) -> qa -> playtester -> tech-writer -> close, tag `playtest-2026-10-29-3b`.
 - [ ] **3c, boss encounter** (brief written at 3b close). One boss with simple HP-threshold phases and telegraphed attacks in the existing telegraph language. Equal 50% resistance across elements (the run's last boss is the final boss, GDD §7). It replaces the 3a placeholder.
 - [ ] **3d, loadouts** (brief written at 3c close). From run 2 on: build, save and load a starting deck, validated by the deck rules. Persisted in `user://`.
 - Later in M3 or after: shops and drops (GDD §14 item 1, [OPEN], not started); branching routes.

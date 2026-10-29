@@ -1,14 +1,14 @@
 # Director open items
 
 Last updated: 2026-10-29
-**Status: 2 small balance questions (D13, D14), nothing blocked.** Content slice C1, the capture-tooling task and Polish 1 are **done** (tag `playtest-2026-10-29-C1`). Now in progress: Milestone 3a, the run structure (rooms in a row, win and lose screens).
+**Status: 2 small balance questions (D13, D14), nothing blocked.** Done: C1 and Polish 1, and **Milestone 3a (runs of 8 rooms)**. In progress: 3b, the card reward screen and deck-clean.
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
 ## How to playtest
 
 - **Play the latest known-good build:** `git checkout <tag>` (the tag is named in "While you were away" below), play, then `git checkout main` when you're done. If there's no tag yet, `main` runs too.
-- **Normal run:** `godot --path .` (or open `project.godot` and press Play). Play normal runs for the checklist. Test scenarios give you 9999 HP.
+- **Normal run:** `godot --path .` (or open `project.godot` and press Play). This starts an 8-room run. Useful extras: `godot --path . -- --run-seed=5` (replay a seed), `-- --run-room=8` (jump to the boss room). Test scenarios give you 9999 HP and the old endless arena.
 - **Keys:** WASD move · mouse aims · left click = light attack (it also fires on its own) · right click = heavy attack · Space = dodge · 1-5 = cast the card in that slot · Ctrl+1-5 = dead-card swap (throw away that slot's card and draw the next one, with a short cooldown) · Esc = pause and settings · F3 = debug overlay.
 - **Hold-to-preview (the default):** hold a card key to see its hit area in your element colour, aim with the mouse, and let go to cast.
 - **Settings:** press Esc. The pause screen has the "Cast cards on: Release (preview) / Press" toggle. It saves at once.
@@ -18,7 +18,9 @@ Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
 _Updated at every slice close._
 
-- **Latest playtest tag:** `playtest-2026-10-29-C1` (C1 closed with qa PASS, 696/696 tests).
+- **Latest playtest tag:** `playtest-2026-10-29-3a` (3a closed with qa PASS, 766/766). The previous tag is `playtest-2026-10-29-C1`.
+- **New in 3a (since the C1 tag):** pressing Play now starts a **run**: 8 rooms in a row (5 fights, 1 elite, 1 rest, then a boss), with "Room X of 8" and a shape for the room type at the top. Clearing a room shows a panel with Continue. Your HP carries over between rooms. There's a win screen, and Game Over now says how far you got. Elites (diamond sign) and the boss (star sign) have more HP. The boss is a stand-in until 3c. Try again starts a new run with a new seed.
+- **Try first in 3a:** play one whole run (checklist item 19). Note the boss room's length and where your HP drops.
 - **Built since your last session (C1):**
   - 9 new Fire Rogue cards, all in your starting deck: Slash, Then Bleed · Four Quick Stabs · Fireball, Incoming · Wall of Mild Fire · Walk Through Everyone · Reluctant Lunge · Nope, Leaping Away · Heal By Hurting · Eventual Healing.
   - New card abilities under the hood: placed fire zones, dashes that hit along the path, a backward leap, walking through enemies, bleed, regeneration, life-steal.
@@ -54,7 +56,8 @@ Each entry says what I chose and the one-line way to change it.
 3. **A run is 8 rooms: 5 combat, 1 elite, 1 rest, and the boss last** (short prototype runs, per GDD §9). **Change:** edit the room counts in `data/run.json`.
 4. **The rest room heals 30% of max HP.** **Change:** `data/run.json` rest heal value.
 5. **Elite enemies resist every element at least 25%** (they keep their own if it's higher, e.g. the fire golem), capped at 50%, per GDD §7. **Change:** the elite resistance value in `data/run.json`.
-6. **A normal launch now starts a run; test scenarios and the wave sim keep the old endless arena.** **Change:** none needed; scenarios are for looking at one thing.
+6. **Your starting deck will shrink to 15 cards (3 per slot) in 3b,** so rewards have new cards to offer. It's the original starters plus Nope, Leaping Away (an escape) and Eventual Healing; the other 9 cards come from rewards. **Change:** edit `data/run.json` `starting_deck`. To play with every card, launch with `--full-deck` (from 3b).
+7. **A normal launch now starts a run; test scenarios and the wave sim keep the old endless arena.** **Change:** none needed; scenarios are for looking at one thing.
 
 ## Needs your eyes: play-session checklist (about 20-30 minutes)
 

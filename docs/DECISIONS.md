@@ -739,3 +739,13 @@ Commits 8b54b25..0f4e317; 740/740. Rejected alternatives in brackets.
 - PASS a6a5d68, 766/766 (`docs/reviews/2026-10-29-m3a-qa.md`).
 - **Flake fix:** `slice6_qa_test` same-seed crowd test tolerance 1e-6 -> 0.01 m. The 1e-4 drift comes from physics-engine sensitivity to allocation history (one unrelated StaticBody3D shifted it 7.8e-4 m), not from non-deterministic game code. The strict id-dependence pin stays in the sibling steering test (1e-5). [Keeping 1e-6 and hunting the engine internals.]
 - Non-blocking follow-ups go to the backlog: run-mode sim results depend on earlier runs in the same process; the LOST line shows a stale HP; the `--run-room` win count is wrong; objects rise +1 per soak cycle; `-RoomTimeout` clamps silently.
+
+### 2026-10-29 - 3a closed; 3b plan (game-lead)
+- 3a closed: qa PASS a6a5d68, playtest 013e7d7 with no blocker, docs 15250c4. D1's "revisit with the run structure" is partly met by a single "Reached room X of Y" line; the full run stats stay deferred.
+- **Playtester questions I answered myself:**
+  - The boss room drags (65-98 s): 3c replaces the placeholder boss, so I didn't touch the HP x7 now.
+  - The rest room at full HP shows "Healed +0": 3b turns rest into heal-or-remove and fixes the text.
+  - Next-room preview: added to 3b, on the shared panel.
+  - Run length: 8 rooms stays.
+- **3b starter deck = 15 cards, 3 per slot** (listed in the ROADMAP 3b brief). The full pool is reachable via `--full-deck`. [Keeping the full pool, which makes every reward a duplicate and every unique card unremovable.] The escape card (Backward Leap) is in the starter because enemies are solid.
+- **"Does nothing for the build" filter** is a generic optional card field `requires`. No shipped card needs it yet. [Hardcoded per-card rules.]

@@ -703,3 +703,13 @@ Commits 16eecd9..353070f; 688/688. Rejected alternatives in brackets.
 - **Solid enemies stay on.** The playtester judged them fair, not a blocker. The bot is pinned in 8-10% of move frames, the longest stretch is 1.8 s, and there's never a full lock. If the director finds it sticky, the first lever is the Shadow Step cooldown 4.0 -> 3.0, before flipping the flag.
 - **Playtest proposals not acted on** (sent to the director as D13/D14, because they change balance the director is about to feel by hand): Recovery heal power against 30 HP, and Fire Wall being weak on a single target. Small UX items went to the ROADMAP backlog.
 - **Not adopted:** "every Movement slot must guarantee an escape card". The shipped pool has 2 escapes (Shadow Step, Backward Leap) among 5 Movement cards, and the rule would need a new deck-rule type. Revisit if the director finds pinning a problem.
+
+### 2026-10-29 - Milestone 3a defaults (game-lead)
+Each is also listed under "Calls I made" in OPEN_ITEMS.
+- **Linear room sequence, no branching map.** It's the simplest way to prove the loop, and the GDD only says "procedurally generated room sequence". [A branching map now; it adds UI and a generator before we know the loop is fun.]
+- **8 rooms:** 5 combat, 1 elite, 1 rest, boss last. That's about a 10-15 minute run at the current wave lengths, within GDD §9's [PROPOSED] 15-25 minute prototype. The elite and rest positions are seeded within rules from data. [A 15-room run, which is slower to iterate on.]
+- **Rest heals 30% of max HP.** It's a placeholder; 3b adds the deck-clean option. [A full heal, which removes attrition.]
+- **Elite resistance = max(own, 25%), capped at 50%.** GDD §7 says "25% across elements", and an elite golem shouldn't lose its fire resistance. [Overwriting to exactly 25%.]
+- **Normal launch = run mode; scenarios and wave_sim = endless arena.** This keeps the capture tooling and the seeded sim baselines stable.
+- **Starting deck is a data list,** shipped as the full pool so the C1 checklist stays testable. 3b shrinks it, because with the full pool every reward is a duplicate and `can_remove` blocks every unique at exactly 3. (Utility has only 3 unique cards in the whole pool.)
+- **Coupling rule:** run-loop code handles card ids through the deck APIs only, never specific card content (director, Part 5).

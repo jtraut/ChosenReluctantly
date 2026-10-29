@@ -352,6 +352,13 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     6. **End screens:** a placeholder win screen after the last room. The lose screen reuses the existing death and Game Over flow. "Try again" starts a new run with a new seed (and the same deck rules).
     7. **Bot sim:** the sim plays whole seeded runs headless and reports crashes, NaN, soft locks (a room that never ends), rooms reached, the win or loss, and the room-type distribution across N seeds.
     8. **Hygiene:** test scenarios and the capture tool still work. Zero errors on startup and in the 20 s headless run. Full suite green. Reload soak clean. SceneSelfCheck passes.
+  - **Also in 3a (game-lead, 2026-10-29):**
+    - **Normal launch vs scenarios:** a normal launch starts a run with finite room waves. Capture scenarios and `wave_sim` keep the current endless arena (`loop_from_stage`), and their seeded baselines must not change.
+    - **Starting deck from data:** RunState takes its starting deck from a data list (`data/run.json` `starting_deck` or similar, validated by the deck rules). Ship it as the full Fire Rogue pool, as now. 3b will shrink it to a starter subset (the full pool would make every reward a duplicate). Keep a way to get the full deck (a scenario or debug flag).
+    - **RunState lifetime:** if it is an autoload or a static, the reload soak must cover a mid-run reload and "Try again after death starts a fresh RunState with a new seed". No state may leak across runs.
+    - **qa N5:** replace `get_tree().current_scene` in `Main.gd:74` and `GameOverScreen.gd:26` with the WorldRef path. Room transitions must work inside VpCapture.
+    - **Elite resistance:** each element = max(the enemy's own value, 25%), capped at 50% (GDD §7). Elites are existing enemy types with a data HP multiplier and a visible marker (ux).
+    - **Bot sim:** add qa's N3 charter checks: empty deck, stuck cooldown, pick-rate outliers per card.
   - **Files likely touched:** new `src/run/` (generator, RunState, room controller), `data/run.json` and room/wave data, `src/main/Main.gd`, the spawner, new HUD bits under `src/ui/`, `tools/bot_sim.gd`, and tests.
   - **Defaults (game-lead calls, logged in DECISIONS and "Calls I made"):** a linear sequence, no branching map (routing comes later); 8 rooms (5 combat, 1 elite, 1 rest, 1 boss last); rest heals 30% of max HP; short prototype runs (GDD §9 [PROPOSED]).
 

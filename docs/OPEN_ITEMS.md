@@ -12,7 +12,7 @@ Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 - **Keys:** WASD move · mouse aims · left click = light attack (it also fires on its own) · right click = heavy attack · Space = dodge · 1-5 = cast the card in that slot · Ctrl+1-5 = dead-card swap (throw away that slot's card and draw the next one, with a short cooldown) · Esc = pause and settings · F3 = debug overlay.
 - **Hold-to-preview (the default):** hold a card key to see its hit area in your element colour, aim with the mouse, and let go to cast.
 - **Settings:** press Esc. The pause screen has the "Cast cards on: Release (preview) / Press" toggle. It saves at once.
-- **Test scenarios** (9999 HP, for looking at one thing): `godot --path . -- --scenario=<name>` with `waves`, `attacks`, `card_cast`, `cast_preview`, `targeted_aoe`, `stun_crowd`, `hp_bars`, `bar_modes`, `game_over`, `settings_open`, and others in `data/scenarios.json`.
+- **Test scenarios** (9999 HP, for looking at one thing): `godot --path . -- --scenario=<name>` with `waves`, `attacks`, `card_cast`, `c1_status`, `c1_placed`, `c1_moves`, `cast_preview`, `targeted_aoe`, `stun_crowd`, `hp_bars`, `bar_modes`, `game_over`, `settings_open`, and others in `data/scenarios.json`.
 
 ## While you were away
 
@@ -26,7 +26,7 @@ _Updated at every slice close._
   - **Enemies are now solid:** you can't walk or dodge through them. Walk Through Everyone and Nope, Leaping Away are your ways out. (My call; one flag to undo, see "Calls I made".)
   - New visual cues: a bleed drip, a regen ring, a life-steal bead, green "+N" heal numbers, a ghosted look while walking through enemies, a Fire Wall burn-down timer, and a range ring for placed cards.
   - Dodge is 5 m (your D8).
-- **What to try first:** checklist items 12 (every new card) and 12a (solid enemies): push into a crowd for a minute, and see whether being blocked feels fair and whether the escape cards feel good.
+- **What to try first:** checklist items 12 (every new card) and 13 (solid enemies): push into a crowd for a minute, and see whether being blocked feels fair and whether the escape cards feel good.
 - **Playtester's headline (scripted, no hands):** Fireball and the backward leap are the standouts. Fire Wall is weak against one enemy. Healing may be too strong for 30 HP (D13). In big crowds you can lose sight of yourself and of enemy shots.
 
 ## Vision check (answer after playing)
@@ -50,6 +50,11 @@ Neither blocks work. Until you answer, I keep the current values.
 Each entry says what I chose and the one-line way to change it.
 
 1. **Enemies are now solid to you (from C1).** Before, you could walk straight through enemies, which made Shadow Step's "pass through enemies" meaningless. Now bodies block you; Shadow Step lets you through and the dodge doesn't. **Change:** set `data/player.json` `body.collide_with_enemies` to false.
+2. **Runs are a straight line of rooms (3a), no branching map yet.** Routing choices come later. **Change:** ask for a branching map (it's a generator change).
+3. **A run is 8 rooms: 5 combat, 1 elite, 1 rest, and the boss last** (short prototype runs, per GDD §9). **Change:** edit the room counts in `data/run.json`.
+4. **The rest room heals 30% of max HP.** **Change:** `data/run.json` rest heal value.
+5. **Elite enemies resist every element at least 25%** (they keep their own if it's higher, e.g. the fire golem), capped at 50%, per GDD §7. **Change:** the elite resistance value in `data/run.json`.
+6. **A normal launch now starts a run; test scenarios and the wave sim keep the old endless arena.** **Change:** none needed; scenarios are for looking at one thing.
 
 ## Needs your eyes: play-session checklist (about 20-30 minutes)
 
@@ -76,23 +81,23 @@ Play a normal run, not a test scenario. Reply with the item number and a word or
 **C. Try the cards**
 10. **Hold-to-preview.** Hold a card key, aim, let go. Look for: it feels natural rather than slow, and the outline is clear over enemies without being loud.
 11. **Cards vs the free light attack.** Look for: every damage card feels clearly better than the auto attack. The three area cards are only about 7-10% better than light on a single enemy: do they still feel worth casting on one?
-12. **Every new card (after C1).** Try each one: Slash, Then Bleed · Four Quick Stabs · Fireball, Incoming · Wall of Mild Fire · Walk Through Everyone (Shadow Step) · Reluctant Lunge · Nope, Leaping Away · Heal By Hurting (Leech) · Eventual Healing (Regeneration). Also check the names and flavor lines fit the voice. Look for: which feel great, which feel dull, and which to cut or rework.
-12a. **Solid enemies (after C1).** Look for: you never get stuck or pinned with no way out, and Shadow Step feels like a real escape through a crowd. If it feels worse than walking through enemies, say so (one data flag).
-13. **Recovery slot (after C1).** Look for: is it ready often enough to matter, without being something you can lean on?
-14. **Dead-card swap.** Press Ctrl+1-5 to throw away a card you don't want right now. Look for: is it useful, or a chore? (This feeds Vision check question 4.)
+12. **Every new card.** Try each one: Slash, Then Bleed · Four Quick Stabs · Fireball, Incoming · Wall of Mild Fire · Walk Through Everyone (Shadow Step) · Reluctant Lunge · Nope, Leaping Away · Heal By Hurting (Leech) · Eventual Healing (Regeneration). Also check the names and flavor lines fit the voice. Look for: which feel great, which feel dull, and which to cut or rework.
+13. **Solid enemies.** Look for: you never get stuck or pinned with no way out, and Shadow Step feels like a real escape through a crowd. If it feels worse than walking through enemies, say so (one data flag).
+14. **Recovery slot.** Look for: is it ready often enough to matter, without being something you can lean on?
+15. **Dead-card swap.** Press Ctrl+1-5 to throw away a card you don't want right now. Look for: is it useful, or a chore? (This feeds Vision check question 4.)
 
 **D. Die once**
-15. **Death.** Let yourself die. Look for: you can clearly tell you died (white then red flash, grey-out, topple), the reticle vanishes, and the slow-mo feels "longer", "shorter" or "fine". Then press "Try again": the restart is clean.
+16. **Death.** Let yourself die. Look for: you can clearly tell you died (white then red flash, grey-out, topple), the reticle vanishes, and the slow-mo feels "longer", "shorter" or "fine". Then press "Try again": the restart is clean.
 
 **E. Settings and pause**
-16. **Pause screen.** Press Esc, switch "Cast cards on" to Press, play a moment, then switch it back. Look for: it works both ways, and pressing Space on Resume doesn't make you dodge.
-17. **Pause text tone.** "Paused" / "The world will wait. It is very patient and very cheerful." / "Esc also resumes". Is the tone right? (Placeholder text.)
+17. **Pause screen.** Press Esc, switch "Cast cards on" to Press, play a moment, then switch it back. Look for: it works both ways, and pressing Space on Resume doesn't make you dodge.
+18. **Pause text tone.** "Paused" / "The world will wait. It is very patient and very cheerful." / "Esc also resumes". Is the tone right? (Placeholder text.)
 
 **F. The run loop (only after each Milestone 3 slice lands; see "While you were away")**
-18. **Full run (after 3a).** Play several rooms in a row. Look for: "Room X of Y" is clear, your HP and deck carry over, and the win and lose screens make sense.
-19. **Card rewards (after 3b).** After each won room: pick 1 of 3, or reject the offer (3 rejects per run). Look for: offers fit your build, and the deck-clean option is clear.
-20. **Boss (after 3c).** Look for: the phases and telegraphs are readable, and it's fair.
-21. **Loadouts (after 3d).** On run 2, save and pick a starting deck. Look for: it's easy to understand.
+19. **Full run (after 3a).** Play several rooms in a row. Look for: "Room X of Y" is clear, your HP and deck carry over, and the win and lose screens make sense.
+20. **Card rewards (after 3b).** After each won room: pick 1 of 3, or reject the offer (3 rejects per run). Look for: offers fit your build, and the deck-clean option is clear.
+21. **Boss (after 3c).** Look for: the phases and telegraphs are readable, and it's fair.
+22. **Loadouts (after 3d).** On run 2, save and pick a starting deck. Look for: it's easy to understand.
 
 ## FYI, no action needed
 

@@ -651,3 +651,47 @@ func test_f1_same_seed_crowd_is_bit_identical_across_runs_and_shifted_instance_i
 
 func _screen(main: Main) -> SettingsScreen:
 	return main.get_node("SettingsScreen") as SettingsScreen
+
+
+# --- re-check 2026-10-28: S6-5 dodge block window ----------------------------------------------
+
+func _dodged_after_resume(wait_ticks: int) -> bool:
+	var main := _spawn()
+	await _frames(3)
+	var player := main.player
+	GamePause.pause()
+	await _frames(3)
+	GamePause.resume()
+	for i in range(wait_ticks):
+		await get_tree().physics_frame
+	TestInput.press(&"dodge")
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	TestInput.release(&"dodge")
+	var dodged: bool = player._forced_move_time_remaining > 0.0 or player._dodge_cooldown_remaining > 0.0
+	get_tree().current_scene = null
+	_main.free()
+	_main = null
+	return dodged
+
+
+func test_s6_5_probe_dodge_pressed_a_few_ticks_after_resume_still_works() -> void:
+	# The block is DODGE_BLOCK_TICKS_AFTER_PAUSE (2) ticks, so a deliberate press 6 ticks (100 ms) after
+	# resume must roll. The result for 0..5 ticks is printed for the review.
+	var report := ""
+	for n in range(0, 6):
+		report += "%d:%s " % [n, str(await _dodged_after_resume(n))]
+	print("S6-5 PROBE dodge after resume (ticks waited: rolled) ", report)
+	assert_bool(await _dodged_after_resume(6)).override_failure_message("a dodge 6 ticks after resume was eaten").is_true()
+
+
+func test_s6_5_hit_stop_does_not_block_a_dodge() -> void:
+	var main := _spawn()
+	await _frames(3)
+	Juice.hit_stop(0.05, 0.1)
+	await get_tree().physics_frame
+	TestInput.press(&"dodge")
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	TestInput.release(&"dodge")
+	assert_bool(main.player._forced_move_time_remaining > 0.0 or main.player._dodge_cooldown_remaining > 0.0).override_failure_message("a dodge during hit-stop was blocked").is_true()

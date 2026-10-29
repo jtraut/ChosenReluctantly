@@ -113,3 +113,50 @@ No crash, NaN, cap violation or stall near the 45 s alarm. Compared with my 5d n
 
 ## Director questions
 None. Game-lead: S6-2 (is the dash coast intended; which side moves) and whether S6-4 holds 5d.
+
+---
+
+# Re-check 2026-10-28 (qa, targeted)
+
+Range reviewed: 17b28a2, 7b7a471, 0e4d9b5, 6738109, 1ed76f4, 9e6c417, 5095be9, dcdb043 (HEAD 84abe1e at start).
+
+## Verdicts
+| Item | Verdict | Evidence |
+|---|---|---|
+| S6-1 attack latch across pause | **RESOLVED** | `test_a_latched_heavy_click_does_not_fire_after_pause_and_resume` passes, assertions unmodified (`git diff 0d670df HEAD -- slice6_qa_test.gd` touches only comments and the pin renames). `cancel_cast_preview()` now clears both attack latches; it is what pause, death, focus loss and a cast_trigger change call |
+| S6-2 dash/dodge coast | **RESOLVED** | `test_s6_2_dash_ends_where_the_preview_says` passes, assertion unmodified (comment only). Forced move scales the last tick by `remaining/delta` and zeroes horizontal velocity on the tick it ends. `forced_move_s6_test` (30/60/120 Hz, dash 4.0 m driven and at rest within 0.02) passes; dodge i-frame ticks 15-16, `dodge_duration` 0.25 and `dodge_cooldown` 0.8 asserted, and the Player export defaults are not in the diff. Behaviour change: dodge about half as far (7.1 to 3.5 m), dash 8.1 to 4.0 m (see observation O1) |
+| S6-3 projectile lane tip | **RESOLVED** | Lane length is now `max_range + lateral_reach`, used by both the cast marker and the hold preview. My former PIN became `test_projectile_lane_tip_is_where_a_real_shot_stops_hitting` (0.3 inside the tip is hit, 0.1 past it is not); passes. The dev notes the lane is an upper bound (a shot frees one tick short), which I accept: the rule is "nothing hit outside the drawn lane". The ranged-enemy lane tip (`enemy_shot_lane`) has the same understatement; out of this brief, already flagged to game-lead |
+| S6-5 Space on Resume also dodges | **RESOLVED** | Former PIN became `test_space_on_the_focused_resume_button_closes_the_screen_and_does_not_dodge`, and now also asserts a later Space press dodges. Probes below |
+| S6-6 null-material errors | **RESOLVED** | Two full runs: 0 occurrences of `Parameter "material" is null`. Fix is test-only (below) |
+| S6-7 silent failed save | **RESOLVED** | `ux_6b_test::test_a_failed_save_shows_a_note_and_a_good_save_clears_it` passes: note hidden on open, shown after a failed save (text from data), hidden on re-open, hidden after a good save; one expected `push_error` line in the log. Scene file untouched |
+
+**Overall Slice 6: PASS.** Both intentionally red tests are green; no assertion was weakened.
+
+## Checks
+- **Test file diff, no weakening:** the two red tests keep their assertions (S6-1 byte-identical; S6-2 comment only, tolerance 0.5 as before). The three PIN renames each invert a pin that asserted the bug, into an assertion that the bug is gone; the dodge one is stricter than needed (rest within 0.05 of 3.5 m), and the S6-5 one gained a positive "fresh press still dodges" check.
+- **No gameplay or data change beyond the brief:** `git diff 0d670df HEAD --stat -- data scenes` is `data/ui.json` only (+2 keys `save_failed`, `save_failed_color` in `settings_screen`); no `.tscn` changed. Src changes: Player, SettingsScreen, UiConfig, VfxSizing, CastPreviewShapes, TemplateVfx only.
+- **S6-6 test-only:** the S6-6 commit 1ed76f4 touches only `tests/unit/ux_6b_test.gd` (one assertion line). No production file.
+- **S6-5 block does not eat a normal dodge.** Probe (`test_s6_5_probe_dodge_pressed_a_few_ticks_after_resume_still_works`, added by me): pause 3 frames, resume, wait N physics ticks, press dodge. Rolled for N = 0:no, 1:no, 2:yes, 3:yes, 4:yes, 5:yes (6 asserted yes). So the blocked window is the first 2 ticks (about 33 ms) after pause and after resume; a press there is dropped, not deferred (`is_action_just_pressed` is a one-frame edge). That is below human re-press time; acceptable. **Hit-stop does not block:** the block is set only from `GamePause.paused_changed`, which Juice hit-stop does not emit; `test_s6_5_hit_stop_does_not_block_a_dodge` passes. Minor: Resume via the Esc key then an immediate dodge within 33 ms is also dropped; same bound.
+- **Frame rate independence:** also checked from the dev's numbers by running their suite in the full runs (30/60/120 all within 0.02 m of 4.0 driven and at rest).
+
+## Runs (this re-check)
+| Run | Result |
+|---|---|
+| Full suite | **542 run, 0 fail, 0 orphans, exit 0** (540 + my 2 probes), twice. ERROR lines, all expected: runner port pair, `nope_enemy`, `data/ui.json hp_bars` invalid mode, `Settings: settings file ... unreadable`, `ConfigFile parse error ... 'press'` (my fixture), and the new expected `Settings: could not save 'cast_trigger'...`. Zero `Parameter "material"` lines |
+| 20 s headless | `--fixed-fps 60 --quit-after 1200`: 0 error/warning/bug lines; `--quit-after 1200` plain: clean |
+| SceneSelfCheck | no message in any load; `main_scene_smoke_test` passes |
+| Reload soak | `run_reload_cycle.ps1 -Cycles 5`: RELOAD CYCLE OK, orphans 0, objects 1903-1905, time_scale 1.0 |
+| Bot sim | `-Rooms 20`: OK, no NaN |
+| Wave sim normal | `-Seed 300 -Seconds 180 -Runs 3`: WAVE SIM OK, all survived; HP lost 79/96/103; kills 87/86/88; casts 343/343/336; alive peak 11/10/12; stall 7/7/8 s; spacing worst 0.89/0.89/0.85 m, 85/92/83% >= 1.2 m |
+| Wave sim idle | `-Seed 500 -Seconds 60 -Runs 3 -Idle -Scale 1`: WAVE SIM OK, died at 7.7/8.6/7.5 s, HP lost 30 (unchanged), 0 casts |
+
+## Observations
+- **O1 (balance flag for game-lead, not a defect):** the bot dodges telegraphs, and with the dodge now half as far, HP lost in the same seeded sim went from 32/41/39 (my Slice 6 review) to 79/96/103, about 2.5x, with kills 78/75/84 to 87/86/88. Runs do not repeat from a seed (S6-4), but the shift is far outside the earlier spread, so treat it as real. The dev flagged the feel change and the tuning knobs (`dodge_speed`, `dodge_duration`, Player exports); the playtester should judge it. Dodge distance is a Player export, not data/JSON.
+- **O2:** `DODGE_BLOCK_TICKS_AFTER_PAUSE` is a code constant, not data. Fine as a guard, noted.
+- S6-4 remains open (capture-tooling task) and is not part of this re-check.
+
+## Not verified
+Windowed feel of the shorter dodge and of the lane tip; occlusion cue pixels (unchanged from the main review).
+
+## Tests added in this re-check
+Two in `tests/unit/slice6_qa_test.gd` (now 27): the S6-5 post-resume dodge probe (prints `S6-5 PROBE ...`) and the hit-stop non-block test.

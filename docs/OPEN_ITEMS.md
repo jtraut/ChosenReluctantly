@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-10-29
-**Status: Nothing is waiting on a decision.** Milestone 2 and Polish 1 slices 0-6 are done, including chaser crowding (5d) and hold-to-preview casting (Slice 6). In progress: Content slice C1 (new Fire Rogue cards, unique-card minimums). C1-a, C1-b1 and the test-gate repair are built; C1-b2 (zones, dash path damage, pass-through) is next. Then C1 closes along with the tooling task and Polish 1, and work goes straight on into Milestone 3 (the run loop).
+**Status: 2 small balance questions (D13, D14), nothing blocked.** Content slice C1, the capture-tooling task and Polish 1 are **done** (tag `playtest-2026-10-29-C1`). Now in progress: Milestone 3a, the run structure (rooms in a row, win and lose screens).
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
@@ -18,9 +18,16 @@ Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
 _Updated at every slice close._
 
-- **Latest playtest tag:** none yet. The first one will be `playtest-2026-10-29-C1`, made when C1 closes. Until then, `main` runs.
-- **Built since your last session:** (filled in as slices close)
-- **What to try first:** (filled in as slices close)
+- **Latest playtest tag:** `playtest-2026-10-29-C1` (C1 closed with qa PASS, 696/696 tests).
+- **Built since your last session (C1):**
+  - 9 new Fire Rogue cards, all in your starting deck: Slash, Then Bleed · Four Quick Stabs · Fireball, Incoming · Wall of Mild Fire · Walk Through Everyone · Reluctant Lunge · Nope, Leaping Away · Heal By Hurting · Eventual Healing.
+  - New card abilities under the hood: placed fire zones, dashes that hit along the path, a backward leap, walking through enemies, bleed, regeneration, life-steal.
+  - Every slot needs at least 3 different cards, and the game refuses to start a run with a deck that doesn't (F3 shows the counts).
+  - **Enemies are now solid:** you can't walk or dodge through them. Walk Through Everyone and Nope, Leaping Away are your ways out. (My call; one flag to undo, see "Calls I made".)
+  - New visual cues: a bleed drip, a regen ring, a life-steal bead, green "+N" heal numbers, a ghosted look while walking through enemies, a Fire Wall burn-down timer, and a range ring for placed cards.
+  - Dodge is 5 m (your D8).
+- **What to try first:** checklist items 12 (every new card) and 12a (solid enemies): push into a crowd for a minute, and see whether being blocked feels fair and whether the escape cards feel good.
+- **Playtester's headline (scripted, no hands):** Fireball and the backward leap are the standouts. Fire Wall is weak against one enemy. Healing may be too strong for 30 HP (D13). In big crowds you can lose sight of yourself and of enemy shots.
 
 ## Vision check (answer after playing)
 
@@ -33,7 +40,10 @@ _Updated at every slice close._
 
 ## Needs your decision
 
-Nothing waiting. D8-D12 were answered on 2026-10-28 (see Recently resolved).
+Neither blocks work. Until you answer, I keep the current values.
+
+- **D13. Is healing too strong?** The playtester estimates the Recovery slot is ready 5-6 times a minute. With a 30 HP pool that out-heals what the waves deal, so slow chip damage can't kill you. Options: **A** keep it (judge it in play first; my default); **B** Recovery cooldown 8 s -> 12 s; **C** smaller heals (e.g. the potion 16 -> 10). This matters more once runs are several rooms long (3a), because HP carries over.
+- **D14. Wall of Mild Fire on a single enemy.** It only hurts while enemies stand in it, so a lone enemy walks out. Options: **A** keep it as a crowd card (my default); **B** it also slows enemies inside it; **C** raise its tick damage 2.5 -> 3.5.
 
 ## Calls I made while you were away (easy to change)
 

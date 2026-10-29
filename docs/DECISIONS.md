@@ -602,7 +602,7 @@ Fixes for the Slice 5 qa FAIL, one commit each. Choices and the alternative reje
 - **The wave sim disables hit-stop** to repeat exactly. Accepted: hit-stop timing is covered by unit tests and the reload soak, and the sim's job is crashes, NaN, soft locks and pacing. Rejected: a fake clock in Juice (more code in a hot path).
 
 ### 2026-10-28 - C1-a deck rules plumbing (gameplay-dev, logged by game-lead)
-- **Run start warns instead of blocking (temporary).** GDD §4 says a deck that misses the minimums can't start a run. The shipped Fire Rogue deck is short (Movement 2/3, Recovery 2/3) until C1-c adds the cards, so blocking now would make the game unplayable. Rejected: block now. **C1-c must switch run start to block (fail loud) once content passes**, and delete the tripwire test branch `test_shipped_content_meets_the_minimums_PENDING_C1C`.
+- **Run start warns instead of blocking (temporary).** *(Superseded 2026-10-29: C1-c made it block, and the PENDING_C1C tripwire was replaced by a real pass test.)* GDD §4 says a deck that misses the minimums can't start a run. The shipped Fire Rogue deck is short (Movement 2/3, Recovery 2/3) until C1-c adds the cards, so blocking now would make the game unplayable. Rejected: block now. **C1-c must switch run start to block (fail loud) once content passes**, and delete the tripwire test branch `test_shipped_content_meets_the_minimums_PENDING_C1C`.
 - **Per-slot overrides live in `deck_rules.json`** as `"slots": {slot: {"min_unique": n}}`. Rejected: a field in `slot_types.json`, because keeping every deck rule in one file is simpler.
 - **Content validation runs as a test and helper, not at boot.** Rejected: a boot check, which would duplicate the run-start warning.
 - **The pending content check is a tripwire test** that asserts the exact known shortfalls. Rejected: a gdUnit skip, which would hide a regression.
@@ -628,7 +628,7 @@ Commits 4236e5a..87dbb87. Rejected alternatives in brackets.
 - **Kept here as a record, since they weren't anywhere else:**
   - The director's example minimum config (attack group 10, utility 5, movement 3, recovery 3) means a 21-card minimum deck, which would limit deck-clean rewards. It exists only as a test fixture.
   - After C1, the Neutral pool gives 3 Recovery cards (Healing Potion, Leech, Regeneration) and 1 Movement card (Backward Leap). Any future class + element pair needs at least 2 Movement cards of its own to meet 3 per slot. Content validation flags it.
-- **Dodge note corrected.** OPEN_ITEMS said "7.1 m to 3.5 m", which was the S6-2 step only. The full history: 3.5 m set (speed 14 x 0.25 s), 7.1 m in practice because of the slide bug; S6-2 fixed it to 3.5 m; D8 default B made it 7.0 m (speed 28); D8 = C made it 5.0 m (`data/player.json` speed 20). The code fallbacks in `PlayerConfig.gd` and the `Player.gd` export still say 28 (they're used only if data is missing). C1-b2 aligns them to 20.
+- **Dodge note corrected.** OPEN_ITEMS said "7.1 m to 3.5 m", which was the S6-2 step only. The full history: 3.5 m set (speed 14 x 0.25 s), 7.1 m in practice because of the slide bug; S6-2 fixed it to 3.5 m; D8 default B made it 7.0 m (speed 28); D8 = C made it 5.0 m (`data/player.json` speed 20). The code fallbacks in `PlayerConfig.gd` and the `Player.gd` export said 28; C1-b2 (4b1820a) aligned them to 20.
 - **`.claude/settings.local.json` is local-only** (Claude Code's per-machine permissions file, already ignored by the director's global git ignore). Added to the repo `.gitignore` so it is never committed from another machine. Rejected: sharing it (it holds machine-specific allowances).
 
 ### 2026-10-29 - C1-b2 generic capabilities part 2 (gameplay-dev, logged by game-lead)
@@ -697,3 +697,9 @@ Commits 16eecd9..353070f; 688/688. Rejected alternatives in brackets.
 - **Name fit:** `fit_padding` 2 -> 12 and line spacing 0 (the second line of "Walk Through Everyone" was being clipped).
 - **Known gap:** the Lunge preview shows the full 3 m path even when a body will stop it short.
 - **Process:** the CLAUDE.md rule says qa checks README commands and the CHANGELOG entry, but the docs pass comes after qa. So in C1-f qa lists README and CHANGELOG gaps as inputs for C1-h, and game-lead confirms the CHANGELOG entry exists before closing. [Running qa twice.]
+
+### 2026-10-29 - C1, tooling task and Polish 1 closed (game-lead)
+- Closed on qa PASS 76bca75, the C1-g playtest d94676a (no blocker) and the docs pass 4c7b490. Tagged `playtest-2026-10-29-C1`.
+- **Solid enemies stay on.** The playtester judged them fair, not a blocker. The bot is pinned in 8-10% of move frames, the longest stretch is 1.8 s, and there's never a full lock. If the director finds it sticky, the first lever is the Shadow Step cooldown 4.0 -> 3.0, before flipping the flag.
+- **Playtest proposals not acted on** (sent to the director as D13/D14, because they change balance the director is about to feel by hand): Recovery heal power against 30 HP, and Fire Wall being weak on a single target. Small UX items went to the ROADMAP backlog.
+- **Not adopted:** "every Movement slot must guarantee an escape card". The shipped pool has 2 escapes (Shadow Step, Backward Leap) among 5 Movement cards, and the rule would need a new deck-rule type. Revisit if the director finds pinning a problem.

@@ -1,0 +1,16 @@
+{
+    "id": "rogue_shadow_step",
+    "name": "Shadow Step",
+    "slot_type": "movement",
+    "pool": "rogue",
+    "cooldown_modifier": 1.0,
+    "flavor_text": "Placeholder: walk through them. Rude, but effective.",
+    "effects": [
+        {
+            "template": "pass_through",
+            "params": {
+                "duration": 2.5
+            }
+        }
+    ]
+}

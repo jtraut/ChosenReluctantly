@@ -26,7 +26,7 @@ func test_shipped_damage_cards_are_found() -> void:
 	for card: Dictionary in CardDatabase.all_cards():
 		if CardDamageRule.is_damage_card(card):
 			count += 1
-	assert_int(count).is_equal(8)
+	assert_int(count).is_equal(12)
 
 
 func test_compliant_fixture_passes() -> void:

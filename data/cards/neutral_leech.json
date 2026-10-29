@@ -1,0 +1,18 @@
+{
+    "id": "neutral_leech",
+    "name": "Leech",
+    "slot_type": "recovery",
+    "pool": "neutral",
+    "cooldown_modifier": 0.5,
+    "flavor_text": "Placeholder: heal by hurting, for a while.",
+    "effects": [
+        {
+            "template": "apply_status",
+            "params": {
+                "status_id": "leech",
+                "duration": 7.0,
+                "target": "self"
+            }
+        }
+    ]
+}

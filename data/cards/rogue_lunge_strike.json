@@ -1,0 +1,21 @@
+{
+    "id": "rogue_lunge_strike",
+    "name": "Lunge Strike",
+    "slot_type": "movement",
+    "pool": "rogue",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "Placeholder: a short charge that hurts whatever is in the way.",
+    "effects": [
+        {
+            "template": "dash",
+            "params": {
+                "distance": 3.0,
+                "speed": 15.0,
+                "damage": 8,
+                "damage_type": "physical",
+                "hit_radius": 0.9,
+                "knockback_strength": 3.0
+            }
+        }
+    ]
+}

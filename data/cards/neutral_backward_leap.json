@@ -1,0 +1,18 @@
+{
+    "id": "neutral_backward_leap",
+    "name": "Backward Leap",
+    "slot_type": "movement",
+    "pool": "neutral",
+    "cooldown_modifier": 0.5,
+    "flavor_text": "Placeholder: the other direction, quickly.",
+    "effects": [
+        {
+            "template": "dash",
+            "params": {
+                "distance": 6.5,
+                "speed": 26.0,
+                "direction_mode": "away_from_aim"
+            }
+        }
+    ]
+}

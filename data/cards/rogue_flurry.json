@@ -1,0 +1,21 @@
+{
+    "id": "rogue_flurry",
+    "name": "Flurry",
+    "slot_type": "attack_single",
+    "pool": "rogue",
+    "cooldown_modifier": 0.3,
+    "flavor_text": "Placeholder: four stabs, one sigh.",
+    "effects": [
+        {
+            "template": "cone",
+            "params": {
+                "damage": 2.0,
+                "damage_type": "physical",
+                "range": 1.8,
+                "half_angle_degrees": 45,
+                "hits": 4,
+                "hit_interval": 0.12
+            }
+        }
+    ]
+}

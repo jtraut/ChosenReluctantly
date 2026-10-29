@@ -41,6 +41,8 @@ const STATUS_TARGETS: Array[String] = ["last_hits", "self"]
 ##     (+ knockback_strength) hit each enemy along the path at most once per dash.
 ##   aoe (optional): max_range places the disc at the aim point clamped to that range (a card version of
 ##     the targeted_aoe heavy); without it the disc is centred on the caster.
+##   aoe (optional, C1-c): delay (seconds, 0..MAX_AOE_DELAY) locks the disc where it is at cast, shows the shared
+##     ground telegraph growing for `delay`, then hits. A caster that dies or is freed in that time cancels the hit.
 const ZONE_KEYS: Array[String] = ["shape", "duration", "tick_interval", "damage", "damage_type", "max_range", "radius", "length", "width",
 		"knockback_strength", "status_id", "status_duration", "status_chance"]
 const DASH_KEYS: Array[String] = ["distance", "speed", "invulnerable", "damage_type", "direction_mode", "damage", "hit_radius", "knockback_strength"]
@@ -51,6 +53,7 @@ const MAX_ZONE_DURATION := 30.0
 const MAX_ZONE_TICKS := 200
 const MAX_PLACE_RANGE := 30.0
 const MAX_PASS_THROUGH := 30.0
+const MAX_AOE_DELAY := 3.0
 
 const PROJECTILE_SCENE_PATH := "res://scenes/effects/Projectile.tscn"
 ## A shot leaves this far in front of the caster (the cast preview lane starts here too).
@@ -107,6 +110,8 @@ static func validate_params(template_id: String, params: Dictionary) -> Array[St
 		"aoe":
 			if params.has("max_range") and not _number_in(params["max_range"], 0.0, MAX_PLACE_RANGE, false):
 				errors.append("'max_range' must be a number above 0 and at most %s" % str(MAX_PLACE_RANGE))
+			if params.has("delay") and not _number_in(params["delay"], 0.0, MAX_AOE_DELAY, false):
+				errors.append("'delay' must be a number above 0 and at most %s" % str(MAX_AOE_DELAY))
 	return errors
 
 
@@ -311,7 +316,50 @@ static func _execute_aoe(params: Dictionary, context: EffectContext) -> void:
 		# Placed: the disc lands at the aim point clamped to max_range, locked at cast.
 		locked = params.duplicate()
 		locked["center"] = context.placement(float(params["max_range"]))["point"]
+	var delay: float = float(params.get("delay", 0.0))
+	if delay > 0.0 and context.spawn_parent != null and context.spawn_parent.is_inside_tree():
+		_telegraphed_aoe(locked, context, delay)
+		return
 	_run_hits(locked, context, func(index: int) -> void: _aoe_hit(locked, context, index))
+
+
+## The disc is locked now; the shared ground telegraph (the targeted_aoe heavy's) grows over `delay`, then the
+## hits run. The tween lives on the world node, so it survives the caster being freed (and the callback then
+## sees an inactive caster and only clears the telegraph).
+static func _telegraphed_aoe(locked: Dictionary, context: EffectContext, delay: float) -> void:
+	var center: Vector3 = locked.get("center", context.caster.global_position)
+	var pool := EffectPool.for_world(context.spawn_parent)
+	var parts: Array[PooledEffect] = []
+	var generations: Array[int] = []
+	if pool != null:
+		var look := ElementVisuals.visual_for_team(String(locked.get("damage_type", "physical")), context.caster_team)
+		parts = TemplateVfx.aoe_telegraph(pool, center, VfxSizing.aoe_reach(float(locked["radius"])), look["color"])
+		for part: PooledEffect in parts:
+			generations.append(part.generation)
+	var tween := context.spawn_parent.create_tween()
+	if pool != null:
+		tween.tween_method(func(fraction: float) -> void: _drive_telegraph(pool, parts, generations, fraction), 0.0, 1.0, delay)
+	else:
+		tween.tween_interval(delay)
+	tween.tween_callback(func() -> void:
+		_stop_telegraph(pool, parts, generations)
+		if _caster_active(context):
+			_run_hits(locked, context, func(index: int) -> void: _aoe_hit(locked, context, index)))
+
+
+static func _drive_telegraph(pool: EffectPool, parts: Array[PooledEffect], generations: Array[int], fraction: float) -> void:
+	if not is_instance_valid(pool):
+		return
+	for i in range(parts.size()):
+		if pool.is_running(parts[i], generations[i]):
+			parts[i].set_progress(fraction)
+
+
+static func _stop_telegraph(pool: EffectPool, parts: Array[PooledEffect], generations: Array[int]) -> void:
+	if not is_instance_valid(pool):
+		return
+	for i in range(parts.size()):
+		pool.stop(parts[i], generations[i])
 
 
 static func _aoe_hit(params: Dictionary, context: EffectContext, index: int) -> void:

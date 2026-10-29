@@ -1,0 +1,28 @@
+{
+    "id": "fire_fireball",
+    "name": "Fireball",
+    "slot_type": "attack_aoe",
+    "pool": "fire",
+    "cooldown_modifier": 0.6,
+    "flavor_text": "Placeholder: aimed fire, a moment to dodge it.",
+    "effects": [
+        {
+            "template": "aoe",
+            "params": {
+                "damage": 14,
+                "damage_type": "fire",
+                "radius": 2.0,
+                "max_range": 8.0,
+                "delay": 0.4,
+                "knockback_strength": 2.0
+            }
+        },
+        {
+            "template": "apply_status",
+            "params": {
+                "status_id": "burn",
+                "duration": 4.0
+            }
+        }
+    ]
+}

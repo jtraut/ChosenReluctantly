@@ -6,6 +6,8 @@ class_name Main
 ## Emitted once, after the death beat (slow-mo) finishes. The Game Over screen
 ## listens for this (find Main via the scene root: `get_tree().current_scene`).
 signal game_over_ready()
+## Emitted once from _ready when the starting deck breaks a minimum; the run does not start.
+signal run_start_blocked(message: String)
 
 var _game_over_announced: bool = false
 var _restarting: bool = false
@@ -24,7 +26,8 @@ const MAX_BEAT_STEP := 0.5
 @onready var debug_overlay: DebugOverlay = $DebugOverlay
 
 
-static var _deck_warned: bool = false
+## True when the starting deck broke a unique-card minimum and the run was refused (see _check_starting_deck).
+var run_blocked: bool = false
 
 
 func _enter_tree() -> void:
@@ -55,17 +58,20 @@ func _ready() -> void:
 	_setup_debug_capture()
 
 
-## Run-start deck validation (GDD section 4 unique minimums). Warns, not blocks, until the
-## C1-c cards exist: the preset deck is short on some slots today. See DECISIONS.
+## Run-start deck validation (GDD section 4 unique minimums). A deck that breaks a minimum cannot start a
+## run: push_error with every shortfall, switch the spawner off (no waves, no run) and emit run_start_blocked.
+## The shipped content passes (DeckRules.validate_shipped_content, tested), so this only fires on bad data.
 func _check_starting_deck() -> void:
 	var problems := DeckRules.validate_config(DeckRules.shipped_config(), SlotTypeDatabase.known_ids())
 	if not problems.is_empty():
 		push_error("deck_rules.json is invalid: " + "; ".join(problems))
-	if _deck_warned:
+	var message := DeckRules.run_start_block_message(player.card_slots.deck_check())
+	if message == "":
 		return
-	_deck_warned = true  # once per process; scene reloads would repeat the same lines
-	for problem: String in player.card_slots.deck_check().problems:
-		push_warning("Starting deck breaks a unique-card minimum: " + problem)
+	push_error(message)
+	run_blocked = true
+	enemy_spawner.process_mode = Node.PROCESS_MODE_DISABLED
+	run_start_blocked.emit(message)
 
 
 func is_game_over() -> bool:

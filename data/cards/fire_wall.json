@@ -1,0 +1,26 @@
+{
+    "id": "fire_wall",
+    "name": "Fire Wall",
+    "slot_type": "attack_aoe",
+    "pool": "fire",
+    "cooldown_modifier": 0.8,
+    "flavor_text": "Placeholder: a line of fire, mostly a suggestion.",
+    "effects": [
+        {
+            "template": "zone",
+            "params": {
+                "shape": "line",
+                "length": 5.0,
+                "width": 1.2,
+                "duration": 4.0,
+                "tick_interval": 0.5,
+                "damage": 2.5,
+                "damage_type": "fire",
+                "max_range": 7.0,
+                "status_id": "burn",
+                "status_duration": 3.0,
+                "status_chance": 0.4
+            }
+        }
+    ]
+}

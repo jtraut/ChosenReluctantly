@@ -14,21 +14,21 @@
         "damage_per_tick": 1.0,
         "damage_type": "physical",
         "tick_interval": 0.5,
-        "flavor_text": "Placeholder numbers; C1-c tunes them."
+        "flavor_text": "Placeholder."
     },
     "regeneration": {
         "display_name": "Regeneration",
         "effect_type": "heal_over_time",
-        "heal_per_tick": 1.0,
+        "heal_per_tick": 2.0,
         "tick_interval": 1.0,
-        "flavor_text": "Placeholder numbers; C1-c tunes them."
+        "flavor_text": "Placeholder."
     },
     "leech": {
         "display_name": "Leech",
         "effect_type": "lifesteal",
-        "fraction": 0.3,
-        "max_heal_per_hit": 2.0,
-        "flavor_text": "Placeholder numbers; C1-c tunes them."
+        "fraction": 0.4,
+        "max_heal_per_hit": 3.0,
+        "flavor_text": "Placeholder."
     },
     "stun": {
         "display_name": "Stun",

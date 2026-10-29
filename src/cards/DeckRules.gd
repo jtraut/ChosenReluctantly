@@ -112,6 +112,14 @@ static func check_shipped(card_ids: Array) -> DeckCheck:
 	return check(card_ids, shipped_config(), slot_map_from_database(), SlotTypeDatabase.known_ids(), slot_names_from_database())
 
 
+## Run-start gate (GDD section 4): "" when the deck may start a run, otherwise one loud message naming every
+## shortfall. Pure, so tests feed it fixture decks. Main blocks the run on a non-empty result.
+static func run_start_block_message(result: DeckCheck) -> String:
+	if result.is_ok():
+		return ""
+	return "Run cannot start, the starting deck breaks a unique-card minimum: " + "; ".join(result.problems)
+
+
 ## Shortfalls that removing one copy of `card_id` would cause (empty = allowed).
 ## Only rules touching the card's slot (its slot minimum and any group holding it) can block,
 ## so an already-short unrelated slot never blocks a removal.

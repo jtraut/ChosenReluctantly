@@ -138,18 +138,35 @@ func test_content_validation_names_the_combination_and_the_shortfall() -> void:
 	assert_array(strict).contains_exactly(["rogue+fire+neutral: Movement needs 4 unique cards, deck has 3"])
 
 
-## Known shortfall until C1-c adds cards: movement and recovery have 2 unique each (need 3).
-## Marked pending so the suite stays green; remove the pending line once C1-c lands.
-func test_shipped_content_meets_the_minimums_PENDING_C1C() -> void:
-	var errors := DeckRules.validate_shipped_content()
-	if not errors.is_empty():
-		push_warning("PENDING C1-c: %s" % "; ".join(errors))
-		assert_array(errors).contains_exactly([
-			"rogue+fire+neutral: Movement needs 3 unique cards, deck has 2",
-			"rogue+fire+neutral: Recovery needs 3 unique cards, deck has 2",
-		])
-		return
-	assert_array(errors).is_empty()
+func test_shipped_content_meets_the_minimums() -> void:
+	assert_array(DeckRules.validate_shipped_content()).is_empty()
+
+
+func test_the_shipped_preset_deck_passes_the_run_start_gate_with_at_least_3_per_slot() -> void:
+	var result := DeckRules.check_shipped(CardDatabase.all_cards().filter(func(c: Dictionary) -> bool: return ["rogue", "fire", "neutral"].has(String(c["pool"]))).map(func(c: Dictionary) -> String: return String(c["id"])))
+	assert_str(DeckRules.run_start_block_message(result)).is_empty()
+	for entry: Dictionary in result.slots:
+		assert_int(int(entry["count"])).override_failure_message(str(entry["slot_type"])).is_greater_equal(3)
+
+
+func test_run_start_gate_blocks_a_short_deck_with_every_shortfall_named() -> void:
+	var short := _deck({"attack_single": 3, "attack_aoe": 3, "utility": 2, "movement": 3, "recovery": 1})
+	var message := DeckRules.run_start_block_message(DeckRules.check(short[0], {"min_unique_per_slot": 3}, short[1], SLOTS, NAMES))
+	assert_str(message).contains("Utility needs 3 unique cards, deck has 2").contains("Recovery needs 3 unique cards, deck has 1")
+	var full := _deck({"attack_single": 3, "attack_aoe": 3, "utility": 3, "movement": 3, "recovery": 3})
+	assert_str(DeckRules.run_start_block_message(DeckRules.check(full[0], {"min_unique_per_slot": 3}, full[1], SLOTS, NAMES))).is_empty()
+
+
+## The director's example (attack group 10, utility 5, movement 3, recovery 3) is covered both ways by
+## test_checker_reports_counts_shortfalls_and_messages_for_the_director_example (fails) and
+## test_checker_passes_the_director_example_when_met (passes); the gate agrees with both.
+func test_run_start_gate_agrees_with_the_director_example_fixture_both_ways() -> void:
+	var config := DeckRules.load_config(EXAMPLE)
+	var short := _deck({"attack_single": 5, "attack_aoe": 3, "utility": 4, "movement": 3, "recovery": 3})
+	var message := DeckRules.run_start_block_message(DeckRules.check(short[0], config, short[1], SLOTS, NAMES))
+	assert_str(message).contains("Utility needs 5 unique cards, deck has 4").contains("Attack group needs 10, has 8")
+	var met := _deck({"attack_single": 5, "attack_aoe": 5, "utility": 5, "movement": 3, "recovery": 3})
+	assert_str(DeckRules.run_start_block_message(DeckRules.check(met[0], config, met[1], SLOTS, NAMES))).is_empty()
 
 
 # --- shuffle bag ---------------------------------------------------------------------------

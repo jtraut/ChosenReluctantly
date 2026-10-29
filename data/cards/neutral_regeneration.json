@@ -1,0 +1,18 @@
+{
+    "id": "neutral_regeneration",
+    "name": "Regeneration",
+    "slot_type": "recovery",
+    "pool": "neutral",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "Placeholder: slow healing, no questions.",
+    "effects": [
+        {
+            "template": "apply_status",
+            "params": {
+                "status_id": "regeneration",
+                "duration": 7.0,
+                "target": "self"
+            }
+        }
+    ]
+}

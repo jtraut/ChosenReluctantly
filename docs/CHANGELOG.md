@@ -2,9 +2,10 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-10-28 (Polish 1: Slice 5 waves and readability, Slice 4 skill visuals, Slice 3b attack rework, director open items)
+## 2026-10-28 (Polish 1: Slice 6 fix pass, Slice 5 waves and readability, Slice 4 skill visuals, Slice 3b attack rework, director open items)
 
 ### Added
+- **Reference docs (first tech-writer pass).** New `docs/ARCHITECTURE.md` (code map, data flow from a card press to an applied effect, how-to-add checklists, gotchas). `docs/ASSETS.md` now lists everything in the repo: one third-party library (gdUnit4, MIT), no art, audio or fonts, and three project-authored files. README commands were run and the README was corrected (see Docs and process).
 - **Pause and settings screen (Slice 6b).** Esc pauses and opens a small screen with one toggle, "Cast cards on: Release (preview) / Press", which saves at once. It never opens over Game Over. The cast preview now uses the player's element colour, draws over the enemies it targets, and dims while the card is cooling down. When enemies hide the player, a pale silhouette shows through them. (9ff60d8, 98ee2ea, 2f44346, 567cdc4)
 - **[Director decision] D7 applied:** enemy HP bars now show only on damaged enemies; elites and bosses always show theirs. Before, every bar was always visible. (efaf164)
 - **Hold-to-preview casting (Slice 6a, director D2 = C).** Holding a card key shows its exact hit area on the ground (cone, area, projectile lane, dash path, or a small ring for self cards). The area follows your aim, and the card casts when you let go. A `cast_trigger` setting (`release` or `press`) switches back to casting on press. Settings now have a store (defaults in `data/settings.json`, your choices in `user://settings.cfg`), and the game can pause without breaking hit-stop or the death slow-mo. Attack and card keys are now read through input events, so an open screen can block them. (aecde4f, d2463f0, 7bfdb6f, 29656c2, 4f5220e)
@@ -28,6 +29,7 @@ A plain-language history of the project for the director, grouped by date (from 
 - **More tests.** qa added real-scene tests for Slice 4 and 3b, and the bot simulator is now seeded so its failures can be reproduced. (6f82a4b, 8cc7b92, 552ef04)
 
 ### Changed
+- **Feel change (S6-2): dash and dodge now stop at their data distance.** Before, a forced move kept sliding after it ended (friction carried it about twice as far, and the extra depended on frame rate). Now it ends exactly at speed x duration and stops, at any frame rate. Dodge roll: about 7.1 m -> 3.5 m (`dodge_speed` and `dodge_duration` are Player exports, not data). Blaze and Bail dash: about 8.1 m -> 4.0 m. Ugh, Fine, Moving (data distance 4.5 m) uses the same code and shortened too; its old distance was not measured (unverified). Dodge i-frame time and cooldown are unchanged. In qa's seeded wave sim the bot lost about 2.5x more HP after this. The preview and the data distance already said 4.0 m, so the fix moved the player, not the preview. **Open:** the director is asked in D8 whether to restore the old dodge feel (game-lead's recommended default is `dodge_speed` 14 -> 28 at the same 0.25 s). (7b7a471)
 - **Balance: golem wind-up** 0.45 s -> 0.7 s (director item D6, default A applied). Its attack cycle goes 2.25 s -> 2.5 s and its damage per second 4.0 -> 3.6. Hit damage is unchanged at 9. (acc26a4)
 - **Damage numbers are bigger:** about 12 px -> 20 px at 720p, with an outline. Quick hits on the same spot merge into one number, and at most 16 show at once. **IMMUNE** now draws above HP bars. The cone, heal, dash and projectile trails read more strongly, and their timings are now data. A ring shows when a stun cancels an enemy's wind-up. Enemy HP bar visibility is now one data setting with four modes (shipped as "always" at the time; switched by director call D7 in 6b, see efaf164). (058d3dd, 3ae40b7, 39c03e6, b50aa0c, bff7581)
 - **Enemy HP bars** are slightly smaller (1.4 x 0.19 -> 1.2 x 0.16) and hidden behind models in front of them. Before, they drew over everything. (caab2c0, 8e05395)
@@ -47,6 +49,13 @@ A plain-language history of the project for the director, grouped by date (from 
 - **Balance (side effect of a bug fix): projectile hit size** now really reads its data. Flaming Nonsense hits at 0.3 (was 0.25), and ranged enemy shots at 0.3 (was 0.25). (1d87756)
 
 ### Fixed
+- **Slice 6 fix pass** (qa FAIL 957fa16, re-check PASS 57be0a1, 542 of 542 tests):
+  - **S6-1:** an attack click latched just before a pause no longer fires when you resume. The latch is cleared on pause, death, focus loss and a cast-trigger change. (17b28a2)
+  - **S6-3:** the projectile preview lane and ground marker now reach the true hit distance (they were about 0.3 m short). (0e4d9b5)
+  - **S6-5:** pressing Space on the focused Resume button no longer also dodges. Dodge is ignored for 2 physics ticks after a pause or resume (a code constant, `DODGE_BLOCK_TICKS_AFTER_PAUSE`). (6738109)
+  - **S6-6 (test-only):** removed four stray engine error lines (`Parameter "material" is null`) from full test runs. Nothing changed in play. (1ed76f4, 5095be9)
+  - **S6-7:** if the settings file can't be saved, the settings screen shows a note and logs an error instead of forgetting the choice silently. New `data/ui.json` keys `settings_screen.save_failed` and `settings_screen.save_failed_color`. (9e6c417)
+  - **S6-4 is still open:** a seeded sim run does not repeat (see the README). It is a non-blocking item for a later capture and sim tooling task.
 - **5d fixes from qa:** a crowded enemy waiting to swing could slide faster than its top speed (now capped). A broken enemy stats block is now caught when the game loads. Enemy sidestep direction now comes from spawn order instead of an internal object id, so the steering itself repeats (a whole simulated run still does not repeat from a seed; see the 6c review). (c3d244f, 6e8c3e6, a23a960)
 - **The old bot-sim tool had been silently broken since 5b.** It stopped compiling but still printed "OK". It is fixed, and now fails loudly on any error. (c13a43a, e100f09)
 - **Slice 5 cleanups:**
@@ -74,8 +83,14 @@ A plain-language history of the project for the director, grouped by date (from 
 - **DECISIONS.md had a stray non-UTF-8 character.** (cd60da8)
 
 ### Docs and process
-- game-lead corrected the 5b damage-numbers bullet: the HP bar mode note had gone stale after D7 (fact fix, qa S6-9).
-- **5d closed** (qa re-check PASS 957fa16). **Slice 6 qa FAIL** on two small blockers: an attack click latched before a pause fired after resume, and the dash preview showed 4 m while the dash really ends about 8 m away. A fix pass is in progress. (957fa16, 0d670df)
+- **Docs pass for the Slice 6 fix pass and the new reference docs.** README rewritten after running every command: it now has a docs index, repo layout, controls, a table of all 12 capture scenarios with working capture times, the two extra capture helpers, the sim flags, and a truthful note on seeds. The old README claim that seeded sims "rerun with --seed=N to reproduce" was only partly true: the wave plan and steering repeat, a whole run does not (S6-4). The bot sim wrapper `run_bot_sim.ps1` has no seed parameter, so its own "rerun with --seed" hint can't be followed through the wrapper. README capture example `--screenshot-out=shots/a.png` pointed outside the gitignored `screenshots/`; it now uses `screenshots/`.
+- **[Director decision] tech-writer role added, and doc ownership split.** tech-writer owns `README.md`, `docs/CHANGELOG.md`, `docs/ASSETS.md` and `docs/ARCHITECTURE.md`. game-lead owns `docs/GDD.md`, `docs/DECISIONS.md`, `docs/ROADMAP.md`, `docs/STATE.md`, `docs/OPEN_ITEMS.md` and `CLAUDE.md`. Other roles don't edit docs they don't own; they report needed changes in their hand-back. (b4c735a)
+- **[Director decision] one docs pass per slice or multi-agent task.** game-lead runs tech-writer once at the end, between playtester and close, with a short doc handoff note. The loop is now build -> qa -> playtester -> tech-writer -> game-lead close; a slice can't be marked done until the docs pass is complete. Whoever adds a third-party asset gives tech-writer its source, author and license at that time. qa's slice review checks that the README commands work and the CHANGELOG has an entry. The changelog rule now names tech-writer as its owner. (b4c735a)
+- **[Director decision] what goes in `docs/DECISIONS.md`.** Only assumptions, defaults and judgment calls that agents make on their own. Director directives are recorded in the GDD (design), `CLAUDE.md` (process), and this changelog with the `[Director decision]` tag. Existing DECISIONS entries stay as they are. (b4c735a)
+- qa's Slice 6 re-check passed all six blockers and fixes (S6-1, 2, 3, 5, 6, 7) with 542 of 542 tests, plus two extra qa probes. qa flagged that the bot lost about 2.5x more HP with the shorter dodge, as a playtest call (see the S6-2 entry). (57be0a1)
+- game-lead recorded the fix pass and the D8 question. (84abe1e, 44c5d73, dcdb043)
+- game-lead corrected the 5b damage-numbers bullet the 5b damage-numbers bullet: the HP bar mode note had gone stale after D7 (fact fix, qa S6-9).
+- **5d closed** (qa re-check PASS 957fa16). **Slice 6 qa FAIL** on two small blockers: an attack click latched before a pause fired after resume, and the dash preview showed 4 m while the dash really ends about 8 m away. A fix pass is in progress. (957fa16, 0d670df) **Correction (tech-writer, 2026-10-28):** the fix pass finished and qa's re-check passed (57be0a1, 542 of 542 tests); see the Slice 6 fix pass entries under Changed and Fixed above.
 - **[Director decision] Answers to D1-D7.**
   - D1 A: no Game Over stats yet.
   - D2 C: hold-to-preview casting becomes the default, with a setting to cast on press. It is added to GDD §3 and scheduled as Slice 6.

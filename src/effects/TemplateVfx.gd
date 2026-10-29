@@ -162,12 +162,21 @@ static func dash_start(pool: EffectPool, position: Vector3, look: Dictionary) ->
 
 ## Brief faint path of the dash as intended (start to start + distance). Cosmetic
 ## width (a dash has no hit area); if the dash is blocked short, the end puff shows where it stopped.
-static func dash_path(pool: EffectPool, origin: Vector3, direction: Vector3, distance: float, look: Dictionary) -> void:
+## A dash that damages along its path (`hit_radius` >= 0) draws the swept hit area instead
+## (VfxSizing.dash_path_half_width / dash_path_length: reaching that far sideways, behind the start and past the end).
+static func dash_path(pool: EffectPool, origin: Vector3, direction: Vector3, distance: float, look: Dictionary, hit_radius: float = -1.0) -> void:
 	if pool == null or direction.length_squared() < 0.0001 or distance <= 0.0:
 		return
 	var yaw: float = atan2(-direction.x, -direction.z)
-	pool.play(EffectPool.Shape.STRIP, origin, VfxConfig.marker("dash_path_half_width"), look["color"],
-			VfxConfig.marker("dash_path_duration"), 1.0, 1.0, VfxConfig.marker("dash_path_alpha"), 0.0, yaw) 			.lengthened(distance)
+	var half_width: float = VfxConfig.marker("dash_path_half_width")
+	var length: float = distance
+	var start: Vector3 = origin
+	if hit_radius >= 0.0:
+		half_width = VfxSizing.dash_path_half_width(hit_radius)
+		length = VfxSizing.dash_path_length(distance, hit_radius)
+		start = origin - direction.normalized() * VfxSizing.lateral_reach(hit_radius)
+	pool.play(EffectPool.Shape.STRIP, start, half_width, look["color"],
+			VfxConfig.marker("dash_path_duration"), 1.0, 1.0, VfxConfig.marker("dash_path_alpha"), 0.0, yaw) 			.lengthened(length)
 
 
 static func dash_trail(pool: EffectPool, position: Vector3, look: Dictionary) -> void:

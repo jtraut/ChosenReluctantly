@@ -51,6 +51,10 @@ var spawn_index: int = -1
 ## Every live enemy in the tree, for separation steering (5d). A plain static array walked in place:
 ## no per-frame allocation, and the order (spawn order) is deterministic.
 static var _roster: Array[Enemy] = []
+## True while the player has a pass-through buff: no enemy body collides with the player's body.
+## Static so an enemy spawned during the buff joins it; the Player clears it on end, death and exit.
+static var _player_body_suppressed: bool = false
+var _default_collision_mask: int = 0
 var _separation_radius: float = 0.0
 var _separation_strength: float = 0.0
 
@@ -80,6 +84,9 @@ func _ready() -> void:
 	if spawn_index < 0:
 		spawn_index = _roster.size()
 	_roster.append(self)
+	_default_collision_mask = collision_mask
+	if _player_body_suppressed:
+		collision_mask = _default_collision_mask & ~CollisionLayers.PLAYER_BODY
 	_apply_stats(EnemyConfig.stats_for(enemy_id))
 	_separation_radius = EnemyConfig.separation_radius()
 	_separation_strength = EnemyConfig.separation_strength()
@@ -117,6 +124,18 @@ func _apply_stats(stats: Dictionary) -> void:
 
 func _exit_tree() -> void:
 	_roster.erase(self)
+
+
+## Pass-through buff (Player): every live enemy stops colliding with the player's body (and stays
+## that way for enemies spawned meanwhile), or goes back to the mask its scene gave it.
+static func set_player_body_suppressed(suppressed: bool) -> void:
+	_player_body_suppressed = suppressed
+	for enemy: Enemy in _roster:
+		enemy.collision_mask = (enemy._default_collision_mask & ~CollisionLayers.PLAYER_BODY) if suppressed else enemy._default_collision_mask
+
+
+static func is_player_body_suppressed() -> bool:
+	return _player_body_suppressed
 
 
 func _physics_process(delta: float) -> void:

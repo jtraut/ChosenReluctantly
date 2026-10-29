@@ -12,6 +12,10 @@ var last_hits: Array[Hurtbox] = []
 ## Seeded RNG for chances (apply_status "chance"): the Player's status RNG, so a seeded run
 ## repeats. May be null when no effect with a chance below 1 runs.
 var rng: RandomNumberGenerator = null
+## Where the caster is aiming on the ground (Vector3) or null, and the walkable XZ rectangle
+## (empty = unbounded). Placed effects (zone, aoe with max_range) read these through placement().
+var aim_point: Variant = null
+var arena: Rect2 = Rect2()
 
 
 func _init(p_caster: Node3D, p_spawn_parent: Node, p_caster_team: String = "neutral") -> void:
@@ -25,3 +29,9 @@ func _init(p_caster: Node3D, p_spawn_parent: Node, p_caster_team: String = "neut
 ## apply_status) never trips a "not inside world" engine error.
 func world() -> World3D:
 	return caster.get_world_3d()
+
+
+## The clamped landing point for a placed effect with range cap `max_range` (see AoeTargeting.placement).
+func placement(max_range: float) -> Dictionary:
+	var forward: Vector3 = -caster.global_transform.basis.z
+	return AoeTargeting.placement(caster.global_position, aim_point, forward, max_range, arena)

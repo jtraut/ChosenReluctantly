@@ -100,6 +100,10 @@ func try_swap(slot_type: String) -> bool:
 func _cast_card(card_data: Dictionary) -> void:
 	var context := EffectContext.new(caster, spawn_parent, caster_team)
 	context.rng = status_rng
+	if caster != null and is_instance_valid(caster) and caster.has_method("get_aim_point"):
+		# Placed effects (zone, aoe with max_range) land where the caster aims, clamped by their range.
+		context.aim_point = caster.get_aim_point()
+		context.arena = caster.get_arena_rect()
 	var effects: Array = card_data.get("effects", [])
 	for effect: Dictionary in effects:
 		EffectTemplates.execute(effect.get("template", ""), effect.get("params", {}), context)

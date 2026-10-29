@@ -29,3 +29,17 @@ static func clamp_target(origin: Vector3, aim_point: Variant, forward: Vector3, 
 		target.x = clampf(target.x, inner.position.x, inner.end.x)
 		target.z = clampf(target.z, inner.position.y, inner.end.y)
 	return target
+
+
+## Where a placed skill (zone, placed aoe, the targeted heavy) lands and what the reticle shows:
+## {point: the clamped target, range: the cap, clamped: true when the aim point was pulled in (too
+## far, or off the arena), origin: the caster point the range is measured from, raw: the unclamped wish}.
+static func placement(origin: Vector3, aim_point: Variant, forward: Vector3, max_range: float, arena: Rect2) -> Dictionary:
+	var flat_forward := Vector3(forward.x, 0.0, forward.z)
+	flat_forward = flat_forward.normalized() if flat_forward.length_squared() > 0.0001 else Vector3.FORWARD
+	var raw: Vector3 = origin + flat_forward * max_range
+	if typeof(aim_point) == TYPE_VECTOR3 and (aim_point as Vector3).is_finite():
+		raw = aim_point
+	var point: Vector3 = clamp_target(origin, aim_point, forward, max_range, arena)
+	var moved := Vector2(point.x - raw.x, point.z - raw.z).length()
+	return {"point": point, "range": max_range, "clamped": moved > 0.001, "origin": origin, "raw": Vector3(raw.x, origin.y, raw.z)}

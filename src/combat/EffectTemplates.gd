@@ -16,6 +16,8 @@ const REQUIRED_PARAMS: Dictionary = {
 	"heal": ["amount"],
 	"apply_status": ["status_id", "duration"],
 	"buff": ["stat", "modifier_type", "value", "duration"],
+	"zone": ["shape", "duration", "tick_interval", "damage", "damage_type", "max_range"],
+	"pass_through": ["duration"],
 }
 
 ## Optional params, validated by validate_params (CardSchema calls it). Absent = old behaviour.
@@ -29,6 +31,26 @@ const MULTI_HIT_TEMPLATES: Array[String] = ["cone", "aoe", "projectile", "apply_
 const MAX_HITS := 20
 const MAX_HIT_INTERVAL := 5.0
 const STATUS_TARGETS: Array[String] = ["last_hits", "self"]
+
+## C1-b2 params (validated by validate_params, which rejects unknown keys for these templates):
+##   zone (required above): shape "circle" (+ radius) or "line" (+ length, width); max_range = how far
+##     from the caster it may be placed (the aim point is clamped to it); optional knockback_strength,
+##     status_id + status_duration (+ status_chance 0..1, default 1) applied each tick.
+##   pass_through: duration only. The caster's body stops colliding with enemy bodies.
+##   dash (optional): direction_mode "forward" | "away_from_aim"; damage + damage_type + hit_radius
+##     (+ knockback_strength) hit each enemy along the path at most once per dash.
+##   aoe (optional): max_range places the disc at the aim point clamped to that range (a card version of
+##     the targeted_aoe heavy); without it the disc is centred on the caster.
+const ZONE_KEYS: Array[String] = ["shape", "duration", "tick_interval", "damage", "damage_type", "max_range", "radius", "length", "width",
+		"knockback_strength", "status_id", "status_duration", "status_chance"]
+const DASH_KEYS: Array[String] = ["distance", "speed", "invulnerable", "damage_type", "direction_mode", "damage", "hit_radius", "knockback_strength"]
+const DASH_DIRECTION_MODES: Array[String] = ["forward", "away_from_aim"]
+const DIRECTION_FORWARD := "forward"
+const DIRECTION_AWAY := "away_from_aim"
+const MAX_ZONE_DURATION := 30.0
+const MAX_ZONE_TICKS := 200
+const MAX_PLACE_RANGE := 30.0
+const MAX_PASS_THROUGH := 30.0
 
 const PROJECTILE_SCENE_PATH := "res://scenes/effects/Projectile.tscn"
 ## A shot leaves this far in front of the caster (the cast preview lane starts here too).
@@ -75,7 +97,114 @@ static func validate_params(template_id: String, params: Dictionary) -> Array[St
 			errors.append("'target' must be one of %s" % str(STATUS_TARGETS))
 		if typeof(params.get("status_id")) == TYPE_STRING and not StatusDatabase.has_status(String(params["status_id"])):
 			errors.append("unknown status_id '%s'" % String(params["status_id"]))
+	match template_id:
+		"zone":
+			_validate_zone(params, errors)
+		"pass_through":
+			_validate_pass_through(params, errors)
+		"dash":
+			_validate_dash(params, errors)
+		"aoe":
+			if params.has("max_range") and not _number_in(params["max_range"], 0.0, MAX_PLACE_RANGE, false):
+				errors.append("'max_range' must be a number above 0 and at most %s" % str(MAX_PLACE_RANGE))
 	return errors
+
+
+## True when `value` is a finite number in (min, max] (or [min, max] when `inclusive_min`).
+static func _number_in(value: Variant, minimum: float, maximum: float, inclusive_min: bool) -> bool:
+	if not _is_number(value):
+		return false
+	var number: float = float(value)
+	if is_nan(number) or is_inf(number) or number > maximum:
+		return false
+	return number >= minimum if inclusive_min else number > minimum
+
+
+static func _validate_zone(params: Dictionary, errors: Array[String]) -> void:
+	for key: Variant in params.keys():
+		if not ZONE_KEYS.has(String(key)):
+			errors.append("'%s' is not a known zone param" % str(key))
+	var shape: String = String(params["shape"]) if typeof(params.get("shape")) == TYPE_STRING else ""
+	if not ZoneShape.SHAPES.has(shape):
+		errors.append("'shape' must be one of %s" % str(ZoneShape.SHAPES))
+	else:
+		var wanted: Array[String] = []
+		var unwanted: Array[String] = []
+		if shape == ZoneShape.CIRCLE:
+			wanted.append("radius")
+			unwanted.append_array(["length", "width"])
+		else:
+			wanted.append_array(["length", "width"])
+			unwanted.append("radius")
+		for key: String in wanted:
+			if not params.has(key):
+				errors.append("a %s zone needs '%s'" % [shape, key])
+			elif not _number_in(params[key], 0.0, 20.0, false):
+				errors.append("'%s' must be a number above 0 and at most 20" % key)
+		for key: String in unwanted:
+			if params.has(key):
+				errors.append("'%s' is not used by a %s zone" % [key, shape])
+	var duration_ok: bool = params.has("duration") and _number_in(params["duration"], 0.0, MAX_ZONE_DURATION, false)
+	if params.has("duration") and not duration_ok:
+		errors.append("'duration' must be a number above 0 and at most %s" % str(MAX_ZONE_DURATION))
+	if params.has("tick_interval"):
+		if not _number_in(params["tick_interval"], 0.0, MAX_ZONE_DURATION, false):
+			errors.append("'tick_interval' must be a number above 0 and at most %s" % str(MAX_ZONE_DURATION))
+		elif duration_ok and ZoneShape.tick_count(float(params["duration"]), float(params["tick_interval"])) > MAX_ZONE_TICKS:
+			errors.append("a zone may tick at most %d times (duration / tick_interval)" % MAX_ZONE_TICKS)
+	if params.has("damage") and not _number_in(params["damage"], 0.0, 100000.0, true):
+		errors.append("'damage' must be a number from 0 up")
+	if params.has("damage_type") and (typeof(params["damage_type"]) != TYPE_STRING or String(params["damage_type"]).is_empty()):
+		errors.append("'damage_type' must be a non-empty string")
+	if params.has("max_range") and not _number_in(params["max_range"], 0.0, MAX_PLACE_RANGE, false):
+		errors.append("'max_range' must be a number above 0 and at most %s" % str(MAX_PLACE_RANGE))
+	if params.has("knockback_strength") and not _number_in(params["knockback_strength"], 0.0, 100.0, true):
+		errors.append("'knockback_strength' must be a number from 0 to 100")
+	var has_status: bool = params.has("status_id")
+	if has_status:
+		if typeof(params["status_id"]) != TYPE_STRING or not StatusDatabase.has_status(String(params["status_id"])):
+			errors.append("unknown status_id '%s'" % str(params["status_id"]))
+		if not params.has("status_duration") or not _number_in(params["status_duration"], 0.0, 600.0, false):
+			errors.append("a zone with a status needs 'status_duration' above 0 and at most 600")
+	else:
+		for key: String in ["status_duration", "status_chance"]:
+			if params.has(key):
+				errors.append("'%s' needs 'status_id'" % key)
+	if params.has("status_chance") and not _number_in(params["status_chance"], 0.0, 1.0, true):
+		errors.append("'status_chance' must be a number from 0 to 1")
+	if _is_number(params.get("damage")) and float(params["damage"]) == 0.0 and not has_status:
+		errors.append("a zone with damage 0 needs a status")
+
+
+static func _validate_pass_through(params: Dictionary, errors: Array[String]) -> void:
+	for key: Variant in params.keys():
+		if String(key) != "duration":
+			errors.append("'%s' is not a known pass_through param" % str(key))
+	if params.has("duration") and not _number_in(params["duration"], 0.0, MAX_PASS_THROUGH, false):
+		errors.append("'duration' must be a number above 0 and at most %s" % str(MAX_PASS_THROUGH))
+
+
+static func _validate_dash(params: Dictionary, errors: Array[String]) -> void:
+	for key: Variant in params.keys():
+		if not DASH_KEYS.has(String(key)):
+			errors.append("'%s' is not a known dash param" % str(key))
+	if params.has("direction_mode") and not (typeof(params["direction_mode"]) == TYPE_STRING and DASH_DIRECTION_MODES.has(String(params["direction_mode"]))):
+		errors.append("'direction_mode' must be one of %s" % str(DASH_DIRECTION_MODES))
+	if params.has("damage"):
+		if not _number_in(params["damage"], 0.0, 100000.0, false):
+			errors.append("'damage' must be a number above 0")
+		if not params.has("hit_radius"):
+			errors.append("a dash with 'damage' needs 'hit_radius'")
+		if typeof(params.get("damage_type")) != TYPE_STRING or String(params.get("damage_type")).is_empty():
+			errors.append("a dash with 'damage' needs a 'damage_type'")
+	else:
+		for key: String in ["hit_radius", "knockback_strength"]:
+			if params.has(key):
+				errors.append("'%s' needs 'damage'" % key)
+	if params.has("hit_radius") and not _number_in(params["hit_radius"], 0.0, 5.0, false):
+		errors.append("'hit_radius' must be a number above 0 and at most 5")
+	if params.has("knockback_strength") and not _number_in(params["knockback_strength"], 0.0, 100.0, true):
+		errors.append("'knockback_strength' must be a number from 0 to 100")
 
 
 static func _is_number(value: Variant) -> bool:
@@ -129,6 +258,10 @@ static func execute(template_id: String, params: Dictionary, context: EffectCont
 			_execute_apply_status(params, context)
 		"buff":
 			_execute_buff(params, context)
+		"zone":
+			_execute_zone(params, context)
+		"pass_through":
+			_execute_pass_through(params, context)
 		_:
 			push_error("EffectTemplates: unknown template '%s'" % template_id)
 
@@ -154,7 +287,7 @@ static func _cone_hit(params: Dictionary, context: EffectContext, index: int) ->
 		_play_cone_vfx(params, context, forward)
 	var knockback_strength: float = params.get("knockback_strength", 0.0)
 	for hurtbox: Hurtbox in hits:
-		hurtbox.receive_damage(params["damage"], params["damage_type"], _knockback_from(context.caster.global_position, hurtbox.global_position, knockback_strength), context.caster, _kind_for(index))
+		hurtbox.receive_damage(params["damage"], params["damage_type"], knockback_from(context.caster.global_position, hurtbox.global_position, knockback_strength), context.caster, _kind_for(index))
 
 
 ## Ground wedge through the shared EffectPool, sized by VfxSizing (the same
@@ -173,7 +306,12 @@ static func _play_cone_vfx(params: Dictionary, context: EffectContext, forward: 
 ## Optional code-only param "center" (Vector3) moves the disc off the caster, for
 ## targeted heavies; cards leave it out and the disc is centred on the caster.
 static func _execute_aoe(params: Dictionary, context: EffectContext) -> void:
-	_run_hits(params, context, func(index: int) -> void: _aoe_hit(params, context, index))
+	var locked: Dictionary = params
+	if params.has("max_range") and not params.has("center") and context.caster.is_inside_tree():
+		# Placed: the disc lands at the aim point clamped to max_range, locked at cast.
+		locked = params.duplicate()
+		locked["center"] = context.placement(float(params["max_range"]))["point"]
+	_run_hits(locked, context, func(index: int) -> void: _aoe_hit(locked, context, index))
 
 
 static func _aoe_hit(params: Dictionary, context: EffectContext, index: int) -> void:
@@ -190,7 +328,7 @@ static func _aoe_hit(params: Dictionary, context: EffectContext, index: int) -> 
 	_play_aoe_vfx(params, context, center)
 	var knockback_strength: float = params.get("knockback_strength", 0.0)
 	for hurtbox: Hurtbox in hits:
-		hurtbox.receive_damage(params["damage"], params["damage_type"], _knockback_from(center, hurtbox.global_position, knockback_strength), context.caster, _kind_for(index))
+		hurtbox.receive_damage(params["damage"], params["damage_type"], knockback_from(center, hurtbox.global_position, knockback_strength), context.caster, _kind_for(index))
 
 
 ## Ground disc through the shared EffectPool, sized exactly to the hit radius.
@@ -208,7 +346,7 @@ static func _play_aoe_vfx(params: Dictionary, context: EffectContext, center: Va
 ## Horizontal-only impulse pointing from `origin` toward `target_pos`, scaled
 ## by `strength`. Zero strength (the common case - most cards have none)
 ## is a real Vector3.ZERO, not a tiny near-zero vector.
-static func _knockback_from(origin: Vector3, target_pos: Vector3, strength: float) -> Vector3:
+static func knockback_from(origin: Vector3, target_pos: Vector3, strength: float) -> Vector3:
 	if strength <= 0.0:
 		return Vector3.ZERO
 	var away := target_pos - origin
@@ -257,13 +395,19 @@ static func _execute_dash(params: Dictionary, context: EffectContext) -> void:
 	if not context.caster.has_method("start_forced_move"):
 		return
 	var forward: Vector3 = -context.caster.global_transform.basis.z
+	if String(params.get("direction_mode", DIRECTION_FORWARD)) == DIRECTION_AWAY:
+		forward = -forward
 	var speed: float = params["speed"]
 	var distance: float = params["distance"]
 	var duration: float = distance / speed if speed > 0.0 else 0.0
 	var look := ElementVisuals.visual_for_damage_type(String(params.get("damage_type", "physical")))
+	var path_hit: Dictionary = {}
+	if params.has("damage"):
+		path_hit = {"damage": float(params["damage"]), "damage_type": String(params["damage_type"]),
+				"hit_radius": float(params["hit_radius"]), "knockback_strength": float(params.get("knockback_strength", 0.0))}
 	TemplateVfx.dash_start(_vfx_pool(context), _caster_pos(context), look)
-	TemplateVfx.dash_path(_vfx_pool(context), _caster_pos(context), forward, distance, look)
-	context.caster.start_forced_move(forward, speed, duration, params.get("invulnerable", false), look)
+	TemplateVfx.dash_path(_vfx_pool(context), _caster_pos(context), forward, distance, look, float(path_hit["hit_radius"]) if not path_hit.is_empty() else -1.0)
+	context.caster.start_forced_move(forward, speed, duration, params.get("invulnerable", false), look, path_hit)
 
 
 static func _execute_heal(params: Dictionary, context: EffectContext) -> void:
@@ -323,3 +467,28 @@ static func _execute_buff(params: Dictionary, context: EffectContext) -> void:
 	if context.caster.is_inside_tree():
 		var tree := context.caster.get_tree()
 		tree.create_timer(duration, false).timeout.connect(func() -> void: stat_modifiers.remove_modifier(stat, modifier_id))
+
+
+## Places a zone at the aim point clamped to max_range (straight ahead when there is no aim point).
+static func _execute_zone(params: Dictionary, context: EffectContext) -> void:
+	if context.caster == null or not is_instance_valid(context.caster) or not context.caster.is_inside_tree():
+		return
+	var manager := ZoneManager.for_world(context.spawn_parent)
+	if manager == null:
+		return
+	var placed: Dictionary = context.placement(float(params["max_range"]))
+	var origin: Vector3 = placed["origin"]
+	var point: Vector3 = placed["point"]
+	var cast_dir := Vector3(point.x - origin.x, 0.0, point.z - origin.z)
+	if cast_dir.length_squared() < 0.0001:
+		cast_dir = -context.caster.global_transform.basis.z
+	manager.spawn(params, point, cast_dir.normalized(), context)
+	# Zones tick on their own; nothing was hit at cast time as far as later effects are concerned.
+	context.last_hits = []
+
+
+## Lets the caster walk through enemies for `duration` (see Player.grant_pass_through).
+static func _execute_pass_through(params: Dictionary, context: EffectContext) -> void:
+	if not context.caster.has_method("grant_pass_through"):
+		return
+	context.caster.grant_pass_through(float(params["duration"]))

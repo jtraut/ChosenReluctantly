@@ -18,6 +18,10 @@ signal attack_fired(attack_id: StringName)
 signal attack_ready(attack_id: StringName)
 signal attack_cancelled(attack_id: StringName)
 
+## True when a pass-through buff starts (the body stops colliding with enemies), false when the last one
+## ends, on death, and on leaving the tree. ux: the ghosted-player cue listens here or reads is_pass_through().
+signal pass_through_changed(active: bool)
+
 @export var move_speed: float = 6.0
 @export var acceleration: float = 24.0
 @export var friction: float = 28.0
@@ -29,7 +33,7 @@ signal attack_cancelled(attack_id: StringName)
 static var default_rng_seed: int = -1
 
 ## Dodge roll tuning, loaded from data/player.json (PlayerConfig) in _ready.
-var dodge_speed: float = 28.0
+var dodge_speed: float = 20.0
 var dodge_duration: float = 0.25
 var dodge_cooldown: float = 0.8
 
@@ -92,6 +96,14 @@ var _dodge_cooldown_remaining: float = 0.0
 var _dodge_blocked_until_frame: int = -1
 var _base_body_color: Color = Color.WHITE
 var _knockback_velocity: Vector3 = Vector3.ZERO
+## Pass-through buff: how many grants are running, and the collision mask the body had before the first.
+var _pass_through_count: int = 0
+var _mask_before_pass_through: int = 0
+## Damage along a dash path (EffectTemplates dash with `damage`): the spec, the enemies already hit this
+## dash (instance ids) and where the last tick sampled from.
+var _path_hit: Dictionary = {}
+var _path_hit_ids: Dictionary = {}
+var _path_prev: Vector3 = Vector3.ZERO
 var _dead: bool = false
 var _flash_tween: Tween = null
 
@@ -164,11 +176,14 @@ func _physics_process(delta: float) -> void:
 	_handle_attack(delta)
 	_handle_card_slot_input()
 	move_and_slide()
+	if forced_this_tick and not _path_hit.is_empty():
+		_tick_path_hits()
 	if forced_this_tick and _forced_move_time_remaining <= 0.0:
 		# The forced move is over: stop dead and hand back to normal movement, so it never
 		# coasts past its data distance (friction would carry it about twice as far).
 		velocity.x = 0.0
 		velocity.z = 0.0
+		_path_hit = {}
 
 
 ## A key released while the window is out of focus may never reach us, so losing focus
@@ -179,6 +194,7 @@ func _notification(what: int) -> void:
 
 
 func _exit_tree() -> void:
+	_end_all_pass_through()
 	if Settings.changed.is_connected(_on_setting_changed):
 		Settings.changed.disconnect(_on_setting_changed)
 	if GamePause.paused_changed.is_connected(_on_pause_changed):
@@ -249,6 +265,8 @@ func _on_died() -> void:
 	_forced_move_time_remaining = 0.0
 	_forced_move_invulnerable = false
 	_forced_move_look = {}
+	_path_hit = {}
+	_end_all_pass_through()
 	attacks.cancel_all()
 	cancel_cast_preview()
 	if hurtbox != null:
@@ -340,9 +358,14 @@ func _handle_dodge_input() -> void:
 ## directly along `direction` at `speed`. Used by the dodge roll, and by the
 ## "dash" card effect template so Movement-slot cards can reuse the same
 ## motion/invulnerability machinery instead of duplicating it.
-func start_forced_move(direction: Vector3, speed: float, duration: float, invulnerable: bool = false, vfx_look: Dictionary = {}) -> void:
+## `path_hit` (optional, from the dash template): {damage, damage_type, hit_radius, knockback_strength}
+## damages each enemy the body sweeps through, at most once per move.
+func start_forced_move(direction: Vector3, speed: float, duration: float, invulnerable: bool = false, vfx_look: Dictionary = {}, path_hit: Dictionary = {}) -> void:
 	if _dead:
 		return
+	_path_hit = path_hit
+	_path_hit_ids.clear()
+	_path_prev = global_position if is_inside_tree() else Vector3.ZERO
 	_forced_move_look = vfx_look
 	_forced_move_trail_timer = 0.0
 	var flat_direction := direction
@@ -379,6 +402,68 @@ func _apply_forced_move(delta: float) -> void:
 		if _forced_move_invulnerable and hurtbox != null:
 			hurtbox.set_invulnerable(false)
 		_forced_move_invulnerable = false
+
+
+## Hits every enemy within hit_radius of the body's path since the last tick, once each per dash. The path
+## is sampled every hit_radius so a fast dash cannot skip an enemy; the query is the shared sphere query,
+## so the hit area is the lane the dash drew (VfxSizing.dash_path_*). A direct hit: hit-stop and shake.
+func _tick_path_hits() -> void:
+	var radius: float = float(_path_hit["hit_radius"])
+	var from: Vector3 = _path_prev
+	var to: Vector3 = global_position
+	_path_prev = to
+	var steps: int = maxi(ceili(from.distance_to(to) / maxf(radius, 0.1)), 1)
+	var team: String = hurtbox.team if hurtbox != null else "player"
+	var space := get_world_3d().direct_space_state
+	for step in range(steps + 1):
+		var point: Vector3 = from.lerp(to, float(step) / float(steps))
+		for target: Hurtbox in MeleeQuery.find_hurtboxes_in_sphere(space, point, radius, team, CollisionLayers.HURTBOX):
+			var id: int = target.get_instance_id()
+			if _path_hit_ids.has(id):
+				continue
+			_path_hit_ids[id] = true
+			target.receive_damage(float(_path_hit["damage"]), String(_path_hit["damage_type"]),
+					EffectTemplates.knockback_from(global_position, target.global_position, float(_path_hit["knockback_strength"])), self, Health.KIND_HIT)
+
+
+## Walk through enemies for `duration` seconds: the body stops colliding with enemy bodies (both ways)
+## until the last running grant ends, on death, or when the player leaves the tree (reload). Grants
+## overlap rather than stack. The timer follows the game's pause and time scale like other buffs.
+func grant_pass_through(duration: float) -> void:
+	if _dead or not is_inside_tree() or duration <= 0.0:
+		return
+	_pass_through_count += 1
+	if _pass_through_count == 1:
+		_set_pass_through(true)
+	get_tree().create_timer(duration, false).timeout.connect(_release_pass_through, CONNECT_ONE_SHOT)
+
+
+func is_pass_through() -> bool:
+	return _pass_through_count > 0
+
+
+func _release_pass_through() -> void:
+	if _pass_through_count <= 0:
+		return
+	_pass_through_count -= 1
+	if _pass_through_count == 0:
+		_set_pass_through(false)
+
+
+func _end_all_pass_through() -> void:
+	if _pass_through_count > 0:
+		_pass_through_count = 0
+		_set_pass_through(false)
+
+
+func _set_pass_through(active: bool) -> void:
+	if active:
+		_mask_before_pass_through = collision_mask
+		collision_mask = collision_mask & ~CollisionLayers.ENEMY_BODY
+	else:
+		collision_mask = (collision_mask & ~CollisionLayers.ENEMY_BODY) | (_mask_before_pass_through & CollisionLayers.ENEMY_BODY)
+	Enemy.set_player_body_suppressed(active)
+	pass_through_changed.emit(active)
 
 
 func _setup_attacks() -> void:
@@ -526,11 +611,18 @@ func get_aoe_target(attack_id: StringName) -> Vector3:
 ## Walkable XZ rectangle from the Floor node (Rect2: x, z, width, depth), or an empty
 ## Rect2 (unbounded) with an error when the arena has no Floor.
 func _arena_rect() -> Rect2:
+	var rect := get_arena_rect()
+	if not rect.has_area():
+		push_error("Player: no Floor node to bound the targeted_aoe heavy; target is unbounded")
+	return rect
+
+
+## The same rectangle without the error (an empty Rect2 = unbounded). Used by placed card effects.
+func get_arena_rect() -> Rect2:
 	var floor_node: CSGBox3D = null
 	if get_parent() != null:
 		floor_node = get_parent().get_node_or_null("Floor") as CSGBox3D
 	if floor_node == null:
-		push_error("Player: no Floor node to bound the targeted_aoe heavy; target is unbounded")
 		return Rect2()
 	var half := Vector2(floor_node.size.x, floor_node.size.z) * 0.5
 	var center := Vector2(floor_node.global_position.x, floor_node.global_position.z)
@@ -710,6 +802,13 @@ func get_aim_direction() -> Vector3:
 	if forward.length_squared() < 0.0001:
 		return Vector3.FORWARD
 	return forward.normalized()
+
+
+## Where a placed skill with range cap `max_range` would land right now, for the reticle: {point (the clamped
+## target), range, clamped (the aim point was pulled in), origin, raw (the unclamped wish)}. Read-only.
+## A zone or aoe card casts at exactly this point, and the cast preview draws its shape here.
+func get_placement(max_range: float) -> Dictionary:
+	return AoeTargeting.placement(global_position, get_aim_point(), get_aim_direction(), max_range, get_arena_rect())
 
 
 func _ground_point_under_mouse() -> Variant:

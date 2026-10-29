@@ -70,3 +70,30 @@ static func projectile_lane_length(max_range: float, hit_radius: float) -> float
 ## lane's sides already use (lateral_reach_vs_player), so the tip shows the real reach too.
 static func enemy_shot_lane_length(max_range: float, hit_radius: float) -> float:
 	return max_range + lateral_reach_vs_player(hit_radius)
+
+
+## Zone template (circle): the disc is the same sphere hit as an aoe, so it reaches the same.
+static func zone_circle_reach(radius: float) -> float:
+	return aoe_reach(radius)
+
+
+## Zone template (line): a target is hit while its centre is inside the rectangle, which is the
+## drawn line grown by the hurtbox reach radius on every side. Half of the long side.
+static func zone_line_half_length(length: float) -> float:
+	return length * 0.5 + VfxConfig.hurtbox_reach_radius()
+
+
+## Zone template (line): half of the short side.
+static func zone_line_half_width(width: float) -> float:
+	return width * 0.5 + VfxConfig.hurtbox_reach_radius()
+
+
+## A dash that damages along its path sweeps a sphere of `hit_radius`, so its lane is as wide as
+## that sphere reaches sideways.
+static func dash_path_half_width(hit_radius: float) -> float:
+	return lateral_reach(hit_radius)
+
+
+## The same sweep also reaches that far behind the start and beyond the end of the dash.
+static func dash_path_length(distance: float, hit_radius: float) -> float:
+	return distance + 2.0 * lateral_reach(hit_radius)

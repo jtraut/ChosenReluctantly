@@ -80,9 +80,23 @@ func _process(_delta: float) -> void:
 	var y: float = origin.y + float(_config["ground_offset"])
 	for i in range(_parts.size()):
 		var pivot := _pivots[i]
-		var offset: float = _parts[i]["start_offset"]
-		pivot.position = Vector3(origin.x + forward.x * offset, y, origin.z + forward.z * offset)
-		pivot.rotation.y = yaw
+		var part: Dictionary = _parts[i]
+		if bool(part.get("placed", false)):
+			# A placed skill (zone, aoe with max_range): drawn at the clamped aim point, which is also
+			# where the cast lands. A line zone runs across the cast direction.
+			var placement: Dictionary = _player.get_placement(float(part["range"]))
+			var point: Vector3 = placement["point"]
+			var to_point := Vector3(point.x - origin.x, 0.0, point.z - origin.z)
+			var cast_dir: Vector3 = to_point.normalized() if to_point.length_squared() > 0.0001 else forward
+			pivot.position = Vector3(point.x, y, point.z)
+			pivot.rotation.y = atan2(-cast_dir.x, -cast_dir.z) + (PI * 0.5 if part["shape"] == CastPreviewShapes.ZONE_LINE else 0.0)
+		else:
+			var offset: float = part["start_offset"]
+			# A dash that goes away from the aim runs the other way: offsets and yaw flip with it.
+			var turned: float = float(part.get("yaw_offset_degrees", 0.0))
+			var side: float = -1.0 if turned == 180.0 else 1.0
+			pivot.position = Vector3(origin.x + forward.x * offset * side, y, origin.z + forward.z * offset * side)
+			pivot.rotation.y = yaw + deg_to_rad(turned)
 		pivot.visible = true
 	_apply_ready(_is_shown_slot_ready())
 
@@ -140,6 +154,7 @@ func _style_part(index: int, part: Dictionary) -> void:
 	var shape: String = part["shape"]
 	var fill := _fills[index]
 	var edge := _edges[index]
+	fill.position = Vector3.ZERO
 	match shape:
 		CastPreviewShapes.CONE:
 			var half_angle: float = part["half_angle_degrees"]
@@ -150,13 +165,20 @@ func _style_part(index: int, part: Dictionary) -> void:
 			fill.mesh = EffectPool.disc_mesh()
 			fill.scale = Vector3(size, 1.0, size)
 			edge.mesh = _cached("ring|%f|%f" % [size, thickness], func() -> Mesh: return build_ring(size, thickness))
+		CastPreviewShapes.ZONE_LINE:
+			# `size` is the half length; the lane is centred on the pivot (placed point), long side along local Z.
+			var lane_thickness: float = minf(thickness, half_width)
+			fill.mesh = EffectPool.strip_mesh()
+			fill.scale = Vector3(half_width, 1.0, size * 2.0)
+			fill.position.z = size
+			edge.mesh = _cached("zline|%f|%f|%f" % [half_width, size, lane_thickness], func() -> Mesh: return build_lane_outline(half_width, size * 2.0, lane_thickness))
 		_:
 			var lane_thickness: float = minf(thickness, half_width)
 			fill.mesh = EffectPool.strip_mesh()
 			fill.scale = Vector3(half_width, 1.0, size)
 			edge.mesh = _cached("lane|%f|%f|%f" % [half_width, size, lane_thickness], func() -> Mesh: return build_lane_outline(half_width, size, lane_thickness))
 	edge.scale = Vector3.ONE
-	edge.position.y = 0.005
+	edge.position = Vector3(0.0, 0.005, fill.position.z)
 	var color := Color.html(String(_config["default_color"]))
 	match String(_config["color_source"]):
 		"card_element":
@@ -214,7 +236,7 @@ func _cached(key: String, builder: Callable) -> Mesh:
 ## whether releasing now would cast (false while the slot cools: ux may dim the preview).
 func get_state() -> Dictionary:
 	if not _sync():
-		return {"active": false, "slot": "", "card_id": "", "shape": "", "size": 0.0, "parts": [], "ready": false}
+		return {"active": false, "slot": "", "card_id": "", "shape": "", "size": 0.0, "parts": [], "ready": false, "placement": {}}
 	return {
 		"active": true,
 		"slot": CardSlotController.slot_type_at_index(_shown_slot),
@@ -223,7 +245,18 @@ func get_state() -> Dictionary:
 		"size": _parts[0]["size"],
 		"parts": _parts.duplicate(true),
 		"ready": _is_shown_slot_ready(),
+		"placement": _placement_state(),
 	}
+
+
+## The reticle data of the first placed part, live: {point (clamped target), range (the cap), clamped
+## (the aim was pulled in), origin, raw}, or {} when the previewed card places nothing. ux draws the
+## range ring around `origin` with `range`, and a marker at `point`.
+func _placement_state() -> Dictionary:
+	for part: Dictionary in _parts:
+		if bool(part.get("placed", false)):
+			return _player.get_placement(float(part["range"]))
+	return {}
 
 
 func _is_shown_slot_ready() -> bool:
@@ -242,46 +275,11 @@ func pivot_node(index: int) -> Node3D:
 
 # --- edge meshes (built at the real size, once per distinct shape; never per frame) ---
 
-## Flat annulus: outer radius `outer`, inner `outer - thickness`.
+## Flat annulus: outer radius `outer`, inner `outer - thickness` (see GroundOutlines).
 static func build_ring(outer: float, thickness: float) -> ArrayMesh:
-	var inner: float = maxf(outer - thickness, 0.0)
-	var segments: int = 40
-	var vertices := PackedVector3Array()
-	var normals := PackedVector3Array()
-	for i in range(segments):
-		var a0: float = TAU * float(i) / float(segments)
-		var a1: float = TAU * float(i + 1) / float(segments)
-		var o0 := Vector3(sin(a0), 0.0, -cos(a0))
-		var o1 := Vector3(sin(a1), 0.0, -cos(a1))
-		vertices.append_array([o0 * inner, o0 * outer, o1 * outer, o0 * inner, o1 * outer, o1 * inner])
-	return _flat_mesh(vertices, normals)
+	return GroundOutlines.build_ring(outer, thickness)
 
 
 ## Outline of a lane (x from -half_width to half_width, z from 0 to -length), drawn inward.
 static func build_lane_outline(half_width: float, length: float, thickness: float) -> ArrayMesh:
-	var vertices := PackedVector3Array()
-	var normals := PackedVector3Array()
-	var t: float = thickness
-	for rect: Array in [
-			[-half_width, -half_width + t, 0.0, -length],
-			[half_width - t, half_width, 0.0, -length],
-			[-half_width, half_width, -length + t, -length],
-			[-half_width, half_width, 0.0, -t]]:
-		var x0: float = rect[0]
-		var x1: float = rect[1]
-		var z0: float = rect[2]
-		var z1: float = rect[3]
-		vertices.append_array([Vector3(x0, 0, z0), Vector3(x1, 0, z0), Vector3(x1, 0, z1), Vector3(x0, 0, z0), Vector3(x1, 0, z1), Vector3(x0, 0, z1)])
-	return _flat_mesh(vertices, normals)
-
-
-static func _flat_mesh(vertices: PackedVector3Array, normals: PackedVector3Array) -> ArrayMesh:
-	for n in range(vertices.size()):
-		normals.append(Vector3.UP)
-	var arrays: Array = []
-	arrays.resize(Mesh.ARRAY_MAX)
-	arrays[Mesh.ARRAY_VERTEX] = vertices
-	arrays[Mesh.ARRAY_NORMAL] = normals
-	var mesh := ArrayMesh.new()
-	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-	return mesh
+	return GroundOutlines.build_lane_outline(half_width, length, thickness)

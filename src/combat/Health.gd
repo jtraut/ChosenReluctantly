@@ -9,6 +9,13 @@ signal healed(amount: float)
 signal health_changed(current: float, maximum: float)
 signal died()
 
+## How a damage event is delivered, so feel code can treat them differently:
+## "hit" is a direct hit (full hit-stop and shake), "echo" is hit 2..N of a multi-hit
+## (number and flash only), "dot" is a status tick (number only).
+const KIND_HIT := &"hit"
+const KIND_ECHO := &"echo"
+const KIND_DOT := &"dot"
+
 @export var max_health: float = 20.0
 ## element name ("fire", "water", ...) -> resistance fraction [0, resistance_cap]
 @export var resistances: Dictionary = {}
@@ -16,22 +23,32 @@ signal died()
 
 var current_health: float = 0.0
 var _is_dead: bool = false
+## Kind of the damage event being delivered right now. Valid inside `damaged` handlers
+## (the signal signature stays fixed; handlers read this instead).
+var last_kind: StringName = KIND_HIT
 
 
 func _ready() -> void:
 	current_health = max_health
 
 
-func take_damage(amount: float, damage_type: String = "physical", knockback: Vector3 = Vector3.ZERO) -> void:
+## `source` is whoever dealt it (may be null or freed). If it has a `damage_dealt`
+## signal it is emitted once per event with the HP actually removed (overkill is not
+## counted), so lifesteal and similar listeners cover every damage source.
+func take_damage(amount: float, damage_type: String = "physical", knockback: Vector3 = Vector3.ZERO, source: Node = null, kind: StringName = KIND_HIT) -> void:
 	if _is_dead or amount <= 0.0:
 		return
 	var resistance_fraction: float = resistances.get(damage_type, 0.0)
 	var final_amount := CombatMath.apply_resistance(amount, damage_type, resistance_fraction, resistance_cap)
 	if final_amount <= 0.0:
 		return
+	var removed: float = minf(final_amount, current_health)
 	current_health = maxf(current_health - final_amount, 0.0)
+	last_kind = kind
 	damaged.emit(final_amount, damage_type, knockback)
 	health_changed.emit(current_health, max_health)
+	if source != null and is_instance_valid(source) and source.has_signal(&"damage_dealt"):
+		source.emit_signal(&"damage_dealt", get_parent(), removed, damage_type, kind)
 	if current_health <= 0.0 and not _is_dead:
 		_is_dead = true
 		died.emit()

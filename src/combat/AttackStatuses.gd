@@ -40,7 +40,7 @@ static func roll(rng: RandomNumberGenerator, chance: float) -> bool:
 ## Applies the attack's statuses to each living hurtbox in `hits`. Returns what
 ## landed as [{hurtbox, status_id}] (an immune stun still counts as "landed" here;
 ## the status manager is what refuses it).
-static func apply_on_hit(attack_def: Dictionary, element_id: String, hits: Array[Hurtbox], rng: RandomNumberGenerator) -> Array[Dictionary]:
+static func apply_on_hit(attack_def: Dictionary, element_id: String, hits: Array[Hurtbox], rng: RandomNumberGenerator, source: Node = null) -> Array[Dictionary]:
 	var landed: Array[Dictionary] = []
 	var multiplier: float = float(attack_def.get("status_chance_multiplier", 0.0))
 	var element: Dictionary = element_status(element_id)
@@ -57,10 +57,10 @@ static func apply_on_hit(attack_def: Dictionary, element_id: String, hits: Array
 			if status_def.is_empty() or not roll(rng, float(entry.get("chance", 1.0))):
 				continue
 			var duration: float = float(entry.get("duration", status_def.get("base_duration", 0.0)))
-			hurtbox.status_manager.apply_status(status_id, status_def, duration)
+			hurtbox.status_manager.apply_status(status_id, status_def, duration, source)
 			landed.append({"hurtbox": hurtbox, "status_id": status_id})
 		if not element.is_empty() and roll(rng, element_chance_value):
 			var element_status_id: String = String(element["status_id"])
-			hurtbox.status_manager.apply_status(element_status_id, StatusDatabase.get_status(element_status_id), float(attack_def.get("element_status_duration", 0.0)))
+			hurtbox.status_manager.apply_status(element_status_id, StatusDatabase.get_status(element_status_id), float(attack_def.get("element_status_duration", 0.0)), source)
 			landed.append({"hurtbox": hurtbox, "status_id": element_status_id})
 	return landed

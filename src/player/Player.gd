@@ -5,6 +5,11 @@ class_name Player
 ## Emitted once when Health reaches 0. Main, the run system, and UI listen here.
 signal player_died()
 
+## Emitted once per damage event this player dealt, from any source (hits, projectiles, DoT
+## ticks): the target's root node, HP actually removed, damage type, Health.KIND_*.
+## Lifesteal and any future on-damage-dealt effect listen here.
+signal damage_dealt(target: Node, amount: float, damage_type: String, kind: StringName)
+
 ## Attack timing signals for UI (ids are &"light" / &"heavy"). Forwarded from
 ## the AttackController. started: swing or wind-up begins; fired: damage
 ## moment; ready: cooldown finished; cancelled: wind-up aborted (death).
@@ -56,6 +61,7 @@ var cast_preview: CastPreview = null
 
 @onready var hurtbox: Hurtbox = $Hurtbox
 @onready var health: Health = $Health
+@onready var status_manager: StatusEffectManager = $StatusEffectManager
 @onready var body_mesh: MeshInstance3D = $BodyMesh
 
 var _attack_visuals: Dictionary = {}
@@ -120,6 +126,8 @@ func _ready() -> void:
 	dodge_cooldown = float(dodge_cfg["cooldown"])
 	dodge_block_ticks_after_pause = int(dodge_cfg["block_ticks_after_pause"])
 	card_slots = CardSlotController.new(self, WorldRef.get_world(get_tree()), team, stat_modifiers, owned_pools, card_rng)
+	card_slots.status_rng = status_rng
+	damage_dealt.connect(_on_damage_dealt)
 	_setup_attacks()
 	cast_preview = CastPreview.new()
 	cast_preview.name = "CastPreview"
@@ -289,10 +297,15 @@ func _play_death_animation() -> void:
 		colors.tween_property(standard, "albedo_color", Color(0.25, 0.25, 0.25), duration)
 
 
+func _on_damage_dealt(_target: Node, amount: float, _damage_type: String, _kind: StringName) -> void:
+	if status_manager != null:
+		status_manager.on_damage_dealt(amount)
+
+
 func _on_damaged(amount: float, damage_type: String, knockback: Vector3) -> void:
 	_knockback_velocity = knockback
 	_flash_body(HIT_FLASH_COLOR)
-	Juice.on_hit_landed(global_position, amount, damage_type)
+	Juice.on_hit_landed(global_position, amount, damage_type, health.last_kind)
 
 
 func _flash_body(color: Color) -> void:
@@ -551,7 +564,7 @@ func _on_attack_fired(attack_id: StringName) -> void:
 			"vfx": false,
 		}, context)
 		(_attack_visuals[attack_id] as AttackArcVisual).flash(float(def["flash_duration"]))
-	AttackStatuses.apply_on_hit(def, character_element_id(), context.last_hits, status_rng)
+	AttackStatuses.apply_on_hit(def, character_element_id(), context.last_hits, status_rng, self)
 	if not context.last_hits.is_empty():
 		Juice.hit_stop(float(def["hit_stop_duration"]), float(def["hit_stop_scale"]))
 		Juice.screen_shake(float(def["shake_strength"]), float(def["shake_duration"]))

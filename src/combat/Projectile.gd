@@ -12,6 +12,9 @@ var _damage_type: String = "physical"
 var _speed: float = 12.0
 var _max_range: float = 15.0
 var _exclude_team: String = "neutral"
+## Who fired it, as an object id (the caster may be freed before the shot lands). 0 = none.
+var _source_id: int = 0
+var _hit_kind: StringName = Health.KIND_HIT
 var _traveled: float = 0.0
 var _direction: Vector3 = Vector3.FORWARD
 ## Element look ({"color", "scale"}), set once by set_look(); cached so the
@@ -88,6 +91,13 @@ func hitbox_radius() -> float:
 	return ((get_node("CollisionShape3D") as CollisionShape3D).shape as SphereShape3D).radius
 
 
+## Credit the shot's damage to `source` (feeds its `damage_dealt` signal, e.g. lifesteal).
+## `kind` is the Health.KIND_* of the hit it deals.
+func set_source(source: Node, kind: StringName = Health.KIND_HIT) -> void:
+	_source_id = source.get_instance_id() if source != null else 0
+	_hit_kind = kind
+
+
 func launch(origin: Vector3, direction: Vector3, damage: float, damage_type: String, speed: float, max_range: float, exclude_team: String) -> void:
 	global_position = origin
 	_direction = direction.normalized() if direction.length_squared() > 0.0001 else Vector3.FORWARD
@@ -123,7 +133,7 @@ func _on_area_entered(area: Area3D) -> void:
 	if hurtbox.team == _exclude_team:
 		return
 	var knockback := _direction * knockback_strength if knockback_strength > 0.0 else Vector3.ZERO
-	hurtbox.receive_damage(_damage, _damage_type, knockback)
+	hurtbox.receive_damage(_damage, _damage_type, knockback, instance_from_id(_source_id) as Node if _source_id != 0 else null, _hit_kind)
 	_burst()
 	queue_free()
 

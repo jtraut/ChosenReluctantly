@@ -16,6 +16,9 @@ var spawn_parent: Node
 var caster_team: String
 var stat_modifiers: StatModifiers
 var slots: Dictionary = {}
+## RNG for apply_status chances (the owner's status RNG; Player sets it). Not the shuffle RNG,
+## so deck order never depends on how many status rolls happened.
+var status_rng: RandomNumberGenerator = null
 
 
 ## `rng` (optional) is shared by every slot's shuffles, so a seeded one makes decks repeat.
@@ -96,6 +99,7 @@ func try_swap(slot_type: String) -> bool:
 
 func _cast_card(card_data: Dictionary) -> void:
 	var context := EffectContext.new(caster, spawn_parent, caster_team)
+	context.rng = status_rng
 	var effects: Array = card_data.get("effects", [])
 	for effect: Dictionary in effects:
 		EffectTemplates.execute(effect.get("template", ""), effect.get("params", {}), context)

@@ -15,6 +15,8 @@ signal status_refreshed(status_id: String)
 ## A stun landed on an immune target (boss, or diminishing returns): nothing was applied.
 ## ux can show an "immune" popup from this.
 signal status_resisted(status_id: String)
+## Lifesteal returned HP to the owner (amount actually healed). ux can show a heal cue.
+signal lifesteal_healed(amount: float)
 
 @export var health_path: NodePath
 
@@ -28,6 +30,8 @@ var _active: Dictionary = {}
 ## How many active statuses are stuns; is_stunned() is asked by every enemy every physics
 ## frame, so it reads this instead of walking (and allocating from) _active.values().
 var _stun_count: int = 0
+## Active lifesteal statuses; on_damage_dealt is called on every hit, so it reads this first.
+var _lifesteal_count: int = 0
 ## Reused each frame by _process so it does not build an Array while a status runs.
 var _expired: Array[String] = []
 var _clock: float = 0.0
@@ -47,8 +51,19 @@ class ActiveStatus:
 	var tick_interval: float
 	var time_remaining: float
 	var time_to_next_tick: float
+	## heal_over_time: HP per tick. lifesteal: fraction of damage dealt returned as HP,
+	## and the most HP one damage event may return.
+	var heal_per_tick: float
+	var lifesteal_fraction: float
+	var lifesteal_cap: float
+	## Who applied it (damage_over_time ticks are credited to them), as an object id so a freed
+	## applier cannot be passed around by accident. Latest applier wins on refresh. 0 = none.
+	var source_id: int = 0
 
-	func _init(p_status_id: String, status_def: Dictionary, duration: float) -> void:
+	func source_node() -> Node:
+		return instance_from_id(source_id) as Node if source_id != 0 else null
+
+	func _init(p_status_id: String, status_def: Dictionary, duration: float, p_source: Node = null) -> void:
 		status_id = p_status_id
 		effect_type = status_def.get("effect_type", "damage_over_time")
 		damage_per_tick = status_def.get("damage_per_tick", 0.0)
@@ -56,9 +71,18 @@ class ActiveStatus:
 		tick_interval = maxf(status_def.get("tick_interval", 1.0), 0.05)
 		time_remaining = duration
 		time_to_next_tick = tick_interval
+		heal_per_tick = status_def.get("heal_per_tick", 0.0)
+		lifesteal_fraction = status_def.get("fraction", 0.0)
+		lifesteal_cap = status_def.get("max_heal_per_hit", 0.0)
+		source_id = p_source.get_instance_id() if p_source != null else 0
 
-	func refresh(status_def: Dictionary, duration: float) -> void:
+	func refresh(status_def: Dictionary, duration: float, p_source: Node = null) -> void:
 		damage_per_tick = status_def.get("damage_per_tick", damage_per_tick)
+		heal_per_tick = status_def.get("heal_per_tick", heal_per_tick)
+		lifesteal_fraction = status_def.get("fraction", lifesteal_fraction)
+		lifesteal_cap = status_def.get("max_heal_per_hit", lifesteal_cap)
+		if p_source != null:
+			source_id = p_source.get_instance_id()
 		time_remaining = maxf(time_remaining, duration)
 
 
@@ -69,8 +93,9 @@ func _ready() -> void:
 
 
 ## Applying the same status_id again refreshes its duration (does not stack
-## multiple instances of the same status).
-func apply_status(status_id: String, status_def: Dictionary, duration: float) -> void:
+## multiple instances of the same status). `source` is who applied it; a damage tick
+## is credited to it (so lifesteal covers DoTs). It may be null.
+func apply_status(status_id: String, status_def: Dictionary, duration: float, source: Node = null) -> void:
 	var was_active: bool = _active.has(status_id)
 	if String(status_def.get("effect_type", "")) == "stun":
 		# Rank and diminishing returns decide the real length; 0 means immune, which
@@ -84,12 +109,14 @@ func apply_status(status_id: String, status_def: Dictionary, duration: float) ->
 	if was_active:
 		# A refresh keeps the tick phase (time_to_next_tick) and takes the longer duration,
 		# so recasting before expiry never restarts the tick timer or shortens the status.
-		(_active[status_id] as ActiveStatus).refresh(status_def, duration)
+		(_active[status_id] as ActiveStatus).refresh(status_def, duration, source)
 	else:
-		var created := ActiveStatus.new(status_id, status_def, duration)
+		var created := ActiveStatus.new(status_id, status_def, duration, source)
 		_active[status_id] = created
 		if created.effect_type == "stun":
 			_stun_count += 1
+		elif created.effect_type == "lifesteal":
+			_lifesteal_count += 1
 		status_applied.emit(status_id)
 	# A refresh emits nothing, so check the flame is still alive (it could have
 	# been recycled) and restart it if not.
@@ -135,16 +162,45 @@ func _process(delta: float) -> void:
 		if active.time_remaining <= 0.0:
 			_expired.append(status_id)
 	for status_id: String in _expired:
-		if (_active[status_id] as ActiveStatus).effect_type == "stun":
+		var expired_type: String = (_active[status_id] as ActiveStatus).effect_type
+		if expired_type == "stun":
 			_stun_count -= 1
+		elif expired_type == "lifesteal":
+			_lifesteal_count -= 1
 		_active.erase(status_id)
 		_stop_flame(status_id)
 		status_expired.emit(status_id)
 
 
 func _tick(active: ActiveStatus) -> void:
-	if active.effect_type == "damage_over_time" and health != null:
-		health.take_damage(active.damage_per_tick, active.damage_type)
+	if health == null:
+		return
+	if active.effect_type == "damage_over_time":
+		health.take_damage(active.damage_per_tick, active.damage_type, Vector3.ZERO, active.source_node(), Health.KIND_DOT)
+	elif active.effect_type == "heal_over_time":
+		# A tick at full HP does nothing (no popup, no cue).
+		if not health.is_dead() and health.get_current_health() < health.get_max_health():
+			health.heal(active.heal_per_tick)
+
+
+## The owner dealt `amount` damage (the owner's `damage_dealt` signal, from any source:
+## hits, DoT ticks). Every active lifesteal status returns fraction x amount as HP, at most
+## its per-hit cap, once per damage event. Returns the HP healed (0 when nothing applies).
+func on_damage_dealt(amount: float) -> float:
+	if health == null or health.is_dead() or amount <= 0.0 or _lifesteal_count <= 0:
+		return 0.0
+	var total: float = 0.0
+	for active: ActiveStatus in _active.values():
+		if active.effect_type == "lifesteal":
+			total += minf(amount * active.lifesteal_fraction, active.lifesteal_cap)
+	if total <= 0.0:
+		return 0.0
+	var before: float = health.get_current_health()
+	health.heal(total)
+	var healed: float = health.get_current_health() - before
+	if healed > 0.0:
+		lifesteal_healed.emit(healed)
+	return healed
 
 
 func _vfx_pool() -> EffectPool:

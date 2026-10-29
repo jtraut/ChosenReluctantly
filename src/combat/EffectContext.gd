@@ -9,6 +9,9 @@ var caster: Node3D
 var spawn_parent: Node
 var caster_team: String
 var last_hits: Array[Hurtbox] = []
+## Seeded RNG for chances (apply_status "chance"): the Player's status RNG, so a seeded run
+## repeats. May be null when no effect with a chance below 1 runs.
+var rng: RandomNumberGenerator = null
 
 
 func _init(p_caster: Node3D, p_spawn_parent: Node, p_caster_team: String = "neutral") -> void:

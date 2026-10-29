@@ -5,7 +5,9 @@ extends RefCounted
 ## an invalid entry is treated as missing (get_status returns {}), so a typo
 ## cannot silently turn into a zero-damage or invisible status.
 
-const EFFECT_TYPES: Array[String] = ["damage_over_time", "stun"]
+## damage_over_time: Burn, Bleed. heal_over_time: Regeneration. lifesteal: while active, the
+## owner heals a fraction of the damage it deals (see StatusEffectManager.on_damage_dealt).
+const EFFECT_TYPES: Array[String] = ["damage_over_time", "heal_over_time", "lifesteal", "stun"]
 ## Enemy ranks a stun rule must cover (see EnemyConfig.RANKS, which owns the list).
 const RANKS: Array[String] = ["normal", "elite", "boss"]
 ## Allowed "visual.kind" values (see StatusEffectManager._ensure_flame).
@@ -23,6 +25,14 @@ const NUMBER_RULES_BY_TYPE: Dictionary = {
 	"damage_over_time": {
 		"damage_per_tick": [0.0, 100000.0, true],
 		"tick_interval": [0.0, 3600.0, false],
+	},
+	"heal_over_time": {
+		"heal_per_tick": [0.0, 100000.0, false],
+		"tick_interval": [0.0, 3600.0, false],
+	},
+	"lifesteal": {
+		"fraction": [0.0, 1.0, false],
+		"max_heal_per_hit": [0.0, 100000.0, false],
 	},
 	"stun": {
 		"base_duration": [0.0, 60.0, false],

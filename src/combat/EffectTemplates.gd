@@ -18,6 +18,18 @@ const REQUIRED_PARAMS: Dictionary = {
 	"buff": ["stat", "modifier_type", "value", "duration"],
 }
 
+## Optional params, validated by validate_params (CardSchema calls it). Absent = old behaviour.
+##   hits (whole number 1..MAX_HITS, default 1) and hit_interval (seconds > 0, required when
+##   hits > 1): the effect repeats `hits` times, `hit_interval` apart. Cone and aoe re-query
+##   from the caster's pose at each hit; a projectile fires `hits` shots; apply_status re-rolls
+##   against the latest hit set, so give it the same hits/hit_interval as the damage effect to
+##   roll its chance once per hit.
+##   chance (0..1, default 1), apply_status only: rolled per target on the shared seeded RNG.
+const MULTI_HIT_TEMPLATES: Array[String] = ["cone", "aoe", "projectile", "apply_status"]
+const MAX_HITS := 20
+const MAX_HIT_INTERVAL := 5.0
+const STATUS_TARGETS: Array[String] = ["last_hits", "self"]
+
 const PROJECTILE_SCENE_PATH := "res://scenes/effects/Projectile.tscn"
 ## A shot leaves this far in front of the caster (the cast preview lane starts here too).
 const PROJECTILE_MUZZLE_OFFSET := 0.6
@@ -29,6 +41,76 @@ static func is_known_template(template_id: String) -> bool:
 
 static func required_params(template_id: String) -> Array:
 	return REQUIRED_PARAMS.get(template_id, [])
+
+
+## Problems with the optional params of one effect (empty = fine). Required params are
+## CardSchema's job; this checks types and ranges of the multi-hit and chance fields.
+static func validate_params(template_id: String, params: Dictionary) -> Array[String]:
+	var errors: Array[String] = []
+	var multi: bool = MULTI_HIT_TEMPLATES.has(template_id)
+	for key: String in ["hits", "hit_interval"]:
+		if params.has(key) and not multi:
+			errors.append("'%s' is not supported by the %s template" % [key, template_id])
+	if params.has("chance") and template_id != "apply_status":
+		errors.append("'chance' is only supported by apply_status")
+	var hits: int = 1
+	if multi and params.has("hits"):
+		var value: Variant = params["hits"]
+		if not _is_number(value) or float(value) != floorf(float(value)) or float(value) < 1.0 or float(value) > float(MAX_HITS):
+			errors.append("'hits' must be a whole number from 1 to %d" % MAX_HITS)
+		else:
+			hits = int(value)
+	if multi and params.has("hit_interval"):
+		var interval: Variant = params["hit_interval"]
+		if not _is_number(interval) or is_nan(float(interval)) or float(interval) <= 0.0 or float(interval) > MAX_HIT_INTERVAL:
+			errors.append("'hit_interval' must be a number above 0 and at most %s" % str(MAX_HIT_INTERVAL))
+	elif multi and hits > 1:
+		errors.append("'hit_interval' is required when 'hits' is more than 1")
+	if template_id == "apply_status":
+		if params.has("chance"):
+			var chance: Variant = params["chance"]
+			if not _is_number(chance) or is_nan(float(chance)) or float(chance) < 0.0 or float(chance) > 1.0:
+				errors.append("'chance' must be a number from 0 to 1")
+		if params.has("target") and not (typeof(params["target"]) == TYPE_STRING and STATUS_TARGETS.has(String(params["target"]))):
+			errors.append("'target' must be one of %s" % str(STATUS_TARGETS))
+		if typeof(params.get("status_id")) == TYPE_STRING and not StatusDatabase.has_status(String(params["status_id"])):
+			errors.append("unknown status_id '%s'" % String(params["status_id"]))
+	return errors
+
+
+static func _is_number(value: Variant) -> bool:
+	return typeof(value) == TYPE_FLOAT or typeof(value) == TYPE_INT
+
+
+## Runs `fire(hit_index)` now, then once more per extra hit at hit_interval spacing (absolute
+## delays from the cast, so two effects with the same hits/hit_interval land on the same
+## frame in card order). The timers respect pause and the time scale (hit-stop slows them
+## too). A repeat is dropped if the caster is gone, dead, or out of the tree (death, reload).
+static func _run_hits(params: Dictionary, context: EffectContext, fire: Callable) -> void:
+	fire.call(0)
+	var hits: int = int(params.get("hits", 1))
+	if hits <= 1 or not context.caster.is_inside_tree():
+		return
+	var interval: float = float(params["hit_interval"])
+	var tree: SceneTree = context.caster.get_tree()
+	for index in range(1, hits):
+		tree.create_timer(interval * index, false, true).timeout.connect(func() -> void:
+			if _caster_active(context):
+				fire.call(index))
+
+
+static func _caster_active(context: EffectContext) -> bool:
+	if context.caster == null or not is_instance_valid(context.caster) or not context.caster.is_inside_tree():
+		return false
+	if context.spawn_parent == null or not is_instance_valid(context.spawn_parent):
+		return false
+	if context.caster.has_node("Health") and (context.caster.get_node("Health") as Health).is_dead():
+		return false
+	return true
+
+
+static func _kind_for(index: int) -> StringName:
+	return Health.KIND_HIT if index == 0 else Health.KIND_ECHO
 
 
 static func execute(template_id: String, params: Dictionary, context: EffectContext) -> void:
@@ -52,6 +134,10 @@ static func execute(template_id: String, params: Dictionary, context: EffectCont
 
 
 static func _execute_cone(params: Dictionary, context: EffectContext) -> void:
+	_run_hits(params, context, func(index: int) -> void: _cone_hit(params, context, index))
+
+
+static func _cone_hit(params: Dictionary, context: EffectContext, index: int) -> void:
 	var space_state := context.world().direct_space_state
 	var forward: Vector3 = -context.caster.global_transform.basis.z
 	var hits := MeleeQuery.find_hurtboxes_in_cone(
@@ -68,7 +154,7 @@ static func _execute_cone(params: Dictionary, context: EffectContext) -> void:
 		_play_cone_vfx(params, context, forward)
 	var knockback_strength: float = params.get("knockback_strength", 0.0)
 	for hurtbox: Hurtbox in hits:
-		hurtbox.receive_damage(params["damage"], params["damage_type"], _knockback_from(context.caster.global_position, hurtbox.global_position, knockback_strength))
+		hurtbox.receive_damage(params["damage"], params["damage_type"], _knockback_from(context.caster.global_position, hurtbox.global_position, knockback_strength), context.caster, _kind_for(index))
 
 
 ## Ground wedge through the shared EffectPool, sized by VfxSizing (the same
@@ -87,6 +173,10 @@ static func _play_cone_vfx(params: Dictionary, context: EffectContext, forward: 
 ## Optional code-only param "center" (Vector3) moves the disc off the caster, for
 ## targeted heavies; cards leave it out and the disc is centred on the caster.
 static func _execute_aoe(params: Dictionary, context: EffectContext) -> void:
+	_run_hits(params, context, func(index: int) -> void: _aoe_hit(params, context, index))
+
+
+static func _aoe_hit(params: Dictionary, context: EffectContext, index: int) -> void:
 	var space_state := context.world().direct_space_state
 	var center: Vector3 = params.get("center", context.caster.global_position)
 	var hits := MeleeQuery.find_hurtboxes_in_sphere(
@@ -100,7 +190,7 @@ static func _execute_aoe(params: Dictionary, context: EffectContext) -> void:
 	_play_aoe_vfx(params, context, center)
 	var knockback_strength: float = params.get("knockback_strength", 0.0)
 	for hurtbox: Hurtbox in hits:
-		hurtbox.receive_damage(params["damage"], params["damage_type"], _knockback_from(center, hurtbox.global_position, knockback_strength))
+		hurtbox.receive_damage(params["damage"], params["damage_type"], _knockback_from(center, hurtbox.global_position, knockback_strength), context.caster, _kind_for(index))
 
 
 ## Ground disc through the shared EffectPool, sized exactly to the hit radius.
@@ -129,6 +219,10 @@ static func _knockback_from(origin: Vector3, target_pos: Vector3, strength: floa
 
 
 static func _execute_projectile(params: Dictionary, context: EffectContext) -> void:
+	_run_hits(params, context, func(index: int) -> void: _projectile_shot(params, context, index))
+
+
+static func _projectile_shot(params: Dictionary, context: EffectContext, index: int) -> void:
 	var scene: PackedScene = load(PROJECTILE_SCENE_PATH)
 	var instance: Projectile = scene.instantiate()
 	context.spawn_parent.add_child(instance)
@@ -137,6 +231,7 @@ static func _execute_projectile(params: Dictionary, context: EffectContext) -> v
 	instance.set_hit_radius(params["hit_radius"])
 	instance.set_look(ElementVisuals.visual_for_team(String(params["damage_type"]), context.caster_team))
 	instance.knockback_strength = params.get("knockback_strength", 0.0)
+	instance.set_source(context.caster, _kind_for(index))
 	# Player shots only: an enemy shot's lane would look like a telegraph it is not.
 	if context.caster_team == "player":
 		TemplateVfx.projectile_lane(_vfx_pool(context), origin, forward, float(params["max_range"]), float(params["hit_radius"]),
@@ -182,6 +277,10 @@ static func _execute_heal(params: Dictionary, context: EffectContext) -> void:
 
 
 static func _execute_apply_status(params: Dictionary, context: EffectContext) -> void:
+	_run_hits(params, context, func(_index: int) -> void: _apply_status_once(params, context))
+
+
+static func _apply_status_once(params: Dictionary, context: EffectContext) -> void:
 	var status_id: String = params["status_id"]
 	var duration: float = params["duration"]
 	var status_def := StatusDatabase.get_status(status_id)
@@ -191,9 +290,18 @@ static func _execute_apply_status(params: Dictionary, context: EffectContext) ->
 	var targets: Array[Hurtbox] = context.last_hits
 	if params.get("target", "last_hits") == "self" and context.caster.has_node("Hurtbox"):
 		targets = [context.caster.get_node("Hurtbox") as Hurtbox]
+	var chance: float = float(params.get("chance", 1.0))
+	if chance > 0.0 and chance < 1.0 and context.rng == null:
+		push_error("EffectTemplates: apply_status '%s' has chance %s but the context has no RNG; not applied" % [status_id, str(chance)])
+		return
 	for hurtbox: Hurtbox in targets:
-		if hurtbox.status_manager != null:
-			hurtbox.status_manager.apply_status(status_id, status_def, duration)
+		if not is_instance_valid(hurtbox) or hurtbox.status_manager == null:
+			continue
+		if hurtbox.health != null and hurtbox.health.is_dead():
+			continue
+		# roll() draws nothing at chance 0 or 1, so chance-less cards leave seeded sequences untouched.
+		if AttackStatuses.roll(context.rng, chance):
+			hurtbox.status_manager.apply_status(status_id, status_def, duration, context.caster)
 
 
 ## Counter for unique buff modifier ids (not the clock, so seeded sim runs repeat).

@@ -21,9 +21,9 @@ func _ready() -> void:
 		status_manager = get_node(status_manager_path) as StatusEffectManager
 
 
-func receive_damage(amount: float, damage_type: String = "physical", knockback: Vector3 = Vector3.ZERO) -> void:
+func receive_damage(amount: float, damage_type: String = "physical", knockback: Vector3 = Vector3.ZERO, source: Node = null, kind: StringName = Health.KIND_HIT) -> void:
 	if health != null:
-		health.take_damage(amount, damage_type, knockback)
+		health.take_damage(amount, damage_type, knockback, source, kind)
 
 
 func set_invulnerable(invulnerable: bool) -> void:

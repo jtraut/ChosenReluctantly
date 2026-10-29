@@ -100,8 +100,13 @@ func screen_shake(strength: float, duration: float) -> void:
 
 ## The one call combat code makes on a hit: shows the number, and adds
 ## hit-stop/shake if the hit was "heavy" (per HEAVY_HIT_THRESHOLD).
-func on_hit_landed(world_pos: Vector3, amount: float, damage_type: String) -> void:
+## `kind` (Health.KIND_*): only a direct "hit" gets hit-stop and shake. Follow-up hits of a
+## multi-hit ("echo") and status ticks ("dot") show the number only, so a flurry or a
+## Bleed cannot chain stutters.
+func on_hit_landed(world_pos: Vector3, amount: float, damage_type: String, kind: StringName = Health.KIND_HIT) -> void:
 	spawn_damage_number(world_pos, amount, damage_type)
+	if kind != Health.KIND_HIT:
+		return
 	if amount >= HEAVY_HIT_THRESHOLD:
 		hit_stop(0.06, 0.04)
 		screen_shake(0.25, 0.18)

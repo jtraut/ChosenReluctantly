@@ -8,7 +8,7 @@ extends RefCounted
 ##   (b) single-target DPS while cycling, cast / (slot base cooldown + card
 ##       modifier), strictly above the light's auto DPS (light damage / interval).
 ## Per-cast damage = direct damage of every cone/aoe/projectile effect plus the
-## damage-over-time that lands in sustained use: whole ticks over
+## damage-over-time that lands in sustained use (x its chance, the expected value; direct damage x `hits`): whole ticks over
 ## min(status duration, card cycle time), no resistance. A recast refreshes a
 ## still-running Burn instead of stacking it, so ticks past the next cast are not
 ## extra. A card may opt out with a non-empty `rule_exception` string.
@@ -32,9 +32,12 @@ static func cast_damage(card: Dictionary, statuses: Dictionary, cycle_time: floa
 		var template := String(effect.get("template", ""))
 		var params: Dictionary = effect.get("params", {})
 		if DIRECT_TEMPLATES.has(template):
-			total += float(params.get("damage", 0.0))
+			# A multi-hit effect deals its damage `hits` times (default 1).
+			total += float(params.get("damage", 0.0)) * float(params.get("hits", 1))
 		elif template == "apply_status":
-			total += status_damage(statuses.get(String(params.get("status_id", "")), {}), minf(float(params.get("duration", 0.0)), cycle_time))
+			# Expected value: DoT damage x chance (default 1). A status that re-applies every hit of a
+			# multi-hit only adds one refresh's worth of ticks (a refresh never stacks).
+			total += status_damage(statuses.get(String(params.get("status_id", "")), {}), minf(float(params.get("duration", 0.0)), cycle_time)) * float(params.get("chance", 1.0))
 	return total
 
 

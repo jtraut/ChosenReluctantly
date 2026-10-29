@@ -76,6 +76,8 @@ static func _validate_effect(effect: Variant, index: int, errors: Array[String])
 	for required_param: String in EffectTemplates.required_params(template_id):
 		if not params_dict.has(required_param):
 			errors.append("effects[%d] (%s) missing required param '%s'" % [index, template_id, required_param])
+	for problem: String in EffectTemplates.validate_params(template_id, params_dict):
+		errors.append("effects[%d] (%s): %s" % [index, template_id, problem])
 
 
 static func _require_non_empty_string(card_data: Dictionary, field: String, errors: Array[String]) -> void:

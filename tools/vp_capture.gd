@@ -26,7 +26,9 @@ func _ready() -> void:
 	sub.size = size
 	sub.render_target_update_mode = SubViewport.UPDATE_ALWAYS
 	container.add_child(sub)
-	var main: Node = (load("res://scenes/main/Main.tscn") as PackedScene).instantiate()
+	# --run plays the run (RunMain, the normal launch); without it the endless arena that scenarios use.
+	var scene_path := "res://scenes/main/RunMain.tscn" if OS.get_cmdline_user_args().has("--run") else "res://scenes/main/Main.tscn"
+	var main: Node = (load(scene_path) as PackedScene).instantiate()
 	sub.add_child(main)
 	# The Game Over screen binds to current_scene (null here), so bind it by hand.
 	(main.get_node("GameOverScreen") as GameOverScreen).bind(main)

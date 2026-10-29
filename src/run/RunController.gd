@@ -28,15 +28,20 @@ var _active: bool = false
 var _room_seconds: float = 0.0
 var _healed: float = 0.0
 var _summary: Dictionary = {}
+var _launch_room: int = 0
+var _launch_clear_after: float = -1.0
 
 
 ## Called by Main._ready in run mode, after the scene is wired. Starts the current room.
 func begin(main: Main) -> void:
 	_main = main
 	var config: Dictionary = RunConfig.get_config()
-	if RunSession.current == null:
+	var fresh_launch: bool = RunSession.current == null
+	if fresh_launch:
 		_apply_launch_args()
 	_state = RunSession.ensure_run()
+	if fresh_launch and _launch_room > 0:
+		_state.room_index = _launch_room
 	_rooms = RunGenerator.generate(_state.seed_value, config)
 	if _state.room_index < 0 or _state.room_index >= _rooms.size():
 		push_error("RunController: room index %d is outside the %d-room run; starting a new run" % [_state.room_index, _rooms.size()])
@@ -66,13 +71,26 @@ func begin(main: Main) -> void:
 		spawner.configure_room(RunConfig.room_wave_config(variant, WaveConfig.get_config()), room_spawn_seed(_state.seed_value, _state.room_index))
 		set_process(true)
 	room_started.emit(_state.room_index, _rooms.size(), String(room["type"]))
+	if _launch_clear_after >= 0.0 and fresh_launch:
+		get_tree().create_timer(_launch_clear_after).timeout.connect(_debug_clear_room)
 
 
-## `--run-seed=N` on the command line fixes the first run's seed (tools, repro). Later runs are random again.
+## Launch arguments for tools and repro (after `--`); they apply to the first run of a launch only:
+## `--run-seed=N` fixes the seed, `--run-room=K` starts at room K (1-based), `--run-clear-after=S` wins the room
+## S seconds in (so a screenshot can show the room-cleared prompt or the win screen).
 func _apply_launch_args() -> void:
 	for arg: String in OS.get_cmdline_user_args():
 		if arg.begins_with("--run-seed=") and arg.substr(11).is_valid_int():
 			RunSession.forced_seed = absi(arg.substr(11).to_int()) & RunState.SEED_LIMIT
+		elif arg.begins_with("--run-room=") and arg.substr(11).is_valid_int():
+			_launch_room = maxi(arg.substr(11).to_int() - 1, 0)
+		elif arg.begins_with("--run-clear-after=") and arg.substr(18).is_valid_float():
+			_launch_clear_after = maxf(arg.substr(18).to_float(), 0.0)
+
+
+func _debug_clear_room() -> void:
+	if _active and not _cleared and not _main.player.is_dead():
+		_finish_room(0.0)
 
 
 ## The spawner seed of one room, from the run seed (pure).

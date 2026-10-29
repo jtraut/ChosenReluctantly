@@ -11,6 +11,7 @@ extends Node
 ## errors) are NOT caught here; the wrapper script scans the output for them.
 
 const MAIN_PATH := "res://scenes/main/Main.tscn"
+const RUN_MAIN_PATH := "res://scenes/main/RunMain.tscn"
 const ENEMY_PATH := "res://scenes/enemies/MeleeChaser.tscn"
 const SETTLE_FRAMES := 8
 const BEAT_TIMEOUT_MSEC := 6000
@@ -201,6 +202,8 @@ func _run() -> void:
 	_check_fresh("live reload")
 	snaps.append(_snapshot("after live reload"))
 
+	await _run_mode_soak(snaps)
+
 	# Orphan / object growth: compare last full cycle to the first.
 	if snaps.size() >= 2:
 		var first_cycle: Dictionary = snaps[0]
@@ -216,3 +219,113 @@ func _run() -> void:
 	else:
 		print("RELOAD CYCLE FAILED: %d problem(s)" % _failures.size())
 		get_tree().quit(1)
+
+
+# ---- Milestone 3a: run mode ----
+
+## Replaces the current scene with a fresh RunMain (a normal launch) on top of whatever RunSession holds.
+func _enter_run_main() -> Main:
+	var old: Node = get_tree().current_scene
+	if old != null:
+		get_tree().root.remove_child(old)
+		old.queue_free()
+	var run_main: Node = (load(RUN_MAIN_PATH) as PackedScene).instantiate()
+	get_tree().root.add_child(run_main)
+	get_tree().current_scene = run_main
+	await _frames(SETTLE_FRAMES)
+	return run_main as Main
+
+
+func _check_run_fresh(label: String, expected_room: int) -> void:
+	var main := _main()
+	_check(main != null and main.run_controller != null, "%s: no run controller" % label)
+	if main == null or main.run_controller == null:
+		return
+	_check(main.run_controller.room_number() == expected_room, "%s: room %d, expected %d" % [label, main.run_controller.room_number(), expected_room])
+	_check(not main.is_game_over(), "%s: game over still announced" % label)
+	_check(not main.player.is_dead(), "%s: player dead in a new room" % label)
+	_check(not main.player.health.damage_immune, "%s: damage immunity leaked into a new room" % label)
+	_check(is_equal_approx(Engine.time_scale, 1.0) and not get_tree().paused, "%s: time scale or pause leaked" % label)
+	_check(not Enemy.is_player_body_suppressed(), "%s: pass-through flag leaked" % label)
+	_check(_enemy_count(main) == 0, "%s: %d enemies in a fresh room" % [label, _enemy_count(main)])
+	for slot_type: String in CardSlotController.SLOT_TYPE_ORDER:
+		_check(main.player.card_slots.get_slot(slot_type).cooldown_remaining == 0.0, "%s: slot %s cooldown carried over" % [label, slot_type])
+	var deck: Array[String] = main.player.card_slots.owned_card_ids()
+	deck.sort()
+	var state_deck: Array[String] = RunSession.current.deck.duplicate()
+	state_deck.sort()
+	_check(deck == state_deck, "%s: player deck differs from the RunState deck" % label)
+	_check(SceneSelfCheck.find_problems(main).is_empty(), "%s: SceneSelfCheck problems %s" % [label, str(SceneSelfCheck.find_problems(main))])
+
+
+func _run_mode_soak(snaps: Array[Dictionary]) -> void:
+	print("Run-mode soak: mid-run reload, room transition, death -> Try again, win -> New run")
+	RunSession.clear()
+	var first_state := RunSession.begin_new_run(555)
+	first_state.room_index = 3
+	first_state.max_hp = 100.0
+	first_state.hp = 60.0
+	var main := await _enter_run_main()
+	_check_run_fresh("run start (room 4)", 4)
+	_check(is_equal_approx(main.player.health.current_health, 60.0), "run start: HP %s, expected the carried 60" % main.player.health.current_health)
+	await _arm_zone_and_pass_through(main, "run mid-room")
+
+	# 1. Reload in the middle of a live room: that is "Try again" semantics, a new run with a new seed.
+	var seed_before := RunSession.current.seed_value
+	var mid_id := main.get_instance_id()
+	main.restart_arena()
+	await _frames(SETTLE_FRAMES)
+	_check(_main().get_instance_id() != mid_id and not is_instance_valid(main), "run mid-reload: scene not replaced")
+	_check(RunSession.current != first_state and RunSession.current.seed_value != seed_before, "run mid-reload: the run kept its seed or state")
+	_check(RunSession.current.room_index == 0 and RunSession.current.history.is_empty() and RunSession.current.rejects_remaining == 3, "run mid-reload: state leaked into the new run")
+	_check_run_fresh("run mid-reload", 1)
+	snaps.append(_snapshot("after run mid-reload"))
+
+	# 2. A cleared room continues into the next one with HP and deck carried and cooldowns reset.
+	main = _main()
+	main.player.health.take_damage(9.0, "physical")
+	var hp_carried := main.player.health.current_health
+	main.player.card_slots.try_use("attack_single")
+	main.run_controller._finish_room(0.0)
+	_check(main.run_controller.is_cleared(), "continue: room not cleared")
+	var room_id := main.get_instance_id()
+	main.run_controller.continue_to_next_room()
+	await _frames(SETTLE_FRAMES)
+	_check(_main().get_instance_id() != room_id, "continue: scene not replaced")
+	_check_run_fresh("continue", 2)
+	_check(is_equal_approx(_main().player.health.current_health, hp_carried), "continue: HP %s, expected %s" % [_main().player.health.current_health, hp_carried])
+	snaps.append(_snapshot("after continue"))
+
+	# 3. Death, Game Over, Try again: a new run with a new seed.
+	main = _main()
+	var seed_dead := RunSession.current.seed_value
+	_kill(main)
+	_check(await _wait_game_over(main), "run death: game_over_ready never fired")
+	_check((main.get_node("GameOverScreen") as CanvasLayer).visible, "run death: Game Over screen not visible")
+	_check(RunSession.current.outcome == "lost", "run death: outcome %s" % RunSession.current.outcome)
+	var dead_id := main.get_instance_id()
+	((main.get_node("GameOverScreen") as GameOverScreen).get_node("Root/Center/Column/TryAgain") as Button).pressed.emit()
+	await _frames(SETTLE_FRAMES)
+	_check(_main().get_instance_id() != dead_id, "run death: Try again did not replace the scene")
+	_check(RunSession.current.seed_value != seed_dead and RunSession.current.outcome == "", "run death: Try again kept the old seed or outcome")
+	_check_run_fresh("try again", 1)
+	_check(is_equal_approx(_main().player.health.current_health, _main().player.health.max_health), "try again: HP not full")
+	snaps.append(_snapshot("after try again"))
+
+	# 4. A won run: the last room cleared shows the win screen, "New run" starts a fresh seed.
+	var total: int = RunGenerator.generate(RunSession.current.seed_value, RunConfig.get_config()).size()
+	RunSession.current.room_index = total - 1  # jump to the boss room: _enter_run_main builds its scene from the state
+	var boss_main := await _enter_run_main()
+	_check(boss_main.run_controller.is_last_room(), "win: not the last room")
+	boss_main.run_controller._finish_room(0.0)
+	_check((boss_main.get_node("WinScreen") as CanvasLayer).visible, "win: win screen not visible")
+	_check(RunSession.current.outcome == "won", "win: outcome %s" % RunSession.current.outcome)
+	var win_seed := RunSession.current.seed_value
+	var win_id := boss_main.get_instance_id()
+	((boss_main.get_node("WinScreen") as Node).get_node("Root/Center/Column/Action") as Button).pressed.emit()
+	await _frames(SETTLE_FRAMES)
+	_check(_main().get_instance_id() != win_id, "win: New run did not replace the scene")
+	_check(RunSession.current.seed_value != win_seed and RunSession.current.room_index == 0 and RunSession.current.outcome == "", "win: the new run leaked state")
+	_check_run_fresh("new run after win", 1)
+	snaps.append(_snapshot("after win"))
+	RunSession.clear()

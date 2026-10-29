@@ -11,6 +11,12 @@ extends Node
 ## Runs as a scene (autoloads resolve only that way). Usage:
 ##   powershell -File tools\run_wave_sim.ps1 [-Seed 1] [-Seconds 90] [-Runs 3] [-God]
 ## --god keeps the player alive (9999 HP) so the full wave table and soft locks get exercised.
+##
+## --run (Milestone 3a): plays WHOLE seeded runs through scenes/main/RunMain.tscn instead of the endless arena
+## (--seed is the first run seed, --runs the number of runs). Each run goes room to room until the win, a death or
+## a soft lock (a room that does not end within --room-timeout sim seconds, default 240). Reports per run: rooms
+## reached, the outcome, the room types, crashes and NaN (the same world checks), and qa N3 checks (an empty deck,
+## a stuck cooldown), then the room-type distribution and the per-card pick rates over all runs.
 
 const MAIN_PATH := "res://scenes/main/Main.tscn"
 const STALL_SECONDS := 45.0
@@ -75,6 +81,14 @@ var _climb_frames: int = 0
 var _trace: bool = false
 var _trace_next: float = 1.0
 
+# ---- run mode (3a) ----
+const RUN_MAIN_PATH := "res://scenes/main/RunMain.tscn"
+var _run_mode: bool = false
+var _room_timeout: float = 240.0
+var _run_results: Array[Dictionary] = []
+var _card_casts: Dictionary = {}
+var _slot_stuck_since: Dictionary = {}
+
 
 func _ready() -> void:
 	for arg in OS.get_cmdline_user_args():
@@ -92,6 +106,10 @@ func _ready() -> void:
 			_god = true
 		elif arg == "--trace":
 			_trace = true
+		elif arg == "--run":
+			_run_mode = true
+		elif arg.begins_with("--room-timeout="):
+			_room_timeout = maxf(10.0, float(arg.substr(15)))
 	_run_all.call_deferred()
 
 
@@ -103,7 +121,12 @@ func _run_all() -> void:
 	get_tree().current_scene = placeholder
 	print("Wave sim: %d run(s) x %.0f sim-seconds, seed %d (rerun with --seed=%d), %s, time_scale %.0f" % [_runs, _seconds, _seed, _seed, ("god mode" if _god else "real HP") + (", idle bot" if _idle else ""), _scale])
 	for run_index in range(_runs):
-		await _run_one(_seed + run_index)
+		if _run_mode:
+			await _run_whole(_seed + run_index)
+		else:
+			await _run_one(_seed + run_index)
+	if _run_mode:
+		_run_summary()
 	print("")
 	if _issues.is_empty():
 		print("WAVE SIM OK")
@@ -415,6 +438,8 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 	var want: Vector3 = Vector3.ZERO
 	if nearest_d < 2.3:
 		want = away
+	elif _run_mode and _hunting(enemies) and nearest_d > 2.0:
+		want = -away  # a room needs its last enemies dead: with only a few left (or only shooters) go and get them
 	elif nearest_d > 4.5:
 		want = -away
 	else:
@@ -435,6 +460,17 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 		_press(StringName("slot_%d" % _rng.randi_range(1, 5)))
 	if _rng.randf() < 0.5:
 		_press(&"attack_light")
+
+
+## Run mode only: true when the room is down to 2 enemies or fewer, or only ranged ones, so waiting for them to
+## come never ends. (The endless-arena bot keeps its old behaviour so the seeded baselines do not move.)
+func _hunting(enemies: Array[Enemy]) -> bool:
+	if enemies.size() <= 2:
+		return true
+	for enemy in enemies:
+		if not enemy.is_ranged:
+			return false
+	return true
 
 
 func _hold_still() -> void:
@@ -507,3 +543,218 @@ func _report(run_seed: int, wall_ms: int) -> void:
 	print("    headless frame ms (wall, each frame steps ~%.0fx physics): p50 %.2f p95 %.2f max %.2f | engine process %.2f ms, physics %.2f ms avg per frame | _attack_has_target %.1f us/call with %d enemies alive (%d calls)" % [
 		_scale, _percentile(sorted_times, 0.5), _percentile(sorted_times, 0.95), _percentile(sorted_times, 0.999),
 		_process_ms_sum / maxf(float(_perf_samples), 1.0), _physics_ms_sum / maxf(float(_perf_samples), 1.0), _query_usec, _profiled_alive, _query_calls])
+
+
+# ---- Whole runs (Milestone 3a) ----
+
+func _run_whole(run_seed: int) -> void:
+	_reset_run_state(run_seed)
+	Player.default_rng_seed = run_seed
+	Juice.hit_stop_enabled = false
+	RunSession.clear()
+	RunSession.begin_new_run(run_seed)
+	var rooms: Array[Dictionary] = RunGenerator.generate(run_seed, RunConfig.get_config())
+	if _god:
+		RunSession.current.max_hp = 9999.0
+		RunSession.current.hp = 9999.0
+	var result: Dictionary = {"seed": run_seed, "rooms_total": rooms.size(), "rooms_reached": 0, "outcome": "unfinished", "types": [], "wall_ms": 0, "sim_s": 0.0, "room_s": []}
+	for room: Dictionary in rooms:
+		(result["types"] as Array).append(String(room["type"]))
+	var wall_start := Time.get_ticks_msec()
+	var run_sim_total: float = 0.0
+	get_tree().change_scene_to_packed(load(RUN_MAIN_PATH) as PackedScene)
+	var previous: Node = null
+	var room_index: int = 0
+	while room_index < rooms.size():
+		var main_node: Node = await _await_new_main(previous)
+		if not (main_node is Main) or (main_node as Main).run_controller == null:
+			_fail("run %d: room %d did not load as a run room" % [run_seed, room_index + 1])
+			result["outcome"] = "crash"
+			break
+		_main = main_node as Main
+		_player = _main.player
+		previous = _main
+		result["rooms_reached"] = room_index + 1
+		var controller: RunController = _main.run_controller
+		_begin_run_room(run_seed, rooms[room_index])
+		var room_result: String = await _play_room(run_seed, controller, rooms[room_index])
+		(result["room_s"] as Array).append(snappedf(_sim_time, 0.1))
+		run_sim_total += _sim_time
+		if room_result == "lost":
+			result["outcome"] = "lost"
+			break
+		if room_result != "cleared":
+			result["outcome"] = room_result
+			break
+		if controller.is_last_room():
+			result["outcome"] = "won"
+			break
+		controller.continue_to_next_room()
+		room_index += 1
+	result["wall_ms"] = Time.get_ticks_msec() - wall_start
+	result["sim_s"] = run_sim_total
+	result["hp_end"] = snappedf(RunSession.current.hp, 0.1) if RunSession.current != null else -1.0
+	Engine.time_scale = 1.0
+	_release_all()
+	Player.default_rng_seed = -1
+	Juice.reset()
+	_run_results.append(result)
+	var type_letters: Array[String] = []
+	for t: String in (result["types"] as Array):
+		type_letters.append(t.substr(0, 1))
+	print("  run seed %d: %s | rooms reached %d of %d | sim %.0f s in %.1f s wall | types %s | room seconds %s | HP at last room clear %s" % [
+		run_seed, String(result["outcome"]).to_upper(), int(result["rooms_reached"]), rooms.size(), float(result["sim_s"]), float(result["wall_ms"]) / 1000.0, ",".join(type_letters), str(result["room_s"]), str(result["hp_end"])])
+	# Leave nothing of this run behind for the next one.
+	var last: Node = get_tree().current_scene
+	if last != null and last is Main:
+		get_tree().current_scene = null
+		last.queue_free()
+	RunSession.clear()
+
+
+## Waits for a Main that is not `old` to become the current scene (the scene swap is deferred).
+func _await_new_main(old: Node) -> Node:
+	for i in range(120):
+		await get_tree().process_frame
+		var scene: Node = get_tree().current_scene
+		if scene is Main and scene != old and is_instance_valid(scene) and scene.is_node_ready():
+			await get_tree().process_frame
+			return scene
+	return null
+
+
+## Per-room setup of the sim counters (the world checks and the stall watch are per room).
+func _begin_run_room(run_seed: int, room: Dictionary) -> void:
+	_sim_time = 0.0
+	_clock = 0.0
+	_last_stage_count = 0
+	_last_progress_time = 0.0
+	_kills = 0
+	set_meta("kills_mark", -1)
+	_dodge_cooldown_until = 0.0
+	_heavy_until = 0.0
+	_rng.seed = run_seed * 131 + int(room["index"])
+	_player.card_slots.card_cast.connect(func(_slot_type: String, card_id: String) -> void: _card_casts[card_id] = int(_card_casts.get(card_id, 0)) + 1)
+	_slot_stuck_since.clear()
+	# N3: a deck with an empty slot is a broken run.
+	for slot_type: String in CardSlotController.SLOT_TYPE_ORDER:
+		var slot: CardSlot = _player.card_slots.get_slot(slot_type)
+		if slot == null or not slot.has_cards():
+			_fail("run %d room %d: empty deck for slot '%s'" % [run_seed, int(room["index"]) + 1, slot_type])
+	if _player.card_slots.owned_card_ids().is_empty():
+		_fail("run %d room %d: the deck is empty" % [run_seed, int(room["index"]) + 1])
+	Engine.time_scale = _scale
+
+
+## Plays one room to "cleared", "lost" or "soft_lock".
+func _play_room(run_seed: int, controller: RunController, room: Dictionary) -> String:
+	var cap: int = _main.enemy_spawner.plan.max_alive()
+	var prev_enemies: Dictionary = {}
+	await get_tree().process_frame
+	while true:
+		Engine.time_scale = _scale
+		await get_tree().process_frame
+		var dt: float = _clock - _sim_time
+		_sim_time = _clock
+		for action in _release_next:
+			_release_action(action)
+		_release_next.clear()
+		if _player.is_dead():
+			return "lost"
+		if controller.is_cleared():
+			_release_all()
+			return "cleared"
+		if _sim_time > _room_timeout:
+			_fail("SOFT LOCK: run %d room %d (%s, %s) not finished after %.0f sim seconds (alive %d, plan finished %s)" % [
+				run_seed, int(room["index"]) + 1, room["type"], room["wave_id"], _room_timeout, _main.enemy_spawner.alive_count(), str(_main.enemy_spawner.plan.is_finished())])
+			return "soft_lock"
+		var enemies := _enemies()
+		_check_world(enemies, cap, dt)
+		_check_cooldowns(run_seed, room)
+		_count_kills(enemies, prev_enemies)
+		_bot_step(enemies)
+		if _god:
+			_player.health.heal(9999.0)
+	return "unreachable"
+
+
+## N3: a slot cooldown that is negative, longer than its own duration, or frozen above zero for 10 s.
+func _check_cooldowns(run_seed: int, room: Dictionary) -> void:
+	for slot_key: Variant in _player.card_slots.slots.keys():
+		var slot: CardSlot = _player.card_slots.slots[slot_key]
+		var remaining: float = slot.cooldown_remaining
+		var label: String = "run %d room %d slot %s" % [run_seed, int(room["index"]) + 1, str(slot_key)]
+		if remaining < 0.0 or remaining > 120.0 or remaining > slot.last_cooldown_duration + 0.05:
+			_fail("stuck/invalid cooldown: %s has %.2f s left of a %.2f s cooldown at t=%.1f" % [label, remaining, slot.last_cooldown_duration, _sim_time])
+		if remaining > 0.0:
+			var frozen: Dictionary = _slot_stuck_since.get(slot_key, {})
+			if frozen.is_empty() or not is_equal_approx(float(frozen["value"]), remaining):
+				_slot_stuck_since[slot_key] = {"value": remaining, "since": _sim_time}
+			elif _sim_time - float(frozen["since"]) > 10.0:
+				_fail("stuck cooldown: %s frozen at %.2f s for 10 s (t=%.1f)" % [label, remaining, _sim_time])
+		else:
+			_slot_stuck_since.erase(slot_key)
+
+
+func _run_summary() -> void:
+	print("")
+	var outcomes: Dictionary = {}
+	var reached: Dictionary = {}
+	var played_types: Dictionary = {}
+	for result: Dictionary in _run_results:
+		outcomes[result["outcome"]] = int(outcomes.get(result["outcome"], 0)) + 1
+		reached[int(result["rooms_reached"])] = int(reached.get(int(result["rooms_reached"]), 0)) + 1
+		for t: String in (result["types"] as Array):
+			played_types[t] = int(played_types.get(t, 0)) + 1
+	print("RUN SUMMARY over %d run(s): outcomes %s | rooms reached (rooms: runs) %s" % [_run_results.size(), str(outcomes), str(reached)])
+	print("  room types in the played runs: %s" % str(played_types))
+	# Distribution of the generator alone over many seeds (cheap and pure).
+	var counts: Dictionary = {}
+	var index_counts: Dictionary = {}
+	var seeds: int = 1000
+	for seed_value in range(1, seeds + 1):
+		for room: Dictionary in RunGenerator.generate(seed_value, RunConfig.get_config()):
+			counts[room["type"]] = int(counts.get(room["type"], 0)) + 1
+			var key: String = "%s@%d" % [room["type"], int(room["index"]) + 1]
+			index_counts[key] = int(index_counts.get(key, 0)) + 1
+	var per_run: Dictionary = {}
+	for key: Variant in counts.keys():
+		per_run[key] = snappedf(float(counts[key]) / float(seeds), 0.01)
+	print("  generator, %d seeds: rooms per run by type %s" % [seeds, str(per_run)])
+	for room_type: String in ["elite", "rest"]:
+		var parts: Array[String] = []
+		for index in range(1, 9):
+			var n: int = int(index_counts.get("%s@%d" % [room_type, index], 0))
+			if n > 0:
+				parts.append("room %d: %.0f%%" % [index, 100.0 * float(n) / float(seeds)])
+		print("    %s position: %s" % [room_type, ", ".join(parts)])
+	_print_pick_rates()
+
+
+## N3: per-card pick rates. Within one slot type the bot presses at random, so cards should be cast at similar
+## rates apart from their cooldowns. A card far from its slot mean (under 0.4x or over 2.0x), or never cast, is
+## reported for balance review (a NOTE, not a failure: cooldowns differ on purpose).
+func _print_pick_rates() -> void:
+	var total: int = 0
+	for card_id: Variant in _card_casts.keys():
+		total += int(_card_casts[card_id])
+	print("  card pick rates (%d casts over all runs; OUTLIER = under 0.4x or over 2.0x of its slot mean):" % total)
+	for slot_type: String in CardSlotController.SLOT_TYPE_ORDER:
+		var ids: Array[String] = []
+		for card: Variant in CardDatabase.cards_for_slot_type(slot_type):
+			ids.append(String((card as Dictionary)["id"]))
+		var in_slot: int = 0
+		for card_id: String in ids:
+			in_slot += int(_card_casts.get(card_id, 0))
+		var mean: float = float(in_slot) / maxf(float(ids.size()), 1.0)
+		var row: Array[String] = []
+		for card_id: String in ids:
+			var n: int = int(_card_casts.get(card_id, 0))
+			var ratio: float = float(n) / maxf(mean, 0.0001)
+			var flag: String = ""
+			if n == 0:
+				flag = " <-- NEVER CAST"
+			elif ratio < 0.4 or ratio > 2.0:
+				flag = " <-- OUTLIER"
+			row.append("%s %d (%.2fx)%s" % [card_id, n, ratio, flag])
+		print("    %s: %s" % [slot_type, "; ".join(row)])

@@ -1,6 +1,6 @@
 # Chosen, Reluctantly
 
-A 3D isometric action RPG where your skills are cards: real-time combat driven by typed card slots, each with its own shuffled mini-deck. Built around deep class/element build combinations and roguelite runs with persistent between-run progression. Currently a placeholder-visuals combat prototype (one arena, one Fire Rogue, staged enemy waves). See `docs/GDD.md` for the design and `docs/ROADMAP.md` for status.
+A 3D isometric action RPG where your skills are cards: real-time combat driven by typed card slots, each with its own shuffled mini-deck. Built around deep class/element build combinations and roguelite runs with persistent between-run progression. Currently a placeholder-visuals prototype: one Fire Rogue, a seeded 8-room run (combat, elite, rest, boss), no rewards yet. See `docs/GDD.md` for the design and `docs/ROADMAP.md` for status.
 
 ## Docs
 | File | What it is |
@@ -16,10 +16,10 @@ A 3D isometric action RPG where your skills are cards: real-time combat driven b
 
 ## Repo layout
 ```
-project.godot   Godot project (main scene: scenes/main/Main.tscn)
-src/            GDScript, grouped by system (camera, cards, combat, core, debug, effects, enemies, main, player, ui)
+project.godot   Godot project (main scene: scenes/main/RunMain.tscn, the run; scenes/main/Main.tscn is the endless arena)
+src/            GDScript, grouped by system (camera, cards, combat, core, debug, effects, enemies, main, player, run, ui)
 scenes/         .tscn scenes
-data/           JSON game content and tuning (cards, enemies, waves, statuses, zones, deck rules, player, UI, VFX, scenarios, input bindings)
+data/           JSON game content and tuning (cards, enemies, waves, run structure, statuses, zones, deck rules, player, UI, VFX, scenarios, input bindings)
 assets/         icon and one shader (no art or audio yet)
 addons/gdUnit4  vendored test framework
 tests/          gdUnit4 suites (tests/unit), fixtures, helpers in tests/support (test_input.gd, body_flag.gd, test_caster.gd, test_clock.gd)
@@ -32,8 +32,16 @@ Requires Godot 4.7.x (developed on 4.7.2 stable). Open `project.godot` in the ed
 
 ```
 godot --path . --quit   # smoke-check with no window (verified: exits 0)
-godot --path .          # play it
+godot --path .          # play it: starts a run
 ```
+
+A normal launch starts a **run**: 8 rooms in a row (5 combat, 1 elite, 1 rest, boss last), built from a seed; see `data/run.json` and `docs/ARCHITECTURE.md` section 2. The room indicator at the top shows "Room X of Y - Type" with a shape per type (circle combat, diamond elite, plus rest, star boss). After a room, a "Room cleared" panel offers Continue; winning shows a stats screen; Game Over shows "Reached room X of Y". Try again and New run start a new seed. `scenes/main/Main.tscn` is the endless arena, still used by tests, scenarios, the wave sim and VpCapture without `--run`.
+
+Launch args for the run (after `--`, for example `godot --path . -- --run-seed=7 --run-room=8`; verified with `capture_screenshot.ps1 -Extra`):
+- `--run-seed=N`: seed for the first run only. Later runs (Try again, New run) get random seeds.
+- `--run-room=K`: start at room K (1-based), for the first run only.
+- `--run-clear-after=S`: clear the first room after S seconds (debug).
+- `--scenario=...` always keeps the endless arena, even on a normal launch.
 
 Controls (from `data/input_bindings.json`): WASD move, mouse aim, Space dodge, left click light attack, right click heavy attack, 1-5 use a card slot, Ctrl+1-5 swap a dead card, Esc pause/settings, F3 debug overlay. Holding a slot key shows the card's hit area and releasing casts it (change with the `cast_trigger` setting in the pause screen).
 
@@ -46,7 +54,7 @@ Tests use [gdUnit4](https://github.com/godot-gdunit-labs/gdUnit4), vendored in `
 powershell -File tools\run_tests.ps1
 ```
 
-This runs every suite under `/tests` and exits non-zero on any failure. Last verified run (2026-10-29): 696 test cases in 63 suites, all passed, about 4 minutes. Reports go to `reports/` (gitignored). The script uses the console-subsystem `*_console.exe` build when one sits next to the resolved binary, because PowerShell cannot reliably wait on or read the windowed build, which made failures look like passes (see `docs/DECISIONS.md`).
+This runs every suite under `/tests` and exits non-zero on any failure. Last recorded run (qa, 2026-10-29, `docs/reviews/2026-10-29-m3a-qa.md`): 766 of 766 test cases passed. Not re-run in the 3a docs pass. Reports go to `reports/` (gitignored). The script uses the console-subsystem `*_console.exe` build when one sits next to the resolved binary, because PowerShell cannot reliably wait on or read the windowed build, which made failures look like passes (see `docs/DECISIONS.md`).
 
 > After adding a new global class (`class_name`) the plain headless run may fail with "Could not find type X in current scope". Run `godot --headless --editor --quit --path .` once to rebuild the class cache (verified: exits 0), then re-run the tests.
 
@@ -71,7 +79,7 @@ godot --path . -- --screenshot-count=3 --screenshot-interval=2.0 --screenshot-ou
 godot --path . -- --scenario=hp_bars                                          # play a scenario by hand, no capture
 ```
 
-`capture_screenshot.ps1` parameters: `-After` (seconds, comma list, default "3.0"), `-Out` (default `screenshots\shot.png`), `-Scenario` (default `hp_bars`), `-Resolution` (default `1280x720`). Without `--screenshot-out` the game writes to `user://screenshot.png`.
+`capture_screenshot.ps1` parameters: `-After` (seconds, comma list, default "3.0"), `-Out` (default `screenshots\shot.png`), `-Scenario` (default `hp_bars`; `-Scenario ""` captures the normal run), `-Resolution` (default `1280x720`), `-Extra` (more game args, comma-split, for example `-Extra "--run-seed=7,--run-room=8"`). Without `--screenshot-out` the game writes to `user://screenshot.png`.
 
 Scenarios are defined in `data/scenarios.json` and checked by `src/debug/ScenarioSchema.gd`. Capture times below are known-good starting points; every one of them was run and produced the listed number of shots.
 
@@ -98,7 +106,7 @@ Scenarios are defined in `data/scenarios.json` and checked by `src/debug/Scenari
 | `c1_overlay` | toggles the F3 debug overlay (deck counts) | `"1.5"` |
 
 ### True-size capture (`-TrueSize`)
-The OS window is clamped to the monitor, so `-Resolution` cannot exceed it. `-TrueSize WxH` instead runs the real Main scene inside a SubViewport of exactly that size (`tools/VpCapture.tscn`; Main registers with `src/core/WorldRef.gd` because `current_scene` is null there). Same scenarios and `-After` times as above. It needs a renderer (windowed), like all capture.
+The OS window is clamped to the monitor, so `-Resolution` cannot exceed it. `-TrueSize WxH` instead runs the real Main scene (with `-Scenario ""`, RunMain, via `--run`) inside a SubViewport of exactly that size (`tools/VpCapture.tscn`; Main registers with `src/core/WorldRef.gd` because `current_scene` is null there). Same scenarios and `-After` times as above. It needs a renderer (windowed), like all capture.
 
 ```
 powershell -File tools\capture_screenshot.ps1 -Scenario c1_overlay -After "1.5" -TrueSize 2560x1440 -Out screenshots/t.png   # verified: saved one PNG, exit 0
@@ -121,16 +129,22 @@ powershell -File tools\run_bot_sim.ps1 -Rooms 20 -Seed 3      # verified: prints
 Parameters: `-Rooms` (default 20) and `-Seed` (default 1). The same seed and rooms print the same checksum (verified: two runs of seed 3 both gave 2281795515).
 
 ## Wave density sim
-Plays the real Main scene (spawner, enemies, player) with a bot that uses the real input actions, then reports crashes, NaN, cap violations, enemies or player leaving the arena, stalls, damage taken, alive counts, spacing, and rough CPU frame cost. It runs as a scene (so autoloads exist), headless. `-Seconds` is game time, `-Scale` is `Engine.time_scale` (1 = real time and most faithful, default 3), `-God` keeps the player alive to exercise the whole wave table, `-Idle` is a player who never moves, `-Runs` repeats with consecutive seeds (verified: `-Seed 20 -Runs 2` ran seeds 20 and 21), `-Seed` sets the first seed. The script launches Godot with `--fixed-fps 60` (one 60 Hz physics tick per frame) and turns hit-stop off in the sim; `-Scale` defaults to 1, and a `-Scale` above 1 drops `--fixed-fps` and the run no longer repeats.
+Plays the real Main scene (spawner, enemies, player) with a bot that uses the real input actions, then reports crashes, NaN, cap violations, enemies or player leaving the arena, stalls, damage taken, alive counts, spacing, and rough CPU frame cost. It runs as a scene (so autoloads exist), headless. `-Seconds` is game time, `-Scale` is `Engine.time_scale` (1 = real time and most faithful, default 3), `-God` keeps the player alive to exercise the whole wave table, `-Idle` is a player who never moves, `-Runs` repeats with consecutive seeds (verified: `-Seed 20 -Runs 2` ran seeds 20 and 21), `-Seed` sets the first seed. `-Run` plays whole seeded runs through `RunMain` instead (see below). The script launches Godot with `--fixed-fps 60` (one 60 Hz physics tick per frame) and turns hit-stop off in the sim; `-Scale` defaults to 1, and a `-Scale` above 1 drops `--fixed-fps` and the run no longer repeats.
 
 ```
 powershell -File tools\run_wave_sim.ps1 -Seed 1 -Seconds 150 -Runs 3
 powershell -File tools\run_wave_sim.ps1 -Seed 1 -Seconds 120 -God
 powershell -File tools\run_wave_sim.ps1 -Seed 20 -Seconds 60 -Runs 3 -Idle -Scale 1
 ```
+```
+powershell -File tools
+un_wave_sim.ps1 -Run -Seed 1 -Runs 2    # whole runs; verified: both runs WON, prints WAVE SIM OK
+```
+`-Run`: `-Seed` is the first run seed, `-Runs` the number of runs, `-RoomTimeout` (sim seconds, default 240, minimum 10) is how long a room may last before it counts as a soft lock. It reports per room time and lowest HP, and fails on a soft lock, an empty deck, a stuck cooldown or a card pick-rate outlier. A small `-RoomTimeout` (60 was tried) flags the boss room as a soft lock; that is the check working, not a bug.
+
 All forms run and end with `WAVE SIM OK` (verified with shorter `-Seconds`; the 150 s and 120 s forms use the same code path). The wave table and the simultaneous-enemy cap live in `data/waves.json` (validated by `src/enemies/WaveConfig.gd`; enemy ids and scenes in `data/enemies.json`). Headless frame times exclude rendering.
 
-**Seeds repeat exactly** on the same machine and build. The same `-Seed` (at `-Scale` 1) gives the same `result:` line: HP lost, kills, casts and a `state_hash` of final positions (verified: two runs of `-Seed 1 -Seconds 30` were identical). A windowed run, a `-Scale` above 1, or another machine or Godot version can differ. Besides the `result:` line the sim prints a `pinned:` line (frames where the bot was commanded to move but the player barely moved, and the longest stretch) and a `climb:` line (the player's maximum feet height), which watch for solid enemies pinning or lifting the player.
+**Seeds repeat exactly** on the same machine and build. The same `-Seed` (at `-Scale` 1) gives the same `result:` line: HP lost, kills, casts and a `state_hash` of final positions (verified: two runs of `-Seed 1 -Seconds 30` were identical, `state_hash` 2792856473; the default 90 s run of seed 1 gives 4120250839). A windowed run, a `-Scale` above 1, or another machine or Godot version can differ. Besides the `result:` line the sim prints a `pinned:` line (frames where the bot was commanded to move but the player barely moved, and the longest stretch) and a `climb:` line (the player's maximum feet height), which watch for solid enemies pinning or lifting the player.
 
 ## Death / restart soak (real scene reload)
 Kills the player in the real Main scene, waits for `game_over_ready`, calls `restart_arena()` (twice, on purpose), repeats, and also restarts mid slow-mo. It also places a Fire Wall zone and a Shadow Step pass-through grant, and reloads with the buff live, then checks the zone manager, the static pass-through flag and the enemy mask. It checks HP, `Engine.time_scale`, enemy count, wave timer, Game Over screen state and orphan/object/node counts, and fails on any engine ERROR/WARNING line.
@@ -141,4 +155,4 @@ powershell -File tools\run_reload_cycle.ps1 -Cycles 5     # verified: prints "RE
 It runs `tools/ReloadCycle.tscn` headless; it must be a scene so autoloads resolve. Re-run it whenever `Main`, `Juice`, `Player` or the autoloads change.
 
 ## Last verification
-Run on 2026-10-29 on Windows with Godot 4.7.2 (console build via `GODOT_BIN`): the full test suite (696/696), `godot --path . --quit`, `run_bot_sim.ps1 -Rooms 20 -Seed 3` (twice), `run_wave_sim.ps1 -Seed 1 -Seconds 30` (twice), `run_reload_cycle.ps1 -Cycles 5`, `capture_screenshot.ps1` for every `c1_*` scenario at its listed times (each saved the expected number of shots; `c1_overlay` only via `-TrueSize`), `-TrueSize 2560x1440`, `VpCapture.tscn` at 1920x1080, and `SlotStateCapture.tscn`. Earlier-verified forms (the older scenario rows, the `-Seed 20 -Runs 2`, `-God` and `-Idle` wave-sim forms, and the 150 s and 120 s durations) were not re-run in this pass. Not run interactively: plain `godot --path .` and `-- --scenario=hp_bars` without capture (they open a window and wait for a person).
+3a docs pass, 2026-10-29, Windows, Godot 4.7.2 (console build via `GODOT_BIN`): `godot --path . --quit` (exit 0); `run_wave_sim.ps1 -Seed 1 -Seconds 30` (twice, hash 2792856473) and the default 90 s run (hash 4120250839); `run_wave_sim.ps1 -Run -Seed 1 -Runs 2` (both won); `-Run -RoomTimeout 60` (reports the boss-room soft lock, as expected); `capture_screenshot.ps1 -Scenario "" -Extra "--run-seed=7,--run-room=8"` and `-Scenario "" -TrueSize 1920x1080` (each saved a PNG, exit 0). Not re-run in this pass: the full test suite (766/766 per the qa report), the bot sim, the reload cycle, the scenario captures and `SlotStateCapture`. Earlier passes (2026-10-29, C1) verified those. Not run interactively: plain `godot --path .` and a scenario without capture (they open a window and wait for a person).

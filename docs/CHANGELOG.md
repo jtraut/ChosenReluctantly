@@ -2,7 +2,37 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-10-29 (Content slice C1: deck rules, nine Fire Rogue cards, solid enemies, status cues)
+## 2026-10-29 (Milestone 3a run structure; content slice C1: deck rules, nine Fire Rogue cards, solid enemies, status cues)
+
+### Milestone 3a: run structure
+
+Commits a7731e2..013e7d7. qa passed it at 766 of 766 tests (a6a5d68; review in `docs/reviews/2026-10-29-m3a-qa.md`). Playtest found no blocker (013e7d7; `docs/playtests/2026-10-29-m3a-run-structure.md`).
+
+#### Added
+- **A normal launch is now a run.** The project's main scene is `scenes/main/RunMain.tscn`: 8 rooms in a straight line (5 combat, 1 elite, 1 rest, boss last), built from a seed. The elite lands in rooms 4-7 and the rest in rooms 3-7, and the first room is always combat. `scenes/main/Main.tscn` stays the endless arena for tests, scenarios, the wave sim and VpCapture. A `--scenario` launch keeps the arena. (a7731e2)
+- **Run state across rooms.** `RunState` holds seed, room index, HP, deck card ids, rejects (3 per run), and room history; it serializes to JSON. Each room is a fresh scene, so cooldowns, the shuffle bag, zones, statuses and timers reset per room while HP and the deck carry over. A room won makes the player damage-immune until Continue, so a shot still in the air can't kill a winner. (a7731e2)
+- **Run data in `data/run.json`:** room composition and placement rules, rest heal fraction, rejects per run, the starting deck (the whole current pool), elite and boss tiers, finite wave lists per room type, and the UI wording. The wave schema gained `finite` (the table ends instead of looping) and a per-spawn `tier`. (a7731e2)
+- **Elites and a placeholder boss.** Elite: HP x2.5. Boss: HP x7, cannot be stunned (3c replaces this boss). Both: resistance becomes the larger of the enemy's own and 25%, capped at 50%. A flat diamond (elite) or star (boss) sign floats above the HP bar. The shape carries the rank, and the body is not bigger. (a7731e2, 8b54b25, c560d83)
+- **Rest room.** Heals 30% of max HP and ends at once. (a7731e2)
+- **Run UI (ux).** A "Room X of Y - Type" indicator at the top centre with a shape per type: circle combat, diamond elite, plus rest, star boss. A "Room cleared" panel with Continue shows HP and time ("Healed +N" on a rest room). A win screen shows rooms cleared, total time and HP left, with New run. The panel is generic (`show_content`, `options_box`), so the 3b reward screen can reuse it. (0f4e317)
+- **Game Over in a run** adds "Reached room X of Y." Try again and New run both start a new seed. (0f4e317)
+- **Launch args:** `--run-seed=N` (first run only), `--run-room=K` (1-based), `--run-clear-after=S`. (f47ae2e, f00ee65)
+- **Tooling:** `run_wave_sim.ps1 -Run` plays whole seeded runs and checks for soft locks (`-RoomTimeout`), an empty deck, a stuck cooldown, and card pick-rate outliers; it reports lowest HP per room and the room-type distribution over 1000 seeds. `capture_screenshot.ps1` gained `-Extra` (comma list of game args), `-Scenario ""` to capture the normal run, and `-TrueSize` with `-Scenario ""` hosts RunMain in VpCapture. The reload soak also covers run mode. (f47ae2e, f00ee65, c560d83)
+- 70 more test cases: 696 at the end of C1, 766 at the qa pass. (a7731e2..a6a5d68)
+
+#### Changed
+- **Elite and boss body scale** is 1.0 in `data/run.json` (the marker is the cue; hit shapes keep their data size). (c560d83)
+- **Game-lead calls** (not director decisions, logged in `docs/DECISIONS.md`): linear rooms, 8 rooms, rest heals 30%, elite resistance is the larger of own and 25% (cap 50%).
+- **Run stats on Game Over (D1)** were deferred "until the run structure"; a minimal one-line version shipped: "Reached room X of Y." (0f4e317)
+
+#### Fixed
+- **qa N5:** `Main` and `GameOverScreen` no longer depend on `current_scene`, so scene transitions work inside VpCapture.
+- **Flaky `slice6_qa_test` crowd test:** tolerance 1e-6 -> 0.01 m. The drift (about 1e-4 m) comes from physics-engine sensitivity to allocation history, not from non-deterministic game code. (a6a5d68)
+
+#### Docs and process
+- Docs pass for 3a: README, ARCHITECTURE and this file. No new third-party assets, so `docs/ASSETS.md` is unchanged.
+
+### Content slice C1
 
 Slice C1 ran 2026-10-28 to 2026-10-29 (commits 2a985e4..d94676a; C1-a, C1-b1 and C1-t were built on 10-28). qa passed it at 696 of 696 tests (76bca75). The tooling task (true-size capture, seeded sims, dodge values in data) is listed under 2026-10-28.
 

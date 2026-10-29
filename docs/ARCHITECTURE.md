@@ -1,12 +1,12 @@
 # Architecture
 
-A map of the code for a new agent. Read this first, then open the files it links. Every path below exists; line-level detail is left to the code. Numbers that change (balance, timings) live in `data/`, not here. Engine: Godot 4.7.2, statically typed GDScript. Last verified against HEAD d94676a (2026-10-29).
+A map of the code for a new agent. Read this first, then open the files it links. Every path below exists; line-level detail is left to the code. Numbers that change (balance, timings) live in `data/`, not here. Engine: Godot 4.7.2, statically typed GDScript. Last verified against HEAD 013e7d7 (2026-10-29, after Milestone 3a).
 
 ## 1. Repo layout
 
 | Path | What lives there |
 |---|---|
-| `project.godot` | Main scene `scenes/main/Main.tscn`, four autoloads, physics layer names, gdUnit4 plugin enabled |
+| `project.godot` | Main scene `scenes/main/RunMain.tscn`, four autoloads, physics layer names, gdUnit4 plugin enabled |
 | `src/camera/` | `CameraRig` (follow + shake) |
 | `src/cards/` | Card data and slots: `CardDatabase`, `CardSchema`, `CardSlot`, `CardSlotController`, held-key cast: `CastInput`, `CastPreview`, `CastPreviewShapes`, `CastPreviewConfig`; deck rules: `DeckRules`, `DeckCheck` |
 | `src/combat/` | Damage and effects: `Health`, `Hurtbox`, `EffectTemplates`, `EffectContext`, `Projectile`, `MeleeQuery`, `CombatMath`, status system (`StatusDatabase`, `StatusEffectManager`, `StunRules`), attack data (`AttackDatabase`, `AttackStatuses`), `CardDamageRule`, `AoeTargeting`, `CollisionLayers`, zones (`ZoneManager`, `ZoneShape`, `ZoneConfig`), `TrainingDummy` (debug only) |
@@ -15,9 +15,10 @@ A map of the code for a new agent. Read this first, then open the files it links
 | `src/effects/` | Visual effects: `EffectPool`, `PooledEffect`, `TemplateVfx`, `ElementVisuals`, `VfxConfig`, `VfxSizing`, `DamageNumber`, `GroundOutlines` (ground ring/outline builders shared by the preview and zones) |
 | `src/enemies/` | `Enemy`, `EnemySpawner`, `WaveConfig`, `WavePlan`, `EnemyConfig` |
 | `src/main/` | `Main` (wiring, death beat, restart), `SceneSelfCheck` |
+| `src/run/` | Run structure (3a): `RunConfig` (loads and validates `data/run.json`), `RunGenerator` (seed to room list), `RunState` (what carries across rooms), `RunSession` (static holder), `RunController` (one room's flow), `TierRules` (elite/boss maths) |
 | `src/player/` | `Player`, `PlayerConfig` (`data/player.json`), `AttackController`, `AttackArcVisual`, `PlayerCues` (ghost, heal numbers, Leech drain), `PlayerOcclusionCue` (+ its `.gdshader`) |
-| `src/ui/` | `Hud`, `HudLayout`, `CardSlotWidget`, `AttackMeter`, `EnemyHpBar`, `GameOverScreen`, `SettingsScreen`, `AimIndicator`, `DebugOverlay`, `TextFit`, `UiConfig` |
-| `scenes/` | `main/Main.tscn`, `player/`, `camera/`, `enemies/` (3 types), `effects/` (Projectile, DamageNumber), `ui/`, `debug/TrainingDummy.tscn` |
+| `src/ui/` | `Hud`, `HudLayout`, `CardSlotWidget`, `AttackMeter`, `EnemyHpBar`, `GameOverScreen`, `SettingsScreen`, run UI: `RunHud`, `RunPromptScreen`, `RunPromptRows`, `RunIcons`, `RunTypeIcon`, `TierMarker`, `AimIndicator`, `DebugOverlay`, `TextFit`, `UiConfig` |
+| `scenes/` | `main/RunMain.tscn` (Main plus run nodes), `main/Main.tscn` (endless arena), `player/`, `camera/`, `enemies/` (3 types), `effects/` (Projectile, DamageNumber), `ui/`, `debug/TrainingDummy.tscn` |
 | `data/` | All content and tuning as JSON (section 6) |
 | `assets/` | `icon.svg`, `shaders/enemy_hp_bar.gdshader` only. No art or audio |
 | `tests/` | gdUnit4 suites in `tests/unit/`, JSON fixtures in `tests/fixtures/`, helpers in `tests/support/` (`test_input.gd`, `body_flag.gd`, `test_caster.gd`, `test_clock.gd`) |
@@ -28,22 +29,35 @@ Rule from `CLAUDE.md`: content is data, not code. A new card, enemy or status sh
 
 ## 2. Scene and run flow
 
-`Main.tscn` is the only gameplay scene. Its children: `WorldEnvironment`, `Sun`, `Floor` (CSG box), `ArenaWalls` (invisible static walls), `Player`, `CameraRig`, `EnemySpawner`, `Hud`, `GameOverScreen`, `SettingsScreen`, `DebugOverlay`.
+There are two entry scenes:
+- `scenes/main/RunMain.tscn` is the project's main scene. It is an inherited instance of `Main.tscn` with `run_mode = true` plus `RunController`, `RunHud`, `RoomClearedScreen` and `WinScreen` (both `RunPromptScreen`, the second with `kind = "win"`).
+- `scenes/main/Main.tscn` is the endless arena (looping waves from `data/waves.json`, no rooms). Tests, `wave_sim` (without `--run`), `ReloadCycle` and scenarios use it.
+
+`Main.tscn` children: `WorldEnvironment`, `Sun`, `Floor` (CSG box), `ArenaWalls` (invisible static walls), `Player`, `CameraRig`, `EnemySpawner`, `Hud`, `GameOverScreen`, `SettingsScreen`, `DebugOverlay`.
 
 `Main._ready` ([src/main/Main.gd](../src/main/Main.gd)):
 1. Hands the player to the camera rig, the spawner, the HUD and the debug overlay; gives the player the camera for aiming.
 2. Attaches `AimIndicator`, `PlayerOcclusionCue` and `PlayerCues` to the player; registers itself with `WorldRef` (`_enter_tree`).
-3. Runs `SceneSelfCheck.find_problems` and `push_error`s if the world would render empty (no camera, camera can't see the player, etc.).
-4. If user args follow `--`, sets up scenario and screenshot capture (`Main._setup_debug_capture`).
+3. `_setup_run_mode`: if `uses_run_mode(run_mode, user args)` (pure static: `run_mode` is true and there is no `--scenario` arg) and `data/run.json` is valid, calls `RunController.begin(self)`. Otherwise it removes the run nodes (`RunController`, `RunHud`, `RoomClearedScreen`, `WinScreen`) so the scene is the endless arena. An invalid `run.json` logs an error and falls back to the arena.
+4. `_check_starting_deck`, then `SceneSelfCheck.find_problems` (`push_error`s if the world would render empty).
+5. If user args follow `--`, sets up scenario and screenshot capture (`Main._setup_debug_capture`).
 
-Run start: `Main` checks the deck rules (`DeckRules.run_start_block_message`). A short deck is blocked: `push_error`, the spawner is switched off, and `Main.run_start_blocked(message)` is emitted. The shipped deck passes.
+Deck check: `Main` checks the deck rules (`DeckRules.run_start_block_message`). A short deck is blocked: `push_error`, the spawner is switched off, and `Main.run_start_blocked(message)` is emitted. The shipped deck passes.
 
-Run loop today: one arena, no rooms, no rewards, no run structure yet (Milestone 3a is next per `docs/STATE.md`). The player fights staged waves until dead.
+### Run flow (Milestone 3a)
+- **Config:** `data/run.json` (section 6) is loaded and validated by `RunConfig`. `RunGenerator.generate(seed, config)` returns the room list (each entry has `index`, `type`, `wave_id`) from a seeded shuffle that follows `composition` and `placement` (boss last, first room combat, elite and rest inside index ranges). The same seed gives the same rooms.
+- **State:** `RunState` holds seed, room index, HP and max HP, deck ids, rejects left, history and outcome. It serializes with `to_json`/`from_json`. `RunSession.current` (a static, not an autoload) keeps it between scenes; `RunSession.begin_new_run` is the only way to start a fresh one (it consumes `forced_seed` once).
+- **A room:** `RunController.begin` puts the state's HP and deck on the player, builds the room's finite wave table (`RunConfig.room_wave_config`), configures the spawner with it and a seed from `room_spawn_seed(run_seed, room_index)`, and emits `room_started`. `_process` watches `EnemySpawner.room_cleared()`. A rest room heals `rest_heal_fraction` of max HP and ends at once (spawner off). `_finish_room` sets `Health.damage_immune` on the player (so a projectile in flight can't kill a winner), records history, and emits `room_cleared` or, on the last room, `run_won`.
+- **Next room:** the Continue button calls `RunController.continue_to_next_room`, which bumps the index and calls `Main.swap_to_fresh_scene`. A fresh scene resets cooldowns, shuffle bags, zones, statuses and timers; the `RunState` carries HP and the deck.
+- **Death:** `Player.player_died` goes through the normal death beat to Game Over, which shows "Reached room X of Y". Try again and New run both call `Main.restart_arena`, which in run mode does `RunSession.begin_new_run()` (new seed) and swaps the scene.
+- **Launch args** (`RunController._apply_launch_args`, first scene of a launch only): `--run-seed=N`, `--run-room=K` (1-based), `--run-clear-after=S` (debug: clears that room after S seconds).
+- **Tiers:** a wave spawn can carry `tier` (`elite` or `boss`). `EnemySpawner` calls `Enemy.apply_tier(tier_id, cfg)` with the `data/run.json` `tiers` entry: HP multiplier, resistance via `TierRules.resistance` (the larger of own and the floor, capped), rank, and a `TierMarker`. The boss in 3a is a placeholder (3c replaces it); it is unstunnable.
+- **UI:** `RunHud` shows "Room X of Y - Type" with a `RunTypeIcon` (shapes from `RunIcons`: circle combat, diamond elite, plus rest, star boss; placed by `HudLayout.room_indicator_rect`). `RunPromptScreen` is a generic panel (icon, title, subtitle, flavour line, label/value rows, `options_box`, one action button). To reuse it (3b rewards), fill `options_box` and call `show_content(dict)`; the text rows come from `RunPromptRows`. `TierMarker` is the flat diamond/star sign above an elite's or boss's HP bar (shape, not colour, and no bigger body). Look and sizes: `data/ui.json` `run_ui`; words: `data/run.json` `ui`.
 
 Death and restart:
 - `Player.player_died` (from `Health.died`) -> `Main._on_player_died` starts slow-mo and shake via `Juice`. The beat is timed in `Main._process` from `Time.get_ticks_usec()` (paused time excluded), because Godot's ignore_time_scale timer overcounts the frame where the time scale changes.
 - When the beat ends `Main` calls `Main._announce_game_over`, which emits `Main.game_over_ready` once. `GameOverScreen` listens, shows itself, and on "Try again" calls `Main.restart_arena()`.
-- `restart_arena()` resets `Juice` and `GamePause`, unpauses, and calls `get_tree().reload_current_scene()`. The reload resets everything that lives in the scene (HP, decks, cooldowns, enemies, waves, statuses). Autoload state does not reset on its own, which is why `Juice.reset()` and `GamePause.reset()` are called first.
+- `restart_arena()` (in run mode it starts a new run first) calls `swap_to_fresh_scene()`, which resets `Juice` and `GamePause`, unpauses, and replaces the scene with a fresh copy of itself in the same place in the tree (deferred; it does not rely on `current_scene`, so it works inside VpCapture). If the scene has no parent or file path it falls back to `reload_current_scene()`. The fresh scene resets everything that lives in the scene (HP, decks, cooldowns, enemies, waves, statuses). Autoload state does not reset on its own, which is why `Juice.reset()` and `GamePause.reset()` are called first.
 
 ## 3. Autoloads (`project.godot`)
 
@@ -72,7 +86,7 @@ Fixed-angle isometric rig. Root follows `target`; child `Camera3D` keeps a fixed
 
 ### Combat and damage
 - `Hurtbox` (Area3D) has a `team` and paths to `Health` and `StatusEffectManager`. Attacks find hurtboxes by physics query (`MeleeQuery.find_hurtboxes_in_cone / in_sphere`), skipping the caster's own team (no friendly fire).
-- `Health.take_damage(amount, type, knockback)` applies the resistance fraction (`CombatMath.apply_resistance`, capped), lowers HP, emits `damaged`, `health_changed`, and `died` once.
+- `Health.take_damage(amount, type, knockback)` applies the resistance fraction (`CombatMath.apply_resistance`, capped), lowers HP (ignored while `Health.damage_immune` is true; the run sets it on a won room), emits `damaged`, `health_changed`, and `died` once.
 - `Player._on_damaged` and `Enemy._on_damaged` call `Juice.on_hit_landed` (damage number; hit-stop and shake **only for `Health.KIND_HIT`**, not `KIND_DOT` ticks or `KIND_ECHO` follow-up hits) and apply their own hit flash and knockback.
 - `Health.take_damage(..., source, kind)` emits the source's `damage_dealt(target, removed, damage_type, kind)` (HP actually removed, after resistance). Leech listens to it through `StatusEffectManager.on_damage_dealt`.
 - Layers: `CollisionLayers` (World 1, Player 2, Enemy 4, Hurtbox 8, Hitbox 16), named in `project.godot`. Player and enemy bodies are solid to each other (see Player).
@@ -110,7 +124,7 @@ A `StatusEffectManager` node on every body that can be affected. `StatusDatabase
 ### Enemies and spawner
 - `Enemy` ([src/enemies/Enemy.gd](../src/enemies/Enemy.gd)) is one script for all types. `_apply_stats` overrides the scene's exported values with `data/enemies.json` `enemies.<id>.stats`. It chases, telegraphs (ground wedge or shot lane), then attacks through `EffectTemplates` (cone for melee, projectile for ranged). Separation steering uses a static roster and `spawn_index`. Signals: `stunned`, `stun_ended`, `stun_refreshed`.
 - Types: `melee_chaser`, `ranged_shooter`, `fire_resistant_golem` (scenes in `scenes/enemies/`, ids and rank in `data/enemies.json`).
-- `EnemySpawner` runs a `WavePlan` built from `WaveConfig` (`data/waves.json`): staged groups, a delay per stage, a `max_alive` cap, ring spawn positions, spawn attack grace. Signal `enemy_spawned(enemy, alive)`. `set_seed` seeds spawn choices.
+- `EnemySpawner` runs a `WavePlan` built from `WaveConfig` (`data/waves.json`): staged groups, a delay per stage, a `max_alive` cap, ring spawn positions, spawn attack grace. A table with `finite: true` ends after its last stage (endless ones loop), and `EnemySpawner.room_cleared()` is true when a finite plan is done and nothing is alive. A queued spawn is the enemy id, or `"<tier>|<enemy id>"` for an elite or boss (`WavePlan.TIER_SEPARATOR`), which keeps the shuffle's random calls identical to the plain-id case. Signal `enemy_spawned(enemy, alive)`. `set_seed` seeds spawn choices.
 - `EnemyConfig` validates `data/enemies.json` (call `validate_stats`; `Enemy` reads via `stats_for`, `rank_for`, `scene_path_for`).
 
 ### Effects and VFX
@@ -119,7 +133,7 @@ A `StatusEffectManager` node on every body that can be affected. `StatusDatabase
 ### HUD and UI
 - `Hud` polls the player each frame (no signals): five `CardSlotWidget`s, a health bar with "HP x / y", `AttackMeter`s for light and heavy. Layout comes from `data/ui.json` `hud` through `HudLayout`/`TextFit`.
 - `EnemyHpBar` is a billboard per enemy using `assets/shaders/enemy_hp_bar.gdshader`; visibility mode is `data/ui.json` `hp_bars.visibility_mode`.
-- `GameOverScreen` (listens to `Main.game_over_ready`), `SettingsScreen` (Esc; one setting; calls `GamePause`), `DebugOverlay` (F3), `AimIndicator`.
+- `GameOverScreen` (listens to `Main.game_over_ready`; shows the run line in run mode), the run UI (see Run flow), `SettingsScreen` (Esc; one setting; calls `GamePause`), `DebugOverlay` (F3), `AimIndicator`.
 - All UI numbers, colors and strings go through `UiConfig` (`data/ui.json`), which validates the `hp_bars`, `death_beat`, `aim`, `popups` and `damage_numbers` blocks on load (others are read as is: unverified).
 
 ## 5. Data flow: card key to applied effect
@@ -150,9 +164,10 @@ All in `data/`. Schema/validation lives in code; the file is not self-describing
 | `player.json` | `dodge {speed, duration, cooldown, block_ticks_after_pause}`, `body {collide_with_enemies}` | `PlayerConfig` |
 | `attacks.json` | `light`, and `heavy` keyed by class id | `AttackDatabase` |
 | `enemies.json` | `attack_shapes`, `separation`, `enemies.<id> {rank, scene, stats}` | `EnemyConfig` |
-| `waves.json` | `max_alive`, delays, spawn distances, `stages[]` | `WaveConfig`, `WavePlan` |
+| `waves.json` | `max_alive`, delays, spawn distances, `stages[]`; optional `finite`, and per spawn an optional `tier` (`elite`/`boss`) | `WaveConfig`, `WavePlan` |
+| `run.json` | Run structure: `composition`, `placement`, `rest_heal_fraction`, `rejects_per_run`, `starting_deck`, `tiers` (elite, boss), `rooms` (finite wave lists per room type, with `min_index`/`max_index`), `ui` words | `RunConfig.validate` |
 | `vfx.json` | Effect pool cap, durations, alphas, `team_tints` | `VfxConfig` |
-| `ui.json` | HUD, HP bars, damage numbers, popups, game over, settings screen, death beat, aim | `UiConfig` |
+| `ui.json` | HUD, HP bars, damage numbers, popups, game over, settings screen, death beat, aim, `run_ui` | `UiConfig` |
 | `cast_preview.json` | Preview look | `CastPreviewConfig` |
 | `settings.json` | User-facing settings and defaults (`cast_trigger`) | `SettingsStore` |
 | `input_bindings.json` | Action name to key/mouse events | `InputBindings` |
@@ -164,6 +179,7 @@ Data is validated at first use and fails loudly (`push_error`) on bad content; s
 
 - `Player.player_died` -> `Main._on_player_died`.
 - `Main.game_over_ready` -> `GameOverScreen`. `GameOverScreen` emits `retry_requested` and then calls `Main.restart_arena()` itself (no signal connection).
+- `RunController.room_started(index, total, room_type)` -> `RunHud`; `room_cleared(summary)` -> the cleared `RunPromptScreen`; `run_won` -> the win screen; `run_lost`. `RunPromptScreen.confirmed` (its action button).
 - `Health.damaged / healed / health_changed / died`.
 - `CardSlotController.card_cast(slot_type, card_id)`.
 - `Main.run_start_blocked(message)`; `Player.pass_through_changed`; `damage_dealt` (source -> `StatusEffectManager.on_damage_dealt`, `PlayerCues`); `ZoneManager.zone_started / zone_ended`.
@@ -199,6 +215,9 @@ Add a pool in `data/pools.json` with `kind: "element"`, a `visual` (color, scale
 ### A slot type
 `SLOT_TYPE_ORDER` in `CardSlotController` and `USE_ACTIONS`/`SWAP_ACTIONS` in `Player` are hardcoded to five. A new slot type needs code plus HUD and input binding changes, not just data.
 
+### A room wave list or room type
+Add a variant under `data/run.json` `rooms.<type>` with `id`, optional `min_index`/`max_index`, `first_wave_delay` and `stages`. `RunConfig.validate` checks enemy ids and that every room index has a variant; the run tests load the real file. A new room *type* also needs `composition`, `RunController` handling, an icon in `RunIcons` and a `run_ui` colour.
+
 ### A scenario
 Add an entry in `data/scenarios.json`; unknown or misspelled keys fail on load (`ScenarioSchema`). Add a test in `tests/unit/` if it proves behavior. Document the new scenario in `README.md`.
 
@@ -210,9 +229,9 @@ Add an entry in `data/scenarios.json`; unknown or misspelled keys fail on load (
   - `run_tests.ps1` -> gdUnit4 headless.
   - `capture_screenshot.ps1` -> windowed capture, uses `src/debug/*` via user args.
   - `run_bot_sim.ps1 [-Rooms] [-Seed]` + `bot_sim.gd` -> card/deck NaN check, runs as a `SceneTree` script; prints a checksum that repeats per seed.
-  - `run_wave_sim.ps1` + `WaveSim.tscn` + `wave_sim.gd` -> real Main scene with a bot. A scene, so autoloads exist. Runs at `--fixed-fps 60` with hit-stop off, so a seed repeats exactly; prints `pinned:` and `climb:` lines.
+  - `run_wave_sim.ps1` + `WaveSim.tscn` + `wave_sim.gd` -> real Main scene with a bot. `-Run` plays whole seeded runs through RunMain (`-Seed` first seed, `-Runs` count, `-RoomTimeout`): checks soft locks, empty decks, stuck cooldowns and card pick rates, and prints the room-type distribution over 1000 seeds. A scene, so autoloads exist. Runs at `--fixed-fps 60` with hit-stop off, so a seed repeats exactly; prints `pinned:` and `climb:` lines.
   - `run_reload_cycle.ps1` + `ReloadCycle.tscn` + `reload_cycle.gd` -> death/restart soak.
-  - `VpCapture.tscn` + `vp_capture.gd` (`capture_screenshot.ps1 -TrueSize WxH`) -> hosts the real Main in an oversized SubViewport; Main registers with `WorldRef` so spawners, popups and effects find the arena when `current_scene` is null. `GameOverScreen` still binds `current_scene`; VpCapture binds it by hand.
+  - `VpCapture.tscn` + `vp_capture.gd` (`capture_screenshot.ps1 -TrueSize WxH`) -> hosts the real Main in an oversized SubViewport (RunMain with `--run`, which `capture_screenshot.ps1` adds for `-Scenario ""`); Main registers with `WorldRef` so spawners, popups and effects find the arena when `current_scene` is null. Scene swaps work there too (`swap_to_fresh_scene`).
   - `SlotStateCapture.tscn` + `slot_state_capture.gd` -> HUD slot capture.
 - **Windows binary:** the scripts prefer the `*_console.exe` Godot build. The windowed build can make PowerShell report a failing run as success.
 
@@ -223,7 +242,7 @@ Add an entry in `data/scenarios.json`; unknown or misspelled keys fail on load (
 - **Only `GamePause` should set `paused`.** The pause screen and cast preview run `PROCESS_MODE_ALWAYS`. The pause also freezes `Juice` time scale and hands the remaining hit-stop/slow-mo back on resume.
 - **Autoload state survives a scene reload** (`Engine.time_scale`, `Juice`, `GamePause`). `Main._prepare_for_restart` resets them; anything new that is global must be reset there too. Re-run the reload soak after touching `Main`, `Juice`, `Player` or the autoloads.
 - **Dodge distance is data** (`data/player.json`, speed x duration). The `Player.gd` and `PlayerConfig.gd` fallbacks must match it; they are used only if the file is missing or bad. Dash cards use their own `distance` and `speed`.
-- **Solid enemies change difficulty and tests.** `body.collide_with_enemies` roughly doubled HP lost in the sim. A crowd can pin the player (the wave sim's `pinned:` line watches it). Lunge stops at the first body. Keep `WorldRef` in mind: use `WorldRef.get_world(tree)`, not `current_scene`, for anything that spawns into the arena (`Main.gd` and `GameOverScreen.gd` still use `current_scene`).
+- **Solid enemies change difficulty and tests.** `body.collide_with_enemies` roughly doubled HP lost in the sim. A crowd can pin the player (the wave sim's `pinned:` line watches it). Lunge stops at the first body. Keep `WorldRef` in mind: use `WorldRef.get_world(tree)`, not `current_scene`, for anything that spawns into the arena.
 - **Pass-through leaves a timer alive** for about one object per reload until it expires (qa N2).
 - **The Lunge preview** shows the full path even when a body will stop the dash short (known gap).
 - **Hit-stop only on `KIND_HIT`.** A new damage source that should feel heavy must pass `Health.KIND_HIT`; DoT and zone ticks use `KIND_DOT`.
@@ -232,7 +251,9 @@ Add an entry in `data/scenarios.json`; unknown or misspelled keys fail on load (
 - **Ctrl+N** is a swap, not a cast. Slot keys use `exact_match` on press so Ctrl+1 doesn't also press 1.
 - **Don't add per-frame allocation** in hot paths (`Player._physics_process`, `Enemy`, HUD): earlier reviews removed several. Use the `EffectPool`, not new nodes, for transient visuals. The held `CastPreview` is deliberately not pooled.
 - **Enemy stats live in data.** The exported fields on `Enemy` scenes are only fallbacks (see `Enemy._apply_stats`).
-- **Enemy HP bars:** `elite` and `boss` ranks always show their bar; no elite or boss is in the shipped waves yet.
+- **Enemy HP bars:** `elite` and `boss` ranks always show their bar; the endless-arena `data/waves.json` has none; the shipped run rooms have one elite and a placeholder boss.
+- **Run state is a static.** `RunSession.current` survives scene swaps on purpose, so tests and tools that start a run must call `RunSession.clear()`. A new per-room reset belongs in the fresh scene; something that must carry over belongs in `RunState` (and its `to_dict`/`from_dict`). `Health.damage_immune` is set at room clear and must not leak into the next room (the reload soak checks it).
+- **Seeded baselines use the endless arena.** The wave_sim seed hashes depend on `Main.tscn`. The `tier|enemy` encoding in `WavePlan` is built to leave them unchanged.
 - **`TrainingDummy`** (`scenes/debug/`) is not in `Main.tscn`; some tests instantiate it.
 - **Name rows:** card names use `fit_padding` 12 and line spacing 0 so two-line names fit; a test pins every card name at 720p, 1080p and 1440p.
 - **One shader lives in `src/player/`** (`player_occlusion_cue.gdshader`), the other in `assets/shaders/`.

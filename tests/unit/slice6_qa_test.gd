@@ -641,6 +641,16 @@ func _aligned_crowd(seed_value: int) -> Array[Vector3]:
 	return out
 
 
+## The engine's own noise floor for this crowd (qa, M3a review). Allocating even one unrelated StaticBody3D before a run
+## moved the settled positions by up to 7.8e-4 m with identical game code, identical ticks (300 each), time_scale 1.0
+## on every tick and an empty enemy roster: the physics server's pair ordering depends on its handle allocation
+## history, which depends on when earlier tests' deferred frees landed. That made this test fail in about one full
+## run in three (bit-identical 1e-4 differences, first run vs second, only after the suite had run). The strict
+## instance-id pin is `test_f1_steering_depends_on_spawn_index_not_on_the_instance_id` (steering with no physics, 1e-5).
+## An id-dependent swirl moves a crowd by decimetres, so 1 cm still catches it.
+const PHYSICS_NOISE := 0.01
+
+
 func test_f1_same_seed_crowd_is_bit_identical_across_runs_and_shifted_instance_ids() -> void:
 	var first := await _aligned_crowd(11)
 	var junk: Array[Node] = []
@@ -653,8 +663,8 @@ func test_f1_same_seed_crowd_is_bit_identical_across_runs_and_shifted_instance_i
 		node.free()
 	var different := false
 	for i in range(first.size()):
-		assert_float(first[i].distance_to(second[i])).override_failure_message("enemy %d: %s vs %s" % [i, first[i], second[i]]).is_less(0.000001)
-		assert_float(second[i].distance_to(third[i])).is_less(0.000001)
+		assert_float(first[i].distance_to(second[i])).override_failure_message("enemy %d: %s vs %s" % [i, first[i], second[i]]).is_less(PHYSICS_NOISE)
+		assert_float(second[i].distance_to(third[i])).override_failure_message("enemy %d: %s vs %s" % [i, second[i], third[i]]).is_less(PHYSICS_NOISE)
 		if first[i].distance_to(other[i]) > 0.01:
 			different = true
 	assert_bool(different).override_failure_message("a different seed gave the same crowd: the test is vacuous").is_true()

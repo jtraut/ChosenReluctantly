@@ -32,6 +32,7 @@ func after_test() -> void:
 		get_tree().current_scene = null
 		_main.free()
 	_main = null
+	Juice.hit_stop_enabled = true
 	Juice.reset()
 	for action: StringName in [&"slot_1", &"slot_2", &"slot_3", &"slot_4", &"slot_5", &"attack_heavy", &"attack_light"]:
 		TestInput.release(action)
@@ -227,10 +228,10 @@ func test_escape_during_the_death_beat_pauses_and_game_over_still_arrives_once_a
 	await _frames(2)
 	assert_bool(_screen(main).is_open()).is_true()
 	assert_float(Engine.time_scale).is_equal(1.0)
-	await get_tree().create_timer(float(UiConfig.death_beat()["slow_mo_duration"]) + 0.4, true, false, true).timeout
+	await TestClock.wait_real(get_tree(), float(UiConfig.death_beat()["slow_mo_duration"]) + 0.4)
 	assert_array(announced).is_empty()
 	_screen(main).close()
-	await get_tree().create_timer(float(UiConfig.death_beat()["slow_mo_duration"]) + 0.5, true, false, true).timeout
+	await TestClock.wait_real(get_tree(), float(UiConfig.death_beat()["slow_mo_duration"]) + 0.5)
 	assert_array(announced).has_size(1)
 	assert_float(Engine.time_scale).is_equal(1.0)
 	# Over Game Over, Esc is refused and nothing is left paused.
@@ -602,7 +603,14 @@ func test_f1_spawner_numbers_enemies_in_spawn_order_and_resets_with_the_seed() -
 	assert_bool(spawner_source.contains("_spawn_count = 0")).is_true()
 
 
+## Positions depend on Engine.time_scale (measured in C1-t: a 30-frame slow-mo in the middle of a 300-tick
+## run moved enemies by 0.036). A hit-stop still running from an earlier test, or started late by an
+## earlier test's coroutine, shifts them by ~1e-4 and made this test fail in some full runs. So the run
+## turns hit-stop off (the same switch the sims use) and starts from a clean Juice, and a time scale that
+## is not 1.0 is reported as the cause instead of as a mysterious position drift.
 func _aligned_crowd(seed_value: int) -> Array[Vector3]:
+	Juice.hit_stop_enabled = false
+	Juice.reset()
 	await get_tree().physics_frame  # start every run on the same physics boundary
 	_spawn()
 	_main.player.process_mode = Node.PROCESS_MODE_DISABLED
@@ -621,6 +629,7 @@ func _aligned_crowd(seed_value: int) -> Array[Vector3]:
 		list.append(enemy)
 	for f in range(300):
 		await get_tree().physics_frame
+		assert_float(Engine.time_scale).override_failure_message("Engine.time_scale left 1.0 at tick %d of the crowd run" % f).is_equal(1.0)
 	var out: Array[Vector3] = []
 	for enemy in list:
 		out.append(enemy.global_position)

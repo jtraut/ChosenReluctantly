@@ -35,9 +35,9 @@ func _frames(count: int) -> void:
 		await get_tree().process_frame
 
 
-## Real seconds, counted by a timer that keeps running while paused and ignores time scale.
+## Real (wall-clock) seconds. See TestClock for why this is not an ignore_time_scale timer (C1-t).
 func _real_wait(seconds: float) -> void:
-	await get_tree().create_timer(seconds, true, false, true).timeout
+	await TestClock.wait_real(get_tree(), seconds)
 
 
 func _main() -> Main:

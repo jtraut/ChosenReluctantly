@@ -11,11 +11,11 @@ Last updated: 2026-10-29. The director is away until the evening with an autonom
 - The repo runs. Suite 696/696.
 
 ## In progress
-- **Milestone 3a, run structure.** The brief is in ROADMAP. Next role: gameplay-dev.
+- **Milestone 3a, run structure.** Gameplay built a7731e2..c560d83 (726/726). Next role: ux-designer.
 
 ## Exact next step
-1. **3a build** with gameplay-dev (ROADMAP brief, plus qa's N3 bot-sim charter checks). **On resume:** check `git log` for "3a" commits and `git status` for leftovers. Continue from what's committed.
-2. Then ux-designer (the "Room X of Y" indicator, win screen, room-cleared prompt) -> qa -> playtester -> tech-writer -> game-lead close, tag `playtest-2026-10-29-3a`.
+1. **3a ux** with ux-designer (RunHud, room-cleared prompt, win screen, tier markers). **On resume:** check `git log` for 3a ux commits.
+2. Then qa -> playtester -> tech-writer -> game-lead close, tag `playtest-2026-10-29-3a`.
 3. Then 3b, 3c, 3d in order (write each brief at the previous slice's close).
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.

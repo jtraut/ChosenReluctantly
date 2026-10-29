@@ -713,3 +713,15 @@ Each is also listed under "Calls I made" in OPEN_ITEMS.
 - **Normal launch = run mode; scenarios and wave_sim = endless arena.** This keeps the capture tooling and the seeded sim baselines stable.
 - **Starting deck is a data list,** shipped as the full pool so the C1 checklist stays testable. 3b shrinks it, because with the full pool every reward is a duplicate and `can_remove` blocks every unique at exactly 3. (Utility has only 3 unique cards in the whole pool.)
 - **Coupling rule:** run-loop code handles card ids through the deck APIs only, never specific card content (director, Part 5).
+
+### 2026-10-29 - 3a run structure, gameplay side (gameplay-dev, logged by game-lead)
+Commits a7731e2..c560d83; 726/726. The wave-sim seed 1 hash and the bot-sim checksum are unchanged. Rejected alternatives in brackets.
+- **`project.godot` main scene is now `scenes/main/RunMain.tscn`.** `Main.tscn` stays the endless arena for tests, scenarios, wave_sim and VpCapture. [Auto-detecting run mode inside Main, which would flip about 30 suites.] `--scenario` launches fall back to the arena.
+- **Continue swaps in a fresh Main** (`Main.swap_to_fresh_scene`). [`reload_current_scene`, which needs `current_scene` and is null in VpCapture (qa N5, now fixed).]
+- **`RunSession` is a static, not an autoload.** `begin_new_run` is the only constructor, and a forced seed is used once, so "Try again" always gets a new seed.
+- **Finite waves via `finite: true`** on the existing wave schema. [`loop_from_stage` -1.] **Tier is encoded in the queued spawn** (`tier|enemy`), so RNG calls and seeded baselines are unchanged.
+- **Tiers** (`data/run.json`): elite HP x2.5, boss placeholder HP x7, resistance floor 0.25 and cap 0.5, body scale 1.0 (the hurtbox doesn't scale), plus a marker sphere. The boss is unstunnable. The boss placeholder's resistance is 25% until 3c sets 50%.
+- **Damage immunity after a room is won.** [Clearing projectiles and zones.]
+- **Placement:** elite in rooms 4-7 and rest in rooms 3-7 (seeded), the first room is combat, the boss is last.
+- **Bot change in run mode only:** it hunts the last 2 enemies or a lone shooter. Without that, a lone shooter stalls a room.
+- **Sim, seeds 1-12 at real time:** 12/12 won, 0 soft locks. A run is about 260-290 s, the boss room 65-98 s. **The bot ends every room at 30/30 HP:** with the full deck, Recovery out-heals everything, so attrition is nil (feeds D13 and the 3b starter shrink). The N3 checks are clean (pick rate 0.93-1.06x, which shows no bag bug, not balance).

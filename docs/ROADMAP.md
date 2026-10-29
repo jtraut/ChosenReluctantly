@@ -303,7 +303,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
     - Regeneration status: heal over time.
     - Lifesteal timed modifier: a single "damage dealt" event covering every source, with a per-hit cap.
     - All in data.
-  - [ ] **C1-b2, generic capabilities part 2 (gameplay-dev):** (also: `Main.gd:70` Game Over wait counts from `Time.get_ticks_msec()` instead of an ignore_time_scale timer, from C1-t)
+  - [ ] **C1-b2, generic capabilities part 2 (gameplay-dev):** BUILT 4b1820a..5fbc715+uid (630/630, reload soak OK). The `zone` and `pass_through` templates; dash `direction_mode` and path damage; aoe `max_range` placement; Game Over beat counted from usec ticks with pause excluded; dodge fallbacks set to 20. Finding: player and enemy bodies never collided, so pass-through was a no-op. Resolved in C1-c (game-lead call, DECISIONS 2026-10-29). (also: `Main.gd:70` Game Over wait counts from `Time.get_ticks_msec()` instead of an ignore_time_scale timer, from C1-t)
     - Zone template: circle or line; size, duration, tick, damage and status chance; placed at a point within a range cap; pooled, capped and self-cleaning; safe if the caster dies.
     - Dash path damage: each enemy is hit once, using the shared query.
     - Dash `direction_mode` `forward` | `away_from_aim`.
@@ -317,6 +317,8 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
     - The preset deck contains all Fire Rogue cards.
     - Content validation passes at 3 per slot (fixes Movement 2/3 and Recovery 2/3 from C1-a).
     - Then switch the run-start deck check from warn to block (fail loud), and delete the tripwire branch in `test_shipped_content_meets_the_minimums_PENDING_C1C`.
+    - **Solid enemies (game-lead call 2026-10-29):** new data flag `data/player.json` `body.collide_with_enemies` (default true, validated) that turns on player-vs-enemy body collision both ways, so Shadow Step's pass-through means something. The dodge does NOT pass through bodies (escaping a crowd is the Movement cards' job, per D8). Guard against soft-pinning: separation steering keeps working, and enemies must not shove the player through arena walls. Rerun the seeded wave sim and report before/after HP lost and any stuck frames. False restores today's feel.
+    - Rerun the seeded sims now that cards use `hits`/`chance` (C1-b1 note). Report numbers.
   - [ ] **C1-d, story:** names (25 characters or fewer) and flavor (80 characters or fewer) for the 9 new cards, in the dry weary-hero voice. Data text only.
   - [ ] **C1-e, ux-designer:**
     - Readable visuals via the shared VFX for Fireball (telegraph and burst), Fire Wall (line plus a duration indicator), Bleed, Regeneration, Stealth (ghosted player), Lunge, Backward Leap and Leech (drain plus heal cue).
@@ -333,17 +335,28 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
 ## Later (director, 2026-10-28)
 - Stealth makes enemies drop aggro (GDD §15 "Stealth drops enemy aggro [PLANNED, later]"). Do it with the enemy targeting/AI pass.
 
-## Milestone 3 — Card system and run loop (next, outlined only)
-Not started. Expected scope per GDD §13 milestone 3 and §9:
-- Multi-room procedural run structure (room graph, not just one arena)
-- **3a:** run structure (room graph/data model) first
-- **3b:** post-battle card reward screen: pick 1 of 3 or reject the whole offer, 3-reject cap per run, offer size from data. Build it to be reusable for future 3-choice screens (GDD §15 level-up idea)
-- Deck-clean rewards / routing choices
-- A boss encounter
-- Loadout saving between runs (starting from run 2, per GDD §9)
-- ~~Resolve open question: single-card offer vs. choice of several~~ - resolved by director 2026-10-27 (pick 1 of 3 or reject all; GDD §9)
-- Resolve open question: shops/drops alongside post-battle rewards (GDD §14 item 1)
-- Expand the headless bot simulator from a stub into a real multi-room balance tool
+## Milestone 3 — Card system and run loop
+Director run order 2026-10-29: start right after C1 and Polish 1 close; one slice at a time, each with the full loop (build -> ux where seen/clicked -> qa -> playtester -> tech-writer docs pass -> game-lead close), then a `playtest-YYYY-MM-DD-<slice>` tag. GDD §2, §4, §5, §7, §9, §13. No art, audio, passive tree, Wizard or Water.
+**Coupling rule for every M3 slice:** run-loop code must not know specific cards. It handles card ids, slot types and pools through the existing deck/card APIs, so a card-system change after the director's vision check doesn't strand it.
+
+- [ ] **3a, run structure**
+  - **Goal:** a run is a seeded sequence of rooms you fight through, carrying your state, ending in a win or a loss.
+  - **Acceptance:**
+    1. **Run generation:** seeded generator builds a room sequence from data (`data/run.json` or similar): room count, the type mix and placement rules. Types: `combat`, `elite`, `rest` (placeholder: heal a data % of max HP, or a "deck-clean coming in 3b" note), `boss` (placeholder until 3c: a beefed-up elite). The same seed gives the same sequence.
+    2. **Rooms:** each combat, elite or boss room has a finite wave list in data (reusing the existing spawner and wave schema where possible). A room is won when its waves are done and no enemy is alive. Elites use 25% resistance across elements (GDD §7). Schema validation fails loud.
+    3. **RunState:** one object holding HP (current and max), deck (card ids), rejects remaining (3, data), seed, room index and room history. It survives room transitions. It serializes to and from a Dictionary/JSON (round-trip test). Nothing in it is card-specific.
+    4. **Transitions:** a won room shows "Room cleared" and a Continue button (3b replaces it with the reward screen), then loads the next room with state carried over. Slot cooldowns and the shuffle bag reset per room. HP carries over.
+    5. **HUD:** a minimal "Room X of Y" indicator (with the room type) (ux-designer).
+    6. **End screens:** a placeholder win screen after the last room. The lose screen reuses the existing death and Game Over flow. "Try again" starts a new run with a new seed (and the same deck rules).
+    7. **Bot sim:** the sim plays whole seeded runs headless and reports crashes, NaN, soft locks (a room that never ends), rooms reached, the win or loss, and the room-type distribution across N seeds.
+    8. **Hygiene:** test scenarios and the capture tool still work. Zero errors on startup and in the 20 s headless run. Full suite green. Reload soak clean. SceneSelfCheck passes.
+  - **Files likely touched:** new `src/run/` (generator, RunState, room controller), `data/run.json` and room/wave data, `src/main/Main.gd`, the spawner, new HUD bits under `src/ui/`, `tools/bot_sim.gd`, and tests.
+  - **Defaults (game-lead calls, logged in DECISIONS and "Calls I made"):** a linear sequence, no branching map (routing comes later); 8 rooms (5 combat, 1 elite, 1 rest, 1 boss last); rest heals 30% of max HP; short prototype runs (GDD §9 [PROPOSED]).
+
+- [ ] **3b, reward screen** (brief written at 3a close). After each won room: offer N cards (`offer_size` from data, default 3); pick one or reject the whole offer (rejects capped at 3 per run, from RunState). Offers come only from the character's pools (class, element, neutral) and skip cards that do nothing for the build. Deck-clean options use the existing `can_remove` guard, so no removal can break a slot minimum. The screen is generic (a list of options of any kind), so level-up choices can reuse it later.
+- [ ] **3c, boss encounter** (brief written at 3b close). One boss with simple HP-threshold phases and telegraphed attacks in the existing telegraph language. Equal 50% resistance across elements (the run's last boss is the final boss, GDD §7). It replaces the 3a placeholder.
+- [ ] **3d, loadouts** (brief written at 3c close). From run 2 on: build, save and load a starting deck, validated by the deck rules. Persisted in `user://`.
+- Later in M3 or after: shops and drops (GDD §14 item 1, [OPEN], not started); branching routes.
 
 ## Milestone 4 — Second class/element, subclasses, passive tree prototype, balance sim
 Not started. Per GDD §13: Wizard + Water added, 2 subclasses each for Rogue/Wizard/Fire/Water, first passive tree prototype (30-40 nodes), headless balance simulation grown out.

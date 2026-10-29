@@ -630,3 +630,20 @@ Commits 4236e5a..87dbb87. Rejected alternatives in brackets.
   - After C1, the Neutral pool gives 3 Recovery cards (Healing Potion, Leech, Regeneration) and 1 Movement card (Backward Leap). Any future class + element pair needs at least 2 Movement cards of its own to meet 3 per slot. Content validation flags it.
 - **Dodge note corrected.** OPEN_ITEMS said "7.1 m to 3.5 m", which was the S6-2 step only. The full history: 3.5 m set (speed 14 x 0.25 s), 7.1 m in practice because of the slide bug; S6-2 fixed it to 3.5 m; D8 default B made it 7.0 m (speed 28); D8 = C made it 5.0 m (`data/player.json` speed 20). The code fallbacks in `PlayerConfig.gd` and the `Player.gd` export still say 28 (they're used only if data is missing). C1-b2 aligns them to 20.
 - **`.claude/settings.local.json` is local-only** (Claude Code's per-machine permissions file, already ignored by the director's global git ignore). Added to the repo `.gitignore` so it is never committed from another machine. Rejected: sharing it (it holds machine-specific allowances).
+
+### 2026-10-29 - C1-b2 generic capabilities part 2 (gameplay-dev, logged by game-lead)
+Commits 4b1820a..5fbc715 plus a uid commit; 630/630. Rejected alternatives in brackets.
+- **New `zone` template** (circle or line; duration, tick_interval, damage, optional status with chance; placed at the aim point clamped to `max_range`). The first tick lands at placement. At the `data/zones.json` `max_live` cap (6), the oldest zone ends. [Refuse the new zone.] A zone ends when its caster dies or is freed. A line zone runs across the cast direction, like a wall. [An orientation param.] Zone ticks are `KIND_DOT`, so they show the number and flash only.
+- **New `pass_through` template** `{duration}`. [A fake `buff` stat.] Overlapping grants end with the last one. A static flag also clears enemy masks, so enemies spawned mid-buff are included; it resets on end, death and `_exit_tree`.
+- **Dash:** `direction_mode` forward | away_from_aim, plus optional path damage. Each enemy is hit once, as `KIND_HIT` (hit-stop per enemy, so the playtester checks for stutter). The path is sampled every `hit_radius`.
+- **aoe `max_range`** places the disc at the clamped aim point, so Fireball can be an aoe card.
+- **Game Over beat:** `Main` already used an ignore_time_scale timer, but Godot overcounts the frame where the time scale changes. The beat is now counted from `Time.get_ticks_usec()` in `_process`, excluding paused time, with each step clamped to 0.5 s. [Creating the timer a frame later still fired at 869 of 900 ms.]
+- `CastPreview` outline builders moved to `src/effects/GroundOutlines.gd`, because a dependency chain through `Player` broke `bot_sim.gd` under `-s`.
+- **Finding:** player and enemy bodies never collided (player mask = world only), so pass-through had no effect in the shipped game.
+
+### 2026-10-29 - Enemies solid to the player (game-lead)
+- **Call:** add a data flag `data/player.json` `body.collide_with_enemies`, default **true**, which turns on body collision between player and enemies. Shadow Step's pass-through (D9 = A) then has a real use: walking out through a crowd. The dodge doesn't pass through bodies, so escape is a Movement-card job, which fits the D8 note that critical survival moves should come from Movement cards.
+- **Rejected:**
+  - Leaving bodies non-solid and redefining Shadow Step as invulnerability or an aggro drop. That contradicts D9 (pass-through only for now), and aggro drop is planned for later.
+  - Asking the director first. It's one data flag, cheap to reverse, so it doesn't meet the escalation bar.
+- **Risk:** the player gets pinned by a crowd of 12. Mitigations: separation steering, the sim rerun, and the playtester checks. Listed under "Calls I made".

@@ -19,9 +19,10 @@ signal attack_cancelled(attack_id: StringName)
 @export var turn_speed: float = 14.0
 @export var gravity: float = 20.0
 
-@export var dodge_speed: float = 14.0
-@export var dodge_duration: float = 0.25
-@export var dodge_cooldown: float = 0.8
+## Dodge roll tuning, loaded from data/player.json (PlayerConfig) in _ready.
+var dodge_speed: float = 28.0
+var dodge_duration: float = 0.25
+var dodge_cooldown: float = 0.8
 
 ## Milestone 2 has one character: a Fire Rogue with no class/element pick
 ## yet, so this is a fixed export rather than real character creation.
@@ -94,14 +95,19 @@ var _forced_move_invulnerable: bool = false
 var _forced_move_look: Dictionary = {}
 var _forced_move_trail_timer: float = 0.0
 
-## Physics ticks after a pause or resume in which a dodge press is ignored (S6-5).
-const DODGE_BLOCK_TICKS_AFTER_PAUSE := 2
+## Physics ticks after a pause or resume in which a dodge press is ignored (S6-5); from data/player.json.
+var dodge_block_ticks_after_pause: int = 2
 const DASH_TRAIL_INTERVAL := 0.04
 
 
 func _ready() -> void:
 	var team := hurtbox.team if hurtbox != null else "player"
 	status_rng.randomize()
+	var dodge_cfg: Dictionary = PlayerConfig.dodge()
+	dodge_speed = float(dodge_cfg["speed"])
+	dodge_duration = float(dodge_cfg["duration"])
+	dodge_cooldown = float(dodge_cfg["cooldown"])
+	dodge_block_ticks_after_pause = int(dodge_cfg["block_ticks_after_pause"])
 	card_slots = CardSlotController.new(self, WorldRef.get_world(get_tree()), team, stat_modifiers, owned_pools)
 	_setup_attacks()
 	cast_preview = CastPreview.new()
@@ -603,7 +609,7 @@ func _on_pause_changed(_is_paused: bool) -> void:
 	cancel_cast_preview()
 	# Dodge polls Input, so Space pressed on a focused settings button (ui_accept closes the
 	# screen) would roll on the first tick after resume. Ignore dodge for the next ticks.
-	_dodge_blocked_until_frame = Engine.get_physics_frames() + DODGE_BLOCK_TICKS_AFTER_PAUSE
+	_dodge_blocked_until_frame = Engine.get_physics_frames() + dodge_block_ticks_after_pause
 
 
 func _on_setting_changed(key: String, _value: Variant) -> void:

@@ -1,0 +1,8 @@
+{
+    "dodge": {
+        "speed": 28.0,
+        "duration": 0.25,
+        "cooldown": 0.8,
+        "block_ticks_after_pause": 2
+    }
+}

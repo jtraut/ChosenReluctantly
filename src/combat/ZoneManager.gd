@@ -15,11 +15,8 @@ signal zone_ended(zone_id: int)
 
 const NODE_NAME := "ZoneManager"
 const GROUND_OFFSET := 0.04
-const FILL_ALPHA := 0.3
-const FILL_ALPHA_END := 0.12  ## the fill fades to this over the zone's life
-const EDGE_ALPHA := 0.85
-const TICK_FLASH_TIME := 0.12
-const TICK_FLASH_BOOST := 0.25
+## The look numbers (fill and edge alpha, tick flash, the burn-down timer, the ending blink) are data:
+## data/zones.json "look", read through ZoneConfig.look(). The sizes are never data here: VfxSizing owns them.
 
 
 class Zone extends RefCounted:
@@ -47,7 +44,13 @@ class Zone extends RefCounted:
 	var color: Color = Color.WHITE
 	var fill: MeshInstance3D = null
 	var edge: MeshInstance3D = null
+	## The burn-down indicator inside the zone: a bar (line) or a core disc (circle) that empties as the zone runs out.
+	var timer: MeshInstance3D = null
 	var live: bool = false
+	## Cached for the per-frame update (set in _build_visual): where the timer sits and how big it can be.
+	var timer_axis: Vector3 = Vector3.ZERO
+	var timer_extent: float = 0.0  ## line: full long side; circle: radius at full life
+	var timer_half_width: float = 0.0
 
 
 var max_live: int = 6
@@ -181,7 +184,7 @@ func _source_active(zone: Zone) -> bool:
 
 func _tick(zone: Zone) -> void:
 	zone.ticks_done += 1
-	zone.flash = TICK_FLASH_TIME
+	zone.flash = float(ZoneConfig.look()["tick_flash_time"])
 	var source: Node = null
 	if zone.source_id != 0:
 		var found: Object = instance_from_id(zone.source_id)
@@ -219,6 +222,7 @@ func _end(zone: Zone) -> void:
 	_live.erase(zone)
 	zone.fill.visible = false
 	zone.edge.visible = false
+	zone.timer.visible = false
 	_free.append(zone)
 	zone_ended.emit(zone.id)
 
@@ -230,8 +234,10 @@ func _acquire() -> Zone:
 		var fresh := Zone.new()
 		fresh.fill = _make_mesh_node()
 		fresh.edge = _make_mesh_node()
+		fresh.timer = _make_mesh_node()
 		add_child(fresh.fill)
 		add_child(fresh.edge)
+		add_child(fresh.timer)
 		_created += 1
 		return fresh
 	_end(_live[0])  # at the cap: the oldest zone makes room
@@ -253,6 +259,7 @@ func _make_mesh_node() -> MeshInstance3D:
 
 ## Fill and outline at the true hit area (VfxSizing); never scaled by the element.
 func _build_visual(zone: Zone) -> void:
+	var look: Dictionary = ZoneConfig.look()
 	var thickness: float = float(CastPreviewConfig.get_config()["edge_thickness"])
 	var y: float = zone.center.y + GROUND_OFFSET
 	if zone.shape == ZoneShape.CIRCLE:
@@ -268,6 +275,11 @@ func _build_visual(zone: Zone) -> void:
 		zone.edge.scale = Vector3.ONE
 		zone.edge.rotation = Vector3.ZERO
 		zone.edge.position = Vector3(zone.center.x, y + 0.005, zone.center.z)
+		zone.timer.mesh = EffectPool.disc_mesh()
+		zone.timer.rotation = Vector3.ZERO
+		zone.timer.position = Vector3(zone.center.x, y + 0.008, zone.center.z)
+		zone.timer_extent = reach * float(look["timer_circle_scale"])
+		zone.timer_half_width = 0.0
 	else:
 		var half_length: float = VfxSizing.zone_line_half_length(zone.size_a)
 		var half_width: float = VfxSizing.zone_line_half_width(zone.size_b)
@@ -285,14 +297,52 @@ func _build_visual(zone: Zone) -> void:
 		zone.edge.scale = Vector3.ONE
 		zone.edge.rotation = Vector3(0.0, yaw, 0.0)
 		zone.edge.position = Vector3(start.x, y + 0.005, start.z)
+		zone.timer.mesh = EffectPool.strip_mesh()
+		zone.timer.rotation = Vector3(0.0, yaw, 0.0)
+		zone.timer_axis = axis
+		zone.timer_extent = half_length * 2.0
+		zone.timer_half_width = timer_bar_half_width(float(look["timer_width"]), half_width)
 	zone.fill.visible = true
 	zone.edge.visible = true
+	zone.timer.visible = true
 	_update_visual(zone, 0.0)
 
 
+## Half width of the line zone's timer bar: the data width, kept clear of the zone's own edge.
+static func timer_bar_half_width(width: float, zone_half_width: float) -> float:
+	return minf(width, zone_half_width * 0.6)
+
+
+## How much of the timer is left to draw: the remaining life fraction (1 -> 0), never quite nothing until the zone ends.
+static func timer_scale(life: float) -> float:
+	return clampf(1.0 - life, 0.0, 1.0)
+
+
+## The outline alpha: steady until the last `ending_fraction` of the life, then a blink between `min_alpha` and full,
+## so a zone about to vanish does not just disappear. `elapsed` is the zone's age in seconds.
+static func edge_alpha_at(life: float, elapsed: float, look: Dictionary) -> float:
+	var base: float = float(look["edge_alpha"])
+	if 1.0 - life > float(look["ending_fraction"]):
+		return base
+	var wave: float = 0.5 + 0.5 * sin(elapsed * float(look["ending_blink_hz"]) * TAU)
+	return base * lerpf(float(look["ending_blink_min_alpha"]), 1.0, wave)
+
+
 func _update_visual(zone: Zone, delta: float) -> void:
+	var look: Dictionary = ZoneConfig.look()
 	zone.flash = maxf(zone.flash - delta, 0.0)
 	var life: float = clampf(zone.elapsed / zone.duration, 0.0, 1.0)
-	var boost: float = TICK_FLASH_BOOST * (zone.flash / TICK_FLASH_TIME)
-	(zone.fill.material_override as StandardMaterial3D).albedo_color = Color(zone.color, lerpf(FILL_ALPHA, FILL_ALPHA_END, life) + boost)
-	(zone.edge.material_override as StandardMaterial3D).albedo_color = Color(TemplateVfx.lighter(zone.color, 0.4), EDGE_ALPHA)
+	var boost: float = float(look["tick_flash_boost"]) * (zone.flash / float(look["tick_flash_time"]))
+	(zone.fill.material_override as StandardMaterial3D).albedo_color = Color(zone.color, lerpf(float(look["fill_alpha"]), float(look["fill_alpha_end"]), life) + boost)
+	(zone.edge.material_override as StandardMaterial3D).albedo_color = Color(TemplateVfx.lighter(zone.color, 0.4), edge_alpha_at(life, zone.elapsed, look))
+	# The burn-down timer sits inside the hit area and empties as the zone runs out (it never claims area of its own).
+	var left: float = timer_scale(life)
+	if zone.shape == ZoneShape.CIRCLE:
+		var radius: float = maxf(zone.timer_extent * left, 0.001)
+		zone.timer.scale = Vector3(radius, 1.0, radius)
+	else:
+		var length: float = maxf(zone.timer_extent * left, 0.001)
+		zone.timer.scale = Vector3(zone.timer_half_width, 1.0, length)
+		var start: Vector3 = zone.center - zone.timer_axis * (length * 0.5)
+		zone.timer.position = Vector3(start.x, zone.center.y + GROUND_OFFSET + 0.008, start.z)
+	(zone.timer.material_override as StandardMaterial3D).albedo_color = Color(TemplateVfx.lighter(zone.color, float(look["timer_lighten"])), float(look["timer_alpha"]))

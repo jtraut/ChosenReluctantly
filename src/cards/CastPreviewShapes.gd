@@ -19,7 +19,9 @@ extends RefCounted
 ## "self_ring" (radius from data/cast_preview.json, switch it off with self_ring_enabled).
 ## Each part also carries damage_type ("" when none) so the visual can take the element colour,
 ## placed (drawn at the clamped aim point, not at the caster), range (the cap when placed) and
-## yaw_offset_degrees (180 for a dash that goes away from the aim).
+## yaw_offset_degrees (180 for a dash that goes away from the aim). A dash part also shows an arrowhead at its far
+## end (CastPreview); `cosmetic_width` is true when its lane is not a hit area (a dash with no path damage), so the
+## arrowhead may be wider than the lane.
 
 const CONE := "cone"
 const AOE := "aoe"
@@ -69,7 +71,7 @@ static func parts_for_card(card_data: Dictionary, config: Dictionary) -> Array[D
 					parts.append({"shape": DASH_PATH, "size": float(params["distance"]),
 							"half_angle_degrees": 0.0, "half_width": VfxConfig.marker("dash_path_half_width"),
 							"start_offset": 0.0, "damage_type": String(params.get("damage_type", "")),
-							"yaw_offset_degrees": 180.0 if away else 0.0})
+							"yaw_offset_degrees": 180.0 if away else 0.0, "cosmetic_width": true})
 	if parts.is_empty() and bool(config.get("self_ring_enabled", true)) and not (card_data.get("effects", []) as Array).is_empty():
 		parts.append({"shape": SELF_RING, "size": float(config.get("self_ring_radius", 0.9)),
 				"half_angle_degrees": 0.0, "half_width": 0.0, "start_offset": 0.0, "damage_type": ""})

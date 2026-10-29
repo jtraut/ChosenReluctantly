@@ -116,7 +116,7 @@ const DEFAULT_PLAYER_OUTLINE: Dictionary = {
 const DEFAULT_HUD: Dictionary = {
 	"reference_height": 720,
 	"safe_margin": 16,
-	"fit_padding": 2,
+	"fit_padding": 12,
 	"slot_size": [150, 118],
 	"slot_gap": 12,
 	"slot_row_separation": 2,

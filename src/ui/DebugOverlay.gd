@@ -2,10 +2,21 @@ extends CanvasLayer
 class_name DebugOverlay
 ## F3-toggled overlay: FPS, every slot's cooldown, and deck contents. Off by
 ## default - this is a diagnostic tool, not part of the normal HUD.
+##
+## The unique-card counts come straight from DeckCheck's data (never parsed back out of its text):
+## "Movement 5/3 ok" in a quiet colour, a shortfall as "Movement 2/3  SHORT -1" in red and bold. The
+## words "ok" and "SHORT" carry the meaning too, so it does not rely on colour.
 
-@onready var label: Label = $Label
+const OK_COLOR := "#8fe388"
+const SHORT_COLOR := "#ff6b5e"
+const DIM_COLOR := "#9aa5b1"
+const PANEL_PADDING := 8.0
+
+@onready var label: RichTextLabel = $Label
+@onready var panel: Panel = $Panel
 
 var player: Player = null
+var _last_text: String = ""
 
 
 func _ready() -> void:
@@ -40,10 +51,36 @@ func _process(_delta: float) -> void:
 					_card_label(slot.preview_card_id()),
 				]
 			)
-		var deck_check := player.card_slots.deck_check()
-		lines.append("Unique cards (have/need):")
-		lines.append_array(deck_check.summary_lines())
-	label.text = "\n".join(lines)
+		for i in range(lines.size()):
+			lines[i] = lines[i].replace("[", "[lb]")
+		lines.append("[color=%s]Unique cards (have/need):[/color]" % DIM_COLOR)
+		lines.append_array(count_lines(player.card_slots.deck_check()))
+	var text := "\n".join(lines)
+	if text != _last_text:
+		_last_text = text
+		label.text = text
+		# fit_content sizes the label to its text; the backing panel follows it.
+		panel.position = label.position - Vector2(PANEL_PADDING, PANEL_PADDING)
+		panel.size = label.get_combined_minimum_size() + Vector2(PANEL_PADDING * 2.0, PANEL_PADDING * 2.0)
+
+
+## One BBCode line per slot and per group: "Movement 5/3 ok", or "Movement 2/3  SHORT -1" in red bold.
+static func count_lines(deck_check: DeckCheck) -> Array[String]:
+	var lines: Array[String] = []
+	for entry: Dictionary in deck_check.slots:
+		lines.append(count_line(str(entry["display_name"]), entry))
+	for entry: Dictionary in deck_check.groups:
+		lines.append(count_line("%s group" % str(entry["name"]), entry))
+	return lines
+
+
+static func count_line(name_: String, entry: Dictionary) -> String:
+	var have: int = int(entry["count"])
+	var need: int = int(entry["required"])
+	var short: int = int(entry["short"])
+	if short > 0:
+		return "[color=%s][b]%s %d/%d  SHORT -%d[/b][/color]" % [SHORT_COLOR, name_, have, need, short]
+	return "[color=%s]%s %d/%d ok[/color]" % [OK_COLOR, name_, have, need]
 
 
 ## "id (Full Name)" so names the HUD had to shrink or truncate are still readable here.

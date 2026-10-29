@@ -253,7 +253,7 @@ func test_zones_are_capped_pooled_and_recycle_the_oldest() -> void:
 	assert_int(manager.live_count()).is_equal(cap)
 	assert_int(manager.created_count()).is_less_equal(cap)
 	assert_int(ended.size()).is_greater_equal(3)
-	assert_int(manager.get_child_count()).is_less_equal(cap * 2)  # two meshes per zone, reused
+	assert_int(manager.get_child_count()).is_less_equal(cap * 3)  # three meshes per zone (fill, edge, timer), reused
 	manager.clear()
 	assert_int(manager.live_count()).is_equal(0)
 	EffectTemplates.execute("zone", _circle(), _context(main, main.player.global_position + Vector3(0, 0, -5)))
@@ -266,8 +266,8 @@ func test_zone_visual_is_the_hit_area() -> void:
 	var manager := _cast_zone(main, _circle({"radius": 2.5}), main.player.global_position + Vector3(0, 0, -5))
 	var fill: MeshInstance3D = null
 	for child in manager.get_children():
-		if child is MeshInstance3D and (child as MeshInstance3D).visible and (child as MeshInstance3D).mesh is CylinderMesh:
-			fill = child
+		if child is MeshInstance3D and (child as MeshInstance3D).visible and (child as MeshInstance3D).mesh is CylinderMesh and fill == null:
+			fill = child  # the first one is the fill; the next is the timer core (C1-e)
 	assert_object(fill).is_not_null()
 	assert_float(fill.scale.x).is_equal_approx(VfxSizing.zone_circle_reach(2.5), 0.0001)
 	var entry: Dictionary = manager.live_zones()[0]

@@ -9,15 +9,15 @@ const BOOLS: Array[String] = ["disable_spawner", "freeze_aim", "enemies_idle", "
 ## key -> minimum (inclusive) for a finite number.
 const NUMBERS: Dictionary = {
 	"player_max_health": 1.0, "player_start_damage": 0.0, "aim_preview_distance": 0.0,
-	"enemy_max_health": 1.0, "burn_duration": 0.01, "heavy_at": 0.0, "kill_player_at": 0.0,
-	"stun_at": 0.0, "stun_duration": 0.01, "open_settings_at": 0.0,
+	"enemy_max_health": 1.0, "burn_duration": 0.01, "bleed_duration": 0.01, "heavy_at": 0.0, "kill_player_at": 0.0,
+	"stun_at": 0.0, "stun_duration": 0.01, "open_settings_at": 0.0, "debug_overlay_at": 0.0,
 }
 ## key -> minimum (inclusive) for a whole number.
 const INTS: Dictionary = {"columns": 1, "status_seed": -2147483647, "wave_seed": 0}
 const STRINGS: Array[String] = ["heavy_class"]
 ## key -> exact number of finite numbers in the array.
 const NUMBER_ARRAYS: Dictionary = {"origin_offset": 3, "spacing": 2, "aim_point_offset": 2}
-const INDEX_ARRAYS: Array[String] = ["burn_indices", "stun_indices", "boss_indices"]
+const INDEX_ARRAYS: Array[String] = ["burn_indices", "bleed_indices", "stun_indices", "boss_indices"]
 
 
 static func validate(scenario_id: String, def: Variant) -> Array[String]:

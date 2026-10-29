@@ -115,6 +115,7 @@ func test_every_shipped_card_cast_repeatedly_stays_within_cap_and_returns_to_idl
 	# Let every shot fly out and every effect run out. Burn on the live enemies is
 	# the only thing still allowed to hold a pool slot.
 	main.player.health.heal(1000.0)
+	main.player.status_manager._process(10.0)  # Leech and Regeneration (C1-c) run 7 s and hold persistent cues on the player
 	for i in range(240):
 		await get_tree().physics_frame
 	assert_int(pool.get_child_count()).is_less_equal(14)
@@ -124,10 +125,14 @@ func test_every_shipped_card_cast_repeatedly_stays_within_cap_and_returns_to_idl
 			enemy.free()
 	await get_tree().process_frame
 	await get_tree().process_frame
+	# A Bleed drop (C1-e) is a short transient: one that fell just before the enemies went still has to fade out.
+	for i in range(60):
+		await get_tree().physics_frame
 	assert_int(pool.active_count()).is_equal(0)
 	# No node growth beyond the pool itself and the two spawn-time children.
 	var growth := Performance.get_monitor(Performance.OBJECT_NODE_COUNT) - nodes_before
-	assert_float(growth).is_less_equal(14.0 + 2.0)
+	# Plus one timer mesh per zone slot (C1-e: each zone now owns fill, edge and a burn-down timer).
+	assert_float(growth).is_less_equal(14.0 + 2.0 + float(ZoneConfig.max_live()))
 
 
 func _count_projectiles(main: Node) -> int:

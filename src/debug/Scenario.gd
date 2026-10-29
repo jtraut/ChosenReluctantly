@@ -67,6 +67,7 @@ static func setup(main: Node3D, scenario_id: String) -> Scenario:
 	return scenario
 
 
+var _overlay_toggled: bool = false
 var _settings_opened: bool = false
 
 
@@ -161,6 +162,10 @@ func _build() -> void:
 		if burn_index < _enemies.size():
 			var manager: StatusEffectManager = _enemies[burn_index].get_node("StatusEffectManager")
 			manager.apply_status("burn", StatusDatabase.get_status("burn"), float(_def.get("burn_duration", 8.0)))
+	for bleed_index: int in _def.get("bleed_indices", []):
+		if bleed_index < _enemies.size():
+			var bleeder: StatusEffectManager = _enemies[bleed_index].get_node("StatusEffectManager")
+			bleeder.apply_status("bleed", StatusDatabase.get_status("bleed"), float(_def.get("bleed_duration", 8.0)))
 
 
 func _process(delta: float) -> void:
@@ -186,6 +191,11 @@ func _process(delta: float) -> void:
 		_send_action(&"pause", true)
 		_send_action(&"pause", false)
 		print("Scenario: t=%.2f pause key (settings screen)" % _elapsed)
+	if not _overlay_toggled and _def.has("debug_overlay_at") and _elapsed >= float(_def["debug_overlay_at"]):
+		_overlay_toggled = true
+		_send_action(&"debug_overlay", true)
+		_send_action(&"debug_overlay", false)
+		print("Scenario: t=%.2f F3 overlay toggled" % _elapsed)
 	var late: Dictionary = _def.get("late_hit", {})
 	if late.is_empty() or _late_hit_done or _elapsed < float(late.get("at", 2.4)):
 		return

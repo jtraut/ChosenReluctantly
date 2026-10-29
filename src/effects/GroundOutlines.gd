@@ -24,6 +24,37 @@ static func build_ring(outer: float, thickness: float) -> ArrayMesh:
 static func build_lane_outline(half_width: float, length: float, thickness: float) -> ArrayMesh:
 	var vertices := PackedVector3Array()
 	var normals := PackedVector3Array()
+	_add_lane_outline(vertices, half_width, length, thickness)
+	return flat_mesh(vertices, normals)
+
+
+## A lane outline with a filled arrowhead at its far end (the -Z end), so a dash's direction reads from the
+## shape alone. The head sits inside the lane's length; its half width is `arrow_half_width` (the caller keeps
+## it inside the lane when the lane is a hit area) and its length `arrow_length` (kept under the lane length).
+static func build_lane_arrow_outline(half_width: float, length: float, thickness: float, arrow_half_width: float, arrow_length: float) -> ArrayMesh:
+	var vertices := PackedVector3Array()
+	var normals := PackedVector3Array()
+	_add_lane_outline(vertices, half_width, length, thickness)
+	var head: float = minf(arrow_length, length)
+	vertices.append_array([Vector3(-arrow_half_width, 0, -(length - head)), Vector3(arrow_half_width, 0, -(length - head)), Vector3(0, 0, -length)])
+	return flat_mesh(vertices, normals)
+
+
+## Flat diamond outline (a square turned 45 degrees): the clamped-placement marker. `outer` is the distance from
+## the centre to a corner, `thickness` the stroke width measured toward the centre.
+static func build_diamond_outline(outer: float, thickness: float) -> ArrayMesh:
+	var vertices := PackedVector3Array()
+	var normals := PackedVector3Array()
+	var inner: float = maxf(outer - thickness * 1.41421356, 0.0)
+	var corners_out: Array[Vector3] = [Vector3(0, 0, -outer), Vector3(outer, 0, 0), Vector3(0, 0, outer), Vector3(-outer, 0, 0)]
+	var corners_in: Array[Vector3] = [Vector3(0, 0, -inner), Vector3(inner, 0, 0), Vector3(0, 0, inner), Vector3(-inner, 0, 0)]
+	for i in range(4):
+		var j: int = (i + 1) % 4
+		vertices.append_array([corners_in[i], corners_out[i], corners_out[j], corners_in[i], corners_out[j], corners_in[j]])
+	return flat_mesh(vertices, normals)
+
+
+static func _add_lane_outline(vertices: PackedVector3Array, half_width: float, length: float, thickness: float) -> void:
 	var t: float = thickness
 	for rect: Array in [
 			[-half_width, -half_width + t, 0.0, -length],
@@ -35,7 +66,6 @@ static func build_lane_outline(half_width: float, length: float, thickness: floa
 		var z0: float = rect[2]
 		var z1: float = rect[3]
 		vertices.append_array([Vector3(x0, 0, z0), Vector3(x1, 0, z0), Vector3(x1, 0, z1), Vector3(x0, 0, z0), Vector3(x1, 0, z1), Vector3(x0, 0, z1)])
-	return flat_mesh(vertices, normals)
 
 
 static func flat_mesh(vertices: PackedVector3Array, normals: PackedVector3Array) -> ArrayMesh:

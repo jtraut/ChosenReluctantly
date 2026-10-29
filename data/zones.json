@@ -1,3 +1,17 @@
 {
-    "max_live": 6
+    "max_live": 6,
+    "look": {
+        "fill_alpha": 0.3,
+        "fill_alpha_end": 0.12,
+        "edge_alpha": 0.85,
+        "tick_flash_time": 0.12,
+        "tick_flash_boost": 0.25,
+        "timer_alpha": 0.6,
+        "timer_lighten": 0.5,
+        "timer_width": 0.12,
+        "timer_circle_scale": 0.5,
+        "ending_fraction": 0.25,
+        "ending_blink_hz": 4.0,
+        "ending_blink_min_alpha": 0.25
+    }
 }

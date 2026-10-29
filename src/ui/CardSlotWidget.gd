@@ -79,6 +79,13 @@ func apply_layout(cfg: Dictionary, s: float) -> void:
 	_size_row(cooldown_bar, w, float(cfg["bar_height"]) * s)
 	_size_row(preview_label, w, float(cfg["preview_height"]) * s)
 	preview_label.max_lines_visible = int(cfg["preview_max_lines"])
+	# The fit width is the label width minus fit_padding, so the label itself keeps that margin too: without it a
+	# name that fits on one line in the full width would run right up to the slot border.
+	var margin := StyleBoxEmpty.new()
+	margin.content_margin_left = float(cfg["fit_padding"]) * s * 0.5
+	margin.content_margin_right = float(cfg["fit_padding"]) * s * 0.5
+	name_label.add_theme_stylebox_override("normal", margin)
+	preview_label.add_theme_stylebox_override("normal", margin)
 	queue_redraw()
 	# Force a refit at the new scale.
 	var n := _name_text

@@ -30,6 +30,14 @@ var _fill_colors: Array[Color] = []
 var _edge_colors: Array[Color] = []
 var _shown_ready: bool = true
 var _colors_dirty: bool = true
+## The placed-skill reticle: a faint range ring around the player, a marker at the clamped point (a circle when the
+## aim is inside the range, a diamond when it was pulled in), and a thin link to where the cursor really is.
+var _range_node: MeshInstance3D = null
+var _marker_node: MeshInstance3D = null
+var _link_node: MeshInstance3D = null
+var _reticle_dirty: bool = true
+var _reticle_range: float = -1.0
+var _reticle_clamped: bool = false
 
 
 func setup(player: Player) -> void:
@@ -51,6 +59,13 @@ func setup(player: Player) -> void:
 		_edges.append(edge)
 		_fill_colors.append(Color.WHITE)
 		_edge_colors.append(Color.WHITE)
+	_range_node = _make_mesh_node()
+	_marker_node = _make_mesh_node()
+	_link_node = _make_mesh_node()
+	_link_node.mesh = EffectPool.strip_mesh()
+	for node: MeshInstance3D in [_range_node, _marker_node, _link_node]:
+		node.visible = false
+		add_child(node)
 	set_process(bool(_config["enabled"]))
 
 
@@ -78,6 +93,7 @@ func _process(_delta: float) -> void:
 	var forward: Vector3 = _player.get_aim_direction()
 	var yaw: float = atan2(-forward.x, -forward.z)
 	var y: float = origin.y + float(_config["ground_offset"])
+	var reticle_done: bool = false
 	for i in range(_parts.size()):
 		var pivot := _pivots[i]
 		var part: Dictionary = _parts[i]
@@ -86,6 +102,9 @@ func _process(_delta: float) -> void:
 			# where the cast lands. A line zone runs across the cast direction.
 			var placement: Dictionary = _player.get_placement(float(part["range"]))
 			var point: Vector3 = placement["point"]
+			if not reticle_done:
+				reticle_done = true
+				_update_reticle(placement, float(part["range"]), y)
 			var to_point := Vector3(point.x - origin.x, 0.0, point.z - origin.z)
 			var cast_dir: Vector3 = to_point.normalized() if to_point.length_squared() > 0.0001 else forward
 			pivot.position = Vector3(point.x, y, point.z)
@@ -99,6 +118,10 @@ func _process(_delta: float) -> void:
 			pivot.rotation.y = yaw + deg_to_rad(turned)
 		pivot.visible = true
 	_apply_ready(_is_shown_slot_ready())
+	if not reticle_done:
+		_range_node.visible = false
+		_marker_node.visible = false
+		_link_node.visible = false
 
 
 ## Brings the built parts in line with what is being previewed. False when nothing is.
@@ -129,6 +152,48 @@ func _hide_all() -> void:
 	for pivot in _pivots:
 		if pivot.visible:
 			pivot.visible = false
+	_range_node.visible = false
+	_marker_node.visible = false
+	_link_node.visible = false
+
+
+## Draws the placed-skill reticle for one frame. `placement` is Player.get_placement(range). Meshes are cached per
+## range; per frame it only moves three nodes and recolours only when the preview was rebuilt or the shot got
+## (un)clamped.
+func _update_reticle(placement: Dictionary, reach: float, y: float) -> void:
+	var origin: Vector3 = placement["origin"]
+	var point: Vector3 = placement["point"]
+	var clamped: bool = bool(placement["clamped"])
+	if reach != _reticle_range or clamped != _reticle_clamped:
+		# The meshes only change with the range or when the aim crosses the range cap (rare), never per frame.
+		_reticle_range = reach
+		_reticle_clamped = clamped
+		_reticle_dirty = true
+		var thickness: float = VfxConfig.marker("reticle_range_thickness")
+		var marker_size: float = VfxConfig.marker("reticle_marker_size")
+		var marker_thickness: float = minf(thickness * 2.0, marker_size * 0.5)
+		_range_node.mesh = _cached("rangering|%f|%f" % [reach, thickness], func() -> Mesh: return GroundOutlines.build_ring(reach, thickness))
+		_marker_node.mesh = _cached("marker|%s|%f|%f" % [clamped, marker_size, marker_thickness], func() -> Mesh:
+			return GroundOutlines.build_diamond_outline(marker_size * 1.25, marker_thickness) if clamped else GroundOutlines.build_ring(marker_size, marker_thickness))
+	_range_node.position = Vector3(origin.x, y - 0.01, origin.z)
+	_range_node.visible = true
+	_marker_node.position = Vector3(point.x, y + 0.01, point.z)
+	_marker_node.visible = true
+	# The link: from the clamped point to where the cursor really is, only when the aim was pulled in.
+	var raw: Vector3 = placement["raw"]
+	var gap := Vector3(raw.x - point.x, 0.0, raw.z - point.z)
+	_link_node.visible = clamped and gap.length() > 0.2
+	if _link_node.visible:
+		var along: Vector3 = gap.normalized()
+		_link_node.position = Vector3(point.x, y + 0.01, point.z)
+		_link_node.rotation = Vector3(0.0, atan2(-along.x, -along.z), 0.0)
+		_link_node.scale = Vector3(0.03, 1.0, gap.length())
+	if _reticle_dirty:
+		_reticle_dirty = false
+		var base: Color = Color(_edge_colors[0], 1.0)
+		(_range_node.material_override as StandardMaterial3D).albedo_color = Color(base, VfxConfig.marker("reticle_range_alpha"))
+		(_marker_node.material_override as StandardMaterial3D).albedo_color = Color(base, VfxConfig.marker("reticle_marker_alpha"))
+		(_link_node.material_override as StandardMaterial3D).albedo_color = Color(base, minf(VfxConfig.marker("reticle_range_alpha") * 1.5, 1.0))
 
 
 func _rebuild(slot_index: int, card_id: String) -> void:
@@ -172,6 +237,16 @@ func _style_part(index: int, part: Dictionary) -> void:
 			fill.scale = Vector3(half_width, 1.0, size * 2.0)
 			fill.position.z = size
 			edge.mesh = _cached("zline|%f|%f|%f" % [half_width, size, lane_thickness], func() -> Mesh: return build_lane_outline(half_width, size * 2.0, lane_thickness))
+		CastPreviewShapes.DASH_PATH:
+			# A dash lane ends in an arrowhead, so which way you will travel (Backward Leap goes away from the
+			# aim) reads from the shape. Inside the lane when the lane is a hit area, wider when it is only a guide.
+			var lane_thickness: float = minf(thickness, half_width)
+			var arrow_half: float = VfxConfig.marker("dash_arrow_half_width") if bool(part.get("cosmetic_width", false)) else half_width
+			var arrow_length: float = VfxConfig.marker("dash_arrow_length")
+			fill.mesh = EffectPool.strip_mesh()
+			fill.scale = Vector3(half_width, 1.0, size)
+			edge.mesh = _cached("dash|%f|%f|%f|%f|%f" % [half_width, size, lane_thickness, arrow_half, arrow_length], func() -> Mesh:
+				return GroundOutlines.build_lane_arrow_outline(half_width, size, lane_thickness, arrow_half, arrow_length))
 		_:
 			var lane_thickness: float = minf(thickness, half_width)
 			fill.mesh = EffectPool.strip_mesh()
@@ -191,6 +266,7 @@ func _style_part(index: int, part: Dictionary) -> void:
 	_fill_colors[index] = Color(color, float(_config["fill_alpha"]))
 	_edge_colors[index] = Color(color.lerp(Color.WHITE, float(_config["edge_lighten"])), float(_config["edge_alpha"]))
 	_colors_dirty = true
+	_reticle_dirty = true
 
 
 ## Ready: the full-strength colours. Not ready (the slot is cooling, so a release would not

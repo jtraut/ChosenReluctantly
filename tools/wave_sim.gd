@@ -88,6 +88,7 @@ var _room_timeout: float = 240.0
 var _run_results: Array[Dictionary] = []
 var _card_casts: Dictionary = {}
 var _slot_stuck_since: Dictionary = {}
+var _room_min_hp: float = INF
 
 
 func _ready() -> void:
@@ -557,7 +558,7 @@ func _run_whole(run_seed: int) -> void:
 	if _god:
 		RunSession.current.max_hp = 9999.0
 		RunSession.current.hp = 9999.0
-	var result: Dictionary = {"seed": run_seed, "rooms_total": rooms.size(), "rooms_reached": 0, "outcome": "unfinished", "types": [], "wall_ms": 0, "sim_s": 0.0, "room_s": []}
+	var result: Dictionary = {"seed": run_seed, "rooms_total": rooms.size(), "rooms_reached": 0, "outcome": "unfinished", "types": [], "wall_ms": 0, "sim_s": 0.0, "room_s": [], "room_min_hp": []}
 	for room: Dictionary in rooms:
 		(result["types"] as Array).append(String(room["type"]))
 	var wall_start := Time.get_ticks_msec()
@@ -579,6 +580,7 @@ func _run_whole(run_seed: int) -> void:
 		_begin_run_room(run_seed, rooms[room_index])
 		var room_result: String = await _play_room(run_seed, controller, rooms[room_index])
 		(result["room_s"] as Array).append(snappedf(_sim_time, 0.1))
+		(result["room_min_hp"] as Array).append(snappedf(_room_min_hp, 0.1))
 		run_sim_total += _sim_time
 		if room_result == "lost":
 			result["outcome"] = "lost"
@@ -602,8 +604,8 @@ func _run_whole(run_seed: int) -> void:
 	var type_letters: Array[String] = []
 	for t: String in (result["types"] as Array):
 		type_letters.append(t.substr(0, 1))
-	print("  run seed %d: %s | rooms reached %d of %d | sim %.0f s in %.1f s wall | types %s | room seconds %s | HP at last room clear %s" % [
-		run_seed, String(result["outcome"]).to_upper(), int(result["rooms_reached"]), rooms.size(), float(result["sim_s"]), float(result["wall_ms"]) / 1000.0, ",".join(type_letters), str(result["room_s"]), str(result["hp_end"])])
+	print("  run seed %d: %s | rooms reached %d of %d | sim %.0f s in %.1f s wall | types %s | room seconds %s | lowest HP in each room %s | HP at last room clear %s" % [
+		run_seed, String(result["outcome"]).to_upper(), int(result["rooms_reached"]), rooms.size(), float(result["sim_s"]), float(result["wall_ms"]) / 1000.0, ",".join(type_letters), str(result["room_s"]), str(result["room_min_hp"]), str(result["hp_end"])])
 	# Leave nothing of this run behind for the next one.
 	var last: Node = get_tree().current_scene
 	if last != null and last is Main:
@@ -636,6 +638,7 @@ func _begin_run_room(run_seed: int, room: Dictionary) -> void:
 	_rng.seed = run_seed * 131 + int(room["index"])
 	_player.card_slots.card_cast.connect(func(_slot_type: String, card_id: String) -> void: _card_casts[card_id] = int(_card_casts.get(card_id, 0)) + 1)
 	_slot_stuck_since.clear()
+	_room_min_hp = _player.health.current_health
 	# N3: a deck with an empty slot is a broken run.
 	for slot_type: String in CardSlotController.SLOT_TYPE_ORDER:
 		var slot: CardSlot = _player.card_slots.get_slot(slot_type)
@@ -668,6 +671,7 @@ func _play_room(run_seed: int, controller: RunController, room: Dictionary) -> S
 			_fail("SOFT LOCK: run %d room %d (%s, %s) not finished after %.0f sim seconds (alive %d, plan finished %s)" % [
 				run_seed, int(room["index"]) + 1, room["type"], room["wave_id"], _room_timeout, _main.enemy_spawner.alive_count(), str(_main.enemy_spawner.plan.is_finished())])
 			return "soft_lock"
+		_room_min_hp = minf(_room_min_hp, _player.health.current_health)
 		var enemies := _enemies()
 		_check_world(enemies, cap, dt)
 		_check_cooldowns(run_seed, room)

@@ -15,8 +15,8 @@
         "neutral_healing_potion", "neutral_leech", "neutral_regeneration", "rogue_nap_time"
     ],
     "tiers": {
-        "elite": { "hp_multiplier": 2.5, "resistance_floor": 0.25, "resistance_cap": 0.5, "rank": "elite", "scale": 1.25, "marker_color": "#ffd23f" },
-        "boss":  { "hp_multiplier": 7.0, "resistance_floor": 0.25, "resistance_cap": 0.5, "rank": "boss",  "scale": 1.4,  "marker_color": "#ff3f6c" }
+        "elite": { "hp_multiplier": 2.5, "resistance_floor": 0.25, "resistance_cap": 0.5, "rank": "elite", "scale": 1.0, "marker_color": "#ffd23f" },
+        "boss":  { "hp_multiplier": 7.0, "resistance_floor": 0.25, "resistance_cap": 0.5, "rank": "boss",  "scale": 1.0,  "marker_color": "#ff3f6c" }
     },
     "rooms": {
         "combat": [

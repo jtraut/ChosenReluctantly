@@ -819,5 +819,23 @@
         "columns": 1,
         "groups": [{"scene": "res://scenes/enemies/BossGuardian.tscn", "count": 1}],
         "boss_attacks": ["smash", "slam", "volley", "charge"]
+    },
+    "boss_edge": {
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "enemy_max_health": 9999,
+        "origin_offset": [0.0, 0.0, -5.0],
+        "columns": 1,
+        "groups": [{"scene": "res://scenes/enemies/BossGuardian.tscn", "count": 1}],
+        "hp_fractions": [0.5]
+    },
+    "boss_phase3": {
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "enemy_max_health": 9999,
+        "origin_offset": [0.0, 0.0, -9.0],
+        "columns": 1,
+        "groups": [{"scene": "res://scenes/enemies/BossGuardian.tscn", "count": 1}],
+        "boss_phase": 2
     }
 }

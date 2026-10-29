@@ -72,27 +72,33 @@ static func projectile_lane(pool: EffectPool, origin: Vector3, direction: Vector
 			VfxConfig.marker("projectile_lane_duration"), 1.0, 1.0, VfxConfig.marker("projectile_lane_alpha"), 0.0, yaw) 			.lengthened(VfxSizing.projectile_lane_length(max_range, hit_radius))
 
 
+## Lane alpha: `boss` telegraphs are bolder (same shape, size and tint; only more opaque), so a boss attack never reads
+## as a regular enemy's.
+static func _lane_alpha(boss: bool) -> float:
+	return VfxConfig.marker("boss_lane_alpha") if boss else VfxConfig.marker("enemy_shot_lane_alpha")
+
+
 ## A ranged enemy's wind-up lane: the strip its shot will fly along (as wide as the area the shot hits the
 ## PLAYER over), shown for the whole wind-up so the shot can be sidestepped. Tinted for the enemy team.
-static func enemy_shot_lane(pool: EffectPool, origin: Vector3, direction: Vector3, max_range: float, hit_radius: float, color: Color, duration: float) -> PooledEffect:
+static func enemy_shot_lane(pool: EffectPool, origin: Vector3, direction: Vector3, max_range: float, hit_radius: float, color: Color, duration: float, boss: bool = false) -> PooledEffect:
 	if pool == null or direction.length_squared() < 0.0001 or duration <= 0.0:
 		return null
 	var yaw: float = atan2(-direction.x, -direction.z)
 	var lane: PooledEffect = pool.play(EffectPool.Shape.STRIP, origin, VfxSizing.lateral_reach_vs_player(hit_radius), color,
-			duration, 1.0, 1.0, VfxConfig.marker("enemy_shot_lane_alpha"), 0.0, yaw)
+			duration, 1.0, 1.0, _lane_alpha(boss), 0.0, yaw)
 	return lane.lengthened(VfxSizing.enemy_shot_lane_length(max_range, hit_radius)) if lane != null else null
 
 
 ## A charging enemy's wind-up lane: the strip it will run along, as wide as the sphere it sweeps reaches into the player
 ## (VfxSizing.charge_lane_*), starting that reach behind the start point. Shown for the whole wind-up.
-static func enemy_charge_lane(pool: EffectPool, start: Vector3, direction: Vector3, distance: float, hit_radius: float, color: Color, duration: float) -> PooledEffect:
+static func enemy_charge_lane(pool: EffectPool, start: Vector3, direction: Vector3, distance: float, hit_radius: float, color: Color, duration: float, boss: bool = false) -> PooledEffect:
 	if pool == null or direction.length_squared() < 0.0001 or duration <= 0.0:
 		return null
 	var dir: Vector3 = direction.normalized()
 	var yaw: float = atan2(-dir.x, -dir.z)
 	var origin: Vector3 = start - dir * VfxSizing.lateral_reach_vs_player(hit_radius)
 	var lane: PooledEffect = pool.play(EffectPool.Shape.STRIP, origin, VfxSizing.charge_lane_half_width(hit_radius), color,
-			duration, 1.0, 1.0, VfxConfig.marker("enemy_shot_lane_alpha"), 0.0, yaw)
+			duration, 1.0, 1.0, _lane_alpha(boss), 0.0, yaw)
 	return lane.lengthened(VfxSizing.charge_lane_length(distance, hit_radius)) if lane != null else null
 
 
@@ -141,8 +147,10 @@ const AOE_TELEGRAPH_FILL_ALPHA := 0.1
 const AOE_TELEGRAPH_FILL_ALPHA_END := 0.4
 const AOE_TELEGRAPH_EDGE_ALPHA := 0.55
 const AOE_TELEGRAPH_EDGE_ALPHA_END := 1.0
+## Radius of a boss telegraph's second, inner outline ring, as a fraction of the hit reach.
+const BOSS_EDGE_INNER := 0.93
 
-static func aoe_telegraph(pool: EffectPool, center: Vector3, hit_reach: float, color: Color) -> Array[PooledEffect]:
+static func aoe_telegraph(pool: EffectPool, center: Vector3, hit_reach: float, color: Color, boss: bool = false) -> Array[PooledEffect]:
 	var effects: Array[PooledEffect] = []
 	if pool == null:
 		return effects
@@ -155,6 +163,11 @@ static func aoe_telegraph(pool: EffectPool, center: Vector3, hit_reach: float, c
 	var front: PooledEffect = pool.play(EffectPool.Shape.RING, center + Vector3(0.0, 0.03, 0.0), hit_reach, Color.WHITE, 1.0, AOE_TELEGRAPH_START, 1.0, 0.8, 0.0)
 	if front != null:
 		effects.append(front.driven())
+	if boss:
+		# A second outline just inside the hit edge (a bolder edge; nothing is drawn past the real reach).
+		var inner: PooledEffect = pool.play(EffectPool.Shape.RING, center + Vector3(0.0, 0.025, 0.0), hit_reach * BOSS_EDGE_INNER, lighter(color, 0.6), 1.0, 1.0, 1.0, AOE_TELEGRAPH_EDGE_ALPHA, AOE_TELEGRAPH_EDGE_ALPHA_END)
+		if inner != null:
+			effects.append(inner.driven())
 	return effects
 
 

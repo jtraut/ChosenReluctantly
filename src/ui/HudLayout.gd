@@ -52,11 +52,26 @@ static func attack_meter_rects(viewport_size: Vector2, cfg: Dictionary) -> Dicti
 	return {&"light": light, &"heavy": heavy}
 
 
-## The "Room X of Y - Type" indicator: top centre, at the safe margin. Clear of the health panel and meters (top
-## left, which are far narrower than half the screen), the slots (bottom) and the F3 overlay (starts lower).
+## The "Room X of Y - Type" indicator: top right, at the safe margin (3c moved it from the top centre, which the
+## boss bar owns). Clear of the health panel and meters (top left), the slots (bottom) and the F3 overlay.
 static func room_indicator_rect(viewport_size: Vector2, cfg: Dictionary) -> Rect2:
 	var s := ui_scale(viewport_size, cfg)
 	var sz: Array = cfg["room_indicator_size"]
 	var size := Vector2(float(sz[0]), float(sz[1])) * s
 	var margin := float(cfg["safe_margin"]) * s
+	return Rect2(Vector2(viewport_size.x - margin - size.x, margin), size)
+
+
+## The boss HP bar block (name, bar, phase line, attack line): top centre at the safe margin.
+static func boss_bar_rect(viewport_size: Vector2, cfg: Dictionary) -> Rect2:
+	var s := ui_scale(viewport_size, cfg)
+	var sz: Array = cfg["boss_bar_size"]
+	var size := Vector2(float(sz[0]), float(sz[1])) * s
+	var margin := float(cfg["safe_margin"]) * s
 	return Rect2(Vector2((viewport_size.x - size.x) * 0.5, margin), size)
+
+
+## Top edge (pixels) of the F3 debug overlay: just under the boss bar block. The overlay itself is not scaled,
+## so at 1080p and 1440p it sits lower, clear of the scaled HUD pieces above it.
+static func debug_overlay_top(viewport_size: Vector2, cfg: Dictionary) -> float:
+	return boss_bar_rect(viewport_size, cfg).end.y + float(cfg["debug_overlay_gap"]) * ui_scale(viewport_size, cfg)

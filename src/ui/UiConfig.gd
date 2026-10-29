@@ -117,6 +117,8 @@ const DEFAULT_HUD: Dictionary = {
 	"reference_height": 720,
 	"safe_margin": 16,
 	"room_indicator_size": [280, 36],
+	"boss_bar_size": [480, 96],
+	"debug_overlay_gap": 16,
 	"fit_padding": 12,
 	"slot_size": [150, 118],
 	"slot_gap": 12,
@@ -423,7 +425,7 @@ const DEFAULT_RUN_UI: Dictionary = {
 	"prompt_icon_size": 40,
 	"prompt_option_arm_delay": 0.4,
 	"option_card_width": 268,
-	"option_reject_width": 188,
+	"option_reject_width": 216,
 	"option_action_width": 380,
 	"option_cell_width": 214,
 	"option_gap": 14,
@@ -448,6 +450,43 @@ const DEFAULT_RUN_UI: Dictionary = {
 	"option_fit_margin": 0.94,
 	"option_min_fit_scale": 0.8,
 }
+
+
+## Boss HP bar (3c): top centre while a boss lives. Sizes are pixels at the hud `reference_height`.
+## Fill, ghost, back and frame colours come from `hp_bars.colors` so the boss bar matches the enemy bars.
+## Words live here too (they are HUD labels, not run texts).
+const DEFAULT_BOSS_BAR: Dictionary = {
+	"name_font_size": 20,
+	"name_min_font_size": 13,
+	"info_font_size": 14,
+	"attack_font_size": 15,
+	"name_height": 24,
+	"meter_height": 26,
+	"notch_height": 6,
+	"info_height": 18,
+	"attack_height": 22,
+	"row_gap": 2,
+	"border": 2,
+	"resist_border": 4,
+	"ticks": ["#f4ece8", "#8d8089"],
+	"text_color": "#ffffff",
+	"text_outline_color": "#0d080b",
+	"info_color": "#e8dfe3",
+	"invuln_color": "#fff3c4",
+	"invuln_stripe_color": "#fff3c4",
+	"invuln_pulse_hz": 3.0,
+	"warn_color": "#ffb08a",
+	"warn_back_color": "#1c1218",
+	"fade_out": 0.4,
+	"phase_format": "Phase %d of %d: %s",
+	"invulnerable_text": "Invulnerable",
+	"resist_all_format": "Resists all elements %d%%",
+	"resist_some_format": "Resists some elements (up to %d%%)",
+}
+
+
+static func boss_bar() -> Dictionary:
+	return merge_with_defaults(DEFAULT_BOSS_BAR, _table.get_entry("boss_bar"))
 
 
 static func run_ui() -> Dictionary:

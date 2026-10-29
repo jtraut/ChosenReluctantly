@@ -9,6 +9,7 @@ const DEFAULTS: Dictionary = {
 	"hurtbox_reach_radius": 0.45,
 	"hurtbox_low_center_height": 0.45,
 	"enemy_shot_lane_alpha": 0.3,
+	"boss_lane_alpha": 0.5,
 	"player_hurtbox_reach_radius": 0.4,
 	"player_hurtbox_low_center_height": 0.4,
 	"heal_color": "#7dff9a",
@@ -70,7 +71,7 @@ const DEFAULTS: Dictionary = {
 }
 
 ## Ground marker tuning (4c): alpha 0..1, durations in seconds, half width in meters.
-const MARKER_KEYS: Array[String] = ["enemy_shot_lane_alpha", "projectile_lane_alpha", "projectile_lane_duration",
+const MARKER_KEYS: Array[String] = ["enemy_shot_lane_alpha", "boss_lane_alpha", "projectile_lane_alpha", "projectile_lane_duration",
 		"dash_path_alpha", "dash_path_duration", "dash_path_half_width",
 		"cone_duration", "cone_alpha", "cone_blade_duration", "cone_blade_alpha", "cone_enemy_duration_scale",
 		"heal_sparkle_size", "heal_sparkle_duration", "heal_sparkle_rise", "heal_ring_radius", "heal_ring_alpha", "heal_ring_duration",

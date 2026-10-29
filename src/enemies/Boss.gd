@@ -397,19 +397,19 @@ func _start_telegraph_visual() -> void:
 			_active_wedge = _wedge_for(_attack_id, color)
 			_active_wedge.show_windup(0.0)
 		"aoe":
-			_hold_parts(TemplateVfx.aoe_telegraph(_tele_pool, _aoe_center(), BossRules.aoe_reach(_attack), color))
+			_hold_parts(TemplateVfx.aoe_telegraph(_tele_pool, _aoe_center(), BossRules.aoe_reach(_attack), color, true))
 		"volley":
 			var half_width_hit: float = float(_attack["hit_radius"])
 			var angles: Array[float] = BossRules.volley_angles(int(_attack["count"]), float(_attack["spread_degrees"]))
 			var parts: Array[PooledEffect] = []
 			for angle: float in angles:
 				var dir: Vector3 = _lock_dir.rotated(Vector3.UP, deg_to_rad(angle))
-				var lane: PooledEffect = TemplateVfx.enemy_shot_lane(_tele_pool, global_position + dir * BossRules.MUZZLE, dir, float(_attack["shot_range"]), half_width_hit, color, _telegraph_total)
+				var lane: PooledEffect = TemplateVfx.enemy_shot_lane(_tele_pool, global_position + dir * BossRules.MUZZLE, dir, float(_attack["shot_range"]), half_width_hit, color, _telegraph_total, true)
 				if lane != null:
 					parts.append(lane)
 			_hold_parts(parts)
 		"charge":
-			var lane2: PooledEffect = TemplateVfx.enemy_charge_lane(_tele_pool, global_position, _lock_dir, float(_attack["distance"]), float(_attack["hit_radius"]), color, _telegraph_total)
+			var lane2: PooledEffect = TemplateVfx.enemy_charge_lane(_tele_pool, global_position, _lock_dir, float(_attack["distance"]), float(_attack["hit_radius"]), color, _telegraph_total, true)
 			var single: Array[PooledEffect] = []
 			if lane2 != null:
 				single.append(lane2)

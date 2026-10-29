@@ -21,6 +21,16 @@ var _last_text: String = ""
 
 func _ready() -> void:
 	visible = false
+	_apply_layout()
+	get_viewport().size_changed.connect(_apply_layout)
+
+
+## Sits under the scaled HUD pieces above it (the boss bar block): see HudLayout.debug_overlay_top.
+func _apply_layout() -> void:
+	var top: float = HudLayout.debug_overlay_top(get_viewport().get_visible_rect().size, UiConfig.hud())
+	label.position.y = top + PANEL_PADDING
+	panel.position.y = top
+	_last_text = ""  # the next _process rebuilds the backing panel around the label
 
 
 func _unhandled_input(event: InputEvent) -> void:

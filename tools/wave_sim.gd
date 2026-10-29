@@ -55,6 +55,16 @@ var _pair_frames: int = 0
 var _pair_ok_frames: int = 0
 var _pair_min_sum: float = 0.0
 var _pair_min_all: float = INF
+## Pinned-stretch metric (C1-c, read-only): a frame is "pinned" when the bot commanded movement last
+## frame but the player moved under PIN_FRACTION of the distance that speed allows. Reports the count
+## and the longest unbroken stretch, so solid enemies (body.collide_with_enemies) can be judged.
+const PIN_FRACTION := 0.25
+var _pin_want: Vector3 = Vector3.ZERO
+var _pin_prev_pos: Vector3 = Vector3.ZERO
+var _pin_frames: int = 0
+var _pin_streak: int = 0
+var _pin_streak_max: int = 0
+var _pin_frames_total: int = 0
 
 
 ## --trace: print the state hash once per sim second (find where two runs of a seed diverge).
@@ -126,6 +136,12 @@ func _reset_run_state(run_seed: int) -> void:
 	_perf_samples = 0
 	_died_at = -1.0
 	_pair_frames = 0
+	_pin_want = Vector3.ZERO
+	_pin_prev_pos = Vector3.ZERO
+	_pin_frames = 0
+	_pin_streak = 0
+	_pin_streak_max = 0
+	_pin_frames_total = 0
 	_pair_ok_frames = 0
 	_pair_min_sum = 0.0
 	_pair_min_all = INF
@@ -184,6 +200,7 @@ func _run_one(run_seed: int) -> void:
 			_profile_attack_query()  # keeps the busiest sample of the run
 		_count_kills(enemies, prev_enemies)
 		_sample_spacing(enemies)
+		_sample_pin(dt)
 		_bot_step(enemies)
 		_track_progress()
 		if _trace and _sim_time >= _trace_next:
@@ -222,6 +239,24 @@ func _enemies() -> Array[Enemy]:
 		if child is Enemy and not (child as Enemy).health.is_dead():
 			list.append(child)
 	return list
+
+
+func _sample_pin(dt: float) -> void:
+	var here := _player.global_position
+	if _player.is_dead() or dt <= 0.0:
+		_pin_streak = 0
+	elif _pin_want.length_squared() > 0.0001:
+		_pin_frames_total += 1
+		var moved := Vector2(here.x - _pin_prev_pos.x, here.z - _pin_prev_pos.z).length()
+		if moved < PIN_FRACTION * _player.get_move_speed() * dt:
+			_pin_frames += 1
+			_pin_streak += 1
+			_pin_streak_max = maxi(_pin_streak_max, _pin_streak)
+		else:
+			_pin_streak = 0
+	else:
+		_pin_streak = 0
+	_pin_prev_pos = here
 
 
 func _sample_spacing(enemies: Array[Enemy]) -> void:
@@ -344,6 +379,7 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 	if _idle:
 		return  # a player who stands still: only the auto light attack acts (aim is frozen)
 	if enemies.is_empty():
+		_pin_want = Vector3.ZERO
 		_hold_still()
 		return
 	var me := _player.global_position
@@ -377,6 +413,7 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 	var limit: float = float(_main.enemy_spawner.plan.config["arena_half_extent"]) - 3.0
 	if absf(me.x) > limit or absf(me.z) > limit:
 		want = (-me).normalized()
+	_pin_want = want
 	_drive(want)
 	if danger != null and _sim_time >= _dodge_cooldown_until:
 		_press(&"dodge")
@@ -452,6 +489,8 @@ func _report(run_seed: int, wall_ms: int) -> void:
 		_damage_taken, _kills, _casts, _max_alive, mean_alive, _main.enemy_spawner.plan.stages_started(), _max_stall])
 	print("    result: seed %d hp_lost %.3f kills %d casts %d alive_max %d stages %d sim_time %.3f state_hash %d" % [
 		run_seed, _damage_taken, _kills, _casts, _max_alive, _main.enemy_spawner.plan.stages_started(), _sim_time, _state_hash()])
+	print("    pinned: %d of %d move-commanded frames (%.1f%%), longest stretch %d frames (%.2f s)" % [
+		_pin_frames, _pin_frames_total, 100.0 * float(_pin_frames) / maxf(float(_pin_frames_total), 1.0), _pin_streak_max, float(_pin_streak_max) / 60.0])
 	print("    spacing (melee within %.0f m of player, %d frames with 2+): mean min-pair %.2f m, worst %.2f m, %.0f%% of frames >= %.1f m" % [
 		NEAR_RADIUS, _pair_frames, _pair_min_sum / maxf(float(_pair_frames), 1.0), (_pair_min_all if _pair_frames > 0 else 0.0), 100.0 * float(_pair_ok_frames) / maxf(float(_pair_frames), 1.0), SPACING_OK])
 	print("    headless frame ms (wall, each frame steps ~%.0fx physics): p50 %.2f p95 %.2f max %.2f | engine process %.2f ms, physics %.2f ms avg per frame | _attack_has_target %.1f us/call with %d enemies alive (%d calls)" % [

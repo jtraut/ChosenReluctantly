@@ -19,8 +19,12 @@ extends RefCounted
 ##   costs_reject: bool  true on the reject option
 ##   opens_list: bool    true on "Remove a card" in the rest menu (it opens the removal list)
 ##   amount: float       HP a heal option gives, else 0
+##   owned: int          copies of this card in the deck now (card options), else 0
+##   slot_contents: Array[String]  names of the distinct cards the deck holds in this card's slot now, in name order
+##                       (card options of a reward; [] elsewhere), for "Slot 1 now: A, B, C"
 ##
-## Model dict (`model`): {choice: "reward"|"rest"|"rest_remove", title, line, options, rejects_remaining, rejects_max}.
+## Model dict (`model`): {choice: "reward"|"rest"|"rest_remove", title, line, options, rejects_remaining, rejects_max,
+## owned: Dictionary card_id -> copies, next_room_type: String ("" here; RunController fills it from the room list)}.
 
 const KINDS: Array[String] = ["card", "remove", "heal", "skip", "back"]
 
@@ -90,7 +94,33 @@ static func model(state: RunState, ctx: Dictionary) -> Dictionary:
 		"options": options(state, ctx),
 		"rejects_remaining": state.rejects_remaining,
 		"rejects_max": int(ctx["rejects_max"]),
+		"owned": owned_counts(state),
+		"next_room_type": "",
 	}
+
+
+## card id -> copies in the deck.
+static func owned_counts(state: RunState) -> Dictionary:
+	var counts: Dictionary = {}
+	for card_id: String in state.deck:
+		counts[card_id] = int(counts.get(card_id, 0)) + 1
+	return counts
+
+
+## Names of the distinct cards the deck holds in `slot_type`, sorted by name.
+static func slot_contents(state: RunState, slot_type: String, ctx: Dictionary) -> Array[String]:
+	var names: Array[String] = []
+	var by_id: Dictionary = ctx["by_id"]
+	var seen: Array[String] = []
+	for card_id: String in state.deck:
+		if seen.has(card_id):
+			continue
+		seen.append(card_id)
+		var card: Dictionary = by_id.get(card_id, {})
+		if String(card.get("slot_type", "")) == slot_type:
+			names.append(String(card.get("name", card_id)))
+	names.sort()
+	return names
 
 
 static func options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
@@ -99,7 +129,10 @@ static func options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 	match state.pending:
 		RunState.PENDING_REWARD:
 			for card_id: String in state.offer:
-				out.append(card_option("card:" + card_id, "card", card_id, ctx))
+				var offered_option: Dictionary = card_option("card:" + card_id, "card", card_id, ctx)
+				offered_option["owned"] = state.deck.count(card_id)
+				offered_option["slot_contents"] = slot_contents(state, String(offered_option["slot_type"]), ctx)
+				out.append(offered_option)
 			var r: Dictionary = ui["reward"]
 			var skip: Dictionary = _blank("skip", "skip")
 			skip["label"] = String(r["skip_label"])
@@ -253,5 +286,5 @@ static func _blank(option_id: String, kind: String) -> Dictionary:
 	return {
 		"id": option_id, "kind": kind, "label": "", "detail": "", "flavor": "", "card_id": "",
 		"slot_type": "", "slot_name": "", "count": 0, "enabled": true, "reason": "",
-		"costs_reject": false, "opens_list": false, "amount": 0.0,
+		"costs_reject": false, "opens_list": false, "amount": 0.0, "owned": 0, "slot_contents": [],
 	}

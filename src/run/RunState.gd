@@ -15,6 +15,7 @@ const PENDING_NONE := ""
 const PENDING_REWARD := "reward"
 const PENDING_REST := "rest"
 const PENDING_REST_REMOVE := "rest_remove"
+const PENDING_VALUES: Array[String] = [PENDING_NONE, PENDING_REWARD, PENDING_REST, PENDING_REST_REMOVE]
 
 var seed_value: int = 0
 var room_index: int = 0
@@ -116,9 +117,22 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.max_hp = float(data["max_hp"])
 	state.rejects_remaining = int(data["rejects_remaining"])
 	state.outcome = String(data.get("outcome", ""))
-	state.pending = String(data.get("pending", PENDING_NONE))
-	for offered: Variant in (data.get("offer", []) as Array):
-		state.offer.append(String(offered))
+	var dropped_choice: bool = false
+	var offered_ids: Variant = data.get("offer", [])
+	if typeof(offered_ids) == TYPE_ARRAY:
+		for offered: Variant in (offered_ids as Array):
+			state.offer.append(String(offered))
+	var pending_value: Variant = data.get("pending", PENDING_NONE)
+	if typeof(pending_value) == TYPE_STRING and PENDING_VALUES.has(String(pending_value)) and not (String(pending_value) == PENDING_REWARD and state.offer.is_empty()):
+		state.pending = String(pending_value)
+	else:
+		# An unknown (or non-string, or an empty reward) pending must not leave a screen that can never close.
+		# The choice is dropped. If the room it followed was already won and recorded (the history holds
+		# this room), the run moves on to the next room instead of replaying the won room.
+		push_error("RunState.from_dict: unknown pending value %s; no choice is open" % str(pending_value))
+		state.pending = PENDING_NONE
+		state.offer = []
+		dropped_choice = true
 	for entry: Variant in (data.get("choice_log", []) as Array):
 		if typeof(entry) != TYPE_DICTIONARY:
 			push_error("RunState.from_dict: choice_log entries must be objects")
@@ -144,6 +158,8 @@ static func from_dict(data: Dictionary) -> RunState:
 			"hp_end": float(e.get("hp_end", 0.0)),
 			"seconds": float(e.get("seconds", 0.0)),
 		})
+	if dropped_choice and not state.history.is_empty() and int((state.history[state.history.size() - 1] as Dictionary)["index"]) == state.room_index:
+		state.room_index += 1
 	return state
 
 

@@ -217,6 +217,7 @@ func current_choice() -> Dictionary:
 	model["room_type"] = room_type()
 	model["room_type_name"] = room_type_name()
 	model["next_line"] = next_room_line()
+	model["next_room_type"] = next_room_type()
 	return model
 
 
@@ -230,6 +231,13 @@ func next_room_line() -> String:
 		return ""
 	var next_room: Dictionary = _rooms[_state.room_index + 1]
 	return String(RunConfig.ui()["next_line"]) % [_state.room_index + 2, _rooms.size(), room_type_name(String(next_room["type"]))]
+
+## The room type after this one ("combat", "elite", "rest", "boss"), or "" after the last room.
+func next_room_type() -> String:
+	if _state == null or _state.room_index + 1 >= _rooms.size():
+		return ""
+	return String((_rooms[_state.room_index + 1] as Dictionary)["type"])
+
 
 func state() -> RunState:
 	return _state

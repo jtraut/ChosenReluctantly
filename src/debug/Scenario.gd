@@ -146,6 +146,17 @@ func _build() -> void:
 	if _def.has("player_start_damage"):
 		player.health.take_damage(float(_def["player_start_damage"]), "physical")
 
+	# Capture-only (3c): start the boss in a later phase and/or script its attack order, so each attack can be shot.
+	for enemy in _enemies:
+		if enemy is Boss:
+			if _def.has("boss_phase"):
+				(enemy as Boss).debug_set_phase(int(_def["boss_phase"]))
+			if _def.has("boss_attacks"):
+				var script_ids: Array[String] = []
+				for id: Variant in _def["boss_attacks"]:
+					script_ids.append(String(id))
+				(enemy as Boss).debug_script_attacks(script_ids)
+
 	var fractions: Array = _def.get("hp_fractions", [])
 	for i in range(mini(fractions.size(), _enemies.size())):
 		var health: Health = _enemies[i].health

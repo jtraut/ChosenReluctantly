@@ -37,7 +37,7 @@ material_override = SubResource("StandardMaterial3D_1")
 
 [node name="Health" type="Node" parent="."]
 script = ExtResource("2")
-max_health = 520.0
+max_health = 280.0
 
 [node name="StatusEffectManager" type="Node" parent="."]
 script = ExtResource("3")

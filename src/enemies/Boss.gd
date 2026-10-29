@@ -73,6 +73,11 @@ var _death_total: float = 0.0
 var _death_last_usec: int = 0
 var _mesh_scale: Vector3 = Vector3.ONE
 var _seeded: bool = false
+var _wedges: Dictionary = {}
+var _known_max: float = 0.0
+var _scripted: Array[String] = []
+var _scripted_index: int = 0
+var _active_wedge: AttackArcVisual = null
 
 
 func _ready() -> void:
@@ -95,7 +100,9 @@ func _ready() -> void:
 	var resistance: float = float(_def["resistance"])
 	health.resistance_cap = maxf(health.resistance_cap, resistance)
 	health.resistances = TierRules.resistances(health.resistances, TierRules.element_ids(), resistance, resistance)
+	_known_max = max_hp
 	health.hp_floor = BossRules.floor_hp(_phases, 1, max_hp)
+	health.health_changed.connect(_on_health_changed)
 	health.health_changed.emit(max_hp, max_hp)
 	_attack_cooldown_remaining = float(_def["spawn_grace"])
 	if not _seeded:
@@ -104,6 +111,27 @@ func _ready() -> void:
 
 
 # ---- API for the spawner, ux and tests ----
+
+## The HP thresholds are fractions of max HP, so a change of max HP (a scenario, a debug tool) moves the floor with it.
+func _on_health_changed(_current: float, maximum: float) -> void:
+	if not is_equal_approx(maximum, _known_max) and not _phases.is_empty():
+		_known_max = maximum
+		health.hp_floor = BossRules.floor_hp(_phases, phase_index + 1, maximum)
+
+
+## Capture and test tooling only: start in phase `index` (0-based) at the HP that phase begins at.
+func debug_set_phase(index: int) -> void:
+	phase_index = clampi(index, 0, _phases.size() - 1)
+	var enters: float = float((_phases[phase_index] as Dictionary)["enters_at"])
+	health.hp_floor = BossRules.floor_hp(_phases, phase_index + 1, health.max_health)
+	health.current_health = maxf(health.max_health * enters, health.hp_floor + 1.0) if phase_index > 0 else health.max_health
+	health.health_changed.emit(health.current_health, health.max_health)
+
+
+## Capture and test tooling only: the next attacks are these ids in order (cycling), ignoring weights and distance windows.
+func debug_script_attacks(ids: Array[String]) -> void:
+	_scripted = ids
+	_scripted_index = 0
 
 ## Seeds the boss's own attack picks and add placement (the spawner passes the room seed). Never uses the global RNG.
 func set_seed(seed_value: int) -> void:
@@ -301,7 +329,7 @@ func _tick_chase(delta: float) -> Vector3:
 	var to_target: Vector3 = _flat_to_target()
 	var distance: float = to_target.length()
 	if _attack_cooldown_remaining <= 0.0:
-		var picked: String = BossRules.pick(BossRules.eligible(_phase(), _attacks, distance), _rng)
+		var picked: String = _next_scripted() if not _scripted.is_empty() else BossRules.pick(BossRules.eligible(_phase(), _attacks, distance), _rng)
 		if picked != "":
 			_begin_windup(picked)
 			return Vector3.ZERO
@@ -323,6 +351,12 @@ func _step_away() -> Vector3:
 	if absf(ahead.x) > ARENA_LIMIT or absf(ahead.z) > ARENA_LIMIT:
 		away = -_lock_dir
 	return away * float(_phase()["move_speed"])
+
+
+func _next_scripted() -> String:
+	var id: String = _scripted[_scripted_index % _scripted.size()]
+	_scripted_index += 1
+	return id if _attacks.has(id) else ""
 
 
 func _begin_windup(attack_id: String) -> void:
@@ -359,12 +393,8 @@ func _start_telegraph_visual() -> void:
 	var color: Color = _telegraph_color()
 	match String(_attack["kind"]):
 		"cone":
-			if _wedge == null:
-				_wedge = AttackArcVisual.new()
-				_wedge.name = "TelegraphWedge"
-				add_child(_wedge)
-			_wedge.setup(BossRules.cone_reach(_attack), float(_attack["half_angle_degrees"]), color)
-			_wedge.show_windup(0.0)
+			_active_wedge = _wedge_for(_attack_id, color)
+			_active_wedge.show_windup(0.0)
 		"aoe":
 			_hold_parts(TemplateVfx.aoe_telegraph(_tele_pool, _aoe_center(), BossRules.aoe_reach(_attack), color))
 		"volley":
@@ -385,6 +415,17 @@ func _start_telegraph_visual() -> void:
 			_hold_parts(single)
 
 
+## One ground wedge per cone attack, built once on first use (AttackArcVisual.setup adds its meshes, so it runs once).
+func _wedge_for(attack_id: String, color: Color) -> AttackArcVisual:
+	if not _wedges.has(attack_id):
+		var wedge := AttackArcVisual.new()
+		wedge.name = "TelegraphWedge_" + attack_id
+		add_child(wedge)
+		wedge.setup(BossRules.cone_reach(_attack), float(_attack["half_angle_degrees"]), color)
+		_wedges[attack_id] = wedge
+	return _wedges[attack_id]
+
+
 func _hold_parts(parts: Array[PooledEffect]) -> void:
 	_tele_parts = parts
 	_tele_gens = []
@@ -399,8 +440,8 @@ func _aoe_center() -> Vector3:
 func _update_telegraph_visual(progress: float) -> void:
 	match String(_attack["kind"]):
 		"cone":
-			if _wedge != null:
-				_wedge.show_windup(progress)
+			if _active_wedge != null:
+				_active_wedge.show_windup(progress)
 		"aoe":
 			if _tele_pool != null and is_instance_valid(_tele_pool):
 				for index in range(_tele_parts.size()):
@@ -409,8 +450,9 @@ func _update_telegraph_visual(progress: float) -> void:
 
 
 func _stop_telegraph_visual() -> void:
-	if _wedge != null:
-		_wedge.hide_now()
+	for wedge: Variant in _wedges.values():
+		(wedge as AttackArcVisual).hide_now()
+	_active_wedge = null
 	if _tele_pool != null and is_instance_valid(_tele_pool):
 		for index in range(_tele_parts.size()):
 			_tele_pool.stop(_tele_parts[index], _tele_gens[index])

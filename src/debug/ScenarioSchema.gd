@@ -13,8 +13,10 @@ const NUMBERS: Dictionary = {
 	"stun_at": 0.0, "stun_duration": 0.01, "open_settings_at": 0.0, "debug_overlay_at": 0.0,
 }
 ## key -> minimum (inclusive) for a whole number.
-const INTS: Dictionary = {"columns": 1, "status_seed": -2147483647, "wave_seed": 0}
+const INTS: Dictionary = {"columns": 1, "status_seed": -2147483647, "wave_seed": 0, "boss_phase": 0}
 const STRINGS: Array[String] = ["heavy_class"]
+## key -> array of non-empty strings (3c: "boss_attacks" scripts the boss's attack order for captures).
+const STRING_ARRAYS: Array[String] = ["boss_attacks"]
 ## key -> exact number of finite numbers in the array.
 const NUMBER_ARRAYS: Dictionary = {"origin_offset": 3, "spacing": 2, "aim_point_offset": 2}
 const INDEX_ARRAYS: Array[String] = ["burn_indices", "bleed_indices", "stun_indices", "boss_indices"]
@@ -42,6 +44,8 @@ static func validate(scenario_id: String, def: Variant) -> Array[String]:
 		elif STRINGS.has(name):
 			if typeof(value) != TYPE_STRING or String(value).strip_edges().is_empty():
 				problems.append("%s must be a non-empty string" % where)
+		elif STRING_ARRAYS.has(name):
+			problems.append_array(_string_array(where, value))
 		elif NUMBER_ARRAYS.has(name):
 			problems.append_array(_number_array(where, value, int(NUMBER_ARRAYS[name])))
 		elif INDEX_ARRAYS.has(name):
@@ -81,6 +85,18 @@ static func _number_array(where: String, value: Variant, length: int) -> Array[S
 	for item: Variant in values:
 		if not _is_number(item):
 			problems.append("%s has a non-number or non-finite entry" % where)
+			break
+	return problems
+
+
+static func _string_array(where: String, value: Variant) -> Array[String]:
+	var problems: Array[String] = []
+	if typeof(value) != TYPE_ARRAY or (value as Array).is_empty():
+		problems.append("%s must be a non-empty array of strings" % where)
+		return problems
+	for item: Variant in value as Array:
+		if typeof(item) != TYPE_STRING or String(item).strip_edges().is_empty():
+			problems.append("%s must hold non-empty strings" % where)
 			break
 	return problems
 

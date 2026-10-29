@@ -757,3 +757,116 @@ func test_boss_death_beat_comes_before_the_win_screen() -> void:
 	assert_bool((main.get_node("WinScreen") as CanvasLayer).visible).is_true()
 	assert_str(RunSession.current.outcome).is_equal("won")
 	assert_bool(main.player.is_dead()).is_false()
+
+
+# ---- Health floor, wedge reuse, scenario, relay ----
+
+func test_health_floor_defaults_to_nothing_and_holds_when_set() -> void:
+	var health := Health.new()
+	health.max_health = 100.0
+	add_child(health)
+	auto_free(health)
+	health.current_health = 100.0
+	var died: Array[int] = []
+	health.died.connect(func() -> void: died.append(1))
+	assert_float(health.hp_floor).is_equal(0.0)
+	health.hp_floor = 40.0
+	health.take_damage(90.0)
+	assert_float(health.current_health).is_equal(40.0)
+	assert_array(died).is_empty()
+	health.take_damage(5.0)  # already at the floor: nothing is taken, nothing is emitted
+	assert_float(health.current_health).is_equal(40.0)
+	health.hp_floor = 0.0
+	health.take_damage(90.0)
+	assert_float(health.current_health).is_equal(0.0)
+	assert_array(died).has_size(1)
+
+
+func test_damage_dealt_counts_only_the_hp_actually_taken_at_the_floor() -> void:
+	var main := _spawn_main()
+	var boss := _boss(main)
+	var dealer := TestCaster.new()
+	add_child(dealer)
+	auto_free(dealer)
+	await _frames(1)
+	boss.health.take_damage(boss.health.max_health * 2.0, "physical", Vector3.ZERO, dealer)
+	var taken: float = boss.health.max_health * 0.34
+	assert_float(float(dealer.dealt[0][0])).is_equal_approx(taken, 0.05)
+
+
+func test_floors_follow_a_change_of_max_hp() -> void:
+	var main := _spawn_main()
+	var boss := _boss(main)
+	await _frames(1)
+	boss.health.set_max_health(9999.0)
+	boss.health.heal(9999.0)
+	assert_float(boss.health.hp_floor).is_equal_approx(9999.0 * 0.66, 0.01)
+
+
+func test_the_cone_wedge_is_built_once_however_often_it_telegraphs() -> void:
+	var main := _spawn_main()
+	var boss := _boss(main)
+	await _frames(1)
+	boss.set_physics_process(false)
+	boss._begin_windup("smash")
+	var wedge: Node = boss.get_node("TelegraphWedge_smash")
+	var children: int = wedge.get_child_count()
+	assert_int(children).is_greater(0)
+	for i in range(4):
+		boss._cancel_attack()
+		boss._begin_windup("smash")
+	assert_int(boss.get_node("TelegraphWedge_smash").get_child_count()).is_equal(children)
+	assert_int(boss.get_children().filter(func(n: Node) -> bool: return n.name.begins_with("TelegraphWedge")).size()).is_equal(1)
+
+
+func test_boss_capture_scenario_builds_a_9999_hp_boss_with_a_scripted_attack_order() -> void:
+	var main := _spawn_main()
+	await get_tree().process_frame
+	var scenario := Scenario.setup(main, "boss")
+	assert_object(scenario).is_not_null()
+	var boss: Boss = scenario.enemies()[0] as Boss
+	assert_object(boss).is_not_null()
+	await _frames(2)
+	assert_float(boss.health.max_health).is_equal(9999.0)
+	assert_float(boss.health.current_health).is_equal(9999.0)
+	assert_float(main.player.health.max_health).is_equal(9999.0)
+	# Every attack comes up in the scripted order, each with its real telegraph.
+	var order: Array[String] = []
+	boss.attack_telegraphed.connect(func(id: String, _l: String, _w: float) -> void: order.append(id))
+	boss._attack_cooldown_remaining = 0.0
+	main.player.health.damage_immune = true
+	await _until(func() -> bool: return order.size() >= 4, 25.0)
+	assert_array(order.slice(0, 4)).is_equal(["smash", "slam", "volley", "charge"])
+
+
+func test_scenario_schema_accepts_and_rejects_the_boss_flags() -> void:
+	assert_array(ScenarioSchema.validate("t", {"boss_phase": 2, "boss_attacks": ["smash"]})).is_empty()
+	for bad: Dictionary in [{"boss_phase": -1}, {"boss_phase": 1.5}, {"boss_attacks": []}, {"boss_attacks": [3]}, {"boss_attacks": "smash"}, {"boss_phases": 1}]:
+		assert_array(ScenarioSchema.validate("t", bad)).override_failure_message("accepted %s" % str(bad)).is_not_empty()
+
+
+func test_debug_set_phase_starts_the_boss_in_that_phase() -> void:
+	var main := _spawn_main()
+	var boss := _boss(main)
+	await _frames(1)
+	boss.debug_set_phase(2)
+	assert_int(boss.phase_index).is_equal(2)
+	assert_float(boss.health.hp_floor).is_equal(0.0)
+	assert_float(boss.health.current_health / boss.health.max_health).is_less_equal(0.33 + 0.0001)
+	var ids: Array[String] = []
+	for e: Dictionary in BossRules.eligible(boss._phase(), boss._attacks, 10.0):
+		ids.append(String(e["id"]))
+	assert_array(ids).contains(["charge"])
+
+
+func test_the_run_controller_relays_the_boss_to_the_ui() -> void:
+	var main := _boss_room_main()
+	await get_tree().process_frame
+	var seen: Array[Boss] = []
+	main.run_controller.boss_spawned.connect(func(b: Boss) -> void: seen.append(b))
+	assert_object(main.run_controller.current_boss()).is_null()
+	main.enemy_spawner._process(3.0)
+	assert_array(seen).has_size(1)
+	assert_object(main.run_controller.current_boss()).is_same(seen[0])
+	assert_str(seen[0].display_name()).is_equal("The Overly Enthusiastic Guardian")
+	assert_array(seen[0].phase_thresholds()).is_equal([0.66, 0.33])

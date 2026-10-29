@@ -453,9 +453,24 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 	var limit: float = float(_main.enemy_spawner.plan.config["arena_half_extent"]) - 3.0
 	if absf(me.x) > limit or absf(me.z) > limit:
 		want = (-me).normalized()
+	# Run mode, boss fight: leave the area of a wind-up by the shortest way (Boss.escape_direction), and dodge if the
+	# telegraph is nearly over and the bot is still inside it. Plain enemies never trigger this.
+	var boss_threat: bool = false
+	if _run_mode:
+		for enemy in enemies:
+			if enemy is Boss and (enemy as Boss).in_threat(me):
+				boss_threat = true
+				want = (enemy as Boss).escape_direction(me)
+				var left: float = (enemy as Boss).telegraph_left()
+				if (enemy as Boss).state_name() == "ACTIVE" or left < 0.3:
+					danger = enemy
+				break
 	_pin_want = want
 	_drive(want)
-	if danger != null and _sim_time >= _dodge_cooldown_until:
+	if boss_threat and danger != null and _sim_time >= _dodge_cooldown_until:
+		_press(&"dodge")
+		_dodge_cooldown_until = _sim_time + 0.9
+	elif danger != null and not (danger is Boss) and _sim_time >= _dodge_cooldown_until:
 		_press(&"dodge")
 		_dodge_cooldown_until = _sim_time + 0.9
 	if crowd >= 2 and _sim_time >= _heavy_until:
@@ -586,6 +601,10 @@ func _run_whole(run_seed: int) -> void:
 		var room_result: String = await _play_room(run_seed, controller, rooms[room_index])
 		(result["room_s"] as Array).append(snappedf(_sim_time, 0.1))
 		(result["room_min_hp"] as Array).append(snappedf(_room_min_hp, 0.1))
+		if _boss_start >= 0.0:
+			var fight: float = (_boss_end if _boss_end >= 0.0 else _sim_time) - _boss_start
+			result["boss_fight_s"] = snappedf(fight, 0.1)
+			print("    boss fight (spawn to death): %.1f s, %s | player lowest HP %.1f" % [fight, "boss died" if _boss_end >= 0.0 else "boss NOT dead", _room_min_hp])
 		run_sim_total += _sim_time
 		if room_result == "lost":
 			result["outcome"] = "lost"
@@ -730,6 +749,8 @@ func _await_new_main(old: Node) -> Node:
 func _begin_run_room(run_seed: int, room: Dictionary) -> void:
 	_sim_time = 0.0
 	_clock = 0.0
+	_boss_start = -1.0
+	_boss_end = -1.0
 	_last_stage_count = 0
 	_last_progress_time = 0.0
 	_kills = 0
@@ -777,10 +798,32 @@ func _play_room(run_seed: int, controller: RunController, room: Dictionary) -> S
 		_check_world(enemies, cap, dt)
 		_check_cooldowns(run_seed, room)
 		_count_kills(enemies, prev_enemies)
+		_track_boss(enemies)
 		_bot_step(enemies)
+		if OS.has_environment("BOSS_TRACE") and int(_sim_time * 60.0) % 300 == 0:
+			for e: Enemy in enemies:
+				if e is Boss:
+					print("  trace t=%.0f boss_hp=%.0f phase=%d state=%s dist=%.1f me_hp=%.0f" % [_sim_time, e.health.current_health, (e as Boss).phase_index, (e as Boss).state_name(), e.global_position.distance_to(_player.global_position), _player.health.current_health])
 		if _god:
 			_player.health.heal(9999.0)
 	return "unreachable"
+
+
+## Boss fight timing: from the boss appearing to its death (the death beat and the win wait are not counted: the beat
+## runs on the wall clock, which at sim speed is many sim seconds).
+var _boss_start: float = -1.0
+var _boss_end: float = -1.0
+
+
+func _track_boss(enemies: Array[Enemy]) -> void:
+	var has_boss: bool = false
+	for enemy in enemies:
+		if enemy is Boss:
+			has_boss = true
+	if has_boss and _boss_start < 0.0:
+		_boss_start = _sim_time
+	elif not has_boss and _boss_start >= 0.0 and _boss_end < 0.0:
+		_boss_end = _sim_time
 
 
 ## N3: a slot cooldown that is negative, longer than its own duration, or frozen above zero for 10 s.

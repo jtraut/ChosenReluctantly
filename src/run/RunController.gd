@@ -21,6 +21,9 @@ signal choice_requested(model: Dictionary)
 ## A choice was resolved (picked, rejected, healed, removed); the next room loads right after. `result` is
 ## RunChoices.apply's dict: {ok, kind, card_id, amount, finished}.
 signal choice_resolved(result: Dictionary)
+## The boss entered the room (3c). Its signals (phase_changed, transition_started, defeated, ...), `health.health_changed`,
+## `display_name()` and `phase_thresholds()` are what a boss HP bar needs. Also available any time as `current_boss()`.
+signal boss_spawned(boss: Boss)
 ## The last room was won.
 signal run_won()
 ## The player died; Main shows Game Over after its death beat.
@@ -35,6 +38,7 @@ var _room_seconds: float = 0.0
 var _healed: float = 0.0
 var _summary: Dictionary = {}
 var _ctx: Dictionary = {}
+var _boss: Boss = null
 var _launch_room: int = 0
 var _launch_clear_after: float = -1.0
 
@@ -82,6 +86,7 @@ func begin(main: Main) -> void:
 	else:
 		var variant: Dictionary = RunConfig.variant_by_id(config, String(room["type"]), String(room["wave_id"]))
 		spawner.tier_configs = (config["tiers"] as Dictionary).duplicate(true)
+		spawner.enemy_spawned.connect(_on_enemy_spawned)
 		spawner.configure_room(RunConfig.room_wave_config(variant, WaveConfig.get_config()), room_spawn_seed(_state.seed_value, _state.room_index))
 		set_process(true)
 	room_started.emit(_state.room_index, _rooms.size(), String(room["type"]))
@@ -102,6 +107,17 @@ func _apply_launch_args() -> void:
 			_launch_room = maxi(arg.substr(11).to_int() - 1, 0)
 		elif arg.begins_with("--run-clear-after=") and arg.substr(18).is_valid_float():
 			_launch_clear_after = maxf(arg.substr(18).to_float(), 0.0)
+
+
+func _on_enemy_spawned(enemy: Enemy, _alive_count: int) -> void:
+	if enemy is Boss:
+		_boss = enemy as Boss
+		boss_spawned.emit(_boss)
+
+
+## The boss of this room while it lives, else null.
+func current_boss() -> Boss:
+	return _boss if _boss != null and is_instance_valid(_boss) and not _boss.is_defeated() else null
 
 
 func _debug_clear_room() -> void:

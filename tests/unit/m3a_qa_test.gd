@@ -32,7 +32,7 @@ func _cards() -> Array[String]:
 	return ids
 
 
-const KNOWN_ENEMIES: Array[String] = ["melee_chaser", "ranged_shooter", "fire_resistant_golem"]
+const KNOWN_ENEMIES: Array[String] = ["melee_chaser", "ranged_shooter", "fire_resistant_golem", "boss_guardian"]
 
 
 func _problems(config: Dictionary) -> Array[String]:

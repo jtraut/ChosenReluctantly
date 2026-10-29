@@ -32,7 +32,7 @@ if ($godot -notmatch "_console\.exe$") {
 if (-not [System.IO.Path]::IsPathRooted($Out)) { $Out = Join-Path $root $Out }
 $userArgs = @("--screenshot-after=$After", "--screenshot-out=$Out")
 if ($Scenario) { $userArgs += "--scenario=$Scenario" }
-$userArgs += $Extra
+$userArgs += ($Extra | ForEach-Object { $_ -split "," } | Where-Object { $_ })  # "-File" passes "a","b" as one comma string, so split it
 if ($TrueSize -and -not $Scenario) { $userArgs += "--run" }  # VpCapture hosts RunMain only with --run
 
 Push-Location $root

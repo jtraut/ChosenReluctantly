@@ -15,17 +15,13 @@ Last updated: 2026-10-28. **Milestone 2 is done.** We're running **Post-mileston
 - Suite: 542/542 at 57be0a1. The repo runs.
 
 ## In progress
-- **Tooling task built, waiting for qa** (gameplay-dev, 2026-10-28): true-size capture (`capture_screenshot.ps1 -TrueSize WxH`, `WorldRef`), dodge values in `data/player.json` with D8 default B (28 m/s, 7.0 m; the director's D8 = C, `speed` 20, is still to apply in C1-a), seeded wave and bot sims repeat exactly (`run_wave_sim.ps1` now `--fixed-fps 60`, `-Scale` default 1), enemy shot lane tip, Enemy.gd header. Suite 552/552. Details in DECISIONS (2026-10-28) and the hand-back.
-Nothing is mid-build. The next task hasn't started.
+- **Tooling task:** built (7a372b9, 552/552). qa review handed to qa. Its docs pass is folded into C1-h.
+- **Director answered D8-D12.** D8 = C (dodge about 5 m) is applied in C1-a by setting `data/player.json` `dodge.speed` 28 -> 20.
 
 ## Exact next step
-1. **Tooling task (gameplay-dev -> qa)**, brief in ROADMAP "Tooling: true-size capture". It also includes:
-   - D8 dodge distance: default B is `dodge_speed` 14 -> 28 if the director hasn't answered. The dodge values move to data.
-   - S6-4: make seeded wave and bot sims fully repeat, or document exactly what repeats. The bot-sim ps1 also needs a `-Seed` passthrough.
-   - Follow-up 6-a: pad the enemy shot lane tip.
-   - The stale header comment in `src/enemies/Enemy.gd`.
-2. **Pass close-out:** one whole-pass playtester report covering 5d and Slice 6 live-ish checks, then a tech-writer docs pass, then DoD verified, OPEN_ITEMS and STATE updated.
-3. Then **Milestone 3a (run structure)**.
+1. Tooling qa (in progress).
+2. **Content slice C1**, brief in ROADMAP: C1-a -> C1-b1 -> C1-b2 -> C1-c (gameplay-dev) -> C1-d story -> C1-e ux-designer -> C1-f qa -> C1-g playtester (merged with the pass close-out report) -> C1-h tech-writer (also covers the tooling docs) -> game-lead closes C1, the tooling task and the pass.
+3. Then **Milestone 3a**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 

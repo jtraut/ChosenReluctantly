@@ -596,3 +596,7 @@ Fixes for the Slice 5 qa FAIL, one commit each. Choices and the alternative reje
 ### 2026-10-28 - Follow-up 6-a: enemy shot lane tip padding; Enemy.gd header (gameplay-dev)
 - `TemplateVfx.enemy_shot_lane` now draws the strip `VfxSizing.enemy_shot_lane_length(max_range, hit_radius)` long: `max_range` plus `lateral_reach_vs_player(hit_radius)`, the same reach its sides already use. That is the player lane's `projectile_lane_length` rule applied against the PLAYER's capsule (the brief said "the same padding"; the player lane pads by the enemy-capsule reach, which would be about 0.03 m wrong here, so the enemy lane uses its own matching helper). Test: `cast_markers_test`. Rejected: reusing `projectile_lane_length` directly (wrong capsule).
 - `src/enemies/Enemy.gd` header comment: stats come from `data/enemies.json`, not per-scene exports.
+
+### 2026-10-28 - After the tooling task (game-lead)
+- **The tooling task's docs pass is folded into C1-h** (one tech-writer run instead of two). The README capture and sim sections stay stale until C1 closes, and the tooling task is not marked done until that pass. qa is told to report those README gaps, not fail on them. Rejected: a separate tech-writer run now.
+- **The wave sim disables hit-stop** to repeat exactly. Accepted: hit-stop timing is covered by unit tests and the reload soak, and the sim's job is crashes, NaN, soft locks and pacing. Rejected: a fake clock in Juice (more code in a hot path).

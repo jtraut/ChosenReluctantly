@@ -780,3 +780,12 @@ Commits 56a76f0..d2cd00a. Rejected alternatives in brackets.
   - the 1440p panel top slightly overlaps the dimmed HP label;
   - the Continue / New run button has no arm delay, and its hint says "Space".
 - **Balance note:** with the 15-card starter, the bot loses mostly at the placeholder boss (5 of 6 losses). 3c replaces it.
+
+### 2026-10-29 - 3b closed; 3c plan (game-lead)
+- 3b closed: qa PASS 0a19808, playtest f2a3283 (no blocker), docs 16deeb2. Tagged `playtest-2026-10-29-3b`.
+- **Playtester questions I decided:**
+  - Show slot contents on offers: yes, in the 3c ux step.
+  - Starter stays at 3 per slot. Locked early removal is the GDD rule working; the fix is a clearer reason. [A 4-per-slot starter, which dilutes the rewards.]
+  - Rejects stay 3 per run (a director rule).
+  - 8 rooms stays.
+- **3c defaults:** a 3-phase data-driven boss at 50% resistance to every element (GDD §7, final boss), a placeholder name, no quips, and a pacing target of 45-75 s in the boss room for the bot.

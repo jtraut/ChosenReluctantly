@@ -6,18 +6,18 @@
 Last updated: 2026-10-29. The director is away until the evening with an autonomous run order: after C1 and Polish 1, go on to Milestone 3 (3a run structure, 3b rewards, 3c boss, 3d loadouts). Each slice gets the full loop and, at close, a `playtest-YYYY-MM-DD-<slice>` tag plus an update to OPEN_ITEMS "While you were away".
 
 ## What's done
-- Milestone 2, and **Post-milestone polish 1** (all slices). **Content slice C1** and the **capture-tooling task** closed on 2026-10-29: qa PASS 76bca75 (696/696), playtest d94676a, docs pass 4c7b490. Tag **`playtest-2026-10-29-C1`**. **Milestone 3a** closed (tag `playtest-2026-10-29-3a`).
+- Milestone 2, and **Post-milestone polish 1** (all slices). **Content slice C1** and the **capture-tooling task** closed on 2026-10-29: qa PASS 76bca75 (696/696), playtest d94676a, docs pass 4c7b490. Tag **`playtest-2026-10-29-C1`**. **Milestone 3a** closed (tag `playtest-2026-10-29-3a`). **Milestone 3b** closed (tag `playtest-2026-10-29-3b`).
 - Director answers D1-D12 are recorded. D13 and D14 (healing strength, Fire Wall) are open but don't block; current values stay.
 - The repo runs. Suite 696/696.
 
 ## In progress
-- **Milestone 3a closed** 2026-10-29 (tag `playtest-2026-10-29-3a`, 766/766).
-- **Milestone 3b, reward screen and deck-clean:** gameplay built fd2f644..b8564cd (802/802). ux 56a76f0..d2cd00a; qa PASS 0a19808 (826/826). Next role: playtester.
+- **Milestone 3b closed** 2026-10-29 (tag `playtest-2026-10-29-3b`, 826/826).
+- **Milestone 3c, boss encounter:** the brief is in ROADMAP (it includes the 3b UX follow-ups for the ux step). Next role: gameplay-dev.
 
 ## Exact next step
-1. **3b playtest.** **On resume:** check `docs/playtests/` for a 3b report.
-2. Then tech-writer -> game-lead close, tag `playtest-2026-10-29-3b`.
-3. Then 3c (boss), then 3d (loadouts). Write each brief at the previous slice's close.
+1. **3c build** with gameplay-dev. **On resume:** check `git log` for "3c" commits and `git status`. Continue from what's committed.
+2. Then ux-designer (boss bar plus the 3b follow-ups) -> qa -> playtester -> tech-writer -> close, tag `playtest-2026-10-29-3c`.
+3. Then 3d (loadouts). Write its brief at the 3c close.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 

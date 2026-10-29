@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-10-29
-**Status: 2 small balance questions (D13, D14), nothing blocked.** Done: C1 and Polish 1, and **Milestone 3a (runs of 8 rooms)**. In progress: 3b, the card reward screen and deck-clean.
+**Status: 2 small balance questions (D13, D14), nothing blocked.** Done: C1, Polish 1, **3a (runs of 8 rooms)** and **3b (card rewards and deck-clean)**. In progress: 3c, a real boss fight.
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
@@ -18,7 +18,9 @@ Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
 _Updated at every slice close._
 
-- **Latest playtest tag:** `playtest-2026-10-29-3a` (3a closed with qa PASS, 766/766). The previous tag is `playtest-2026-10-29-C1`.
+- **Latest playtest tag:** `playtest-2026-10-29-3b` (qa PASS, 826/826). Earlier tags: `playtest-2026-10-29-3a`, `playtest-2026-10-29-C1`.
+- **New in 3b (since the 3a tag):** after each won fight you pick 1 of 3 cards or reject the whole offer (3 rejects per run). Rest rooms let you heal or remove a card (you can't remove one that would break the 3-per-slot rule). **Your starting deck is now 15 cards, 3 per slot;** the other 9 cards come from rewards. Launch with `-- --full-deck` to start with all 24. A "Next: Room N of 8" line shows what's coming. HP now drops across a run (the bot averages about 85% at each room's end).
+- **Try first in 3b:** play one whole run (checklist items 19 and 20). Do the offers feel like real choices? Is removal being locked early (every starter card is needed for the 3-per-slot rule) annoying?
 - **New in 3a (since the C1 tag):** pressing Play now starts a **run**: 8 rooms in a row (5 fights, 1 elite, 1 rest, then a boss), with "Room X of 8" and a shape for the room type at the top. Clearing a room shows a panel with Continue. Your HP carries over between rooms. There's a win screen, and Game Over now says how far you got. Elites (diamond sign) and the boss (star sign) have more HP. The boss is a stand-in until 3c. Try again starts a new run with a new seed.
 - **Try first in 3a:** play one whole run (checklist item 19). Note the boss room's length and where your HP drops.
 - **Built since your last session (C1):**
@@ -57,7 +59,8 @@ Each entry says what I chose and the one-line way to change it.
 4. **The rest room heals 30% of max HP.** **Change:** `data/run.json` rest heal value.
 5. **Elite enemies resist every element at least 25%** (they keep their own if it's higher, e.g. the fire golem), capped at 50%, per GDD §7. **Change:** the elite resistance value in `data/run.json`.
 6. **Your starting deck will shrink to 15 cards (3 per slot) in 3b,** so rewards have new cards to offer. It's the original starters plus Nope, Leaping Away (an escape) and Eventual Healing; the other 9 cards come from rewards. **Change:** edit `data/run.json` `starting_deck`. To play with every card, launch with `--full-deck` (from 3b).
-7. **A normal launch now starts a run; test scenarios and the wave sim keep the old endless arena.** **Change:** none needed; scenarios are for looking at one thing.
+7. **Three rejects per run stays fixed, and the starter is exactly 3 per slot,** so removal is locked until you own a 4th card in a slot. **Change:** add cards to `data/run.json` `starting_deck` (4 per slot unlocks early removal); rejects are `rejects_per_run`.
+8. **A normal launch now starts a run; test scenarios and the wave sim keep the old endless arena.** **Change:** none needed; scenarios are for looking at one thing.
 
 ## Needs your eyes: play-session checklist (about 20-30 minutes)
 

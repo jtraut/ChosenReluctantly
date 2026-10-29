@@ -362,7 +362,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
   - **Files likely touched:** new `src/run/` (generator, RunState, room controller), `data/run.json` and room/wave data, `src/main/Main.gd`, the spawner, new HUD bits under `src/ui/`, `tools/bot_sim.gd`, and tests.
   - **Defaults (game-lead calls, logged in DECISIONS and "Calls I made"):** a linear sequence, no branching map (routing comes later); 8 rooms (5 combat, 1 elite, 1 rest, 1 boss last); rest heals 30% of max HP; short prototype runs (GDD §9 [PROPOSED]).
 
-- [ ] **3b, reward screen and deck-clean** — gameplay BUILT fd2f644..b8564cd (802/802); ux BUILT 56a76f0..d2cd00a; qa PASS 0a19808 (826/826). playtester next.
+- [x] **3b, reward screen and deck-clean** — **DONE 2026-10-29.** Gameplay fd2f644..b8564cd; ux 56a76f0..d2cd00a; qa PASS 0a19808 (826/826); playtest f2a3283 (no blocker; attrition is real now, mean room-end HP about 85%); docs 16deeb2. Tag `playtest-2026-10-29-3b`.
   - **Goal:** after each won room you choose how your deck grows: pick 1 of N cards or reject the whole offer. Rest rooms let you trade the heal for removing a card. GDD §4 (deck rules, unique minimums), §5 (pools), §9 (rewards), §15 (the level-up idea reuses the screen).
   - **Acceptance:**
     1. **Offer:** after every won combat or elite room (not the last room, and not the rest room) the reward screen offers `offer_size` cards (data, default 3; distinct within an offer). Seeded from the run seed and room index, so the same seed gives the same offers.
@@ -385,7 +385,27 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     Reward-only at start: Flaming Nonsense, Pointy Stick, Slash Then Bleed, Four Quick Stabs, Fireball, Wall of Mild Fire, Walk Through Everyone, Reluctant Lunge, Heal By Hurting.
   - **Known limit:** Utility has exactly 3 cards in the whole pool, so it can never be cleaned or grow until more Utility cards exist. Accepted for the prototype.
   - **Owner sequence:** gameplay-dev (logic, data, a placeholder screen) -> ux-designer (the choice screen) -> qa -> playtester -> tech-writer -> close, tag `playtest-2026-10-29-3b`.
-- [ ] **3c, boss encounter** (brief written at 3b close). One boss with simple HP-threshold phases and telegraphed attacks in the existing telegraph language. Equal 50% resistance across elements (the run's last boss is the final boss, GDD §7). It replaces the 3a placeholder.
+- [ ] **3c, boss encounter**
+  - **Goal:** the last room ends the run with a real fight: one boss with readable phases and telegraphed attacks, replacing the 3a placeholder (a golem with HP x7). GDD §7 (final boss: 50% resistance to every element, equal), §11 (telegraphs, feel).
+  - **Acceptance:**
+    1. **Data-driven boss** (`data/bosses.json` or a `boss` block in `data/enemies.json`, schema-validated): HP, move speed, 50% resistance to every element (physical ignores resistance as usual), and a phase list with HP thresholds (default 3 phases: 100-66%, 66-33%, 33-0%).
+    2. **Attacks:** an attack list per phase, each built from existing shared shapes (cone, ground disc/aoe, lane or projectile volley, charge along a lane), parameterised in data: wind-up, damage, size, cooldown and weight. At least 3 distinct attacks. Every attack shows a telegraph in the existing enemy telegraph language for at least 0.6 s (data). Visuals match hitboxes (`VfxSizing`, tests).
+    3. **Phases:** crossing a threshold triggers a short, readable transition (a brief invulnerable roar or flash, max 1.5 s, data) and changes the pattern: new attacks and/or faster cadence. Optional: the phase may summon a few normal enemies (data), capped well under the room cap.
+    4. **Fairness:** the boss can't be stunned (or stun is heavily reduced; data). No attack is undodgeable: each one can be escaped by walking or with the 5 m dodge given its telegraph. Pinning against solid bodies must not trap the player (it pushes, or the boss isn't solid while charging; pick one and test it).
+    5. **HUD:** a boss HP bar (name, phase pips at the thresholds) at the top of the screen while the boss lives (ux-designer). The room indicator keeps working.
+    6. **Pacing target:** for the sim bot with the 15-card starter plus about 4 rewards, the boss room takes 45-75 s, and the bot wins in most seeds without god mode. Report the numbers.
+    7. **Feel:** hit-stop and shake on its big hits, a heavier screen shake on phase change, knockback the player feels, and a death beat (slow-mo plus burst) on the boss's death before the win screen.
+    8. **Gates:** suite green; zero errors on startup and in the 20 s headless run; reload soak clean (reload during the boss fight and during a phase transition); SceneSelfCheck; capture scenarios unchanged; the wave-sim arena hash unchanged. Add a `boss` capture scenario (9999 HP) so each attack can be screenshotted.
+  - **Defaults (game-lead calls, logged):** the boss is a big capsule (a primitive placeholder, roughly 2x scale with a matching hurtbox); name "The Overly Enthusiastic Guardian" (placeholder; story may rename it later); 3 phases; no boss quips (story is dormant).
+  - **Folded into the 3c ux step (3b playtest and qa follow-ups):**
+    - offer cards show what you already hold in that slot ("Slot 1 now: A, B, C");
+    - the removal-locked reason says what to do ("Own a 4th Utility card first");
+    - plain-language effect lines with units ("dash 6.5" -> "Dash 6.5 m");
+    - the Reject tile title doesn't wrap;
+    - the 1440p panel top doesn't overlap the HP label;
+    - the Continue / New run button gets the arm delay, and its hint drops "Space".
+    - Gameplay side: `RunState.from_dict` rejects an unknown `pending`; the choice model carries `owned` and `next_room_type`.
+  - **Owner sequence:** gameplay-dev -> ux-designer (boss bar, telegraph readability) -> qa -> playtester -> tech-writer -> close, tag `playtest-2026-10-29-3c`.
 - [ ] **3d, loadouts** (brief written at 3c close). From run 2 on: build, save and load a starting deck, validated by the deck rules. Persisted in `user://`.
 - Later in M3 or after: shops and drops (GDD §14 item 1, [OPEN], not started); branching routes.
 

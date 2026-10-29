@@ -59,6 +59,7 @@ Fewer, more impactful enemies. Telegraphed attacks, readable danger, and dodge s
 - **Dodge roll:** Space bar. **[OPEN]** how this relates to the Movement slot (see section 4).
   - **[DIRECTOR DECISION, 2026-10-28]** The dodge is a modest escape, about 5 m, and may be lowered later. Its distance must stay easy to tune (data). Critical survival manoeuvres should come from Movement cards, not the dodge.
   - **[DIRECTOR DECISION, 2026-10-29]** The dodge has **charges**: start with 3 (may drop to 2; data value). Each charge recharges on a slightly longer cooldown than the old single-dodge cooldown (0.8 s). The HUD must show the dodge charges and their cooldown.
+  - **[DIRECTOR DECISION, 2026-10-29]** Passives (class and element trees, possibly subclass passives) may raise or lower the baseline dodge charges as a trade-off (for example a tankier Knight, Guardian or Paladin build with fewer charges). Level-up boosts must never change dodge charges, because a repeatable pick could stack them. **Hard limits: minimum 0, maximum 4 charges** after all modifiers.
 - **Controller:** late stretch goal, not in scope.
 
 ---
@@ -277,6 +278,7 @@ Nothing in this section is scheduled. **DO NOT IMPLEMENT** anything here without
 ### Survivor-style level-up layer **[IDEA, not scheduled]**
 - Inside each room the player earns XP and levels up, choosing 1 of 3 power-up options (damage, cooldown reduction, movement speed, gold or XP gain, and so on).
 - Card rewards still come only at the end of a won room.
+- Level-up options must never change dodge charges (see section 3).
 - Enemy density stays moderate. This is not Vampire Survivors-style hordes (see the density principle in section 1).
 - **[PROPOSED]** level-ups come mainly from room completion and key kills, about one or two per room.
 - Power-ups are generic stat boosts and stay distinct from cards (abilities) and the passive tree.

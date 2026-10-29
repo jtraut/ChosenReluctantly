@@ -22,13 +22,22 @@ static func total_seconds(history: Array) -> float:
 	return total
 
 
+## Rows of a choice screen: the rejects left (card rewards only).
+static func choice_rows(model: Dictionary, ui: Dictionary) -> Array[Dictionary]:
+	var rows: Array[Dictionary] = []
+	if String(model.get("choice", "")) == RunState.PENDING_REWARD:
+		rows.append({"label": String((ui["reward"] as Dictionary)["rejects_label"]), "value": "%d / %d" % [int(model.get("rejects_remaining", 0)), int(model.get("rejects_max", 0))]})
+	return rows
+
+
 ## Rows for a cleared room: HP now, the healed amount on a rest room, the time on any other room (a rest room
 ## is over instantly, so its time would only read "0:00"). Each row is {label, value}.
 static func cleared_rows(summary: Dictionary, text: Dictionary) -> Array[Dictionary]:
 	var rows: Array[Dictionary] = []
 	rows.append({"label": String(text.get("stat_hp", "HP")), "value": hp_text(float(summary.get("hp", 0.0)), float(summary.get("max_hp", 0.0)))})
 	if String(summary.get("type", "")) == "rest":
-		rows.append({"label": String(text.get("stat_healed", "Healed")), "value": "+%d" % roundi(float(summary.get("healed", 0.0)))})
+		if float(summary.get("healed", 0.0)) > 0.0:  # never "Healed +0"
+			rows.append({"label": String(text.get("stat_healed", "Healed")), "value": "+%d" % roundi(float(summary.get("healed", 0.0)))})
 	else:
 		rows.append({"label": String(text.get("stat_time", "Time")), "value": format_time(float(summary.get("seconds", 0.0)))})
 	return rows

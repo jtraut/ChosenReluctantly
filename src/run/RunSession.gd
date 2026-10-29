@@ -8,6 +8,9 @@ extends RefCounted
 static var current: RunState = null
 ## Seed for the NEXT new run only (consumed by it) when a tool or launch argument fixes it (-1 = random).
 static var forced_seed: int = -1
+## `--full-deck`: new runs start with every card of the character's pools instead of the starter list.
+## Sticky for the launch (Try again keeps it); a tool or test sets and clears it.
+static var full_deck: bool = false
 
 
 static func has_run() -> bool:
@@ -22,7 +25,8 @@ static func begin_new_run(seed_value: int = -1) -> RunState:
 		forced_seed = -1  # used once: "Try again" must get a new seed
 	if chosen < 0:
 		chosen = new_random_seed()
-	current = RunState.new_run(chosen, RunConfig.starting_deck(), RunConfig.rejects_per_run())
+	var deck: Array[String] = RunConfig.cards_in_pools(RunConfig.character_pools()) if full_deck else RunConfig.starting_deck()
+	current = RunState.new_run(chosen, deck, RunConfig.rejects_per_run())
 	return current
 
 

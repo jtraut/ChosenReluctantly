@@ -92,8 +92,9 @@ func test_room_is_won_only_when_waves_are_done_and_nothing_is_alive() -> void:
 	await get_tree().process_frame
 	assert_int(main.enemy_spawner.alive_count()).is_equal(1)
 	assert_bool(main.run_controller.is_cleared()).is_false()
+	# 3b: a won combat room opens the card reward (choice_requested); room_cleared is for rooms with no choice.
 	var cleared: Array[Dictionary] = []
-	main.run_controller.room_cleared.connect(func(summary: Dictionary) -> void: cleared.append(summary))
+	main.run_controller.choice_requested.connect(func(model: Dictionary) -> void: cleared.append(model))
 	for child in main.get_children():
 		if child is Enemy:
 			(child as Enemy).health.take_damage(100000.0)
@@ -118,7 +119,7 @@ func test_continue_loads_the_next_room_carrying_hp_and_deck() -> void:
 	main.player.card_slots.try_use("attack_single")
 	assert_float(main.player.card_slots.get_slot("attack_single").cooldown_remaining).is_greater(0.0)
 	var old_id := main.get_instance_id()
-	main.run_controller.continue_to_next_room()
+	main.run_controller.continue_to_next_room(true)
 	await get_tree().process_frame
 	await get_tree().process_frame
 	var next := _other_main(old_id)
@@ -149,12 +150,17 @@ func test_rest_room_heals_thirty_percent_and_clears() -> void:
 	state.max_hp = 100.0
 	state.hp = 40.0
 	var main := _spawn()
-	var summaries: Array[Dictionary] = []
-	main.run_controller.room_cleared.connect(func(s: Dictionary) -> void: summaries.append(s))
 	await get_tree().process_frame
 	await get_tree().process_frame
+	# 3b: the rest room waits for a choice; taking the heal gives 30% of max HP.
 	assert_bool(main.run_controller.is_cleared()).is_true()
+	assert_str(RunSession.current.pending).is_equal(RunState.PENDING_REST)
+	var old_id := main.get_instance_id()
+	assert_bool(main.run_controller.choose("heal")["ok"]).is_true()
 	assert_float(main.player.health.current_health).is_equal_approx(70.0, 0.001)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	auto_free(_other_main(old_id))  # the next room that the choice loaded
 	assert_float(RunSession.current.hp).is_equal_approx(70.0, 0.001)
 
 
@@ -169,7 +175,12 @@ func test_rest_heal_does_not_exceed_max() -> void:
 	var main := _spawn()
 	await get_tree().process_frame
 	await get_tree().process_frame
+	var old_id := main.get_instance_id()
+	main.run_controller.choose("heal")
 	assert_float(main.player.health.current_health).is_equal_approx(100.0, 0.001)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	auto_free(_other_main(old_id))
 
 
 func test_last_room_won_ends_the_run_with_a_win() -> void:

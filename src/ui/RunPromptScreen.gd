@@ -14,6 +14,9 @@ class_name RunPromptScreen
 @export var kind: String = "cleared"
 
 signal confirmed()
+## An option button was activated (mouse, Enter or its number key): the option's `id`. In a run the screen also
+## passes it to RunController.choose; a test or another host can listen to this alone.
+signal option_chosen(option_id: String)
 
 @onready var root: Control = $Root
 @onready var backdrop: ColorRect = $Root/Backdrop
@@ -30,6 +33,9 @@ signal confirmed()
 
 var _controller: RunController = null
 var _pending: Dictionary = {}
+## The option dicts of the open choice, and one button per option (same order).
+var _options: Array[Dictionary] = []
+var _option_buttons: Array[Button] = []
 
 
 func _ready() -> void:
@@ -46,6 +52,7 @@ func _ready() -> void:
 		_controller.run_won.connect(_show_win)
 	else:
 		_controller.room_cleared.connect(_show_cleared)
+		_controller.choice_requested.connect(show_choice)
 
 
 func _exit_tree() -> void:
@@ -61,10 +68,42 @@ func _show_cleared(summary: Dictionary) -> void:
 	show_content({
 		"title": String(text["title"]),
 		"subtitle": "%s  -  %s" % [_controller.room_label(), _controller.room_type_name(room_type)],
-		"line": (String(text["rest_line"]) % roundi(healed)) if healed > 0.0 else "",
+		"line": _cleared_line(room_type, healed, text),
 		"rows": RunPromptRows.cleared_rows(summary, text),
 		"button": String(text["button"]),
-		"hint": String(text.get("hint", "")),
+		"hint": _next_hint(String(text.get("hint", ""))),
+		"icon_shape": RunIcons.shape_for(room_type),
+		"icon_color": RunIcons.color_for(room_type, UiConfig.run_ui(), tiers),
+	})
+
+
+func _cleared_line(room_type: String, healed: float, text: Dictionary) -> String:
+	if room_type != "rest":
+		return ""
+	return (String(text["rest_line"]) % roundi(healed)) if healed > 0.0 else String(text["rest_full_line"])
+
+
+## "Next: Room N of 8 - Type" above the usual hint text (no next room after the last).
+func _next_hint(hint: String) -> String:
+	var next_line: String = _controller.next_room_line() if _controller != null else ""
+	if next_line == "":
+		return hint
+	return next_line if hint == "" else next_line + "\n" + hint
+
+
+## Opens a choice (RunController.choice_requested): the model's options become buttons in `options_box`.
+## Placeholder look; ux restyles it. See RunChoices for the option dict.
+func show_choice(model: Dictionary) -> void:
+	var ui: Dictionary = RunConfig.ui()
+	var room_type: String = String(model.get("room_type", ""))
+	var tiers: Dictionary = RunConfig.get_config().get("tiers", {})
+	show_content({
+		"title": String(model.get("title", "")),
+		"subtitle": "%s  -  %s" % [String(model.get("room_label", "")), String(model.get("room_type_name", ""))],
+		"line": String(model.get("line", "")),
+		"rows": RunPromptRows.choice_rows(model, ui),
+		"options": model.get("options", []),
+		"hint": String(model.get("next_line", "")),
 		"icon_shape": RunIcons.shape_for(room_type),
 		"icon_color": RunIcons.color_for(room_type, UiConfig.run_ui(), tiers),
 	})
@@ -100,7 +139,10 @@ func show_content(content: Dictionary) -> void:
 	_pending = {}
 	_fill(content)
 	visible = true
-	button.grab_focus()
+	if _options.is_empty():
+		button.grab_focus()
+	else:
+		_focus_option(_first_enabled())
 
 
 func is_open() -> bool:
@@ -132,6 +174,8 @@ func _fill(content: Dictionary) -> void:
 	line_label.text = line
 	line_label.visible = line != ""
 	button.text = String(content.get("button", ""))
+	_fill_options(content.get("options", []))
+	button.visible = _options.is_empty()
 	var hint: String = String(content.get("hint", ""))
 	hint_label.text = hint
 	hint_label.visible = hint != ""
@@ -146,6 +190,87 @@ func _fill(content: Dictionary) -> void:
 	var rows: Array = content.get("rows", [])
 	for row: Dictionary in rows:
 		_add_stat(String(row.get("label", "")), String(row.get("value", "")))
+
+
+func _fill_options(options: Array) -> void:
+	for child in options_box.get_children():
+		options_box.remove_child(child)
+		child.queue_free()
+	_options.clear()
+	_option_buttons.clear()
+	var cfg := UiConfig.run_ui()
+	var s := _scale(cfg)
+	for i in range(options.size()):
+		var option: Dictionary = options[i]
+		_options.append(option)
+		var option_button := Button.new()
+		option_button.text = option_text(option, i)
+		option_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		option_button.disabled = not bool(option.get("enabled", true))
+		option_button.tooltip_text = String(option.get("reason", ""))
+		option_button.focus_mode = Control.FOCUS_ALL
+		option_button.add_theme_font_size_override("font_size", roundi(float(cfg["prompt_stat_font_size"]) * s))
+		option_button.custom_minimum_size = Vector2(0.0, float(cfg["prompt_button_min_size"][1]) * s)
+		var option_id: String = String(option.get("id", ""))
+		option_button.pressed.connect(_on_option_pressed.bind(option_id))
+		options_box.add_child(option_button)
+		_option_buttons.append(option_button)
+
+
+## The text of one option button: "1. Name  [Slot]", its effect line or detail, the flavor, and the reason when disabled.
+static func option_text(option: Dictionary, index: int) -> String:
+	var head: String = "%d. %s" % [index + 1, String(option.get("label", ""))]
+	if int(option.get("count", 0)) > 1:
+		head += "  x%d" % int(option["count"])
+	if String(option.get("slot_name", "")) != "":
+		head += "  [%s]" % String(option["slot_name"])
+	var lines: Array[String] = [head]
+	if String(option.get("detail", "")) != "":
+		lines.append(String(option["detail"]))
+	if String(option.get("flavor", "")) != "":
+		lines.append(String(option["flavor"]))
+	if not bool(option.get("enabled", true)) and String(option.get("reason", "")) != "":
+		lines.append("Unavailable: " + String(option["reason"]))
+	return "\n".join(lines)
+
+
+func _first_enabled() -> int:
+	for i in range(_options.size()):
+		if bool(_options[i].get("enabled", true)):
+			return i
+	return 0
+
+
+func _focus_option(index: int) -> void:
+	if index >= 0 and index < _option_buttons.size() and not _option_buttons[index].disabled:
+		_option_buttons[index].grab_focus()
+
+
+## Number keys 1..N move the highlight to that option (Enter or a click confirms it), so mashing the card keys
+## at the end of a fight cannot pick by accident. Handled here so the Player never sees them.
+func _input(event: InputEvent) -> void:
+	if not visible or _options.is_empty():
+		return
+	var key := event as InputEventKey
+	if key == null or not key.pressed or key.echo:
+		return
+	var number: int = key.keycode - KEY_1
+	if number < 0 or number >= _options.size():
+		number = key.keycode - KEY_KP_1
+	if number >= 0 and number < _options.size():
+		_focus_option(number)
+		get_viewport().set_input_as_handled()
+
+
+func _on_option_pressed(option_id: String) -> void:
+	if not visible:
+		return
+	option_chosen.emit(option_id)
+	if _controller == null:
+		return
+	var result: Dictionary = _controller.choose(option_id)
+	if bool(result.get("ok", false)) and bool(result.get("finished", false)):
+		visible = false
 
 
 func _add_stat(label_text: String, value_text: String) -> void:

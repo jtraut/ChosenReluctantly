@@ -8,7 +8,13 @@ extends RefCounted
 ## Seeds stay below 2^31 so they survive a JSON round-trip, where every number comes back as a float.
 
 const SEED_LIMIT := 2147483647
-const FORMAT_VERSION := 1
+const FORMAT_VERSION := 2
+
+## `pending` values: no choice open, a card reward, the rest room menu, the rest room card-removal list.
+const PENDING_NONE := ""
+const PENDING_REWARD := "reward"
+const PENDING_REST := "rest"
+const PENDING_REST_REMOVE := "rest_remove"
 
 var seed_value: int = 0
 var room_index: int = 0
@@ -21,6 +27,13 @@ var rejects_remaining: int = 0
 var history: Array[Dictionary] = []
 ## "" while the run is going, then "won" or "lost".
 var outcome: String = ""
+## The choice waiting for the player after a won room (3b), so a reload mid-choice reopens it instead of
+## replaying the room: one of the PENDING_ values, and for a card reward the offered card ids.
+var pending: String = PENDING_NONE
+var offer: Array[String] = []
+## One entry per choice made: {index, kind: pick|reject|heal|remove, card_id, amount}. Picks and removals also
+## change `deck`; this is the record the sim and the end screens read.
+var choice_log: Array[Dictionary] = []
 
 
 ## A fresh run: the starting deck and reject allowance come from data/run.json (RunConfig).
@@ -58,6 +71,14 @@ func record_room(room: Dictionary, hp_end: float, seconds: float) -> void:
 	})
 
 
+func has_pending() -> bool:
+	return pending != PENDING_NONE
+
+
+func log_choice(kind: String, card_id: String = "", amount: float = 0.0) -> void:
+	choice_log.append({"index": room_index, "kind": kind, "card_id": card_id, "amount": amount})
+
+
 func to_dict() -> Dictionary:
 	return {
 		"version": FORMAT_VERSION,
@@ -69,6 +90,9 @@ func to_dict() -> Dictionary:
 		"rejects_remaining": rejects_remaining,
 		"history": history.duplicate(true),
 		"outcome": outcome,
+		"pending": pending,
+		"offer": offer.duplicate(),
+		"choice_log": choice_log.duplicate(true),
 	}
 
 
@@ -92,6 +116,20 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.max_hp = float(data["max_hp"])
 	state.rejects_remaining = int(data["rejects_remaining"])
 	state.outcome = String(data.get("outcome", ""))
+	state.pending = String(data.get("pending", PENDING_NONE))
+	for offered: Variant in (data.get("offer", []) as Array):
+		state.offer.append(String(offered))
+	for entry: Variant in (data.get("choice_log", []) as Array):
+		if typeof(entry) != TYPE_DICTIONARY:
+			push_error("RunState.from_dict: choice_log entries must be objects")
+			return null
+		var c: Dictionary = entry
+		state.choice_log.append({
+			"index": int(c.get("index", 0)),
+			"kind": String(c.get("kind", "")),
+			"card_id": String(c.get("card_id", "")),
+			"amount": float(c.get("amount", 0.0)),
+		})
 	for card_id: Variant in (data["deck"] as Array):
 		state.deck.append(String(card_id))
 	for entry: Variant in (data["history"] as Array):

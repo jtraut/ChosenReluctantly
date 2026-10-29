@@ -45,6 +45,8 @@ static func validate(config: Dictionary, known_enemies: Array[String], known_car
 	if not _is_whole(rejects) or int(rejects) < 0 or int(rejects) > 99:
 		errors.append("'rejects_per_run' must be a whole number in [0, 99]")
 	errors.append_array(_validate_deck(config.get("starting_deck"), known_cards))
+	errors.append_array(_validate_character_pools(config.get("character_pools")))
+	errors.append_array(_validate_rewards(config.get("rewards")))
 	errors.append_array(_validate_tiers(config.get("tiers")))
 	errors.append_array(_validate_rooms(config, known_enemies, total))
 	errors.append_array(_validate_ui(config.get("ui")))
@@ -101,6 +103,42 @@ static func _validate_deck(deck: Variant, known_cards: Array[String]) -> Array[S
 			continue
 		if not known_cards.is_empty() and not known_cards.has(String(entry)):
 			errors.append("starting_deck: unknown card id '%s'" % String(entry))
+	return errors
+
+
+## The pools the (only, for now) character owns: used for the `--full-deck` debug deck.
+static func _validate_character_pools(value: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(value) != TYPE_ARRAY or (value as Array).is_empty():
+		errors.append("'character_pools' must be a non-empty array of pool ids")
+		return errors
+	for entry: Variant in (value as Array):
+		if typeof(entry) != TYPE_STRING or not PoolDatabase.has(String(entry)):
+			errors.append("character_pools: unknown pool '%s'" % str(entry))
+	return errors
+
+
+## The card reward block: offer size, the unowned/owned weights and which room types give a reward.
+static func _validate_rewards(value: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(value) != TYPE_DICTIONARY:
+		errors.append("'rewards' must be an object {offer_size, unowned_weight, owned_weight, reward_room_types}")
+		return errors
+	var r: Dictionary = value
+	if not _is_whole(r.get("offer_size")) or int(r["offer_size"]) < 1 or int(r["offer_size"]) > 12:
+		errors.append("rewards.offer_size must be a whole number in [1, 12]")
+	for key: String in ["unowned_weight", "owned_weight"]:
+		if not _is_number(r.get(key)) or float(r[key]) < 0.0 or float(r[key]) > 1000.0:
+			errors.append("rewards.%s must be a number in [0, 1000]" % key)
+	if _is_number(r.get("unowned_weight")) and _is_number(r.get("owned_weight")) and float(r["unowned_weight"]) + float(r["owned_weight"]) <= 0.0:
+		errors.append("rewards: unowned_weight and owned_weight cannot both be 0")
+	var types: Variant = r.get("reward_room_types")
+	if typeof(types) != TYPE_ARRAY:
+		errors.append("rewards.reward_room_types must be an array of room types")
+	else:
+		for t: Variant in (types as Array):
+			if typeof(t) != TYPE_STRING or not FIGHT_TYPES.has(String(t)):
+				errors.append("rewards.reward_room_types: '%s' is not a fighting room type (combat, elite, boss)" % str(t))
 	return errors
 
 
@@ -217,9 +255,11 @@ static func _validate_ui(ui_value: Variant) -> Array[String]:
 		for room_type: String in ROOM_TYPES:
 			if typeof((names as Dictionary).get(room_type)) != TYPE_STRING:
 				errors.append("ui.type_names.%s must be a string" % room_type)
-	for key: String in ["room_cleared", "win"]:
+	for key: String in ["room_cleared", "win", "reward", "rest"]:
 		if typeof(u.get(key)) != TYPE_DICTIONARY:
 			errors.append("ui.%s must be an object" % key)
+	if typeof(u.get("next_line")) != TYPE_STRING or String(u["next_line"]).count("%d") != 2 or String(u["next_line"]).count("%s") != 1:
+		errors.append("ui.next_line must be a format string with two %d and one %s")
 	return errors
 
 
@@ -336,6 +376,38 @@ static func rejects_per_run() -> int:
 
 static func rest_heal_fraction() -> float:
 	return float(get_config().get("rest_heal_fraction", 0.3))
+
+
+static func character_pools() -> Array[String]:
+	var out: Array[String] = []
+	for entry: Variant in (get_config().get("character_pools", []) as Array):
+		out.append(String(entry))
+	return out
+
+
+static func rewards() -> Dictionary:
+	return get_config().get("rewards", {})
+
+
+static func offer_size() -> int:
+	return int(rewards().get("offer_size", 3))
+
+
+## True when a won room of this type is followed by a card reward (the last room never is; the caller checks that).
+static func rewards_after(room_type: String) -> bool:
+	return (rewards().get("reward_room_types", []) as Array).has(room_type)
+
+
+## Every card id in the given pools, sorted: the `--full-deck` debug deck and the reward candidate list.
+static func cards_in_pools(pool_ids: Array) -> Array[String]:
+	var out: Array[String] = []
+	for pool_id: Variant in pool_ids:
+		for card: Variant in CardDatabase.cards_for_pool(String(pool_id)):
+			var id: String = String((card as Dictionary)["id"])
+			if not out.has(id):
+				out.append(id)
+	out.sort()
+	return out
 
 
 static func tier(tier_id: String) -> Dictionary:

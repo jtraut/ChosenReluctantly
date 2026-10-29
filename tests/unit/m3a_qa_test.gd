@@ -291,7 +291,7 @@ func test_a_room_swap_resets_the_bag_statuses_and_zones_and_keeps_nothing_alive(
 	await _frames(3)
 	assert_bool(main.run_controller.is_cleared()).is_true()
 	var old_id := main.get_instance_id()
-	main.run_controller.continue_to_next_room()
+	main.run_controller.continue_to_next_room(true)
 	await _frames(3)
 	var next := _next_main(old_id)
 	assert_object(next).is_not_null()
@@ -326,7 +326,7 @@ func test_continue_spam_swaps_exactly_once() -> void:
 	var old_id := main.get_instance_id()
 	for i in range(6):
 		screen.button.pressed.emit()
-		main.run_controller.continue_to_next_room()
+		main.run_controller.continue_to_next_room(true)
 	await _frames(4)
 	assert_int(RunSession.current.room_index).is_equal(1)  # one step, not six
 	assert_int(_mains()).is_equal(1)
@@ -403,7 +403,7 @@ func test_freeing_the_scene_right_after_continue_is_safe() -> void:
 	await _frames(1)
 	_kill(_spawn_tiny_room(main))
 	await _frames(3)
-	main.run_controller.continue_to_next_room()
+	main.run_controller.continue_to_next_room(true)
 	main.get_parent().remove_child(main)
 	main.free()
 	await _frames(4)
@@ -434,7 +434,7 @@ func test_eight_rooms_of_swaps_leave_no_nodes_behind() -> void:
 			baseline_nodes = int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT))
 			baseline_orphans = int(Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT))
 		var old_id := main.get_instance_id()
-		controller.continue_to_next_room()
+		controller.continue_to_next_room(true)
 		await _frames(4)
 		main = _next_main(old_id)
 		assert_object(main).is_not_null()
@@ -530,7 +530,7 @@ func test_room_transition_and_try_again_work_inside_a_sub_viewport() -> void:
 	await _frames(3)
 	assert_bool(main.run_controller.is_cleared()).is_true()
 	var old_id := main.get_instance_id()
-	main.run_controller.continue_to_next_room()
+	main.run_controller.continue_to_next_room(true)
 	await _frames(4)
 	var next: Main = null
 	for child in viewport.get_children():

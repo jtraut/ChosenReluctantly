@@ -289,7 +289,7 @@ func _run_mode_soak(snaps: Array[Dictionary]) -> void:
 	main.run_controller._finish_room(0.0)
 	_check(main.run_controller.is_cleared(), "continue: room not cleared")
 	var room_id := main.get_instance_id()
-	main.run_controller.continue_to_next_room()
+	main.run_controller.continue_to_next_room(true)
 	await _frames(SETTLE_FRAMES)
 	_check(_main().get_instance_id() != room_id, "continue: scene not replaced")
 	_check_run_fresh("continue", 2)

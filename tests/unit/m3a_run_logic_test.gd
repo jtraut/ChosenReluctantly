@@ -29,15 +29,17 @@ func test_shipped_run_json_is_valid() -> void:
 	assert_bool(RunConfig.is_valid()).is_true()
 
 
-func test_shipped_starting_deck_is_the_full_fire_rogue_pool() -> void:
-	var expected: Array[String] = []
-	for pool_id: String in ["rogue", "fire", "neutral"]:
-		for card: Variant in CardDatabase.cards_for_pool(pool_id):
-			expected.append(String((card as Dictionary)["id"]))
-	var actual: Array[String] = RunConfig.starting_deck()
-	expected.sort()
-	actual.sort()
-	assert_array(actual).is_equal(expected)
+func test_shipped_starting_deck_is_the_15_card_starter_with_3_per_slot() -> void:
+	# 3b: the starter shrank from the full pool; the full pool is the --full-deck debug deck.
+	var deck: Array[String] = RunConfig.starting_deck()
+	assert_int(deck.size()).is_equal(15)
+	var per_slot: Dictionary = {}
+	for card_id: String in deck:
+		assert_bool(CardDatabase.has_card(card_id)).is_true()
+		var slot_type: String = String(CardDatabase.get_card(card_id)["slot_type"])
+		per_slot[slot_type] = int(per_slot.get(slot_type, 0)) + 1
+	for slot_type: String in CardSlotController.SLOT_TYPE_ORDER:
+		assert_int(int(per_slot.get(slot_type, 0))).is_equal(3)
 
 
 func test_shipped_numbers_match_the_brief() -> void:

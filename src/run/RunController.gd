@@ -15,6 +15,12 @@ extends Node
 signal room_started(index: int, total: int, room_type: String)
 ## A non-final room was won (or the rest room finished). `summary`: {index, type, wave_id, hp, max_hp, healed, seconds}.
 signal room_cleared(summary: Dictionary)
+## A choice is waiting (a card reward, the rest menu, the rest removal list); also re-emitted when the list
+## changes (rest menu -> removal list -> Back). `model` is `current_choice()`: see RunChoices for the option format.
+signal choice_requested(model: Dictionary)
+## A choice was resolved (picked, rejected, healed, removed); the next room loads right after. `result` is
+## RunChoices.apply's dict: {ok, kind, card_id, amount, finished}.
+signal choice_resolved(result: Dictionary)
 ## The last room was won.
 signal run_won()
 ## The player died; Main shows Game Over after its death beat.
@@ -28,6 +34,7 @@ var _active: bool = false
 var _room_seconds: float = 0.0
 var _healed: float = 0.0
 var _summary: Dictionary = {}
+var _ctx: Dictionary = {}
 var _launch_room: int = 0
 var _launch_clear_after: float = -1.0
 
@@ -59,10 +66,17 @@ func begin(main: Main) -> void:
 		player.health.current_health = clampf(_state.hp, 1.0, _state.max_hp)
 		player.health.health_changed.emit(player.health.current_health, player.health.max_health)
 	player.card_slots.set_deck(_state.deck)
+	_ctx = RunChoices.shipped_context(player.owned_pools)
 	player.player_died.connect(_on_player_died, CONNECT_ONE_SHOT)
 	var room: Dictionary = current_room()
 	var spawner: EnemySpawner = main.enemy_spawner
-	if String(room["type"]) == "rest":
+	if _state.has_pending():
+		# A reload mid-choice: the room is already won and recorded, so do not fight it again; reopen the choice.
+		spawner.process_mode = Node.PROCESS_MODE_DISABLED
+		_cleared = true
+		player.health.damage_immune = true
+		_resume_choice.call_deferred()
+	elif String(room["type"]) == "rest":
 		spawner.process_mode = Node.PROCESS_MODE_DISABLED
 		_start_rest.call_deferred()
 	else:
@@ -76,11 +90,13 @@ func begin(main: Main) -> void:
 
 
 ## Launch arguments for tools and repro (after `--`); they apply to the first run of a launch only:
-## `--run-seed=N` fixes the seed, `--run-room=K` starts at room K (1-based), `--run-clear-after=S` wins the room
+## `--run-seed=N` fixes the seed, `--run-room=K` starts at room K (1-based), `--full-deck` starts with every card of the character's pools (debug), `--run-clear-after=S` wins the room
 ## S seconds in (so a screenshot can show the room-cleared prompt or the win screen).
 func _apply_launch_args() -> void:
 	for arg: String in OS.get_cmdline_user_args():
-		if arg.begins_with("--run-seed=") and arg.substr(11).is_valid_int():
+		if arg == "--full-deck":
+			RunSession.full_deck = true
+		elif arg.begins_with("--run-seed=") and arg.substr(11).is_valid_int():
 			RunSession.forced_seed = absi(arg.substr(11).to_int()) & RunState.SEED_LIMIT
 		elif arg.begins_with("--run-room=") and arg.substr(11).is_valid_int():
 			_launch_room = maxi(arg.substr(11).to_int() - 1, 0)
@@ -113,12 +129,13 @@ func _process(delta: float) -> void:
 
 
 func _start_rest() -> void:
-	if not _active or _cleared:
-		return
-	var health: Health = _main.player.health
-	var before: float = health.current_health
-	health.heal(health.max_health * RunConfig.rest_heal_fraction())
-	_finish_room(health.current_health - before)
+	if _active and not _cleared:
+		_finish_room(0.0)
+
+
+func _resume_choice() -> void:
+	if _active and _state.has_pending():
+		choice_requested.emit(current_choice())
 
 
 func _finish_room(healed: float) -> void:
@@ -137,14 +154,44 @@ func _finish_room(healed: float) -> void:
 	if _state.room_index >= _rooms.size() - 1:
 		_state.outcome = "won"
 		run_won.emit()
+		return
+	if RunChoices.open_for_room(_state, String(room["type"]), false, _ctx) != RunState.PENDING_NONE:
+		choice_requested.emit(current_choice())
 	else:
 		room_cleared.emit(_summary)
 
 
+## Resolves one option of the open choice (by its `id`). When it finishes the choice the next room loads at once.
+## Returns RunChoices.apply's dict; `ok` is false (and nothing changes) for a disabled or unknown option.
+func choose(option_id: String) -> Dictionary:
+	if not _active or not _cleared or not _state.has_pending():
+		return {"ok": false, "kind": "", "card_id": "", "amount": 0.0, "finished": false, "reason": "no choice is open"}
+	var result: Dictionary = RunChoices.apply(_state, option_id, _ctx)
+	if not bool(result["ok"]):
+		return result
+	var health: Health = _main.player.health
+	if String(result["kind"]) == "heal" and float(result["amount"]) > 0.0:
+		health.heal(float(result["amount"]))
+	_state.hp = health.current_health
+	if bool(result["finished"]):
+		if not _state.history.is_empty():
+			(_state.history[_state.history.size() - 1] as Dictionary)["hp_end"] = _state.hp  # the room ends when the choice does
+		choice_resolved.emit(result)
+		continue_to_next_room()
+	else:
+		choice_requested.emit(current_choice())
+	return result
+
+
 ## The Continue button: advance the room index and swap in a fresh Main for the next room.
-func continue_to_next_room() -> void:
+func continue_to_next_room(force: bool = false) -> void:
 	if not _active or not _cleared or _state.is_over():
 		return
+	if _state.has_pending():
+		if not force:
+			return  # a choice is open: only `choose` ends it (force = tests and debug only)
+		_state.pending = RunState.PENDING_NONE
+		_state.offer = []
 	_active = false
 	_state.room_index += 1
 	_main.swap_to_fresh_scene()
@@ -160,6 +207,29 @@ func _on_player_died() -> void:
 
 
 # ---- Getters for the UI ----
+
+## The open choice as a model for the screen (RunChoices.model plus the room texts), or {} when none is open.
+func current_choice() -> Dictionary:
+	if _state == null or not _state.has_pending():
+		return {}
+	var model: Dictionary = RunChoices.model(_state, _ctx)
+	model["room_label"] = room_label()
+	model["room_type"] = room_type()
+	model["room_type_name"] = room_type_name()
+	model["next_line"] = next_room_line()
+	return model
+
+
+func has_choice() -> bool:
+	return _state != null and _state.has_pending()
+
+
+## "Next: Room 4 of 8 - Elite" (data ui.next_line), or "" after the last room.
+func next_room_line() -> String:
+	if _state == null or _state.room_index + 1 >= _rooms.size():
+		return ""
+	var next_room: Dictionary = _rooms[_state.room_index + 1]
+	return String(RunConfig.ui()["next_line"]) % [_state.room_index + 2, _rooms.size(), room_type_name(String(next_room["type"]))]
 
 func state() -> RunState:
 	return _state

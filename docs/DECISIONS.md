@@ -610,3 +610,15 @@ Fixes for the Slice 5 qa FAIL, one commit each. Choices and the alternative reje
 - **The run-start warning fires once per process,** so scene reloads don't repeat it. **`DeckRules.shipped_config()` is cached** because the F3 overlay reads it every frame; explicit-path loads (fixtures) stay uncached.
 - **Shuffle bag fix (bug, not design):** the old code reshuffled while the last-drawn card was still in hand, so that card was missing from the next cycle (a size-3 deck could cycle [c1,c1,c2]). Now the bag refills from all owned copies when it empties, and the first card of the new bag is never the card just drawn (when another unique card exists). Side effect: a one-card slot's "next" preview now shows that card instead of "".
 - **Recovery cooldown: no change.** Base 8.0 vs next-longest utility 4.0; shortest recovery effective 6.5 (Nap Time) vs longest non-recovery effective 4.5 (Deep Sigh). A test pins this rule against shipped data.
+
+### 2026-10-28 - C1-b1 generic capabilities part 1 (gameplay-dev, logged by game-lead)
+Commits 4236e5a..87dbb87. Rejected alternatives in brackets.
+- **Lifesteal is a status (`leech`, effect_type `lifesteal`)**, so it gets refresh, a data cap, and the applied/expired signals. [A `StatModifiers` buff, which stacks on recast and can expire a refreshed modifier early.]
+- **Lifesteal counts HP actually removed after resistance** (no overkill). [Overkill-inclusive amount.]
+- **Multi-hit cone/aoe:** hits 2..N re-query from the caster's live position and facing. [Lock the origin at cast.] **Projectile `hits`** means N shots, `hit_interval` apart. [One shot that re-hits.]
+- **`apply_status` has its own `hits`/`hit_interval`.** With them it rolls once per hit against the latest hit set. Without them it applies once, to the first hit's targets. [Auto-linking to the previous effect.] **`hit_interval` is required when `hits` > 1**, with no hidden default.
+- **`CardDamageRule`** multiplies direct damage by `hits` and weights DoT by `chance` (expected value). [Counting full DoT damage.]
+- **Chance rolls use `status_rng`**, not `card_rng`, so deck order and status rolls stay independent. Chance 0 or 1 draws nothing, so existing seeds are unchanged.
+- **Follow-up hits stop if the caster is freed, dead or out of the tree** (reload-safe). Source ids are stored as object ids.
+- **Bleed, Regeneration and Leech ship in `statuses.json` with placeholder numbers.** [Test-only fixtures.] C1-c tunes them.
+- **Feel change:** only direct hits (`KIND_HIT`) trigger hit-stop and shake. DoT ticks (including Burn) and follow-up hits show the number and flash only. Before, every damage event, including Burn ticks, triggered hit-stop. [Keep hit-stop on every tick, which would spam hit-stop with multi-hit and DoTs.] Playtester checks this in C1-g; CHANGELOG notes it.

@@ -143,6 +143,7 @@
         "prompt_title_color": "#ffd7a8",
         "prompt_text_color": "#e8dfe3",
         "prompt_value_color": "#ffffff",
+        "prompt_option_arm_delay": 0.4,
         "prompt_icon_size": 40
     },
     "game_over": {

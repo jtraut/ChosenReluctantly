@@ -421,6 +421,7 @@ const DEFAULT_RUN_UI: Dictionary = {
 	"prompt_text_color": "#e8dfe3",
 	"prompt_value_color": "#ffffff",
 	"prompt_icon_size": 40,
+	"prompt_option_arm_delay": 0.4,
 }
 
 

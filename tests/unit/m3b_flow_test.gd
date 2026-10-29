@@ -210,6 +210,11 @@ func test_number_keys_move_the_highlight_and_do_not_pick() -> void:
 	var picked: Array[String] = []
 	screen.option_chosen.connect(func(id: String) -> void: picked.append(id))
 	var old_id := main.get_instance_id()
+	assert_bool(screen.options_armed()).is_false()  # just opened: a press is ignored (Space, LMB, mashed keys)
+	(screen.options_box.get_child(1) as Button).pressed.emit()
+	assert_array(picked).is_empty()
+	assert_bool(state.has_pending()).is_true()
+	screen.disarm()
 	(screen.options_box.get_child(1) as Button).pressed.emit()
 	assert_array(picked).is_equal(["card:" + offered_second])
 	await _frames()

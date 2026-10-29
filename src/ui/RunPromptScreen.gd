@@ -36,6 +36,9 @@ var _pending: Dictionary = {}
 ## The option dicts of the open choice, and one button per option (same order).
 var _options: Array[Dictionary] = []
 var _option_buttons: Array[Button] = []
+## Real time (ms ticks) before which option presses are ignored: the panel opens right after a fight, while
+## the player is still mashing the card keys, Space (dodge) and LMB. Length: data/ui.json run_ui.prompt_option_arm_delay.
+var _armed_at_msec: int = 0
 
 
 func _ready() -> void:
@@ -139,6 +142,7 @@ func show_content(content: Dictionary) -> void:
 	_pending = {}
 	_fill(content)
 	visible = true
+	_armed_at_msec = Time.get_ticks_msec() + roundi(float(UiConfig.run_ui().get("prompt_option_arm_delay", 0.4)) * 1000.0)
 	if _options.is_empty():
 		button.grab_focus()
 	else:
@@ -234,6 +238,16 @@ static func option_text(option: Dictionary, index: int) -> String:
 	return "\n".join(lines)
 
 
+## True once the short arm delay after opening has passed (options ignore presses before that).
+func options_armed() -> bool:
+	return Time.get_ticks_msec() >= _armed_at_msec
+
+
+## Skips the arm delay (tests and scripted input).
+func disarm() -> void:
+	_armed_at_msec = 0
+
+
 func _first_enabled() -> int:
 	for i in range(_options.size()):
 		if bool(_options[i].get("enabled", true)):
@@ -246,24 +260,27 @@ func _focus_option(index: int) -> void:
 		_option_buttons[index].grab_focus()
 
 
-## Number keys 1..N move the highlight to that option (Enter or a click confirms it), so mashing the card keys
-## at the end of a fight cannot pick by accident. Handled here so the Player never sees them.
+## Number keys 1..N move the highlight to that option (Enter or a click confirms it), and every digit key is
+## swallowed while options are open so the Player never casts a slot behind the screen. Accidental picks are
+## also held off by the short arm delay after opening (`options_armed`). Does nothing while paused.
 func _input(event: InputEvent) -> void:
-	if not visible or _options.is_empty():
+	if not visible or _options.is_empty() or GamePause.is_paused():
 		return
 	var key := event as InputEventKey
-	if key == null or not key.pressed or key.echo:
+	if key == null or not key.pressed:
 		return
 	var number: int = key.keycode - KEY_1
+	var is_digit: bool = (key.keycode >= KEY_0 and key.keycode <= KEY_9) or (key.keycode >= KEY_KP_0 and key.keycode <= KEY_KP_9)
 	if number < 0 or number >= _options.size():
 		number = key.keycode - KEY_KP_1
-	if number >= 0 and number < _options.size():
+	if number >= 0 and number < _options.size() and not key.echo:
 		_focus_option(number)
+	if is_digit:
 		get_viewport().set_input_as_handled()
 
 
 func _on_option_pressed(option_id: String) -> void:
-	if not visible:
+	if not visible or GamePause.is_paused() or not options_armed():
 		return
 	option_chosen.emit(option_id)
 	if _controller == null:

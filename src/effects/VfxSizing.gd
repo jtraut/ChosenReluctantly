@@ -64,3 +64,9 @@ static func projectile_lane_half_width(hit_radius: float) -> float:
 ## position (a target centre up to that far beyond max_range is still hit).
 static func projectile_lane_length(max_range: float, hit_radius: float) -> float:
 	return max_range + lateral_reach(hit_radius)
+
+
+## The same for an enemy shot, which hits the PLAYER's capsule: flight plus the lateral reach the
+## lane's sides already use (lateral_reach_vs_player), so the tip shows the real reach too.
+static func enemy_shot_lane_length(max_range: float, hit_radius: float) -> float:
+	return max_range + lateral_reach_vs_player(hit_radius)

@@ -14,6 +14,19 @@ func _world() -> Array:
 	return [EffectPool.for_world(holder), EffectContext.new(caster, holder, "player")]
 
 
+func test_enemy_shot_lane_tip_is_padded_by_the_reach_the_sides_use() -> void:
+	var parts := _world()
+	var pool: EffectPool = parts[0]
+	var max_range := 12.0
+	var hit_radius := EnemyConfig.projectile_hit_radius()
+	var lane: PooledEffect = TemplateVfx.enemy_shot_lane(pool, Vector3.ZERO, Vector3.FORWARD, max_range, hit_radius, Color.RED, 1.0)
+	assert_object(lane).is_not_null()
+	var aabb := lane.mesh.get_aabb()
+	var reach := VfxSizing.lateral_reach_vs_player(hit_radius)
+	assert_float(aabb.size.z * lane.scale.z).is_equal_approx(max_range + reach, 0.001)
+	assert_float(aabb.size.x * lane.scale.x).is_equal_approx(reach * 2.0, 0.001)
+
+
 func test_projectile_lane_is_hit_width_by_max_range() -> void:
 	var parts := _world()
 	var pool: EffectPool = parts[0]

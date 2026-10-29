@@ -80,7 +80,7 @@ static func enemy_shot_lane(pool: EffectPool, origin: Vector3, direction: Vector
 	var yaw: float = atan2(-direction.x, -direction.z)
 	var lane: PooledEffect = pool.play(EffectPool.Shape.STRIP, origin, VfxSizing.lateral_reach_vs_player(hit_radius), color,
 			duration, 1.0, 1.0, VfxConfig.marker("enemy_shot_lane_alpha"), 0.0, yaw)
-	return lane.lengthened(max_range) if lane != null else null
+	return lane.lengthened(VfxSizing.enemy_shot_lane_length(max_range, hit_radius)) if lane != null else null
 
 
 # --- cone / melee ------------------------------------------------------------

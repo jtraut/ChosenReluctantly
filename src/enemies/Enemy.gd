@@ -3,8 +3,8 @@ class_name Enemy
 ## Shared enemy behavior: chase, melee or ranged attack (via EffectTemplates,
 ## same system cards use), a telegraph before the attack lands, hit-flash,
 ## and knockback. The 3 enemy types in this milestone (melee chaser, ranged
-## shooter, elemental-resistant) are this same script with different exported
-## values per scene - resistance itself lives as data on the Health node.
+## shooter, elemental-resistant) are this same script; their stats (health, speed,
+## damage, ranges, resistances) come from data/enemies.json, not per-scene exports.
 
 const TELEGRAPH_COLOR := Color(1.0, 0.65, 0.1)
 const HIT_FLASH_COLOR := Color(1.0, 1.0, 1.0)

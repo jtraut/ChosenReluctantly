@@ -66,7 +66,7 @@ func _spawn_one(enemy_id: String) -> void:
 	instance.spawn_index = _spawn_count
 	_spawn_count += 1
 	# The arena is the spawner's parent (Main); only a parentless spawner falls back to the scene root.
-	var world: Node = get_parent() if get_parent() != null else get_tree().current_scene
+	var world: Node = get_parent() if get_parent() != null else WorldRef.get_world(get_tree())
 	world.add_child(instance)
 	instance.global_position = _random_spawn_position()
 	instance.target = target

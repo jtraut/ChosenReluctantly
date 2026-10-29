@@ -1,11 +1,12 @@
 # Windowed screenshot capture of the real game (needs a renderer; headless cannot capture).
-# Usage: powershell -File tools\capture_screenshot.ps1 [-After "3.0,5.0"] [-Out screenshots\shot.png] [-Scenario hp_bars] [-Resolution 1920x1080]
+# Usage: powershell -File tools\capture_screenshot.ps1 [-After "3.0,5.0"] [-Out screenshots\shot.png] [-Scenario hp_bars] [-Resolution 1920x1080] [-TrueSize 2560x1440]
 # Resolves Godot like tools\run_tests.ps1 (GODOT_BIN, else godot_console/godot on PATH, preferring *_console.exe).
 param(
     [string]$After = "3.0",
     [string]$Out = "screenshots\shot.png",
     [string]$Scenario = "hp_bars",
-    [string]$Resolution = "1280x720"
+    [string]$Resolution = "1280x720",
+    [string]$TrueSize = ""   # e.g. "2560x1440": render in an oversized SubViewport (not clamped to the monitor)
 )
 
 $root = Split-Path -Parent $PSScriptRoot
@@ -32,7 +33,12 @@ if ($Scenario) { $userArgs += "--scenario=$Scenario" }
 
 Push-Location $root
 try {
-    & $godot --path . --resolution $Resolution -- @userArgs
+    if ($TrueSize) {
+        # tools/VpCapture.tscn hosts Main in a SubViewport of exactly this size; same scenario/capture args.
+        & $godot --path . res://tools/VpCapture.tscn -- "--size=$TrueSize" @userArgs
+    } else {
+        & $godot --path . --resolution $Resolution -- @userArgs
+    }
     exit $LASTEXITCODE
 } finally {
     Pop-Location

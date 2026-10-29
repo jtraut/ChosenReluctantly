@@ -1,24 +1,32 @@
-extends SceneTree
-## QA experiment: render the real Main scene inside an oversized SubViewport and
-## save a PNG, bypassing the OS window clamp. Needs a renderer (not --headless).
-## godot --path . --script tools/vp_capture.gd -- 2560 1440 out.png
-func _initialize() -> void:
-	var args: PackedStringArray = OS.get_cmdline_user_args()
-	var w: int = int(args[0]) if args.size() > 0 else 1920
-	var h: int = int(args[1]) if args.size() > 1 else 1080
-	var out: String = args[2] if args.size() > 2 else "screenshots/vp.png"
+extends Node
+## True-size capture: hosts the real Main scene in an oversized SubViewport (the OS window is
+## clamped to the monitor, so --resolution cannot exceed it). Needs a renderer (not --headless).
+## Run via tools/capture_screenshot.ps1 -TrueSize WxH, or directly:
+##   godot --path . res://tools/VpCapture.tscn -- --size=2560x1440 --scenario=waves --screenshot-after=3 --screenshot-out=screenshots/a.png
+## Everything except --size is the normal capture args (CaptureArgs); Main reads them itself and its
+## ScreenshotCapture node saves the SubViewport texture, then quits the tree cleanly.
+## Main registers with WorldRef, so spawners and card effects work although current_scene is null here.
+
+func _ready() -> void:
+	var size := Vector2i(1920, 1080)
+	for arg: String in OS.get_cmdline_user_args():
+		if arg.begins_with("--size="):
+			var parts: PackedStringArray = arg.substr(7).split("x")
+			if parts.size() == 2 and parts[0].is_valid_int() and parts[1].is_valid_int():
+				size = Vector2i(parts[0].to_int(), parts[1].to_int())
+			else:
+				push_error("vp_capture: bad --size '%s' (need WxH)" % arg)
+				get_tree().quit(1)
+				return
+	# A container forwards real input events (scenario key presses) into the SubViewport.
+	var container := SubViewportContainer.new()
+	container.stretch = false
+	add_child(container)
 	var sub := SubViewport.new()
-	sub.size = Vector2i(w, h)
+	sub.size = size
 	sub.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-	root.add_child(sub)
+	container.add_child(sub)
 	var main: Node = (load("res://scenes/main/Main.tscn") as PackedScene).instantiate()
 	sub.add_child(main)
-	# Known limit: current_scene must be a child of root, so enemy/player spawns
-	# that use get_tree().current_scene log script errors here (HUD/layout unaffected).
-	for i in range(90):
-		await process_frame
-	var img: Image = sub.get_texture().get_image()
-	DirAccess.make_dir_recursive_absolute(out.get_base_dir())
-	img.save_png(out)
-	print("saved ", out, " ", img.get_size())
-	quit()
+	# The Game Over screen binds to current_scene (null here), so bind it by hand.
+	(main.get_node("GameOverScreen") as GameOverScreen).bind(main)

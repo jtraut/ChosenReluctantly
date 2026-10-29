@@ -345,7 +345,7 @@ func _execute_attack() -> void:
 	_attack_cooldown_remaining = attack_cooldown
 	if not _has_live_target():
 		return
-	var context := EffectContext.new(self, get_tree().current_scene, hurtbox.team if hurtbox != null else "enemy")
+	var context := EffectContext.new(self, WorldRef.get_world(get_tree()), hurtbox.team if hurtbox != null else "enemy")
 	if is_ranged:
 		EffectTemplates.execute("projectile", {
 			"damage": attack_damage,

@@ -67,5 +67,5 @@ func reset() -> void:
 
 
 func _game_over_is_up() -> bool:
-	var scene: Node = get_tree().current_scene
+	var scene: Node = WorldRef.get_world(get_tree())
 	return scene != null and scene.has_method("is_game_over") and bool(scene.call("is_game_over"))

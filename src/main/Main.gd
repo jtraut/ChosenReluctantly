@@ -17,6 +17,14 @@ var _restarting: bool = false
 @onready var debug_overlay: DebugOverlay = $DebugOverlay
 
 
+func _enter_tree() -> void:
+	WorldRef.register(self)
+
+
+func _exit_tree() -> void:
+	WorldRef.unregister(self)
+
+
 func _ready() -> void:
 	camera_rig.target = player
 	camera_rig.global_position = player.global_position

@@ -102,7 +102,7 @@ const DASH_TRAIL_INTERVAL := 0.04
 func _ready() -> void:
 	var team := hurtbox.team if hurtbox != null else "player"
 	status_rng.randomize()
-	card_slots = CardSlotController.new(self, get_tree().current_scene, team, stat_modifiers, owned_pools)
+	card_slots = CardSlotController.new(self, WorldRef.get_world(get_tree()), team, stat_modifiers, owned_pools)
 	_setup_attacks()
 	cast_preview = CastPreview.new()
 	cast_preview.name = "CastPreview"
@@ -509,7 +509,7 @@ func _arena_rect() -> Rect2:
 
 func _on_attack_fired(attack_id: StringName) -> void:
 	var def := attacks.get_def(attack_id)
-	var context := EffectContext.new(self, get_tree().current_scene, hurtbox.team if hurtbox != null else "neutral")
+	var context := EffectContext.new(self, WorldRef.get_world(get_tree()), hurtbox.team if hurtbox != null else "neutral")
 	if String(def["shape"]) == "targeted_aoe":
 		# The same "aoe" template cards use, centred on the locked target.
 		var target: Vector3 = _aoe_targets.get(attack_id, AoeTargeting.clamp_target(global_position, null, get_aim_direction(), float(def["max_range"]), _arena_rect()))

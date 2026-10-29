@@ -111,12 +111,12 @@ func spawn_popup(world_pos: Vector3, words: String, color: Color, text_scale: fl
 	popup_count += 1
 	last_popup_text = words
 	var tree := Engine.get_main_loop() as SceneTree
-	if tree == null or tree.current_scene == null:
+	if tree == null or WorldRef.get_world(tree) == null:
 		return
 	var scene: PackedScene = load(DAMAGE_NUMBER_SCENE_PATH)
 	var instance: DamageNumber = scene.instantiate()
 	instance.configure(UiConfig.damage_numbers())
-	tree.current_scene.add_child(instance)
+	WorldRef.get_world(tree).add_child(instance)
 	instance.global_position = world_pos + Vector3(0.0, height, 0.0)
 	instance.show_text(words, color, text_scale)
 
@@ -126,7 +126,7 @@ func spawn_popup(world_pos: Vector3, words: String, color: Color, text_scale: fl
 ## keeps more than `max_alive` numbers.
 func spawn_damage_number(world_pos: Vector3, amount: float, damage_type: String) -> void:
 	var tree := Engine.get_main_loop() as SceneTree
-	if tree == null or tree.current_scene == null:
+	if tree == null or WorldRef.get_world(tree) == null:
 		return
 	var cfg: Dictionary = UiConfig.damage_numbers()
 	var spot: Vector3 = world_pos + Vector3(0.0, float(cfg["spawn_height"]), 0.0)
@@ -149,7 +149,7 @@ func spawn_damage_number(world_pos: Vector3, amount: float, damage_type: String)
 	var scene: PackedScene = load(DAMAGE_NUMBER_SCENE_PATH)
 	var instance: DamageNumber = scene.instantiate()
 	instance.configure(cfg)
-	tree.current_scene.add_child(instance)
+	WorldRef.get_world(tree).add_child(instance)
 	instance.global_position = spot
 	instance.show_amount(amount, damage_type, DamageNumber.color_for(damage_type, float(cfg["color_lighten"])), is_big)
 	_live_numbers.append(instance)

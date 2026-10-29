@@ -16,12 +16,12 @@ Last updated: 2026-10-28. **Milestone 2 is done.** We're running **Post-mileston
 
 ## In progress
 - **Tooling task:** built (7a372b9) and **qa PASS** (b5a796a, 552/552). It closes with C1 once the C1-h docs pass is done.
-- **C1-a** built 2a985e4..73c8e72 (571/571). **C1-b1** built 4236e5a..87dbb87 (596/597). **C1-t** (test gate repair) handed to qa.
+- **C1-a** built 2a985e4..73c8e72 (571/571). **C1-b1** built 4236e5a..87dbb87 (596/597). **C1-t** done da1115a (597/597, 3 of 3 runs). **C1-b2** handed to gameplay-dev.
 - **Director answered D8-D12.** D8 = C (dodge about 5 m) is applied in C1-a by setting `data/player.json` `dodge.speed` 28 -> 20.
 
 ## Exact next step
-1. **C1-t** with qa (brief in ROADMAP): make the suite green and repeatable. **On resume:** check `git log` for qa commits. If none, re-run C1-t.
-2. Then C1-b2 -> C1-c (gameplay-dev) -> C1-d story -> C1-e ux-designer -> C1-f qa -> C1-g playtester (merged with the pass close-out report) -> C1-h tech-writer (also covers the tooling docs) -> game-lead closes C1, the tooling task and the pass.
+1. **C1-b2** with gameplay-dev (brief in ROADMAP). **On resume:** check `git log` for C1-b2 commits and `git status` for leftovers. If done and recorded in ROADMAP, go on to C1-c. If not, re-run C1-b2, telling gameplay-dev to continue from what's committed.
+2. Then C1-c (gameplay-dev) -> C1-d story -> C1-e ux-designer -> C1-f qa -> C1-g playtester (merged with the pass close-out report) -> C1-h tech-writer (also covers the tooling docs) -> game-lead closes C1, the tooling task and the pass.
 3. Then **Milestone 3a**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.

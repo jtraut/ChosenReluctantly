@@ -296,14 +296,14 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
     - **D8 = C (director):** dodge about 5 m. The tooling task applies default B (`dodge_speed` 28, 7 m) and moves the dodge values to data. C1-a changes the data value to 20 (20 x 0.25 s = 5.0 m) and updates tests. If the tooling task didn't land the data move, do it here.
     - Recovery gets the longest base cooldown: check `data/slot_types.json`, check no other slot's default effective cooldown is longer, and log old/new.
   - [ ] **C1-b1, generic capabilities part 1 (gameplay-dev):** BUILT 4236e5a..87dbb87 (596/597; the one failure is the pre-existing pause_6a test). Data shapes are in the hand-back summary in DECISIONS. ux note: Bleed/Regen/Leech cues need code (`StatusDatabase.VISUAL_KINDS` only allows flame/stars). Rerun the seeded sims once C1-c cards use `hits`/`chance`.
-  - [ ] **C1-t, test gate repair (qa, inserted 2026-10-28):** `pause_6a_test > test_a_hit_stop_that_ended_during_the_pause_does_not_come_back` fails every time when its suite runs alone (on the baseline too). `slice6_qa_test > test_f1_same_seed_crowd_is_bit_identical...` drifts about 1e-4 in some full runs. Find the cause. Fix the tests if they're wrong; if game code is wrong, report it for gameplay-dev. Goal: a green, repeatable suite before C1-b2.
+  - [x] **C1-t, test gate repair (qa, inserted 2026-10-28):** DONE da1115a, 597/597 in 3 of 3 full runs (`docs/reviews/2026-10-28-c1t-test-gate.md`). pause_6a was a test-timer bug (ignore_time_scale timer counts the scale-change frame 10x); slice6 crowd test now runs with hit-stop off and asserts time_scale 1.0 per tick. Follow-ups: harden `attack_meter_test > test_meters_track_player_and_heavy_ready_state` (seen flaking once) in C1-f; `Main.gd:70` Game Over timer fix goes into C1-b2; enemy movement changes under `Engine.time_scale` despite a fixed delta (investigate with the enemy AI pass, not now). Original brief: `pause_6a_test > test_a_hit_stop_that_ended_during_the_pause_does_not_come_back` fails every time when its suite runs alone (on the baseline too). `slice6_qa_test > test_f1_same_seed_crowd_is_bit_identical...` drifts about 1e-4 in some full runs. Find the cause. Fix the tests if they're wrong; if game code is wrong, report it for gameplay-dev. Goal: a green, repeatable suite before C1-b2.
     - `chance` on `apply_status`, reusing the 3b element-chance code.
     - `hits` and `hit_interval` on cone, aoe and projectile.
     - Bleed status: physical DoT that ignores elemental resistance and refreshes rather than stacking.
     - Regeneration status: heal over time.
     - Lifesteal timed modifier: a single "damage dealt" event covering every source, with a per-hit cap.
     - All in data.
-  - [ ] **C1-b2, generic capabilities part 2 (gameplay-dev):**
+  - [ ] **C1-b2, generic capabilities part 2 (gameplay-dev):** (also: `Main.gd:70` Game Over wait counts from `Time.get_ticks_msec()` instead of an ignore_time_scale timer, from C1-t)
     - Zone template: circle or line; size, duration, tick, damage and status chance; placed at a point within a range cap; pooled, capped and self-cleaning; safe if the caster dies.
     - Dash path damage: each enemy is hit once, using the shared query.
     - Dash `direction_mode` `forward` | `away_from_aim`.

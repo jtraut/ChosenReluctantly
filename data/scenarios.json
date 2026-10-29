@@ -421,22 +421,10 @@
         "enemies_idle": true,
         "disable_auto_attack": true,
         "open_settings_at": 1.0,
-        "origin_offset": [
-            -1.5,
-            0.0,
-            -2.0
-        ],
-        "spacing": [
-            1.6,
-            -1.6
-        ],
+        "origin_offset": [-1.5, 0.0, -2.0],
+        "spacing": [1.6, -1.6],
         "columns": 2,
-        "groups": [
-            {
-                "scene": "res://scenes/enemies/MeleeChaser.tscn",
-                "count": 4
-            }
-        ]
+        "groups": [{"scene": "res://scenes/enemies/MeleeChaser.tscn", "count": 4}]
     },
     "c1_status": {
         "disable_spawner": true,
@@ -827,23 +815,9 @@
         "disable_spawner": true,
         "player_max_health": 9999,
         "enemy_max_health": 9999,
-        "origin_offset": [
-            0.0,
-            0.0,
-            -9.0
-        ],
+        "origin_offset": [0.0, 0.0, -9.0],
         "columns": 1,
-        "groups": [
-            {
-                "scene": "res://scenes/enemies/BossGuardian.tscn",
-                "count": 1
-            }
-        ],
-        "boss_attacks": [
-            "smash",
-            "slam",
-            "volley",
-            "charge"
-        ]
+        "groups": [{"scene": "res://scenes/enemies/BossGuardian.tscn", "count": 1}],
+        "boss_attacks": ["smash", "slam", "volley", "charge"]
     }
 }

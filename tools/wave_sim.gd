@@ -800,10 +800,6 @@ func _play_room(run_seed: int, controller: RunController, room: Dictionary) -> S
 		_count_kills(enemies, prev_enemies)
 		_track_boss(enemies)
 		_bot_step(enemies)
-		if OS.has_environment("BOSS_TRACE") and int(_sim_time * 60.0) % 300 == 0:
-			for e: Enemy in enemies:
-				if e is Boss:
-					print("  trace t=%.0f boss_hp=%.0f phase=%d state=%s dist=%.1f me_hp=%.0f" % [_sim_time, e.health.current_health, (e as Boss).phase_index, (e as Boss).state_name(), e.global_position.distance_to(_player.global_position), _player.health.current_health])
 		if _god:
 			_player.health.heal(9999.0)
 	return "unreachable"

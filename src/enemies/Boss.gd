@@ -9,8 +9,9 @@ class_name Boss
 ##
 ## Fairness rules, all from data and tested: every telegraph is at least rules.min_telegraph seconds; every attack can
 ## be escaped by walking or by the dodge (BossRules.escape); the boss cannot be stunned (rank boss, stun multiplier 0).
-## Pinning: the boss is not solid to the player while it charges, during its transitions and its death. It becomes
-## solid again only once it no longer overlaps the player's body, so a charge can never trap a player against a wall.
+## Pinning: the boss is not solid to the player (or to other enemies) while it charges and once it is dead. After a
+## charge it becomes solid again only once it no longer overlaps the player's body, so a charge can never trap a
+## player against a wall. During a phase transition it stands still and stays solid.
 ##
 ## For ux: the signals below, `display_name()`, `phase_thresholds()`, `phase_index`, `phase_count()`, `phase_name()`,
 ## `is_transitioning()`, and `health` (health_changed gives the HP bar). The boss is in the group "boss".
@@ -261,7 +262,7 @@ func live_adds() -> int:
 	return live.size()
 
 
-## True while the boss' body does not block the player (a charge, a transition, the death).
+## True while the boss' body does not block the player (a charge and its aftermath while still overlapping, the death).
 func is_phased() -> bool:
 	return _phased
 
@@ -697,18 +698,36 @@ func _on_died() -> void:
 	_death_total = float(cfg["beat_seconds"])
 	_death_left = _death_total
 	_death_last_usec = Time.get_ticks_usec()
+	if not GamePause.paused_changed.is_connected(_on_pause_changed):
+		GamePause.paused_changed.connect(_on_pause_changed)
 	set_process(true)
 	defeated.emit()
 
 
+## Time spent paused does not count towards the beat (like Main's own beat).
+func _on_pause_changed(_is_paused: bool) -> void:
+	_death_last_usec = Time.get_ticks_usec()
+
+
+func _exit_tree() -> void:
+	super()
+	if GamePause.paused_changed.is_connected(_on_pause_changed):
+		GamePause.paused_changed.disconnect(_on_pause_changed)
+
+
 ## The death beat is counted on the wall clock (not on the time scale the slow-mo changes), like Main's own beat.
-func _process(_delta: float) -> void:
+## With hit-stop and slow-mo off (the sims) the time scale never changes, so game time is exact and keeps a seeded
+## run repeating: a wall-clock beat would be 35 sim seconds at sim speed and vary with the machine.
+func _process(delta: float) -> void:
 	if _death_left < 0.0:
 		set_process(false)
 		return
-	var now: int = Time.get_ticks_usec()
-	_death_left -= minf(float(now - _death_last_usec) / 1000000.0, MAX_BEAT_STEP)
-	_death_last_usec = now
+	if Juice.hit_stop_enabled:
+		var now: int = Time.get_ticks_usec()
+		_death_left -= minf(float(now - _death_last_usec) / 1000000.0, MAX_BEAT_STEP)
+		_death_last_usec = now
+	else:
+		_death_left -= delta
 	var progress: float = clampf(1.0 - _death_left / _death_total, 0.0, 1.0)
 	_set_body_color(Color(1.0, 0.95, 0.8).lerp(_base_color, 0.0 if progress < 0.7 else (progress - 0.7) / 0.3))
 	if progress > 0.6:

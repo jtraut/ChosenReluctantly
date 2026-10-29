@@ -789,3 +789,23 @@ Commits 56a76f0..d2cd00a. Rejected alternatives in brackets.
   - Rejects stay 3 per run (a director rule).
   - 8 rooms stays.
 - **3c defaults:** a 3-phase data-driven boss at 50% resistance to every element (GDD §7, final boss), a placeholder name, no quips, and a pacing target of 45-75 s in the boss room for the bot.
+
+### 2026-10-29 - 3c boss, gameplay side (gameplay-dev, logged by game-lead)
+Commits a35501d..2234dc8; 875/875. The arena hash and the bot-sim checksum are unchanged. Rejected alternatives in brackets.
+- **`data/bosses.json`** (validated by `BossConfig` and `BossRules`). `boss_guardian` "The Overly Enthusiastic Guardian" (placeholder name): 280 HP, 50% resistance to every element, no knockback taken, unstunnable.
+- **Attacks:**
+  - smash: cone 3.4 m, 8 dmg;
+  - slam: disc radius 3.2 locked on the player's spot, 9 dmg;
+  - volley: 5 lanes, 5 dmg each;
+  - charge: an 11 m lane, 10 dmg.
+
+  Wind-ups are 0.9-1.1 s, and 0.77 s at the shortest in phase 3 (the floor is 0.6).
+- **Phases at 66% and 33%:** faster, a shorter attack gap, and new attacks (charge from phase 2). Adds: 2 chasers at phase 2 and 2 shooters at phase 3, with at most 3 alive. Each change is a 1.2 s invulnerable roar.
+- **`Health.hp_floor` holds each threshold,** so one hit can't skip a phase. [Checking after the damage lands.]
+- **Pinning:** the boss isn't solid while charging, and becomes solid again only once it's clear of the player. [Pushing the player, which can eject them through a wall.]
+- **Boss telegraphs are drawn at the vs-player reach.** [The template's `delay` telegraph, which sizes against the enemy hurtbox.] Projectile `yaw_degrees` and aoe `vfx:false` were added as optional template params. [A template per boss attack.]
+- **The boss spawns with no tier** (the 3a `tiers.boss` HP x7 is now unused). The boss owns its adds and kills them on death.
+- **Death beat** 1.6 s (slow-mo, burst, the player immune), then the win screen.
+- **Pacing** (seeds 1-8, 15-card starter, real HP): boss fight 52-67 s, mean 61 (was 80 with the placeholder). The bot won 8/8; its lowest HP in the fight was 12-26 of 30. Tuned HP 520 -> 280.
+- **Follow-ups done:** `RunState.from_dict` rejects bad `pending` values; the choice model has `owned`, `next_room_type` and per-option `slot_contents`.
+- **Known:** player card visuals are drawn against the 0.45 m enemy radius, so they understate reach on the boss (1.05 m). That's the safe direction, so it's accepted.

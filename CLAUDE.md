@@ -54,7 +54,7 @@ project.godot
 /assets  - placeholder art/audio only
 /tests   - gdUnit4 test suites
 /tools   - CLI utilities (test runner, headless sim)
-/docs    - GDD, decisions, roadmap, state, assets
+/docs    - GDD, decisions, roadmap, state, open items, changelog, architecture, assets; playtests/ and reviews/ reports
 ```
 Deviating from this layout requires a logged reason in `docs/DECISIONS.md`.
 

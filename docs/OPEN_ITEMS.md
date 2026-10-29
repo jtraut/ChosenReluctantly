@@ -42,6 +42,10 @@ _Updated at every slice close._
 5. Which cards are great, which are dull, and what is missing?
 6. Is the game fun enough to keep building on, or does something need to change first? (The run-loop work is kept loosely coupled to specific cards, so a card-system change won't strand it.)
 
+## Your feedback in progress
+
+- **2026-10-29: "No scrolling by default on the round-end reward selection."** Accepted. ux-designer fixes it right after the current boss playtest, before 3c is tagged. Reward offers will fit without scrolling down to about 1024x600; only the rest-room removal list may scroll.
+
 ## Needs your decision
 
 Neither blocks work. Until you answer, I keep the current values.

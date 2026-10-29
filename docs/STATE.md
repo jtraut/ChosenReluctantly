@@ -16,7 +16,7 @@ Last updated: 2026-10-29. The director is away until the evening with an autonom
 
 ## Exact next step
 1. **3c playtest.** **On resume:** check `docs/playtests/` for a 3c report.
-2. Then tech-writer -> close, tag `playtest-2026-10-29-3c`.
+2. Then **ux-designer: the director's no-scroll reward fix** (ROADMAP 3c line) -> qa quick check -> tech-writer -> close, tag `playtest-2026-10-29-3c`.
 3. Then 3d (loadouts). Write its brief at the 3c close.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.

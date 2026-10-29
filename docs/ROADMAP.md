@@ -310,7 +310,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
     - Pass-through buff: disables player-vs-enemy body collision, restored on end, death or reload.
     - Placed skills use a reticle clamped to the range cap (data exposed for ux).
     - Align the dodge fallbacks to data: the `PlayerConfig.gd` default dict and the `Player.gd` export go from 28 to 20; update any test that pins 28 (added 2026-10-29). Rerun the reload soak (Main and Player change).
-  - [ ] **C1-c, cards (gameplay-dev):**
+  - [ ] **C1-c, cards (gameplay-dev):** BUILT 87ede1f..de9f916 (666/666; all gates clean). Balance table in DECISIONS. Solid enemies are on (HP lost about 2x in the sim; the playtester judges it). Capture scenarios not re-run after warn -> block (qa checks them in C1-f).
     - Cards: `rogue_bleed_slash`, `rogue_flurry`, `fire_fireball` (reuses `targeted_aoe`), `fire_wall` (line zone), `rogue_shadow_step` (pass-through only), `rogue_lunge_strike` (about 3.0 m with path damage), `neutral_backward_leap` (about 6-7 m, away from aim), `neutral_leech`, `neutral_regeneration`. Give them placeholder names.
     - Neutral cards must not reference class or element data.
     - Tune the numbers to the card-beats-basic rule, and put a balance table in DECISIONS.

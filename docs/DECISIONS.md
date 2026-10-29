@@ -647,3 +647,40 @@ Commits 4b1820a..5fbc715 plus a uid commit; 630/630. Rejected alternatives in br
   - Leaving bodies non-solid and redefining Shadow Step as invulnerability or an aggro drop. That contradicts D9 (pass-through only for now), and aggro drop is planned for later.
   - Asking the director first. It's one data flag, cheap to reverse, so it doesn't meet the escalation bar.
 - **Risk:** the player gets pinned by a crowd of 12. Mitigations: separation steering, the sim rerun, and the playtester checks. Listed under "Calls I made".
+
+### 2026-10-29 - C1-c cards and balance table (gameplay-dev, logged by game-lead)
+Commits 87ede1f..de9f916; 666/666. Rejected alternatives in brackets.
+Slots now hold attack_single 7, attack_aoe 5, utility 3, movement 5, recovery 4. The preset deck is the whole rogue + fire + neutral pool. The run start now **blocks** (a push_error, the spawner off, and a `run_start_blocked` signal) when a deck misses the minimums. [`quit()`, which would kill tools.]
+
+**Balance table** (light = 3 dmg / 0.6 s = 5.00 DPS; cast floor 4.5; "DPS (rule)" is the CardDamageRule value pinned by `slice3b_qa_test`):
+
+| Card | Slot | Cooldown (base+mod) | Cast damage / effect | DPS (rule) | vs light |
+|---|---|---|---|---|---|
+| Bleed Slash | single | 1.2 (1.0+0.2) | 5 direct + Bleed 4 s (2 credited ticks) | 7.0/1.2 = 5.83 | 117% |
+| Flurry | single | 1.3 (1.0+0.3) | 4 hits x 2, 0.12 s apart | 8.0/1.3 = 6.15 | 123% |
+| Fireball | aoe | 3.1 (2.5+0.6) | 14 + Burn (6 credited), radius 2.0, max_range 8, 0.4 s delay | 20/3.1 = 6.45 | 129% |
+| Fire Wall | aoe | 3.3 (2.5+0.8) | line zone 5 x 1.2, 4 s, 2.5 per 0.5 s tick, Burn 40% per tick (not credited) | 20/3.3 = 6.06 | 121% |
+| Shadow Step | movement | 4.0 (3.0+1.0) | pass_through 2.5 s | n/a | n/a |
+| Lunge Strike | movement | 3.0 | dash 3.0 m / 0.2 s, 8 path damage once per enemy, knockback 3 | n/a | n/a |
+| Backward Leap | movement | 3.5 (3.0+0.5) | dash 6.5 m / 0.25 s, away_from_aim, not invulnerable | n/a | n/a |
+| Leech | recovery | 8.5 (8.0+0.5) | 7 s: 40% of damage dealt, at most 3 HP per hit (about 1.6-2.0 HP/s in a fight) | n/a | n/a |
+| Regeneration | recovery | 8.0 | 2 HP/s for 7 s = 14 HP | n/a | n/a |
+
+- **Status tuning:** Regeneration `heal_per_tick` 1.0 -> 2.0; Leech `fraction` 0.3 -> 0.4 and `max_heal_per_hit` 2.0 -> 3.0; Bleed unchanged at 1 per 0.5 s.
+- Fireball is a bit above the other aoe cards (5.3-5.5) because it is aimed and delayed. Fire Wall's rule value assumes one target stands in it the whole time, which is generous; real crossings give 1-3 ticks.
+- Recovery is still the longest effective cooldown (6.5 vs 4.5).
+- **New generic aoe `delay`** (0-3 s): the centre locks at cast and the telegraph grows over the delay. [Treating the hold-to-preview as the telegraph.]
+- **Fire Wall is in attack_aoe,** so the damage rule checks it. [Utility, which is unchecked.]
+- **Lunge Strike stops at the first enemy** (bodies are solid), so it's a gap-closer. [A short pass-through, which would blur it with Shadow Step.]
+- **Solid-enemy implementation:** `data/player.json` `body.collide_with_enemies` (default true). Player and enemies use `platform_floor_layers = WORLD`, so neither can ride the other. The spawner positions an enemy before `add_child` (gated on the flag, so false is bit-exact with the old behaviour). When pass-through ends inside an enemy, collision restores only once the player is clear (3 s cap).
+- **Tests** that pin non-solid geometry use `tests/support/body_flag.gd` to force the flag off; the solid case has its own suite (`c1c_solid_enemies_test.gd`).
+- The wave sim gained read-only pinned-frame and max-feet-height lines.
+
+**Sim, seeds 1/2/3, 150 s, fixed 60 fps.** HP lost: before 21/32/53; cards with the flag false 49/47/41; cards with the flag true 86/91/83. Kills are about the same. The longest pinned stretch goes 0.32 s -> 1.83 s with the flag true. There were no crashes, NaN or stalls, and runs repeat bit-identically.
+
+### 2026-10-29 - Solid enemies kept on, pending playtest (game-lead)
+- The bot sim shows solid bodies about double HP lost. The bot never uses Shadow Step on purpose and walks into enemies, so this overstates the cost for a human.
+- **Call:** keep the flag true and have the C1-g playtester judge pinning and fairness. If the playtester reports being pinned with no way out, or a frustration blocker, I flip the default to false before the C1 tag and park Shadow Step's purpose as a director question.
+- **Rejected:**
+  - Flipping it off now, which leaves Shadow Step a no-op.
+  - Letting the dodge pass through bodies, which would make Shadow Step redundant.

@@ -7,7 +7,9 @@ Owned by game-lead. Answer in chat with the ID, for example "D1 = A".
 
 ## Needs your decision
 
-Nothing waiting. All of D1-D7 were answered on 2026-10-28 (see Recently resolved).
+| ID | Question | Why it matters | Options | Recommended | If you don't answer | How to answer |
+|---|---|---|---|---|---|---|
+| D8 | A bug fix halved the dodge roll. It used to slide about 7 m; now it stops at its set 3.5 m. Which do you want? | Our test bot now takes about 2.5x more damage with the same seed. Dodge is your main defence against telegraphs. The safe window (0.25 s) is the same either way. | A: keep 3.5 m (as originally set). B: restore about 7 m by doubling dodge speed (same safe window). C: about 5 m, in between. | B (keeps the feel you've been testing; one value) | B, applied in the next gameplay task (dodge values also move into data) | "D8 = A/B/C" |
 
 ## Needs your eyes in the game
 

@@ -296,6 +296,48 @@ func _run_mode_soak(snaps: Array[Dictionary]) -> void:
 	_check(is_equal_approx(_main().player.health.current_health, hp_carried), "continue: HP %s, expected %s" % [_main().player.health.current_health, hp_carried])
 	snaps.append(_snapshot("after continue"))
 
+	# 2b. 3b: a reload in the middle of a reward reopens the same offer without replaying (or re-recording) the room.
+	main = _main()
+	main.run_controller._finish_room(0.0)
+	var reward_state: RunState = RunSession.current
+	_check(reward_state.pending == RunState.PENDING_REWARD and reward_state.offer.size() == RunConfig.offer_size(), "reward: no offer after a won room (pending '%s')" % reward_state.pending)
+	var offer_before: Array[String] = reward_state.offer.duplicate()
+	var history_before: int = reward_state.history.size()
+	var reward_id := main.get_instance_id()
+	main = await _enter_run_main()  # a reload on top of the same RunSession
+	_check(main.get_instance_id() != reward_id, "reward reload: scene not replaced")
+	_check(RunSession.current == reward_state and reward_state.offer == offer_before, "reward reload: the offer changed or the state was replaced")
+	_check(reward_state.history.size() == history_before, "reward reload: the room was recorded twice")
+	_check(main.run_controller.is_cleared() and main.run_controller.has_choice(), "reward reload: the choice did not reopen")
+	_check(_enemy_count(main) == 0 and main.enemy_spawner.alive_count() == 0, "reward reload: the room was fought again")
+	_check((main.get_node("RoomClearedScreen") as RunPromptScreen).is_open(), "reward reload: the reward screen is not open")
+	_check(SceneSelfCheck.find_problems(main).is_empty(), "reward reload: SceneSelfCheck problems %s" % str(SceneSelfCheck.find_problems(main)))
+	var picked: String = offer_before[0]
+	var deck_size_before: int = reward_state.deck.size()
+	reward_id = main.get_instance_id()
+	_check(bool(main.run_controller.choose("card:" + picked)["ok"]), "reward pick: refused")
+	await _frames(SETTLE_FRAMES)
+	_check(_main().get_instance_id() != reward_id, "reward pick: the next room did not load")
+	_check_run_fresh("reward pick", 3)
+	_check(reward_state.deck.size() == deck_size_before + 1 and _main().player.card_slots.owned_card_ids().has(picked), "reward pick: the card is not in the deck")
+	snaps.append(_snapshot("after reward pick"))
+
+	# 2c. 3b: Try again from a reward state starts a fresh run with nothing of the reward left over.
+	main = _main()
+	main.run_controller._finish_room(0.0)
+	_check(RunSession.current.has_pending(), "try again from reward: no reward open")
+	var reward_seed: int = RunSession.current.seed_value
+	var open_state: RunState = RunSession.current
+	reward_id = main.get_instance_id()
+	main.restart_arena()
+	await _frames(SETTLE_FRAMES)
+	_check(_main().get_instance_id() != reward_id, "try again from reward: scene not replaced")
+	_check(RunSession.current != open_state and RunSession.current.seed_value != reward_seed, "try again from reward: the run kept its state or seed")
+	_check(not RunSession.current.has_pending() and RunSession.current.offer.is_empty() and RunSession.current.choice_log.is_empty(), "try again from reward: reward state leaked")
+	_check(RunSession.current.rejects_remaining == 3 and RunSession.current.deck == RunConfig.starting_deck(), "try again from reward: rejects or deck leaked")
+	_check_run_fresh("try again from reward", 1)
+	snaps.append(_snapshot("after try again from reward"))
+
 	# 3. Death, Game Over, Try again: a new run with a new seed.
 	main = _main()
 	var seed_dead := RunSession.current.seed_value

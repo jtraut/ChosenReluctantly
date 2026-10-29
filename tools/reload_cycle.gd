@@ -203,6 +203,7 @@ func _run() -> void:
 	snaps.append(_snapshot("after live reload"))
 
 	await _run_mode_soak(snaps)
+	await _boss_soak(snaps)
 
 	# Orphan / object growth: compare last full cycle to the first.
 	if snaps.size() >= 2:
@@ -370,4 +371,95 @@ func _run_mode_soak(snaps: Array[Dictionary]) -> void:
 	_check(RunSession.current.seed_value != win_seed and RunSession.current.room_index == 0 and RunSession.current.outcome == "", "win: the new run leaked state")
 	_check_run_fresh("new run after win", 1)
 	snaps.append(_snapshot("after win"))
+	RunSession.clear()
+
+
+# ---- Milestone 3c: the boss fight ----
+
+## Spawns the boss of a boss room at once (the spawner's first-wave delay skipped) and returns it.
+func _spawn_boss_in(main: Main) -> Boss:
+	main.enemy_spawner._process(3.0)
+	for child in main.get_children():
+		if child is Boss:
+			return child as Boss
+	return null
+
+
+func _check_boss_gone(label: String) -> void:
+	_check(get_tree().get_nodes_in_group(Boss.GROUP).is_empty(), "%s: a Boss from the old scene is still in the tree" % label)
+	_check(is_equal_approx(Engine.time_scale, 1.0), "%s: time_scale %s" % [label, Engine.time_scale])
+	_check(not _main().player.health.damage_immune, "%s: the old fight's damage immunity leaked onto the new player" % label)
+	_check(not Enemy.is_player_body_suppressed(), "%s: pass-through flag leaked" % label)
+
+
+func _boss_soak(snaps: Array[Dictionary]) -> void:
+	print("Boss soak: reload mid-fight, mid-phase-transition, mid-death-beat")
+	RunSession.clear()
+	var total: int = RunGenerator.generate(RunSession.begin_new_run(777).seed_value, RunConfig.get_config()).size()
+	RunSession.current.room_index = total - 1
+	var main := await _enter_run_main()
+	var boss := _spawn_boss_in(main)
+	_check(boss != null, "boss soak: no Boss spawned in the boss room")
+	if boss == null:
+		return
+	_check(main.run_controller.current_boss() == boss, "boss soak: the controller does not expose the boss")
+	await _frames(5)
+	boss._attack_cooldown_remaining = 0.0
+	boss.global_position = main.player.global_position + Vector3(0.0, 0.0, -3.0)
+	var waited: int = 0
+	while boss.state_name() == "CHASE" and waited < 120:
+		await get_tree().physics_frame
+		waited += 1
+	_check(boss.state_name() != "CHASE", "boss soak: the boss never started an attack")
+	# 1. Reload (a fresh scene on the same run) in the middle of a wind-up: the room starts over, nothing of the fight is left.
+	var old_id := main.get_instance_id()
+	main = await _enter_run_main()
+	_check(main.get_instance_id() != old_id, "boss reload mid-fight: scene not replaced")
+	await _frames(SETTLE_FRAMES)
+	_check_boss_gone("boss reload mid-fight")
+	_check_run_fresh("boss reload mid-fight", total)
+	var again := _spawn_boss_in(main)
+	_check(again != null and again != boss and is_equal_approx(again.health.current_health, again.health.max_health) and again.phase_index == 0, "boss reload mid-fight: the new boss is not fresh")
+	snaps.append(_snapshot("after boss mid-fight reload"))
+
+	# 2. Reload during a phase transition (the boss is invulnerable and roaring), through Try again.
+	again.health.take_damage(again.health.max_health * 0.8, "physical")
+	_check(again.is_transitioning() and again.health.damage_immune, "boss soak: no transition after a big hit")
+	old_id = main.get_instance_id()
+	main.restart_arena()
+	await _frames(SETTLE_FRAMES)
+	_check(_main().get_instance_id() != old_id, "boss reload mid-transition: scene not replaced")
+	_check_boss_gone("boss reload mid-transition")
+	_check(RunSession.current.room_index == 0, "boss reload mid-transition: Try again did not start a new run")
+	_check_run_fresh("boss reload mid-transition", 1)
+	# Outlive the transition's length: nothing from the old boss may fire into the new scene.
+	var until_msec: int = Time.get_ticks_msec() + 1600
+	while Time.get_ticks_msec() < until_msec:
+		await get_tree().process_frame
+	_check_boss_gone("boss reload mid-transition, after the old transition would have ended")
+	snaps.append(_snapshot("after boss mid-transition reload"))
+
+	# 3. Reload during the death beat (slow-mo running, the player already protected).
+	RunSession.current.room_index = total - 1
+	main = await _enter_run_main()
+	var dying := _spawn_boss_in(main)
+	_check(dying != null, "boss soak: no Boss for the death-beat reload")
+	if dying == null:
+		return
+	await _frames(3)
+	dying.health.hp_floor = 0.0
+	dying.health.take_damage(dying.health.max_health * 2.0, "physical")
+	_check(dying.is_defeated() and main.player.health.damage_immune, "boss soak: the kill did not start the death beat")
+	_check(is_equal_approx(Engine.time_scale, 0.25), "boss soak: the death beat has no slow-mo (time_scale %s)" % Engine.time_scale)
+	old_id = main.get_instance_id()
+	main.restart_arena()
+	await _frames(SETTLE_FRAMES)
+	_check(_main().get_instance_id() != old_id, "boss reload mid-death-beat: scene not replaced")
+	_check_boss_gone("boss reload mid-death-beat")
+	until_msec = Time.get_ticks_msec() + 2000
+	while Time.get_ticks_msec() < until_msec:
+		await get_tree().process_frame
+	_check(not _main().is_game_over() and not _main().run_controller.is_cleared(), "boss reload mid-death-beat: the old beat or win leaked into the new run")
+	_check((_main().get_node("WinScreen") as CanvasLayer).visible == false, "boss reload mid-death-beat: a win screen showed in the new run")
+	snaps.append(_snapshot("after boss death-beat reload"))
 	RunSession.clear()

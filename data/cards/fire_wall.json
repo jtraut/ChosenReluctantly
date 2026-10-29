@@ -1,10 +1,10 @@
 {
     "id": "fire_wall",
-    "name": "Fire Wall",
+    "name": "Wall of Mild Fire",
     "slot_type": "attack_aoe",
     "pool": "fire",
     "cooldown_modifier": 0.8,
-    "flavor_text": "Placeholder: a line of fire, mostly a suggestion.",
+    "flavor_text": "A line of fire. Mostly a suggestion.",
     "effects": [
         {
             "template": "zone",

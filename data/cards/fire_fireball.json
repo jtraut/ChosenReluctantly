@@ -1,10 +1,10 @@
 {
     "id": "fire_fireball",
-    "name": "Fireball",
+    "name": "Fireball, Incoming",
     "slot_type": "attack_aoe",
     "pool": "fire",
     "cooldown_modifier": 0.6,
-    "flavor_text": "Placeholder: aimed fire, a moment to dodge it.",
+    "flavor_text": "Slow enough to dodge. Enemies never do.",
     "effects": [
         {
             "template": "aoe",

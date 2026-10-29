@@ -1,10 +1,10 @@
 {
     "id": "rogue_bleed_slash",
-    "name": "Bleed Slash",
+    "name": "Slash, Then Bleed",
     "slot_type": "attack_single",
     "pool": "rogue",
     "cooldown_modifier": 0.2,
-    "flavor_text": "Placeholder: a cut that keeps being a problem.",
+    "flavor_text": "It keeps being a problem. Not mine, though.",
     "effects": [
         {
             "template": "cone",

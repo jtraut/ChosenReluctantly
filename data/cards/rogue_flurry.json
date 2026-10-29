@@ -1,10 +1,10 @@
 {
     "id": "rogue_flurry",
-    "name": "Flurry",
+    "name": "Four Quick Stabs",
     "slot_type": "attack_single",
     "pool": "rogue",
     "cooldown_modifier": 0.3,
-    "flavor_text": "Placeholder: four stabs, one sigh.",
+    "flavor_text": "Four stabs, one sigh.",
     "effects": [
         {
             "template": "cone",

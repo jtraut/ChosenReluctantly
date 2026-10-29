@@ -1,10 +1,10 @@
 {
     "id": "neutral_leech",
-    "name": "Leech",
+    "name": "Heal By Hurting",
     "slot_type": "recovery",
     "pool": "neutral",
     "cooldown_modifier": 0.5,
-    "flavor_text": "Placeholder: heal by hurting, for a while.",
+    "flavor_text": "Hit things, feel better. Ethics pending.",
     "effects": [
         {
             "template": "apply_status",

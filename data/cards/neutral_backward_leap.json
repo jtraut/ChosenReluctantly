@@ -1,10 +1,10 @@
 {
     "id": "neutral_backward_leap",
-    "name": "Backward Leap",
+    "name": "Nope, Leaping Away",
     "slot_type": "movement",
     "pool": "neutral",
     "cooldown_modifier": 0.5,
-    "flavor_text": "Placeholder: the other direction, quickly.",
+    "flavor_text": "The other direction, quickly.",
     "effects": [
         {
             "template": "dash",

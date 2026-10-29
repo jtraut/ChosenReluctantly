@@ -14,21 +14,21 @@
         "damage_per_tick": 1.0,
         "damage_type": "physical",
         "tick_interval": 0.5,
-        "flavor_text": "Placeholder."
+        "flavor_text": "Small cut. Big commitment."
     },
     "regeneration": {
         "display_name": "Regeneration",
         "effect_type": "heal_over_time",
         "heal_per_tick": 2.0,
         "tick_interval": 1.0,
-        "flavor_text": "Placeholder."
+        "flavor_text": "Heals slowly. Like everything else, eventually."
     },
     "leech": {
         "display_name": "Leech",
         "effect_type": "lifesteal",
         "fraction": 0.4,
         "max_heal_per_hit": 3.0,
-        "flavor_text": "Placeholder."
+        "flavor_text": "Their health, now yours. They'll cope."
     },
     "stun": {
         "display_name": "Stun",

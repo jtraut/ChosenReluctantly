@@ -1,10 +1,10 @@
 {
     "id": "rogue_lunge_strike",
-    "name": "Lunge Strike",
+    "name": "Reluctant Lunge",
     "slot_type": "movement",
     "pool": "rogue",
     "cooldown_modifier": 0.0,
-    "flavor_text": "Placeholder: a short charge that hurts whatever is in the way.",
+    "flavor_text": "Short sprint, sharp end first. Minimal enthusiasm.",
     "effects": [
         {
             "template": "dash",

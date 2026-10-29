@@ -15,6 +15,7 @@ Last updated: 2026-10-28. **Milestone 2 is done.** We're running **Post-mileston
 - Suite: 542/542 at 57be0a1. The repo runs.
 
 ## In progress
+- **Tooling task built, waiting for qa** (gameplay-dev, 2026-10-28): true-size capture (`capture_screenshot.ps1 -TrueSize WxH`, `WorldRef`), dodge values in `data/player.json` with D8 default B (28 m/s, 7.0 m; the director's D8 = C, `speed` 20, is still to apply in C1-a), seeded wave and bot sims repeat exactly (`run_wave_sim.ps1` now `--fixed-fps 60`, `-Scale` default 1), enemy shot lane tip, Enemy.gd header. Suite 552/552. Details in DECISIONS (2026-10-28) and the hand-back.
 Nothing is mid-build. The next task hasn't started.
 
 ## Exact next step

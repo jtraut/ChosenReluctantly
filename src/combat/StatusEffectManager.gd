@@ -189,6 +189,8 @@ func _tick(active: ActiveStatus) -> void:
 func on_damage_dealt(amount: float) -> float:
 	if health == null or health.is_dead() or amount <= 0.0 or _lifesteal_count <= 0:
 		return 0.0
+	if health.get_current_health() >= health.get_max_health():
+		return 0.0  # nothing to restore: no healed event at full HP
 	var total: float = 0.0
 	for active: ActiveStatus in _active.values():
 		if active.effect_type == "lifesteal":

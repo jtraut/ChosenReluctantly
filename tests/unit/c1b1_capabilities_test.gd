@@ -217,6 +217,33 @@ func test_a_source_without_the_signal_is_ignored() -> void:
 	assert_float(target.current_health).is_equal_approx(45.0, 0.001)
 
 
+func test_lifesteal_at_full_hp_emits_no_heal_event() -> void:
+	var caster: TestCaster = auto_free(TestCaster.new())
+	caster.status_manager.apply_status("leech", _status("leech"), 5.0)
+	var heals: Array[float] = []
+	caster.health.healed.connect(func(amount: float) -> void: heals.append(amount))
+	_health(50.0).take_damage(5.0, "physical", Vector3.ZERO, caster)
+	assert_array(heals).is_empty()
+
+
+func test_real_player_is_wired_for_status_rolls_and_lifesteal() -> void:
+	var main := _spawn_main()
+	await get_tree().process_frame
+	var player: Player = main.player
+	assert_object(player.card_slots.status_rng).is_same(player.status_rng)
+	player.camera = null
+	player.rotation = Vector3.ZERO
+	player.health.current_health = 10.0
+	player.status_manager.apply_status("leech", _status("leech"), 10.0)
+	var dealt: Array[float] = []
+	player.damage_dealt.connect(func(_t: Node, amount: float, _ty: String, _k: StringName) -> void: dealt.append(amount))
+	var enemy := _enemy(main, player, 1.2)
+	await _frames(8)
+	assert_array(dealt).is_not_empty()  # the basic attack reports through damage_dealt
+	assert_float(enemy.health.current_health).is_less(enemy.health.get_max_health())
+	assert_float(player.health.current_health).is_greater(10.0)
+
+
 # --- chance on apply_status ---------------------------------------------------------------
 
 func _targets(count: int) -> Array[Hurtbox]:

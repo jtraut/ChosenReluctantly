@@ -279,6 +279,51 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
   - **Also in this task:** D8 (dodge distance; default B = `dodge_speed` 14 -> 28, same 0.25 s) with dodge values (`dodge_speed`, `dodge_duration`, cooldown, `DODGE_BLOCK_TICKS_AFTER_PAUSE`) moved from Player exports into data; S6-4 (seeded wave sims don't repeat: card shuffle RNG, status RNG, Juice wall-clock hit-stop) and the README reproduce claim; follow-up 6-a (enemy shot lane tip padding); `tools/run_bot_sim.ps1` passes a `-Seed`; the stale header comment in `src/enemies/Enemy.gd` (per-scene exports -> `data/enemies.json`).
   - **Acceptance:** a documented command produces true-size PNGs at 1280x720, 1920x1080, 2560x1440 with waves spawning and scenarios working; no error lines; spawn code uses a world/arena reference instead of `get_tree().current_scene` where needed (no behaviour change in normal play); clean exit. qa verifies; reload soak still clean.
 
+- [ ] **Content slice C1: Fire Rogue card expansion and unique-card minimums (director request 2026-10-28)**
+  - **Order:** this was queued "after the current slice closes, ahead of Slice 5". Slice 5 had already closed, so C1 runs right after the tooling task (the one in flight) and before the pass close-out. The close-out playtest then covers C1. The reasoning is in OPEN_ITEMS (D12).
+  - **GDD:** §4 "Shuffle bag" and "Unique-card minimums [DIRECTOR DECISION, 2026-10-28]", §15 "Slot cooldown reset effects [IDEA]", §3 (cards beat basic attacks), §7. The full director text is in the 2026-10-28 request (Parts 1-7). Number values are [PROPOSED] and get tuned to the card rule.
+  - **Owner sequence:** C1-a, C1-b1, C1-b2, C1-c (gameplay-dev) -> C1-d (story: names and flavor) -> C1-e (ux-designer) -> C1-f (qa) -> C1-g (playtester, merged with the pass close-out report) -> C1-h (tech-writer) -> game-lead closes.
+  - [ ] **C1-a, deck rules plumbing (gameplay-dev):**
+    - `data/deck_rules.json`: global `min_unique_per_slot` 3, optional per-slot `min_unique`, optional `slot_groups` [{name, slots, min_unique_total}]. Shipped with no overrides and no groups.
+    - Validation fails loudly when a group minimum is below the sum of its members' minimums, when a slot name is unknown, or when any minimum is <= 0.
+    - One reusable checker returns per-slot and per-group counts and shortfalls, with clear messages (e.g. "Utility needs 5 unique cards, deck has 4", "Attack group needs 10, has 8"). It is used by:
+      - deck validation at run start: the preset deck now, loadouts later;
+      - a reusable `can_remove(card)` / `can_swap` guard for future in-run removals;
+      - content validation per class + element + neutral.
+    - The F3 overlay shows counts ("Movement 4/3", plus the group line only when a group exists), with shortfalls highlighted. Expose the data; ux styles it in C1-e.
+    - Shuffle bag: verify the current behaviour, fix it if needed, add the no-back-to-back rule across a reshuffle, add tests, and log what you found.
+    - Test fixture with the director's example (attack group of 10, 3 per attack slot, utility 5, movement 3, recovery 3). Shipped data stays at 3 per slot.
+    - Recovery gets the longest base cooldown: check `data/slot_types.json`, check no other slot's default effective cooldown is longer, and log old/new.
+  - [ ] **C1-b1, generic capabilities part 1 (gameplay-dev):**
+    - `chance` on `apply_status`, reusing the 3b element-chance code.
+    - `hits` and `hit_interval` on cone, aoe and projectile.
+    - Bleed status: physical DoT that ignores elemental resistance and refreshes rather than stacking.
+    - Regeneration status: heal over time.
+    - Lifesteal timed modifier: a single "damage dealt" event covering every source, with a per-hit cap.
+    - All in data.
+  - [ ] **C1-b2, generic capabilities part 2 (gameplay-dev):**
+    - Zone template: circle or line; size, duration, tick, damage and status chance; placed at a point within a range cap; pooled, capped and self-cleaning; safe if the caster dies.
+    - Dash path damage: each enemy is hit once, using the shared query.
+    - Dash `direction_mode` `forward` | `away_from_aim`.
+    - Pass-through buff: disables player-vs-enemy body collision, restored on end, death or reload.
+    - Placed skills use a reticle clamped to the range cap (data exposed for ux).
+  - [ ] **C1-c, cards (gameplay-dev):**
+    - Cards: `rogue_bleed_slash`, `rogue_flurry`, `fire_fireball` (reuses `targeted_aoe`), `fire_wall` (line zone), `rogue_shadow_step` (pass-through only), `rogue_lunge_strike` (about 3.0 m with path damage), `neutral_backward_leap` (about 6-7 m, away from aim), `neutral_leech`, `neutral_regeneration`. Give them placeholder names.
+    - Neutral cards must not reference class or element data.
+    - Tune the numbers to the card-beats-basic rule, and put a balance table in DECISIONS.
+    - The preset deck contains all Fire Rogue cards.
+    - Content validation passes at 3 per slot.
+  - [ ] **C1-d, story:** names (25 characters or fewer) and flavor (80 characters or fewer) for the 9 new cards, in the dry weary-hero voice. Data text only.
+  - [ ] **C1-e, ux-designer:**
+    - Readable visuals via the shared VFX for Fireball (telegraph and burst), Fire Wall (line plus a duration indicator), Bleed, Regeneration, Stealth (ghosted player), Lunge, Backward Leap and Leech (drain plus heal cue).
+    - Range-clamped reticle for placed skills.
+    - F3 counts styling.
+    - Names fit the HUD.
+    - Visuals match hitboxes.
+  - [ ] **C1-f, qa:** everything in the director's Part 5, plus the README and CHANGELOG checks.
+  - [ ] **C1-g, playtester:** the director's Part 6, merged into the pass close-out report.
+  - [ ] **C1-h, tech-writer:** the docs pass (ARCHITECTURE adds deck rules, the example config and the new templates; README; CHANGELOG).
+
 - [ ] **Pass close-out:** whole-pass playtester report in `docs/playtests/`, DoD above verified, STATE.md points at Milestone 3a.
 
 ## Milestone 3 — Card system and run loop (next, outlined only)

@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-10-28
-**Status: Nothing is blocked.** Slices 4, 3b and 5 are done. Next: chaser crowding (5d), then hold-to-preview casting plus a small settings screen (Slice 6, your D2 answer), then the screenshot tool and the end-of-pass check.
+**Status: Nothing is blocked.** Your card-expansion request is queued as Content slice C1, right after the tooling task now in progress. Slices 4, 3b and 5 are done. Next: chaser crowding (5d), then hold-to-preview casting plus a small settings screen (Slice 6, your D2 answer), then the screenshot tool and the end-of-pass check.
 
 Owned by game-lead. Answer in chat with the ID, for example "D1 = A".
 
@@ -9,11 +9,17 @@ Owned by game-lead. Answer in chat with the ID, for example "D1 = A".
 
 | ID | Question | Why it matters | Options | Recommended | If you don't answer | How to answer |
 |---|---|---|---|---|---|---|
+| D9 | Should Stealth (Shadow Step) also make enemies lose track of you, or only let you pass through them? | Losing aggro is much stronger and needs enemy AI work. Pass-through alone is cheap. | A: pass-through only. B: also drop aggro for its duration. | A | A | "D9 = A/B" |
+| D10 | Allow duplicate copies of a card in a deck? (Copies never count toward the unique minimum.) | Later rewards may grant copies. Banning them would limit reward design. | A: allow. B: one copy per card id. | A | A | "D10 = A/B" |
+| D11 | Neutral cards (Backward Leap, Leech, Regeneration): neutral colours, or your element's colour? | Neutral cards work for every class and element. Owner colour makes them feel like yours; neutral colour makes them recognisable as neutral. | A: neutral palette. B: owner's element colour. | A (simplest; one data value later) | A | "D11 = A/B" |
+| D12 | Order: your note said "ahead of Slice 5", but Slice 5 is already done. Plan: finish the tooling task in progress, then C1, then one end-of-pass playtest that covers C1 too. OK? | It avoids interrupting a task midway, and saves a separate playtest run. | A: as planned. B: C1 first, then pause the tooling task. | A | A | "D12 = A/B" |
 | D8 | A bug fix halved the dodge roll. It used to slide about 7 m; now it stops at its set 3.5 m. Which do you want? | Our test bot now takes about 2.5x more damage with the same seed. Dodge is your main defence against telegraphs. The safe window (0.25 s) is the same either way. | A: keep 3.5 m (as originally set). B: restore about 7 m by doubling dodge speed (same safe window). C: about 5 m, in between. | B (keeps the feel you've been testing; one value) | B, applied in the next gameplay task (dodge values also move into data) | "D8 = A/B/C" |
 
 ## Needs your eyes in the game
 
 Play a normal run (not a test scenario: scenarios give the player 9999 HP).
+
+0. **New cards (after C1 lands).** Try every new card: Bleed Slash, Flurry, Fireball, Fire Wall, Shadow Step, Lunge Strike, Backward Leap, Leech and Regeneration (working names). Tell us which feel great, which feel dull, and which to cut or rework. Also: does the full deck feel different from run to run?
 
 1. **Death slow-motion.** Die once. Look for: you can clearly tell you died (white then red flash, grey-out, topple), and the slow-mo is long enough without dragging. Tell us "longer", "shorter" or "fine".
 2. **Aim reticle.** Move the mouse around fast, at your normal resolution and at 1440p if you can. Look for: the ring follows the mouse without lag, the dots trail slightly during fast turns, and everything vanishes when you die.
@@ -43,6 +49,10 @@ Play a normal run (not a test scenario: scenarios give the player 9999 HP).
 8. **Light flash and heavy telegraph.** Look for: the light swing reads at full speed, and the heavy wind-up looks clearly different from its impact.
 
 ## FYI, no action needed
+
+- **Example minimum config (not active):** an attack group of 10, utility 5, movement 3 and recovery 3 would mean a 21-card minimum deck. That would limit deck-clean rewards if it were ever adopted. It lives only as a test fixture.
+- **Pool note:** after C1, the Neutral pool gives 3 Recovery cards (Healing Potion, Leech, Regeneration) and 1 Movement card (Backward Leap). So any future class + element combination needs at least 2 Movement cards of its own to meet 3 per slot. Content validation will flag it automatically.
+- **Temporary:** the first-run preset deck will contain every Fire Rogue card, so you can test everything. Unlock rules come with the run loop.
 
 - **Dash and dodge distance.** Dash cards and the dodge roll kept sliding after the move ended, travelling about twice their set distance (Blaze and Bail went about 8 m, not 4 m). They will now stop at the distance set in data, so the hit-area preview tells the truth. Dodge went from about 7.1 m to 3.5 m (its intended distance), and Blaze and Bail from about 8.1 m to 4.0 m. If the dodge feels too short, tune `dodge_speed` or `dodge_duration`; no new code needed.
 

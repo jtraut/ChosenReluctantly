@@ -83,10 +83,23 @@ Notes:
 - Slot base cooldowns can be modified by character passives, passive-tree nodes, and equipment.
 - **Dead-card swap:** the player may discard the currently revealed card and draw the next one at the cost of a short penalty cooldown on that slot. Exact penalty is a tuning value.
 - **No resource system (mana, energy) in the initial version.** May be revisited much later depending on how gameplay feels.
+- **Shuffle bag [DIRECTOR DECISION, 2026-10-28]:** every card in a slot is drawn once before any card repeats. After a reshuffle, the first card of the new cycle is never the same as the last card of the previous cycle, as long as the slot has more than one unique card.
+
+### Unique-card minimums [DIRECTOR DECISION, 2026-10-28]
+- Forcing deck variability is the point of the game, so each slot needs a minimum number of **unique** cards (distinct card ids). Copies of the same card don't add to the count. Because each card belongs to exactly one slot type, group totals never double count.
+- Minimums are data and can be tuned per slot. A named **group** of slots can optionally carry a combined minimum.
+- **Active values:** every slot needs at least **3 unique cards**. There are no per-slot overrides and no group minimums.
+- The director may later set values such as a combined attack minimum of 10 or a higher utility minimum. These are **examples only, not active**.
+- **Where it's enforced:**
+  - Every deck that can start a run (preset starting deck, saved loadouts, the deck at run start) must satisfy every active rule. A deck that fails cannot start a run.
+  - Any in-run removal or swap (for example a deck-clean reward) is blocked if it would break a rule. The reward reject mechanic (§9) is unaffected.
+  - Content validation checks that every class + element combination, together with the neutral pool, can satisfy the rules.
+- **[PROPOSED]** Duplicate copies of a card are allowed in a deck, since later rewards may grant copies.
+- **Temporary testing default:** for the prototype, the preset first-run deck contains every available Fire Rogue card (class, element, neutral). Unlock and tuning rules come with the run loop.
 
 ### Open items
 - **[OPEN]** Does Space dodge roll replace the Movement slot's basic function, or is the Movement slot only for special movement cards (blink, charge, leap)? **[PROPOSED]** dodge roll is a universal, always-available action with its own short cooldown; Movement cards are special movement abilities.
-- **[OPEN]** What happens when a mini-deck runs out? **[PROPOSED]** reshuffle the discard pile automatically.
+- ~~**[OPEN]** What happens when a mini-deck runs out?~~ Resolved: a shuffle bag with no back-to-back repeat across reshuffles (see Cycling rules).
 
 ---
 
@@ -250,6 +263,10 @@ Resolved: engine (Godot), perspective (3D isometric), slice classes and elements
 ## 15. Ideas and Parked Concepts
 
 Nothing in this section is scheduled. **DO NOT IMPLEMENT** anything here without a director decision moving it into the main sections.
+
+### Slot cooldown reset effects **[IDEA, not scheduled]**
+- Utility cards that force-reset another slot's cooldown, for synergy with Recovery (the slot with the longest base cooldown).
+- The effect system should make a `reset_slot_cooldown` effect easy to add later. Don't build it yet.
 
 ### Survivor-style level-up layer **[IDEA, not scheduled]**
 - Inside each room the player earns XP and levels up, choosing 1 of 3 power-up options (damage, cooldown reduction, movement speed, gold or XP gain, and so on).

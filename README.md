@@ -1,6 +1,6 @@
 # Chosen, Reluctantly
 
-A 3D isometric action RPG where your skills are cards: real-time combat driven by typed card slots, each with its own shuffled mini-deck. Built around deep class/element build combinations and roguelite runs with persistent between-run progression. Currently a placeholder-visuals prototype: one Fire Rogue, a seeded 8-room run (combat, elite, rest, boss), no rewards yet. See `docs/GDD.md` for the design and `docs/ROADMAP.md` for status.
+A 3D isometric action RPG where your skills are cards: real-time combat driven by typed card slots, each with its own shuffled mini-deck. Built around deep class/element build combinations and roguelite runs with persistent between-run progression. Currently a placeholder-visuals prototype: one Fire Rogue, a seeded 8-room run (combat, elite, rest, boss) with card rewards after fights and a deck-clean choice in the rest room. See `docs/GDD.md` for the design and `docs/ROADMAP.md` for status.
 
 ## Docs
 | File | What it is |
@@ -35,13 +35,21 @@ godot --path . --quit   # smoke-check with no window (verified: exits 0)
 godot --path .          # play it: starts a run
 ```
 
-A normal launch starts a **run**: 8 rooms in a row (5 combat, 1 elite, 1 rest, boss last), built from a seed; see `data/run.json` and `docs/ARCHITECTURE.md` section 2. The room indicator at the top shows "Room X of Y - Type" with a shape per type (circle combat, diamond elite, plus rest, star boss). After a room, a "Room cleared" panel offers Continue; winning shows a stats screen; Game Over shows "Reached room X of Y". Try again and New run start a new seed. `scenes/main/Main.tscn` is the endless arena, still used by tests, scenarios, the wave sim and VpCapture without `--run`.
+A normal launch starts a **run**: 8 rooms in a row (5 combat, 1 elite, 1 rest, boss last), built from a seed; see `data/run.json` and `docs/ARCHITECTURE.md` section 2. The room indicator at the top shows "Room X of Y - Type" with a shape per type (circle combat, diamond elite, plus rest, star boss). After a won combat or elite room you pick a reward card (see below); a rest room offers heal or remove a card; any other room shows a "Room cleared" panel with Continue. Winning shows a stats screen; Game Over shows "Reached room X of Y". Try again and New run start a new seed. `scenes/main/Main.tscn` is the endless arena, still used by tests, scenarios, the wave sim and VpCapture without `--run`.
 
 Launch args for the run (after `--`, for example `godot --path . -- --run-seed=7 --run-room=8`; verified with `capture_screenshot.ps1 -Extra`):
 - `--run-seed=N`: seed for the first run only. Later runs (Try again, New run) get random seeds.
 - `--run-room=K`: start at room K (1-based), for the first run only.
 - `--run-clear-after=S`: clear the first room after S seconds (debug).
+- `--full-deck`: start with all 24 cards of the character's pools instead of the 15-card starter, for the whole launch (debug).
+- `--run-auto-choose=<option id>[,<id>...]`: the choice screen picks those option ids in turn, skipping the arm delay (debug, for captures; for example `remove_menu`).
 - `--scenario=...` always keeps the endless arena, even on a normal launch.
+
+### Rewards and deck-clean (Milestone 3b)
+- After each won **combat or elite** room (never the last): 3 card offers (`rewards.offer_size` in `data/run.json`). Pick one, or reject all (3 rejects per run, `rejects_per_run`). Offers are seeded, drawn only from the character's pools, and cards you do not own are weighted 4:1 over owned ones. A card may carry an optional `requires` filter.
+- **Rest room:** Heal 30% of max HP, or remove a card. A card whose removal would break a deck minimum is greyed out with the reason; if none can go, the remove tile is disabled.
+- **Starter deck:** 15 cards, 3 per slot (`starting_deck` in `data/run.json`). It was the full 24-card pool before 3b. The deck minimum is 3 unique per slot, so with the plain starter the removal menu is disabled until picks add cards.
+- The choice screen shows card tiles, a reject tile with pips, and a "Next: Room N of 8 - Type" line. Keys 1-N highlight, Enter or a click confirms. Options ignore input for 0.4 s after opening (`prompt_option_arm_delay` in `data/ui.json`), and Space is swallowed. A reload mid-reward resumes the same offer.
 
 Controls (from `data/input_bindings.json`): WASD move, mouse aim, Space dodge, left click light attack, right click heavy attack, 1-5 use a card slot, Ctrl+1-5 swap a dead card, Esc pause/settings, F3 debug overlay. Holding a slot key shows the card's hit area and releasing casts it (change with the `cast_trigger` setting in the pause screen).
 
@@ -54,7 +62,7 @@ Tests use [gdUnit4](https://github.com/godot-gdunit-labs/gdUnit4), vendored in `
 powershell -File tools\run_tests.ps1
 ```
 
-This runs every suite under `/tests` and exits non-zero on any failure. Last recorded run (qa, 2026-10-29, `docs/reviews/2026-10-29-m3a-qa.md`): 766 of 766 test cases passed. Not re-run in the 3a docs pass. Reports go to `reports/` (gitignored). The script uses the console-subsystem `*_console.exe` build when one sits next to the resolved binary, because PowerShell cannot reliably wait on or read the windowed build, which made failures look like passes (see `docs/DECISIONS.md`).
+This runs every suite under `/tests` and exits non-zero on any failure. Last run (3b docs pass, 2026-10-29, about 4 min): 826 of 826 test cases passed (qa's count in `docs/reviews/2026-10-29-m3b-qa.md` matches). Reports go to `reports/` (gitignored). The script uses the console-subsystem `*_console.exe` build when one sits next to the resolved binary, because PowerShell cannot reliably wait on or read the windowed build, which made failures look like passes (see `docs/DECISIONS.md`).
 
 > After adding a new global class (`class_name`) the plain headless run may fail with "Could not find type X in current scope". Run `godot --headless --editor --quit --path .` once to rebuild the class cache (verified: exits 0), then re-run the tests.
 
@@ -79,7 +87,12 @@ godot --path . -- --screenshot-count=3 --screenshot-interval=2.0 --screenshot-ou
 godot --path . -- --scenario=hp_bars                                          # play a scenario by hand, no capture
 ```
 
-`capture_screenshot.ps1` parameters: `-After` (seconds, comma list, default "3.0"), `-Out` (default `screenshots\shot.png`), `-Scenario` (default `hp_bars`; `-Scenario ""` captures the normal run), `-Resolution` (default `1280x720`), `-Extra` (more game args, comma-split, for example `-Extra "--run-seed=7,--run-room=8"`). Without `--screenshot-out` the game writes to `user://screenshot.png`.
+`capture_screenshot.ps1` parameters: `-After` (seconds, comma list, default "3.0"), `-Out` (default `screenshots\shot.png`), `-Scenario` (default `hp_bars`; `-Scenario ""` captures the normal run), `-Resolution` (default `1280x720`), `-Extra` (more game args, comma-split, for example `-Extra "--run-seed=7,--run-room=8"`). Without `--screenshot-out` the game writes to `user://screenshot.png`. Run-screen examples (both verified, each saved a PNG, exit 0; `-Extra` also accepts several quoted args):
+
+```
+powershell -File tools\capture_screenshot.ps1 -Scenario "" -After "3.0" -Out screenshots/reward.png -Extra "--run-seed=3","--run-room=1","--run-clear-after=1"   # reward screen
+powershell -File tools\capture_screenshot.ps1 -Scenario "" -After "4.0" -Out screenshots/remove.png -Extra "--run-seed=3","--run-room=3","--full-deck","--run-auto-choose=remove_menu"   # removal grid (needs --full-deck: with the plain starter the menu is disabled)
+```
 
 Scenarios are defined in `data/scenarios.json` and checked by `src/debug/ScenarioSchema.gd`. Capture times below are known-good starting points; every one of them was run and produced the listed number of shots.
 
@@ -137,10 +150,9 @@ powershell -File tools\run_wave_sim.ps1 -Seed 1 -Seconds 120 -God
 powershell -File tools\run_wave_sim.ps1 -Seed 20 -Seconds 60 -Runs 3 -Idle -Scale 1
 ```
 ```
-powershell -File tools
-un_wave_sim.ps1 -Run -Seed 1 -Runs 2    # whole runs; verified: both runs WON, prints WAVE SIM OK
+powershell -File tools\run_wave_sim.ps1 -Run -Seed 1 -Runs 2    # whole runs; verified in the 3b pass: both runs WON, prints WAVE SIM OK
 ```
-`-Run`: `-Seed` is the first run seed, `-Runs` the number of runs, `-RoomTimeout` (sim seconds, default 240, minimum 10) is how long a room may last before it counts as a soft lock. It reports per room time and lowest HP, and fails on a soft lock, an empty deck, a stuck cooldown or a card pick-rate outlier. A small `-RoomTimeout` (60 was tried) flags the boss room as a soft lock; that is the check working, not a bug.
+`-Run`: `-Seed` is the first run seed, `-Runs` the number of runs, `-RoomTimeout` (sim seconds, default 240, minimum 10) is how long a room may last before it counts as a soft lock. The bot also plays the choices with a seeded policy (rejects 25% of the time while any are left, else a random unowned card; it removes a card in rest rooms when allowed). It reports per room time and lowest HP, and fails on a soft lock, an empty deck or a stuck cooldown. Per run it prints `HP at each room end`, the final deck size and per-slot composition, and picks, rejects used, removals and rest heals; the summary adds `mean HP at room end, as a share of max` per room and `final deck sizes`. Card pick-rate outliers and never-cast cards are printed as a NOTE, not a failure (pick rates count all database cards, so cards outside the 15-card start show as never cast unless picked). A small `-RoomTimeout` (60 was tried) flags the boss room as a soft lock; that is the check working, not a bug.
 
 All forms run and end with `WAVE SIM OK` (verified with shorter `-Seconds`; the 150 s and 120 s forms use the same code path). The wave table and the simultaneous-enemy cap live in `data/waves.json` (validated by `src/enemies/WaveConfig.gd`; enemy ids and scenes in `data/enemies.json`). Headless frame times exclude rendering.
 
@@ -155,4 +167,4 @@ powershell -File tools\run_reload_cycle.ps1 -Cycles 5     # verified: prints "RE
 It runs `tools/ReloadCycle.tscn` headless; it must be a scene so autoloads resolve. Re-run it whenever `Main`, `Juice`, `Player` or the autoloads change.
 
 ## Last verification
-3a docs pass, 2026-10-29, Windows, Godot 4.7.2 (console build via `GODOT_BIN`): `godot --path . --quit` (exit 0); `run_wave_sim.ps1 -Seed 1 -Seconds 30` (twice, hash 2792856473) and the default 90 s run (hash 4120250839); `run_wave_sim.ps1 -Run -Seed 1 -Runs 2` (both won); `-Run -RoomTimeout 60` (reports the boss-room soft lock, as expected); `capture_screenshot.ps1 -Scenario "" -Extra "--run-seed=7,--run-room=8"` and `-Scenario "" -TrueSize 1920x1080` (each saved a PNG, exit 0). Not re-run in this pass: the full test suite (766/766 per the qa report), the bot sim, the reload cycle, the scenario captures and `SlotStateCapture`. Earlier passes (2026-10-29, C1) verified those. Not run interactively: plain `godot --path .` and a scenario without capture (they open a window and wait for a person).
+3b docs pass, 2026-10-29, Windows, Godot 4.7.2 (console build via `GODOT_BIN`): `tools\run_tests.ps1` (826 of 826, exit 0); `run_wave_sim.ps1 -Run -Seed 1 -Runs 2` (both won, WAVE SIM OK, new report lines present); the two run-screen captures above (each saved a PNG, exit 0; the removal grid was viewed and shows the per-slot columns with Utility greyed). Not re-run in this pass: `godot --path . --quit`, the bot sim, the reload cycle, the scenario captures, `-TrueSize`, `SlotStateCapture`, and the seeded-hash checks (last verified in the 3a pass: hashes 2792856473 for `-Seed 1 -Seconds 30` and 4120250839 for the 90 s run). Not run interactively: plain `godot --path .` and a scenario without capture (they open a window and wait for a person).

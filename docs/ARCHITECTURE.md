@@ -1,6 +1,6 @@
 # Architecture
 
-A map of the code for a new agent. Read this first, then open the files it links. Every path below exists; line-level detail is left to the code. Numbers that change (balance, timings) live in `data/`, not here. Engine: Godot 4.7.2, statically typed GDScript. Last verified against HEAD 013e7d7 (2026-10-29, after Milestone 3a).
+A map of the code for a new agent. Read this first, then open the files it links. Every path below exists; line-level detail is left to the code. Numbers that change (balance, timings) live in `data/`, not here. Engine: Godot 4.7.2, statically typed GDScript. Last verified against HEAD f2a3283 (2026-10-29, after Milestone 3b).
 
 ## 1. Repo layout
 
@@ -8,16 +8,16 @@ A map of the code for a new agent. Read this first, then open the files it links
 |---|---|
 | `project.godot` | Main scene `scenes/main/RunMain.tscn`, four autoloads, physics layer names, gdUnit4 plugin enabled |
 | `src/camera/` | `CameraRig` (follow + shake) |
-| `src/cards/` | Card data and slots: `CardDatabase`, `CardSchema`, `CardSlot`, `CardSlotController`, held-key cast: `CastInput`, `CastPreview`, `CastPreviewShapes`, `CastPreviewConfig`; deck rules: `DeckRules`, `DeckCheck` |
+| `src/cards/` | Card data and slots: `CardDatabase`, `CardSchema`, `CardSlot`, `CardSlotController`, held-key cast: `CastInput`, `CastPreview`, `CastPreviewShapes`, `CastPreviewConfig`; deck rules: `DeckRules`, `DeckCheck`; `CardSummary` (the generic effect line for the reward screens) |
 | `src/combat/` | Damage and effects: `Health`, `Hurtbox`, `EffectTemplates`, `EffectContext`, `Projectile`, `MeleeQuery`, `CombatMath`, status system (`StatusDatabase`, `StatusEffectManager`, `StunRules`), attack data (`AttackDatabase`, `AttackStatuses`), `CardDamageRule`, `AoeTargeting`, `CollisionLayers`, zones (`ZoneManager`, `ZoneShape`, `ZoneConfig`), `TrainingDummy` (debug only) |
 | `src/core/` | Autoloads and shared data access: `InputBindings`, `Juice`, `Settings`, `GamePause`; `SettingsStore`, `JsonDataTable`, `PoolDatabase`, `SlotTypeDatabase`, `StatModifiers`, `WorldRef` |
 | `src/debug/` | Capture and scenario tooling: `CaptureArgs`, `Scenario`, `ScenarioSchema`, `ScreenshotCapture` |
 | `src/effects/` | Visual effects: `EffectPool`, `PooledEffect`, `TemplateVfx`, `ElementVisuals`, `VfxConfig`, `VfxSizing`, `DamageNumber`, `GroundOutlines` (ground ring/outline builders shared by the preview and zones) |
 | `src/enemies/` | `Enemy`, `EnemySpawner`, `WaveConfig`, `WavePlan`, `EnemyConfig` |
 | `src/main/` | `Main` (wiring, death beat, restart), `SceneSelfCheck` |
-| `src/run/` | Run structure (3a): `RunConfig` (loads and validates `data/run.json`), `RunGenerator` (seed to room list), `RunState` (what carries across rooms), `RunSession` (static holder), `RunController` (one room's flow), `TierRules` (elite/boss maths) |
+| `src/run/` | Run structure (3a, 3b): `RunConfig` (loads and validates `data/run.json`), `RunGenerator` (seed to room list), `RunState` (what carries across rooms, save format v2), `RunSession` (static holder), `RunController` (one room's flow), `TierRules` (elite/boss maths), `RunChoices` (the post-room choice model: options and resolving one), `RewardOffer` (seeded card offer and the `requires` filter) |
 | `src/player/` | `Player`, `PlayerConfig` (`data/player.json`), `AttackController`, `AttackArcVisual`, `PlayerCues` (ghost, heal numbers, Leech drain), `PlayerOcclusionCue` (+ its `.gdshader`) |
-| `src/ui/` | `Hud`, `HudLayout`, `CardSlotWidget`, `AttackMeter`, `EnemyHpBar`, `GameOverScreen`, `SettingsScreen`, run UI: `RunHud`, `RunPromptScreen`, `RunPromptRows`, `RunIcons`, `RunTypeIcon`, `TierMarker`, `AimIndicator`, `DebugOverlay`, `TextFit`, `UiConfig` |
+| `src/ui/` | `Hud`, `HudLayout`, `CardSlotWidget`, `AttackMeter`, `EnemyHpBar`, `GameOverScreen`, `SettingsScreen`, run UI: `RunHud`, `RunPromptScreen`, `RunOptionCard` (one choice option drawn as a card, reject tile, action tile, grid cell or Back), `RunPromptRows`, `RunIcons`, `RunTypeIcon`, `TierMarker`, `AimIndicator`, `DebugOverlay`, `TextFit`, `UiConfig` |
 | `scenes/` | `main/RunMain.tscn` (Main plus run nodes), `main/Main.tscn` (endless arena), `player/`, `camera/`, `enemies/` (3 types), `effects/` (Projectile, DamageNumber), `ui/`, `debug/TrainingDummy.tscn` |
 | `data/` | All content and tuning as JSON (section 6) |
 | `assets/` | `icon.svg`, `shaders/enemy_hp_bar.gdshader` only. No art or audio |
@@ -46,13 +46,23 @@ Deck check: `Main` checks the deck rules (`DeckRules.run_start_block_message`). 
 
 ### Run flow (Milestone 3a)
 - **Config:** `data/run.json` (section 6) is loaded and validated by `RunConfig`. `RunGenerator.generate(seed, config)` returns the room list (each entry has `index`, `type`, `wave_id`) from a seeded shuffle that follows `composition` and `placement` (boss last, first room combat, elite and rest inside index ranges). The same seed gives the same rooms.
-- **State:** `RunState` holds seed, room index, HP and max HP, deck ids, rejects left, history and outcome. It serializes with `to_json`/`from_json`. `RunSession.current` (a static, not an autoload) keeps it between scenes; `RunSession.begin_new_run` is the only way to start a fresh one (it consumes `forced_seed` once).
-- **A room:** `RunController.begin` puts the state's HP and deck on the player, builds the room's finite wave table (`RunConfig.room_wave_config`), configures the spawner with it and a seed from `room_spawn_seed(run_seed, room_index)`, and emits `room_started`. `_process` watches `EnemySpawner.room_cleared()`. A rest room heals `rest_heal_fraction` of max HP and ends at once (spawner off). `_finish_room` sets `Health.damage_immune` on the player (so a projectile in flight can't kill a winner), records history, and emits `room_cleared` or, on the last room, `run_won`.
-- **Next room:** the Continue button calls `RunController.continue_to_next_room`, which bumps the index and calls `Main.swap_to_fresh_scene`. A fresh scene resets cooldowns, shuffle bags, zones, statuses and timers; the `RunState` carries HP and the deck.
+- **State:** `RunState` holds seed, room index, HP and max HP, deck ids, rejects left, history, outcome, and (3b) `pending`, `offer` and `choice_log`. It serializes with `to_json`/`from_json` (`FORMAT_VERSION` 2; a v1 dict loads with no pending choice). `RunSession.current` (a static, not an autoload) keeps it between scenes; `RunSession.begin_new_run` is the only way to start a fresh one (it consumes `forced_seed` once). `RunSession.full_deck` (`--full-deck`) makes new runs start with every card of `character_pools` instead of `starting_deck`, and stays on for the launch.
+- **A room:** `RunController.begin` puts the state's HP and deck on the player, builds the room's finite wave table (`RunConfig.room_wave_config`), configures the spawner with it and a seed from `room_spawn_seed(run_seed, room_index)`, and emits `room_started`. `_process` watches `EnemySpawner.room_cleared()`. A rest room is finished at once (spawner off). `_finish_room` sets `Health.damage_immune` on the player (so a projectile in flight can't kill a winner), records history, and on the last room emits `run_won`. Otherwise it calls `RunChoices.open_for_room`; if that opens a choice it emits `choice_requested(model)`, else `room_cleared` (the plain Continue panel; with the shipped data every non-final room opens a choice).
+- **Choices (3b):** after a won combat or elite room `RunChoices` opens a card reward (3 offers from `RewardOffer`, or reject all); a rest room opens the rest menu (heal, or a per-card removal list with Back). `RunController.choose(option_id)` resolves one option through `RunChoices.apply`, heals the player for a heal option, emits `choice_resolved(result)` and, when the choice is finished, goes to the next room at once. A non-final step (open the removal list, Back) re-emits `choice_requested`. `RunState.pending` and `offer` persist the open choice, so a reload resumes it (`RunController._resume_choice`) instead of replaying the room. Details in the choice model section below.
+- **Next room:** `RunController.continue_to_next_room(force := false)` bumps the index and calls `Main.swap_to_fresh_scene`. It does nothing while a choice is open; `force = true` discards the choice and is for tests and the reload soak only (a qa test scans `src` and `tools` for other callers). A fresh scene resets cooldowns, shuffle bags, zones, statuses and timers; the `RunState` carries HP and the deck.
 - **Death:** `Player.player_died` goes through the normal death beat to Game Over, which shows "Reached room X of Y". Try again and New run both call `Main.restart_arena`, which in run mode does `RunSession.begin_new_run()` (new seed) and swaps the scene.
-- **Launch args** (`RunController._apply_launch_args`, first scene of a launch only): `--run-seed=N`, `--run-room=K` (1-based), `--run-clear-after=S` (debug: clears that room after S seconds).
+- **Launch args** (`RunController._apply_launch_args`, first scene of a launch only): `--run-seed=N`, `--run-room=K` (1-based), `--run-clear-after=S` (debug: clears that room after S seconds), `--full-deck` (debug). `RunPromptScreen` also reads `--run-auto-choose=<option ids>` (debug: picks those option ids in turn as choices open, skipping the arm delay).
 - **Tiers:** a wave spawn can carry `tier` (`elite` or `boss`). `EnemySpawner` calls `Enemy.apply_tier(tier_id, cfg)` with the `data/run.json` `tiers` entry: HP multiplier, resistance via `TierRules.resistance` (the larger of own and the floor, capped), rank, and a `TierMarker`. The boss in 3a is a placeholder (3c replaces it); it is unstunnable.
-- **UI:** `RunHud` shows "Room X of Y - Type" with a `RunTypeIcon` (shapes from `RunIcons`: circle combat, diamond elite, plus rest, star boss; placed by `HudLayout.room_indicator_rect`). `RunPromptScreen` is a generic panel (icon, title, subtitle, flavour line, label/value rows, `options_box`, one action button). To reuse it (3b rewards), fill `options_box` and call `show_content(dict)`; the text rows come from `RunPromptRows`. `TierMarker` is the flat diamond/star sign above an elite's or boss's HP bar (shape, not colour, and no bigger body). Look and sizes: `data/ui.json` `run_ui`; words: `data/run.json` `ui`.
+- **UI:** `RunHud` shows "Room X of Y - Type" with a `RunTypeIcon` (shapes from `RunIcons`: circle combat, diamond elite, plus rest, star boss; placed by `HudLayout.room_indicator_rect`). `RunPromptScreen` is a generic panel (icon, title, subtitle, flavour line, label/value rows, `options_box`, one action button). `show_content(dict)` fills it; the text rows come from `RunPromptRows`. 3b rewards use it through `show_choice(model)` (see the choice model section). `TierMarker` is the flat diamond/star sign above an elite's or boss's HP bar (shape, not colour, and no bigger body). Look and sizes: `data/ui.json` `run_ui`; words: `data/run.json` `ui`.
+
+### Choice model (Milestone 3b)
+- `RunChoices` ([src/run/RunChoices.gd](../src/run/RunChoices.gd)): pure and static over a `RunState` and a context dict (`RunChoices.shipped_context(pools)` builds it from the databases; tests pass fixtures). Functions: `open_for_room(state, room_type, is_last_room, ctx)` (sets `pending`/`offer`), `model`, `options`, `apply(state, option_id, ctx)`, `removal_problems` (wraps `DeckRules.can_remove`). It never reads card ids or names; the one place that looks inside a card is `CardSummary`.
+- **Option dict** (every key always present): `id` ("card:<id>", "skip", "heal", "remove_menu", "remove:<id>", "back"), `kind` (card, remove, heal, skip, back), `label`, `detail`, `flavor`, `card_id`, `slot_type`, `slot_name`, `count`, `enabled`, `reason`, `costs_reject`, `opens_list`, `amount`.
+- **Model dict** (`RunChoices.model`): `choice` (reward, rest or rest_remove), `title`, `line`, `options`, `rejects_remaining`, `rejects_max`. `RunController.current_choice()` adds `room_label`, `room_type`, `room_type_name` and `next_line`.
+- `apply` returns `{ok, kind, card_id, amount, finished, reason}`. A disabled or unknown option changes nothing and returns `ok = false`. Picks and removals change `RunState.deck`; every resolved option is appended to `choice_log` (`pick`, `reject`, `heal`, `remove`).
+- `RewardOffer.generate(run_seed, room_index, deck, cards, pools, pool_defs, rewards)`: own RNG stream from `offer_seed`, candidates sorted by id, weights from `rewards.unowned_weight` / `owned_weight`, distinct, up to `offer_size`. Card field `requires` (`slot_types`, `pools`, `status_sources`) is checked by `meets_requires` and validated in `CardSchema` (`RewardOffer.validate_requires`).
+- `CardSummary.effect_line(card, slot_base_cooldown, text)` builds a line like "12.0 fire damage (aoe), Burn 5.0 s. Cooldown 3.3 s" from effect templates and params. Buff wording comes from `run.json` `ui.effect` plus the slot names.
+- **Screen:** `RunPromptScreen.show_choice(model)` builds one `RunOptionCard` per option into `options_box`. `layout_for` picks `row` (reward cards), `actions` (rest tiles) or `grid` (removal list, one column per slot); `look_for` maps kind to card look. Keys 1-N move the highlight (in the grid, 1-5 jump to a slot column) and never confirm; Enter or a click confirms (`option_chosen`, then `RunController.choose`). Options are armed `run_ui.prompt_option_arm_delay` seconds after opening (`options_armed()`, `disarm()`), Space is swallowed, input is ignored while paused, and focus is restored after a pause. Sizes and colours: `data/ui.json` `run_ui` keys starting `option_`.
 
 Death and restart:
 - `Player.player_died` (from `Health.died`) -> `Main._on_player_died` starts slow-mo and shake via `Juice`. The beat is timed in `Main._process` from `Time.get_ticks_usec()` (paused time excluded), because Godot's ignore_time_scale timer overcounts the frame where the time scale changes.
@@ -155,7 +165,7 @@ All in `data/`. Schema/validation lives in code; the file is not self-describing
 
 | File | Content | Schema/loader |
 |---|---|---|
-| `cards/*.json` | One card per file: `id`, `name`, `slot_type`, `pool`, `cooldown_modifier`, `flavor_text`, `effects[]` of `{template, params}` | `src/cards/CardSchema.gd`, loaded by `CardDatabase.load_all` |
+| `cards/*.json` | One card per file: `id`, `name`, `slot_type`, `pool`, `cooldown_modifier`, `flavor_text`, `effects[]` of `{template, params}`, optional `requires` (reward filter: `slot_types`, `pools`, `status_sources`) | `src/cards/CardSchema.gd`, loaded by `CardDatabase.load_all` |
 | `slot_types.json` | Five slot types: display name, `base_cooldown`, `input_action` | `SlotTypeDatabase` |
 | `pools.json` | Classes, elements, neutral: `kind` (class / element / neutral), `visual {color, scale}`, element `status {status_id, base_chance}` | `PoolDatabase` |
 | `statuses.json` | burn, bleed, regeneration, leech, stun | `StatusDatabase` |
@@ -165,9 +175,9 @@ All in `data/`. Schema/validation lives in code; the file is not self-describing
 | `attacks.json` | `light`, and `heavy` keyed by class id | `AttackDatabase` |
 | `enemies.json` | `attack_shapes`, `separation`, `enemies.<id> {rank, scene, stats}` | `EnemyConfig` |
 | `waves.json` | `max_alive`, delays, spawn distances, `stages[]`; optional `finite`, and per spawn an optional `tier` (`elite`/`boss`) | `WaveConfig`, `WavePlan` |
-| `run.json` | Run structure: `composition`, `placement`, `rest_heal_fraction`, `rejects_per_run`, `starting_deck`, `tiers` (elite, boss), `rooms` (finite wave lists per room type, with `min_index`/`max_index`), `ui` words | `RunConfig.validate` |
+| `run.json` | Run structure: `composition`, `placement`, `rest_heal_fraction`, `rejects_per_run`, `starting_deck` (15 cards), `character_pools`, `rewards {offer_size, unowned_weight, owned_weight, reward_room_types}`, `tiers` (elite, boss), `rooms` (finite wave lists per room type, with `min_index`/`max_index`), `ui` words (`option`, `effect`, `reward`, `rest`, `next_line`, `room_cleared`, `win`, `lose`) | `RunConfig.validate` |
 | `vfx.json` | Effect pool cap, durations, alphas, `team_tints` | `VfxConfig` |
-| `ui.json` | HUD, HP bars, damage numbers, popups, game over, settings screen, death beat, aim, `run_ui` | `UiConfig` |
+| `ui.json` | HUD, HP bars, damage numbers, popups, game over, settings screen, death beat, aim, `run_ui` (3b adds `prompt_option_arm_delay` and the `option_*` sizes and colours) | `UiConfig` |
 | `cast_preview.json` | Preview look | `CastPreviewConfig` |
 | `settings.json` | User-facing settings and defaults (`cast_trigger`) | `SettingsStore` |
 | `input_bindings.json` | Action name to key/mouse events | `InputBindings` |
@@ -179,7 +189,7 @@ Data is validated at first use and fails loudly (`push_error`) on bad content; s
 
 - `Player.player_died` -> `Main._on_player_died`.
 - `Main.game_over_ready` -> `GameOverScreen`. `GameOverScreen` emits `retry_requested` and then calls `Main.restart_arena()` itself (no signal connection).
-- `RunController.room_started(index, total, room_type)` -> `RunHud`; `room_cleared(summary)` -> the cleared `RunPromptScreen`; `run_won` -> the win screen; `run_lost`. `RunPromptScreen.confirmed` (its action button).
+- `RunController.room_started(index, total, room_type)` -> `RunHud`; `room_cleared(summary)` -> the cleared `RunPromptScreen`; `choice_requested(model)` -> `RunPromptScreen.show_choice`; `choice_resolved(result)` (a choice finished, just before the next room loads); `run_won` -> the win screen; `run_lost`. `RunPromptScreen.confirmed` (its action button) and `option_chosen(option_id)`.
 - `Health.damaged / healed / health_changed / died`.
 - `CardSlotController.card_cast(slot_type, card_id)`.
 - `Main.run_start_blocked(message)`; `Player.pass_through_changed`; `damage_dealt` (source -> `StatusEffectManager.on_damage_dealt`, `PlayerCues`); `ZoneManager.zone_started / zone_ended`.
@@ -195,7 +205,7 @@ Data is validated at first use and fails loudly (`push_error`) on bad content; s
 1. Add `data/cards/<pool>_<name>.json` with the fields above. `slot_type` must be in `slot_types.json`, `pool` in `pools.json`, each effect `template` in `EffectTemplates.REQUIRED_PARAMS` with all its required params.
 2. Names over `ui.json` `hud.name_warn_length` raise a warning (HUD shrinks/truncates).
 3. Attack cards must beat the free light attack (`CardDamageRule`); a load check and a test fail if not.
-4. Run the tests (`card_database_test`, `starter_card_set_test`, `card_schema_test` load real data). A card also changes unique counts: the deck rules (`deck_rules.json`) must still pass (`DeckRules.validate_shipped_content`).
+4. Run the tests (`card_database_test`, `starter_card_set_test`, `card_schema_test` load real data). A new card is not in the 15-card `starting_deck`; it appears only as a reward unless added there (or via `--full-deck`). A card also changes unique counts: the deck rules (`deck_rules.json`) must still pass (`DeckRules.validate_shipped_content`).
 5. A card is only reachable if its pool is in `Player.owned_pools`.
 
 ### An enemy
@@ -218,6 +228,9 @@ Add a pool in `data/pools.json` with `kind: "element"`, a `visual` (color, scale
 ### A room wave list or room type
 Add a variant under `data/run.json` `rooms.<type>` with `id`, optional `min_index`/`max_index`, `first_wave_delay` and `stages`. `RunConfig.validate` checks enemy ids and that every room index has a variant; the run tests load the real file. A new room *type* also needs `composition`, `RunController` handling, an icon in `RunIcons` and a `run_ui` colour.
 
+### A reward rule or choice
+Card reward filtering is data: add `requires` to a card (`slot_types`, `pools`, `status_sources`) and `RewardOffer` applies it. Weights, offer size and which room types reward are `data/run.json` `rewards`. A new kind of option (for example a level-up pick) is a new branch in `RunChoices.options`/`apply` plus an option `kind` and a `RunOptionCard` look; the screen is otherwise generic. Wording lives in `run.json` `ui`.
+
 ### A scenario
 Add an entry in `data/scenarios.json`; unknown or misspelled keys fail on load (`ScenarioSchema`). Add a test in `tests/unit/` if it proves behavior. Document the new scenario in `README.md`.
 
@@ -229,7 +242,7 @@ Add an entry in `data/scenarios.json`; unknown or misspelled keys fail on load (
   - `run_tests.ps1` -> gdUnit4 headless.
   - `capture_screenshot.ps1` -> windowed capture, uses `src/debug/*` via user args.
   - `run_bot_sim.ps1 [-Rooms] [-Seed]` + `bot_sim.gd` -> card/deck NaN check, runs as a `SceneTree` script; prints a checksum that repeats per seed.
-  - `run_wave_sim.ps1` + `WaveSim.tscn` + `wave_sim.gd` -> real Main scene with a bot. `-Run` plays whole seeded runs through RunMain (`-Seed` first seed, `-Runs` count, `-RoomTimeout`): checks soft locks, empty decks, stuck cooldowns and card pick rates, and prints the room-type distribution over 1000 seeds. A scene, so autoloads exist. Runs at `--fixed-fps 60` with hit-stop off, so a seed repeats exactly; prints `pinned:` and `climb:` lines.
+  - `run_wave_sim.ps1` + `WaveSim.tscn` + `wave_sim.gd` -> real Main scene with a bot. `-Run` plays whole seeded runs through RunMain (`-Seed` first seed, `-Runs` count, `-RoomTimeout`): the bot also plays the choices with a seeded policy (rejects, picks, removals); it checks soft locks, empty decks and stuck cooldowns, reports card pick rates as a note (not a failure), prints HP at each room end, final deck composition and the choice counts, and prints the room-type distribution over 1000 seeds. A scene, so autoloads exist. Runs at `--fixed-fps 60` with hit-stop off, so a seed repeats exactly; prints `pinned:` and `climb:` lines.
   - `run_reload_cycle.ps1` + `ReloadCycle.tscn` + `reload_cycle.gd` -> death/restart soak.
   - `VpCapture.tscn` + `vp_capture.gd` (`capture_screenshot.ps1 -TrueSize WxH`) -> hosts the real Main in an oversized SubViewport (RunMain with `--run`, which `capture_screenshot.ps1` adds for `-Scenario ""`); Main registers with `WorldRef` so spawners, popups and effects find the arena when `current_scene` is null. Scene swaps work there too (`swap_to_fresh_scene`).
   - `SlotStateCapture.tscn` + `slot_state_capture.gd` -> HUD slot capture.
@@ -253,6 +266,10 @@ Add an entry in `data/scenarios.json`; unknown or misspelled keys fail on load (
 - **Enemy stats live in data.** The exported fields on `Enemy` scenes are only fallbacks (see `Enemy._apply_stats`).
 - **Enemy HP bars:** `elite` and `boss` ranks always show their bar; the endless-arena `data/waves.json` has none; the shipped run rooms have one elite and a placeholder boss.
 - **Run state is a static.** `RunSession.current` survives scene swaps on purpose, so tests and tools that start a run must call `RunSession.clear()`. A new per-room reset belongs in the fresh scene; something that must carry over belongs in `RunState` (and its `to_dict`/`from_dict`). `Health.damage_immune` is set at room clear and must not leak into the next room (the reload soak checks it).
+- **The starter deck is exactly at the minimum.** `starting_deck` has 3 unique cards per slot, so `DeckRules.can_remove` blocks every starter card until a pick adds a 4th unique or a duplicate in that slot; early rest rooms are heal-only. Editing `starting_deck` must keep `deck_rules.json` satisfied (`RunConfig.deck_problems` checks it). `--full-deck` is the way to reach the removal grid in a capture.
+- **A choice is state, not UI.** An open choice lives in `RunState.pending`/`offer`. Anything that frees or reloads the scene mid-choice must leave them alone; only `choose` (or `continue_to_next_room(force = true)` in tests) clears them. `RunState.from_dict` does not validate `pending`: an unknown string would load as a choice with no options (qa backlog, matters once real saves exist).
+- **Offers are seeded by (run seed, room index) and the current deck,** on their own RNG stream, so a change to the deck changes later offers but never touches the spawner or player RNG. Candidates are sorted by id before the draw.
+- **Wave-sim pick rates cover all database cards,** so cards the bot never picked show as `NEVER CAST`. That is expected, not a defect.
 - **Seeded baselines use the endless arena.** The wave_sim seed hashes depend on `Main.tscn`. The `tier|enemy` encoding in `WavePlan` is built to leave them unchanged.
 - **`TrainingDummy`** (`scenes/debug/`) is not in `Main.tscn`; some tests instantiate it.
 - **Name rows:** card names use `fit_padding` 12 and line spacing 0 so two-line names fit; a test pins every card name at 720p, 1080p and 1440p.

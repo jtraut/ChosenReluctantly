@@ -2,7 +2,41 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-10-29 (Milestone 3a run structure; content slice C1: deck rules, nine Fire Rogue cards, solid enemies, status cues)
+## 2026-10-29 (Milestone 3b rewards and deck-clean; Milestone 3a run structure; content slice C1: deck rules, nine Fire Rogue cards, solid enemies, status cues)
+
+### Milestone 3b: reward screen and deck-clean
+
+Commits fd2f644..d2cd00a (gameplay fd2f644..b8564cd; ux 56a76f0..d2cd00a). qa passed it at 826 of 826 tests (0a19808; review in `docs/reviews/2026-10-29-m3b-qa.md`). Playtest found no blocker (f2a3283; `docs/playtests/2026-10-29-m3b-rewards.md`).
+
+#### Added
+- **Card rewards.** After each won combat or elite room (never the boss or the last room) you get 3 card offers (`rewards.offer_size` in `data/run.json`). Pick one, or reject the whole offer. [Director decision] (GDD section 9): pick 1 of 3 or reject all, with 3 rejects per run (`rejects_per_run`). At 0 rejects you must pick. (fd2f644)
+- **Seeded, pool-limited offers.** The offer comes from the run seed, the room index and the current deck, on its own RNG stream. Candidates are only cards in the character's pools. Cards you do not own weigh 4 and owned ones 1 (`unowned_weight`, `owned_weight`), so duplicates are possible but rarer. The offer shrinks if fewer cards qualify. (fd2f644)
+- **Optional card field `requires`** (`slot_types`, `pools`, `status_sources`): a card is only offered when the deck and character meet it. No shipped card uses it yet. Checked by `CardSchema`. (fd2f644)
+- **Rest room is now a choice:** Heal (30% of max HP, `rest_heal_fraction`) or Remove a card, then a card list with Back. Removal goes through the deck rules (`can_remove`): a card whose removal would drop a slot below its minimum is greyed out with the reason, and the remove tile is disabled when nothing can go. (fd2f644)
+- **Reusable choice model.** `RunChoices` turns the run state into a list of options and resolves one; `RunController` gained `choice_requested`, `choice_resolved` and `choose()`. The same model can serve a later level-up screen. (fd2f644)
+- **Choice screen (ux).** Reward cards show a number badge, name, slot pill, effect line, flavor and "You own N". The reject tile is narrower and darker, with pips for rejects left. Rest has two action tiles. The removal list is a per-slot grid that scrolls; keys 1-5 jump to a slot column. Keys 1-N highlight, Enter or a click confirms. Effect lines are built from effect params by `CardSummary.effect_line`, with wording in `data/run.json` `ui.effect`. (56a76f0, d2cd00a)
+- **"Next: Room N of 8 - Type"** line on the choice screen (`ui.next_line`). (d2cd00a)
+- **Save format v2.** `RunState` gained `pending`, `offer` and `choice_log`. A reload mid-reward reopens the same offer without replaying the room; a v1 state still loads. (fd2f644)
+- **Debug args:** `--full-deck` (all 24 cards for the whole launch, including Try again) and `--run-auto-choose=<option ids>` (picks those options in turn, skipping the arm delay; for captures). (fd2f644, d2cd00a)
+- **Bot sim plays the choices.** `run_wave_sim.ps1 -Run` picks, rejects and removes with a seeded policy and prints HP at each room end, the final deck size and per-slot composition, picks, rejects used, removals and rest heals, plus the mean room-end HP share per room. The reload soak also covers a reload mid-reward and Try again from a reward state. (82bf5d9, 9043866)
+- 60 more test cases: 766 at the end of 3a, 826 at the qa pass, including 17 adversarial qa tests (removal fuzz over 300 decks, offers, rejects, real key input, a `force` audit). (689f2fd, 0a19808)
+
+#### Changed
+- **Starter deck 24 -> 15 cards:** the full rogue + fire + neutral pool (7 + 5 + 3 + 5 + 4) is now 3 cards per slot (`starting_deck` in `data/run.json`). Reason: with the full pool every reward was a duplicate and every removal was blocked. `--full-deck` restores all 24. Consequence: with exactly 3 unique per slot, no starter card can be removed until a pick adds a duplicate or a 4th card in that slot, so early rest rooms are mostly heal. (fd2f644)
+- **Rest text:** a rest at full HP no longer says "Healed +0"; the heal tile reads "HP is already full". (fd2f644)
+- **Rest room no longer ends at once:** it opens the heal-or-remove menu and the next room loads when you choose. (fd2f644)
+- **Input safety on the choice screen:** options ignore input for 0.4 s after the panel opens (`run_ui.prompt_option_arm_delay` in `data/ui.json`), because the player is usually still mashing keys after a fight. Number keys only move the highlight. Presses are ignored while paused. (b8564cd)
+- **`RunController.continue_to_next_room(force)`:** while a choice is open it does nothing; `force = true` (tests and debug only) discards the choice. Only `choose()` ends a choice in play. (fd2f644)
+- **Game-lead calls** (not director decisions, logged in `docs/DECISIONS.md`): reject gives no card (no reroll); 4:1 weights; boss rooms are not reward rooms (`reward_room_types`); offers regenerate from the seed, a reload resumes the saved offer.
+
+#### Fixed
+- **Space confirmed the focused option** on the choice screen (it is also dodge); it is now swallowed while options are open. Focus returns to the highlighted option after a pause. (d2cd00a)
+- **Buff cards showed raw ids** in the effect line; they now read like "Attack: Single cooldown -0.5 s for 6 s", with wording from data. (56a76f0)
+
+#### Docs and process
+- Docs pass for 3b: README, ARCHITECTURE and this file. No new third-party assets, so `docs/ASSETS.md` is unchanged.
+- **Correction to the 3a entry below and the 3a README:** the wave sim does not fail on card pick-rate outliers; it prints them as a NOTE (`wave_sim.gd`, `_print_pick_rates`). The README and ARCHITECTURE are corrected.
+- Known and logged by qa (not fixed): an unknown `RunState.pending` string would load as a choice with no options (not reachable until real saves exist); a few effect lines read oddly ("dash 6.5"); the 1440p reward panel slightly overlaps the dimmed HP label; the Continue / New run button has no arm delay.
 
 ### Milestone 3a: run structure
 

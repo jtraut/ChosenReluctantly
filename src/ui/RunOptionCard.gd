@@ -46,7 +46,11 @@ static func owned_text(count: int, format: String) -> String:
 	return format % count if count > 0 else ""
 
 
-## "Slot 2 now: A, B, C": the distinct cards already held in the offered card's slot (data/run.json ui.option.slot_now).
+## Card names contain commas, so the list is joined with a slash.
+const SLOT_NOW_SEPARATOR: String = " / "
+
+
+## "Slot 2 now: A / B / C": the distinct cards already held in the offered card's slot (data/run.json ui.option.slot_now).
 ## "" when the slot holds nothing yet or the slot is unknown.
 static func slot_now_text(key: int, names: Array, format: String) -> String:
 	if key <= 0 or names.is_empty():
@@ -54,7 +58,7 @@ static func slot_now_text(key: int, names: Array, format: String) -> String:
 	var joined: PackedStringArray = PackedStringArray()
 	for entry: Variant in names:
 		joined.append(String(entry))
-	return format % [key, ", ".join(joined)]
+	return format % [key, SLOT_NOW_SEPARATOR.join(joined)]
 
 
 ## Builds the card. `extra`: index (0-based, -1 = no number), owned (int), rejects_remaining, rejects_max, texts (run.json ui.option).

@@ -268,7 +268,7 @@ func test_binding_mid_transition_reads_the_live_state() -> void:
 
 func test_slot_now_text() -> void:
 	var fmt: String = String(RunConfig.ui()["option"]["slot_now"])
-	assert_str(RunOptionCard.slot_now_text(1, ["A", "B", "C"], fmt)).is_equal("Slot 1 now: A, B, C")
+	assert_str(RunOptionCard.slot_now_text(1, ["A", "B", "C"], fmt)).is_equal("Slot 1 now: A / B / C")
 	assert_str(RunOptionCard.slot_now_text(4, ["A"], fmt)).is_equal("Slot 4 now: A")
 	assert_str(RunOptionCard.slot_now_text(2, [], fmt)).is_empty()
 	assert_str(RunOptionCard.slot_now_text(0, ["A"], fmt)).is_empty()

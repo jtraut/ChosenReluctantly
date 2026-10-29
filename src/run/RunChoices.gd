@@ -164,7 +164,7 @@ static func options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 			menu["opens_list"] = true
 			if removable_card_ids(state, ctx).is_empty():
 				menu["enabled"] = false
-				menu["reason"] = String(t["remove_none"])
+				menu["reason"] = _locked_menu_reason(state, ctx, String(t["remove_none"]))
 			out.append(menu)
 		RunState.PENDING_REST_REMOVE:
 			for card_id: String in unique_deck_ids(state, ctx):
@@ -240,6 +240,16 @@ static func heal_amount(state: RunState, fraction: float) -> float:
 	if not state.has_hp():
 		return 0.0
 	return maxf(minf(state.max_hp * fraction, state.max_hp - state.hp), 0.0)
+
+
+## Why the rest menu's "Remove a card" is greyed: the actionable reason of the first deck card (the same words as
+## the grid cell), else `fallback` (an empty deck).
+static func _locked_menu_reason(state: RunState, ctx: Dictionary, fallback: String) -> String:
+	for card_id: String in unique_deck_ids(state, ctx):
+		var problems: Array[String] = removal_problems(state, card_id, ctx)
+		if not problems.is_empty():
+			return removal_reason(state, card_id, problems, ctx)
+	return fallback
 
 
 ## What to do about a locked removal, in the words of data/run.json `ui.rest.remove_locked`. The unique-card minimum

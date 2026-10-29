@@ -19,7 +19,7 @@ Last updated: 2026-10-28. **Milestone 2 is done.** We're running **Post-mileston
 - **Director answered D8-D12.** D8 = C (dodge about 5 m) is applied in C1-a by setting `data/player.json` `dodge.speed` 28 -> 20.
 
 ## Exact next step
-1. Tooling qa (in progress).
+1. Tooling qa (in progress at session end, 2026-10-28). **On resume:** if `docs/reviews/2026-10-28-polish1-tooling-qa.md` exists and is committed, read its verdict and continue. If it doesn't, check `git status` for qa's leftover uncommitted test files under `tests/`, then re-run the tooling qa review from the start (the brief is in ROADMAP).
 2. **Content slice C1**, brief in ROADMAP: C1-a -> C1-b1 -> C1-b2 -> C1-c (gameplay-dev) -> C1-d story -> C1-e ux-designer -> C1-f qa -> C1-g playtester (merged with the pass close-out report) -> C1-h tech-writer (also covers the tooling docs) -> game-lead closes C1, the tooling task and the pass.
 3. Then **Milestone 3a**.
 
@@ -28,4 +28,4 @@ Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass"; game-lead resumes at the step above. Run roles one at a time (shared working tree and git), and each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`. Right now that's D8 (dodge distance), plus the "needs your eyes" checks.
+All director-facing items are in `docs/OPEN_ITEMS.md`. Nothing needs a decision right now; there are 12 "needs your eyes" checks.

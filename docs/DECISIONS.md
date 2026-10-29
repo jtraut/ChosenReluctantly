@@ -771,3 +771,12 @@ Commits 56a76f0..d2cd00a. Rejected alternatives in brackets.
 - **New debug arg `--run-auto-choose=<ids>`,** for screenshots.
 - **Process:** subagent commits carry their own session's model attribution (Sonnet), not the "Opus" line in the briefs. That's fine: the attribution should name the model that wrote the commit. Briefs now say "use your session's attribution line".
 - **Follow-up (backlog):** put `owned` and `next_room_type` in the choice model so the screen is self-contained for level-up reuse.
+
+### 2026-10-29 - 3b qa PASS (qa, logged by game-lead)
+- PASS 0a19808, 826/826 (`docs/reviews/2026-10-29-m3b-qa.md`). A removal fuzz over 300 decks never broke a minimum.
+- **Backlog:**
+  - validate an unknown `RunState.pending` value when real saves arrive (3d);
+  - tidy the effect-line wording ("dash 6.5");
+  - the 1440p panel top slightly overlaps the dimmed HP label;
+  - the Continue / New run button has no arm delay, and its hint says "Space".
+- **Balance note:** with the 15-card starter, the bot loses mostly at the placeholder boss (5 of 6 losses). 3c replaces it.

@@ -362,7 +362,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
   - **Files likely touched:** new `src/run/` (generator, RunState, room controller), `data/run.json` and room/wave data, `src/main/Main.gd`, the spawner, new HUD bits under `src/ui/`, `tools/bot_sim.gd`, and tests.
   - **Defaults (game-lead calls, logged in DECISIONS and "Calls I made"):** a linear sequence, no branching map (routing comes later); 8 rooms (5 combat, 1 elite, 1 rest, 1 boss last); rest heals 30% of max HP; short prototype runs (GDD §9 [PROPOSED]).
 
-- [ ] **3b, reward screen and deck-clean** — gameplay BUILT fd2f644..b8564cd (802/802); ux BUILT 56a76f0..d2cd00a. qa next.
+- [ ] **3b, reward screen and deck-clean** — gameplay BUILT fd2f644..b8564cd (802/802); ux BUILT 56a76f0..d2cd00a; qa PASS 0a19808 (826/826). playtester next.
   - **Goal:** after each won room you choose how your deck grows: pick 1 of N cards or reject the whole offer. Rest rooms let you trade the heal for removing a card. GDD §4 (deck rules, unique minimums), §5 (pools), §9 (rewards), §15 (the level-up idea reuses the screen).
   - **Acceptance:**
     1. **Offer:** after every won combat or elite room (not the last room, and not the rest room) the reward screen offers `offer_size` cards (data, default 3; distinct within an offer). Seeded from the run seed and room index, so the same seed gives the same offers.

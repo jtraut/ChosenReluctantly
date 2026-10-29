@@ -12,11 +12,11 @@ Last updated: 2026-10-29. The director is away until the evening with an autonom
 
 ## In progress
 - **Milestone 3a closed** 2026-10-29 (tag `playtest-2026-10-29-3a`, 766/766).
-- **Milestone 3b, reward screen and deck-clean:** gameplay built fd2f644..b8564cd (802/802). ux 56a76f0..d2cd00a. Next role: qa.
+- **Milestone 3b, reward screen and deck-clean:** gameplay built fd2f644..b8564cd (802/802). ux 56a76f0..d2cd00a; qa PASS 0a19808 (826/826). Next role: playtester.
 
 ## Exact next step
-1. **3b qa.** **On resume:** check `docs/reviews/` for a 3b review.
-2. Then playtester -> tech-writer -> game-lead close, tag `playtest-2026-10-29-3b`.
+1. **3b playtest.** **On resume:** check `docs/playtests/` for a 3b report.
+2. Then tech-writer -> game-lead close, tag `playtest-2026-10-29-3b`.
 3. Then 3c (boss), then 3d (loadouts). Write each brief at the previous slice's close.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.

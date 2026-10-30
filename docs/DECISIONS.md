@@ -852,3 +852,24 @@ Commits b8af93f..5245779; 894/894. Rejected alternatives in brackets.
 - **Boss name stays a placeholder** until the director or the story role names it.
 - **qa N11** (an intermittent soak failure: damage immunity leaked after a reward pick, also present at 64df947) goes to the P-dodge gameplay task.
 - **Order after 3c:** A1 armor, then P-dodge, then 3d (director order).
+
+### 2026-10-29 - A1 armor Part 1 (gameplay-dev, logged by game-lead)
+Commits b23d7df..e141dfe; 923/923; arena hash unchanged. Rejected alternatives in brackets.
+- **Re-verified:** physical was skipped by a hardcoded `== "physical"`; `neutral` skipped mitigation only because it had no resistance entry. The boss took 0% from physical and 50% from fire.
+- **`data/armor.json`:** `k` 50, `armor_reduction_cap` 0.5, `non_elemental_types` [physical, neutral], loaded by `ArmorConfig`. It's a new file because tiers, the boss, enemies and the player all share it. Unlisted types count as elemental. [A second "elemental" list.]
+- **Armor values:** elite tier 17; `tiers.boss` 27 (still unused); boss_guardian 50; per-enemy optional, default 0. Tiered enemies use max(own, tier).
+- **`tiers.boss.resistance_floor` 0.25 -> 0.35** so its armor 27 passes parity, which matches GDD §7's 35% for bosses. [Removing the unused tier.]
+- **Parity is enforced at load** (`RunConfig`, `BossConfig`) and by a test. [Test only.]
+- **`Health.take_damage` is the single choke point.** Penetration is read from the source's `armor_penetration` stat; the player has armor 0 via its own StatModifiers. Scenario setup hits bypass armor.
+- **DoT is float end to end:** a Bleed tick of 1.0 at armor 50 does 0.5. No gameplay minimum is needed. On display, a single unmerged tick under 0.5 would show "0"; ux handles that.
+- **Re-tune** (whole-run sim, 16 seeds, medians):
+  - Before: elite room 41.85 s, boss 63.65 s.
+  - Armor at the old HP: 56.85 s and 85.9 s.
+  - After the retune: 40.55 s and 63.4 s.
+  - **Elite `hp_multiplier` 2.5 -> 2.0; boss `max_health` 280 -> 195.**
+  - Target was the measured baseline (about 63 s), not 61. No enemy-damage or player changes.
+- **Deck families** (`-Deck` sim option, god mode, 8 seeds), boss fight median after armor:
+  - standard 63.1 s; fire 58.4 s (0.93x); physical 70.05 s (1.11x). Both are within the director's 70-130% band.
+  - Light and heavy only: about 3.2x (it was 3.5x before armor). That's a bot-capability limit, not armor; 4 of 8 seeds timed out.
+  - Limits: light and heavy are in every family, Blaze and Bail deals fire in every family, and the minimums are bypassed by a tool-only flag.
+- **Pre-existing:** a BossHpBar deferred-bind error in long light/heavy-only runs (a freed boss), also on the 3c tag. Sent to ux in Part 2.

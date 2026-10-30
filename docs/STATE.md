@@ -12,11 +12,11 @@ Last updated: 2026-10-29. The director is away until the evening with an autonom
 
 ## In progress
 - **Milestone 3c closed** 2026-10-29 (tag `playtest-2026-10-29-3c`, 907/907).
-- **Slice A1: Armor** (director request): the brief is in ROADMAP. Next role: gameplay-dev (Part 1).
+- **Slice A1: Armor** (director request): Part 1 built b23d7df..e141dfe (923/923). Next role: ux-designer (Part 2).
 
 ## Exact next step
-1. **A1 Part 1** with gameplay-dev. **On resume:** check `git log` for "A1" commits and `git status`. Continue from what's committed.
-2. Then ux-designer (Part 2) -> qa (Part 3) -> playtester (Part 4) -> tech-writer -> close, tag `playtest-2026-10-29-A1`.
+1. **A1 Part 2** with ux-designer. **On resume:** check `git log` for A1 ux commits.
+2. Then qa (Part 3) -> playtester (Part 4) -> tech-writer -> close, tag `playtest-2026-10-29-A1`.
 3. Then **P-dodge** (brief in ROADMAP; it includes qa N11, the damage-immunity soak flake), then **3d** loadouts (brief in ROADMAP).
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.

@@ -1,0 +1,19 @@
+{
+    "name": "mixed-rogue",
+    "description": "Rogue: the normal 15-card starter; full is every Rogue, Fire and neutral card (the whole pool).",
+    "starter": [
+        "rogue_quick_slash", "rogue_overhand_whatever", "fire_ember_whatever",
+        "fire_fine_burn_then", "rogue_everyone_calm_down", "neutral_shrug_bomb",
+        "fire_hot_head", "neutral_deep_sigh", "rogue_not_my_problem",
+        "fire_blaze_and_bail", "rogue_ugh_fine_moving", "neutral_backward_leap",
+        "neutral_healing_potion", "rogue_nap_time", "neutral_regeneration"
+    ],
+    "full": [
+        "rogue_quick_slash", "rogue_overhand_whatever", "rogue_bleed_slash", "rogue_flurry", "neutral_pointy_stick",
+        "fire_ember_whatever", "fire_flaming_nonsense",
+        "rogue_everyone_calm_down", "neutral_shrug_bomb", "fire_fine_burn_then", "fire_fireball", "fire_wall",
+        "rogue_not_my_problem", "neutral_deep_sigh", "fire_hot_head",
+        "rogue_lunge_strike", "rogue_shadow_step", "rogue_ugh_fine_moving", "neutral_backward_leap", "fire_blaze_and_bail",
+        "rogue_nap_time", "neutral_healing_potion", "neutral_leech", "neutral_regeneration"
+    ]
+}

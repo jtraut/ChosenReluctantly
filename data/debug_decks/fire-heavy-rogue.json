@@ -1,0 +1,18 @@
+{
+    "name": "fire-heavy-rogue",
+    "description": "Rogue with every Fire card (7 of 7) plus the fewest others the deck rules need; full adds extra Fire copies.",
+    "starter": [
+        "fire_ember_whatever", "fire_flaming_nonsense", "rogue_quick_slash",
+        "fire_fine_burn_then", "fire_fireball", "fire_wall",
+        "fire_hot_head", "neutral_deep_sigh", "rogue_not_my_problem",
+        "fire_blaze_and_bail", "rogue_ugh_fine_moving", "neutral_backward_leap",
+        "neutral_healing_potion", "rogue_nap_time", "neutral_regeneration"
+    ],
+    "full": [
+        "fire_ember_whatever", "fire_ember_whatever", "fire_flaming_nonsense", "rogue_quick_slash",
+        "fire_fine_burn_then", "fire_fine_burn_then", "fire_fireball", "fire_fireball", "fire_wall",
+        "fire_hot_head", "neutral_deep_sigh", "rogue_not_my_problem",
+        "fire_blaze_and_bail", "rogue_ugh_fine_moving", "neutral_backward_leap", "rogue_shadow_step",
+        "neutral_healing_potion", "rogue_nap_time", "neutral_regeneration", "neutral_leech"
+    ]
+}

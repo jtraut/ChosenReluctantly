@@ -85,15 +85,13 @@ var _trace_next: float = 1.0
 const RUN_MAIN_PATH := "res://scenes/main/RunMain.tscn"
 var _run_mode: bool = false
 var _room_timeout: float = 240.0
-## `--deck=<family>`: fixed test decks for armor comparisons (A1). "" or "standard" = the normal starting deck and policy.
-## Families keep the standard utility/movement/recovery cards and replace only the two attack slots, and the deck is
-## re-imposed after every reward or removal, so the fight is the same every time. Not a legal deck (minimums skipped).
+## `--sim-deck=<preset>` (wave sim -Deck): start every run with a debug preset deck from data/debug_decks (T-decks), so
+## armor comparisons use legal decks. "" or "standard" = the normal starting deck. The preset is the whole run's deck
+## start (Try again is not used in the sim); rewards then change it as usual.
 var _deck_family: String = ""
-const DECK_FAMILIES: Dictionary = {
-	"fire": {"attack_single": ["fire_ember_whatever", "fire_flaming_nonsense", "fire_ember_whatever"], "attack_aoe": ["fire_fine_burn_then", "fire_fireball", "fire_wall"]},
-	"physical": {"attack_single": ["rogue_quick_slash", "rogue_overhand_whatever", "rogue_bleed_slash"], "attack_aoe": ["rogue_everyone_calm_down", "neutral_shrug_bomb", "rogue_everyone_calm_down"]},
-	"lightheavy": {"attack_single": [], "attack_aoe": []},
-}
+## `--light-heavy-only`: the bot never presses the two attack card slots (1 and 2), so only light and heavy attacks hit.
+## A bot attack policy, not a deck. It draws the same random numbers as without the flag.
+var _light_heavy_only: bool = false
 var _run_results: Array[Dictionary] = []
 var _card_casts: Dictionary = {}
 var _slot_stuck_since: Dictionary = {}
@@ -122,15 +120,19 @@ func _ready() -> void:
 			_trace = true
 		elif arg == "--run":
 			_run_mode = true
-		elif arg.begins_with("--deck="):
-			_deck_family = arg.substr(7)
+		elif arg == "--light-heavy-only":
+			_light_heavy_only = true
+		elif arg.begins_with("--sim-deck="):
+			_deck_family = arg.substr(11)
 			if _deck_family == "standard":
 				_deck_family = ""
-			elif not DECK_FAMILIES.has(_deck_family):
-				push_error("wave sim: --deck must be standard, fire, physical or lightheavy (got '%s')" % _deck_family)
-				get_tree().quit(2)
-				return
-			RunSession.skip_deck_minimums = _deck_family != ""
+			elif _deck_family != "":
+				var directory: Dictionary = DebugDecks.read_dir()
+				if not (directory["presets"] as Dictionary).has(_deck_family):
+					push_error("wave sim: -Deck must be a debug deck (valid: %s) or standard, got '%s'" % [", ".join(directory["names"] as Array[String]), _deck_family])
+					get_tree().quit(2)
+					return
+				RunSession.debug_deck = (directory["presets"] as Dictionary)[_deck_family]
 		elif arg.begins_with("--room-timeout="):
 			_room_timeout = maxf(10.0, float(arg.substr(15)))
 	_run_all.call_deferred()
@@ -495,7 +497,9 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 		_press(&"attack_heavy")
 		_heavy_until = _sim_time + 1.9
 	if _rng.randf() < 0.3:
-		_press(StringName("slot_%d" % _rng.randi_range(1, 5)))
+		var slot_number: int = _rng.randi_range(1, 5)
+		if not (_light_heavy_only and slot_number <= 2):
+			_press(StringName("slot_%d" % slot_number))
 	if _rng.randf() < 0.5:
 		_press(&"attack_light")
 
@@ -591,7 +595,6 @@ func _run_whole(run_seed: int) -> void:
 	Juice.hit_stop_enabled = false
 	RunSession.clear()
 	RunSession.begin_new_run(run_seed)
-	_impose_deck_family()
 	var rooms: Array[Dictionary] = RunGenerator.generate(run_seed, RunConfig.get_config())
 	if _god:
 		RunSession.current.max_hp = 9999.0
@@ -640,7 +643,6 @@ func _run_whole(run_seed: int) -> void:
 				guard += 1
 				var choice_id: String = _policy_choose(controller)
 				var outcome: Dictionary = controller.choose(choice_id)
-				_impose_deck_family()
 				if not bool(outcome["ok"]):
 					_fail("run %d room %d: the bot choice '%s' was refused: %s" % [run_seed, room_index + 1, choice_id, str(outcome.get("reason", ""))])
 					break
@@ -669,22 +671,6 @@ func _run_whole(run_seed: int) -> void:
 		get_tree().current_scene = null
 		last.queue_free()
 	RunSession.clear()
-
-
-## Replaces the two attack slots of the run's deck with the chosen test family (no-op for the standard deck).
-func _impose_deck_family() -> void:
-	if _deck_family == "" or RunSession.current == null:
-		return
-	var family: Dictionary = DECK_FAMILIES[_deck_family]
-	var deck: Array[String] = []
-	for card_id: String in RunSession.current.deck:
-		var slot_type: String = String(CardDatabase.get_card(card_id).get("slot_type", ""))
-		if slot_type != "attack_single" and slot_type != "attack_aoe":
-			deck.append(card_id)
-	for slot_type: String in family:
-		for card_id: String in (family[slot_type] as Array):
-			deck.append(card_id)
-	RunSession.current.deck = deck
 
 
 ## The seeded reward policy. It reads the choice model (option kinds and the state HP and deck counts), never a
@@ -800,8 +786,6 @@ func _begin_run_room(run_seed: int, room: Dictionary) -> void:
 	# N3: a deck with an empty slot is a broken run.
 	for slot_type: String in CardSlotController.SLOT_TYPE_ORDER:
 		var slot: CardSlot = _player.card_slots.get_slot(slot_type)
-		if _deck_family != "" and slot_type.begins_with("attack_"):
-			continue  # a test family may leave an attack slot empty on purpose
 		if slot == null or not slot.has_cards():
 			_fail("run %d room %d: empty deck for slot '%s'" % [run_seed, int(room["index"]) + 1, slot_type])
 	if _player.card_slots.owned_card_ids().is_empty():

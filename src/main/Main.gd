@@ -99,8 +99,6 @@ func _check_starting_deck() -> void:
 	var problems := DeckRules.validate_config(DeckRules.shipped_config(), SlotTypeDatabase.known_ids())
 	if not problems.is_empty():
 		push_error("deck_rules.json is invalid: " + "; ".join(problems))
-	if RunSession.skip_deck_minimums:
-		return
 	var message := DeckRules.run_start_block_message(player.card_slots.deck_check())
 	if message == "":
 		return

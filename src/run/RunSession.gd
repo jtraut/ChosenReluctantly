@@ -11,9 +11,9 @@ static var forced_seed: int = -1
 ## `--full-deck`: new runs start with every card of the character's pools instead of the starter list.
 ## Sticky for the launch (Try again keeps it); a tool or test sets and clears it.
 static var full_deck: bool = false
-## Tool-only (tools/wave_sim.gd `--deck=`): skip the "3 unique cards per slot" run-start block so a deck-family test deck
-## (for example fire-only attacks) can start. Never set by the game.
-static var skip_deck_minimums: bool = false
+## `--deck=<name>` (T-decks): the debug preset every new run starts with ({} = none, the normal starting deck). The preset's
+## `starter` list is used, or its `full` list with `full_deck`. Sticky for the launch like `full_deck`, so Try again keeps it.
+static var debug_deck: Dictionary = {}
 
 
 static func has_run() -> bool:
@@ -28,7 +28,11 @@ static func begin_new_run(seed_value: int = -1) -> RunState:
 		forced_seed = -1  # used once: "Try again" must get a new seed
 	if chosen < 0:
 		chosen = new_random_seed()
-	var deck: Array[String] = RunConfig.cards_in_pools(RunConfig.character_pools()) if full_deck else RunConfig.starting_deck()
+	var deck: Array[String]
+	if not debug_deck.is_empty():
+		deck = DebugDecks.deck_of(debug_deck, full_deck)
+	else:
+		deck = RunConfig.cards_in_pools(RunConfig.character_pools()) if full_deck else RunConfig.starting_deck()
 	current = RunState.new_run(chosen, deck, RunConfig.rejects_per_run())
 	return current
 

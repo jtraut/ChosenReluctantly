@@ -1,0 +1,18 @@
+{
+    "name": "physical-rogue",
+    "description": "Rogue and neutral physical cards; only 2 Fire cards (Hot Head, Fine Burn Then) because the deck rules need them.",
+    "starter": [
+        "rogue_quick_slash", "rogue_overhand_whatever", "rogue_bleed_slash",
+        "rogue_everyone_calm_down", "neutral_shrug_bomb", "fire_fine_burn_then",
+        "fire_hot_head", "neutral_deep_sigh", "rogue_not_my_problem",
+        "rogue_lunge_strike", "rogue_ugh_fine_moving", "neutral_backward_leap",
+        "neutral_healing_potion", "rogue_nap_time", "neutral_regeneration"
+    ],
+    "full": [
+        "rogue_quick_slash", "rogue_quick_slash", "rogue_overhand_whatever", "rogue_overhand_whatever", "rogue_bleed_slash", "rogue_flurry", "neutral_pointy_stick",
+        "rogue_everyone_calm_down", "rogue_everyone_calm_down", "neutral_shrug_bomb", "fire_fine_burn_then",
+        "fire_hot_head", "neutral_deep_sigh", "rogue_not_my_problem",
+        "rogue_lunge_strike", "rogue_shadow_step", "rogue_ugh_fine_moving", "neutral_backward_leap",
+        "neutral_healing_potion", "rogue_nap_time", "neutral_regeneration", "neutral_leech"
+    ]
+}

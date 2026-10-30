@@ -49,7 +49,8 @@ func begin(main: Main) -> void:
 	var config: Dictionary = RunConfig.get_config()
 	var fresh_launch: bool = RunSession.current == null
 	if fresh_launch:
-		_apply_launch_args()
+		if not _apply_launch_args():
+			return  # a bad --deck or --list-decks: the game is quitting (see _apply_launch_args)
 	_state = RunSession.ensure_run()
 	if fresh_launch and _launch_room > 0:
 		_state.room_index = _launch_room
@@ -96,9 +97,24 @@ func begin(main: Main) -> void:
 
 ## Launch arguments for tools and repro (after `--`); they apply to the first run of a launch only:
 ## `--run-seed=N` fixes the seed, `--run-room=K` starts at room K (1-based), `--full-deck` starts with every card of the character's pools (debug), `--run-clear-after=S` wins the room
-## S seconds in (so a screenshot can show the room-cleared prompt or the win screen).
-func _apply_launch_args() -> void:
-	for arg: String in OS.get_cmdline_user_args():
+## S seconds in (so a screenshot can show the room-cleared prompt or the win screen). `--deck=<name>` starts with a debug
+## preset deck from data/debug_decks (its `starter`, or its `full` with `--full-deck`) and `--list-decks` prints them and quits.
+## Returns false when the launch must not go on: it has asked the tree to quit (exit 0 for --list-decks, 2 for bad args).
+func _apply_launch_args() -> bool:
+	var args: PackedStringArray = OS.get_cmdline_user_args()
+	var directory: Dictionary = DebugDecks.read_dir()
+	var launch: Dictionary = DebugDecks.resolve_launch(args, directory)
+	for line: String in (launch["lines"] as Array[String]):
+		print(line)
+	for message: String in (launch["errors"] as Array[String]):
+		push_error("Launch refused: " + message)
+	var exit_code: int = int(launch["exit"])
+	if exit_code != DebugDecks.EXIT_CONTINUE:
+		get_tree().quit(exit_code)
+		return false
+	if String(launch["deck"]) != "":
+		RunSession.debug_deck = (directory["presets"] as Dictionary)[String(launch["deck"])]
+	for arg: String in args:
 		if arg == "--full-deck":
 			RunSession.full_deck = true
 		elif arg.begins_with("--run-seed=") and arg.substr(11).is_valid_int():
@@ -107,6 +123,7 @@ func _apply_launch_args() -> void:
 			_launch_room = maxi(arg.substr(11).to_int() - 1, 0)
 		elif arg.begins_with("--run-clear-after=") and arg.substr(18).is_valid_float():
 			_launch_clear_after = maxf(arg.substr(18).to_float(), 0.0)
+	return true
 
 
 func _on_enemy_spawned(enemy: Enemy, _alive_count: int) -> void:

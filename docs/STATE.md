@@ -6,18 +6,18 @@
 Last updated: 2026-10-29. The director is away until the evening with an autonomous run order: after C1 and Polish 1, go on to Milestone 3 (3a run structure, 3b rewards, 3c boss, 3d loadouts). Each slice gets the full loop and, at close, a `playtest-YYYY-MM-DD-<slice>` tag plus an update to OPEN_ITEMS "While you were away".
 
 ## What's done
-- Milestone 2, and **Post-milestone polish 1** (all slices). **Content slice C1** and the **capture-tooling task** closed on 2026-10-29: qa PASS 76bca75 (696/696), playtest d94676a, docs pass 4c7b490. Tag **`playtest-2026-10-29-C1`**. **Milestone 3a** closed (tag `playtest-2026-10-29-3a`). **Milestone 3b** closed (tag `playtest-2026-10-29-3b`). **Milestone 3c** closed (tag `playtest-2026-10-29-3c`).
-- Director answers D1-D12 are recorded. D13 and D14 (healing strength, Fire Wall) are open but don't block; current values stay.
-- The repo runs. Suite 696/696.
+- Milestone 2, and **Post-milestone polish 1** (all slices). **Content slice C1** and the **capture-tooling task** closed on 2026-10-29: qa PASS 76bca75 (696/696), playtest d94676a, docs pass 4c7b490. Tag **`playtest-2026-10-29-C1`**. **Milestone 3a** closed (tag `playtest-2026-10-29-3a`). **Milestone 3b** closed (tag `playtest-2026-10-29-3b`). **Milestone 3c** closed (tag `playtest-2026-10-29-3c`). **Slice A1 (armor)** closed (tag `playtest-2026-10-29-A1`).
+- Director answers D1-D16 are recorded (D13 = B and D16 = B are built in P-dodge). D17 is open and doesn't block.
+- The repo runs. Suite 968/968.
 
 ## In progress
-- **Milestone 3c closed** 2026-10-29 (tag `playtest-2026-10-29-3c`, 907/907).
-- **Slice A1: Armor** (director request): Part 1 built b23d7df..e141dfe (923/923). Part 2 built 1604f6b..bcf13a5 (939/939). qa PASS 9292e4b (965/965). ux readability fix done f0cb109 (boss bar at 1024x768, elite pip_scale, N1). qa delta PASS 70a761f (966/966 + 2 qa tests). Playtest ff6e7f6 (no blocker). Next: tech-writer docs pass, then close.
+- **Slice A1: Armor** closed 2026-10-29 (tag `playtest-2026-10-29-A1`, 968/968). Docs 28587a9.
+- **T-decks**: not started. Brief in ROADMAP.
 
 ## Exact next step
-1. **A1 tech-writer docs pass** (playtest ff6e7f6, no blocker). **On resume:** check `git log` for a docs commit.
-2. Then game-lead close: OPEN_ITEMS, tag `playtest-2026-10-29-A1`.
-3. Then **T-decks** (debug preset decks; lightweight loop), then **W1 Fire Wizard** (director request; brief in ROADMAP), then **P-dodge** (also carries D13 = B, the Recovery cooldown 8 -> 12 s, and D16 = B, the boss stagger at thresholds), then **3d**.
+1. **T-decks**: hand the ROADMAP brief to gameplay-dev (lightweight loop: gameplay-dev -> qa -> tech-writer -> close, no playtester). Its sim alignment step re-runs the A1 family comparison with 10+ seeds.
+2. Then **W1 Fire Wizard**, then **P-dodge** (carries D13 = B and D16 = B), then **3d**.
+3. Waiting on the director: D17 (card damage-type cue; default B, doesn't block).
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 

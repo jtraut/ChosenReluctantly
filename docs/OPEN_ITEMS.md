@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-10-29
-**Status: nothing waiting on a decision.** Done: C1, Polish 1, **3a (runs of 8 rooms)**, **3b (card rewards and deck-clean)** and **3c (the boss)**. Next: Slice A1 (armor), then dodge charges, then loadouts.
+**Status: 1 waiting on a decision (D17, doesn't block).** Done: C1, Polish 1, 3a (runs of 8 rooms), 3b (card rewards and deck-clean), 3c (the boss) and **A1 (armor)**. Next: debug preset decks (T-decks), then the Fire Wizard (W1), then dodge charges, then loadouts.
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
@@ -18,7 +18,17 @@ Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
 _Updated at every slice close._
 
-- **Latest playtest tag:** `playtest-2026-10-29-3c` (qa PASS, 907/907). Earlier tags: `playtest-2026-10-29-3b`, `-3a`, `-C1`.
+- **Latest playtest tag:** `playtest-2026-10-29-A1` (qa PASS, 968/968). Earlier tags: `playtest-2026-10-29-3c`, `-3b`, `-3a`, `-C1`.
+- **New in A1 (since the 3c tag), your armor request:**
+  - Elites and the boss now have **armor**. It cuts physical and neutral hits about as much as their resistance cuts fire, so a fire deck and a physical deck kill the boss in similar time. In the bot sim each family lands inside your 70-130% band of the standard deck.
+  - **Visible cues:**
+    - the boss bar shows "Armor 50% - Resists all elements 50%";
+    - elite bars have a small shield pip;
+    - armor-reduced hits show as muted `[9]`, resisted hits as `<4>`;
+    - F3 lists the nearest enemy's armor and resistance, plus yours.
+  - To keep fights the same length, elites went from x2.5 to x2.0 HP, and the boss from 280 to 195 HP.
+  - The boss bar now fits a 1024x768 window.
+- **Try first in A1:** checklist item 23 (armor). Fight an elite and the boss once with fire cards and once with Slash, Lunge and the attacks. **Playtester's notes (scripted, no hands):** the cues read fine one at a time, but in a clump of 4 enemies the `[9]` / `<4>` / plain numbers blur together (queued for ux). Nothing on a card says whether it's physical or fire (see D17).
 - **New in 3c (since the 3b tag):** room 8 is a real boss, "The Overly Enthusiastic Guardian" (placeholder name). It has 3 phases with an invulnerable roar between them; smash, slam, volley and charge attacks, each telegraphed; adds in phases 2 and 3; and a boss HP bar at the top with the phase and the attack name. The room indicator moved to the top right. Reward cards show "Slot N now: A / B / C" and plain effect lines. **Your scrolling complaint is fixed:** reward offers never scroll down to 1024x600, including your 1150x680 window. Jump straight to the boss with `godot --path . -- --run-room=8`.
 - **Try first in 3c:** fight the boss (checklist item 21) and answer D16 (should it ever stagger?).
 - **New in 3b (since the 3a tag):** after each won fight you pick 1 of 3 cards or reject the whole offer (3 rejects per run). Rest rooms let you heal or remove a card (you can't remove one that would break the 3-per-slot rule). **Your starting deck is now 15 cards, 3 per slot;** the other 9 cards come from rewards. Launch with `-- --full-deck` to start with all 24. A "Next: Room N of 8" line shows what's coming. HP now drops across a run (the bot averages about 85% at each room's end).
@@ -50,7 +60,7 @@ _Updated at every slice close._
 
 - **2026-10-29: "No cooldown indicator for the dodge; dodge should have 3 charges (maybe 2) and a slightly longer cooldown."** Recorded in GDD §3 as your decision. It's scheduled right after the boss slice closes and before loadouts. I'm setting each charge's recharge to **1.2 s** (was 0.8 s); the charge count and cooldown are both data values (`data/player.json` `dodge.charges`, `dodge.cooldown`). There will be a pip indicator near the attack meters. Also recorded: passives may raise or lower the charges as a trade-off, level-ups never touch them, and the hard limits are 0 and 4. The code gets the hook now; the passives come later.
 
-- **2026-10-29: Armor for elites and bosses** (non-elemental damage mitigated about as much as elemental). Recorded in GDD §7 as your decision. Queued as **Slice A1** right after the boss slice closes, ahead of dodge charges and loadouts, in your order; I see no reason to change it. It also answers D15 (fire against the boss), so D15 is withdrawn.
+- **2026-10-29: Armor for elites and bosses** (non-elemental damage mitigated about as much as elemental). **Built** in `playtest-2026-10-29-A1`; see "While you were away" and checklist item 23. It also answers D15 (fire against the boss), so D15 is withdrawn.
 
 - **2026-10-29: Debug preset decks** (`--deck=<name>`, `--list-decks`, presets in `data/debug_decks/`). Queued as **T-decks** right after armor (A1) closes, ahead of dodge charges. The wave sim's armor-test deck families get folded into your presets, so there's one deck system with no rule bypass.
 
@@ -67,9 +77,12 @@ _Updated at every slice close._
 
 ## Needs your decision
 
-Neither blocks work. Until you answer, I keep the current values.
+It doesn't block work. Until you answer, I keep the current behaviour.
 
-Nothing waiting. D13, D14 and D16 were answered on 2026-10-29 (see Recently resolved).
+- **D17: Show each card's damage type?** Armor only matters if you can tell which of your cards it affects, and right now nothing on a card says physical or fire.
+  - **A:** add a small damage-type tag to card tiles and slots (a short ux task before the Wizard).
+  - **B (my default):** fold it into the pause card-details request you already logged, and schedule both together.
+  - **C:** no cue; the boss bar is enough.
 
 ## Calls I made while you were away (easy to change)
 
@@ -83,6 +96,11 @@ Each entry says what I chose and the one-line way to change it.
 6. **Your starting deck will shrink to 15 cards (3 per slot) in 3b,** so rewards have new cards to offer. It's the original starters plus Nope, Leaping Away (an escape) and Eventual Healing; the other 9 cards come from rewards. **Change:** edit `data/run.json` `starting_deck`. To play with every card, launch with `--full-deck` (from 3b).
 7. **Three rejects per run stays fixed, and the starter is exactly 3 per slot,** so removal is locked until you own a 4th card in a slot. **Change:** add cards to `data/run.json` `starting_deck` (4 per slot unlocks early removal); rejects are `rejects_per_run`.
 8. **A normal launch now starts a run; test scenarios and the wave sim keep the old endless arena.** **Change:** none needed; scenarios are for looking at one thing.
+9. **Armor formula (A1).** Armor cuts damage by armor / (armor + 50), capped at 50%: elite armor 17 = 25%, boss 50 = 50%. **Change:** `data/armor.json` `k` and `armor_reduction_cap`; tier values are in `data/run.json` and `data/bosses.json` (a load check keeps armor matched to resistance).
+10. **Elite and boss HP cut to keep fight lengths (A1).** Elite HP x2.5 -> x2.0; boss 280 -> 195 HP (the boss fight stays near 1 minute in the bot sim). **Change:** `data/run.json` elite `hp_multiplier`, `data/bosses.json` `max_health`.
+11. **Boss-tier resistance floor 25% -> 35% (A1),** to match GDD §7's boss value and the armor. **Change:** `data/run.json` `tiers.boss.resistance_floor`.
+12. **Damage over time (A1):** Bleed goes through armor, Burn through resistance, and heals are never reduced. **Change:** ask; it's a rule in the damage code.
+13. **A build with no damage cards (only light and heavy attacks) stays slow against the boss (about 3x).** GDD §3 says cards beat basic attacks, so I didn't add a safety net. **Change:** ask for a basic-attack buff or a boss tweak.
 
 ## Needs your eyes: play-session checklist (about 20-30 minutes)
 
@@ -109,6 +127,7 @@ _Items 1-10 are answered (see "Your checklist answers" below). The remaining ite
 20. **Card rewards (after 3b).** After each won room: pick 1 of 3, or reject the offer (3 rejects per run). Look for: offers fit your build, and the deck-clean option is clear.
 21. **Boss (after 3c).** Look for: the phases and telegraphs are readable, and it's fair.
 22. **Loadouts (after 3d).** On run 2, save and pick a starting deck. Look for: it's easy to understand.
+23. **Armor (after A1).** Fight an elite and the boss with a fire-heavy deck, then a physical-heavy one (Slash, Lunge, light and heavy). Use `-- --full-deck --run-room=8` for the boss. Look for: the fights feel about as long; the boss bar's armor line and the `[9]` / `<4>` numbers explain the smaller hits.
 
 ## Your checklist answers (2026-10-29)
 

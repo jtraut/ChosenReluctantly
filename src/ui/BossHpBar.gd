@@ -72,6 +72,26 @@ static func resist_text(resistances: Dictionary, cfg: Dictionary) -> String:
 	return String(cfg[key]) % roundi(best * 100.0)
 
 
+## "Armor 50% - Resists all elements 50%": armor first, then resistance; either part is left out at 0. "" with neither.
+## `armor_reduction` is the fraction of non-elemental damage armor removes (Health.get_armor_reduction()).
+static func defense_text(armor_reduction: float, resistances: Dictionary, cfg: Dictionary) -> String:
+	var parts: Array[String] = []
+	if armor_reduction > 0.0:
+		parts.append(String(cfg["armor_format"]) % roundi(armor_reduction * 100.0))
+	var resist: String = resist_text(resistances, cfg)
+	if resist != "":
+		parts.append(resist)
+	return String(cfg["defense_joiner"]).join(parts)
+
+
+## The armor pip colour for the boss bar: alpha 0 = no armor to show.
+static func armor_tint(armor_reduction: float, cfg: Dictionary) -> Color:
+	if armor_reduction <= 0.0:
+		return Color(0.0, 0.0, 0.0, 0.0)
+	var color := Color.html(String(cfg["armor_tint"]))
+	return Color(color.r, color.g, color.b, 1.0)
+
+
 ## How many thresholds the boss is past, given the phase it is in (phase 0 = none, phase 2 of 3 = both).
 static func crossed_count(phase_index: int, thresholds: Array[float]) -> int:
 	return clampi(phase_index, 0, thresholds.size())
@@ -90,7 +110,7 @@ func _ready() -> void:
 	set_process(false)
 	get_tree().node_added.connect(_on_node_added)
 	for node: Node in get_tree().get_nodes_in_group(Boss.GROUP):
-		_try_bind.call_deferred(node)
+		_try_bind_id.call_deferred(node.get_instance_id())
 
 
 func _exit_tree() -> void:
@@ -100,7 +120,9 @@ func _exit_tree() -> void:
 
 func _on_node_added(node: Node) -> void:
 	if node is Boss:
-		_try_bind.call_deferred(node)  # its own _ready (health, phases, resistances) has not run yet
+		# Deferred by instance id, never by Object: a boss freed before the flush would fail the typed argument
+		# conversion itself ("Cannot convert argument 1 from Object to Object"). Its own _ready has not run yet.
+		_try_bind_id.call_deferred(node.get_instance_id())
 
 
 func is_showing() -> bool:
@@ -175,10 +197,10 @@ func _apply_layout() -> void:
 	_meter.ui_scale = s
 	y += meter_h + gap
 	var info_h: float = float(_cfg["info_height"]) * s
-	var half: float = rect.size.x * 0.5
 	var pad: float = _meter.pip
-	_place(_phase_label, pad, y, half - pad, info_h)
-	_place(_resist_label, half, y, half - pad, info_h)
+	var phase_w: float = rect.size.x * float(_cfg["phase_width_fraction"])
+	_place(_phase_label, pad, y, phase_w - pad, info_h)
+	_place(_resist_label, phase_w, y, rect.size.x - phase_w - pad, info_h)
 	for label: Label in [_phase_label, _resist_label]:
 		label.add_theme_font_size_override("font_size", roundi(float(_cfg["info_font_size"]) * s))
 		label.add_theme_color_override("font_color", Color.html(String(_cfg["info_color"])))
@@ -193,6 +215,7 @@ func _apply_layout() -> void:
 	_attack_strip.warn_color = Color.html(String(_cfg["warn_color"]))
 	_attack_strip.ui_scale = s
 	_refresh_phase()
+	_refresh_defense()
 	_fit_name()
 	_meter.queue_redraw()
 	_attack_strip.queue_redraw()
@@ -215,6 +238,15 @@ func _fit_name() -> void:
 
 # ---- Binding ----
 
+## Deferred entry point: resolves the id, and does nothing when the boss is already gone.
+func _try_bind_id(instance_id: int) -> void:
+	if not is_instance_id_valid(instance_id):
+		return
+	var node := instance_from_id(instance_id) as Node
+	if node != null and is_instance_valid(node):
+		_try_bind(node)
+
+
 func _try_bind(node: Node) -> void:
 	var boss := node as Boss
 	if boss == null or not is_instance_valid(boss) or not boss.is_inside_tree() or boss == _boss or boss.is_defeated():
@@ -231,7 +263,7 @@ func _try_bind(node: Node) -> void:
 	boss.tree_exiting.connect(_on_boss_gone)
 	_meter.thresholds = boss.phase_thresholds()
 	_meter.resist_tint = resist_tint(boss.health.resistances, _bars)
-	_resist_label.text = resist_text(boss.health.resistances, _cfg)
+	_refresh_defense()
 	_fill = EnemyHpBar.fill_ratio(boss.health.get_current_health(), boss.health.get_max_health())
 	_ghost = _fill
 	_ghost_delay_left = 0.0
@@ -248,6 +280,20 @@ func _try_bind(node: Node) -> void:
 	set_process(true)
 	if boss.telegraph_left() > 0.0:
 		_start_telegraph(_current_attack_label())
+
+
+## The armor and resistance line plus the armor pip, from the boss's live health (called on bind and on layout).
+func _refresh_defense() -> void:
+	if _boss == null or not is_instance_valid(_boss):
+		return
+	var reduction: float = _boss.health.get_armor_reduction()
+	_meter.armor_tint = armor_tint(reduction, _cfg)
+	var base: int = roundi(float(_cfg["info_font_size"]) * _scale)
+	var low: int = roundi(float(_cfg["info_min_font_size"]) * _scale)
+	var fit: Dictionary = TextFit.fit(defense_text(reduction, _boss.health.resistances, _cfg), _resist_label.get_theme_font("font"), _resist_label.size.x, 1, base, low)
+	_resist_label.text = String(fit["text"])
+	_resist_label.add_theme_font_size_override("font_size", int(fit["font_size"]))
+	_meter.queue_redraw()
 
 
 func _unbind() -> void:

@@ -16,6 +16,8 @@ var invulnerable: bool = false
 var invuln_phase: float = 0.0
 ## Resistance tint with alpha > 0.5 = resistant (thicker frame + diamond), like the enemy bars.
 var resist_tint: Color = Color(0.0, 0.0, 0.0, 0.0)
+## Armor tint with alpha > 0.5 = armored: a shield in the right pip (the diamond's counterpart on the left).
+var armor_tint: Color = Color(0.0, 0.0, 0.0, 0.0)
 var colors: Dictionary = {}
 var notch_h: float = 6.0
 var pip: float = 18.0
@@ -63,6 +65,8 @@ func _draw() -> void:
 	_draw_thresholds(bar, frame_w, inner)
 	if resist_tint.a > 0.5:
 		_draw_diamond(bar)
+	if armor_tint.a > 0.5:
+		_draw_shield(bar)
 
 
 func _draw_stripes(inner: Rect2) -> void:
@@ -118,3 +122,21 @@ func _draw_diamond(bar: Rect2) -> void:
 
 func _diamond(c: Vector2, r: float, color: Color) -> void:
 	draw_colored_polygon(PackedVector2Array([c + Vector2(0.0, -r), c + Vector2(r, 0.0), c + Vector2(0.0, r), c + Vector2(-r, 0.0)]), color)
+
+
+## A heater shield (flat top, pointed bottom) in the right pip: armor's shape, as the diamond is resistance's.
+func _draw_shield(bar: Rect2) -> void:
+	var c := Vector2(size.x - pip * 0.5, bar.position.y + bar.size.y * 0.5)
+	var dark: Color = Color.html(String(colors.get("frame", "#0d080b")))
+	var r: float = minf(bar.size.y * 0.5, pip * 0.5 + 1.0)
+	draw_colored_polygon(shield_polygon(c, r), dark)
+	draw_colored_polygon(shield_polygon(c, r * 0.68), Color(armor_tint.r, armor_tint.g, armor_tint.b, 1.0))
+
+
+## Shield outline around `c`, `r` is the half-height: a flat top edge, straight sides, a point at the bottom.
+static func shield_polygon(c: Vector2, r: float) -> PackedVector2Array:
+	return PackedVector2Array([
+		c + Vector2(-r * 0.85, -r), c + Vector2(r * 0.85, -r),
+		c + Vector2(r * 0.85, r * 0.15), c + Vector2(0.0, r),
+		c + Vector2(-r * 0.85, r * 0.15),
+	])

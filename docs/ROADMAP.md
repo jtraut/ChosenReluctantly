@@ -339,6 +339,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
 - **Heavy attack (director note 2026-10-29):** it feels good now. It may later be weakened or given a longer cooldown. No change scheduled.
 - **Pause shows card details (director request 2026-10-29, unscheduled; ux-designer, with a small gameplay hook if needed).**
   - When the player pauses (Esc), every slot's **active card and next-up card** (including slots on cooldown) expand upward so the player can read what each card does before resuming.
+  - The card frame colour (GDD §4, director 2026-10-30) is the quick family cue; this view adds the detail.
   - Show the name, the effect line (reuse `CardSummary.effect_line`, as on the reward screen), the cooldown, and the remaining cooldown for cooling slots.
   - It must coexist with the pause/settings panel and fit at 720p, 1080p and 1440p with no scrolling. It collapses on resume.
 - Stealth makes enemies drop aggro (GDD §15 "Stealth drops enemy aggro [PLANNED, later]"). Do it with the enemy targeting/AI pass.
@@ -541,7 +542,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
       - **qa, playtester, tech-writer, close.**
     - [ ] **W1b, Wizard content and balance.** Runs after PL2. Full brief below.
 
-- [ ] **PL2, small polish before W1b (game-lead, 2026-10-30; lightweight loop: gameplay-dev -> ux-designer -> qa -> tech-writer -> close; tag `playtest-2026-10-30-PL2`)**
+- [ ] **PL2, small polish before W1b (game-lead, 2026-10-30; loop: gameplay-dev -> ux-designer -> qa -> playtester (short) -> tech-writer -> close; tag `playtest-2026-10-30-PL2`)**
   - **Goal:** clear the non-Wizard fixes from the W1a qa and playtest, so W1b tunes against a stable baseline. The boss spawn fix changes the Rogue's boss fight.
   - **gameplay-dev:**
     1. **Boss spawn:** the boss starts fully on screen in room 8 (3c backlog; the W1a playtest saw only about a quarter of its body). The camera framing must not change for other rooms. **The Rogue `-Run` output and boss times are expected to change. The arena hash (2792856473) must still match**, since the arena has no boss.
@@ -550,13 +551,19 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     4. Delete the tracked junk `scratch_suite.txt` (repo root, from 0c9704e).
     5. Identify the pink fan at the Wizard's feet in a room-1 capture (`--class=wizard`). Is it an enemy telegraph or the player's own cue? Fix it only if it's wrong.
     6. Check that a bolt hits only the first enemy on its line, and report it. No change unless it's a bug; the playtest and D18 decide.
+    6a. **Card frame colour data (director, 2026-10-30, answers D17; GDD §4 "Card frame colours"):** a `frame_color` on every pool in `data/pools.json` (Fire `#ff6a1f`, class pools `#d9b48a` light bronze, neutral `#9a9a9a` grey; starting values, see DECISIONS). A load check fails if any pool lacks one. One accessor (card id -> pool -> frame colour) for the UI. Tests for both.
   - **ux-designer:**
     7. The pick-screen backdrop HUD no longer shows the previous class's HP (one paused frame).
     8. **Rogue melee cue** (the W1 brief's "Quick win"): a new player can tell the light attack is melee. For example, a faint swing arc at the player when nothing is in reach, or a "too far" tick when clicking at a distant reticle. Unobtrusive in a crowd, with data in ui.json.
+    9. **Card frames in the family colour (director, 2026-10-30):** every surface that draws a card uses the 6a accessor for its frame: at least `CardSlotWidget` (active and next-up), `RunOptionCard` (reward offers) and the rest-room removal list; grep for any others. The reward screen's reject option isn't a card and keeps its own border.
+       - **The family colour is always visible, and ready-vs-cooling stays readable at a glance** (today the slot border is the ready cue; move that cue to an inner outline, fill or brightness, your call). Hover and selected states on reward cards stay distinct too.
+       - Check Fire vs bronze side by side in a mixed slot at 720p; adjust the hex values in data if they blur and log the final ones.
   - **qa:**
     - the suite, `--quit`, the 20 s headless run, SceneSelfCheck, and the reload soak (Main and Player likely change; the known flake belongs to P-dodge);
     - a boss capture showing the boss fully on screen at 1024x600 and 1280x720;
     - **re-measure the Rogue's boss time, 10+ seeds, as the new baseline for W1b.**
+    - captures of the HUD and the reward screen showing all three frame colours (fire, bronze, grey) and a cooling slot.
+  - **Playtester (short):** smoke check, the boss on screen, the melee cue, and whether the frame colours read as fire / class / neutral without explanation.
   - **Docs:** tech-writer, at the close.
 
 - [ ] **W1b, Wizard content and balance (brief, game-lead 2026-10-30). Full loop: gameplay-dev -> qa -> playtester -> tech-writer -> close. Tag `playtest-2026-10-30-W1b`. Closing it also ticks the parent W1 item.**

@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-10-30
-**Status: 2 waiting on a decision (D17, D18; neither blocks).** Done: C1, Polish 1, 3a (runs of 8 rooms), 3b (card rewards and deck-clean), 3c (the boss) and **A1 (armor)**, **T-decks (preset test decks)** and **W1a (a playable Fire Wizard)**. Next: a small polish slice (boss starts on screen, a Rogue melee cue), then W1b (Wizard cards and balance), then dodge charges, then loadouts.
+**Status: 1 waiting on a decision (D18; doesn't block).** Done: C1, Polish 1, 3a (runs of 8 rooms), 3b (card rewards and deck-clean), 3c (the boss) and **A1 (armor)**, **T-decks (preset test decks)** and **W1a (a playable Fire Wizard)**. Next: a small polish slice, **PL2, in progress** (boss starts on screen, a Rogue melee cue, and your card frame colours), then W1b (Wizard cards and balance), then dodge charges, then loadouts.
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
@@ -38,7 +38,7 @@ _Updated at every slice close._
     - F3 lists the nearest enemy's armor and resistance, plus yours.
   - To keep fights the same length, elites went from x2.5 to x2.0 HP, and the boss from 280 to 195 HP.
   - The boss bar now fits a 1024x768 window.
-- **Try first in A1:** checklist item 23 (armor). Fight an elite and the boss once with fire cards and once with Slash, Lunge and the attacks. **Playtester's notes (scripted, no hands):** the cues read fine one at a time, but in a clump of 4 enemies the `[9]` / `<4>` / plain numbers blur together (queued for ux). Nothing on a card says whether it's physical or fire (see D17).
+- **Try first in A1:** checklist item 23 (armor). Fight an elite and the boss once with fire cards and once with Slash, Lunge and the attacks. **Playtester's notes (scripted, no hands):** the cues read fine one at a time, but in a clump of 4 enemies the `[9]` / `<4>` / plain numbers blur together (queued for ux). Nothing on a card says whether it's physical or fire (D17, answered 2026-10-30: frame colours, being built in PL2).
 - **New in 3c (since the 3b tag):** room 8 is a real boss, "The Overly Enthusiastic Guardian" (placeholder name). It has 3 phases with an invulnerable roar between them; smash, slam, volley and charge attacks, each telegraphed; adds in phases 2 and 3; and a boss HP bar at the top with the phase and the attack name. The room indicator moved to the top right. Reward cards show "Slot N now: A / B / C" and plain effect lines. **Your scrolling complaint is fixed:** reward offers never scroll down to 1024x600, including your 1150x680 window. Jump straight to the boss with `godot --path . -- --run-room=8`.
 - **Try first in 3c:** fight the boss (checklist item 21) and answer D16 (should it ever stagger?).
 - **New in 3b (since the 3a tag):** after each won fight you pick 1 of 3 cards or reject the whole offer (3 rejects per run). Rest rooms let you heal or remove a card (you can't remove one that would break the 3-per-slot rule). **Your starting deck is now 15 cards, 3 per slot;** the other 9 cards come from rewards. Launch with `-- --full-deck` to start with all 24. A "Next: Room N of 8" line shows what's coming. HP now drops across a run (the bot averages about 85% at each room's end).
@@ -74,6 +74,8 @@ _Updated at every slice close._
 
 - **2026-10-29: Debug preset decks** (`--deck=<name>`, `--list-decks`, presets in `data/debug_decks/`). **Built** in `playtest-2026-10-29-T-decks`; see "How to playtest". The wave sim uses the same presets, with no rule bypass.
 
+- **2026-10-30: "Card frame colours show the family"** (fire red/orange, class light bronze, neutral grey). Recorded in GDD §4 as your decision (answers D17). **In progress** in PL2; Wizard cards are class cards, so they'll be bronze too.
+
 - **2026-10-29: "On pause, expand the active and next-up cards in every slot so I can read what they do."** Logged in ROADMAP under "Later" as unscheduled, as you said it can wait. Tell me when to schedule it.
 
 - **2026-10-29: "Add the mage sooner, with ranged light and heavy attacks"** (your fiancée expected left click to hit where the reticle is). Recorded in GDD §5 as your decision; it replaces your earlier "don't start the Wizard" for the Wizard only, and Water stays in Milestone 4. Planned as **W1: Fire Wizard** with:
@@ -89,10 +91,6 @@ _Updated at every slice close._
 
 Neither blocks work. Until you answer, I use my default.
 
-- **D17: Show each card's damage type?** Armor only matters if you can tell which of your cards it affects, and right now nothing on a card says physical or fire.
-  - **A:** add a small damage-type tag to card tiles and slots (a short ux task before the Wizard).
-  - **B (my default):** fold it into the pause card-details request you already logged, and schedule both together.
-  - **C:** no cue; the boss bar is enough.
 - **D18: Should the Wizard be the "easy class"?** In the bot sim it finishes 31 of 32 rooms untouched; the Rogue loses HP in most rooms. Its boss time is fine, at about 77% of the Rogue's. This sets W1b's tuning target.
   - **A (my default):** the Wizard's rooms should cost some HP, but less than the Rogue's. W1b tunes the Wizard's own numbers (range, fire rate, damage, HP); enemies stay as they are.
   - **B:** it's fine as the easier, beginner-friendly class; tune only its boss time.
@@ -168,6 +166,7 @@ _Items 1-10 are answered (see "Your checklist answers" below). The remaining ite
 
 | ID | Question | Your answer | Date |
 |---|---|---|---|
+| D17 | Show each card's damage type? | Your own answer: colour the card frames by family. Fire cards red/orange, class cards light bronze, neutral cards grey. The pause card details still come later. Recorded in GDD §4; being built in PL2. Starting colours: Fire `#ff6a1f`, bronze `#d9b48a`, grey `#9a9a9a` (ux may nudge them for contrast). | 2026-10-30 |
 | D13 | Is healing too strong? | B: Recovery cooldown 8 s -> 12 s (built in the P-dodge slice). | 2026-10-29 |
 | D16 | Should the boss ever stagger? | B: a short stagger at each phase threshold, which interrupts its attack or action (built in the P-dodge slice). | 2026-10-29 |
 | D14 | Wall of Mild Fire on a single enemy? | A: keep it as a crowd card. | 2026-10-29 |

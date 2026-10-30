@@ -1017,3 +1017,14 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
 - **W1b tunes Wizard data only.** Enemy changes would hit the Rogue too, so if the target needs them, that's a director item. [Using "enemy pressure" as a W1b lever, as my D18 wording allowed.]
 - **A non-kiting Wizard bot policy is added before tuning,** and tuning is checked under both policies. The perfect-kiting bot is a ceiling, and tuning to it would over-nerf the Wizard for real players. [Tune to the kiting bot only.]
 - **New Wizard damage cards must still pass `CardDamageRule` against the Rogue's 5.0 DPS light.**
+
+### 2026-10-30 - Card frame colours scoped into PL2 (game-lead)
+- The director answered D17 with a frame-colour rule (GDD §4, "Card frame colours"). That's a director directive; only my picks are logged here.
+- **Starting hex values (ux may adjust them for contrast and must log the final values):**
+  - Fire frame reuses the pool colour `#ff6a1f`. [A separate frame-tuned red; one colour per element keeps the VFX and the frame matching.]
+  - Class (any class pool, Rogue and Wizard alike) light bronze `#d9b48a`, deliberately lighter and less saturated than Fire so the two don't blur on the dark `#2a1f27` card background. [A deeper bronze such as `#b0793f`, which reads as a dim orange next to Fire.] Wizard cards get no separate arcane colour; they're class cards.
+  - Neutral grey `#9a9a9a`. [The neutral VFX cream `#f2ecd8`, which the director didn't pick for frames.]
+- **Data shape:** a `frame_color` on every pool in `data/pools.json`, with a load check that every pool has one, so a future element (Water) can't ship frameless. One accessor maps card id -> pool -> frame colour; UI never derives it from card fields. [A per-kind default with overrides; more indirection for 4 pools.]
+- **It goes into PL2, not W1b,** because it's ux polish on existing surfaces and W1b's new Wizard cards then show bronze from day one. [A separate slice.]
+- **The slot border already shows readiness** (`slot_ready_border_color`). The family colour must always be visible and ready-vs-cooling must stay readable; ux picks how (inner outline, fill, brightness). [Letting the family colour replace the ready cue.]
+- **PL2 now gets a short playtester pass** (it adds two player-visible changes: the melee cue and the frames). [qa captures only.]

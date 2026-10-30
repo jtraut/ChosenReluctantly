@@ -99,7 +99,12 @@ Notes:
   - Any in-run removal or swap (for example a deck-clean reward) is blocked if it would break a rule. The reward reject mechanic (§9) is unaffected.
   - Content validation checks that every class + element combination, together with the neutral pool, can satisfy the rules.
 - **[DIRECTOR DECISION, 2026-10-28]** Duplicate copies of a card are allowed in a deck, since later rewards may grant copies. Copies never count toward a unique minimum.
-- **[DIRECTOR DECISION, 2026-10-28]** Neutral cards use the neutral colour palette, not the owner's element colour.
+- **[DIRECTOR DECISION, 2026-10-28]** Neutral cards use the neutral colour palette, not the owner's element colour. (This is the effect/VFX palette. The card *frame* colour is the separate rule below.)
+- **Card frame colours [DIRECTOR DECISION, 2026-10-30] (answers D17):** a card's frame (border) colour shows its family at a glance, and is the main cue for physical vs elemental damage:
+  - **Element cards** use their element's colour (Fire: red/orange).
+  - **Class cards** use a light bronze.
+  - **Neutral cards** use grey.
+  - This applies wherever a card is drawn (slots, reward offers, deck lists). The pause card-details view (later) shows more, but the frame is the quick read.
 - **Temporary testing default:** for the prototype, the preset first-run deck contains every available Fire Rogue card (class, element, neutral). Unlock and tuning rules come with the run loop.
 
 ### Open items

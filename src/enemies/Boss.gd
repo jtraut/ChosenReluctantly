@@ -649,7 +649,9 @@ func _begin_transition(next_index: int) -> void:
 	_state = State.STAGGER
 	_state_time = 0.0
 	_stagger_left = stagger
-	health.hp_floor = BossRules.floor_hp(_phases, next_index + 1, health.max_health)
+	# The stagger into the LAST phase keeps a 1 HP floor (floor_hp is 0 there): the boss can't die in it and skip
+	# the final phase and its adds. The roar sets the real floor (0) afterwards.
+	health.hp_floor = maxf(BossRules.floor_hp(_phases, next_index + 1, health.max_health), 1.0)
 	_start_reel(stagger)
 	stagger_started.emit(next_index, stagger)
 

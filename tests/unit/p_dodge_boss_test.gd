@@ -231,3 +231,26 @@ func test_dying_during_the_stagger_is_safe() -> void:
 	assert_bool(boss.is_defeated()).is_true()
 	await _frames(3)
 	assert_float(boss.body_mesh.rotation.x).is_equal(0.0)
+
+
+func test_the_stagger_into_the_last_phase_keeps_a_one_hp_floor_so_the_boss_cannot_skip_phase_three() -> void:
+	var main := _spawn_main()
+	var boss := _boss(main)
+	await _frames(2)
+	boss.health.take_damage(9999.0, "physical")  # held at the 66% floor: stagger into phase 2
+	await _frames(5)
+	boss.health.take_damage(9999.0, "physical")  # during that stagger: held at the 33% floor
+	await _frames(_seconds_to_frames(_stagger() + _roar() + 0.1))
+	assert_int(boss.phase_index).is_equal(1)
+	await _frames(2)
+	assert_bool(boss.is_staggered()).override_failure_message("at the 33% threshold: staggers into the last phase").is_true()
+	assert_float(boss.health.hp_floor).override_failure_message("last-phase stagger floor is 1 HP").is_equal(1.0)
+	boss.health.take_damage(99999.0, "physical")
+	boss.health.take_damage(99999.0, "fire")
+	assert_bool(boss.is_defeated()).override_failure_message("the boss must not die in the stagger").is_false()
+	assert_float(boss.health.current_health).is_equal(1.0)
+	await _frames(_seconds_to_frames(_stagger() + _roar() + 0.1))
+	assert_int(boss.phase_index).override_failure_message("phase 3 is entered").is_equal(2)
+	assert_float(boss.health.hp_floor).is_equal(0.0)
+	boss.health.take_damage(99999.0, "physical")
+	assert_bool(boss.is_defeated()).override_failure_message("and phase 3 can be killed").is_true()

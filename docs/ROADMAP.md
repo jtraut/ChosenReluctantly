@@ -622,6 +622,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     4b. **D13 = B (director):** `data/slot_types.json` recovery `base_cooldown` 8.0 -> 12.0. Check that Recovery is still the longest effective cooldown and update any test that pins 8.
     4d. **Per-class dodge charges (director, 2026-10-30, GDD §3/§5):** Rogue 3, Wizard 2, as a per-character override in `data/characters.json` (the `player.json` default stays 3). Still clamped 0-4. The pip indicator shows 2 for the Wizard. Tests.
     4e. **Wizard Recovery cooldown (director, 2026-10-30: "slightly longer" than the Rogue's):** Wizard Recovery 14 s vs the Rogue's 12 s (game-lead call), as a per-character slot cooldown override in data. Recovery stays the longest cooldown for both classes. Tests.
+    4f. **From F1 qa (non-blocking):** if pass-through ends with an enemy's centre exactly on the player's position, the player is launched upward (pre-existing, also with Shadow Step). Nudge the player out on restore or clamp y; add a test. Also fix the stale "Ctrl" comment at `src/player/Player.gd:798`.
     4c. **D16 = B (director):** at each phase threshold the boss staggers briefly (`bosses.json` `transition.stagger` seconds, default 0.8, a game-lead call), which **interrupts its current attack or action**.
        - A visible reel: a stagger pose or tilt, a flash, and a "STAGGERED" cue on the boss bar (ux).
        - The stagger plays before the existing roar.

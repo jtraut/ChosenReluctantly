@@ -1084,3 +1084,9 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
   - **The ring notch was the scroll container clipping the ring;** the container gets a padding stylebox equal to the ring width, and the fit maths includes it. [Moving the ring inside the card, which changes the look the director is judging; a wrapper MarginContainer, which changes node paths.]
   - **The ghost look shows only after pass-through has lasted `ghost_show_delay` 0.35 s** (`data/vfx.json`), so movement dashes no longer flicker; Shadow Step and the stuck-in-body window still show it, 0.35 s late. [A flag on dash grants, which touches gameplay code.]
   - **No swap hint added:** the game never showed one. [Adding a Shift hint.]
+
+### 2026-10-30 - F1 qa triage (game-lead)
+- qa PASS f305fae (1102/1102 with qa's 4 new cases; soak clean, hash 3513335656). Rogue 10 rooms, 12 seeds: boss mean 66.5 s (45.3-78.2).
+- **The dodge passing through during the post-dash ghost window goes to the director as D19** (it touches the wording of a GDD §3 director rule). Default A: accept it and add a carve-out line. It stays as built until answered. [Deciding the GDD wording myself.]
+- **The concentric launch quirk and a stale comment go to P-dodge,** which touches Player anyway. They're pre-existing and essentially unreachable in play (exact centre overlap). [Reopening F1.]
+- **Bot pick-rate outliers** (Wall 0.30x, because the bot doesn't aim walls) need no action; W1b's tuning watches card pick rates.

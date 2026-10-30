@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-10-30
-**Status: nothing waiting on a decision. 3 new things to look at when you play (items 25-27), plus item 22 once loadouts exist.** Done: C1, Polish 1, 3a (runs of 8 rooms), 3b (card rewards and deck-clean), 3c (the boss) and **A1 (armor)**, **T-decks (preset test decks)** and **W1a (a playable Fire Wizard)**. Done: **PL2** (tag `playtest-2026-10-30-PL2`). Next: **F1, in progress** (your 2026-10-30 checklist answers: bigger Fire Wall, movement cards pass through enemies, Shift+1-5 swap, 10-room runs), then **P-dodge** (dodge charges: Rogue 3, Wizard 2; Recovery cooldowns), then **W1b** (Wizard cards and tuning, now after the dodge work so it's tuned once), then loadouts.
+**Status: 1 waiting on a decision (D19; doesn't block). 3 new things to look at when you play (items 25-27), plus item 22 once loadouts exist.** Done: C1, Polish 1, 3a (runs of 8 rooms), 3b (card rewards and deck-clean), 3c (the boss) and **A1 (armor)**, **T-decks (preset test decks)** and **W1a (a playable Fire Wizard)**. Done: **PL2** (tag `playtest-2026-10-30-PL2`). Next: **F1, in progress** (your 2026-10-30 checklist answers: bigger Fire Wall, movement cards pass through enemies, Shift+1-5 swap, 10-room runs), then **P-dodge** (dodge charges: Rogue 3, Wizard 2; Recovery cooldowns), then **W1b** (Wizard cards and tuning, now after the dodge work so it's tuned once), then loadouts.
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
@@ -97,7 +97,11 @@ _Updated at every slice close._
 
 ## Needs your decision
 
-Nothing right now.
+Doesn't block work. Until you answer, I use my default.
+
+- **D19: The dodge right after a movement card ends inside an enemy.** If a movement-card dash ends overlapping an enemy, you stay "ghosted" until you walk clear (at most 3 s), so you can't get stuck. A dodge during that short window also goes through enemies, which bends your "the dodge doesn't go through enemies" rule. qa found no way to chain it into a crowd exploit: the window ends as soon as you're clear, and the dodge can't extend it.
+  - **A (my default, qa's pick):** keep it, and add a line to GDD §3 that the dodge can pass through only during that short window.
+  - **B:** block the dodge in that window too (it can feel like the dodge "failed" right after a dash).
 
 ## Calls I made while you were away (easy to change)
 

@@ -530,7 +530,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
   - **Quick win for the Rogue, from the same playtest (ux):** a new player can't tell the light attack is melee. Consider a short-range cue (e.g. the swing arc shown faintly at the player when nothing is in reach, or a "too far" tick when clicking at a distant reticle). Its own small item; doesn't block W1.
   - **Owner sequence:** gameplay-dev (character data, class pick logic, attacks, cards) -> ux-designer (pick screen, bolt and telegraph readability, HUD) -> qa -> playtester -> tech-writer -> close, tag `playtest-2026-10-29-W1`. If too big for one sitting, split into W1a (character data, pick, ranged attacks, minimal cards) and W1b (full card pool, presets, balance).
   - **Split (game-lead, 2026-10-29): W1 is two slices, each with the full loop.**
-    - **W1a, a playable Wizard. Tag `playtest-2026-10-29-W1a`.**
+    - [x] **W1a, a playable Wizard.** **DONE 2026-10-30.** Gameplay 0c9704e, 39fe0c6; ux 7d93d1c..672622f; qa PASS b799153; playtest b5f2e02 (no blocker); docs 031f321 (1053/1053). Tag `playtest-2026-10-30-W1a`.
       - **gameplay-dev:**
         - items 1, 3, 4, 6, 7 and 8;
         - item 2's logic and `--class` (the pick screen itself is ux);
@@ -539,7 +539,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
         - item 12's gates.
       - **ux-designer:** item 9 (the pick screen, bolt and telegraph readability, per-class HUD meters).
       - **qa, playtester, tech-writer, close.**
-    - **W1b, Wizard content and balance. Tag `playtest-2026-10-29-W1b`.**
+    - [ ] **W1b, Wizard content and balance. Tag `playtest-2026-10-30-W1b`.**
       - item 5 in full: about 6-8 Wizard cards in total, including 2-4 attack cards, plus the balance table;
       - item 10's report (8+ seeds; Wizard boss time 70-130% of the Rogue's);
       - item 11's presets;
@@ -551,6 +551,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
         - the pick backdrop shows the previous class's HP;
         - verify the bolt hits only the first enemy on its line;
         - identify the pink fan at the Wizard's feet in a room-1 capture.
+        - A bare or unknown `--class` exits 2 correctly but also dumps a stack trace from `RunController.prepare` (docs 031f321); print only the message.
         - The tuning target follows D18 (default A: Wizard rooms cost HP, less than the Rogue's).
       - From W1a qa (b799153): gameplay-dev deletes the tracked junk `scratch_suite.txt` (repo root); check whether the Wizard bot kiting or the 12 m auto-fire is too safe (the bot ends rooms at full HP).
       - Then qa, playtester, tech-writer, close.

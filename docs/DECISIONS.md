@@ -873,3 +873,18 @@ Commits b23d7df..e141dfe; 923/923; arena hash unchanged. Rejected alternatives i
   - Light and heavy only: about 3.2x (it was 3.5x before armor). That's a bot-capability limit, not armor; 4 of 8 seeds timed out.
   - Limits: light and heavy are in every family, Blaze and Bail deals fire in every family, and the minimums are bypassed by a tool-only flag.
 - **Pre-existing:** a BossHpBar deferred-bind error in long light/heavy-only runs (a freed boss), also on the 3c tag. Sent to ux in Part 2.
+
+### 2026-10-29 - A1 armor Part 2, readability (ux-designer, logged by game-lead)
+Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier commits read keys that arrive in bcf13a5. Rejected alternatives in brackets.
+- **Boss bar** widened 480 -> 560 px. It shows a shield pip at the right end plus "Armor 50% · Resists all elements 50%"; the armor part is hidden at 0.
+- **Elite bars:** a shield pip (flat top, pointed bottom) beside the existing diamond. At 720p the pips are about 6 px, which may be too small (a playtest check; the fix would be a data size knob).
+- **Damage numbers:**
+  - armor-reduced hits show `[9]` in muted grey at 85% size;
+  - resisted elemental hits show `<4>` (a new style, element colour toward grey);
+  - both need at least 10% reduction (data);
+  - shape and colour both tell them apart.
+- **Display rule:** values under 1 show one decimal (floor 0.1), so Bleed at armor 50 reads "0.5". [Rounding to "0".]
+- **F3 "Defense" block:** under-cursor (1.6 m pick radius) or nearest enemy armor and resistance, plus the player's armor.
+- **BossHpBar deferred-bind error fixed** by binding via instance id; proven by restoring the old code. The engine error itself can't be asserted in gdUnit4.
+- New scenarios: `boss_f3`, `elite_f3`, `armor_numbers` (key `elite_indices`).
+- **Housekeeping:** game-lead stopped 4 stray headless WaveSim processes left by the lightheavy repro (and left the director's game alone), and deleted `ws2.log`. The log showed class-cache parse errors from a run started mid-edit; qa re-verifies on a clean tree.

@@ -12,11 +12,11 @@ Last updated: 2026-10-29. The director is away until the evening with an autonom
 
 ## In progress
 - **Milestone 3c closed** 2026-10-29 (tag `playtest-2026-10-29-3c`, 907/907).
-- **Slice A1: Armor** (director request): Part 1 built b23d7df..e141dfe (923/923). Next role: ux-designer (Part 2).
+- **Slice A1: Armor** (director request): Part 1 built b23d7df..e141dfe (923/923). Part 2 built 1604f6b..bcf13a5 (939/939). Next role: qa (Part 3).
 
 ## Exact next step
-1. **A1 Part 2** with ux-designer. **On resume:** check `git log` for A1 ux commits.
-2. Then qa (Part 3) -> playtester (Part 4) -> tech-writer -> close, tag `playtest-2026-10-29-A1`.
+1. **A1 Part 3** with qa. **On resume:** check `docs/reviews/` for an A1 review.
+2. Then playtester (Part 4) -> tech-writer -> close, tag `playtest-2026-10-29-A1`.
 3. Then **T-decks** (debug preset decks; lightweight loop), then **P-dodge** (also carries D13 = B, the Recovery cooldown 8 -> 12 s, and D16 = B, the boss stagger at thresholds), then **3d**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.

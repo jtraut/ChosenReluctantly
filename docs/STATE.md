@@ -13,12 +13,12 @@ Last updated: 2026-10-30. The director is away until the evening with an autonom
 ## In progress
 - **Slice A1: Armor** closed 2026-10-29 (tag `playtest-2026-10-29-A1`, 968/968). Docs 28587a9.
 - **T-decks** closed 2026-10-29 (tag `playtest-2026-10-29-T-decks`, 996/996). Docs cddab25.
-- **W1a (a playable Wizard)**: gameplay built 451eaf3..39fe0c6; ux built 0b540d6..672622f (1044/1044). qa PASS b799153 (1053/1053). Playtester next. **On resume:** look for `docs/playtests/2026-10-30-w1a-*.md`.
+- **W1a (a playable Wizard)**: gameplay built 451eaf3..39fe0c6; ux built 0b540d6..672622f (1044/1044). qa PASS b799153 (1053/1053). Playtest b5f2e02 (no blocker). tech-writer docs pass running; then close (ROADMAP [x], tag `playtest-2026-10-30-W1a`; OPEN_ITEMS already updated). **On resume:** check `git log` for a W1a docs commit.
 
 ## Exact next step
-1. **W1a**: playtester -> tech-writer -> close. Then **W1b** (cards, presets, balance).
+1. **W1a**: tech-writer -> close. Then **W1b** (cards, presets, balance).
 2. Then **P-dodge** (carries D13 = B, D16 = B and the reload soak flake), then **3d**.
-3. Waiting on the director: D17 (card damage-type cue; default B, doesn't block).
+3. Waiting on the director: D17 (card damage-type cue; default B) and D18 (Wizard difficulty; default A). Neither blocks.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 

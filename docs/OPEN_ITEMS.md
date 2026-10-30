@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-10-29
-**Status: 1 waiting on a decision (D17, doesn't block).** Done: C1, Polish 1, 3a (runs of 8 rooms), 3b (card rewards and deck-clean), 3c (the boss) and **A1 (armor)** and **T-decks (preset test decks)**. Next: the Fire Wizard (W1), then dodge charges, then loadouts.
+**Status: 2 waiting on a decision (D17, D18; neither blocks).** Done: C1, Polish 1, 3a (runs of 8 rooms), 3b (card rewards and deck-clean), 3c (the boss) and **A1 (armor)**, **T-decks (preset test decks)** and **W1a (a playable Fire Wizard)**. Next: W1b (Wizard cards and balance), then dodge charges, then loadouts.
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
@@ -19,7 +19,15 @@ Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
 _Updated at every slice close._
 
-- **Latest playtest tag:** `playtest-2026-10-29-T-decks` (qa PASS, 996/996). Earlier tags: `playtest-2026-10-29-A1`, `-3c`, `-3b`, `-3a`, `-C1`.
+- **Latest playtest tag:** `playtest-2026-10-30-W1a` (qa PASS, 1053/1053). Earlier tags: `playtest-2026-10-29-T-decks`, `-A1`, `-3c`, `-3b`, `-3a`, `-C1`.
+- **New in W1a (since the T-decks tag), your "add the mage sooner" request:**
+  - Every run starts with a **class pick**: Rogue or Wizard. 1/2 or the arrows choose, Enter starts, and your last pick is preselected.
+  - The **Wizard** has 26 HP and a purple body.
+    - Its left click is an auto-firing cyan bolt that flies where you aim (12 m, about 80% of the Rogue's damage).
+    - Its right click is a blast at the reticle; the meter says CAST.
+  - It has 4 cards of its own, 2 cooldown buffs and 2 escape blinks. Its attack cards come in W1b, so for now its attack slots are Fire and Neutral cards.
+  - Launch straight in with `godot --path . -- --class=wizard`.
+- **Try first in W1a:** checklist item 24. **Playtester's notes (scripted, no hands):** the pick screen answers your fiancée's confusion directly ("Melee. Hits what is in front of it, up close" vs "Ranged. Fires a bolt at the cursor"). The bolt reads clearly. In the bot sim the Wizard is safe: about 77% of the Rogue's boss time, and it ends almost every room at full HP (see D18). Some starter cards sound melee (Pointy Stick); W1b replaces them with caster cards.
 - **New in T-decks (since the A1 tag), your preset-deck request:** `--deck=<name>` and `--list-decks`, with three Rogue presets (fire-heavy, physical, mixed). See "How to playtest" above. `physical-rogue` has to keep 2 Fire cards: without them there are only 2 Utility and 2 area cards, and each slot needs 3 different ones. A 12-seed bot re-check puts fire-heavy at 1.02x and physical at 1.07x of the standard deck's boss time, well inside your 70-130% band.
 - **New in A1 (since the 3c tag), your armor request:**
   - Elites and the boss now have **armor**. It cuts physical and neutral hits about as much as their resistance cuts fire, so a fire deck and a physical deck kill the boss in similar time. In the bot sim each family lands inside your 70-130% band of the standard deck.
@@ -85,6 +93,10 @@ It doesn't block work. Until you answer, I keep the current behaviour.
   - **A:** add a small damage-type tag to card tiles and slots (a short ux task before the Wizard).
   - **B (my default):** fold it into the pause card-details request you already logged, and schedule both together.
   - **C:** no cue; the boss bar is enough.
+- **D18: Should the Wizard be the "easy class"?** In the bot sim it finishes 31 of 32 rooms untouched; the Rogue loses HP in most rooms. Its boss time is fine, at about 77% of the Rogue's. This sets W1b's tuning target.
+  - **A (my default):** the Wizard's rooms should cost some HP, but less than the Rogue's. W1b tunes range, fire rate or enemy pressure on it.
+  - **B:** it's fine as the easier, beginner-friendly class; tune only its boss time.
+  - **C:** match the Rogue's risk.
 
 ## Calls I made while you were away (easy to change)
 
@@ -130,6 +142,7 @@ _Items 1-10 are answered (see "Your checklist answers" below). The remaining ite
 21. **Boss (after 3c).** Look for: the phases and telegraphs are readable, and it's fair.
 22. **Loadouts (after 3d).** On run 2, save and pick a starting deck. Look for: it's easy to understand.
 23. **Armor (after A1).** Fight an elite and the boss with a fire-heavy deck, then a physical-heavy one (Slash, Lunge, light and heavy). Use `-- --full-deck --run-room=8` for the boss. Look for: the fights feel about as long; the boss bar's armor line and the `[9]` / `<4>` numbers explain the smaller hits.
+24. **Wizard (after W1a).** Start a run, pick Wizard on the new screen, and play a few rooms and the boss (`-- --class=wizard --run-room=8` jumps there). Look for: the pick screen is clear with a real mouse and keyboard; the bolt hits what's under your reticle; the right-click blast lands where you aim; and whether the Wizard feels too safe (D18). A bolt stops at the first enemy on its line, so check that this feels fair.
 
 ## Your checklist answers (2026-10-29)
 

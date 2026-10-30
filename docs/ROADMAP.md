@@ -544,6 +544,14 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
       - item 10's report (8+ seeds; Wizard boss time 70-130% of the Rogue's);
       - item 11's presets;
       - the Rogue melee cue as a small ux item.
+      - From the W1a playtest (b5f2e02):
+        - the Wizard starter is rebuilt around the new Wizard attack cards (no melee-flavoured cards);
+        - the scenario `character` key also sets the body look;
+        - fix the boss starting mostly off-screen;
+        - the pick backdrop shows the previous class's HP;
+        - verify the bolt hits only the first enemy on its line;
+        - identify the pink fan at the Wizard's feet in a room-1 capture.
+        - The tuning target follows D18 (default A: Wizard rooms cost HP, less than the Rogue's).
       - From W1a qa (b799153): gameplay-dev deletes the tracked junk `scratch_suite.txt` (repo root); check whether the Wizard bot kiting or the 12 m auto-fire is too safe (the bot ends rooms at full HP).
       - Then qa, playtester, tech-writer, close.
 

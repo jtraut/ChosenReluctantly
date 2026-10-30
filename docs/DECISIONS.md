@@ -996,3 +996,17 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
 - **Known and accepted for now:**
   - the HUD behind the dim shows the previous class's HP for one paused frame;
   - the screen copy ("Pick your hero"...) is ux placeholder wording.
+
+### 2026-10-30 - W1a playtest triage (game-lead)
+- Playtest b5f2e02, no blocker. Pick screen clear; the bolt follows the aim line and reads against enemy shots. On 4 seeds the Wizard's boss time is about 77% of the Rogue's (inside 70-130%), and it ended 31 of 32 rooms at full HP.
+- **My calls:**
+  - **Whether the Wizard should be the "easy class" goes to the director as D18.** The GDD says nothing about class difficulty, and it shapes the W1b tuning target. Default until answered: W1b tunes the Wizard so its rooms cost HP, but less than the Rogue's (A). [Deciding it myself.]
+  - **The melee-flavoured cards in the Wizard starter** (Pointy Stick and others, from the Neutral and Fire pools) are fixed in W1b by adding Wizard attack cards and rebuilding the starter around them. [A director question.]
+  - **No playstyle or difficulty tag on the pick screen for now.** "Melee" vs "Ranged" plus the descriptions answer the original complaint. [Adding a tag.]
+  - **Run length** (about 3 min in the sim vs the GDD's 30-60 min) stays as is. Short prototype runs are a standing call (OPEN_ITEMS calls #3, GDD §9). [Lengthening runs before more classes.]
+- **Backlog into W1b:**
+  - the `character` scenario key also sets the body look (captures show a Rogue body);
+  - the boss starting mostly off-screen (a 3c backlog item, now higher priority for a ranged class);
+  - the pick backdrop HUD showing the previous class's HP;
+  - check by hand that a bolt hits only the first enemy on its line;
+  - identify the pink fan at the Wizard's feet in a room-1 capture.

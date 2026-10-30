@@ -15,7 +15,7 @@ extends Node3D
 var _player: Player = null
 var _config: Dictionary = {}
 var _material := StandardMaterial3D.new()
-var _band := MeshInstance3D.new()
+var _band: MeshInstance3D = null
 var _base_color: Color = Color.WHITE
 var _alpha: float = 0.0
 var _pulse: float = 0.0
@@ -47,6 +47,7 @@ func setup(player: Player) -> void:
 	_material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	_material.render_priority = -1
 	_material.albedo_color = Color(_base_color, 0.0)
+	_band = MeshInstance3D.new()
 	_band.mesh = build_band(VfxSizing.cone_reach(float(def["range"])), float(def["half_angle_degrees"]), float(_config["thickness"]))
 	_band.material_override = _material
 	_band.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -140,4 +141,4 @@ func _on_attack_started(attack_id: StringName) -> void:
 
 ## True while any of the cue is drawn (tests).
 func is_showing() -> bool:
-	return _band.visible
+	return _band != null and _band.visible

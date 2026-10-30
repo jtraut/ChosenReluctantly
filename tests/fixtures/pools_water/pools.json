@@ -1,6 +1,6 @@
 {
-    "rogue": { "kind": "class", "display_name": "Rogue" },
-    "fire": { "kind": "element", "display_name": "Fire", "visual": { "color": "#ff6a1f", "scale": 1.0 } },
-    "water": { "kind": "element", "display_name": "Water", "visual": { "color": "#4aa8ff", "scale": 1.5 } },
-    "neutral": { "kind": "neutral", "display_name": "Neutral", "visual": { "color": "#f2ecd8", "scale": 1.0 } }
+    "rogue": { "kind": "class", "display_name": "Rogue", "frame_color": "#d9b48a" },
+    "fire": { "kind": "element", "display_name": "Fire", "frame_color": "#ff6a1f", "visual": { "color": "#ff6a1f", "scale": 1.0 } },
+    "water": { "kind": "element", "display_name": "Water", "frame_color": "#4aa8ff", "visual": { "color": "#4aa8ff", "scale": 1.5 } },
+    "neutral": { "kind": "neutral", "display_name": "Neutral", "frame_color": "#9a9a9a", "visual": { "color": "#f2ecd8", "scale": 1.0 } }
 }

@@ -2,7 +2,7 @@ class_name BossSpawnPl2Test
 extends GdUnitTestSuite
 ## PL2 item 1: the boss starts fully on screen (data/bosses.json `spawn`).
 
-const KNOWN_ENEMIES: Array[String] = ["chaser", "shooter"]
+const KNOWN_ENEMIES: Array[String] = ["melee_chaser", "ranged_shooter", "fire_resistant_golem", "boss_guardian"]
 
 
 func _spawn_def() -> Dictionary:

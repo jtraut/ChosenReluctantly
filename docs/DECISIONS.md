@@ -917,3 +917,20 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
 - **Rejected:**
   - a ranged light attack for every class (it changes the Rogue's identity);
   - Water now (the director said the Wizard only).
+
+### 2026-10-29 - A1 close: ux fix, qa delta, playtest (game-lead)
+- **ux fix f0cb109:**
+  - New `data/ui.json` keys: `hp_bars.pip_scale` (validated, number >= 1), plus `hud.boss_bar_gap`, `hud.boss_bar_stack_below` (500 ref px) and `hud.boss_bar_stack_extra`.
+  - "All elements" is now judged against `TierRules.element_ids()`.
+  - Soft spot: the `target_line` test (`{"fire": 0.5}` -> "all elements") holds only while fire is the only element, and must change on purpose when a second element ships.
+- **qa delta PASS 70a761f:** 968/968 including qa's 2 new tests.
+  - The three hud keys have no `DEFAULT_HUD` defaults; a qa test pins their presence.
+  - Defaults go to the ux backlog. [Fix before close.]
+- **Playtest ff6e7f6 (no blocker), 4 seeds per family, boss spawn to death:** fire 57 s, physical 69 s, standard 71 s, which is 0.80x and 0.97x of standard.
+  - qa's earlier measurement was 0.93x and 1.04x. The two disagree on fire.
+  - Both are inside the director's 70-130% band.
+- **My calls:**
+  - **No retune now.** qa re-measures with 10+ seeds using the T-decks presets in its T-decks review. If either family falls outside the band, it becomes a director item. [Tune parity to within about 10% now.]
+  - **Playtest readability findings go to the ux backlog** (numbers blurring in a clump, the shield pip hidden behind neighbours, F3 covering the arena, unlabeled boss-bar glyphs). [Fix before the A1 close.]
+  - **Card damage-type cue is D17 for the director,** default B (schedule it with the pause card-details request). [Building a tag now unasked.]
+  - **The playtester's "safety net for a no-card build" question** is covered by the existing 3.2x call above, so it isn't a director item. [Escalating it.]

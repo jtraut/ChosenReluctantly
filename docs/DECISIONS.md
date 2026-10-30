@@ -1077,3 +1077,10 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
   - **A finer boss fallback sweep at three distances, with no extra RNG draw.** [Loosening the corner test.]
 - **Known gap for qa:** in that up-to-3 s ghost window after a dash ends inside a body, a dodge also passes through. That bends GDD §3 ("the dodge doesn't pass through") only in an edge case; qa judges whether it matters.
 - **For W1b (game-lead):** with 10 rooms, the Wizard owns 15 of its 18 available cards at the start, so most later offers are duplicates. W1b's 2-4 new Wizard cards ease this; W1b reports the offer mix.
+
+### 2026-10-30 - F1 ux (ux-designer, logged by game-lead)
+- Built a1504cc (1098/1098; hash 3513335656 unchanged). "of 10" fixtures and comments; the focus-ring notch fixed; a ghost delay on short pass-through grants.
+- **Calls:**
+  - **The ring notch was the scroll container clipping the ring;** the container gets a padding stylebox equal to the ring width, and the fit maths includes it. [Moving the ring inside the card, which changes the look the director is judging; a wrapper MarginContainer, which changes node paths.]
+  - **The ghost look shows only after pass-through has lasted `ghost_show_delay` 0.35 s** (`data/vfx.json`), so movement dashes no longer flicker; Shadow Step and the stuck-in-body window still show it, 0.35 s late. [A flag on dash grants, which touches gameplay code.]
+  - **No swap hint added:** the game never showed one. [Adding a Shift hint.]

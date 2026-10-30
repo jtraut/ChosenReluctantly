@@ -90,7 +90,11 @@ func _spawn_one(queued: String) -> void:
 		(instance as Boss).set_seed((_seed_value * 2654435761 + instance.spawn_index * 40503 + 12345) & 0x7fffffff)
 	# The arena is the spawner's parent (Main); only a parentless spawner falls back to the scene root.
 	var world: Node = get_parent() if get_parent() != null else WorldRef.get_world(get_tree())
-	var spawn_position := _random_spawn_position()
+	var spawn_position: Vector3
+	if instance is Boss and BossConfig.boss(enemy_id).has("spawn"):
+		spawn_position = _boss_spawn_position(BossConfig.boss(enemy_id)["spawn"])
+	else:
+		spawn_position = _random_spawn_position()
 	if PlayerConfig.collide_with_enemies() and world is Node3D:
 		# Solid bodies: in place before it enters the tree. An enemy that first appears at the origin overlaps a
 		# player standing there and pops it up onto its head for a few frames. (With the flag off the old order
@@ -145,6 +149,37 @@ func _random_spawn_position() -> Vector3:
 		if actual >= min_dist:
 			return pos
 	return best
+
+
+## Where a boss appears: on a ring like any enemy, but only at points whose body lands inside the on-screen box around the
+## player (data/bosses.json `spawn`), so the boss is fully visible when the room starts. Other enemies keep the plain ring.
+## Falls back to sweeping evenly spaced angles at the minimum distance, then to the plain ring.
+func _boss_spawn_position(spawn: Dictionary) -> Vector3:
+	var min_dist: float = float(spawn["distance_min"])
+	var max_dist: float = float(spawn["distance_max"])
+	for attempt in range(16):
+		var pos: Vector3 = _ring_point(_rng.randf_range(0.0, TAU), _rng.randf_range(min_dist, max_dist))
+		if _flat_distance(pos) >= min_dist and _inside_screen_box(pos, spawn):
+			return pos
+	var sweep_start: float = _rng.randf_range(0.0, TAU)
+	for step in range(SWEEP_ANGLES):
+		var pos: Vector3 = _ring_point(sweep_start + TAU * float(step) / float(SWEEP_ANGLES), min_dist)
+		if _flat_distance(pos) >= min_dist and _inside_screen_box(pos, spawn):
+			return pos
+	return _random_spawn_position()
+
+
+## True when the ground point `pos` is inside the box around the target as the fixed isometric camera shows it (the camera in
+## scenes/camera/CameraRig.tscn looks along (-1, -1, -1), so ground screen-right is (1, 0, -1)/sqrt 2 and a ground metre
+## away from the camera is sin(35.26 degrees) of a metre up the screen).
+static func screen_box_contains(offset: Vector3, half_width: float, half_height: float) -> bool:
+	var right: float = (offset.x - offset.z) * 0.70710678
+	var up: float = -(offset.x + offset.z) * 0.70710678 * 0.57735027
+	return absf(right) <= half_width and absf(up) <= half_height
+
+
+func _inside_screen_box(pos: Vector3, spawn: Dictionary) -> bool:
+	return screen_box_contains(pos - target.global_position, float(spawn["screen_half_width"]), float(spawn["screen_half_height"]))
 
 
 func _ring_point(angle: float, dist: float) -> Vector3:

@@ -114,8 +114,8 @@ func test_physical_and_unknown_types_use_neutral_visual() -> void:
 
 func test_new_element_is_data_only() -> void:
 	var table := {
-		"neutral": {"kind": "neutral", "display_name": "Neutral"},
-		"water": {"kind": "element", "display_name": "Water", "visual": {"color": "#4aa8ff", "scale": 1.2}},
+		"neutral": {"kind": "neutral", "display_name": "Neutral", "frame_color": "#9a9a9a"},
+		"water": {"kind": "element", "display_name": "Water", "frame_color": "#4aa8ff", "visual": {"color": "#4aa8ff", "scale": 1.2}},
 	}
 	assert_array(PoolDatabase.validate_table(table)).is_empty()
 

@@ -158,7 +158,7 @@ func _apply_launch_args(tree: SceneTree) -> bool:
 	for line: String in (launch["lines"] as Array[String]):
 		print(line)
 	for message: String in (launch["errors"] as Array[String]):
-		push_error("Launch refused: " + message)
+		printerr("Launch refused: " + message)  # plain stderr: a bad launch arg is the caller's error, not an engine error with a stack trace
 	var exit_code: int = int(launch["exit"])
 	if exit_code != DebugDecks.EXIT_CONTINUE:
 		tree.quit(exit_code)

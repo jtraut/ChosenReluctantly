@@ -1,15 +1,17 @@
 {
-    "rogue": { "kind": "class", "display_name": "Rogue" },
-    "wizard": { "kind": "class", "display_name": "Wizard" },
+    "rogue": { "kind": "class", "display_name": "Rogue", "frame_color": "#d9b48a" },
+    "wizard": { "kind": "class", "display_name": "Wizard", "frame_color": "#d9b48a" },
     "fire": {
         "kind": "element",
         "display_name": "Fire",
+        "frame_color": "#ff6a1f",
         "visual": { "color": "#ff6a1f", "scale": 1.0 },
         "status": { "status_id": "burn", "base_chance": 0.2 }
     },
     "neutral": {
         "kind": "neutral",
         "display_name": "Neutral",
+        "frame_color": "#9a9a9a",
         "visual": { "color": "#f2ecd8", "scale": 1.0 }
     }
 }

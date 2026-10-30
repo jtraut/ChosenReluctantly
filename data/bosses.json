@@ -15,6 +15,7 @@
             "body_radius": 1.0,
             "max_adds_alive": 3,
             "spawn_grace": 1.5,
+            "spawn": { "distance_min": 7.0, "distance_max": 9.0, "screen_half_width": 9.0, "screen_half_height": 4.5 },
             "transition": { "duration": 1.2, "shake": 0.7, "shake_duration": 0.6, "hit_stop": 0.12, "ring_size": 7.0 },
             "death": { "beat_seconds": 1.6, "slow_mo_scale": 0.25, "shake": 0.9, "shake_duration": 0.8 },
             "attacks": {

@@ -25,6 +25,19 @@ static func get_definition(pool_id: String) -> Dictionary:
 	return _table.get_entry(pool_id)
 
 
+## The card frame colour of a pool (data "frame_color"). Unknown pool: the
+## neutral pool's colour.
+static func frame_color_for_pool(pool_id: String) -> Color:
+	var entry: Dictionary = get_definition(pool_id) if has(pool_id) else get_definition("neutral")
+	return Color.html(String(entry.get("frame_color", "#9a9a9a")))
+
+
+## THE accessor UI uses for a card's frame: card id -> its pool -> frame colour.
+## Unknown card id: the neutral pool's colour.
+static func frame_color_for_card(card_id: String) -> Color:
+	return frame_color_for_pool(String(CardDatabase.get_card(card_id).get("pool", "neutral")))
+
+
 ## Returns human-readable problems for one pool entry; empty means valid.
 ## An "element" must have a "visual"; other kinds may have one.
 static func validate_entry(entry: Dictionary) -> Array[String]:
@@ -35,6 +48,9 @@ static func validate_entry(entry: Dictionary) -> Array[String]:
 	var display_name: Variant = entry.get("display_name")
 	if typeof(display_name) != TYPE_STRING or String(display_name).strip_edges().is_empty():
 		errors.append("'display_name' must be a non-empty string")
+	var frame: Variant = entry.get("frame_color")
+	if typeof(frame) != TYPE_STRING or not Color.html_is_valid(String(frame)):
+		errors.append("'frame_color' must be a valid color string like '#ff6a1f' (card frame colour, GDD section 4)")
 	if entry.has("visual"):
 		errors.append_array(_validate_visual(entry["visual"]))
 	elif kind == "element":

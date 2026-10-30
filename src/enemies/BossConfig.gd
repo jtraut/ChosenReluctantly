@@ -25,7 +25,10 @@ const KIND_KEYS: Dictionary = {
 }
 const PLACES: Array[String] = ["self", "target"]
 const RULE_KEYS: Array[String] = ["min_telegraph", "max_transition", "max_adds_cap", "min_attacks"]
-const BOSS_KEYS: Array[String] = ["display_name", "max_health", "resistance", "armor", "knockback_taken", "body_radius", "max_adds_alive", "spawn_grace", "transition", "death", "attacks", "phases"]
+const BOSS_KEYS: Array[String] = ["display_name", "max_health", "resistance", "armor", "knockback_taken", "body_radius", "max_adds_alive", "spawn_grace", "spawn", "transition", "death", "attacks", "phases"]
+## Optional: where the boss may appear, relative to the player. Distances are metres on the ground; the half extents are the
+## on-screen box (screen-right metres, and metres up the screen) the boss body must start inside, so it is fully visible.
+const SPAWN_KEYS: Array[String] = ["distance_min", "distance_max", "screen_half_width", "screen_half_height"]
 const TRANSITION_KEYS: Array[String] = ["duration", "shake", "shake_duration", "hit_stop", "ring_size"]
 const DEATH_KEYS: Array[String] = ["beat_seconds", "slow_mo_scale", "shake", "shake_duration"]
 const PHASE_KEYS: Array[String] = ["name", "enters_at", "move_speed", "attack_gap", "windup_scale", "attacks", "summon"]
@@ -84,6 +87,11 @@ static func _validate_boss(id: String, def: Dictionary, rules: Dictionary, known
 	_num(def, "body_radius", 0.1, 5.0, where, errors)
 	_whole(def, "max_adds_alive", 0, int(rules.get("max_adds_cap", 6)), where, errors)
 	_num(def, "spawn_grace", 0.0, 10.0, where, errors)
+	if def.has("spawn"):
+		errors.append_array(_validate_block(where + ".spawn", def["spawn"], SPAWN_KEYS, {
+			"distance_min": [1.0, 40.0], "distance_max": [1.0, 40.0], "screen_half_width": [2.0, 40.0], "screen_half_height": [1.0, 40.0]}))
+		if def["spawn"] is Dictionary and _is_num((def["spawn"] as Dictionary).get("distance_min")) and _is_num((def["spawn"] as Dictionary).get("distance_max")) 				and float((def["spawn"] as Dictionary)["distance_max"]) < float((def["spawn"] as Dictionary)["distance_min"]):
+			errors.append("%s.spawn.distance_max must be >= distance_min" % where)
 	errors.append_array(_validate_block(where + ".transition", def.get("transition"), TRANSITION_KEYS, {
 		"duration": [0.1, float(rules.get("max_transition", 1.5))], "shake": [0.0, 5.0], "shake_duration": [0.0, 5.0], "hit_stop": [0.0, 1.0], "ring_size": [0.5, 30.0]}))
 	errors.append_array(_validate_block(where + ".death", def.get("death"), DEATH_KEYS, {

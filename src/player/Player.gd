@@ -177,9 +177,17 @@ func _ready() -> void:
 	var material: Material = body_mesh.get_active_material(0)
 	if material is StandardMaterial3D:
 		var unique_material: StandardMaterial3D = (material as StandardMaterial3D).duplicate()
-		unique_material.albedo_color = CharacterDatabase.body_color(character_id)  # the class's placeholder body colour
 		body_mesh.material_override = unique_material
-		_base_body_color = unique_material.albedo_color
+		apply_body_color()
+
+
+## Paints the body in the character's placeholder colour (data/characters.json). _ready calls it; a scenario that
+## switches `character_id` afterwards calls it again so the look follows the character.
+func apply_body_color() -> void:
+	var unique_material: Material = body_mesh.material_override
+	if unique_material is StandardMaterial3D:
+		(unique_material as StandardMaterial3D).albedo_color = CharacterDatabase.body_color(character_id)
+		_base_body_color = (unique_material as StandardMaterial3D).albedo_color
 
 
 ## Fills in the character from data/characters.json: which class this is, its pools (unless a test set its own) and its

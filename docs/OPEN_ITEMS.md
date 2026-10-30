@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-10-30
-**Status: 1 waiting on a decision (D19; doesn't block). 3 new things to look at when you play (items 25-27), plus item 22 once loadouts exist.** Done: C1, Polish 1, 3a (runs of 8 rooms), 3b (card rewards and deck-clean), 3c (the boss) and **A1 (armor)**, **T-decks (preset test decks)** and **W1a (a playable Fire Wizard)**. Done: **PL2** (tag `playtest-2026-10-30-PL2`). Next: **F1, in progress** (your 2026-10-30 checklist answers: bigger Fire Wall, movement cards pass through enemies, Shift+1-5 swap, 10-room runs), then **P-dodge** (dodge charges: Rogue 3, Wizard 2; Recovery cooldowns), then **W1b** (Wizard cards and tuning, now after the dodge work so it's tuned once), then loadouts.
+**Status: 1 waiting on a decision (D19; doesn't block). 3 new things to look at when you play (items 25-27), plus item 22 once loadouts exist.** Done: C1, Polish 1, 3a (runs of 8 rooms), 3b (card rewards and deck-clean), 3c (the boss) and **A1 (armor)**, **T-decks (preset test decks)** and **W1a (a playable Fire Wizard)**. Done: **PL2** and **F1** (tag `playtest-2026-10-30-F1`). Next: **P-dodge, in progress** (your 2026-10-30 checklist answers: bigger Fire Wall, movement cards pass through enemies, Shift+1-5 swap, 10-room runs), then **P-dodge** (dodge charges: Rogue 3, Wizard 2; Recovery cooldowns), then **W1b** (Wizard cards and tuning, now after the dodge work so it's tuned once), then loadouts.
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
@@ -19,7 +19,14 @@ Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
 _Updated at every slice close._
 
-- **Latest playtest tag:** `playtest-2026-10-30-PL2` (qa PASS, 1082/1082). Earlier tags: `playtest-2026-10-30-W1a`, `playtest-2026-10-29-T-decks`, `-A1`, `-3c`, `-3b`, `-3a`, `-C1`.
+- **Latest playtest tag:** `playtest-2026-10-30-F1` (qa PASS, 1102/1102). Earlier tags: `playtest-2026-10-30-PL2`, `playtest-2026-10-30-W1a`, `playtest-2026-10-29-T-decks`, `-A1`, `-3c`, `-3b`, `-3a`, `-C1`.
+- **New in F1 (since the PL2 tag), your checklist answers:**
+  - **Runs are 10 rooms** (7 fights, 1 elite, 1 rest, boss in room 10: `--run-room=10`).
+  - **Wall of Mild Fire is 1.5x** (7.5 x 1.8 m).
+  - **Every Movement card goes through enemies;** the dodge doesn't (see D19 for one edge case). Reluctant Lunge now hits everything on its line.
+  - **Dead-card swap is Shift+1-5.**
+  - The boss's head clears the top-left meter; the reward focus ring has no notch; dashes no longer flash the ghost look.
+- **Try first in F1:** a full 10-room run; dash out of a crowd with each movement card; drop a Wall in front of walking enemies. **Playtester's notes (stills and bot only):** the Wizard is safe until the boss, which can kill it fast (W1b fixes this); a bot clears 10 rooms in about 5 minutes.
 - **New in PL2 (since the W1a tag):**
   - **Card frames in your colours:** Fire orange, class cards light bronze (Rogue and Wizard alike), neutral grey, on the card slots, reward offers and the rest-room removal list. "Ready" is now shown by a bright plate and green bar instead of the border, so the frame always keeps its colour. The card strip is 8 px taller.
   - **The boss starts fully on screen** in room 8.

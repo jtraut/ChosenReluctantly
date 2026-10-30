@@ -540,7 +540,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
         - item 12's gates.
       - **ux-designer:** item 9 (the pick screen, bolt and telegraph readability, per-class HUD meters).
       - **qa, playtester, tech-writer, close.**
-    - [ ] **F1, director feedback batch (director checklist answers 2026-10-30; loop: gameplay-dev -> ux-designer -> qa -> playtester (short) -> tech-writer -> close; tag `playtest-2026-10-30-F1`)**
+    - [x] **F1, director feedback batch** — **DONE 2026-10-30.** Gameplay efb0516, cef82c5; ux a1504cc; qa PASS f305fae (1102/1102); playtest 027d65a (no blocker); docs 47fde95. Tag `playtest-2026-10-30-F1`. New arena hash 3513335656. D19 open (default A). (Original header: director checklist answers 2026-10-30; loop: gameplay-dev -> ux-designer -> qa -> playtester (short) -> tech-writer -> close; tag `playtest-2026-10-30-F1`)**
   - **Run order (game-lead, 2026-10-30):** PL2 -> **F1 -> P-dodge -> W1b** -> 3d. Wizard *tuning* must come after every change that shifts its risk (10 rooms, movement pass-through, Wall buff, per-class charges, Recovery 8 -> 12 and the Wizard's 14 s), so W1b moved after P-dodge. See DECISIONS.
   - **gameplay-dev:**
     1. **Wall of Mild Fire 1.5x size (director):** `data/cards/fire_wall.json` `length` 5.0 -> 7.5, `width` 1.2 -> 1.8. Everything else unchanged. The cast preview and the burn-down visual follow the new size.

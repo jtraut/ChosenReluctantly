@@ -17,7 +17,7 @@ Last updated: 2026-10-30. Run order (game-lead 2026-10-30, after the director's 
 - **W1a (a playable Wizard)** closed 2026-10-30 (tag `playtest-2026-10-30-W1a`, 1053/1053). Docs 031f321.
 - **PL2** closed 2026-10-30 (tag `playtest-2026-10-30-PL2`, 1082/1082). Docs d175b51.
 - **F1** closed 2026-10-30 (tag `playtest-2026-10-30-F1`, 1102/1102). Docs 47fde95.
-- **P-dodge**: IN PROGRESS. Step: gameplay-dev (items 1, 2, 4, 4a-4f, 5).
+- **P-dodge**: IN PROGRESS. gameplay-dev DONE 0209de4..bc976ca (1141/1141; arena hash baseline 2484586390). Step: ux-designer (dodge pips, STAGGERED cue).
 - **W1b (Wizard cards, presets, balance)**: brief in ROADMAP; runs after P-dodge.
 
 ## Exact next step

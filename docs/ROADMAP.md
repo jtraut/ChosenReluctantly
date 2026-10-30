@@ -598,6 +598,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     4. **A non-kiting Wizard bot policy** (`-WizardNoKite` or similar, the same pattern as `-LightHeavyOnly`): it holds a mid-range spot or walks in like the Rogue bot instead of kiting perfectly. qa and the playtester both said the kiting bot is a ceiling, not a typical player.
     5. **Balance table** for the Wizard cards in the hand-back, for DECISIONS.
     5a. **From the F1 playtest:** the Wizard's risk is flat, then a cliff. Rooms 1-9 cost almost nothing, then on seed 21 the boss killed a full-HP Wizard in 6.4 s; seed 22 won at 11/26 HP. Find which boss attack does it (opening charge or volley vs 26 HP), and tune so the boss is a real threat but not a sudden one-shot. Use Wizard data only, or report it as a director item.
+    5c. **Bot caveat (P-dodge):** the charge-aware bot loses more HP in the 60 s arena with 3 charges than with 1 (extra rolls break its kiting). Read charge effects from whole runs, and note in the hand-back whether the non-kiting policy shows the same artefact.
     5b. A scenario with walking enemies crossing a Wall of Mild Fire, so the director's 1.5x buff can be checked (F1 playtest couldn't).
     6. **Tuning, last:**
        - With the kiting and non-kiting policies, 10+ seeds each, measure the Wizard's boss time against **P-dodge's** Rogue baseline (10 rooms, per-class charges, Recovery 12 s) (target 70-130%) and the HP lost per room.

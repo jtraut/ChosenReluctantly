@@ -119,7 +119,7 @@ func test_real_key_2_then_enter_restarts_as_the_wizard_with_the_same_seed() -> v
 	assert_object(fresh).is_not_null()
 	assert_int(RunSession.current.seed_value).is_equal(seed_value)
 	assert_str(RunSession.current.character_id).is_equal("wizard")
-	assert_float((fresh.get_node("Player") as Player).health.max_health).is_equal(22.0)
+	assert_float((fresh.get_node("Player") as Player).health.max_health).is_equal(26.0)
 	assert_bool(_pick_of(fresh).is_open()).is_false()
 	assert_bool(GamePause.is_paused()).override_failure_message("no screen and a paused game: stuck").is_false()
 

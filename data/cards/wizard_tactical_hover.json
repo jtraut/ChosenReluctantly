@@ -1,0 +1,19 @@
+{
+    "id": "wizard_tactical_hover",
+    "name": "Tactical Hover",
+    "slot_type": "movement",
+    "pool": "wizard",
+    "cooldown_modifier": 1.0,
+    "flavor_text": "Not fleeing. Repositioning. Loudly.",
+    "effects": [
+        {
+            "template": "dash",
+            "params": {
+                "distance": 5.0,
+                "speed": 28.0,
+                "direction_mode": "away_from_aim",
+                "invulnerable": true
+            }
+        }
+    ]
+}

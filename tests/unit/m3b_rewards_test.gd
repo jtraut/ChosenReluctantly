@@ -435,7 +435,7 @@ func test_starter_deck_passes_the_deck_rules_and_is_a_subset_of_the_pool() -> vo
 	var pool := RunConfig.cards_in_pools(RunConfig.character_pools())
 	for id in starter:
 		assert_bool(pool.has(id)).is_true()
-	assert_array(RunConfig.deck_problems(RunConfig.get_config())).is_empty()
+	assert_array(CharacterDatabase.validate_shipped()).is_empty()
 
 
 func test_full_deck_flag_starts_a_run_with_every_pool_card_and_is_off_by_default() -> void:
@@ -447,7 +447,7 @@ func test_full_deck_flag_starts_a_run_with_every_pool_card_and_is_off_by_default
 	var actual := full.deck.duplicate()
 	actual.sort()
 	assert_array(actual).is_equal(expected)
-	assert_int(expected.size()).is_equal(CardDatabase.all_cards().size())
+	assert_int(expected.size()).is_equal(CardDatabase.all_cards().size() - CardDatabase.cards_for_pool("wizard").size())  # the Rogue's pools: every card but the Wizard's
 	assert_array(DeckRules.check_shipped(full.deck).problems).is_empty()
 	RunSession.full_deck = false
 	assert_int(RunSession.begin_new_run(4).deck.size()).is_equal(15)

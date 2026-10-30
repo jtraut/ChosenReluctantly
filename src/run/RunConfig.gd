@@ -16,8 +16,8 @@ static var _loaded: bool = false
 static var _load_problems: Array[String] = []
 
 
-## Human-readable problems; empty means valid. `known_enemies` / `known_cards` skip their id checks when empty.
-static func validate(config: Dictionary, known_enemies: Array[String], known_cards: Array[String]) -> Array[String]:
+## Human-readable problems; empty means valid. `known_enemies` skips its id check when empty (`_known_cards` is kept for callers; the starting deck lives in characters.json).
+static func validate(config: Dictionary, known_enemies: Array[String], _known_cards: Array[String]) -> Array[String]:
 	var errors: Array[String] = []
 	var composition: Variant = config.get("composition")
 	var total: int = 0
@@ -44,8 +44,6 @@ static func validate(config: Dictionary, known_enemies: Array[String], known_car
 	var rejects: Variant = config.get("rejects_per_run")
 	if not _is_whole(rejects) or int(rejects) < 0 or int(rejects) > 99:
 		errors.append("'rejects_per_run' must be a whole number in [0, 99]")
-	errors.append_array(_validate_deck(config.get("starting_deck"), known_cards))
-	errors.append_array(_validate_character_pools(config.get("character_pools")))
 	errors.append_array(_validate_rewards(config.get("rewards")))
 	errors.append_array(_validate_tiers(config.get("tiers")))
 	errors.append_array(_validate_rooms(config, known_enemies, total))
@@ -89,32 +87,6 @@ static func _validate_placement(config: Dictionary, composition: Variant, total:
 	if _is_whole(comp.get("elite", 0)) and _is_whole(comp.get("rest", 0)) and total > 1:
 		if int(comp.get("elite", 0)) + int(comp.get("rest", 0)) > total - 1:
 			errors.append("not enough non-boss rooms for the elite and rest rooms")
-	return errors
-
-
-static func _validate_deck(deck: Variant, known_cards: Array[String]) -> Array[String]:
-	var errors: Array[String] = []
-	if typeof(deck) != TYPE_ARRAY or (deck as Array).is_empty():
-		errors.append("'starting_deck' must be a non-empty array of card ids")
-		return errors
-	for entry: Variant in (deck as Array):
-		if typeof(entry) != TYPE_STRING:
-			errors.append("starting_deck entries must be card id strings")
-			continue
-		if not known_cards.is_empty() and not known_cards.has(String(entry)):
-			errors.append("starting_deck: unknown card id '%s'" % String(entry))
-	return errors
-
-
-## The pools the (only, for now) character owns: used for the `--full-deck` debug deck.
-static func _validate_character_pools(value: Variant) -> Array[String]:
-	var errors: Array[String] = []
-	if typeof(value) != TYPE_ARRAY or (value as Array).is_empty():
-		errors.append("'character_pools' must be a non-empty array of pool ids")
-		return errors
-	for entry: Variant in (value as Array):
-		if typeof(entry) != TYPE_STRING or not PoolDatabase.has(String(entry)):
-			errors.append("character_pools: unknown pool '%s'" % str(entry))
 	return errors
 
 
@@ -328,7 +300,6 @@ static func get_config() -> Dictionary:
 		push_error("RunConfig: " + _load_problems[0])
 		return _cache
 	var problems: Array[String] = validate(parsed, EnemyConfig.enemy_ids(), _card_ids())
-	problems.append_array(deck_problems(parsed))
 	if not problems.is_empty():
 		_load_problems = problems
 		push_error("RunConfig: invalid %s: %s" % [PATH, "; ".join(problems)])
@@ -346,21 +317,6 @@ static func load_problems() -> Array[String]:
 	return _load_problems
 
 
-## Deck-rule problems of the starting deck (unique minimums), checked against the shipped deck rules.
-static func deck_problems(config: Dictionary) -> Array[String]:
-	var out: Array[String] = []
-	var deck: Variant = config.get("starting_deck")
-	if typeof(deck) != TYPE_ARRAY:
-		return out
-	var ids: Array[String] = []
-	for entry: Variant in (deck as Array):
-		ids.append(String(entry))
-	var message: String = DeckRules.run_start_block_message(DeckRules.check_shipped(ids))
-	if message != "":
-		out.append("starting_deck breaks the deck rules: " + message)
-	return out
-
-
 static func _card_ids() -> Array[String]:
 	var ids: Array[String] = []
 	for card: Variant in CardDatabase.all_cards():
@@ -368,11 +324,10 @@ static func _card_ids() -> Array[String]:
 	return ids
 
 
-static func starting_deck() -> Array[String]:
-	var out: Array[String] = []
-	for entry: Variant in (get_config().get("starting_deck", []) as Array):
-		out.append(String(entry))
-	return out
+## A character's 15-card starter (data/characters.json). Defaults to the Rogue's, so callers that do not care
+## which class is playing keep working; a run uses `RunSession.character_id`.
+static func starting_deck(character_id: String = CharacterDatabase.DEFAULT_ID) -> Array[String]:
+	return CharacterDatabase.starting_deck(character_id)
 
 
 static func rejects_per_run() -> int:
@@ -383,11 +338,9 @@ static func rest_heal_fraction() -> float:
 	return float(get_config().get("rest_heal_fraction", 0.3))
 
 
-static func character_pools() -> Array[String]:
-	var out: Array[String] = []
-	for entry: Variant in (get_config().get("character_pools", []) as Array):
-		out.append(String(entry))
-	return out
+## The pools a character draws cards from (data/characters.json); the Rogue's by default.
+static func character_pools(character_id: String = CharacterDatabase.DEFAULT_ID) -> Array[String]:
+	return CharacterDatabase.pools(character_id)
 
 
 static func rewards() -> Dictionary:

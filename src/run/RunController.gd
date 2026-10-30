@@ -24,6 +24,8 @@ signal choice_resolved(result: Dictionary)
 ## The boss entered the room (3c). Its signals (phase_changed, transition_started, defeated, ...), `health.health_changed`,
 ## `display_name()` and `phase_thresholds()` are what a boss HP bar needs. Also available any time as `current_boss()`.
 signal boss_spawned(boss: Boss)
+## The class pick was confirmed (`confirm_class_pick`): the run is (re)started as `character_id`. The scene swaps right after.
+signal class_picked(character_id: String)
 ## The last room was won.
 signal run_won()
 ## The player died; Main shows Game Over after its death beat.
@@ -41,23 +43,21 @@ var _ctx: Dictionary = {}
 var _boss: Boss = null
 var _launch_room: int = 0
 var _launch_clear_after: float = -1.0
+var _prepared: bool = false
+var _launch_ok: bool = true
+var _fresh_launch: bool = false
 
 
 ## Called by Main._ready in run mode, after the scene is wired. Starts the current room.
 func begin(main: Main) -> void:
-	_main = main
+	if not prepare(main):
+		return  # a bad --deck / --class or --list-decks: the game is quitting (see _apply_launch_args)
 	var config: Dictionary = RunConfig.get_config()
-	var fresh_launch: bool = RunSession.current == null
-	if fresh_launch:
-		if not _apply_launch_args():
-			return  # a bad --deck or --list-decks: the game is quitting (see _apply_launch_args)
-	_state = RunSession.ensure_run()
-	if fresh_launch and _launch_room > 0:
-		_state.room_index = _launch_room
+	var fresh_launch: bool = _fresh_launch
 	_rooms = RunGenerator.generate(_state.seed_value, config)
 	if _state.room_index < 0 or _state.room_index >= _rooms.size():
 		push_error("RunController: room index %d is outside the %d-room run; starting a new run" % [_state.room_index, _rooms.size()])
-		_state = RunSession.begin_new_run()
+		_state = RunSession.begin_new_run(-1, _state.character_id)
 		_rooms = RunGenerator.generate(_state.seed_value, config)
 	_active = true
 	_cleared = false
@@ -95,12 +95,63 @@ func begin(main: Main) -> void:
 		get_tree().create_timer(_launch_clear_after).timeout.connect(_debug_clear_room)
 
 
+## Reads the launch args (first scene of a launch only) and makes sure a run exists, so the character is known. Main calls
+## this from _enter_tree, before the Player's _ready, because the class decides the Player's pools, HP, body and attacks.
+## `begin` calls it too; it only works once. Returns false when the launch must not go on (the tree is quitting).
+func prepare(main: Main) -> bool:
+	if _prepared:
+		return _launch_ok
+	_prepared = true
+	_main = main
+	_fresh_launch = RunSession.current == null
+	if _fresh_launch and not _apply_launch_args(main.get_tree()):
+		_launch_ok = false
+		return false
+	_state = RunSession.ensure_run()
+	if _fresh_launch and _launch_room > 0:
+		_state.room_index = _launch_room
+	return true
+
+
+## The character of this run (data/characters.json id); "" before `prepare`.
+func character_id() -> String:
+	return _state.character_id if _state != null else ""
+
+
+## Confirms the class pick and starts the run as that class (the pick screen's one call). The pick is remembered and
+## preselected next time. The same character: nothing restarts. A different one before any room is played: a new run with the
+## same seed and start room, as a fresh scene. Later in a run it is refused (a run keeps its class). Returns true when the run
+## is (now) that class.
+func confirm_class_pick(character: String) -> bool:
+	if not CharacterDatabase.has(character):
+		push_error("RunController.confirm_class_pick: unknown character '%s'" % character)
+		return false
+	if _state == null or _main == null:
+		return false
+	CharacterPick.remember(character)
+	RunSession.selected_character = character
+	if _state.character_id == character:
+		class_picked.emit(character)
+		return true
+	if not _state.history.is_empty():
+		push_error("RunController.confirm_class_pick: a run in progress keeps its class")
+		return false
+	var room_index: int = _state.room_index
+	_active = false
+	var fresh: RunState = RunSession.begin_new_run(_state.seed_value, character)
+	fresh.room_index = room_index
+	class_picked.emit(character)
+	_main.swap_to_fresh_scene()
+	return true
+
+
 ## Launch arguments for tools and repro (after `--`); they apply to the first run of a launch only:
 ## `--run-seed=N` fixes the seed, `--run-room=K` starts at room K (1-based), `--full-deck` starts with every card of the character's pools (debug), `--run-clear-after=S` wins the room
 ## S seconds in (so a screenshot can show the room-cleared prompt or the win screen). `--deck=<name>` starts with a debug
 ## preset deck from data/debug_decks (its `starter`, or its `full` with `--full-deck`) and `--list-decks` prints them and quits.
+## `--class=<rogue|wizard>` plays the run as that character (a `--deck` preset names its class, and a `--class` that disagrees is refused).
 ## Returns false when the launch must not go on: it has asked the tree to quit (exit 0 for --list-decks, 2 for bad args).
-func _apply_launch_args() -> bool:
+func _apply_launch_args(tree: SceneTree) -> bool:
 	var args: PackedStringArray = OS.get_cmdline_user_args()
 	var directory: Dictionary = DebugDecks.read_dir()
 	var launch: Dictionary = DebugDecks.resolve_launch(args, directory)
@@ -110,10 +161,13 @@ func _apply_launch_args() -> bool:
 		push_error("Launch refused: " + message)
 	var exit_code: int = int(launch["exit"])
 	if exit_code != DebugDecks.EXIT_CONTINUE:
-		get_tree().quit(exit_code)
+		tree.quit(exit_code)
 		return false
 	if String(launch["deck"]) != "":
 		RunSession.debug_deck = (directory["presets"] as Dictionary)[String(launch["deck"])]
+	if String(launch["character"]) != "":
+		RunSession.selected_character = String(launch["character"])
+		RunSession.character_forced = true
 	for arg: String in args:
 		if arg == "--full-deck":
 			RunSession.full_deck = true

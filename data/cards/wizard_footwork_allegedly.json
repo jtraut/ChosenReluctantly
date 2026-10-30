@@ -1,0 +1,19 @@
+{
+    "id": "wizard_footwork_allegedly",
+    "name": "Footwork, Allegedly",
+    "slot_type": "utility",
+    "pool": "wizard",
+    "cooldown_modifier": 2.0,
+    "flavor_text": "Moves feel lighter. Nothing about this is certain.",
+    "effects": [
+        {
+            "template": "buff",
+            "params": {
+                "stat": "slot_cooldown.movement",
+                "modifier_type": "additive",
+                "value": -1.5,
+                "duration": 8.0
+            }
+        }
+    ]
+}

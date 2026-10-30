@@ -18,6 +18,8 @@ const PENDING_REST_REMOVE := "rest_remove"
 const PENDING_VALUES: Array[String] = [PENDING_NONE, PENDING_REWARD, PENDING_REST, PENDING_REST_REMOVE]
 
 var seed_value: int = 0
+## The character (data/characters.json id) this run is played as (W1a). Fixed for the whole run.
+var character_id: String = CharacterDatabase.DEFAULT_ID
 var room_index: int = 0
 ## Player HP at the start of the room. -1 means "not set yet": the first room takes the player's own max.
 var hp: float = -1.0
@@ -37,9 +39,10 @@ var offer: Array[String] = []
 var choice_log: Array[Dictionary] = []
 
 
-## A fresh run: the starting deck and reject allowance come from data/run.json (RunConfig).
-static func new_run(seed_value_in: int, starting_deck: Array[String], rejects: int) -> RunState:
+## A fresh run: the reject allowance comes from data/run.json (RunConfig), the starter from the caller (the character's).
+static func new_run(seed_value_in: int, starting_deck: Array[String], rejects: int, character: String = CharacterDatabase.DEFAULT_ID) -> RunState:
 	var state := RunState.new()
+	state.character_id = character
 	state.seed_value = seed_value_in & SEED_LIMIT
 	state.deck = starting_deck.duplicate()
 	state.rejects_remaining = rejects
@@ -84,6 +87,7 @@ func to_dict() -> Dictionary:
 	return {
 		"version": FORMAT_VERSION,
 		"seed": seed_value,
+		"character": character_id,
 		"room_index": room_index,
 		"hp": hp,
 		"max_hp": max_hp,
@@ -112,6 +116,11 @@ static func from_dict(data: Dictionary) -> RunState:
 		return null
 	var state := RunState.new()
 	state.seed_value = int(data["seed"])
+	var saved_character: String = str(data.get("character", CharacterDatabase.DEFAULT_ID))
+	if CharacterDatabase.has(saved_character):
+		state.character_id = saved_character
+	else:
+		push_error("RunState.from_dict: unknown character '%s'; using '%s'" % [saved_character, CharacterDatabase.DEFAULT_ID])
 	state.room_index = int(data["room_index"])
 	state.hp = float(data["hp"])
 	state.max_hp = float(data["max_hp"])

@@ -7,8 +7,13 @@ extends RefCounted
 ## ...): the character's class picks which one it uses. A heavy has a "shape":
 ## "arc" (wide melee wedge) or "targeted_aoe" (disc at the aim point, capped at
 ## max_range). Both are built from the shared cone / aoe effect templates.
+##
+## "light" is the default light attack (an arc; the Rogue's). "light_variants" (optional) is an object keyed by a
+## name a character picks in data/characters.json attacks.light ("default" = "light"). A variant may be a
+## "projectile": an auto-firing bolt through the shared projectile template (W1a, the Wizard's light).
 
-const SHAPES: Array[String] = ["arc", "targeted_aoe"]
+const SHAPES: Array[String] = ["arc", "targeted_aoe", "projectile"]
+const DEFAULT_LIGHT := "default"
 
 ## Fields every shape needs. field -> [min, max, min_inclusive]. All are numbers.
 const COMMON_NUMBER_RULES: Dictionary = {
@@ -33,6 +38,14 @@ const SHAPE_NUMBER_RULES: Dictionary = {
 	"targeted_aoe": {
 		"radius": [0.0, 100.0, false],
 		"max_range": [0.0, 100.0, false],
+	},
+	# range = how far the bolt flies; half_angle_degrees = the auto-fire aim gate (an enemy within this
+	# angle of the aim line, inside range, makes the attack fire on its own).
+	"projectile": {
+		"range": [0.0, 100.0, false],
+		"speed": [0.0, 200.0, false],
+		"hit_radius": [0.0, 5.0, false],
+		"half_angle_degrees": [0.0, 180.0, false],
 	},
 }
 
@@ -76,6 +89,28 @@ static func get_heavy(class_id: String) -> Dictionary:
 	return entry if typeof(entry) == TYPE_DICTIONARY else {}
 
 
+## The light attack a character uses: `variant` is the name in data/characters.json attacks.light
+## ("default" or "" = the plain "light" entry). {} when the name is unknown.
+static func get_light(variant: String) -> Dictionary:
+	if variant == "" or variant == DEFAULT_LIGHT:
+		return _table.get_entry("light")
+	var entry: Variant = _light_variants().get(variant)
+	return entry if typeof(entry) == TYPE_DICTIONARY else {}
+
+
+static func has_light(variant: String) -> bool:
+	return not get_light(variant).is_empty()
+
+
+static func light_variant_ids() -> Array:
+	return _light_variants().keys()
+
+
+static func _light_variants() -> Dictionary:
+	var variants: Variant = _table.get_entry("light_variants")
+	return variants if typeof(variants) == TYPE_DICTIONARY else {}
+
+
 static func _heavy_table() -> Dictionary:
 	var heavy: Variant = _table.get_entry("heavy")
 	return heavy if typeof(heavy) == TYPE_DICTIONARY else {}
@@ -90,8 +125,8 @@ static func validate_entry(entry: Dictionary) -> Array[String]:
 		return errors
 	if typeof(entry.get("auto")) != TYPE_BOOL:
 		errors.append("'auto' must be a boolean")
-	elif bool(entry["auto"]) and String(shape) != "arc":
-		errors.append("only an 'arc' attack can be automatic (auto attacks need a target in front)")
+	elif bool(entry["auto"]) and String(shape) == "targeted_aoe":
+		errors.append("a 'targeted_aoe' attack cannot be automatic (auto attacks need a target in front)")
 	for key: String in ["stat", "damage_type", "color"]:
 		if typeof(entry.get(key)) != TYPE_STRING or String(entry[key]).strip_edges().is_empty():
 			errors.append("'%s' must be a non-empty string" % key)
@@ -161,6 +196,21 @@ static func validate_table(table: Dictionary) -> Array[String]:
 			errors.append("light: " + problem)
 		if String((table["light"] as Dictionary).get("shape", "arc")) != "arc":
 			errors.append("light: shape must be 'arc'")
+	if table.has("light_variants"):
+		if typeof(table["light_variants"]) != TYPE_DICTIONARY:
+			errors.append("light_variants: must be an object keyed by variant name")
+		else:
+			for variant_id: String in (table["light_variants"] as Dictionary).keys():
+				var variant: Variant = (table["light_variants"] as Dictionary)[variant_id]
+				if variant_id == DEFAULT_LIGHT:
+					errors.append("light_variants: '%s' is reserved for the plain 'light' entry" % DEFAULT_LIGHT)
+				if typeof(variant) != TYPE_DICTIONARY:
+					errors.append("light_variants.%s: entry must be an object" % variant_id)
+					continue
+				for problem: String in validate_entry(variant):
+					errors.append("light_variants.%s: %s" % [variant_id, problem])
+				if String((variant as Dictionary).get("shape", "arc")) == "targeted_aoe":
+					errors.append("light_variants.%s: shape must be 'arc' or 'projectile'" % variant_id)
 	if not table.has("heavy"):
 		errors.append("missing required attack 'heavy' (an object keyed by class id)")
 	elif typeof(table["heavy"]) != TYPE_DICTIONARY or (table["heavy"] as Dictionary).is_empty():
@@ -178,18 +228,22 @@ static func validate_table(table: Dictionary) -> Array[String]:
 	return errors
 
 
-## The attacks one character uses: {&"light": entry, &"heavy": that class's heavy}.
+## The attacks one character uses: {&"light": that character's light, &"heavy": that class's heavy}.
 ## Every problem is push_error'd. A class with no valid heavy is an error and
 ## falls back to the first valid heavy so the game still runs.
-static func load_valid(class_id: String) -> Dictionary:
+static func load_valid(class_id: String, light_variant: String = DEFAULT_LIGHT) -> Dictionary:
 	var table: Dictionary = {}
 	for attack_id: String in _table.ids():
 		table[attack_id] = _table.get_entry(attack_id)
 	for problem: String in validate_table(table):
 		push_error("AttackDatabase: " + problem)
 	var valid: Dictionary = {}
-	if typeof(table.get("light")) == TYPE_DICTIONARY and validate_entry(table["light"]).is_empty():
-		valid[&"light"] = table["light"]
+	var light_entry: Dictionary = get_light(light_variant)
+	if light_entry.is_empty():
+		push_error("AttackDatabase: no light attack variant '%s'; using the default" % light_variant)
+		light_entry = get_light(DEFAULT_LIGHT)
+	if not light_entry.is_empty() and validate_entry(light_entry).is_empty():
+		valid[&"light"] = light_entry
 	var heavy_entry: Dictionary = get_heavy(class_id)
 	if heavy_entry.is_empty() or not validate_entry(heavy_entry).is_empty():
 		push_error("AttackDatabase: class '%s' has no valid heavy attack" % class_id)

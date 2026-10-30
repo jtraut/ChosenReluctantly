@@ -424,7 +424,7 @@ func test_a_disabled_reject_cannot_be_chosen_by_signal_or_controller() -> void:
 func test_full_deck_survives_try_again_and_the_full_deck_still_gets_offers() -> void:
 	RunSession.full_deck = true
 	var state := RunSession.begin_new_run(42)
-	var full_size := CardDatabase.all_cards().size()
+	var full_size := RunConfig.cards_in_pools(RunConfig.character_pools()).size()  # the Rogue's whole pool set
 	assert_int(state.deck.size()).is_equal(full_size)
 	var main := _spawn()
 	await _frames(1)

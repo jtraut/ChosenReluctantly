@@ -132,9 +132,10 @@ func test_validate_reports_a_stage_with_no_spawns_and_an_unreachable_wave_gate()
 
 
 func test_a_short_starting_deck_is_reported_with_the_shortfall() -> void:
-	var config := _shipped()
-	config["starting_deck"] = ["rogue_quick_slash", "rogue_flurry", "fire_fireball"]
-	var problems := RunConfig.deck_problems(config)
+	# The starter lives in data/characters.json (W1a): a short one is reported by the character validator.
+	var entry: Dictionary = CharacterDatabase.get_entry("rogue").duplicate(true)
+	entry["starting_deck"] = ["rogue_quick_slash", "rogue_flurry", "fire_fireball"]
+	var problems := CharacterDatabase.validate_entry("rogue", entry)
 	assert_array(problems).has_size(1)
 	assert_str(problems[0]).contains("needs")
 

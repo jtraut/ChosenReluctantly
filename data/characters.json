@@ -1,0 +1,36 @@
+{
+    "rogue": {
+        "display_name": "Rogue",
+        "description": "Melee. Hits what is in front of it, up close.",
+        "class_pool": "rogue",
+        "element_pool": "fire",
+        "pools": ["rogue", "fire", "neutral"],
+        "max_hp": 30.0,
+        "body_color": "#338ce6",
+        "attacks": { "light": "default", "heavy": "rogue" },
+        "starting_deck": [
+            "rogue_quick_slash", "rogue_overhand_whatever", "fire_ember_whatever",
+            "fire_fine_burn_then", "rogue_everyone_calm_down", "neutral_shrug_bomb",
+            "fire_hot_head", "neutral_deep_sigh", "rogue_not_my_problem",
+            "fire_blaze_and_bail", "rogue_ugh_fine_moving", "neutral_backward_leap",
+            "neutral_healing_potion", "rogue_nap_time", "neutral_regeneration"
+        ]
+    },
+    "wizard": {
+        "display_name": "Wizard",
+        "description": "Ranged. Fires a bolt at the cursor and keeps its distance.",
+        "class_pool": "wizard",
+        "element_pool": "fire",
+        "pools": ["wizard", "fire", "neutral"],
+        "max_hp": 26.0,
+        "body_color": "#8a4fe0",
+        "attacks": { "light": "wizard", "heavy": "wizard" },
+        "starting_deck": [
+            "fire_ember_whatever", "fire_flaming_nonsense", "neutral_pointy_stick",
+            "fire_fine_burn_then", "fire_fireball", "neutral_shrug_bomb",
+            "fire_hot_head", "neutral_deep_sigh", "wizard_borrowed_focus",
+            "fire_blaze_and_bail", "neutral_backward_leap", "wizard_sideways_blink",
+            "neutral_healing_potion", "neutral_leech", "neutral_regeneration"
+        ]
+    }
+}

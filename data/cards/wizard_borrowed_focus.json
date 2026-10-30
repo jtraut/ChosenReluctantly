@@ -1,0 +1,19 @@
+{
+    "id": "wizard_borrowed_focus",
+    "name": "Borrowed Focus",
+    "slot_type": "utility",
+    "pool": "wizard",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "Concentrates, briefly, on someone else's problem.",
+    "effects": [
+        {
+            "template": "buff",
+            "params": {
+                "stat": "slot_cooldown.attack_aoe",
+                "modifier_type": "additive",
+                "value": -0.8,
+                "duration": 6.0
+            }
+        }
+    ]
+}

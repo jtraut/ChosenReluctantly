@@ -1,0 +1,18 @@
+{
+    "id": "wizard_sideways_blink",
+    "name": "Sideways Blink",
+    "slot_type": "movement",
+    "pool": "wizard",
+    "cooldown_modifier": 0.5,
+    "flavor_text": "Elsewhere, but only slightly.",
+    "effects": [
+        {
+            "template": "dash",
+            "params": {
+                "distance": 5.5,
+                "speed": 40.0,
+                "invulnerable": true
+            }
+        }
+    ]
+}

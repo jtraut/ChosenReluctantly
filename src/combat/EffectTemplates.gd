@@ -42,6 +42,8 @@ const STATUS_TARGETS: Array[String] = ["last_hits", "self"]
 ##   aoe (optional): max_range places the disc at the aim point clamped to that range (a card version of
 ##     the targeted_aoe heavy); without it the disc is centred on the caster.
 ##   projectile (optional, 3c): yaw_degrees turns the shot's direction about the vertical axis (a fan of shots).
+##   projectile (optional, W1a, code-only): direction (a Vector3, flattened by the caller) replaces the caster's facing; lane false
+##     skips the player's hit-area strip (the auto-firing Wizard bolt would flood the effect pool with one per shot).
 ##   aoe (optional, 3c): vfx false skips the impact visual, for a caller that draws its own at the right reach (the boss).
 ##   aoe (optional, C1-c): delay (seconds, 0..MAX_AOE_DELAY) locks the disc where it is at cast, shows the shared
 ##     ground telegraph growing for `delay`, then hits. A caster that dies or is freed in that time cancels the hit.
@@ -416,6 +418,8 @@ static func _projectile_shot(params: Dictionary, context: EffectContext, index: 
 	var instance: Projectile = scene.instantiate()
 	context.spawn_parent.add_child(instance)
 	var forward: Vector3 = -context.caster.global_transform.basis.z
+	if params.has("direction"):
+		forward = (params["direction"] as Vector3).normalized()  # code-only: the Wizard's light flies to the reticle, not where the body faces
 	if params.has("yaw_degrees"):
 		forward = forward.rotated(Vector3.UP, deg_to_rad(float(params["yaw_degrees"])))  # a fan of shots (boss volley)
 	var origin: Vector3 = context.caster.global_position + forward * PROJECTILE_MUZZLE_OFFSET
@@ -424,7 +428,7 @@ static func _projectile_shot(params: Dictionary, context: EffectContext, index: 
 	instance.knockback_strength = params.get("knockback_strength", 0.0)
 	instance.set_source(context.caster, _kind_for(index))
 	# Player shots only: an enemy shot's lane would look like a telegraph it is not.
-	if context.caster_team == "player":
+	if context.caster_team == "player" and bool(params.get("lane", true)):
 		TemplateVfx.projectile_lane(_vfx_pool(context), origin, forward, float(params["max_range"]), float(params["hit_radius"]),
 				ElementVisuals.visual_for_damage_type(String(params["damage_type"])))
 	instance.launch(origin, forward, params["damage"], params["damage_type"], params["speed"], params["max_range"], context.caster_team)

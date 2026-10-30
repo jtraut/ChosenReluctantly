@@ -39,6 +39,7 @@ var run_blocked: bool = false
 
 func _enter_tree() -> void:
 	WorldRef.register(self)
+	_choose_character()
 
 
 func _exit_tree() -> void:
@@ -65,6 +66,18 @@ func _ready() -> void:
 	if not problems.is_empty():
 		push_error("Main scene self-check FAILED (world may render empty): " + "; ".join(problems))
 	_setup_debug_capture()
+
+
+## Run mode: the run's class must be known before the Player's _ready (children are ready after this node enters the
+## tree), because it decides the Player's pools, max HP, body colour and attacks. The endless arena always plays the default
+## character (the seeded baselines, tests and the soak assume it).
+func _choose_character() -> void:
+	var controller := get_node_or_null("RunController") as RunController
+	var hero := get_node_or_null("Player") as Player
+	if controller == null or hero == null or not uses_run_mode(run_mode, OS.get_cmdline_user_args()) or not RunConfig.is_valid():
+		return
+	if controller.prepare(self):
+		hero.character_id = controller.character_id()
 
 
 ## A scenario capture keeps the endless arena even on a normal launch (their seeded baselines and scripted
@@ -159,7 +172,7 @@ func restart_arena() -> void:
 	if _restarting:
 		return
 	if run_controller != null:
-		RunSession.begin_new_run()
+		RunSession.begin_new_run(-1, run_controller.character_id())  # Try again keeps the class (a pick screen can change it)
 	swap_to_fresh_scene()
 
 

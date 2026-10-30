@@ -37,9 +37,13 @@ var dodge_speed: float = 20.0
 var dodge_duration: float = 0.25
 var dodge_cooldown: float = 0.8
 
-## Milestone 2 has one character: a Fire Rogue with no class/element pick
-## yet, so this is a fixed export rather than real character creation.
-@export var owned_pools: Array[String] = ["rogue", "fire", "neutral"]
+## Which character this is (a key of data/characters.json: rogue, wizard). "" = work it out from `owned_pools`, else the
+## default (Rogue). Main sets it before _ready in a run, from the run's class. It picks the pools, max HP, body colour,
+## light and heavy attack and the starter deck's pools (W1a).
+@export var character_id: String = ""
+## The pools the cards come from. Empty (the default) = the character's pools from data/characters.json; a test or
+## capture can set its own before the player enters the tree.
+@export var owned_pools: Array[String] = []
 
 ## Input action names per slot index, built once (formatting them each frame allocates strings).
 const USE_ACTIONS: Array[StringName] = [&"slot_1", &"slot_2", &"slot_3", &"slot_4", &"slot_5"]
@@ -131,6 +135,7 @@ const DASH_TRAIL_INTERVAL := 0.04
 
 
 func _ready() -> void:
+	_apply_character()
 	health.stat_modifiers = stat_modifiers  # the player's armor reads the `armor` stat (plumbing: base 0, nothing grants it yet)
 	var team := hurtbox.team if hurtbox != null else "player"
 	var card_rng: RandomNumberGenerator = null
@@ -171,8 +176,22 @@ func _ready() -> void:
 	var material: Material = body_mesh.get_active_material(0)
 	if material is StandardMaterial3D:
 		var unique_material: StandardMaterial3D = (material as StandardMaterial3D).duplicate()
+		unique_material.albedo_color = CharacterDatabase.body_color(character_id)  # the class's placeholder body colour
 		body_mesh.material_override = unique_material
 		_base_body_color = unique_material.albedo_color
+
+
+## Fills in the character from data/characters.json: which class this is, its pools (unless a test set its own) and its
+## max HP. The body colour is applied where the unique body material is made.
+func _apply_character() -> void:
+	if character_id == "" and not owned_pools.is_empty():
+		character_id = CharacterDatabase.id_for_pools(owned_pools)
+	if not CharacterDatabase.has(character_id):
+		character_id = CharacterDatabase.DEFAULT_ID
+	if owned_pools.is_empty():
+		owned_pools = CharacterDatabase.pools(character_id)
+	health.max_health = CharacterDatabase.max_hp(character_id)
+	health.current_health = health.max_health
 
 
 func _physics_process(delta: float) -> void:
@@ -501,7 +520,8 @@ func _set_pass_through(active: bool) -> void:
 
 
 func _setup_attacks() -> void:
-	var defs := AttackDatabase.load_valid(character_class_id())
+	var heavy_class: String = _heavy_class_override if not _heavy_class_override.is_empty() else CharacterDatabase.heavy_class(character_id)
+	var defs := AttackDatabase.load_valid(heavy_class, CharacterDatabase.light_variant(character_id))
 	attacks = AttackController.new(defs, stat_modifiers)
 	attacks.attack_started.connect(_on_attack_started)
 	attacks.attack_fired.connect(_on_attack_fired)
@@ -548,10 +568,11 @@ func _attack_has_target(attack_id: StringName) -> bool:
 	if not is_inside_tree():
 		return false
 	var def := attacks.get_def(attack_id)
+	var gate_direction: Vector3 = _projectile_direction() if String(def["shape"]) == "projectile" else -global_transform.basis.z
 	var hits := MeleeQuery.find_hurtboxes_in_cone(
 		get_world_3d().direct_space_state,
 		global_position,
-		-global_transform.basis.z,
+		gate_direction,
 		float(def["range"]),
 		float(def["half_angle_degrees"]),
 		hurtbox.team if hurtbox != null else "player",
@@ -678,6 +699,21 @@ func _on_attack_fired(attack_id: StringName) -> void:
 			"center": target,
 			"knockback_strength": def["knockback"],
 		}, context)
+	elif String(def["shape"]) == "projectile":
+		# The Wizard's light: the shared "projectile" template, flying along the line to the reticle. The damage
+		# lands when the bolt arrives, so there is no hit-stop or shake here (the hit itself brings the usual ones).
+		EffectTemplates.execute("projectile", {
+			"damage": def["damage"],
+			"damage_type": def["damage_type"],
+			"speed": def["speed"],
+			"max_range": def["range"],
+			"hit_radius": def["hit_radius"],
+			"knockback_strength": def["knockback"],
+			"direction": _projectile_direction(),
+			"lane": false,
+		}, context)
+		attack_fired.emit(attack_id)
+		return
 	else:
 		# Light and heavy arcs are just "cone" effects with no card behind them, so
 		# they go through the same EffectTemplates path a Rogue card would.
@@ -695,6 +731,19 @@ func _on_attack_fired(attack_id: StringName) -> void:
 		Juice.hit_stop(float(def["hit_stop_duration"]), float(def["hit_stop_scale"]))
 		Juice.screen_shake(float(def["shake_strength"]), float(def["shake_duration"]))
 	attack_fired.emit(attack_id)
+
+
+## The flat direction a projectile light attack flies and is gated on: from the player to the aim point (the reticle),
+## else where the body faces. The body turns toward the reticle a few frames later, so this is what makes the bolt
+## fly to the reticle and not to where the body happened to look.
+func _projectile_direction() -> Vector3:
+	var aim: Variant = get_aim_point()
+	if aim != null:
+		var to_aim: Vector3 = (aim as Vector3) - global_position
+		to_aim.y = 0.0
+		if to_aim.length_squared() > 0.0025:
+			return to_aim.normalized()
+	return get_aim_direction()
 
 
 ## Light/heavy clicks and card slot keys are latched here, not polled, so a UI screen

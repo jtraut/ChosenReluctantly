@@ -14,26 +14,46 @@ static var full_deck: bool = false
 ## `--deck=<name>` (T-decks): the debug preset every new run starts with ({} = none, the normal starting deck). The preset's
 ## `starter` list is used, or its `full` list with `full_deck`. Sticky for the launch like `full_deck`, so Try again keeps it.
 static var debug_deck: Dictionary = {}
+## The character the next new run is played as ("" = not chosen: the last pick, else the Rogue). Set by `--class`, a
+## `--deck` preset's class, a confirmed pick, or a tool. Sticky for the launch like `debug_deck`, so Try again keeps it.
+static var selected_character: String = ""
+## True when a launch argument (`--class`, or a `--deck` preset, which names a class) fixed the character: a pick screen
+## skips itself then, so a tool or a scripted launch never stalls on it.
+static var character_forced: bool = false
 
 
 static func has_run() -> bool:
 	return current != null
 
 
-## Starts a new run from the shipped config. `seed_value` < 0 uses `forced_seed`, else a random seed.
-static func begin_new_run(seed_value: int = -1) -> RunState:
+## The character the next new run uses: the selection, else the remembered last pick, else the Rogue.
+static func chosen_character() -> String:
+	if CharacterDatabase.has(selected_character):
+		return selected_character
+	return CharacterPick.last_pick()
+
+
+## The class a debug preset deck is for (its `class` field; the Rogue when it has none).
+static func preset_character(preset: Dictionary) -> String:
+	return str(preset.get("class", CharacterDatabase.DEFAULT_ID))
+
+
+## Starts a new run from the shipped config. `seed_value` < 0 uses `forced_seed`, else a random seed. `character`
+## "" = `chosen_character()`. A debug preset is used only when it is for the same class (else the class's own starter).
+static func begin_new_run(seed_value: int = -1, character: String = "") -> RunState:
 	var chosen: int = seed_value
 	if chosen < 0:
 		chosen = forced_seed
 		forced_seed = -1  # used once: "Try again" must get a new seed
 	if chosen < 0:
 		chosen = new_random_seed()
+	var who: String = character if CharacterDatabase.has(character) else chosen_character()
 	var deck: Array[String]
-	if not debug_deck.is_empty():
+	if not debug_deck.is_empty() and preset_character(debug_deck) == who:
 		deck = DebugDecks.deck_of(debug_deck, full_deck)
 	else:
-		deck = RunConfig.cards_in_pools(RunConfig.character_pools()) if full_deck else RunConfig.starting_deck()
-	current = RunState.new_run(chosen, deck, RunConfig.rejects_per_run())
+		deck = CharacterDatabase.full_deck(who) if full_deck else CharacterDatabase.starting_deck(who)
+	current = RunState.new_run(chosen, deck, RunConfig.rejects_per_run(), who)
 	return current
 
 

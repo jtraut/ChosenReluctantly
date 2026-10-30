@@ -1,5 +1,6 @@
 {
     "rogue": { "kind": "class", "display_name": "Rogue" },
+    "wizard": { "kind": "class", "display_name": "Wizard" },
     "fire": {
         "kind": "element",
         "display_name": "Fire",

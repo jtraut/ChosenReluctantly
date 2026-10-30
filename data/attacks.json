@@ -36,7 +36,10 @@
             "status_chance_multiplier": 2.5,
             "element_status_duration": 3.0,
             "on_hit_statuses": [
-                { "status_id": "stun", "chance": 1.0 }
+                {
+                    "status_id": "stun",
+                    "chance": 1.0
+                }
             ],
             "knockback": 8.0,
             "hit_stop_duration": 0.1,
@@ -53,7 +56,7 @@
             "interval": 1.8,
             "manual_click_max_rate_ratio": 0.0,
             "damage": 8.5,
-            "damage_type": "physical",
+            "damage_type": "neutral",
             "radius": 2.0,
             "max_range": 7.0,
             "wind_up": 0.6,
@@ -67,6 +70,31 @@
             "shake_duration": 0.2,
             "color": "#a070ff",
             "flash_duration": 0.25
+        }
+    },
+    "light_variants": {
+        "wizard": {
+            "shape": "projectile",
+            "auto": true,
+            "stat": "attack_interval.light",
+            "interval": 0.6,
+            "manual_click_max_rate_ratio": 1.5,
+            "damage": 2.4,
+            "damage_type": "neutral",
+            "range": 12.0,
+            "speed": 24.0,
+            "hit_radius": 0.25,
+            "half_angle_degrees": 12.0,
+            "wind_up": 0.0,
+            "wind_up_move_slow": 0.0,
+            "status_chance_multiplier": 0.0,
+            "knockback": 1.5,
+            "hit_stop_duration": 0.03,
+            "hit_stop_scale": 0.2,
+            "shake_strength": 0.05,
+            "shake_duration": 0.08,
+            "color": "#c9a8ff",
+            "flash_duration": 0.1
         }
     }
 }

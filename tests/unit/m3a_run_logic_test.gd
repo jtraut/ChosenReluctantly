@@ -25,7 +25,7 @@ func _problems(config: Dictionary) -> Array[String]:
 
 func test_shipped_run_json_is_valid() -> void:
 	assert_array(_problems(_shipped())).is_empty()
-	assert_array(RunConfig.deck_problems(_shipped())).is_empty()
+	assert_array(CharacterDatabase.validate_shipped()).is_empty()
 	assert_bool(RunConfig.is_valid()).is_true()
 
 
@@ -66,8 +66,6 @@ func test_validation_rejects_bad_data() -> void:
 		{"path": ["placement", "boss_last"], "value": false},
 		{"path": ["rest_heal_fraction"], "value": 1.5},
 		{"path": ["rejects_per_run"], "value": -1},
-		{"path": ["starting_deck"], "value": []},
-		{"path": ["starting_deck"], "value": ["not_a_card"]},
 		{"path": ["tiers", "elite", "hp_multiplier"], "value": 0.5},
 		{"path": ["tiers", "elite", "resistance_floor"], "value": 0.9},
 		{"path": ["tiers", "boss", "rank"], "value": "king"},

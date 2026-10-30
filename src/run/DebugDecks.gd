@@ -7,6 +7,11 @@ extends RefCounted
 ## File format: {"name": <file name without .json>, "description": "one line", "full": [card ids, copies allowed],
 ## "starter": [card ids, a sub-multiset of full]}. Both lists must pass the deck rules (DeckRules) and name real cards.
 ## There is deliberately no rule-bypass option.
+##
+## Optional "class": a character id from data/characters.json (default: the default character, the Rogue). A preset is for one class: every card in
+## it must come from that class's pools, `--deck` alone starts the run as that class, and `--class` must agree with it.
+##
+## `--class=<id>` is parsed here too (resolve_launch), because it must be checked against `--deck` before anything starts.
 
 const DEFAULT_DIR := "res://data/debug_decks"
 const EXIT_CONTINUE := -1
@@ -37,6 +42,9 @@ static func read_dir(dir_path: String = DEFAULT_DIR) -> Dictionary:
 	file_names.sort()
 	var slot_of: Dictionary = DeckRules.slot_map_from_database()
 	var slot_names: Dictionary = DeckRules.slot_names_from_database()
+	var pool_of: Dictionary = {}
+	for card: Variant in CardDatabase.all_cards():
+		pool_of[(card as Dictionary)["id"]] = (card as Dictionary).get("pool", "")
 	for file_name: String in file_names:
 		var preset_name: String = file_name.get_basename()
 		names.append(preset_name)
@@ -46,7 +54,7 @@ static func read_dir(dir_path: String = DEFAULT_DIR) -> Dictionary:
 			var bad: Array[String] = ["the file is not a JSON object" if file != null else "the file could not be opened"]
 			problems[preset_name] = bad
 			continue
-		var found: Array[String] = validate_preset(preset_name, parsed, slot_of, DeckRules.shipped_config(), SlotTypeDatabase.known_ids(), slot_names)
+		var found: Array[String] = validate_preset(preset_name, parsed, slot_of, DeckRules.shipped_config(), SlotTypeDatabase.known_ids(), slot_names, pool_of)
 		if found.is_empty():
 			presets[preset_name] = parsed
 		else:
@@ -54,8 +62,9 @@ static func read_dir(dir_path: String = DEFAULT_DIR) -> Dictionary:
 	return result
 
 
-## Problems with one preset (empty = valid). `file_name` is the name from the file path.
-static func validate_preset(file_name: String, data: Variant, slot_of: Dictionary, rules: Dictionary, known_slots: Array, slot_names: Dictionary) -> Array[String]:
+## Problems with one preset (empty = valid). `file_name` is the name from the file path. `pool_of` (card id -> pool id,
+## optional) turns on the check that every card belongs to the preset's class pools.
+static func validate_preset(file_name: String, data: Variant, slot_of: Dictionary, rules: Dictionary, known_slots: Array, slot_names: Dictionary, pool_of: Dictionary = {}) -> Array[String]:
 	var errors: Array[String] = []
 	if typeof(data) != TYPE_DICTIONARY:
 		errors.append("the preset is not a JSON object")
@@ -65,6 +74,13 @@ static func validate_preset(file_name: String, data: Variant, slot_of: Dictionar
 		errors.append("'name' must be the file name '%s' (got %s)" % [file_name, str(preset.get("name"))])
 	if typeof(preset.get("description")) != TYPE_STRING or String(preset["description"]).strip_edges().is_empty():
 		errors.append("'description' must be a non-empty one-line string")
+	var class_id: String = CharacterDatabase.DEFAULT_ID
+	if preset.has("class"):
+		if typeof(preset["class"]) != TYPE_STRING or not CharacterDatabase.has(String(preset["class"])):
+			errors.append("'class' must be a character id from characters.json (got %s)" % str(preset["class"]))
+			class_id = ""
+		else:
+			class_id = String(preset["class"])
 	var lists_ok: bool = true
 	for key: String in ["full", "starter"]:
 		var list: Variant = preset.get(key)
@@ -81,6 +97,14 @@ static func validate_preset(file_name: String, data: Variant, slot_of: Dictionar
 				lists_ok = false
 	if not lists_ok:
 		return errors
+	if class_id != "" and not pool_of.is_empty():
+		var allowed: Array[String] = CharacterDatabase.pools(class_id)
+		for key: String in ["full", "starter"]:
+			for card_id: Variant in (preset[key] as Array):
+				var pool: String = str(pool_of.get(String(card_id), ""))
+				if not allowed.has(pool):
+					errors.append("%s: '%s' is a %s card; a %s deck may only use %s" % [key, str(card_id), pool, class_id, "/".join(allowed)])
+					break
 	for key: String in ["full", "starter"]:
 		var result: DeckCheck = DeckRules.check(preset[key] as Array, rules, slot_of, known_slots, slot_names)
 		for problem: String in result.problems:
@@ -132,13 +156,15 @@ static func list_lines(directory: Dictionary) -> Array[String]:
 
 
 ## Reads the launch args (the user args after `--`) against a read_dir result. Returns
-## {"exit": EXIT_CONTINUE | EXIT_OK | EXIT_REFUSED, "lines": [text to print], "errors": [text to push_error], "deck": preset name or ""}.
+## {"exit": EXIT_CONTINUE | EXIT_OK | EXIT_REFUSED, "lines": [text to print], "errors": [text to push_error], "deck": preset name or "",
+## "character": the class the launch fixes ("" = not fixed: a `--class`, else the `--deck` preset's class)}.
 ## EXIT_OK means print `lines` and quit (--list-decks); EXIT_REFUSED means the launch must not start.
 static func resolve_launch(args: PackedStringArray, directory: Dictionary) -> Dictionary:
 	var lines: Array[String] = []
 	var errors: Array[String] = []
-	var result: Dictionary = {"exit": EXIT_CONTINUE, "lines": lines, "errors": errors, "deck": ""}
+	var result: Dictionary = {"exit": EXIT_CONTINUE, "lines": lines, "errors": errors, "deck": "", "character": ""}
 	var requested: Array[String] = []
+	var classes: Array[String] = []
 	var listing: bool = false
 	for arg: String in args:
 		if arg == "--list-decks":
@@ -147,6 +173,10 @@ static func resolve_launch(args: PackedStringArray, directory: Dictionary) -> Di
 			requested.append("")
 		elif arg.begins_with("--deck="):
 			requested.append(arg.substr(7).strip_edges())
+		elif arg == "--class":
+			classes.append("")
+		elif arg.begins_with("--class="):
+			classes.append(arg.substr(8).strip_edges())
 	var presets: Dictionary = directory["presets"]
 	var names: Array[String] = directory["names"]
 	var problems: Dictionary = directory["problems"]
@@ -157,9 +187,23 @@ static func resolve_launch(args: PackedStringArray, directory: Dictionary) -> Di
 			errors.append("--list-decks: " + problem)
 		result["exit"] = EXIT_OK if (presets.size() == names.size() and load_problems.is_empty()) else EXIT_REFUSED
 		return result
-	if requested.is_empty():
-		return result
 	var valid_names: String = ", ".join(names)
+	var valid_classes: String = ", ".join(CharacterDatabase.ids())
+	var chosen_class: String = ""
+	if classes.size() > 1:
+		errors.append("--class was given %d times; give it once (valid classes: %s)" % [classes.size(), valid_classes])
+	elif classes.size() == 1:
+		if classes[0] == "":
+			errors.append("--class needs a name, as --class=<id> (valid classes: %s)" % valid_classes)
+		elif not CharacterDatabase.has(classes[0]):
+			errors.append("unknown class '%s' (valid classes: %s)" % [classes[0], valid_classes])
+		else:
+			chosen_class = classes[0]
+	if requested.is_empty():
+		result["character"] = chosen_class
+		if not errors.is_empty():
+			result["exit"] = EXIT_REFUSED
+		return result
 	if requested.size() > 1:
 		errors.append("--deck was given %d times; give it once (valid decks: %s)" % [requested.size(), valid_names])
 	elif requested[0] == "":
@@ -172,6 +216,12 @@ static func resolve_launch(args: PackedStringArray, directory: Dictionary) -> Di
 			errors.append("debug deck '%s' is invalid: %s" % [requested[0], str(problem)])
 	else:
 		result["deck"] = requested[0]
+		var preset_class: String = RunSession.preset_character(presets[requested[0]] as Dictionary)
+		if chosen_class != "" and chosen_class != preset_class:
+			errors.append("--deck=%s is a %s deck but --class=%s was given; they must agree (drop one of them)" % [requested[0], preset_class, chosen_class])
+		else:
+			chosen_class = preset_class
+	result["character"] = chosen_class
 	if not errors.is_empty():
 		result["exit"] = EXIT_REFUSED
 	return result

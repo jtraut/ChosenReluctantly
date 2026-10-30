@@ -92,6 +92,9 @@ var _deck_family: String = ""
 ## `--light-heavy-only`: the bot never presses the two attack card slots (1 and 2), so only light and heavy attacks hit.
 ## A bot attack policy, not a deck. It draws the same random numbers as without the flag.
 var _light_heavy_only: bool = false
+## `--sim-class=<id>` (wave sim -Class): play whole runs (-Run) as that character (data/characters.json). "" = the default Rogue.
+## A ranged class (its light attack is a projectile) gets a different bot stand-off, see _bot_step.
+var _sim_class: String = ""
 var _run_results: Array[Dictionary] = []
 var _card_casts: Dictionary = {}
 var _slot_stuck_since: Dictionary = {}
@@ -133,8 +136,17 @@ func _ready() -> void:
 					get_tree().quit(2)
 					return
 				RunSession.debug_deck = (directory["presets"] as Dictionary)[_deck_family]
+		elif arg.begins_with("--sim-class="):
+			_sim_class = arg.substr(12)
+			if not CharacterDatabase.has(_sim_class):
+				push_error("wave sim: -Class must be one of %s, got '%s'" % [", ".join(CharacterDatabase.ids()), _sim_class])
+				get_tree().quit(2)
+				return
+			RunSession.selected_character = _sim_class
 		elif arg.begins_with("--room-timeout="):
 			_room_timeout = maxf(10.0, float(arg.substr(15)))
+	if _sim_class != "" and not _run_mode:
+		print("note: -Class only applies to whole runs (-Run); the endless arena always plays the Rogue")
 	_run_all.call_deferred()
 
 
@@ -450,7 +462,7 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 		if d < nearest_d:
 			nearest_d = d
 			nearest = enemy
-		if d < 3.0:
+		if d < (RANGED_CROWD_RADIUS if _is_ranged_class() else 3.0):
 			crowd += 1
 		var wind: float = float(enemy.get("_telegraph_remaining"))
 		if wind > 0.0 and wind < 0.2 and d < (enemy.attack_range + 1.0 if not enemy.is_ranged else 9.0):
@@ -461,11 +473,16 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 	away.y = 0.0
 	away = away.normalized() if away.length() > 0.01 else Vector3.RIGHT
 	var want: Vector3 = Vector3.ZERO
-	if nearest_d < 2.3:
+	# A ranged character (projectile light) keeps its distance: back off inside RANGED_BACK_OFF, close in beyond
+	# RANGED_CLOSE_IN, otherwise strafe. The melee numbers are untouched, so Rogue sims repeat exactly.
+	var ranged: bool = _is_ranged_class()
+	var back_off: float = RANGED_BACK_OFF if ranged else 2.3
+	var close_in: float = RANGED_CLOSE_IN if ranged else 4.5
+	if nearest_d < back_off:
 		want = away
-	elif _run_mode and _hunting(enemies) and nearest_d > 2.0:
+	elif _run_mode and _hunting(enemies) and nearest_d > (close_in if ranged else 2.0):
 		want = -away  # a room needs its last enemies dead: with only a few left (or only shooters) go and get them
-	elif nearest_d > 4.5:
+	elif nearest_d > close_in:
 		want = -away
 	else:
 		want = Vector3(-away.z, 0.0, away.x) * (1.0 if int(_sim_time / 3.0) % 2 == 0 else -1.0)
@@ -502,6 +519,19 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 			_press(StringName("slot_%d" % slot_number))
 	if _rng.randf() < 0.5:
 		_press(&"attack_light")
+
+
+## The Wizard stand-off (metres): its bolt reaches 12 m and its heavy disc 7 m, melee enemies close in on it.
+const RANGED_BACK_OFF := 5.0
+const RANGED_CLOSE_IN := 9.0
+const RANGED_CROWD_RADIUS := 6.0
+
+
+## True when the played character's light attack is a projectile (it can hit from far away).
+func _is_ranged_class() -> bool:
+	if _player == null or _player.attacks == null:
+		return false
+	return String(_player.attacks.get_def(&"light").get("shape", "arc")) == "projectile"
 
 
 ## Run mode only: true when the room is down to 2 enemies or fewer, or only ranged ones, so waiting for them to
@@ -929,10 +959,14 @@ func _print_pick_rates() -> void:
 	for card_id: Variant in _card_casts.keys():
 		total += int(_card_casts[card_id])
 	print("  card pick rates (%d casts over all runs; OUTLIER = under 0.4x or over 2.0x of its slot mean):" % total)
+	# Only the cards of the pools the played character draws from (the Rogue's by default), so a class's report
+	# does not list the other class's cards as never cast.
+	var played_pools: Array[String] = CharacterDatabase.pools(_sim_class if _sim_class != "" else CharacterDatabase.DEFAULT_ID)
 	for slot_type: String in CardSlotController.SLOT_TYPE_ORDER:
 		var ids: Array[String] = []
 		for card: Variant in CardDatabase.cards_for_slot_type(slot_type):
-			ids.append(String((card as Dictionary)["id"]))
+			if played_pools.has(String((card as Dictionary).get("pool", ""))):
+				ids.append(String((card as Dictionary)["id"]))
 		var in_slot: int = 0
 		for card_id: String in ids:
 			in_slot += int(_card_casts.get(card_id, 0))

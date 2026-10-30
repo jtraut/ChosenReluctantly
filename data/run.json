@@ -7,14 +7,6 @@
     },
     "rest_heal_fraction": 0.3,
     "rejects_per_run": 3,
-    "starting_deck": [
-        "rogue_quick_slash", "rogue_overhand_whatever", "fire_ember_whatever",
-        "fire_fine_burn_then", "rogue_everyone_calm_down", "neutral_shrug_bomb",
-        "fire_hot_head", "neutral_deep_sigh", "rogue_not_my_problem",
-        "fire_blaze_and_bail", "rogue_ugh_fine_moving", "neutral_backward_leap",
-        "neutral_healing_potion", "rogue_nap_time", "neutral_regeneration"
-    ],
-    "character_pools": ["rogue", "fire", "neutral"],
     "rewards": {
         "offer_size": 3,
         "unowned_weight": 4.0,

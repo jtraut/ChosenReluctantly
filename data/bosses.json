@@ -8,7 +8,7 @@
     "bosses": {
         "boss_guardian": {
             "display_name": "The Overly Enthusiastic Guardian",
-            "max_health": 280.0,
+            "max_health": 195.0,
             "resistance": 0.5,
             "armor": 50.0,
             "knockback_taken": 0.0,

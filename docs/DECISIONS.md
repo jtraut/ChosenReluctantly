@@ -1162,3 +1162,32 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
   - **Tuning reads the pellet-dodging bot as the primary measure for both classes**, since a human dodges visible pellets. The default bot is reported too. Rogue reference with `-DodgePellets`: boss 66.5 s. [Tuning to the default bot, which over-punishes the Wizard for a bot gap.]
   - **`-DodgePellets` stays opt-in for now,** so P-dodge's baselines still compare. Making it the default is a later tooling call. [Flipping it now and re-baselining mid-slice.]
   - **Ward duration must end up below its cycle** (no permanent armor with 2 copies).
+
+### 2026-10-30 - W1b tuning (gameplay-dev, logged by game-lead)
+- Built 2128ae4 (1152/1152; Rogue seeds 1-12 and hash 2484586390 unchanged). Wizard data only; no enemy changes were needed.
+- **Values:**
+  - Wizard `max_hp` 26 -> 22;
+  - light 2.4 -> 1.5 (3 DPS, 50% of the Rogue's; the old 80% was a W1a test pin, not a GDD rule);
+  - heavy 8.5 -> 5.5;
+  - Three Bolts 2.5 -> 2.2 per hit;
+  - Overqualified Bolt 12 -> 10.5;
+  - Personal Space, Enforced 11 -> 10.5;
+  - Ward 6 s -> 4 s (below its 5 s cycle).
+- **Balance table update** (supersedes the content-phase rows):
+
+  | Card | Cast | Cycle | DPS |
+  |---|---|---|---|
+  | wizard_bolt_volley | 6.6 | 1.2 s | 5.50 |
+  | wizard_overqualified_bolt | 10.5 | 1.8 s | 5.83 |
+  | wizard_arcane_nova | 10.5 | 2.0 s | 5.25 |
+
+- **Results (pellet-dodging bot, 12 seeds, 10 rooms; Rogue boss 66.5 s, 2.39 HP lost per room):**
+  - kiting Wizard 68.8 s (103%), 0.82 HP per room;
+  - non-kiting 47.6 s (72%), 1.82 HP per room;
+  - all won.
+  - Default bot: kiting 106% and non-kiting 70% boss time, 1.38 and 2.81 HP per room (Rogue 3.89).
+- **D18 = A is met:** rooms cost HP, less than the Rogue's; the Wizard is squishier; boss time is within 70-130%; no deaths.
+- **My calls on gameplay-dev's two questions (tuning numbers, cheap to reverse):**
+  - **The kiting Wizard losing under 1 HP per room is accepted.** The kiting bot is a ceiling; the non-kiting policy (about 75% of the Rogue's room cost) is the typical player. [More nerfs, which would push the non-kiting boss time under 70%.]
+  - **Raise Wizard HP to the smallest value where one full boss volley from full HP can't kill** (about 24, gameplay-dev confirms). The director asked for "not a sudden one-shot". A full-HP death to one telegraphed attack is the cliff we were fixing, even if the bot never saw it. 24 is still squishier than 26. [Keeping 22.]
+  - **The non-kiting boss time sits at the 70% floor;** HP 24 doesn't change damage output, so it stays near 70-72%. qa's independent re-run decides whether it needs one more notch. [Pre-emptively cutting damage.]

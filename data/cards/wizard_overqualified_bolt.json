@@ -1,0 +1,21 @@
+{
+    "id": "wizard_overqualified_bolt",
+    "name": "Overqualified Bolt",
+    "slot_type": "attack_single",
+    "pool": "wizard",
+    "cooldown_modifier": 0.8,
+    "flavor_text": "A lot of education went into this. It shows on impact.",
+    "effects": [
+        {
+            "template": "projectile",
+            "params": {
+                "damage": 12,
+                "damage_type": "neutral",
+                "speed": 30.0,
+                "max_range": 16.0,
+                "hit_radius": 0.35,
+                "knockback_strength": 3.0
+            }
+        }
+    ]
+}

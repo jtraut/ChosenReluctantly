@@ -1,0 +1,19 @@
+{
+    "id": "wizard_ward",
+    "name": "Ward, Technically",
+    "slot_type": "utility",
+    "pool": "wizard",
+    "cooldown_modifier": 1.0,
+    "flavor_text": "A thin shimmer between you and consequences.",
+    "effects": [
+        {
+            "template": "buff",
+            "params": {
+                "stat": "armor",
+                "modifier_type": "additive",
+                "value": 25.0,
+                "duration": 6.0
+            }
+        }
+    ]
+}

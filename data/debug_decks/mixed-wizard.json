@@ -1,0 +1,19 @@
+{
+    "name": "mixed-wizard",
+    "class": "wizard",
+    "description": "Wizard: the normal 15-card starter; full is every Wizard, Fire and neutral card (the whole pool, 22).",
+    "starter": [
+        "wizard_bolt_volley", "wizard_overqualified_bolt", "fire_flaming_nonsense",
+        "wizard_arcane_nova", "fire_fireball", "fire_fine_burn_then",
+        "fire_hot_head", "neutral_deep_sigh", "wizard_borrowed_focus",
+        "wizard_sideways_blink", "wizard_tactical_hover", "neutral_backward_leap",
+        "neutral_healing_potion", "neutral_leech", "neutral_regeneration"
+    ],
+    "full": [
+        "wizard_bolt_volley", "wizard_overqualified_bolt", "fire_ember_whatever", "fire_flaming_nonsense", "neutral_pointy_stick",
+        "wizard_arcane_nova", "fire_fireball", "fire_fine_burn_then", "fire_wall", "neutral_shrug_bomb",
+        "fire_hot_head", "neutral_deep_sigh", "wizard_borrowed_focus", "wizard_footwork_allegedly", "wizard_ward",
+        "wizard_sideways_blink", "wizard_tactical_hover", "neutral_backward_leap", "fire_blaze_and_bail",
+        "neutral_healing_potion", "neutral_leech", "neutral_regeneration"
+    ]
+}

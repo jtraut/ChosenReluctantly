@@ -42,6 +42,7 @@ const DEFAULT_TEXT: Dictionary = {
 	"status_heal_over_time": "%s %s HP/s for %s s",
 	"cooldown": "Cooldown %s s",
 	"slot_cooldown": "%s cooldown %s s",
+	"armor": "%s armor",
 	"for": "for %s s",
 }
 
@@ -123,6 +124,8 @@ static func buff_text(params: Dictionary, text: Dictionary = {}) -> String:
 		var slot_type: String = stat.get_slice(".", 1)
 		var slot_name: String = String((text.get("slot_names", {}) as Dictionary).get(slot_type, slot_type.replace("_", " ").capitalize()))
 		head = String(_word(text, "slot_cooldown")) % [slot_name, amount]
+	elif stat == "armor" and not multiplicative:
+		head = String(_word(text, "armor")) % amount  # "+25 armor": the number says what it is
 	else:
 		head = "%s %s" % [stat.replace(".", " ").replace("_", " ").capitalize(), amount]
 	return "%s %s" % [head, duration]

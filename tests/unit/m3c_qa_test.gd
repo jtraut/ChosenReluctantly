@@ -315,7 +315,7 @@ func test_qa_no_effect_line_carries_a_card_id_a_stat_id_or_a_format_leftover() -
 		# Every number is followed by something that says what it is.
 		var regex := RegEx.new()
 		regex.compile("\\d+(\\.\\d+)?")
-		var units: Array[String] = [" s", " m", " HP", "%", " fire", " physical", " water", " damage", " hits"]
+		var units: Array[String] = [" s", " m", " HP", "%", " fire", " physical", " neutral", " armor", " water", " damage", " hits"]
 		for found in regex.search_all(line):
 			var after: String = line.substr(found.get_end(), 10)
 			var has_unit: bool = false

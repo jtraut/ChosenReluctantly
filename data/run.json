@@ -57,7 +57,7 @@
             "pass_through": "Walk through enemies for %s s",
             "status_plain": "%s for %s s", "status_lifesteal": "%s %d%% for %s s",
             "status_damage_over_time": "%s %s damage/s for %s s", "status_heal_over_time": "%s %s HP/s for %s s",
-            "cooldown": "Cooldown %s s", "slot_cooldown": "%s cooldown %s s", "for": "for %s s"
+            "cooldown": "Cooldown %s s", "slot_cooldown": "%s cooldown %s s", "armor": "%s armor", "for": "for %s s"
         },
         "option": { "unavailable": "Unavailable: %s", "owned": "You own %d", "slot_now": "Slot %d now: %s", "copies": "x%d", "slot_key": "Slot %d", "pick_hint": "Enter to pick", "act_hint": "Enter to choose", "remove_hint": "Enter to remove", "list_hint": "Keys 1-%d highlight, Enter or click confirms", "remove_list_hint": "Keys 1-%d jump to that slot column, Enter confirms" },
         "room_label": "Room %d of %d",

@@ -1,0 +1,22 @@
+{
+    "id": "wizard_bolt_volley",
+    "name": "Three Bolts, Reluctantly",
+    "slot_type": "attack_single",
+    "pool": "wizard",
+    "cooldown_modifier": 0.2,
+    "flavor_text": "One would have been plenty. Rules say three.",
+    "effects": [
+        {
+            "template": "projectile",
+            "params": {
+                "damage": 2.5,
+                "damage_type": "neutral",
+                "speed": 22.0,
+                "max_range": 13.0,
+                "hit_radius": 0.25,
+                "hits": 3,
+                "hit_interval": 0.15
+            }
+        }
+    ]
+}

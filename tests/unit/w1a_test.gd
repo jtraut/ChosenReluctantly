@@ -109,16 +109,16 @@ func test_wizard_full_deck_is_its_whole_pool_set_and_meets_the_rules() -> void:
 		assert_str(String(CardDatabase.get_card(card_id)["pool"])).is_not_equal("wizard")
 
 
-func test_wizard_pool_has_two_utility_and_two_movement_cards_and_no_new_templates() -> void:
+func test_wizard_pool_has_three_utility_and_two_movement_cards_and_no_new_templates() -> void:
 	var by_slot: Dictionary = {}
 	for card: Variant in CardDatabase.cards_for_pool("wizard"):
 		var slot_type: String = String((card as Dictionary)["slot_type"])
 		by_slot[slot_type] = int(by_slot.get(slot_type, 0)) + 1
 		for effect: Variant in ((card as Dictionary)["effects"] as Array):
 			assert_bool(EffectTemplates.is_known_template(String((effect as Dictionary)["template"]))).is_true()
-	assert_int(int(by_slot.get("utility", 0))).is_equal(2)
+	assert_int(int(by_slot.get("utility", 0))).is_equal(3)  # W1b: Ward joined Borrowed Focus and Footwork
 	assert_int(int(by_slot.get("movement", 0))).is_equal(2)
-	assert_int(CardDatabase.cards_for_pool("wizard").size()).is_equal(4)
+	assert_int(CardDatabase.cards_for_pool("wizard").size()).is_equal(8)  # W1b: + volley, bolt, nova, ward
 
 
 func test_character_validation_rejects_bad_entries() -> void:

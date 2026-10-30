@@ -1,0 +1,19 @@
+{
+    "id": "wizard_arcane_nova",
+    "name": "Personal Space, Enforced",
+    "slot_type": "attack_aoe",
+    "pool": "wizard",
+    "cooldown_modifier": -0.5,
+    "flavor_text": "A ring of arcane disapproval. Everyone steps back.",
+    "effects": [
+        {
+            "template": "aoe",
+            "params": {
+                "damage": 11,
+                "damage_type": "neutral",
+                "radius": 3.2,
+                "knockback_strength": 7.0
+            }
+        }
+    ]
+}

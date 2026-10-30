@@ -29,10 +29,10 @@
         "body_color": "#8a4fe0",
         "attacks": { "light": "wizard", "heavy": "wizard" },
         "starting_deck": [
-            "fire_ember_whatever", "fire_flaming_nonsense", "neutral_pointy_stick",
-            "fire_fine_burn_then", "fire_fireball", "neutral_shrug_bomb",
+            "wizard_bolt_volley", "wizard_overqualified_bolt", "fire_flaming_nonsense",
+            "wizard_arcane_nova", "fire_fireball", "fire_fine_burn_then",
             "fire_hot_head", "neutral_deep_sigh", "wizard_borrowed_focus",
-            "fire_blaze_and_bail", "neutral_backward_leap", "wizard_sideways_blink",
+            "wizard_sideways_blink", "wizard_tactical_hover", "neutral_backward_leap",
             "neutral_healing_potion", "neutral_leech", "neutral_regeneration"
         ]
     }

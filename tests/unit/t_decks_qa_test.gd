@@ -85,9 +85,9 @@ func test_full_deck_failing_the_rules_is_reported_separately_from_starter() -> v
 
 
 func test_shipped_presets_use_only_the_characters_pools_and_one_line_descriptions() -> void:
-	var pools: Array = RunConfig.character_pools()
 	for preset_name: String in _presets():
 		var preset: Dictionary = _presets()[preset_name]
+		var pools: Array = RunConfig.character_pools(String(preset.get("class", CharacterDatabase.DEFAULT_ID)))
 		assert_bool(String(preset["description"]).contains("\n")).is_false()
 		for key in ["starter", "full"]:
 			for card_id: String in preset[key]:

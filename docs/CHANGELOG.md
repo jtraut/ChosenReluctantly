@@ -2,7 +2,38 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-10-29 (Milestone 3c boss encounter; Milestone 3b rewards and deck-clean; Milestone 3a run structure; content slice C1: deck rules, nine Fire Rogue cards, solid enemies, status cues)
+## 2026-10-29 (Slice A1 armor; Milestone 3c boss encounter; Milestone 3b rewards and deck-clean; Milestone 3a run structure; content slice C1: deck rules, nine Fire Rogue cards, solid enemies, status cues)
+
+### Slice A1: armor
+
+Commits b23d7df..HEAD. Director decision b6f85bd (GDD section 7, "Armor"). Gameplay b23d7df..e141dfe; ux 1604f6b..bcf13a5; readability fix f0cb109. qa passed at 965 of 965 (9292e4b; `docs/reviews/2026-10-29-a1-armor-qa.md`), and the readability fix at 966 of 966 plus 2 qa tests (70a761f; `docs/reviews/2026-10-29-a1-uxfix-qa.md`). Playtest found no blocker (ff6e7f6; `docs/playtests/2026-10-29-a1-armor.md`).
+
+#### Added
+- **[Director decision] Armor, a non-elemental mitigation channel** (GDD section 7). Physical and neutral damage is reduced by armor: reduction = armor / (armor + K), K 50, capped at 50%. Elemental damage still goes through resistance, and armor never touches it. Before A1, physical was skipped by a hardcoded check, so the boss took 0% from physical and 50% from fire. Settings are in the new `data/armor.json`, read by `ArmorConfig`; which damage types count as non-elemental is data (`non_elemental_types`). (735bda7, b6f85bd)
+- **`Health.take_damage` is the single choke point** for both channels. Penetration is flat, read from the attacker's `armor_penetration` stat through `StatModifiers`. The player has armor 0 for now. Bleed ticks go through armor, Burn ticks through resistance, heals are untouched. (735bda7)
+- **Armor values (new):** elite tier 17, `tiers.boss` 27 (unused by the real boss), `boss_guardian` 50 (`data/run.json`, `data/bosses.json`). Armor and resistance of one tier must give reductions within 2 points; checked at load and by tests. (735bda7)
+- **Boss bar:** a shield pip and "Armor N% - Resists ..." text next to the resistance line. (1604f6b)
+- **Elite bars:** a shield pip left of the resistance diamond; size is `hp_bars.pip_scale` in `data/ui.json`. (62463d8, f0cb109)
+- **Damage numbers:** an armor-reduced hit shows `[9]` in muted grey at 85% size; a resisted hit shows `<4>`. The style appears only above a minimum reduction (`armor_min_reduction`, `resist_min_reduction`). Values under 1 show one decimal, never "0". (f67c317)
+- **F3 overlay "Defense" block:** armor and resistance of the enemy under the cursor (else the nearest), plus the player's armor. (4d22904)
+- **Scenarios** `boss_f3`, `elite_f3`, `armor_numbers` (new key `elite_indices`) for captures. (4d22904)
+- **Wave sim `-Deck <standard|fire|physical|lightheavy>`:** fixed test decks for armor comparisons. The decks are not legal (a tool-only flag skips the run-start minimums). (62fa964)
+
+#### Changed
+- **Balance (re-tune to keep fight length, whole-run sim, 16 seeds):** elite `hp_multiplier` 2.5 -> 2.0; boss `max_health` 280 -> 195. Armor alone had stretched the median elite room from 41.9 s to 56.9 s and the boss fight from 63.7 s to 85.9 s; after the re-tune they are 40.6 s and 63.4 s. (e141dfe)
+- **`tiers.boss.resistance_floor` 0.25 -> 0.35**, so its armor 27 passes the parity check and matches GDD section 7's 35% for bosses. (735bda7)
+- **Boss bar width 480 -> 560 px** (`boss_bar_size` is now 560 x 104). At 1024x768 the bar fits and the blocks stack. (1604f6b, f0cb109)
+- **Boss "all elements" text** is judged against the game's element list, not only the listed keys. (f0cb109)
+- Deck families against the standard deck, real HP (bot, god mode, 8 seeds): fire 0.93x, physical 1.04x boss fight time (before armor: 1.08x and 0.85x), both inside the director's 70 to 130% band. Details in `docs/DECISIONS.md`.
+
+#### Fixed
+- A `BossHpBar` error when the boss is freed while the bar is binding (seen in long light/heavy-only runs; also present on the 3c tag). (1604f6b)
+
+#### Docs and process
+- Docs pass for A1: README, ARCHITECTURE (new "Armor and mitigation" part, `armor.json`, sharp edges) and this file. No new third-party assets, so `docs/ASSETS.md` is unchanged.
+- Test count 907 -> 968 across A1.
+- Known and logged: a light and heavy only bot is about 3.2x slower on the boss (was 3.5x); game-lead judged it a bot limit, not a director question. `armor_reduction(INF)` returns NaN (not reachable from data).
+
 
 ### Milestone 3c: the boss encounter, and the reward-screen scroll fix
 

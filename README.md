@@ -19,7 +19,7 @@ A 3D isometric action RPG where your skills are cards: real-time combat driven b
 project.godot   Godot project (main scene: scenes/main/RunMain.tscn, the run; scenes/main/Main.tscn is the endless arena)
 src/            GDScript, grouped by system (camera, cards, combat, core, debug, effects, enemies, main, player, run, ui)
 scenes/         .tscn scenes
-data/           JSON game content and tuning (cards, enemies, waves, run structure, statuses, zones, deck rules, player, UI, VFX, scenarios, input bindings)
+data/           JSON game content and tuning (cards, armor, enemies, waves, run structure, statuses, zones, deck rules, player, UI, VFX, scenarios, input bindings)
 assets/         icon and one shader (no art or audio yet)
 addons/gdUnit4  vendored test framework
 tests/          gdUnit4 suites (tests/unit), fixtures, helpers in tests/support (test_input.gd, body_flag.gd, test_caster.gd, test_clock.gd)
@@ -63,7 +63,7 @@ Tests use [gdUnit4](https://github.com/godot-gdunit-labs/gdUnit4), vendored in `
 powershell -File tools\run_tests.ps1
 ```
 
-This runs every suite under `/tests` and exits non-zero on any failure. Last run (3c docs pass, 2026-10-29, about 5 min): 907 of 907 test cases passed (qa's fix-pass count, 8bc7241, matches). Reports go to `reports/` (gitignored). The script uses the console-subsystem `*_console.exe` build when one sits next to the resolved binary, because PowerShell cannot reliably wait on or read the windowed build, which made failures look like passes (see `docs/DECISIONS.md`).
+This runs every suite under `/tests` and exits non-zero on any failure. Last run (A1 docs pass, 2026-10-29, about 5 min): 968 of 968 test cases passed, exit 0 (qa's A1 numbers: 966 plus its 2 delta tests). Reports go to `reports/` (gitignored). The script uses the console-subsystem `*_console.exe` build when one sits next to the resolved binary, because PowerShell cannot reliably wait on or read the windowed build, which made failures look like passes (see `docs/DECISIONS.md`).
 
 > After adding a new global class (`class_name`) the plain headless run may fail with "Could not find type X in current scope". Run `godot --headless --editor --quit --path .` once to rebuild the class cache (verified: exits 0), then re-run the tests.
 
@@ -121,6 +121,9 @@ Scenarios are defined in `data/scenarios.json` and checked by `src/debug/Scenari
 | `boss` | the boss with 9999 HP for both sides, scripted through smash, slam, volley and charge (boss bar and telegraphs) `"2.0,5.0,9.0"` |
 | `boss_edge` | the boss at 50% HP (bar and phase line) `"2.0"` |
 | `boss_phase3` | the boss started in phase 3 (`boss_phase` 2) | `"1.2,3.0,5.5"` |
+| `boss_f3` | the boss with the F3 overlay on at 0.5 s, to read its Defense block (armor and resistance) | `"0.8"` |
+| `elite_f3` | elites and plain enemies with the F3 Defense block and the elite shield pips | `"0.8"` |
+| `armor_numbers` | scripted hits on elites and plain enemies: armor `[n]` and resisted `<n>` damage numbers | `"1.5,3.5"` |
 
 ### True-size capture (`-TrueSize`)
 The OS window is clamped to the monitor, so `-Resolution` cannot exceed it. `-TrueSize WxH` instead runs the real Main scene (with `-Scenario ""`, RunMain, via `--run`) inside a SubViewport of exactly that size (`tools/VpCapture.tscn`; Main registers with `src/core/WorldRef.gd` because `current_scene` is null there). Same scenarios and `-After` times as above. It needs a renderer (windowed), like all capture.
@@ -146,12 +149,13 @@ powershell -File tools\run_bot_sim.ps1 -Rooms 20 -Seed 3      # verified: prints
 Parameters: `-Rooms` (default 20) and `-Seed` (default 1). The same seed and rooms print the same checksum (verified: two runs of seed 3 both gave 2281795515).
 
 ## Wave density sim
-Plays the real Main scene (spawner, enemies, player) with a bot that uses the real input actions, then reports crashes, NaN, cap violations, enemies or player leaving the arena, stalls, damage taken, alive counts, spacing, and rough CPU frame cost. It runs as a scene (so autoloads exist), headless. `-Seconds` is game time, `-Scale` is `Engine.time_scale` (1 = real time and most faithful, default 3), `-God` keeps the player alive to exercise the whole wave table, `-Idle` is a player who never moves, `-Runs` repeats with consecutive seeds (verified: `-Seed 20 -Runs 2` ran seeds 20 and 21), `-Seed` sets the first seed. `-Run` plays whole seeded runs through `RunMain` instead (see below). The script launches Godot with `--fixed-fps 60` (one 60 Hz physics tick per frame) and turns hit-stop off in the sim; `-Scale` defaults to 1, and a `-Scale` above 1 drops `--fixed-fps` and the run no longer repeats.
+Plays the real Main scene (spawner, enemies, player) with a bot that uses the real input actions, then reports crashes, NaN, cap violations, enemies or player leaving the arena, stalls, damage taken, alive counts, spacing, and rough CPU frame cost. It runs as a scene (so autoloads exist), headless. `-Seconds` is game time, `-Scale` is `Engine.time_scale` (1 = real time and most faithful, default 3), `-God` keeps the player alive to exercise the whole wave table, `-Idle` is a player who never moves, `-Deck` (`standard` default, `fire`, `physical`, `lightheavy`) fixes the two attack slots to a test family so armor comparisons are like for like (not a legal deck: the run-start minimums are skipped, and it is re-imposed after every reward), `-Runs` repeats with consecutive seeds (verified: `-Seed 20 -Runs 2` ran seeds 20 and 21), `-Seed` sets the first seed. `-Run` plays whole seeded runs through `RunMain` instead (see below). The script launches Godot with `--fixed-fps 60` (one 60 Hz physics tick per frame) and turns hit-stop off in the sim; `-Scale` defaults to 1, and a `-Scale` above 1 drops `--fixed-fps` and the run no longer repeats.
 
 ```
 powershell -File tools\run_wave_sim.ps1 -Seed 1 -Seconds 150 -Runs 3
 powershell -File tools\run_wave_sim.ps1 -Seed 1 -Seconds 120 -God
 powershell -File tools\run_wave_sim.ps1 -Seed 20 -Seconds 60 -Runs 3 -Idle -Scale 1
+powershell -File tools\run_wave_sim.ps1 -Seed 1 -Seconds 20 -God -Deck fire    # verified: WAVE SIM OK, exit 0
 ```
 ```
 powershell -File tools\run_wave_sim.ps1 -Run -Seed 1 -Runs 2    # whole runs; verified in the 3b pass: both runs WON, prints WAVE SIM OK
@@ -171,8 +175,8 @@ powershell -File tools\run_reload_cycle.ps1 -Cycles 5     # verified: prints "RE
 It runs `tools/ReloadCycle.tscn` headless; it must be a scene so autoloads resolve. Re-run it whenever `Main`, `Juice`, `Player` or the autoloads change.
 
 ## Last verification
-3c docs pass, 2026-10-29, Windows, Godot 4.7.2 (console build via `GODOT_BIN`), HEAD 8bc7241:
-- `toolsun_tests.ps1`: 907 of 907, exit 0.
-- `run_wave_sim.ps1 -Run -Seed 1 -Runs 2`: both runs WON, WAVE SIM OK, the `boss fight (spawn to death)` line printed (62.0 s and 56.1 s, boss died).
-- Captures, each exit 0 with the listed number of PNGs: scenarios `boss` (3 shots at "2.0,5.0,9.0"), `boss_edge` (1 at "2.0"), `boss_phase3` (3 at "1.2,3.0,5.5"), and the boss room (`-Scenario "" -Extra "--run-seed=1","--run-room=8"`, 1 shot at 4.0 s). Two shots were viewed: the boss room shows the boss bar top centre with name, phase notches and the "Fan of regrets" label, and the room indicator top right; `boss_phase3` shows "Phase 3 of 3".
-- Not re-run in this pass: `godot --path . --quit`, the bot sim, the reload cycle, the other scenario captures, `-TrueSize`, `SlotStateCapture`, the removal-grid and reward-screen captures, and the seeded-hash checks (last verified in the 3a pass: hashes 2792856473 for `-Seed 1 -Seconds 30` and 4120250839 for the 90 s run). Not run interactively: plain `godot --path .` and a scenario without capture (they open a window and wait for a person).
+A1 docs pass, 2026-10-29, Windows, Godot 4.7.2 (console build via `GODOT_BIN`), HEAD a4f5de4:
+- `tools\run_tests.ps1`: 968 of 968, exit 0.
+- `run_wave_sim.ps1 -Seed 1 -Seconds 20 -God -Deck fire`: WAVE SIM OK, exit 0.
+- Captures, each exit 0 and saved PNGs: scenarios `boss_f3` (1 shot at "0.8"), `elite_f3` ("0.8") and `armor_numbers` ("1.5,3.5"). The images were not viewed in this pass.
+- Not re-run in this pass: `godot --path . --quit`, the bot sim, the reload cycle, `-Run` sims, the other scenario captures, `-TrueSize`, `SlotStateCapture`, and the seeded-hash checks (last verified in the 3a pass: hashes 2792856473 for `-Seed 1 -Seconds 30` and 4120250839 for the 90 s run; qa reported the arena hash unchanged by A1). Not run interactively: plain `godot --path .` and a scenario without capture (they open a window and wait for a person).

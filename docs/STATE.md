@@ -12,10 +12,10 @@ Last updated: 2026-10-29. The director is away until the evening with an autonom
 
 ## In progress
 - **Slice A1: Armor** closed 2026-10-29 (tag `playtest-2026-10-29-A1`, 968/968). Docs 28587a9.
-- **T-decks**: built 9b6e8a6 (987/987). qa next (review, reload soak because Main changed, 10+ seed family comparison). **On resume:** look for `docs/reviews/2026-10-29-t-decks-qa.md`.
+- **T-decks**: built 9b6e8a6 (987/987). qa PASS deb6ff1 (996 with qa tests). Next: tech-writer docs pass, then close. **On resume:** check `git log` for a T-decks docs commit.
 
 ## Exact next step
-1. **T-decks qa**, then tech-writer, then close. (Brief: lightweight loop, no playtester.) qa re-runs the A1 family comparison with 10+ seeds.
+1. **T-decks docs pass** (tech-writer), then close. (Brief: lightweight loop, no playtester.) qa re-runs the A1 family comparison with 10+ seeds.
 2. Then **W1 Fire Wizard**, then **P-dodge** (carries D13 = B and D16 = B), then **3d**.
 3. Waiting on the director: D17 (card damage-type cue; default B, doesn't block).
 

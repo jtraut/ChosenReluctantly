@@ -943,3 +943,15 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
 - **`-LightHeavyOnly`** is a bot policy that skips the attack slots; seeds don't shift. [Emptying the slots needs a bypass.]
 - **A bad `--deck` or `--list-decks` quits from `RunController.begin`** with exit 2 (0 for the list). `--deck` is ignored with `--scenario` or in the arena. [A pre-Main autoload check.]
 - **Only the selected preset must be valid.** `--list-decks` marks broken files `INVALID` and exits 2. `name` must equal the file name. Only `--deck=name` is accepted.
+
+### 2026-10-29 - T-decks qa PASS and the A1 sim re-measure (qa, logged by game-lead)
+- PASS deb6ff1 (987 on HEAD plus 9 qa tests = 996; `docs/reviews/2026-10-29-t-decks-qa.md`).
+- **Boss fight, 12 seeds per family, `-Run -God`, median as a multiple of standard (63.1 s):**
+  - fire-heavy-rogue 1.02x (per seed 0.57-1.62);
+  - physical-rogue 1.07x (0.77-1.46);
+  - light/heavy-only policy 3.95x.
+  - The A1 numbers (0.93x/1.04x qa, 0.80x/0.97x playtest) were seed noise.
+  - **Result: both deck families are inside the director's 70-130% band.** No retune.
+- **Dilution:** rewards push physical-rogue from 2 to 4.2 Fire cards by the boss; fire-heavy keeps most of its contrast. **My call:** don't build a skip-rewards or start-at-boss sim mode now. The A1 goal is met and a hand test can use `--deck=... --run-room=8`. Revisit in W1 balancing if a pure comparison is needed. [Building it now.]
+- **Reload soak flake** ("damage immunity leaked into a new room", tools/reload_cycle.gd:248). It predates T-decks, failing 2 of 3 under load on e7b0029. **My call:** it's assigned to P-dodge, which reworks dodge and immunity anyway. Until then, a single soak failure on that line means re-run once and note it. [Fixing it now in a separate task, which delays W1.]
+- Backlog (gameplay-dev, small): print a notice when `--deck` is ignored (scenario or arena), and a permanent sim log of the deck makeup at the boss.

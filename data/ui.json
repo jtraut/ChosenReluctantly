@@ -266,5 +266,28 @@
         "color": "#8fd0ff",
         "alpha": 0.75,
         "depth_bias": 0.05
+    },
+    "class_pick": {
+        "title": "Pick your hero",
+        "line": "Someone has to go in there. It might as well be one of these two.",
+        "keys_hint": "1 / 2 or the arrow keys to choose. Enter or a click to start.",
+        "start_format": "Enter: play as %s",
+        "hp_format": "HP %d",
+        "attack_label": "Attack",
+        "attack_styles": { "arc": "Melee swing", "projectile": "Magic bolt at the reticle" },
+        "attack_style_unknown": "Unknown",
+        "card_width": 300,
+        "swatch_size": 44,
+        "glyph_size": 30,
+        "title_font_size": 40,
+        "line_font_size": 20,
+        "name_font_size": 30,
+        "body_font_size": 18,
+        "small_font_size": 16,
+        "card_gap": 22,
+        "panel_padding": 24,
+        "fit_margin": 0.94,
+        "min_fit_scale": 0.4,
+        "swatch_border_color": "#f4ece8"
     }
 }

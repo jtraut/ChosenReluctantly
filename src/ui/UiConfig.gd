@@ -515,6 +515,72 @@ const DEFAULT_BOSS_BAR: Dictionary = {
 }
 
 
+## Class pick screen (W1a): shown at the start of every run. Words and sizes (pixels at the run_ui `reference_height`);
+## colours come from `run_ui` (the same card, focus and text colours as the reward screen) plus `swatch_border_color`.
+## `attack_styles` maps a light attack's shape (data/attacks.json) to the words shown under a class, so the screen never
+## names a class.
+const DEFAULT_CLASS_PICK: Dictionary = {
+	"title": "Pick your hero",
+	"line": "Someone has to go in there. It might as well be one of these two.",
+	"keys_hint": "1 / 2 or the arrow keys to choose. Enter or a click to start.",
+	"start_format": "Enter: play as %s",
+	"hp_format": "HP %d",
+	"attack_label": "Attack",
+	"attack_styles": {"arc": "Melee swing", "projectile": "Magic bolt at the reticle"},
+	"attack_style_unknown": "Unknown",
+	"card_width": 300,
+	"swatch_size": 44,
+	"glyph_size": 30,
+	"title_font_size": 40,
+	"line_font_size": 20,
+	"name_font_size": 30,
+	"body_font_size": 18,
+	"small_font_size": 16,
+	"card_gap": 22,
+	"panel_padding": 24,
+	"fit_margin": 0.94,
+	"min_fit_scale": 0.4,
+	"swatch_border_color": "#f4ece8",
+}
+
+
+static func class_pick() -> Dictionary:
+	var merged := merge_with_defaults(DEFAULT_CLASS_PICK, _table.get_entry("class_pick"))
+	var problems := validate_class_pick(merged)
+	if problems.is_empty():
+		return merged
+	push_error("data/ui.json class_pick invalid: " + "; ".join(problems))
+	return DEFAULT_CLASS_PICK.duplicate(true)
+
+
+static func validate_class_pick(block: Dictionary) -> Array[String]:
+	var problems: Array[String] = []
+	for key: String in ["title", "line", "keys_hint", "start_format", "hp_format", "attack_label", "attack_style_unknown"]:
+		if typeof(block.get(key)) != TYPE_STRING or String(block[key]).strip_edges().is_empty():
+			problems.append("%s must be a non-empty string" % key)
+	if typeof(block.get("start_format")) == TYPE_STRING and not String(block["start_format"]).contains("%s"):
+		problems.append("start_format must contain %s")
+	if typeof(block.get("hp_format")) == TYPE_STRING and not String(block["hp_format"]).contains("%d"):
+		problems.append("hp_format must contain %d")
+	var styles: Variant = block.get("attack_styles")
+	if typeof(styles) != TYPE_DICTIONARY or (styles as Dictionary).is_empty():
+		problems.append("attack_styles must be an object of shape -> words")
+	else:
+		for shape: Variant in (styles as Dictionary).keys():
+			if typeof((styles as Dictionary)[shape]) != TYPE_STRING or String((styles as Dictionary)[shape]).strip_edges().is_empty():
+				problems.append("attack_styles.%s must be a non-empty string" % str(shape))
+	if typeof(block.get("swatch_border_color")) != TYPE_STRING or not String(block["swatch_border_color"]).is_valid_html_color():
+		problems.append("swatch_border_color must be a hex color")
+	for key: String in ["card_width", "swatch_size", "glyph_size", "title_font_size", "line_font_size", "name_font_size", "body_font_size",
+			"small_font_size", "card_gap", "panel_padding", "fit_margin", "min_fit_scale"]:
+		var value: Variant = block.get(key)
+		if not (value is float or value is int) or is_nan(float(value)) or float(value) <= 0.0:
+			problems.append("%s must be a number > 0" % key)
+		elif (key == "fit_margin" or key == "min_fit_scale") and float(value) > 1.0:
+			problems.append("%s must be <= 1" % key)
+	return problems
+
+
 static func boss_bar() -> Dictionary:
 	return merge_with_defaults(DEFAULT_BOSS_BAR, _table.get_entry("boss_bar"))
 

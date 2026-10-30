@@ -218,3 +218,11 @@ func test_boss_spawn_box_top_margin_leaves_the_head_clear_of_the_hud() -> void:
 	# near 92 px from the top and the player stands at 300 px, so the ground point may be at most ~1.56 m up the screen.
 	var up: float = float(BossConfig.boss("boss_guardian")["spawn"]["screen_up"])
 	assert_float(up).is_less_equal(1.56)
+
+
+func test_the_wall_preview_uses_the_new_footprint() -> void:
+	var parts: Array[Dictionary] = CastPreviewShapes.parts_for_card(CardDatabase.get_card("fire_wall"), {})
+	assert_int(parts.size()).is_equal(1)
+	assert_str(String(parts[0]["shape"])).is_equal(CastPreviewShapes.ZONE_LINE)
+	assert_float(float(parts[0]["size"])).is_equal_approx(VfxSizing.zone_line_half_length(7.5), 0.001)
+	assert_float(float(parts[0]["half_width"])).is_equal_approx(VfxSizing.zone_line_half_width(1.8), 0.001)

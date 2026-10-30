@@ -615,7 +615,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
   - **Playtester:** a Wizard run (captures plus sim). Do the caster cards make the Wizard feel distinct? Is the risk level right?
   - **Docs:** tech-writer, plus a CHANGELOG fix: the 2026-10-30 W1a entry says the docs pass "now happens per slice", but that rule dates from 2026-10-28. Correct or remove it, and note the fix.
 
-- [ ] **P-dodge, dodge charges and indicator (director request 2026-10-29; runs after F1 and before W1b (2026-10-30 run order); also carries D13, D16 and the 2026-10-30 per-class charges and Wizard Recovery)**
+- [x] **P-dodge, dodge charges and indicator** — **DONE 2026-10-30.** Gameplay 0209de4..1fdca8a + 4986db4, 6243785, bc976ca; ux 8566b9e, 74a972c; qa PASS 14eadd1 (1147/1147); playtest 60d86fd (no blocker); docs ee18b08. Tag `playtest-2026-10-30-P-dodge`. Arena hash 2484586390. W1b baseline: Rogue boss 64.3 s. (Original header: director request 2026-10-29; runs after F1 and before W1b (2026-10-30 run order); also carries D13, D16 and the 2026-10-30 per-class charges and Wizard Recovery)**
   - **Also carries (game-lead, from T-decks qa):** fix the reload soak flake "damage immunity leaked into a new room" (tools/reload_cycle.gd:248). It predates T-decks; reproduce it with a wave sim running alongside `run_reload_cycle.ps1 -Cycles 5`.
   - **Goal:** the dodge has charges and the player can see them. GDD §3 [DIRECTOR DECISION, 2026-10-29].
   - **Acceptance:**

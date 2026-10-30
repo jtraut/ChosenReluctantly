@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-10-30
-**Status: 1 waiting on a decision (D19; doesn't block). 5 new things to look at when you play (items 25-29), plus item 22 once loadouts exist.** Done: C1, Polish 1, 3a (runs of 8 rooms), 3b (card rewards and deck-clean), 3c (the boss) and **A1 (armor)**, **T-decks (preset test decks)** and **W1a (a playable Fire Wizard)**. Done: **PL2** and **F1** (tag `playtest-2026-10-30-F1`). Next: **P-dodge, in progress** (your 2026-10-30 checklist answers: bigger Fire Wall, movement cards pass through enemies, Shift+1-5 swap, 10-room runs), then **P-dodge** (dodge charges: Rogue 3, Wizard 2; Recovery cooldowns), then **W1b** (Wizard cards and tuning, now after the dodge work so it's tuned once), then loadouts.
+**Status: 1 waiting on a decision (D19; doesn't block). 5 new things to look at when you play (items 25-29), plus item 22 once loadouts exist.** Done: C1, Polish 1, 3a, 3b, 3c (the boss), A1 (armor), T-decks, W1a (a playable Fire Wizard), **PL2** (frame colours), **F1** (your checklist answers) and **P-dodge** (dodge charges, Recovery, boss stagger; tag `playtest-2026-10-30-P-dodge`). Next: **W1b** (Wizard cards and tuning, including the boss cliff), then **3d** (loadouts).
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
@@ -19,7 +19,13 @@ Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
 _Updated at every slice close._
 
-- **Latest playtest tag:** `playtest-2026-10-30-F1` (qa PASS, 1102/1102). Earlier tags: `playtest-2026-10-30-PL2`, `playtest-2026-10-30-W1a`, `playtest-2026-10-29-T-decks`, `-A1`, `-3c`, `-3b`, `-3a`, `-C1`.
+- **Latest playtest tag:** `playtest-2026-10-30-P-dodge` (qa PASS, 1147/1147). Earlier tags: `playtest-2026-10-30-F1`, `playtest-2026-10-30-PL2`, `playtest-2026-10-30-W1a`, `playtest-2026-10-29-T-decks`, `-A1`, `-3c`, `-3b`, `-3a`, `-C1`.
+- **New in P-dodge (since the F1 tag):**
+  - **Dodge charges:** Rogue 3, Wizard 2, each recharging in 1.2 s, shown as pips under the attack meters (with an EMPTY state).
+  - **Recovery cooldown 12 s** (your D13); the Wizard's is 14 s.
+  - **The boss staggers** at each phase change (your D16): it reels for 0.8 s, its attack is cancelled, the bar says STAGGERED / "Hit it now", and your hits count. It can't skip phase 3.
+  - The rare "flung into the air" bug is fixed. The stress-test flake was a test mistake, not an invulnerability bug.
+- **Try first in P-dodge:** checklist items 28-29, and fight the boss with each class. **Playtester's notes (bot and stills):** the pips read but sit away from your eyes; the stagger reads as a reward; the Wizard's boss deaths come from back-to-back "Fan of regrets" volleys (W1b looks at this).
 - **New in F1 (since the PL2 tag), your checklist answers:**
   - **Runs are 10 rooms** (7 fights, 1 elite, 1 rest, boss in room 10: `--run-room=10`).
   - **Wall of Mild Fire is 1.5x** (7.5 x 1.8 m).

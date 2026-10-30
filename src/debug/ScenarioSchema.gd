@@ -14,7 +14,7 @@ const NUMBERS: Dictionary = {
 }
 ## key -> minimum (inclusive) for a whole number.
 const INTS: Dictionary = {"columns": 1, "status_seed": -2147483647, "wave_seed": 0, "boss_phase": 0}
-const STRINGS: Array[String] = ["heavy_class"]
+const STRINGS: Array[String] = ["heavy_class", "character"]
 ## key -> array of non-empty strings (3c: "boss_attacks" scripts the boss's attack order for captures).
 const STRING_ARRAYS: Array[String] = ["boss_attacks"]
 ## key -> exact number of finite numbers in the array.

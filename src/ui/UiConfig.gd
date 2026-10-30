@@ -160,6 +160,8 @@ const DEFAULT_HUD: Dictionary = {
 	"light_meter_size": [220, 12],
 	"heavy_meter_size": [220, 22],
 	"meter_label_width": 38,
+	"meter_ready_word": "READY",
+	"meter_windup_words": {"arc": "SWING", "targeted_aoe": "CAST", "default": "SWING"},
 	"meter_font_size": 12,
 	"meter_light_alpha": 0.6,
 	"meter_pulse_duration": 0.4,

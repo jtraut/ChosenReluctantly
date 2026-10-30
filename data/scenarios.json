@@ -884,5 +884,20 @@
         ],
         "elite_indices": [0, 2],
         "debug_overlay_at": 0.3
+    },
+    "wizard_bolt": {
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "freeze_aim": true,
+        "aim_preview_distance": 8.0,
+        "enemy_max_health": 5000,
+        "character": "wizard",
+        "aim_point_offset": [0.0, -8.0],
+        "origin_offset": [-1.0, 0.0, -8.0],
+        "spacing": [2.0, 1.4],
+        "columns": 2,
+        "groups": [
+            {"scene": "res://scenes/enemies/RangedShooter.tscn", "count": 2}
+        ]
     }
 }

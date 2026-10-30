@@ -362,3 +362,25 @@ func test_the_class_pick_data_validates_and_bad_data_is_reported() -> void:
 	bad["start_format"] = "no placeholder"
 	bad["attack_styles"] = {}
 	assert_int(UiConfig.validate_class_pick(bad).size()).is_equal(3)
+
+
+# ---- the heavy meter word ----
+
+func _meter_word_for(character: String) -> String:
+	var main: Main = (load(MAIN_SCENE_PATH) as PackedScene).instantiate()
+	(main.get_node("EnemySpawner") as Node).process_mode = Node.PROCESS_MODE_DISABLED
+	(main.get_node("Player") as Player).character_id = character
+	add_child(main)
+	auto_free(main)
+	await get_tree().process_frame
+	var meter := AttackMeter.new()
+	add_child(meter)
+	auto_free(meter)
+	meter.configure(&"heavy", "RMB", true, UiConfig.hud(), 1.0)
+	meter.set_player(main.player)
+	return meter.windup_word()
+
+
+func test_the_heavy_meter_says_cast_for_the_wizard_and_swing_for_the_rogue() -> void:
+	assert_str(await _meter_word_for("rogue")).is_equal("SWING")
+	assert_str(await _meter_word_for("wizard")).is_equal("CAST")

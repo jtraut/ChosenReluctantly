@@ -43,6 +43,16 @@ func configure(id: StringName, text: String, prominent: bool, cfg: Dictionary, s
 	queue_redraw()
 
 
+## The word shown while this attack winds up: from data (hud.meter_windup_words) by the shape of the attack the player
+## has now, so a swing says SWING and a targeted ground blast says CAST.
+func windup_word() -> String:
+	var words: Dictionary = _cfg.get("meter_windup_words", {})
+	var shape: String = ""
+	if _player != null and _player.attacks != null:
+		shape = String(_player.attacks.get_def(attack_id).get("shape", ""))
+	return String(words.get(shape, words.get("default", "SWING")))
+
+
 func state() -> StringName:
 	return state_for(_ready_now, _winding_up)
 
@@ -130,9 +140,9 @@ func _draw() -> void:
 	if is_prominent:
 		var word := ""
 		if st == &"ready":
-			word = "READY"
+			word = String(_cfg.get("meter_ready_word", "READY"))
 		elif st == &"windup":
-			word = "SWING"
+			word = windup_word()
 		if word != "":
 			var wsz := font.get_string_size(word, HORIZONTAL_ALIGNMENT_CENTER, -1.0, fsize)
 			var pos := Vector2(bar.position.x + (bar.size.x - wsz.x) * 0.5, ty)

@@ -105,6 +105,10 @@ func _build() -> void:
 	# Capture-only: use another class's heavy (the Wizard targeted_aoe proof; no class is built).
 	if _def.has("heavy_class"):
 		player.use_heavy_class(String(_def["heavy_class"]))
+	# Capture-only (W1a ux): play the attacks of another character (the Wizard bolt in flight); the body stays as it is.
+	if _def.has("character") and CharacterDatabase.has(String(_def["character"])):
+		player.character_id = String(_def["character"])
+		player.use_heavy_class(CharacterDatabase.heavy_class(player.character_id))
 	# Capture-only: the heavy's ground aim point, as an [x, z] offset from the player.
 	if _def.has("aim_point_offset"):
 		var aim_values: Array = _def["aim_point_offset"]

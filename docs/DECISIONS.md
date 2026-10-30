@@ -1193,3 +1193,8 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
   - **The non-kiting boss time sits at the 70% floor;** HP 24 doesn't change damage output, so it stays near 70-72%. qa's independent re-run decides whether it needs one more notch. [Pre-emptively cutting damage.]
 - **Correction (gameplay-dev 0754483):** a full volley is 5 x 5 = 25 physical, and the player has no armor, so the smallest safe HP is **26**, not 24. Wizard HP is back to 26, and a test pins "max HP > one full volley" for every class (1153/1153). The bot table is otherwise unchanged; no runs died.
 - **This conflicts with GDD §5 (director: the Wizard "should be squishier than it is today").** My one-shot guard was my own inference, so it goes to the director as **D20**. As built (26 HP), the Wizard is harder through about 40% less damage, 2 dodge charges and Recovery 14 s, but not lower HP. It's a one-value change either way.
+
+### 2026-10-30 - W1b ux (ux-designer, logged by game-lead)
+- 245d8e3 (`tools/ux_capture.gd` only). **5e: no banner overlap.** STAGGERED sits on its own row at all four sizes. The playtest's overlap was a world-space damage number over the boss's head landing on the bar. The stagger capture now uses a normal 30-damage hit. The 4 new Wizard cards fit the slot strip and reward offers at 1024x600, with bronze frames and no clipping.
+- **Damage numbers drawing over the boss bar** when the boss stands just under it goes to the backlog as a ux readability item, not to the director. It's readability, not feel. [A director question.]
+- **Flake for qa:** `w1a_test:482` (Wizard bolt autofire, "less than 20.0 but was 20.0") failed once in a full suite run and passed 30/30 alone.

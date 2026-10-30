@@ -19,12 +19,27 @@ var _scale: float = 1.0
 var _name_text: String = UNSET
 var _preview_text: String = UNSET
 var _ready_state: bool = false
+## Family colours (PoolDatabase) of the card in the slot and of the next one; the frame and the next-up swatch use them.
+var _frame_color: Color = Color.GRAY
+var _next_color: Color = Color.GRAY
+var _has_next: bool = false
+var _card_id: String = UNSET
+var _next_id: String = UNSET
+## Draws the frame above every child (a container paints its own _draw behind them, and the full-width bar would hide
+## the frame's side lines). Top level, so the VBox does not lay it out; it follows this widget's rect.
+var _overlay: Control = null
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for child in get_children():
 		(child as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_overlay = Control.new()
+	_overlay.name = "FrameOverlay"
+	_overlay.top_level = true
+	_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_overlay.draw.connect(_draw_frame)
+	add_child(_overlay)
 	if _cfg.is_empty():
 		apply_layout(UiConfig.hud(), 1.0)
 	_apply_state(false)
@@ -41,13 +56,15 @@ func is_ready_state() -> bool:
 	return _ready_state
 
 
-## Ready: full brightness, bright border, full green-ish bar. Cooling: dimmed,
-## no border, partial grey-blue bar that fills as the cooldown elapses.
+## Ready: full-brightness text, a light plate behind the slot, a green bar. Cooling: the texts and bar dim, a dark plate,
+## a grey-blue bar that fills as the cooldown elapses. The family frame is the same either way.
 func _apply_state(is_ready: bool) -> void:
 	_ready_state = is_ready
 	var cfg := _cfg if not _cfg.is_empty() else UiConfig.hud()
 	var dim := 1.0 if is_ready else float(cfg["slot_cooling_dim"])
-	modulate = Color(dim, dim, dim, 1.0)
+	# Children only: dimming the whole widget would dim the family frame too, and a cooling slot must keep its colour.
+	for child in [key_label, name_label, cooldown_bar, preview_label]:
+		(child as CanvasItem).modulate = Color(dim, dim, dim, 1.0)
 	var fill := StyleBoxFlat.new()
 	fill.bg_color = Color.html(String(cfg["slot_ready_bar_color" if is_ready else "slot_cooling_bar_color"]))
 	var back := StyleBoxFlat.new()
@@ -55,13 +72,61 @@ func _apply_state(is_ready: bool) -> void:
 	cooldown_bar.add_theme_stylebox_override("fill", fill)
 	cooldown_bar.add_theme_stylebox_override("background", back)
 	queue_redraw()
+	_redraw_frame()
 
 
+## The family frame colour of the card in the slot (neutral grey when the slot is empty).
+func frame_color() -> Color:
+	return _frame_color
+
+
+## The family colour of the next-up card, or grey when there is none.
+func next_color() -> Color:
+	return _next_color
+
+
+## The plate behind the children: light while ready, dark while cooling (the ready-vs-cooling cue; the frame never changes).
 func _draw() -> void:
-	if not _ready_state or _cfg.is_empty():
+	if _cfg.is_empty():
 		return
-	var bw := float(maxi(1, roundi(float(_cfg["slot_ready_border_width"]) * _scale)))
-	draw_rect(Rect2(Vector2.ZERO, size).grow(-bw * 0.5), Color.html(String(_cfg["slot_ready_border_color"])), false, bw)
+	var key: String = "slot_plate_ready_color" if _ready_state else "slot_plate_cooling_color"
+	draw_rect(Rect2(Vector2.ZERO, size), Color.html(String(_cfg[key])))
+
+
+func _redraw_frame() -> void:
+	queue_redraw()
+	if _overlay != null:
+		_overlay.queue_redraw()
+
+
+func _sync_overlay() -> void:
+	if _overlay == null:
+		return
+	if _overlay.global_position != global_position:
+		_overlay.global_position = global_position
+	if _overlay.size != size:
+		_overlay.size = size
+
+
+## Frame (outermost in): a dark keyline, then the family colour. The ready cue is the plate behind the slot (see _draw).
+## The next-up swatch is a short bar of the next card's family colour on the left of the preview row.
+func _draw_frame() -> void:
+	if _cfg.is_empty():
+		return
+	var r := Rect2(Vector2.ZERO, _overlay.size)
+	var kw := _px(float(_cfg["slot_frame_keyline_width"]))
+	var fw := _px(float(_cfg["slot_frame_width"]))
+	_overlay.draw_rect(r.grow(-kw * 0.5), Color.html(String(_cfg["slot_frame_keyline_color"])), false, kw)
+	_overlay.draw_rect(r.grow(-kw - fw * 0.5), _frame_color, false, fw)
+	var inset := kw + fw
+	if _has_next:
+		var sw := _px(float(_cfg["slot_next_swatch_width"]))
+		var row := Rect2(preview_label.position, preview_label.size)
+		_overlay.draw_rect(Rect2(Vector2(inset, row.position.y + sw), Vector2(sw, maxf(row.size.y - 2.0 * sw, 1.0))), _next_color)
+
+
+func _px(value: float) -> float:
+	return float(maxi(1, roundi(value * _scale)))
 
 
 ## Sizes every row from config; `s` is the viewport-height scale.
@@ -84,9 +149,12 @@ func apply_layout(cfg: Dictionary, s: float) -> void:
 	var margin := StyleBoxEmpty.new()
 	margin.content_margin_left = float(cfg["fit_padding"]) * s * 0.5
 	margin.content_margin_right = float(cfg["fit_padding"]) * s * 0.5
+	var key_margin := StyleBoxEmpty.new()
+	key_margin.content_margin_top = (float(cfg["slot_frame_width"]) + float(cfg["slot_frame_keyline_width"])) * s
+	key_label.add_theme_stylebox_override("normal", key_margin)
 	name_label.add_theme_stylebox_override("normal", margin)
 	preview_label.add_theme_stylebox_override("normal", margin)
-	queue_redraw()
+	_redraw_frame()
 	# Force a refit at the new scale.
 	var n := _name_text
 	var p := _preview_text
@@ -107,7 +175,9 @@ func set_key_hint(text: String) -> void:
 
 
 func update_from_slot(slot: CardSlot) -> void:
+	_sync_overlay()
 	if slot == null or not slot.has_cards():
+		_set_frames("", "")
 		_set_name("—")
 		_set_preview("")
 		cooldown_bar.max_value = 1.0
@@ -120,6 +190,7 @@ func update_from_slot(slot: CardSlot) -> void:
 	_set_name(str(card_data.get("name", slot.current_card_id)))
 
 	var preview_id := slot.preview_card_id()
+	_set_frames(slot.current_card_id, preview_id)
 	if preview_id == "":
 		_set_preview("Next: —")
 	else:
@@ -132,6 +203,17 @@ func update_from_slot(slot: CardSlot) -> void:
 	var now_ready := slot.is_ready()
 	if now_ready != _ready_state:
 		_apply_state(now_ready)
+
+
+func _set_frames(card_id: String, next_id: String) -> void:
+	if card_id == _card_id and next_id == _next_id:
+		return
+	_card_id = card_id
+	_next_id = next_id
+	_frame_color = PoolDatabase.frame_color_for_card(card_id)
+	_has_next = next_id != ""
+	_next_color = PoolDatabase.frame_color_for_card(next_id)
+	_redraw_frame()
 
 
 func _set_name(text: String) -> void:

@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://src/ui/CardSlotWidget.gd" id="1"]
 
 [node name="CardSlotWidget" type="VBoxContainer"]
-custom_minimum_size = Vector2(150, 118)
+custom_minimum_size = Vector2(150, 126)
 size_flags_horizontal = 0
 size_flags_vertical = 0
 theme_override_constants/separation = 2

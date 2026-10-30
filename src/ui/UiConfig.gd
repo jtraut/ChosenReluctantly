@@ -60,6 +60,20 @@ const DEFAULT_AIM: Dictionary = {
 	"max_length": 6.0,
 }
 
+## Rogue melee cue (MeleeReachCue): a faint reach arc at the player while nothing is in reach. Meters in world units, alpha 0..1,
+## times in seconds. `pulse_*`: the brief brightening on a light click that finds nothing to hit.
+const DEFAULT_MELEE_CUE: Dictionary = {
+	"enabled": true,
+	"color": "#9fd8ff",
+	"ground_offset": 0.045,
+	"thickness": 0.09,
+	"alpha": 0.3,
+	"pulse_alpha": 0.75,
+	"pulse_duration": 0.25,
+	"fade_in": 0.35,
+	"fade_out": 0.12,
+}
+
 ## Game Over screen text and sizes. Font sizes and button_min_size are in pixels
 ## at `reference_height` and are scaled with the window height.
 const DEFAULT_GAME_OVER: Dictionary = {
@@ -122,11 +136,11 @@ const DEFAULT_HUD: Dictionary = {
 	"boss_bar_size": [560, 104],
 	"debug_overlay_gap": 16,
 	"fit_padding": 12,
-	"slot_size": [150, 118],
+	"slot_size": [150, 126],
 	"slot_gap": 12,
 	"slot_row_separation": 2,
 	"key_font_size": 13,
-	"key_height": 20,
+	"key_height": 24,
 	"name_font_size": 15,
 	"name_min_font_size": 11,
 	"name_max_lines": 2,
@@ -135,7 +149,7 @@ const DEFAULT_HUD: Dictionary = {
 	"preview_font_size": 11,
 	"preview_min_font_size": 10,
 	"preview_max_lines": 2,
-	"preview_height": 34,
+	"preview_height": 38,
 	"flavor_min_font_size": 11,
 	"flavor_max_lines": 3,
 	"flavor_box_width": 260,
@@ -150,8 +164,12 @@ const DEFAULT_HUD: Dictionary = {
 	"hp_text_color": "#ffffff",
 	"hp_text_outline_color": "#0d080b",
 	"slot_cooling_dim": 0.7,
-	"slot_ready_border_color": "#f4ece8",
-	"slot_ready_border_width": 2,
+	"slot_frame_width": 4,
+	"slot_frame_keyline_color": "#0d080b",
+	"slot_frame_keyline_width": 1,
+	"slot_plate_ready_color": "#0d080b50",
+	"slot_plate_cooling_color": "#0d080bc0",
+	"slot_next_swatch_width": 2,
 	"slot_cooling_bar_color": "#8fa3b8",
 	"slot_ready_bar_color": "#8fe388",
 	"slot_bar_back_color": "#1c1218",
@@ -330,6 +348,35 @@ static func validate_aim(block: Dictionary) -> Array[String]:
 	return problems
 
 
+static func melee_cue() -> Dictionary:
+	var merged := merge_with_defaults(DEFAULT_MELEE_CUE, _table.get_entry("melee_cue"))
+	var problems := validate_melee_cue(merged)
+	if problems.is_empty():
+		return merged
+	push_error("data/ui.json melee_cue invalid: " + "; ".join(problems))
+	return DEFAULT_MELEE_CUE.duplicate()
+
+
+static func validate_melee_cue(block: Dictionary) -> Array[String]:
+	var problems: Array[String] = []
+	if typeof(block.get("enabled")) != TYPE_BOOL:
+		problems.append("enabled must be true or false")
+	var color: Variant = block.get("color")
+	if typeof(color) != TYPE_STRING or not String(color).is_valid_html_color():
+		problems.append("color must be a hex color")
+	for key: String in DEFAULT_MELEE_CUE:
+		if key == "enabled" or key == "color":
+			continue
+		var value: Variant = block.get(key)
+		if not _is_number(value) or is_nan(float(value)):
+			problems.append("%s must be a number" % key)
+		elif float(value) < 0.0:
+			problems.append("%s must be >= 0" % key)
+		elif key.ends_with("alpha") and float(value) > 1.0:
+			problems.append("%s must be <= 1" % key)
+	return problems
+
+
 static func popups() -> Dictionary:
 	var merged := merge_with_defaults(DEFAULT_POPUPS, _table.get_entry("popups"))
 	var problems := validate_popups(merged)
@@ -464,6 +511,8 @@ const DEFAULT_RUN_UI: Dictionary = {
 	"option_card_border_color": "#6b5a66",
 	"option_focus_color": "#ffd7a8",
 	"option_focus_width": 4,
+	"option_frame_width": 3,
+	"option_card_focus_color": "#ffffff",
 	"option_reject_color": "#1c1418",
 	"option_reject_border_color": "#c9707f",
 	"option_disabled_color": "#18121a",

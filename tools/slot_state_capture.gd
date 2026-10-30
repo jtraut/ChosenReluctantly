@@ -17,13 +17,21 @@ func _ready() -> void:
 	var hud: Hud = (load("res://scenes/ui/Hud.tscn") as PackedScene).instantiate()
 	sub.add_child(hud)
 	await get_tree().process_frame
+	# Slot i: [current card, next card]; one family each so all three frame colours and a mixed slot show. Fractions: 0 = ready.
 	var fractions: Array[float] = [0.0, 0.2, 0.55, 0.9, 0.0]
-	var ids: Array[String] = ["quick_slash", "quick_slash"]
+	var pairs: Array = [
+		["fire_fireball", "rogue_quick_slash"], ["rogue_quick_slash", "fire_fireball"], ["neutral_deep_sigh", "fire_hot_head"],
+		["fire_blaze_and_bail", "neutral_backward_leap"], ["neutral_healing_potion", "rogue_nap_time"],
+	]
 	for i in range(5):
+		var ids: Array[String] = [String(pairs[i][0]), String(pairs[i][1])]
 		var slot := CardSlot.new("attack_single", 4.0, ids)
+		slot.current_card_id = ids[0]
+		slot.draw_pile = [ids[1]]
+		slot.cooldown_remaining = 0.0
 		if fractions[i] > 0.0:
-			slot.use_card(0.0)
-			slot.advance(4.0 * fractions[i])
+			slot.last_cooldown_duration = 4.0
+			slot.cooldown_remaining = 4.0 * (1.0 - fractions[i])
 		hud.slot_widgets[i].update_from_slot(slot)
 	for i in range(10):
 		await get_tree().process_frame

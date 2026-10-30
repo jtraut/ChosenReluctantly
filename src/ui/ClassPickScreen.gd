@@ -38,6 +38,9 @@ var _fit_scale: float = 1.0
 var _paused_here: bool = false
 var _confirming: bool = false
 var _last_focus: int = 0
+## The HUD of the scene behind the screen, hidden while the screen is open: it would show the HP, meters and slot cards of the
+## class the room was built with, not the one highlighted (PL2 item 7).
+var _hidden_hud: CanvasLayer = null
 
 var _root: Control = null
 var _backdrop: ColorRect = null
@@ -94,6 +97,7 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
+	_restore_hud()
 	if _paused_here and not _confirming:
 		_paused_here = false
 		GamePause.resume()
@@ -120,6 +124,7 @@ func open(preselect: String = "") -> void:
 	_confirming = false
 	_rebuild_cards()
 	visible = true
+	_hide_hud()
 	_paused_here = GamePause.pause()
 	var delay: float = float(UiConfig.run_ui().get("prompt_option_arm_delay", 0.4))
 	_armed_at_msec = Time.get_ticks_msec() + roundi(delay * 1000.0)
@@ -128,6 +133,25 @@ func open(preselect: String = "") -> void:
 	_last_focus = maxi(_index_of(wanted), 0)
 	_focus(_last_focus)
 	opened.emit()
+
+
+func _hide_hud() -> void:
+	var main := get_parent() as Main
+	if main == null or main.hud == null or _hidden_hud != null or not main.hud.visible:
+		return
+	_hidden_hud = main.hud
+	_hidden_hud.visible = false
+
+
+func _restore_hud() -> void:
+	if _hidden_hud != null and is_instance_valid(_hidden_hud):
+		_hidden_hud.visible = true
+	_hidden_hud = null
+
+
+## True while the scene's own HUD is hidden behind the screen (tests).
+func hides_hud() -> bool:
+	return _hidden_hud != null
 
 
 func is_open() -> bool:
@@ -204,6 +228,7 @@ func confirm(character_id: String = "") -> void:
 ## Hides the screen and lets the game run again.
 func close() -> void:
 	visible = false
+	_restore_hud()
 	if _paused_here:
 		_paused_here = false
 		GamePause.resume()

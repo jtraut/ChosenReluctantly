@@ -60,6 +60,7 @@ func _ready() -> void:
 	AimIndicator.attach(self, player)
 	PlayerOcclusionCue.attach(player)
 	PlayerCues.attach(player)
+	MeleeReachCue.attach(player)
 	_setup_run_mode()
 	_check_starting_deck()
 	var problems := SceneSelfCheck.find_problems(self)

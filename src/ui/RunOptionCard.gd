@@ -261,6 +261,18 @@ func _slot_chip(opt: Dictionary, texts: Dictionary, font_size: int, enabled: boo
 	return holder
 
 
+## The card this option draws (a reward offer or a removal-list cell), else "": the id the frame colour comes from.
+func frame_card_id() -> String:
+	if look != Look.CARD and look != Look.CELL:
+		return ""
+	return String(option.get("card_id", ""))
+
+
+## The frame colour this option's card wears (tests).
+func frame_color() -> Color:
+	return PoolDatabase.frame_color_for_card(frame_card_id()) if frame_card_id() != "" else Color.html(String(_cfg["option_card_border_color"]))
+
+
 func _apply_styles(enabled: bool) -> void:
 	var border_w: int = maxi(roundi(2.0 * _scale), 1)
 	var radius: int = roundi(8.0 * _scale)
@@ -275,6 +287,11 @@ func _apply_styles(enabled: bool) -> void:
 		base.set_corner_radius_all(roundi(2.0 * _scale))  # square-cornered: a different shape from the cards
 	elif look == Look.BACK:
 		base.set_corner_radius_all(roundi(20.0 * _scale))
+	# A card (reward offer, removal cell) wears its family colour as a thicker frame (GDD section 4, card frame colours).
+	var family: bool = frame_card_id() != ""
+	if family:
+		base.set_border_width_all(maxi(roundi(float(_cfg["option_frame_width"]) * _scale), 2))
+		base.border_color = PoolDatabase.frame_color_for_card(frame_card_id())
 	var hover := base.duplicate() as StyleBoxFlat
 	hover.bg_color = Color.html(String(_cfg["option_card_hover_color"]))
 	var off := base.duplicate() as StyleBoxFlat
@@ -283,8 +300,14 @@ func _apply_styles(enabled: bool) -> void:
 	var focus := StyleBoxFlat.new()
 	focus.draw_center = false
 	focus.set_corner_radius_all(radius)
-	focus.set_border_width_all(maxi(roundi(float(_cfg["option_focus_width"]) * _scale), 2))
+	var focus_w: int = maxi(roundi(float(_cfg["option_focus_width"]) * _scale), 2)
+	focus.set_border_width_all(focus_w)
 	focus.border_color = Color.html(String(_cfg["option_focus_color"]))
+	if family:
+		# The ring sits just outside the card, in white, so it never covers or blends into the family colour (bronze is
+		# close to the shared peach focus colour).
+		focus.border_color = Color.html(String(_cfg["option_card_focus_color"]))
+		focus.set_expand_margin_all(float(focus_w))
 	add_theme_stylebox_override("normal", base)
 	add_theme_stylebox_override("hover", hover)
 	add_theme_stylebox_override("pressed", hover)

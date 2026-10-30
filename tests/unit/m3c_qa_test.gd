@@ -125,7 +125,7 @@ func test_qa_a_hit_exactly_to_the_threshold_and_a_hit_of_one_over_both_hold_the_
 
 # ---- Resistance ----
 
-func test_qa_the_boss_resists_every_element_by_half_and_physical_not_at_all() -> void:
+func test_qa_the_boss_resists_every_element_by_half_and_physical_goes_through_armor_not_resistance() -> void:
 	var main := _spawn_main()
 	main.player.health.damage_immune = true
 	var boss := _boss(main, 14.0)

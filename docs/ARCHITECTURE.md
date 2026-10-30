@@ -15,11 +15,11 @@ A map of the code for a new agent. Read this first, then open the files it links
 | `src/effects/` | Visual effects: `EffectPool`, `PooledEffect`, `TemplateVfx`, `ElementVisuals`, `VfxConfig`, `VfxSizing`, `DamageNumber`, `GroundOutlines` (ground ring/outline builders shared by the preview and zones) |
 | `src/enemies/` | `Enemy`, `EnemySpawner`, `WaveConfig`, `WavePlan`, `EnemyConfig`; the boss (3c): `Boss`, `BossConfig`, `BossRules` |
 | `src/main/` | `Main` (wiring, death beat, restart), `SceneSelfCheck` |
-| `src/run/` | Run structure (3a, 3b): `RunConfig` (loads and validates `data/run.json`), `RunGenerator` (seed to room list), `RunState` (what carries across rooms, save format v2), `RunSession` (static holder), `RunController` (one room's flow), `TierRules` (elite/boss maths), `RunChoices` (the post-room choice model: options and resolving one), `RewardOffer` (seeded card offer and the `requires` filter) |
+| `src/run/` | Run structure (3a, 3b): `RunConfig` (loads and validates `data/run.json`), `RunGenerator` (seed to room list), `RunState` (what carries across rooms, save format v2), `RunSession` (static holder), `DebugDecks` (debug preset decks and the `--deck` / `--list-decks` args), `RunController` (one room's flow), `TierRules` (elite/boss maths), `RunChoices` (the post-room choice model: options and resolving one), `RewardOffer` (seeded card offer and the `requires` filter) |
 | `src/player/` | `Player`, `PlayerConfig` (`data/player.json`), `AttackController`, `AttackArcVisual`, `PlayerCues` (ghost, heal numbers, Leech drain), `PlayerOcclusionCue` (+ its `.gdshader`) |
 | `src/ui/` | `Hud`, `HudLayout`, `CardSlotWidget`, `AttackMeter`, `EnemyHpBar`, `GameOverScreen`, `SettingsScreen`, run UI: `RunHud`, `RunPromptScreen`, `RunOptionCard` (one choice option drawn as a card, reject tile, action tile, grid cell or Back), `RunPromptRows`, `RunIcons`, `RunTypeIcon`, `TierMarker`, boss UI (3c): `BossHpBar`, `BossMeter`, `BossAttackStrip`, `AimIndicator`, `DebugOverlay`, `TextFit`, `UiConfig` |
 | `scenes/` | `main/RunMain.tscn` (Main plus run nodes), `main/Main.tscn` (endless arena), `player/`, `camera/`, `enemies/` (3 types plus `BossGuardian.tscn`), `effects/` (Projectile, DamageNumber), `ui/`, `debug/TrainingDummy.tscn` |
-| `data/` | All content and tuning as JSON (section 6) |
+| `data/` | All content and tuning as JSON (section 6); `data/debug_decks/` holds the debug preset decks |
 | `assets/` | `icon.svg`, `shaders/enemy_hp_bar.gdshader` only. No art or audio |
 | `tests/` | gdUnit4 suites in `tests/unit/`, JSON fixtures in `tests/fixtures/`, helpers in `tests/support/` (`test_input.gd`, `body_flag.gd`, `test_caster.gd`, `test_clock.gd`) |
 | `tools/` | PowerShell wrappers and headless/capture scripts (section 9) |
@@ -119,6 +119,7 @@ Fixed-angle isometric rig. Root follows `target`; child `Camera3D` keeps a fixed
 - `data/deck_rules.json` -> `DeckRules` (pure static logic; `shipped_config()` is cached because the F3 overlay reads it every frame). Config: `min_unique_per_slot`, optional `slots: {slot: {min_unique}}`, optional `slot_groups: [{name, slots, min_unique_total}]`. Copies never count twice.
 - `DeckRules.check(...)` returns a `DeckCheck` (per-slot and per-group `count/required/short`, `problems`, `summary_lines()`). `can_remove` / `can_swap` return the problems a change would cause (empty = allowed); they only block on the card's own slot and groups. `CardSlotController.deck_check()`, `can_remove`, `can_swap` wrap them for the live deck.
 - `DeckRules.validate_shipped_content()` (run by a test, not at boot) checks the shipped pools against the minimums. `Main` blocks run start on a short deck (section 2).
+- **Debug preset decks (T-decks).** `DebugDecks` ([src/run/DebugDecks.gd](../src/run/DebugDecks.gd)) reads `data/debug_decks/*.json` (`read_dir`), validates each preset with `DeckRules`, and parses `--deck=<name>` / `--list-decks` (`resolve_launch`). `RunController._apply_launch_args` sets `RunSession.debug_deck`; `RunSession.begin_new_run` then builds the deck from the preset's `starter`, or `full` with `--full-deck` (`DebugDecks.deck_of`). It is sticky for the launch, so Try again keeps it. Bad args quit with exit 2 from `RunController.begin`; `--deck` is ignored with `--scenario` and in the arena. Presets are legal decks: there is no rule bypass.
 - The shuffle is a true bag: it refills from all owned copies when empty, and never repeats the card just drawn across a reshuffle (when another unique card exists).
 
 ### Held-key casting (Slice 6)
@@ -188,6 +189,7 @@ All in `data/`. Schema/validation lives in code; the file is not self-describing
 | `pools.json` | Classes, elements, neutral: `kind` (class / element / neutral), `visual {color, scale}`, element `status {status_id, base_chance}` | `PoolDatabase` |
 | `statuses.json` | burn, bleed, regeneration, leech, stun | `StatusDatabase` |
 | `deck_rules.json` | Unique-card minimums (`min_unique_per_slot`, `slots`, `slot_groups`) | `DeckRules` |
+| `debug_decks/<name>.json` | Debug preset decks: `name` (= file name), `description`, `full`, `starter` (sub-multiset of `full`); both lists must pass the deck rules | `DebugDecks.validate_preset` |
 | `zones.json` | `max_live` and the zone `look` | `ZoneConfig` |
 | `player.json` | `dodge {speed, duration, cooldown, block_ticks_after_pause}`, `body {collide_with_enemies}` | `PlayerConfig` |
 | `attacks.json` | `light`, and `heavy` keyed by class id | `AttackDatabase` |
@@ -254,6 +256,9 @@ Card reward filtering is data: add `requires` to a card (`slot_types`, `pools`, 
 ### A boss attack, phase or boss
 Attack: add it under `attacks` in `data/bosses.json` with an existing `kind` (cone, aoe, volley, charge; see the `BossConfig` header) and list it in a phase's weighted `attacks`; `BossConfig.validate` rejects malformed entries (including a telegraph under `rules.min_telegraph`); a test (`m3c_boss_test`, `BossRules.escape`) checks every shipped attack can be walked or dodged out of. A new attack kind needs code in `Boss`, `BossConfig` and `BossRules` (unverified in detail). A phase is one more entry in `phases` (descending `enters_at`). Another boss: add `bosses.<id>` with a matching `enemies.json` entry (rank `boss`) and a scene using the `Boss` script; the bar reads the name and phases from the boss.
 
+### A debug preset deck
+Add `data/debug_decks/<name>.json` (`name` = the file name, `description`, `full`, `starter`; see section 6). No code. Check it with `godot --headless --path . -- --list-decks` (a broken file prints `INVALID` and exits 2). A new card is not in any preset until you add it.
+
 ### A scenario
 Add an entry in `data/scenarios.json`; unknown or misspelled keys fail on load (`ScenarioSchema`). Add a test in `tests/unit/` if it proves behavior. Document the new scenario in `README.md`.
 
@@ -265,7 +270,7 @@ Add an entry in `data/scenarios.json`; unknown or misspelled keys fail on load (
   - `run_tests.ps1` -> gdUnit4 headless.
   - `capture_screenshot.ps1` -> windowed capture, uses `src/debug/*` via user args.
   - `run_bot_sim.ps1 [-Rooms] [-Seed]` + `bot_sim.gd` -> card/deck NaN check, runs as a `SceneTree` script; prints a checksum that repeats per seed.
-  - `run_wave_sim.ps1` + `WaveSim.tscn` + `wave_sim.gd` -> real Main scene with a bot. `-Deck standard|fire|physical|lightheavy` fixes the two attack slots to a test family (A1 armor comparisons). `-Run` plays whole seeded runs through RunMain (`-Seed` first seed, `-Runs` count, `-RoomTimeout`): the bot also plays the choices with a seeded policy (rejects, picks, removals); it checks soft locks, empty decks and stuck cooldowns, reports card pick rates as a note (not a failure), prints HP at each room end, final deck composition and the choice counts, and prints the room-type distribution over 1000 seeds. A scene, so autoloads exist. Runs at `--fixed-fps 60` with hit-stop off, so a seed repeats exactly; prints `pinned:` and `climb:` lines.
+  - `run_wave_sim.ps1` + `WaveSim.tscn` + `wave_sim.gd` -> real Main scene with a bot. `-Deck standard|<preset name>` starts every run with a `data/debug_decks` preset (passed as `--sim-deck=`; only the starting deck, rewards change it). `-LightHeavyOnly` is a bot policy that never presses slots 1 and 2. `-Run` plays whole seeded runs through RunMain (`-Seed` first seed, `-Runs` count, `-RoomTimeout`): the bot also plays the choices with a seeded policy (rejects, picks, removals); it checks soft locks, empty decks and stuck cooldowns, reports card pick rates as a note (not a failure), prints HP at each room end, final deck composition and the choice counts, and prints the room-type distribution over 1000 seeds. A scene, so autoloads exist. Runs at `--fixed-fps 60` with hit-stop off, so a seed repeats exactly; prints `pinned:` and `climb:` lines.
   - `run_reload_cycle.ps1` + `ReloadCycle.tscn` + `reload_cycle.gd` -> death/restart soak.
   - `VpCapture.tscn` + `vp_capture.gd` (`capture_screenshot.ps1 -TrueSize WxH`) -> hosts the real Main in an oversized SubViewport (RunMain with `--run`, which `capture_screenshot.ps1` adds for `-Scenario ""`); Main registers with `WorldRef` so spawners, popups and effects find the arena when `current_scene` is null. Scene swaps work there too (`swap_to_fresh_scene`).
   - `SlotStateCapture.tscn` + `slot_state_capture.gd` -> HUD slot capture.
@@ -302,4 +307,4 @@ Add an entry in `data/scenarios.json`; unknown or misspelled keys fail on load (
 - **All damage must go through `Health.take_damage`.** Subtracting from `current_health` directly skips armor and resistance; a static audit test (`a1_qa_test.gd`) fails if source code does it outside `Health`. Pass the `source` so penetration and `damage_dealt` work, and pass the right `damage_type`: a new physical-like type belongs in `data/armor.json` `non_elemental_types`, otherwise it is treated as elemental.
 - **Armor and resistance parity.** Each tier's armor and resistance must give reductions within 2 points (`ArmorConfig.PARITY_TOLERANCE`); this is checked at load and by tests. Change one without the other and a test fails. `tiers.boss` in `data/run.json` is still unused by the real boss (it has its own armor in `bosses.json`).
 - **"All elements" boss text** is judged against the game's element list, so it is only right while the elements are uniform; a second element with a different resistance changes it on purpose.
-- **Wave sim `-Deck` decks are not legal decks.** They skip the run-start minimum check (`RunSession.skip_deck_minimums`) and exist only for armor comparisons.
+- **Presets are only the starting deck.** Rewards change a `--deck` / sim `-Deck` deck as the run goes on (physical-rogue goes from 2 to about 4 Fire cards by the boss), so sim comparisons dilute over a run. `--deck` is silently ignored with `--scenario` and in the arena.

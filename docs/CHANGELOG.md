@@ -2,7 +2,26 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-10-29 (Slice A1 armor; Milestone 3c boss encounter; Milestone 3b rewards and deck-clean; Milestone 3a run structure; content slice C1: deck rules, nine Fire Rogue cards, solid enemies, status cues)
+## 2026-10-29 (Slice T-decks debug preset decks; Slice A1 armor; Milestone 3c boss encounter; Milestone 3b rewards and deck-clean; Milestone 3a run structure; content slice C1: deck rules, nine Fire Rogue cards, solid enemies, status cues)
+
+### Slice T-decks: debug preset decks
+
+Commits e7b0029..HEAD; build 9b6e8a6. qa passed (deb6ff1; `docs/reviews/2026-10-29-t-decks-qa.md`): 987 tests on HEAD plus 9 qa tests in `tests/unit/t_decks_qa_test.gd`.
+
+#### Added
+- **[Director decision] Debug preset decks for launches.** Named decks in `data/debug_decks/<name>.json` (`name` equals the file name, `description`, `full`, `starter` a sub-multiset of `full`). Adding a preset is one file, no code. Both lists must pass the deck rules; there is no bypass. Shipped: `fire-heavy-rogue`, `physical-rogue` (has 2 Fire cards, the minimum the rules allow) and `mixed-rogue`. New `src/run/DebugDecks.gd` and `RunSession.debug_deck`. (9b6e8a6)
+- **Launch options** `--deck=<name>` (the preset's `starter`), `--deck=<name> --full-deck` (its `full` list) and `--list-decks` (prints names and descriptions, exits 0; exits 2 if a preset file is broken). The preset applies to the whole launch, so Try again keeps it. `--deck` is ignored with `--scenario` and in the arena. An unknown name, `--deck` twice, a bare `--deck` or an invalid preset exits 2 with "Launch refused: ...". (9b6e8a6)
+- **Wave sim `-LightHeavyOnly`:** a bot policy that never presses card slots 1 and 2, so only light and heavy attacks hit. Not a deck; the random stream is unchanged. (9b6e8a6)
+- README: a "Launch options" table listing every launch option with an example.
+
+#### Changed
+- **Wave sim `-Deck` now takes a preset name or `standard`** (passed to the game as `--sim-deck=`). Old: `standard|fire|physical|lightheavy`, test families that fixed the two attack slots. New: real, legal preset decks. A preset is only the starting deck; rewards change it during the run. (9b6e8a6)
+- **`RunSession.skip_deck_minimums` is removed.** Nothing can start a run below the deck minimums any more. (9b6e8a6)
+
+#### Docs and process
+- 12-seed boss-fight result, `-Run -God`, median as a multiple of the standard deck: fire-heavy 1.02x, physical 1.07x, both inside the director's 70 to 130% band, so no retune. The A1 numbers (fire 0.93x, physical 1.04x) were seed noise. Details in `docs/DECISIONS.md`, "T-decks qa PASS". (43b7e35)
+- Known: the reload soak (`tools/reload_cycle.gd`, "damage immunity leaked into a new room") flaked 2 of 3 under load before T-decks; it is assigned to P-dodge. Re-run once and note it until then.
+- Docs pass for T-decks: README, ARCHITECTURE and this file. No new third-party assets, so `docs/ASSETS.md` is unchanged.
 
 ### Slice A1: armor
 
@@ -18,6 +37,7 @@ Commits b23d7df..HEAD. Director decision b6f85bd (GDD section 7, "Armor"). Gamep
 - **F3 overlay "Defense" block:** armor and resistance of the enemy under the cursor (else the nearest), plus the player's armor. (4d22904)
 - **Scenarios** `boss_f3`, `elite_f3`, `armor_numbers` (new key `elite_indices`) for captures. (4d22904)
 - **Wave sim `-Deck <standard|fire|physical|lightheavy>`:** fixed test decks for armor comparisons. The decks are not legal (a tool-only flag skips the run-start minimums). (62fa964)
+  - Correction (T-decks docs pass): this wording is out of date. In T-decks (9b6e8a6) `-Deck` became a preset name or `standard`, the `fire`/`physical`/`lightheavy` families and the minimums skip (`skip_deck_minimums`) were removed, and the decks are legal.
 
 #### Changed
 - **Balance (re-tune to keep fight length, whole-run sim, 16 seeds):** elite `hp_multiplier` 2.5 -> 2.0; boss `max_health` 280 -> 195. Armor alone had stretched the median elite room from 41.9 s to 56.9 s and the boss fight from 63.7 s to 85.9 s; after the re-tune they are 40.6 s and 63.4 s. (e141dfe)

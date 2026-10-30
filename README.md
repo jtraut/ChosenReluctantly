@@ -19,7 +19,7 @@ A 3D isometric action RPG where your skills are cards: real-time combat driven b
 project.godot   Godot project (main scene: scenes/main/RunMain.tscn, the run; scenes/main/Main.tscn is the endless arena)
 src/            GDScript, grouped by system (camera, cards, combat, core, debug, effects, enemies, main, player, run, ui)
 scenes/         .tscn scenes
-data/           JSON game content and tuning (cards, armor, enemies, waves, run structure, statuses, zones, deck rules, player, UI, VFX, scenarios, input bindings)
+data/           JSON game content and tuning (cards, armor, enemies, waves, run structure, statuses, zones, deck rules, player, UI, VFX, scenarios, input bindings); data/debug_decks/ holds the debug preset decks
 assets/         icon and one shader (no art or audio yet)
 addons/gdUnit4  vendored test framework
 tests/          gdUnit4 suites (tests/unit), fixtures, helpers in tests/support (test_input.gd, body_flag.gd, test_caster.gd, test_clock.gd)
@@ -37,13 +37,30 @@ godot --path .          # play it: starts a run
 
 A normal launch starts a **run**: 8 rooms in a row (5 combat, 1 elite, 1 rest, boss last), built from a seed; see `data/run.json` and `docs/ARCHITECTURE.md` section 2. The room indicator at the top right shows "Room X of Y - Type" with a shape per type (circle combat, diamond elite, plus rest, star boss). After a won combat or elite room you pick a reward card (see below); a rest room offers heal or remove a card; any other room shows a "Room cleared" panel with Continue. The last room is the boss (`data/bosses.json`): its HP bar shows at the top centre with its name, phase notches and the attack it is winding up. Killing it ends with a short death beat, then the stats screen; Game Over shows "Reached room X of Y". Try again and New run start a new seed. `scenes/main/Main.tscn` is the endless arena, still used by tests, scenarios, the wave sim and VpCapture without `--run`.
 
-Launch args for the run (after `--`, for example `godot --path . -- --run-seed=7 --run-room=8`; verified with `capture_screenshot.ps1 -Extra`):
-- `--run-seed=N`: seed for the first run only. Later runs (Try again, New run) get random seeds.
-- `--run-room=K`: start at room K (1-based), for the first run only.
-- `--run-clear-after=S`: clear the first room after S seconds (debug).
-- `--full-deck`: start with all 24 cards of the character's pools instead of the 15-card starter, for the whole launch (debug).
-- `--run-auto-choose=<option id>[,<id>...]`: the choice screen picks those option ids in turn, skipping the arm delay (debug, for captures; for example `remove_menu`).
-- To jump straight to the boss: `godot --path . -- --run-seed=1 --run-room=8`, or capture it with `-Scenario "" -Extra "--run-seed=1","--run-room=8"`.
+### Launch options
+Game args go after `--`, for example `godot --path . -- --run-seed=7 --run-room=8`. Options marked "run" are read only by a normal run launch (RunMain) and are ignored with `--scenario` or in the endless arena. "First run" means Try again and New run do not repeat it; "whole launch" means they do. Parsed in `src/run/RunController.gd` (`_apply_launch_args`), `src/run/DebugDecks.gd`, `src/ui/RunPromptScreen.gd` and `src/debug/CaptureArgs.gd`.
+
+| Option | What it does | Example |
+|---|---|---|
+| `--run-seed=N` | Run: seed for the first run only. Later runs get random seeds. | `godot --path . -- --run-seed=7` |
+| `--run-room=K` | Run: start at room K (1-based), first run only. | `godot --path . -- --run-seed=1 --run-room=8` (boss room) |
+| `--run-clear-after=S` | Run: clear the first room after S seconds (debug, for captures). | `godot --path . -- --run-clear-after=1` |
+| `--run-auto-choose=<id>[,<id>...]` | Run: the choice screen picks those option ids in turn, skipping the arm delay (debug). | `godot --path . -- --run-room=3 --full-deck --run-auto-choose=remove_menu` |
+| `--full-deck` | Run: start with the full card list instead of the starter (all 24 cards of the character's pools, or the preset's `full` list with `--deck`). Whole launch. | `godot --path . -- --full-deck` |
+| `--deck=<name>` | Run: start with debug preset deck `<name>` (its `starter` list). Whole launch (Try again keeps it). Presets are in `data/debug_decks/`. | `godot --path . -- --deck=fire-heavy-rogue` |
+| `--deck=<name> --full-deck` | Run: the preset's `full` list. | `godot --path . -- --deck=mixed-rogue --full-deck` |
+| `--list-decks` | Run launch: print the preset names and descriptions and quit. Exit 0; exit 2 if a preset file is broken (verified). | `godot --headless --path . -- --list-decks` |
+| `--scenario=<id>` | Play a scripted scenario in the endless arena (ids in `data/scenarios.json`, table below). Unknown id: error, exit 1. | `godot --path . -- --scenario=hp_bars` |
+| `--screenshot-after=T[,T...]` | Capture a PNG at each time (seconds), then quit. Needs a renderer. | `godot --path . -- --screenshot-after=3.0,6.0 --screenshot-out=screenshots/a.png` |
+| `--screenshot-count=N` with `--screenshot-interval=S` | N shots at S, 2S, ... (interval default 1.0). Ignored if `--screenshot-after` is given. | `godot --path . -- --screenshot-count=3 --screenshot-interval=2.0` |
+| `--screenshot-out=<path>` | Output PNG path (default `user://screenshot.png`); several shots insert `_<n>` before the extension. | `--screenshot-out=screenshots/c.png` |
+
+Notes:
+- `--deck` errors exit 2 with "Launch refused: ..." on stderr: unknown name, `--deck` given twice, a bare `--deck`, or a preset that is invalid (each verified except the invalid-preset case, which is covered by tests). There is no rule bypass: both lists of a preset must pass the deck rules.
+- `--deck` is ignored with `--scenario` and in the arena, because only the run reads it. `--list-decks` needs the run too (a plain launch).
+- Preset files (`data/debug_decks/<name>.json`): `name` (equals the file name), `description`, `full` (card ids, copies allowed) and `starter` (a sub-multiset of `full`). Adding a file needs no code. Shipped: `fire-heavy-rogue`, `physical-rogue` (has 2 Fire cards, the rules' minimum) and `mixed-rogue`; `--list-decks` prints the current set. A preset is only the starting deck: rewards and removals change it during the run.
+- `tools/VpCapture.tscn` has its own args: `--size=WxH` (required) and `--run` (host the run instead of the arena). Everything else is the capture args above. `tools/capture_screenshot.ps1` builds these for you.
+- To jump straight to the boss: `-- --run-seed=1 --run-room=8`, or capture it with `-Scenario "" -Extra "--run-seed=1","--run-room=8"`.
 - `--scenario=...` always keeps the endless arena, even on a normal launch.
 
 ### Rewards and deck-clean (Milestone 3b)
@@ -63,7 +80,7 @@ Tests use [gdUnit4](https://github.com/godot-gdunit-labs/gdUnit4), vendored in `
 powershell -File tools\run_tests.ps1
 ```
 
-This runs every suite under `/tests` and exits non-zero on any failure. Last run (A1 docs pass, 2026-10-29, about 5 min): 968 of 968 test cases passed, exit 0 (qa's A1 numbers: 966 plus its 2 delta tests). Reports go to `reports/` (gitignored). The script uses the console-subsystem `*_console.exe` build when one sits next to the resolved binary, because PowerShell cannot reliably wait on or read the windowed build, which made failures look like passes (see `docs/DECISIONS.md`).
+This runs every suite under `/tests` and exits non-zero on any failure. Last run (T-decks docs pass, 2026-10-29, about 5 min 19 s): 996 of 996 test cases passed, exit 0 (qa's T-decks numbers: 987 plus its 9 delta tests). Reports go to `reports/` (gitignored). The script uses the console-subsystem `*_console.exe` build when one sits next to the resolved binary, because PowerShell cannot reliably wait on or read the windowed build, which made failures look like passes (see `docs/DECISIONS.md`).
 
 > After adding a new global class (`class_name`) the plain headless run may fail with "Could not find type X in current scope". Run `godot --headless --editor --quit --path .` once to rebuild the class cache (verified: exits 0), then re-run the tests.
 
@@ -149,13 +166,14 @@ powershell -File tools\run_bot_sim.ps1 -Rooms 20 -Seed 3      # verified: prints
 Parameters: `-Rooms` (default 20) and `-Seed` (default 1). The same seed and rooms print the same checksum (verified: two runs of seed 3 both gave 2281795515).
 
 ## Wave density sim
-Plays the real Main scene (spawner, enemies, player) with a bot that uses the real input actions, then reports crashes, NaN, cap violations, enemies or player leaving the arena, stalls, damage taken, alive counts, spacing, and rough CPU frame cost. It runs as a scene (so autoloads exist), headless. `-Seconds` is game time, `-Scale` is `Engine.time_scale` (1 = real time and most faithful, default 3), `-God` keeps the player alive to exercise the whole wave table, `-Idle` is a player who never moves, `-Deck` (`standard` default, `fire`, `physical`, `lightheavy`) fixes the two attack slots to a test family so armor comparisons are like for like (not a legal deck: the run-start minimums are skipped, and it is re-imposed after every reward), `-Runs` repeats with consecutive seeds (verified: `-Seed 20 -Runs 2` ran seeds 20 and 21), `-Seed` sets the first seed. `-Run` plays whole seeded runs through `RunMain` instead (see below). The script launches Godot with `--fixed-fps 60` (one 60 Hz physics tick per frame) and turns hit-stop off in the sim; `-Scale` defaults to 1, and a `-Scale` above 1 drops `--fixed-fps` and the run no longer repeats.
+Plays the real Main scene (spawner, enemies, player) with a bot that uses the real input actions, then reports crashes, NaN, cap violations, enemies or player leaving the arena, stalls, damage taken, alive counts, spacing, and rough CPU frame cost. It runs as a scene (so autoloads exist), headless. `-Seconds` is game time, `-Scale` is `Engine.time_scale` (1 = real time and most faithful, default 3), `-God` keeps the player alive to exercise the whole wave table, `-Idle` is a player who never moves, `-Deck` (`standard` default, or the name of a preset in `data/debug_decks/`; passed to the game as `--sim-deck=`) starts every run with that legal preset deck, so armor comparisons are like for like. A preset is only the starting deck: rewards and removals change it as the run goes on. `-LightHeavyOnly` is a bot policy, not a deck: the bot never presses card slots 1 and 2, so only light and heavy attacks hit. `-Runs` repeats with consecutive seeds (verified: `-Seed 20 -Runs 2` ran seeds 20 and 21), `-Seed` sets the first seed. `-Run` plays whole seeded runs through `RunMain` instead (see below). The script launches Godot with `--fixed-fps 60` (one 60 Hz physics tick per frame) and turns hit-stop off in the sim; `-Scale` defaults to 1, and a `-Scale` above 1 drops `--fixed-fps` and the run no longer repeats.
 
 ```
 powershell -File tools\run_wave_sim.ps1 -Seed 1 -Seconds 150 -Runs 3
 powershell -File tools\run_wave_sim.ps1 -Seed 1 -Seconds 120 -God
 powershell -File tools\run_wave_sim.ps1 -Seed 20 -Seconds 60 -Runs 3 -Idle -Scale 1
-powershell -File tools\run_wave_sim.ps1 -Seed 1 -Seconds 20 -God -Deck fire    # verified: WAVE SIM OK, exit 0
+powershell -File tools\run_wave_sim.ps1 -Seed 1 -Seconds 20 -God -Deck fire-heavy-rogue    # verified: WAVE SIM OK, exit 0
+powershell -File toolsun_wave_sim.ps1 -Seed 1 -Seconds 20 -God -Deck physical-rogue -LightHeavyOnly    # verified: WAVE SIM OK, exit 0
 ```
 ```
 powershell -File tools\run_wave_sim.ps1 -Run -Seed 1 -Runs 2    # whole runs; verified in the 3b pass: both runs WON, prints WAVE SIM OK
@@ -175,8 +193,8 @@ powershell -File tools\run_reload_cycle.ps1 -Cycles 5     # verified: prints "RE
 It runs `tools/ReloadCycle.tscn` headless; it must be a scene so autoloads resolve. Re-run it whenever `Main`, `Juice`, `Player` or the autoloads change.
 
 ## Last verification
-A1 docs pass, 2026-10-29, Windows, Godot 4.7.2 (console build via `GODOT_BIN`), HEAD a4f5de4:
-- `tools\run_tests.ps1`: 968 of 968, exit 0.
-- `run_wave_sim.ps1 -Seed 1 -Seconds 20 -God -Deck fire`: WAVE SIM OK, exit 0.
-- Captures, each exit 0 and saved PNGs: scenarios `boss_f3` (1 shot at "0.8"), `elite_f3` ("0.8") and `armor_numbers` ("1.5,3.5"). The images were not viewed in this pass.
-- Not re-run in this pass: `godot --path . --quit`, the bot sim, the reload cycle, `-Run` sims, the other scenario captures, `-TrueSize`, `SlotStateCapture`, and the seeded-hash checks (last verified in the 3a pass: hashes 2792856473 for `-Seed 1 -Seconds 30` and 4120250839 for the 90 s run; qa reported the arena hash unchanged by A1). Not run interactively: plain `godot --path .` and a scenario without capture (they open a window and wait for a person).
+T-decks docs pass, 2026-10-29, Windows, Godot 4.7.2 (console build via `GODOT_BIN`), HEAD 43b7e35:
+- `toolsun_tests.ps1`: 996 of 996, exit 0.
+- `godot --headless --path . -- --list-decks`: prints the three presets, exit 0. `--deck=nope`, a bare `--deck` and `--deck` twice: each exit 2 with "Launch refused: ...".
+- `run_wave_sim.ps1 -Seed 1 -Seconds 20 -God -Deck fire-heavy-rogue` and `... -Deck physical-rogue -LightHeavyOnly`: WAVE SIM OK, exit 0.
+- Not re-run in this pass: captures, the bot sim, the reload cycle (it has a known flake, see `docs/CHANGELOG.md`), `-Run` sims, `-TrueSize`, `SlotStateCapture`, and the seeded-hash checks (last verified in the 3a pass; qa reported the arena hash unchanged by A1). Not run interactively: plain `godot --path .` and a scenario without capture (they open a window and wait for a person).

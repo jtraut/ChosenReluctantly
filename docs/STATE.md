@@ -17,7 +17,7 @@ Last updated: 2026-10-29. The director is away until the evening with an autonom
 ## Exact next step
 1. **A1 ux fix** (N2 boss bar at 1024x768, elite pip size at 720p, N1). **On resume:** check `git log`.
 2. Then playtester (Part 4) -> tech-writer -> close, tag `playtest-2026-10-29-A1`.
-3. Then **T-decks** (debug preset decks; lightweight loop), then **P-dodge** (also carries D13 = B, the Recovery cooldown 8 -> 12 s, and D16 = B, the boss stagger at thresholds), then **3d**.
+3. Then **T-decks** (debug preset decks; lightweight loop), then **W1 Fire Wizard** (director request; brief in ROADMAP), then **P-dodge** (also carries D13 = B, the Recovery cooldown 8 -> 12 s, and D16 = B, the boss stagger at thresholds), then **3d**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 

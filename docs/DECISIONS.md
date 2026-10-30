@@ -902,3 +902,18 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
   - N4: the golem's fire resistance lives in its `.tscn`;
   - N5: `armor_reduction(INF)` returns NaN (not reachable from data).
 - **The BossHpBar bind error couldn't be reproduced** on either the old or the new code over 32 sim runs; the fix stays, covered by a unit test.
+
+### 2026-10-29 - W1 Fire Wizard plan (game-lead)
+- **Director directive:** the Wizard comes earlier, with ranged light and heavy attacks (GDD §5).
+- **My calls:**
+  - **Order:** after A1 and T-decks, ahead of P-dodge and 3d. T-decks is small and gives Wizard test decks. [Wizard right after A1, which delays a small director request already queued.]
+  - **Element:** Fire only.
+  - **Class pick:** every run, with the last pick preselected.
+  - **Basic attacks:** the Wizard's are `neutral` (non-elemental magic, so armor applies).
+  - **Light DPS** is about 80% of the Rogue's as the price of range.
+  - **HP** 26 vs 30.
+  - **Data:** a new `data/characters.json` replaces the hardcoded pools.
+  - **Wizard pool** 6-8 cards with at least 1 Utility and 1 Movement, so Wizard + Fire + Neutral meets 3 per slot.
+- **Rejected:**
+  - a ranged light attack for every class (it changes the Rogue's identity);
+  - Water now (the director said the Wizard only).

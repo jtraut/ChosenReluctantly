@@ -509,7 +509,28 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
        - tech-writer: one "Launch options" table in README listing every launch option, with an example each; a CHANGELOG entry.
        - game-lead: boss-room examples in OPEN_ITEMS "How to playtest".
 
-- [ ] **P-dodge, dodge charges and indicator (director request 2026-10-29; runs after A1 and T-decks, before 3d; also carries the D13 and D16 answers)**
+- [ ] **W1: Fire Wizard, a ranged class (director request 2026-10-29; runs after A1 and T-decks, ahead of P-dodge and 3d)**
+  - **Goal:** a second playable class whose basic attacks shoot where you aim, chosen at run start. GDD §5 "Wizard moved earlier" [DIRECTOR DECISION], §3 (cards beat basic attacks), §4 (deck rules), §7 (armor and resistance).
+  - **Acceptance:**
+    1. **Character data:** `data/characters.json` (validated) holds the class id, display name, element, pools, starting deck, max HP, body colour and attack set per class. It replaces the hardcoded `Player.owned_pools` and `run.json` `character_pools`. Rogue's behaviour is unchanged.
+    2. **Class pick at run start:** a simple screen choosing Rogue or Wizard (the element is Fire for both, since it's the only element), shown at the start of every run including run 1, with the last pick preselected so Enter starts. Plus `--class=wizard|rogue` for launches and tools, combinable with `--run-room`, `--run-seed`, `--full-deck` and `--deck`.
+    3. **Ranged light attack (Wizard):** an auto-firing magic bolt (projectile template) aimed at the reticle. Clicking speeds it up, like the Rogue's. Range is about 12 m (data). Damage type `neutral` (non-elemental magic, so it goes through armor per A1). Starting numbers: ranged safety costs damage, so light DPS is about 80% of the Rogue's (logged; tuned in the sim). It must visibly fly to the reticle.
+    4. **Ranged heavy attack (Wizard):** reuse the existing `heavy.wizard` (a targeted aoe at the reticle, clamped to `max_range`, with a telegraph and wind-up). Change its damage type to `neutral`, and keep the card-beats-basic rule.
+    5. **Wizard cards:** a Wizard class pool of about 6-8 cards in data (no new effect templates unless unavoidable), so Wizard + Fire + Neutral meets 3 unique cards per slot. Fire + Neutral alone give Utility 2 and Movement 2, so the Wizard pool needs at least 1 Utility and 1 Movement (aim for 2 each), plus a few attack cards with a ranged or caster feel (e.g. a bolt volley, an arcane nova, a blink, a mana-shield buff). Placeholder names (story names them in a later pass, if the director activates story again). A balance table in DECISIONS. A 15-card Wizard starter (3 per slot) and a full pool for `--full-deck`.
+    6. **Rewards and pools:** offers use the chosen class's pools. Rogue cards never appear for a Wizard and vice versa (tested).
+    7. **Look:** the Wizard body is a different colour or shape (a primitive placeholder), so it's obviously a different character.
+    8. **HP:** the Wizard has 26 max HP vs the Rogue's 30 (game-lead call: ranged safety for a slightly squishier body; data).
+    9. **Readability (ux):**
+       - the class pick screen;
+       - the light bolt and heavy telegraph are readable;
+       - the HUD shows the right attack meters per class.
+    10. **Sim:** the whole-run sim supports `--class=wizard`. Report Wizard vs Rogue win rate, elite and boss time-to-kill, and HP lost on about 8 seeds. Target: the Wizard's boss time is within about 70-130% of the Rogue's.
+    11. **T-decks follow-up:** add `fire-heavy-wizard` and `mixed-wizard` presets (and an arcane-heavy one if it makes sense).
+    12. **Gates:** suite green; zero errors on startup and in the 20 s headless run; reload soak (including a Wizard run); SceneSelfCheck; capture scenarios; the arena hash unchanged for the Rogue default.
+  - **Quick win for the Rogue, from the same playtest (ux):** a new player can't tell the light attack is melee. Consider a short-range cue (e.g. the swing arc shown faintly at the player when nothing is in reach, or a "too far" tick when clicking at a distant reticle). Its own small item; doesn't block W1.
+  - **Owner sequence:** gameplay-dev (character data, class pick logic, attacks, cards) -> ux-designer (pick screen, bolt and telegraph readability, HUD) -> qa -> playtester -> tech-writer -> close, tag `playtest-2026-10-29-W1`. If too big for one sitting, split into W1a (character data, pick, ranged attacks, minimal cards) and W1b (full card pool, presets, balance).
+
+- [ ] **P-dodge, dodge charges and indicator (director request 2026-10-29; runs after A1, T-decks and W1, before 3d; also carries the D13 and D16 answers)**
   - **Goal:** the dodge has charges and the player can see them. GDD §3 [DIRECTOR DECISION, 2026-10-29].
   - **Acceptance:**
     1. `data/player.json` `dodge.charges` (default 3). The effective count is read through the existing StatModifiers as a stat (e.g. `dodge_charges`) so future passives can raise or lower it, **clamped to a hard 0-4** after all modifiers (`dodge.min_charges` 0 and `dodge.max_charges` 4 in data, validated). At 0 the dodge is unavailable and the indicator shows that clearly. Tests cover the clamp at both ends and a mid-run change (the current charges clamp down). No passive or level-up content now; only the hook and `dodge.cooldown` is the per-charge recharge time. Charges recharge one at a time while below max. Each dodge spends one charge. A dodge can't start during another dodge (the roll lasts 0.25 s). Distance stays 5 m.

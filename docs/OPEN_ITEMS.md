@@ -56,6 +56,15 @@ _Updated at every slice close._
 
 - **2026-10-29: "On pause, expand the active and next-up cards in every slot so I can read what they do."** Logged in ROADMAP under "Later" as unscheduled, as you said it can wait. Tell me when to schedule it.
 
+- **2026-10-29: "Add the mage sooner, with ranged light and heavy attacks"** (your fiancée expected left click to hit where the reticle is). Recorded in GDD §5 as your decision; it replaces your earlier "don't start the Wizard" for the Wizard only, and Water stays in Milestone 4. Planned as **W1: Fire Wizard** with:
+  - a class pick at run start;
+  - an auto-firing bolt that flies to the reticle;
+  - a targeted blast heavy;
+  - 6-8 Wizard cards;
+  - 26 HP.
+
+  **Order (my call, tell me if you want it different):** armor (A1, finishing now) -> debug decks (T-decks, small, so you can launch Wizard test decks) -> **Wizard** -> dodge charges plus D13/D16 -> loadouts. Also logged: a small Rogue cue so new players can tell the light attack is melee.
+
 ## Needs your decision
 
 Neither blocks work. Until you answer, I keep the current values.

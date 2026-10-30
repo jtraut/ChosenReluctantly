@@ -119,6 +119,9 @@ Fire, Water, Earth, Wind, Light, Dark. Others may be added.
 ### Character creation
 Pick one **class** and one **element** (for example Fire Rogue).
 
+### Wizard moved earlier **[DIRECTOR DECISION, 2026-10-29]**
+- The **Wizard** is added now, ahead of Milestone 4, as a ranged class: its **light and heavy attacks are ranged** and aimed at the reticle. Reason: an outside playtester expected left click to hit distant enemies under the reticle, and found the Rogue's melee swing confusing. Water and the subclasses stay in Milestone 4.
+
 ### Card pools
 A character may only draw cards from:
 1. Their class pool

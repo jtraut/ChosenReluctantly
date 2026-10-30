@@ -562,7 +562,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
 
 - [ ] **W1b, Wizard content and balance.** Runs after PL2. Full brief below.
 
-- [ ] **PL2, small polish before W1b (game-lead, 2026-10-30; loop: gameplay-dev -> ux-designer -> qa -> playtester (short) -> tech-writer -> close; tag `playtest-2026-10-30-PL2`)**
+- [x] **PL2, small polish before W1b** — **DONE 2026-10-30.** Gameplay 3b8359e..5079a2a; ux ad77847, B1 fix cb2be67; qa FAIL b7ba7fe then delta PASS 8a99ce4 (1082/1082); playtest 4dd2eaa (no blocker); docs d175b51. Tag `playtest-2026-10-30-PL2`. Rogue boss baseline (8 rooms, 12 seeds) 66.7 s mean. Follow-ups (N1 boss head margin, focus-ring notch) in F1. (Original header: game-lead, 2026-10-30; loop: gameplay-dev -> ux-designer -> qa -> playtester (short) -> tech-writer -> close; tag `playtest-2026-10-30-PL2`)**
   - **Goal:** clear the non-Wizard fixes from the W1a qa and playtest, so W1b tunes against a stable baseline. The boss spawn fix changes the Rogue's boss fight.
   - **gameplay-dev:**
     1. **Boss spawn:** the boss starts fully on screen in room 8 (3c backlog; the W1a playtest saw only about a quarter of its body). The camera framing must not change for other rooms. **The Rogue `-Run` output and boss times are expected to change. The arena hash (2792856473) must still match**, since the arena has no boss.

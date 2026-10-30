@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-10-30
-**Status: nothing waiting on a decision. 1 checklist item left for later (22, loadouts, once they exist).** Done: C1, Polish 1, 3a (runs of 8 rooms), 3b (card rewards and deck-clean), 3c (the boss) and **A1 (armor)**, **T-decks (preset test decks)** and **W1a (a playable Fire Wizard)**. Next: **PL2, in qa** (boss on screen, Rogue melee cue, your card frame colours), then **F1** (your 2026-10-30 checklist answers: bigger Fire Wall, movement cards pass through enemies, Shift+1-5 swap, 10-room runs), then **P-dodge** (dodge charges: Rogue 3, Wizard 2; Recovery cooldowns), then **W1b** (Wizard cards and tuning, now after the dodge work so it's tuned once), then loadouts.
+**Status: nothing waiting on a decision. 3 new things to look at when you play (items 25-27), plus item 22 once loadouts exist.** Done: C1, Polish 1, 3a (runs of 8 rooms), 3b (card rewards and deck-clean), 3c (the boss) and **A1 (armor)**, **T-decks (preset test decks)** and **W1a (a playable Fire Wizard)**. Done: **PL2** (tag `playtest-2026-10-30-PL2`). Next: **F1, in progress** (your 2026-10-30 checklist answers: bigger Fire Wall, movement cards pass through enemies, Shift+1-5 swap, 10-room runs), then **P-dodge** (dodge charges: Rogue 3, Wizard 2; Recovery cooldowns), then **W1b** (Wizard cards and tuning, now after the dodge work so it's tuned once), then loadouts.
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
@@ -19,7 +19,13 @@ Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
 _Updated at every slice close._
 
-- **Latest playtest tag:** `playtest-2026-10-30-W1a` (qa PASS, 1053/1053). Earlier tags: `playtest-2026-10-29-T-decks`, `-A1`, `-3c`, `-3b`, `-3a`, `-C1`.
+- **Latest playtest tag:** `playtest-2026-10-30-PL2` (qa PASS, 1082/1082). Earlier tags: `playtest-2026-10-30-W1a`, `playtest-2026-10-29-T-decks`, `-A1`, `-3c`, `-3b`, `-3a`, `-C1`.
+- **New in PL2 (since the W1a tag):**
+  - **Card frames in your colours:** Fire orange, class cards light bronze (Rogue and Wizard alike), neutral grey, on the card slots, reward offers and the rest-room removal list. "Ready" is now shown by a bright plate and green bar instead of the border, so the frame always keeps its colour. The card strip is 8 px taller.
+  - **The boss starts fully on screen** in room 8.
+  - **Rogue melee cue:** a faint pale-blue arc at light-attack reach, only when nothing is in range; it flashes when you click and miss.
+  - The class pick screen no longer shows the old HUD behind it. A bad `--class` / `--deck` prints one clean "Launch refused" line.
+- **Try first in PL2:** checklist items 25-27. **Playtester's notes (stills only):** the three frame colours read as three families without labels; bronze vs grey is the closest pair; the melee arc may read as "range" more than "swing".
 - **New in W1a (since the T-decks tag), your "add the mage sooner" request:**
   - Every run starts with a **class pick**: Rogue or Wizard. 1/2 or the arrows choose, Enter starts, and your last pick is preselected.
   - The **Wizard** has 26 HP and a purple body.
@@ -118,6 +124,11 @@ Each entry says what I chose and the one-line way to change it.
 Play a normal run, not a test scenario. Reply with the item number and a word or two ("3: fine", "8: too short").
 
 _Items 1-21, 23 and 24 are answered (see "Your checklist answers" below)._
+
+**G. PL2 (new)**
+25. **Frame colours.** Look for: at a glance in a fight, can you tell orange (fire), bronze (class) and grey (neutral) apart on the card strip, especially bronze vs grey?
+26. **Highlighted grey reward card.** Look for: the white ring around a highlighted grey card is easy to see. (A small notch in it is a known bug, fixed in F1.)
+27. **Rogue melee arc.** Look for: does the faint arc tell you the light attack is melee, or would a first run need a hint?
 
 22. **Loadouts (after 3d, not built yet).** This is about a feature still to come: from your second run on, you'll be able to build your own starting deck from your cards, save it, and pick it before a run. (The "Pick your hero" screen you saw is the class pick from W1a.) Look for, once it lands: it's easy to understand.
 

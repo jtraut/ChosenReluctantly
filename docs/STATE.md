@@ -16,7 +16,7 @@ Last updated: 2026-10-30. Run order (game-lead 2026-10-30, after the director's 
 - **T-decks** closed 2026-10-29 (tag `playtest-2026-10-29-T-decks`, 996/996). Docs cddab25.
 - **W1a (a playable Wizard)** closed 2026-10-30 (tag `playtest-2026-10-30-W1a`, 1053/1053). Docs 031f321.
 - **PL2** closed 2026-10-30 (tag `playtest-2026-10-30-PL2`, 1082/1082). Docs d175b51.
-- **F1 (director feedback batch)**: IN PROGRESS. Step: gameplay-dev (items 1-4, incl. 3a).
+- **F1 (director feedback batch)**: IN PROGRESS. gameplay-dev DONE efb0516 (1095/1095; new arena hash 3513335656, from the Wall). Step: ux-designer (5, 5a).
 - **W1b (Wizard cards, presets, balance)**: brief in ROADMAP; runs after P-dodge.
 
 ## Exact next step

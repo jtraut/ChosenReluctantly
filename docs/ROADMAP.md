@@ -593,7 +593,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     1. **Wizard attack cards:** 2-4 attack cards in pool `wizard` (attack_single and/or attack_aoe) with a ranged or caster feel, e.g. a bolt volley, an arcane nova, a piercing beam. Existing effect templates only, unless one is unavoidable (log it). That brings the Wizard pool to about 6-8 cards in total. Placeholder names in the game's dry, weary tone.
        - **Every new damage card must pass `CardDamageRule` against the Rogue's 5.0 DPS light**, the existing stricter bar.
        - Optionally a ward or armor buff card, which needs `CardSummary` wording support for armor (see the W1a calls).
-    2. **The Wizard starter is rebuilt** around the Wizard cards: 15 cards, 3 per slot, no melee-flavoured cards where a caster card exists (e.g. Pointy Stick out). The full deck is updated too.
+    2. **The Wizard starter is rebuilt** (F1 note: with 10 rooms the Wizard owns 15 of 18 available cards at the start, so most offers are duplicates; report the offer mix after the new cards). around the Wizard cards: 15 cards, 3 per slot, no melee-flavoured cards where a caster card exists (e.g. Pointy Stick out). The full deck is updated too.
     3. **Presets:** `fire-heavy-wizard` and `mixed-wizard` in `data/debug_decks/` with `"class": "wizard"` (plus an arcane-heavy one if it makes sense). Report the card counts per family.
     4. **A non-kiting Wizard bot policy** (`-WizardNoKite` or similar, the same pattern as `-LightHeavyOnly`): it holds a mid-range spot or walks in like the Rogue bot instead of kiting perfectly. qa and the playtester both said the kiting bot is a ceiling, not a typical player.
     5. **Balance table** for the Wizard cards in the hand-back, for DECISIONS.

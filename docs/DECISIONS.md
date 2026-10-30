@@ -1064,3 +1064,16 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
 - **Calls:**
   - **Boss head behind the RMB meter at 1024x600 (N1) goes to F1** as a data margin tweak, not a PL2 blocker. Nothing is clipped by the screen edge. [Reopening PL2.]
   - **Bronze vs grey, the grey focus ring's contrast, and whether the melee arc teaches "melee"** go to the director's eyes, not to tuning: the playtester only had stills, and all three are subjective. The ring's notch artefact is a plain bug and goes to F1. [Tuning colours now from stills.]
+
+### 2026-10-30 - F1 gameplay (gameplay-dev, logged by game-lead)
+- Built efb0516 + a preview-pin test commit (1095/1095). Wall 7.5 x 1.8; a `pass_through` flag on the dash template, set on the 6 movement dash cards (Shadow Step is a buff and already passed through); swap on Shift+1-5; boss spawn `screen_up` 2.2 -> 1.5; runs of 10 rooms (7/1/1/1, elite [3,8], rest [2,8]).
+- **Arena hash changes 2792856473 -> 3513335656** (90 s seed-1: 4120250839 -> 2081798188). The Wall alone causes it (bisected): in that sim, HP lost 14 -> 5, kills 9 -> 8. Accepted as the new baseline: it's the intended director buff.
+- **Reluctant Lunge on 3 enemies in a line:** damage [8,0,0] -> [8,8,8], distance 0.73 -> 3.0 m. The preview already drew the full path.
+- **10-room Rogue (12 seeds):** all won; boss 45-78 s, mean about 66 s; room-end HP 77-98%; two near-deaths (0.6 HP in room 4, 4 HP in room 3).
+- **Calls:**
+  - **Pass-through is a data flag on the dash template,** required on every movement dash card by a test. [Deriving it from `slot_type`; a schema rule.]
+  - **The grant lasts exactly the move,** not a timer. A dash that ends inside a body reuses Shadow Step's restore (up to 3 s ghosted). [`grant_pass_through(duration)`, which can be off by a tick.]
+  - **`screen_up` 1.5,** head at y≈112 vs the meter's 92 at 1024x600. [1.6, too tight.]
+  - **A finer boss fallback sweep at three distances, with no extra RNG draw.** [Loosening the corner test.]
+- **Known gap for qa:** in that up-to-3 s ghost window after a dash ends inside a body, a dodge also passes through. That bends GDD §3 ("the dodge doesn't pass through") only in an edge case; qa judges whether it matters.
+- **For W1b (game-lead):** with 10 rooms, the Wizard owns 15 of its 18 available cards at the start, so most later offers are duplicates. W1b's 2-4 new Wizard cards ease this; W1b reports the offer mix.

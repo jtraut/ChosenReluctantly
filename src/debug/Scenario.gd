@@ -142,6 +142,10 @@ func _build() -> void:
 		for enemy in _enemies:
 			enemy.health.set_max_health(float(_def["enemy_max_health"]))
 			enemy.health.heal(enemy.health.get_max_health())
+	# Capture-only (A1): make these enemies elites through the real tier path (HP, armor, resistance, marker).
+	for elite_index: int in _def.get("elite_indices", []):
+		if elite_index < _enemies.size():
+			_enemies[elite_index].apply_tier("elite", RunConfig.tier("elite"))
 	# Capture-only: start below full HP so a heal is observable.
 	if _def.has("player_start_damage"):
 		_hit_unmitigated(player.health, float(_def["player_start_damage"]))

@@ -19,7 +19,7 @@ const STRINGS: Array[String] = ["heavy_class"]
 const STRING_ARRAYS: Array[String] = ["boss_attacks"]
 ## key -> exact number of finite numbers in the array.
 const NUMBER_ARRAYS: Dictionary = {"origin_offset": 3, "spacing": 2, "aim_point_offset": 2}
-const INDEX_ARRAYS: Array[String] = ["burn_indices", "bleed_indices", "stun_indices", "boss_indices"]
+const INDEX_ARRAYS: Array[String] = ["burn_indices", "bleed_indices", "stun_indices", "boss_indices", "elite_indices"]
 
 
 static func validate(scenario_id: String, def: Variant) -> Array[String]:

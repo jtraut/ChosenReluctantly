@@ -2,7 +2,47 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-10-29 (Milestone 3b rewards and deck-clean; Milestone 3a run structure; content slice C1: deck rules, nine Fire Rogue cards, solid enemies, status cues)
+## 2026-10-29 (Milestone 3c boss encounter; Milestone 3b rewards and deck-clean; Milestone 3a run structure; content slice C1: deck rules, nine Fire Rogue cards, solid enemies, status cues)
+
+### Milestone 3c: the boss encounter, and the reward-screen scroll fix
+
+Commits a35501d..8bc7241 (a35501d is the gameplay follow-up commit; gameplay a35501d..2234dc8; ux b8af93f..5245779; fix pass 741c624..b7a6a01). qa passed 3c at 903 of 903 tests (64df947; `docs/reviews/2026-10-29-m3c-qa.md`) and the fix pass at 907 (8bc7241). Playtest found no blocker (81b03d8; `docs/playtests/2026-10-29-m3c-boss.md`).
+
+#### Added
+- **A real boss: "The Overly Enthusiastic Guardian" (placeholder name, per DECISIONS)** replaces the 3a placeholder (a golem with HP x7). Everything is data in `data/bosses.json`, read by `BossConfig` (validator) and `BossRules` (pure rules); the brain is `src/enemies/Boss.gd` on `scenes/enemies/BossGuardian.tscn`. The boss is 280 HP, resists every element by 50% (GDD section 7, final boss), cannot be stunned, and takes no knockback. (31fa26e, a5303c2, 72b7985)
+- **Four telegraphed attacks:** smash (cone), slam (disc on where you stood), volley (5 shot lanes), charge (a lane). Wind-ups run 0.77 to 1.1 s; the data floor is `rules.min_telegraph` 0.6 s, and a test (not load-time validation) checks every attack can be escaped by walking or by the dodge. (31fa26e)
+- **Three phases** at 66% and 33% of HP: faster, a shorter gap between attacks, more attacks (charge from phase 2). Each change is a 1.2 s invulnerable roar. Phase 2 summons 2 chasers and phase 3 summons 2 shooters, at most 3 adds alive; the boss kills its adds when it dies. `Health.hp_floor` holds each threshold, so one big hit cannot skip a phase or kill the boss before its last one. (31fa26e)
+- **Pinning rule:** the boss is not solid to the player or other enemies while it charges, and turns solid again only once it no longer overlaps the player, so a charge cannot trap you against a wall. (31fa26e)
+- **Death beat:** 1.6 s of slow-motion and a burst with the player immune, then the win screen. The beat counts game time when hit-stop is off, so seeded sims still repeat exactly. (31fa26e, 2234dc8)
+- **Template params** (optional, used by the boss): projectile `yaw_degrees` (turns the shot about the vertical axis, a fan) and aoe `vfx: false` (skip the template's own impact visual). (31fa26e)
+- **`RunController.boss_spawned(boss)` and `current_boss()`** (the boss bar does not use them; it finds the boss by class). (a5303c2)
+- **Boss HP bar (ux),** top centre while a boss lives: name, fill with ghost trail, a notch and line at each phase threshold, "Phase N of 3: name", a striped "Invulnerable" look during the roar, the resistance line, and the current attack's label with a draining wind-up strip. It finds the boss by class, so it also works in scenarios. New: `BossHpBar`, `BossMeter`, `BossAttackStrip`, `HudLayout.boss_bar_rect` and `debug_overlay_top`. (b8af93f)
+- **Debug scenarios `boss`, `boss_edge`, `boss_phase3`** (9999 HP for both sides) for captures. The boss room itself: `-Scenario "" -Extra "--run-seed=1","--run-room=8"`. (a5303c2, b8af93f)
+- **Sim tooling:** the run-mode bot leaves wind-up areas and dodges, and `run_wave_sim.ps1 -Run` prints a `boss fight (spawn to death)` line per run. The reload soak covers the boss fight, a phase transition and the death beat. (a5303c2, 72b7985)
+- Test count 826 -> 907 across 3c and its fix pass.
+
+#### Changed
+- **Room indicator moved from top centre to top right** to make room for the boss bar; the F3 overlay now sits under the boss bar block (`HudLayout.debug_overlay_top`). (b8af93f)
+- **Boss telegraphs are bolder:** lane alpha 0.3 -> 0.5 for boss lanes (`boss_lane_alpha` in `data/vfx.json`), the slam gets an inner ring, and cone outlines and aoe rings draw over bodies. Sizes are unchanged. (b8af93f, b7a6a01)
+- **Boss attack label font 15 -> 22 px** (`boss_bar.attack_font_size`), attack row 22 -> 30 px, bar block 96 -> 104 px (`boss_bar_size`). (b7a6a01)
+- **Boss pacing** (bot, seeds 1-8, 15-card starter): fight 52 to 67 s, mean 61 s (about 80 s with the placeholder); the bot won 8 of 8. HP tuned 520 -> 280. (72b7985)
+- **The boss spawns with no tier,** so `tiers.boss` in `data/run.json` (HP x7) is now unused; qa logged removing it for 3d. (31fa26e)
+- **3b follow-ups (ux):**
+  - Offers list the slot's cards: "Slot N now: A / B / C" (separator is " / " because card names contain commas; first version used ", "). (5245779, 5a85712)
+  - Effect lines carry units, from data (status numbers come from `statuses.json`).
+  - Reject tile width 188 -> 216 px (`option_reject_width`) so "Reject" fits on one line.
+  - Locked removal reads "Get another card for the Utility slot first (minimum 3 different)" on both the tile and the grid (`ui.rest.remove_locked`).
+  - Continue and New run now ignore input for the arm delay (0.4 s), Space no longer confirms them, and the hints say Enter.
+  - The reward panel sits below the HUD band, clear of the HP label.
+- **`RunState.from_dict` rejects a bad `pending` value** (closes the 3b qa note; it now drops an unknown value and logs an error). The choice model gained `owned`, `next_room_type` and per-option `slot_contents`. (a35501d)
+
+#### Fixed
+- **[Director decision] Reward selection scrolled and clipped** in windows near or under 720p. Cause: the container around the panel reset the panel's fit scale to 1 every time it sorted its children, undoing the shrink-to-fit. The scale is now re-applied after every sort. Offers never scroll (tests from 1024x600 to 2560x1440, including a live window resize); only the removal grid scrolls. New `run_ui.offer_min_fit_scale` 0.45 (the removal grid keeps `option_min_fit_scale` 0.8); panel padding 28 -> 22 px (`prompt_panel_padding`). (741c624, qa 8bc7241)
+
+#### Docs and process
+- **[Director decision] Planned, not built: dodge charges** (GDD section 3; scheduled as slice P-dodge after the 3c close). The dodge gets charges, 3 to start (maybe 2; a data value), each recharging on a slightly longer cooldown than the old single dodge, with a HUD indicator. Passives may raise or lower the baseline (for example fewer charges for a tankier build); level-ups must never change it. Hard limits 0 to 4 after all modifiers. Today the dodge is still a single dodge with one cooldown (`data/player.json`). (bef7a8c, 467383d)
+- Docs pass for 3c: README, ARCHITECTURE and this file. No new third-party assets, so `docs/ASSETS.md` is unchanged.
+- Known and logged (not fixed): the Game Over screen still accepts Space and says "Enter or Space"; the boss body can cover the resist text; a doubled cooldown in some buff lines; player card visuals are drawn against the 0.45 m enemy radius so they understate reach on the boss's larger body (safe direction, accepted). qa's save-robustness findings go to 3d.
 
 ### Milestone 3b: reward screen and deck-clean
 

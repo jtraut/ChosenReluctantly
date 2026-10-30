@@ -1,6 +1,6 @@
 # Chosen, Reluctantly
 
-A 3D isometric action RPG where your skills are cards: real-time combat driven by typed card slots, each with its own shuffled mini-deck. Built around deep class/element build combinations and roguelite runs with persistent between-run progression. Currently a placeholder-visuals prototype: one Fire Rogue, a seeded 8-room run (combat, elite, rest, boss) with card rewards after fights and a deck-clean choice in the rest room. See `docs/GDD.md` for the design and `docs/ROADMAP.md` for status.
+A 3D isometric action RPG where your skills are cards: real-time combat driven by typed card slots, each with its own shuffled mini-deck. Built around deep class/element build combinations and roguelite runs with persistent between-run progression. Currently a placeholder-visuals prototype: one Fire Rogue, a seeded 8-room run (combat, elite, rest, boss) with card rewards after fights, a deck-clean choice in the rest room, and a three-phase final boss, The Overly Enthusiastic Guardian (placeholder name). See `docs/GDD.md` for the design and `docs/ROADMAP.md` for status.
 
 ## Docs
 | File | What it is |
@@ -35,7 +35,7 @@ godot --path . --quit   # smoke-check with no window (verified: exits 0)
 godot --path .          # play it: starts a run
 ```
 
-A normal launch starts a **run**: 8 rooms in a row (5 combat, 1 elite, 1 rest, boss last), built from a seed; see `data/run.json` and `docs/ARCHITECTURE.md` section 2. The room indicator at the top shows "Room X of Y - Type" with a shape per type (circle combat, diamond elite, plus rest, star boss). After a won combat or elite room you pick a reward card (see below); a rest room offers heal or remove a card; any other room shows a "Room cleared" panel with Continue. Winning shows a stats screen; Game Over shows "Reached room X of Y". Try again and New run start a new seed. `scenes/main/Main.tscn` is the endless arena, still used by tests, scenarios, the wave sim and VpCapture without `--run`.
+A normal launch starts a **run**: 8 rooms in a row (5 combat, 1 elite, 1 rest, boss last), built from a seed; see `data/run.json` and `docs/ARCHITECTURE.md` section 2. The room indicator at the top right shows "Room X of Y - Type" with a shape per type (circle combat, diamond elite, plus rest, star boss). After a won combat or elite room you pick a reward card (see below); a rest room offers heal or remove a card; any other room shows a "Room cleared" panel with Continue. The last room is the boss (`data/bosses.json`): its HP bar shows at the top centre with its name, phase notches and the attack it is winding up. Killing it ends with a short death beat, then the stats screen; Game Over shows "Reached room X of Y". Try again and New run start a new seed. `scenes/main/Main.tscn` is the endless arena, still used by tests, scenarios, the wave sim and VpCapture without `--run`.
 
 Launch args for the run (after `--`, for example `godot --path . -- --run-seed=7 --run-room=8`; verified with `capture_screenshot.ps1 -Extra`):
 - `--run-seed=N`: seed for the first run only. Later runs (Try again, New run) get random seeds.
@@ -43,13 +43,14 @@ Launch args for the run (after `--`, for example `godot --path . -- --run-seed=7
 - `--run-clear-after=S`: clear the first room after S seconds (debug).
 - `--full-deck`: start with all 24 cards of the character's pools instead of the 15-card starter, for the whole launch (debug).
 - `--run-auto-choose=<option id>[,<id>...]`: the choice screen picks those option ids in turn, skipping the arm delay (debug, for captures; for example `remove_menu`).
+- To jump straight to the boss: `godot --path . -- --run-seed=1 --run-room=8`, or capture it with `-Scenario "" -Extra "--run-seed=1","--run-room=8"`.
 - `--scenario=...` always keeps the endless arena, even on a normal launch.
 
 ### Rewards and deck-clean (Milestone 3b)
 - After each won **combat or elite** room (never the last): 3 card offers (`rewards.offer_size` in `data/run.json`). Pick one, or reject all (3 rejects per run, `rejects_per_run`). Offers are seeded, drawn only from the character's pools, and cards you do not own are weighted 4:1 over owned ones. A card may carry an optional `requires` filter.
 - **Rest room:** Heal 30% of max HP, or remove a card. A card whose removal would break a deck minimum is greyed out with the reason; if none can go, the remove tile is disabled.
 - **Starter deck:** 15 cards, 3 per slot (`starting_deck` in `data/run.json`). It was the full 24-card pool before 3b. The deck minimum is 3 unique per slot, so with the plain starter the removal menu is disabled until picks add cards.
-- The choice screen shows card tiles, a reject tile with pips, and a "Next: Room N of 8 - Type" line. Keys 1-N highlight, Enter or a click confirms. Options ignore input for 0.4 s after opening (`prompt_option_arm_delay` in `data/ui.json`), and Space is swallowed. A reload mid-reward resumes the same offer.
+- The choice screen shows card tiles, a reject tile with pips, and a "Next: Room N of 8 - Type" line. Keys 1-N highlight, Enter or a click confirms. Options ignore input for 0.4 s after opening (`prompt_option_arm_delay` in `data/ui.json`), and Space is swallowed (the Continue and New run buttons have the same delay, and Space no longer confirms them). The offer panel shrinks to fit the window and never scrolls (tested from 1024x600 up); only the removal grid scrolls. Card tiles show "Slot N now: A / B / C". A reload mid-reward resumes the same offer.
 
 Controls (from `data/input_bindings.json`): WASD move, mouse aim, Space dodge, left click light attack, right click heavy attack, 1-5 use a card slot, Ctrl+1-5 swap a dead card, Esc pause/settings, F3 debug overlay. Holding a slot key shows the card's hit area and releasing casts it (change with the `cast_trigger` setting in the pause screen).
 
@@ -62,7 +63,7 @@ Tests use [gdUnit4](https://github.com/godot-gdunit-labs/gdUnit4), vendored in `
 powershell -File tools\run_tests.ps1
 ```
 
-This runs every suite under `/tests` and exits non-zero on any failure. Last run (3b docs pass, 2026-10-29, about 4 min): 826 of 826 test cases passed (qa's count in `docs/reviews/2026-10-29-m3b-qa.md` matches). Reports go to `reports/` (gitignored). The script uses the console-subsystem `*_console.exe` build when one sits next to the resolved binary, because PowerShell cannot reliably wait on or read the windowed build, which made failures look like passes (see `docs/DECISIONS.md`).
+This runs every suite under `/tests` and exits non-zero on any failure. Last run (3c docs pass, 2026-10-29, about 5 min): 907 of 907 test cases passed (qa's fix-pass count, 8bc7241, matches). Reports go to `reports/` (gitignored). The script uses the console-subsystem `*_console.exe` build when one sits next to the resolved binary, because PowerShell cannot reliably wait on or read the windowed build, which made failures look like passes (see `docs/DECISIONS.md`).
 
 > After adding a new global class (`class_name`) the plain headless run may fail with "Could not find type X in current scope". Run `godot --headless --editor --quit --path .` once to rebuild the class cache (verified: exits 0), then re-run the tests.
 
@@ -117,6 +118,9 @@ Scenarios are defined in `data/scenarios.json` and checked by `src/debug/Scenari
 | `c1_moves` | holds Lunge, then Backward Leap: dash previews with arrowheads | `"1.0,1.6,3.6,4.1"` |
 | `c1_names` | holds many cards at once to check card name rows fit | `"0.8,2.0,3.2"` |
 | `c1_overlay` | toggles the F3 debug overlay (deck counts) | `"1.5"` |
+| `boss` | the boss with 9999 HP for both sides, scripted through smash, slam, volley and charge (boss bar and telegraphs) `"2.0,5.0,9.0"` |
+| `boss_edge` | the boss at 50% HP (bar and phase line) `"2.0"` |
+| `boss_phase3` | the boss started in phase 3 (`boss_phase` 2) | `"1.2,3.0,5.5"` |
 
 ### True-size capture (`-TrueSize`)
 The OS window is clamped to the monitor, so `-Resolution` cannot exceed it. `-TrueSize WxH` instead runs the real Main scene (with `-Scenario ""`, RunMain, via `--run`) inside a SubViewport of exactly that size (`tools/VpCapture.tscn`; Main registers with `src/core/WorldRef.gd` because `current_scene` is null there). Same scenarios and `-After` times as above. It needs a renderer (windowed), like all capture.
@@ -152,7 +156,7 @@ powershell -File tools\run_wave_sim.ps1 -Seed 20 -Seconds 60 -Runs 3 -Idle -Scal
 ```
 powershell -File tools\run_wave_sim.ps1 -Run -Seed 1 -Runs 2    # whole runs; verified in the 3b pass: both runs WON, prints WAVE SIM OK
 ```
-`-Run`: `-Seed` is the first run seed, `-Runs` the number of runs, `-RoomTimeout` (sim seconds, default 240, minimum 10) is how long a room may last before it counts as a soft lock. The bot also plays the choices with a seeded policy (rejects 25% of the time while any are left, else a random unowned card; it removes a card in rest rooms when allowed). It reports per room time and lowest HP, and fails on a soft lock, an empty deck or a stuck cooldown. Per run it prints `HP at each room end`, the final deck size and per-slot composition, and picks, rejects used, removals and rest heals; the summary adds `mean HP at room end, as a share of max` per room and `final deck sizes`. Card pick-rate outliers and never-cast cards are printed as a NOTE, not a failure (pick rates count all database cards, so cards outside the 15-card start show as never cast unless picked). A small `-RoomTimeout` (60 was tried) flags the boss room as a soft lock; that is the check working, not a bug.
+`-Run`: `-Seed` is the first run seed, `-Runs` the number of runs, `-RoomTimeout` (sim seconds, default 240, minimum 10) is how long a room may last before it counts as a soft lock. The bot also plays the choices with a seeded policy (rejects 25% of the time while any are left, else a random unowned card; it removes a card in rest rooms when allowed). It reports per room time and lowest HP, and for the boss room a `boss fight (spawn to death)` line (seconds, whether the boss died, the player's lowest HP; the bot steps out of wind-up areas and dodges), and fails on a soft lock, an empty deck or a stuck cooldown. Per run it prints `HP at each room end`, the final deck size and per-slot composition, and picks, rejects used, removals and rest heals; the summary adds `mean HP at room end, as a share of max` per room and `final deck sizes`. Card pick-rate outliers and never-cast cards are printed as a NOTE, not a failure (pick rates count all database cards, so cards outside the 15-card start show as never cast unless picked). A small `-RoomTimeout` (60 was tried) flags the boss room as a soft lock; that is the check working, not a bug.
 
 All forms run and end with `WAVE SIM OK` (verified with shorter `-Seconds`; the 150 s and 120 s forms use the same code path). The wave table and the simultaneous-enemy cap live in `data/waves.json` (validated by `src/enemies/WaveConfig.gd`; enemy ids and scenes in `data/enemies.json`). Headless frame times exclude rendering.
 
@@ -167,4 +171,8 @@ powershell -File tools\run_reload_cycle.ps1 -Cycles 5     # verified: prints "RE
 It runs `tools/ReloadCycle.tscn` headless; it must be a scene so autoloads resolve. Re-run it whenever `Main`, `Juice`, `Player` or the autoloads change.
 
 ## Last verification
-3b docs pass, 2026-10-29, Windows, Godot 4.7.2 (console build via `GODOT_BIN`): `tools\run_tests.ps1` (826 of 826, exit 0); `run_wave_sim.ps1 -Run -Seed 1 -Runs 2` (both won, WAVE SIM OK, new report lines present); the two run-screen captures above (each saved a PNG, exit 0; the removal grid was viewed and shows the per-slot columns with Utility greyed). Not re-run in this pass: `godot --path . --quit`, the bot sim, the reload cycle, the scenario captures, `-TrueSize`, `SlotStateCapture`, and the seeded-hash checks (last verified in the 3a pass: hashes 2792856473 for `-Seed 1 -Seconds 30` and 4120250839 for the 90 s run). Not run interactively: plain `godot --path .` and a scenario without capture (they open a window and wait for a person).
+3c docs pass, 2026-10-29, Windows, Godot 4.7.2 (console build via `GODOT_BIN`), HEAD 8bc7241:
+- `toolsun_tests.ps1`: 907 of 907, exit 0.
+- `run_wave_sim.ps1 -Run -Seed 1 -Runs 2`: both runs WON, WAVE SIM OK, the `boss fight (spawn to death)` line printed (62.0 s and 56.1 s, boss died).
+- Captures, each exit 0 with the listed number of PNGs: scenarios `boss` (3 shots at "2.0,5.0,9.0"), `boss_edge` (1 at "2.0"), `boss_phase3` (3 at "1.2,3.0,5.5"), and the boss room (`-Scenario "" -Extra "--run-seed=1","--run-room=8"`, 1 shot at 4.0 s). Two shots were viewed: the boss room shows the boss bar top centre with name, phase notches and the "Fan of regrets" label, and the room indicator top right; `boss_phase3` shows "Phase 3 of 3".
+- Not re-run in this pass: `godot --path . --quit`, the bot sim, the reload cycle, the other scenario captures, `-TrueSize`, `SlotStateCapture`, the removal-grid and reward-screen captures, and the seeded-hash checks (last verified in the 3a pass: hashes 2792856473 for `-Seed 1 -Seconds 30` and 4120250839 for the 90 s run). Not run interactively: plain `godot --path .` and a scenario without capture (they open a window and wait for a person).

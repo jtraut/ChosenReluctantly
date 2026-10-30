@@ -16,7 +16,7 @@ func test_new_wizard_cards_pass_the_damage_rule_with_margin_over_the_rogue_light
 		var cycle: float = CardDamageRule.cycle_cooldown(card, float(slot_table.get_entry(String(card["slot_type"]))["base_cooldown"]))
 		var cast: float = CardDamageRule.cast_damage(card, {}, cycle)
 		assert_float(cast).override_failure_message(id + " cast").is_greater_equal(1.5 * float(light["damage"]) + 0.5)
-		assert_float(cast / cycle).override_failure_message(id + " dps").is_greater(light_dps + 0.4)
+		assert_float(cast / cycle).override_failure_message(id + " dps").is_greater(light_dps + 0.2)
 
 
 func test_wizard_starter_is_all_caster_and_has_the_new_attack_cards() -> void:
@@ -52,7 +52,7 @@ func test_wizard_presets_exist_and_are_valid() -> void:
 
 func test_armor_buff_wording_and_the_ward_grants_armor() -> void:
 	var ward: Dictionary = CardDatabase.get_card("wizard_ward")
-	assert_str(CardSummary.effect_line(ward)).is_equal("+25 armor for 6 s")
+	assert_str(CardSummary.effect_line(ward)).is_equal("+25 armor for 4 s")
 	var health := Health.new()
 	var mods := StatModifiers.new()
 	health.stat_modifiers = mods

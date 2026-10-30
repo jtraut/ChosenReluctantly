@@ -74,7 +74,7 @@ func test_shipped_characters_are_valid_and_listed_rogue_first() -> void:
 	var list: Array[Dictionary] = CharacterDatabase.list()
 	assert_str(String(list[0]["display_name"])).is_equal("Rogue")
 	assert_str(String(list[1]["display_name"])).is_equal("Wizard")
-	assert_float(float(list[1]["max_hp"])).is_equal(26.0)
+	assert_float(float(list[1]["max_hp"])).is_equal(22.0)
 
 
 func test_rogue_data_is_what_the_hardcoded_values_were() -> void:
@@ -206,8 +206,8 @@ func test_a_run_main_launch_plays_the_selected_class() -> void:
 	assert_str(player.character_id).is_equal("wizard")
 	assert_str(main.run_controller.character_id()).is_equal("wizard")
 	assert_array(player.owned_pools).is_equal(["wizard", "fire", "neutral"])
-	assert_float(player.health.max_health).is_equal(26.0)
-	assert_float(RunSession.current.max_hp).is_equal(26.0)
+	assert_float(player.health.max_health).is_equal(22.0)
+	assert_float(RunSession.current.max_hp).is_equal(22.0)
 	assert_array(player.card_slots.owned_card_ids()).contains_exactly_in_any_order(CharacterDatabase.starting_deck("wizard"))
 	assert_str(String(player.attacks.get_def(&"light")["shape"])).is_equal("projectile")
 
@@ -378,14 +378,14 @@ func test_a_wizard_run_in_the_scene_offers_only_wizard_fire_and_neutral_cards() 
 
 # ---- the Wizard body, HP and attacks ----
 
-func test_wizard_body_is_a_different_colour_with_26_hp_and_the_rogue_unchanged() -> void:
+func test_wizard_body_is_a_different_colour_with_22_hp_and_the_rogue_unchanged() -> void:
 	var wizard_main: Main = _spawn_arena("wizard")
 	var rogue_main: Main = _spawn_arena()
 	await get_tree().process_frame
 	var wizard: Player = wizard_main.player
 	var rogue: Player = rogue_main.player
-	assert_float(wizard.health.max_health).is_equal(26.0)
-	assert_float(wizard.health.current_health).is_equal(26.0)
+	assert_float(wizard.health.max_health).is_equal(22.0)
+	assert_float(wizard.health.current_health).is_equal(22.0)
 	assert_float(rogue.health.max_health).is_equal(30.0)
 	var wizard_color: Color = (wizard.body_mesh.material_override as StandardMaterial3D).albedo_color
 	var rogue_color: Color = (rogue.body_mesh.material_override as StandardMaterial3D).albedo_color
@@ -394,7 +394,7 @@ func test_wizard_body_is_a_different_colour_with_26_hp_and_the_rogue_unchanged()
 	assert_float(absf(rogue_color.r - 0.2) + absf(rogue_color.g - 0.55) + absf(rogue_color.b - 0.9)).is_less(0.01)  # the scene's blue, to within a hex digit
 
 
-func test_wizard_light_is_80_percent_of_the_rogues_and_neutral_with_12_m_range() -> void:
+func test_wizard_light_is_50_percent_of_the_rogues_and_neutral_with_12_m_range() -> void:
 	var rogue: Dictionary = AttackDatabase.get_light("default")
 	var wizard: Dictionary = AttackDatabase.get_light("wizard")
 	assert_str(String(wizard["shape"])).is_equal("projectile")
@@ -403,9 +403,9 @@ func test_wizard_light_is_80_percent_of_the_rogues_and_neutral_with_12_m_range()
 	assert_float(float(wizard["range"])).is_equal(12.0)
 	var rogue_dps: float = float(rogue["damage"]) / float(rogue["interval"])
 	var wizard_dps: float = float(wizard["damage"]) / float(wizard["interval"])
-	assert_float(wizard_dps / rogue_dps).is_equal_approx(0.8, 0.001)
+	assert_float(wizard_dps / rogue_dps).is_equal_approx(0.5, 0.001)
 	var clicked_ratio: float = (float(wizard["damage"]) / (float(wizard["interval"]) / float(wizard["manual_click_max_rate_ratio"]))) / (float(rogue["damage"]) / (float(rogue["interval"]) / float(rogue["manual_click_max_rate_ratio"])))
-	assert_float(clicked_ratio).is_equal_approx(0.8, 0.001)
+	assert_float(clicked_ratio).is_equal_approx(0.5, 0.001)
 	# Rogue's light is untouched, and the plain getter still returns it.
 	assert_float(float(rogue["damage"])).is_equal(3.0)
 	assert_float(float(AttackDatabase.get_attack("light")["damage"])).is_equal(3.0)
@@ -415,7 +415,7 @@ func test_wizard_heavy_is_neutral_so_it_goes_through_armor() -> void:
 	var heavy: Dictionary = AttackDatabase.get_heavy("wizard")
 	assert_str(String(heavy["damage_type"])).is_equal("neutral")
 	assert_bool(ArmorConfig.is_non_elemental("neutral")).is_true()
-	assert_float(float(heavy["damage"])).is_equal(8.5)  # numbers unchanged: only the type moved
+	assert_float(float(heavy["damage"])).is_equal(5.5)  # W1b tuning: 8.5 -> 5.5
 	assert_float(float(heavy["max_range"])).is_equal(7.0)
 
 
@@ -456,8 +456,8 @@ func test_the_wizard_bolt_flies_to_the_reticle_not_where_the_body_faces() -> voi
 			break
 	assert_bool(saw_bolt).override_failure_message("no bolt flew").is_true()
 	assert_float(enemy.health.current_health).is_less(start_hp)
-	# Neutral, 2.4 per bolt: hit armor-free (a plain chaser has none).
-	assert_float(start_hp - enemy.health.current_health).is_equal_approx(2.4, 0.01)
+	# Neutral, 1.5 per bolt: hit armor-free (a plain chaser has none).
+	assert_float(start_hp - enemy.health.current_health).is_equal_approx(1.5, 0.01)
 
 
 func test_the_wizard_bolt_does_not_reach_past_its_12_m_range_and_autofire_needs_a_target_in_range() -> void:

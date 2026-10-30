@@ -9,7 +9,7 @@
         {
             "template": "aoe",
             "params": {
-                "damage": 11,
+                "damage": 10.5,
                 "damage_type": "neutral",
                 "radius": 3.2,
                 "knockback_strength": 7.0

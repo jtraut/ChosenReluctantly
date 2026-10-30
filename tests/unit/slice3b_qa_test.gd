@@ -174,9 +174,9 @@ func test_decisions_balance_table_matches_the_data_files() -> void:
 		"fire_fireball": [20.0, 3.1, 6.45],
 		"fire_wall": [20.0, 3.3, 6.06],
 		# W1b (Wizard attack cards)
-		"wizard_bolt_volley": [7.5, 1.2, 6.25],
-		"wizard_overqualified_bolt": [12.0, 1.8, 6.67],
-		"wizard_arcane_nova": [11.0, 2.0, 5.50],
+		"wizard_bolt_volley": [6.6, 1.2, 5.50],
+		"wizard_overqualified_bolt": [10.5, 1.8, 5.83],
+		"wizard_arcane_nova": [10.5, 2.0, 5.25],
 	}
 	var statuses: Dictionary = {}
 	for status_id: String in ["burn", "bleed"]:

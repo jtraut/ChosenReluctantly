@@ -9,7 +9,7 @@
         {
             "template": "projectile",
             "params": {
-                "damage": 12,
+                "damage": 10.5,
                 "damage_type": "neutral",
                 "speed": 30.0,
                 "max_range": 16.0,

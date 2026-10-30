@@ -816,7 +816,7 @@ Commits b8af93f..5245779; 894/894. Rejected alternatives in brackets.
 - The bar finds the boss by class via `node_added`, so it works in capture scenarios too. [`RunController.boss_spawned`, which the arena doesn't have.] Equal resistance across elements uses the neutral tint.
 - **Boss telegraphs are bolder:** lanes at alpha 0.5 vs 0.3, and the slam gets an inner ring. Sizes are unchanged.
 - **3b follow-ups done:**
-  - "Slot N now: A, B, C";
+  - "Slot N now: A / B / C" (the separator changed to " / " in 5a85712, since names contain commas);
   - effect lines with units, from data (status numbers come from `statuses.json` via context);
   - Reject tile 188 -> 216 px;
   - the locked-removal reason is "Get another card for the Utility slot first (minimum 3 different)";
@@ -846,3 +846,9 @@ Commits b8af93f..5245779; 894/894. Rejected alternatives in brackets.
 
   [Recharging all charges at once; a 1.0 s recharge.]
 - **Note:** 3 x 5 m of i-frame rolls is a large survival buff against the GDD line that critical escapes should come from Movement cards. The director chose it knowingly, and the sim before/after will show the size of the effect.
+
+### 2026-10-29 - 3c closed (game-lead)
+- 3c closed: qa PASS 64df947; playtest 81b03d8 (no blocker); the director's no-scroll fix 741c624..b7a6a01 with qa PASS 8bc7241 (907/907); docs b4c7a1d. Tagged `playtest-2026-10-29-3c`.
+- **Boss name stays a placeholder** until the director or the story role names it.
+- **qa N11** (an intermittent soak failure: damage immunity leaked after a reward pick, also present at 64df947) goes to the P-dodge gameplay task.
+- **Order after 3c:** A1 armor, then P-dodge, then 3d (director order).

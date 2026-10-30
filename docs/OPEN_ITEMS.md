@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-10-29
-**Status: 3 small balance questions (D13, D14, D16), nothing blocked.** Done: C1, Polish 1, **3a (runs of 8 rooms)** and **3b (card rewards and deck-clean)**. In progress: 3c, a real boss fight.
+**Status: 3 small balance questions (D13, D14, D16), nothing blocked.** Done: C1, Polish 1, **3a (runs of 8 rooms)**, **3b (card rewards and deck-clean)** and **3c (the boss)**. Next: Slice A1 (armor), then dodge charges, then loadouts.
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
@@ -18,7 +18,9 @@ Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
 _Updated at every slice close._
 
-- **Latest playtest tag:** `playtest-2026-10-29-3b` (qa PASS, 826/826). Earlier tags: `playtest-2026-10-29-3a`, `playtest-2026-10-29-C1`.
+- **Latest playtest tag:** `playtest-2026-10-29-3c` (qa PASS, 907/907). Earlier tags: `playtest-2026-10-29-3b`, `-3a`, `-C1`.
+- **New in 3c (since the 3b tag):** room 8 is a real boss, "The Overly Enthusiastic Guardian" (placeholder name). It has 3 phases with an invulnerable roar between them; smash, slam, volley and charge attacks, each telegraphed; adds in phases 2 and 3; and a boss HP bar at the top with the phase and the attack name. The room indicator moved to the top right. Reward cards show "Slot N now: A / B / C" and plain effect lines. **Your scrolling complaint is fixed:** reward offers never scroll down to 1024x600, including your 1150x680 window. Jump straight to the boss with `godot --path . -- --run-room=8`.
+- **Try first in 3c:** fight the boss (checklist item 21) and answer D16 (should it ever stagger?).
 - **New in 3b (since the 3a tag):** after each won fight you pick 1 of 3 cards or reject the whole offer (3 rejects per run). Rest rooms let you heal or remove a card (you can't remove one that would break the 3-per-slot rule). **Your starting deck is now 15 cards, 3 per slot;** the other 9 cards come from rewards. Launch with `-- --full-deck` to start with all 24. A "Next: Room N of 8" line shows what's coming. HP now drops across a run (the bot averages about 85% at each room's end).
 - **Try first in 3b:** play one whole run (checklist items 19 and 20). Do the offers feel like real choices? Is removal being locked early (every starter card is needed for the 3-per-slot rule) annoying?
 - **New in 3a (since the C1 tag):** pressing Play now starts a **run**: 8 rooms in a row (5 fights, 1 elite, 1 rest, then a boss), with "Room X of 8" and a shape for the room type at the top. Clearing a room shows a panel with Continue. Your HP carries over between rooms. There's a win screen, and Game Over now says how far you got. Elites (diamond sign) and the boss (star sign) have more HP. The boss is a stand-in until 3c. Try again starts a new run with a new seed.
@@ -44,7 +46,7 @@ _Updated at every slice close._
 
 ## Your feedback in progress
 
-- **2026-10-29: "No scrolling by default on the round-end reward selection."** Accepted. ux-designer fixes it right after the current boss playtest, before 3c is tagged. Reward offers will fit without scrolling down to about 1024x600; only the rest-room removal list may scroll.
+- **2026-10-29: "No scrolling by default on the round-end reward selection."** **Fixed** in `playtest-2026-10-29-3c`. Cause: the panel's shrink-to-fit was being undone by its container. Offers now fit with no scrollbar from 1024x600 up; only the rest-room removal list can scroll.
 
 - **2026-10-29: "No cooldown indicator for the dodge; dodge should have 3 charges (maybe 2) and a slightly longer cooldown."** Recorded in GDD §3 as your decision. It's scheduled right after the boss slice closes and before loadouts. I'm setting each charge's recharge to **1.2 s** (was 0.8 s); the charge count and cooldown are both data values (`data/player.json` `dodge.charges`, `dodge.cooldown`). There will be a pip indicator near the attack meters. Also recorded: passives may raise or lower the charges as a trade-off, level-ups never touch them, and the hard limits are 0 and 4. The code gets the hook now; the passives come later.
 

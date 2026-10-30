@@ -1,0 +1,7 @@
+{
+    "k": 50.0,
+    "armor_reduction_cap": 0.5,
+    "non_elemental_types": ["physical", "neutral"],
+    "stat_armor": "armor",
+    "stat_penetration": "armor_penetration"
+}

@@ -25,7 +25,7 @@ const KIND_KEYS: Dictionary = {
 }
 const PLACES: Array[String] = ["self", "target"]
 const RULE_KEYS: Array[String] = ["min_telegraph", "max_transition", "max_adds_cap", "min_attacks"]
-const BOSS_KEYS: Array[String] = ["display_name", "max_health", "resistance", "knockback_taken", "body_radius", "max_adds_alive", "spawn_grace", "transition", "death", "attacks", "phases"]
+const BOSS_KEYS: Array[String] = ["display_name", "max_health", "resistance", "armor", "knockback_taken", "body_radius", "max_adds_alive", "spawn_grace", "transition", "death", "attacks", "phases"]
 const TRANSITION_KEYS: Array[String] = ["duration", "shake", "shake_duration", "hit_stop", "ring_size"]
 const DEATH_KEYS: Array[String] = ["beat_seconds", "slow_mo_scale", "shake", "shake_duration"]
 const PHASE_KEYS: Array[String] = ["name", "enters_at", "move_speed", "attack_gap", "windup_scale", "attacks", "summon"]
@@ -77,6 +77,9 @@ static func _validate_boss(id: String, def: Dictionary, rules: Dictionary, known
 		errors.append("%s.display_name must be a non-empty string" % where)
 	_num(def, "max_health", 1.0, 100000.0, where, errors)
 	_num(def, "resistance", 0.0, 0.5, where, errors)  # GDD section 7: a resistance caps at 50%
+	_num(def, "armor", 0.0, 1000.0, where, errors)  # required; GDD section 7 Armor (final boss 50 = 50% at K 50)
+	if _is_num(def.get("armor")) and _is_num(def.get("resistance")):
+		errors.append_array(ArmorConfig.parity_errors(where, float(def["armor"]), float(def["resistance"]), ArmorConfig.k(), ArmorConfig.PARITY_TOLERANCE))
 	_num(def, "knockback_taken", 0.0, 1.0, where, errors)
 	_num(def, "body_radius", 0.1, 5.0, where, errors)
 	_whole(def, "max_adds_alive", 0, int(rules.get("max_adds_cap", 6)), where, errors)

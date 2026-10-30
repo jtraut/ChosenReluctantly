@@ -22,8 +22,8 @@
         "reward_room_types": ["combat", "elite"]
     },
     "tiers": {
-        "elite": { "hp_multiplier": 2.5, "resistance_floor": 0.25, "resistance_cap": 0.5, "rank": "elite", "scale": 1.0, "marker_color": "#ffd23f", "marker_size": 0.26, "marker_height": 2.85 },
-        "boss":  { "hp_multiplier": 7.0, "resistance_floor": 0.25, "resistance_cap": 0.5, "rank": "boss",  "scale": 1.0,  "marker_color": "#ff3f6c", "marker_size": 0.34, "marker_height": 2.85 }
+        "elite": { "hp_multiplier": 2.5, "armor": 17.0, "resistance_floor": 0.25, "resistance_cap": 0.5, "rank": "elite", "scale": 1.0, "marker_color": "#ffd23f", "marker_size": 0.26, "marker_height": 2.85 },
+        "boss":  { "hp_multiplier": 7.0, "armor": 27.0, "resistance_floor": 0.35, "resistance_cap": 0.5, "rank": "boss",  "scale": 1.0,  "marker_color": "#ff3f6c", "marker_size": 0.34, "marker_height": 2.85 }
     },
     "rooms": {
         "combat": [

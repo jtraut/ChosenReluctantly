@@ -164,6 +164,11 @@ static func _validate_tiers(tiers: Variant) -> Array[String]:
 			errors.append("tiers.%s.resistance_cap must be a number in [0, 1]" % tier_id)
 		elif _is_number(floor_value) and float(floor_value) > float(cap_value):
 			errors.append("tiers.%s.resistance_floor is above resistance_cap" % tier_id)
+		var armor_value: Variant = t.get("armor")
+		if not _is_number(armor_value) or float(armor_value) < 0.0 or float(armor_value) > 1000.0:
+			errors.append("tiers.%s.armor is required and must be a number in [0, 1000]" % tier_id)
+		elif _is_number(floor_value):
+			errors.append_array(ArmorConfig.parity_errors("tiers." + tier_id, float(armor_value), float(floor_value), ArmorConfig.k(), ArmorConfig.PARITY_TOLERANCE))
 		if typeof(t.get("rank")) != TYPE_STRING or not ["normal", "elite", "boss"].has(String(t["rank"])):
 			errors.append("tiers.%s.rank must be normal, elite or boss" % tier_id)
 		var scale_value: Variant = t.get("scale")

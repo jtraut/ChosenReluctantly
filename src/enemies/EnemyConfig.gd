@@ -36,6 +36,11 @@ const STAT_NUMBERS: Dictionary = {
 	"projectile_speed": [0.0, 100.0],
 	"projectile_max_range": [0.0, 200.0],
 }
+## Optional per-enemy stats (absent means the default): key -> [low, high, default]. `armor` is flat armor points
+## against non-elemental damage (GDD section 7, Armor); normal enemies default to 0.
+const OPTIONAL_STAT_NUMBERS: Dictionary = {
+	"armor": [0.0, 1000.0, 0.0],
+}
 
 
 ## Returns human-readable problems; empty means valid.
@@ -109,12 +114,21 @@ static func validate_stats(enemy_id: String, stats: Variant) -> Array[String]:
 			errors.append("enemies.%s.stats: '%s' must be a number" % [enemy_id, key])
 		elif is_nan(float(value)) or float(value) < float(range_pair[0]) or float(value) > float(range_pair[1]):
 			errors.append("enemies.%s.stats: '%s' must be between %s and %s" % [enemy_id, key, range_pair[0], range_pair[1]])
+	for key: String in OPTIONAL_STAT_NUMBERS.keys():
+		if not dict.has(key):
+			continue
+		var opt_range: Array = OPTIONAL_STAT_NUMBERS[key]
+		var opt_value: Variant = dict[key]
+		if typeof(opt_value) != TYPE_INT and typeof(opt_value) != TYPE_FLOAT:
+			errors.append("enemies.%s.stats: '%s' must be a number" % [enemy_id, key])
+		elif is_nan(float(opt_value)) or float(opt_value) < float(opt_range[0]) or float(opt_value) > float(opt_range[1]):
+			errors.append("enemies.%s.stats: '%s' must be between %s and %s" % [enemy_id, key, opt_range[0], opt_range[1]])
 	if typeof(dict.get("is_ranged")) != TYPE_BOOL:
 		errors.append("enemies.%s.stats: 'is_ranged' must be true or false" % enemy_id)
 	if typeof(dict.get("attack_damage_type")) != TYPE_STRING or String(dict["attack_damage_type"]) == "":
 		errors.append("enemies.%s.stats: 'attack_damage_type' must be a non-empty string" % enemy_id)
 	for key: String in dict.keys():
-		if not STAT_NUMBERS.has(key) and key != "is_ranged" and key != "attack_damage_type":
+		if not STAT_NUMBERS.has(key) and not OPTIONAL_STAT_NUMBERS.has(key) and key != "is_ranged" and key != "attack_damage_type":
 			errors.append("enemies.%s.stats: unknown key '%s'" % [enemy_id, key])
 	return errors
 

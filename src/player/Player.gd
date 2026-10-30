@@ -131,6 +131,7 @@ const DASH_TRAIL_INTERVAL := 0.04
 
 
 func _ready() -> void:
+	health.stat_modifiers = stat_modifiers  # the player's armor reads the `armor` stat (plumbing: base 0, nothing grants it yet)
 	var team := hurtbox.team if hurtbox != null else "player"
 	var card_rng: RandomNumberGenerator = null
 	if default_rng_seed >= 0:

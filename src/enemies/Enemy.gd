@@ -117,6 +117,7 @@ func _ready() -> void:
 func _apply_stats(stats: Dictionary) -> void:
 	if stats.is_empty():
 		return
+	health.base_armor = float(stats.get("armor", 0.0))
 	move_speed = float(stats["move_speed"])
 	is_ranged = bool(stats["is_ranged"])
 	attack_range = float(stats["attack_range"])
@@ -212,6 +213,7 @@ func apply_tier(tier_id: String, cfg: Dictionary) -> void:
 	var new_max: float = TierRules.scaled_health(health.max_health, float(cfg["hp_multiplier"]))
 	health.max_health = new_max
 	health.current_health = new_max
+	health.base_armor = maxf(health.base_armor, float(cfg["armor"]))  # like the resistance floor: a tier never lowers an enemy's own armor
 	health.resistance_cap = maxf(health.resistance_cap, float(cfg["resistance_cap"]))
 	health.resistances = TierRules.resistances(health.resistances, TierRules.element_ids(), float(cfg["resistance_floor"]), float(cfg["resistance_cap"]))
 	if status_manager != null:

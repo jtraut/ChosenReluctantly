@@ -10,6 +10,7 @@
             "display_name": "The Overly Enthusiastic Guardian",
             "max_health": 280.0,
             "resistance": 0.5,
+            "armor": 50.0,
             "knockback_taken": 0.0,
             "body_radius": 1.0,
             "max_adds_alive": 3,

@@ -98,6 +98,7 @@ func _ready() -> void:
 	var max_hp: float = float(_def["max_health"])
 	health.max_health = max_hp
 	health.current_health = max_hp
+	health.base_armor = float(_def["armor"])
 	var resistance: float = float(_def["resistance"])
 	health.resistance_cap = maxf(health.resistance_cap, resistance)
 	health.resistances = TierRules.resistances(health.resistances, TierRules.element_ids(), resistance, resistance)

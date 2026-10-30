@@ -447,13 +447,12 @@ func test_the_wizard_bolt_flies_to_the_reticle_not_where_the_body_faces() -> voi
 	main.player.aim_point_override = enemy.global_position
 	var start_hp: float = enemy.health.current_health
 	var saw_bolt: bool = false
-	for i in range(90):
+	var deadline: int = Time.get_ticks_msec() + 4000  # bounded on real time, see the auto-fire test below
+	while enemy.health.current_health >= start_hp and Time.get_ticks_msec() < deadline:
 		await get_tree().physics_frame
 		for child in main.get_children():
 			if child is Projectile:
 				saw_bolt = true
-		if enemy.health.current_health < start_hp:
-			break
 	assert_bool(saw_bolt).override_failure_message("no bolt flew").is_true()
 	assert_float(enemy.health.current_health).is_less(start_hp)
 	# Neutral, 1.5 per bolt: hit armor-free (a plain chaser has none).
@@ -478,8 +477,14 @@ func test_the_wizard_bolt_does_not_reach_past_its_12_m_range_and_autofire_needs_
 	main.player.aim_point_override = far.global_position
 	await _frames(1)
 	assert_bool(main.player._attack_has_target(&"light")).is_true()
-	await _frames(90)
-	assert_float(far.health.current_health).is_less(start_hp)
+	# Bounded poll on real time, not a fixed 90 ticks (qa, W1b: one full-run failure "less than 20.0 but was 20.0"; a fixed tick
+	# count is 1.5 game-seconds only while Engine.time_scale is 1, and the bolt needs about 0.4 s to cross 9 m).
+	var deadline: int = Time.get_ticks_msec() + 4000
+	while far.health.current_health >= start_hp and Time.get_ticks_msec() < deadline:
+		await get_tree().physics_frame
+	assert_float(far.health.current_health).override_failure_message(
+		"auto-fire never landed in 4 s: time_scale=%s can_act=%s busy=%s" % [Engine.time_scale, main.player.can_act(), main.player.attacks.is_busy()]
+	).is_less(start_hp)
 
 
 func test_auto_fire_does_not_flood_the_effect_pool_or_recycle_the_heavy_telegraph() -> void:

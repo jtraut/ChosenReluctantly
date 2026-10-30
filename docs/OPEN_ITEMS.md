@@ -79,28 +79,11 @@ Each entry says what I chose and the one-line way to change it.
 
 Play a normal run, not a test scenario. Reply with the item number and a word or two ("3: fine", "8: too short").
 
-**A. Start a run and fight**
-1. **Opening wave.** The first wave is 4 chasers. Look for: is it a fair start, or too hard? (It can drop to 2 or 3 in data.)
-2. **Busy waves.** Up to 12 enemies at once, arriving in four stages. Look for: is 12 at once too many for you?
-3. **Enemy warnings.** Look for: you can read every warning before the hit. Chasers show a red-pink ground wedge, shooters a lane strip, and the golem has a 0.7 s wind-up. Enemy shots are pink, so they don't look like yours.
-4. **Finding yourself in a crowd.** Enemies now spread around you instead of stacking in a line. When they're in front of you, a pale blue silhouette of you shows through them. Look for: you can always find yourself, and the colour works against your blue body.
-5. **Enemy HP bars near you.** Look for: bars over or next to your character never hide anything you need to see.
-6. **Aim reticle.** Move the mouse fast (at 1440p too, if you can). Look for: the ring follows without lag, and the dots trail slightly in fast turns.
-
-**B. Try the attacks**
-7. **Light attack.** It fires on its own; clicking speeds it up to 1.5x at most. Look for: the swing flash reads at full speed, and spam-clicking helps a bit but doesn't feel mandatory.
-8. **Heavy attack (right click).** Look for:
-   - the wind-up slow feels like commitment, not sluggishness;
-   - the wind-up looks clearly different from the impact;
-   - the area feels big enough to be worth pressing;
-   - the 0.6 s stun (yellow stars) visibly freezes enemies;
-   - about half of heavies set enemies on fire: a fun surprise or a letdown?
-9. **Dodge (Space).** It now goes 5 m (your D8 answer). Look for: too short, too long, or fine?
+_Items 1-10 are answered (see "Your checklist answers" below). The remaining items keep their numbers so your replies still line up._
 
 **C. Try the cards**
-10. **Hold-to-preview.** Hold a card key, aim, let go. Look for: it feels natural rather than slow, and the outline is clear over enemies without being loud.
 11. **Cards vs the free light attack.** Look for: every damage card feels clearly better than the auto attack. The three area cards are only about 7-10% better than light on a single enemy: do they still feel worth casting on one?
-12. **Every new card.** Try each one: Slash, Then Bleed · Four Quick Stabs · Fireball, Incoming · Wall of Mild Fire · Walk Through Everyone (Shadow Step) · Reluctant Lunge · Nope, Leaping Away · Heal By Hurting (Leech) · Eventual Healing (Regeneration). Also check the names and flavor lines fit the voice. Look for: which feel great, which feel dull, and which to cut or rework.
+12. **Every new card.** (Most now come from rewards; launch with `-- --full-deck` to start with all of them.) Try each one: Slash, Then Bleed · Four Quick Stabs · Fireball, Incoming · Wall of Mild Fire · Walk Through Everyone (Shadow Step) · Reluctant Lunge · Nope, Leaping Away · Heal By Hurting (Leech) · Eventual Healing (Regeneration). Also check the names and flavor lines fit the voice. Look for: which feel great, which feel dull, and which to cut or rework.
 13. **Solid enemies.** Look for: you never get stuck or pinned with no way out, and Shadow Step feels like a real escape through a crowd. If it feels worse than walking through enemies, say so (one data flag).
 14. **Recovery slot.** Look for: is it ready often enough to matter, without being something you can lean on?
 15. **Dead-card swap.** Press Ctrl+1-5 to throw away a card you don't want right now. Look for: is it useful, or a chore? (This feeds Vision check question 4.)
@@ -117,6 +100,21 @@ Play a normal run, not a test scenario. Reply with the item number and a word or
 20. **Card rewards (after 3b).** After each won room: pick 1 of 3, or reject the offer (3 rejects per run). Look for: offers fit your build, and the deck-clean option is clear.
 21. **Boss (after 3c).** Look for: the phases and telegraphs are readable, and it's fair.
 22. **Loadouts (after 3d).** On run 2, save and pick a starting deck. Look for: it's easy to understand.
+
+## Your checklist answers (2026-10-29)
+
+| # | Item | Your answer | Follow-up |
+|---|---|---|---|
+| 1 | Opening wave | Feels good, not too hard. You'd lean toward making the whole run harder. | Difficulty tiers (Easy / Normal / Hard) logged in ROADMAP "Later". No retune now. |
+| 2 | Busy waves | Never overwhelmed. | Same as 1. |
+| 3 | Enemy warnings | Look good. | None. |
+| 4 | Finding yourself | Easy. | None. |
+| 5 | Enemy HP bars | Look good. | None. |
+| 6 | Aim reticle | Looks good. | None. |
+| 7 | Light attack | Auto-fires; clicking makes a noticeable difference. | None. |
+| 8 | Heavy attack | Feels good. You may later weaken it or raise its cooldown. | Noted in ROADMAP "Later"; no change now. |
+| 9 | Dodge | Feels nice. | The dodge-charges slice is still queued (your earlier request). |
+| 10 | Hold-to-preview | Good. | None. |
 
 ## FYI, no action needed
 

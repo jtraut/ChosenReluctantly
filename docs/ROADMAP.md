@@ -544,6 +544,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
       - item 10's report (8+ seeds; Wizard boss time 70-130% of the Rogue's);
       - item 11's presets;
       - the Rogue melee cue as a small ux item.
+      - From W1a qa (b799153): gameplay-dev deletes the tracked junk `scratch_suite.txt` (repo root); check whether the Wizard bot kiting or the 12 m auto-fire is too safe (the bot ends rooms at full HP).
       - Then qa, playtester, tech-writer, close.
 
 - [ ] **P-dodge, dodge charges and indicator (director request 2026-10-29; runs after A1, T-decks and W1, before 3d; also carries the D13 and D16 answers)**

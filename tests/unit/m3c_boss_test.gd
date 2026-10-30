@@ -710,7 +710,7 @@ func test_death_beat_keeps_the_body_then_frees_it_and_protects_the_player() -> v
 
 func _boss_room_main() -> Main:
 	var state := RunSession.begin_new_run(42)
-	state.room_index = 7
+	state.room_index = 9
 	var main: Main = (load(RUN_MAIN_PATH) as PackedScene).instantiate()
 	add_child(main)
 	auto_free(main)

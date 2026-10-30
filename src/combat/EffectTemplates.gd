@@ -37,6 +37,8 @@ const STATUS_TARGETS: Array[String] = ["last_hits", "self"]
 ##     from the caster it may be placed (the aim point is clamped to it); optional knockback_strength,
 ##     status_id + status_duration (+ status_chance 0..1, default 1) applied each tick.
 ##   pass_through: duration only. The caster's body stops colliding with enemy bodies.
+##   dash (optional, F1): pass_through (bool, default false) = the caster ignores enemy bodies for exactly this move (set on every
+##     movement-slot dash card; the dodge is not a card and stays blocked). A move ending inside a body waits to turn solid again.
 ##   dash (optional): direction_mode "forward" | "away_from_aim"; damage + damage_type + hit_radius
 ##     (+ knockback_strength) hit each enemy along the path at most once per dash.
 ##   aoe (optional): max_range places the disc at the aim point clamped to that range (a card version of
@@ -51,7 +53,7 @@ const STATUS_TARGETS: Array[String] = ["last_hits", "self"]
 ##     ground telegraph growing for `delay`, then hits. A caster that dies or is freed in that time cancels the hit.
 const ZONE_KEYS: Array[String] = ["shape", "duration", "tick_interval", "damage", "damage_type", "max_range", "radius", "length", "width",
 		"knockback_strength", "status_id", "status_duration", "status_chance"]
-const DASH_KEYS: Array[String] = ["distance", "speed", "invulnerable", "damage_type", "direction_mode", "damage", "hit_radius", "knockback_strength"]
+const DASH_KEYS: Array[String] = ["distance", "speed", "invulnerable", "damage_type", "direction_mode", "damage", "hit_radius", "knockback_strength", "pass_through"]
 const DASH_DIRECTION_MODES: Array[String] = ["forward", "away_from_aim"]
 const DIRECTION_FORWARD := "forward"
 const DIRECTION_AWAY := "away_from_aim"
@@ -201,6 +203,8 @@ static func _validate_dash(params: Dictionary, errors: Array[String]) -> void:
 			errors.append("'%s' is not a known dash param" % str(key))
 	if params.has("direction_mode") and not (typeof(params["direction_mode"]) == TYPE_STRING and DASH_DIRECTION_MODES.has(String(params["direction_mode"]))):
 		errors.append("'direction_mode' must be one of %s" % str(DASH_DIRECTION_MODES))
+	if params.has("pass_through") and typeof(params["pass_through"]) != TYPE_BOOL:
+		errors.append("'pass_through' must be true or false")
 	if params.has("damage"):
 		if not _number_in(params["damage"], 0.0, 100000.0, false):
 			errors.append("'damage' must be a number above 0")
@@ -469,7 +473,7 @@ static func _execute_dash(params: Dictionary, context: EffectContext) -> void:
 				"hit_radius": float(params["hit_radius"]), "knockback_strength": float(params.get("knockback_strength", 0.0))}
 	TemplateVfx.dash_start(_vfx_pool(context), _caster_pos(context), look)
 	TemplateVfx.dash_path(_vfx_pool(context), _caster_pos(context), forward, distance, look, float(path_hit["hit_radius"]) if not path_hit.is_empty() else -1.0)
-	context.caster.start_forced_move(forward, speed, duration, params.get("invulnerable", false), look, path_hit)
+	context.caster.start_forced_move(forward, speed, duration, params.get("invulnerable", false), look, path_hit, bool(params.get("pass_through", false)))
 
 
 static func _execute_heal(params: Dictionary, context: EffectContext) -> void:

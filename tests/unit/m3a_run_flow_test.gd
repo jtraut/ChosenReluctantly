@@ -67,9 +67,9 @@ func test_run_main_starts_room_one_with_the_starting_deck() -> void:
 	var controller := main.run_controller
 	assert_object(controller).is_not_null()
 	assert_int(controller.room_number()).is_equal(1)
-	assert_int(controller.room_total()).is_equal(8)
+	assert_int(controller.room_total()).is_equal(10)
 	assert_str(controller.room_type()).is_equal("combat")
-	assert_str(controller.room_label()).is_equal("Room 1 of 8")
+	assert_str(controller.room_label()).is_equal("Room 1 of 10")
 	var deck := main.player.card_slots.owned_card_ids()
 	deck.sort()
 	var expected := RunConfig.starting_deck()
@@ -185,7 +185,7 @@ func test_rest_heal_does_not_exceed_max() -> void:
 
 func test_last_room_won_ends_the_run_with_a_win() -> void:
 	var state := RunSession.begin_new_run(42)
-	state.room_index = 7
+	state.room_index = 9
 	var main := _spawn()
 	await get_tree().process_frame
 	var wins: Array[int] = []

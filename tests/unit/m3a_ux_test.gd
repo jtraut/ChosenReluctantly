@@ -194,7 +194,7 @@ func test_game_over_shows_the_room_reached_in_a_run_only() -> void:
 	var main := _spawn()
 	await get_tree().process_frame
 	var screen := main.get_node("GameOverScreen") as GameOverScreen
-	assert_str(screen.run_line()).contains("room 1 of 8")
+	assert_str(screen.run_line()).contains("room 1 of 10")
 	var arena := (load("res://scenes/main/Main.tscn") as PackedScene).instantiate()
 	add_child(arena)
 	auto_free(arena)

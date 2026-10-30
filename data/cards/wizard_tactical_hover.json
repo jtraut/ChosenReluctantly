@@ -11,6 +11,7 @@
             "params": {
                 "distance": 5.0,
                 "speed": 28.0,
+                "pass_through": true,
                 "direction_mode": "away_from_aim",
                 "invulnerable": true
             }

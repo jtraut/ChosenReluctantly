@@ -47,7 +47,7 @@ func test_shipped_numbers_match_the_brief() -> void:
 	assert_int(int(config["rejects_per_run"])).is_equal(3)
 	assert_float(float(config["rest_heal_fraction"])).is_equal(0.3)
 	var comp: Dictionary = config["composition"]
-	assert_int(int(comp["combat"])).is_equal(5)
+	assert_int(int(comp["combat"])).is_equal(7)
 	assert_int(int(comp["elite"])).is_equal(1)
 	assert_int(int(comp["rest"])).is_equal(1)
 	assert_int(int(comp["boss"])).is_equal(1)
@@ -60,7 +60,7 @@ func test_validation_rejects_bad_data() -> void:
 		{"path": ["composition", "boss"], "value": 2},
 		{"path": ["composition", "combat"], "value": -1},
 		{"path": ["composition", "ghost"], "value": 1},
-		{"path": ["placement", "ranges", "elite"], "value": [3, 7]},
+		{"path": ["placement", "ranges", "elite"], "value": [3, 9]},
 		{"path": ["placement", "ranges", "elite"], "value": [5, 3]},
 		{"path": ["placement", "ranges", "rest"], "value": "x"},
 		{"path": ["placement", "boss_last"], "value": false},
@@ -118,7 +118,7 @@ func test_every_seed_follows_the_rules() -> void:
 	var ranges: Dictionary = config["placement"]["ranges"]
 	for seed_value in range(1, 400):
 		var rooms := RunGenerator.generate(seed_value, config)
-		assert_int(rooms.size()).is_equal(8)
+		assert_int(rooms.size()).is_equal(10)
 		var counts: Dictionary = {"combat": 0, "elite": 0, "rest": 0, "boss": 0}
 		for room: Dictionary in rooms:
 			counts[room["type"]] = int(counts[room["type"]]) + 1
@@ -132,11 +132,11 @@ func test_every_seed_follows_the_rules() -> void:
 			if room["type"] == "elite" or room["type"] == "rest":
 				var window: Array = ranges[room["type"]]
 				assert_bool(index >= int(window[0]) and index <= int(window[1])).is_true()
-		assert_int(counts["combat"]).is_equal(5)
+		assert_int(counts["combat"]).is_equal(7)
 		assert_int(counts["elite"]).is_equal(1)
 		assert_int(counts["rest"]).is_equal(1)
 		assert_int(counts["boss"]).is_equal(1)
-		assert_str(rooms[7]["type"]).is_equal("boss")
+		assert_str(rooms[9]["type"]).is_equal("boss")
 		assert_str(rooms[0]["type"]).is_equal("combat")
 
 

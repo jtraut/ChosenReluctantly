@@ -271,7 +271,7 @@ func _resolve(args: Array) -> Dictionary:
 
 
 func test_class_arg_sets_the_character_and_combines_with_the_other_args() -> void:
-	for args: Array in [["--class=wizard"], ["--class=wizard", "--run-room=8", "--run-seed=3", "--full-deck"], ["--full-deck", "--class=wizard"]]:
+	for args: Array in [["--class=wizard"], ["--class=wizard", "--run-room=10", "--run-seed=3", "--full-deck"], ["--full-deck", "--class=wizard"]]:
 		var result: Dictionary = _resolve(args)
 		assert_int(int(result["exit"])).is_equal(DebugDecks.EXIT_CONTINUE)
 		assert_str(String(result["character"])).is_equal("wizard")

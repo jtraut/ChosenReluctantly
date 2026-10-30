@@ -23,6 +23,8 @@ var _scenes: Dictionary = {}
 
 ## Evenly spaced fallback angles tried when random ring points keep landing too close (player in a corner).
 const SWEEP_ANGLES := 32
+## The boss sweep is finer: its on-screen box leaves narrow windows when the player stands near a wall (F1 shrank the top margin).
+const BOSS_SWEEP_ANGLES := 72
 
 
 ## Enemies this spawner has spawned so far; each gets its running number as `spawn_index`.
@@ -153,7 +155,7 @@ func _random_spawn_position() -> Vector3:
 
 ## Where a boss appears: on a ring like any enemy, but only at points whose body lands inside the on-screen box around the
 ## player (data/bosses.json `spawn`), so the boss is fully visible when the room starts. Other enemies keep the plain ring.
-## Falls back to sweeping evenly spaced angles at the minimum distance, then to the plain ring.
+## Falls back to sweeping evenly spaced angles at the minimum, middle and maximum distance, then to the plain ring.
 func _boss_spawn_position(spawn: Dictionary) -> Vector3:
 	var min_dist: float = float(spawn["distance_min"])
 	var max_dist: float = float(spawn["distance_max"])
@@ -162,10 +164,11 @@ func _boss_spawn_position(spawn: Dictionary) -> Vector3:
 		if _flat_distance(pos) >= min_dist and _inside_screen_box(pos, spawn):
 			return pos
 	var sweep_start: float = _rng.randf_range(0.0, TAU)
-	for step in range(SWEEP_ANGLES):
-		var pos: Vector3 = _ring_point(sweep_start + TAU * float(step) / float(SWEEP_ANGLES), min_dist)
-		if _flat_distance(pos) >= min_dist and _inside_screen_box(pos, spawn):
-			return pos
+	for dist: float in [min_dist, (min_dist + max_dist) * 0.5, max_dist]:
+		for step in range(BOSS_SWEEP_ANGLES):
+			var pos: Vector3 = _ring_point(sweep_start + TAU * float(step) / float(BOSS_SWEEP_ANGLES), dist)
+			if _flat_distance(pos) >= min_dist and _inside_screen_box(pos, spawn):
+				return pos
 	return _random_spawn_position()
 
 

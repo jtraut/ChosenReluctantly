@@ -255,7 +255,8 @@ func test_dodge_and_backward_leap_into_a_solid_enemy_stay_on_the_floor_and_stop_
 	assert_float(max_y).is_less(0.3)
 
 
-func test_the_real_lunge_strike_hits_the_enemy_in_front_once_and_stops_short() -> void:
+func test_the_real_lunge_strike_hits_the_enemy_in_front_once_and_runs_through_it() -> void:
+	# F1: the Lunge is a Movement card, so it passes through the body: it hits it once and covers the full 3 m.
 	_set_flag(true)
 	var main := _spawn_main()
 	var player := main.player
@@ -272,7 +273,7 @@ func test_the_real_lunge_strike_hits_the_enemy_in_front_once_and_stops_short() -
 	for i in range(30):
 		await _frames(1)
 	assert_float(before - enemy.health.current_health).override_failure_message("8 damage, once").is_equal_approx(8.0, 0.01)
-	assert_float((player.global_position - start).dot(facing)).override_failure_message("knocks the enemy back and stops short of the full 3 m: travelled %.2f" % (player.global_position - start).dot(facing)).is_between(0.5, 2.6)
+	assert_float((player.global_position - start).dot(facing)).override_failure_message("covers the full 3 m: travelled %.2f" % (player.global_position - start).dot(facing)).is_equal_approx(3.0, 0.1)
 	assert_float(player.global_position.y).is_less(0.3)
 
 

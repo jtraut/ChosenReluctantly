@@ -55,8 +55,8 @@ func test_generator_uses_every_legal_position_and_only_those() -> void:
 	var rest_keys: Array = rest_at.keys()
 	elite_keys.sort()
 	rest_keys.sort()
-	assert_array(elite_keys).is_equal([3, 4, 5, 6])  # rooms 4-7 (index 3-6); never 0 and never the boss slot
-	assert_array(rest_keys).is_equal([2, 3, 4, 5, 6])  # rooms 3-7
+	assert_array(elite_keys).is_equal([3, 4, 5, 6, 7, 8])  # rooms 4-9 (index 3-8); never 0 and never the boss slot
+	assert_array(rest_keys).is_equal([2, 3, 4, 5, 6, 7, 8])  # rooms 3-9
 
 
 func test_generator_does_not_repeat_a_wave_list_when_another_fits() -> void:
@@ -88,8 +88,8 @@ func test_generator_seed_zero_and_the_seed_limit_work() -> void:
 	var config := _shipped()
 	for seed_value in [0, RunState.SEED_LIMIT]:
 		var rooms := RunGenerator.generate(seed_value, config)
-		assert_int(rooms.size()).is_equal(8)
-		assert_str(rooms[7]["type"]).is_equal("boss")
+		assert_int(rooms.size()).is_equal(10)
+		assert_str(rooms[9]["type"]).is_equal("boss")
 
 
 # ---- RunConfig: malformed data fails loud and never crashes ----
@@ -179,7 +179,7 @@ func test_run_state_round_trips_edge_values() -> void:
 	state.outcome = "won"
 	state.hp = 0.5
 	state.max_hp = 30.0
-	state.room_index = 7
+	state.room_index = 9
 	copy = RunState.from_json(state.to_json())
 	assert_bool(state.equals(copy)).is_true()
 	assert_str(copy.outcome).is_equal("won")
@@ -366,7 +366,7 @@ func test_dying_in_the_frame_of_the_last_kill_is_a_loss_not_a_clear() -> void:
 
 func test_dying_on_the_last_room_in_the_frame_of_the_last_kill_does_not_win() -> void:
 	var state := RunSession.begin_new_run(42)
-	state.room_index = 7
+	state.room_index = 9
 	var main := _spawn()
 	await _frames(1)
 	var enemies := _spawn_tiny_room(main)
@@ -413,7 +413,7 @@ func test_freeing_the_scene_right_after_continue_is_safe() -> void:
 	assert_int(_mains()).is_equal(0)  # nothing half-built was left behind
 
 
-func test_eight_rooms_of_swaps_leave_no_nodes_behind() -> void:
+func test_ten_rooms_of_swaps_leave_no_nodes_behind() -> void:
 	var state := RunSession.begin_new_run(42)
 	var main := _spawn()
 	await _frames(2)
@@ -440,9 +440,9 @@ func test_eight_rooms_of_swaps_leave_no_nodes_behind() -> void:
 		main = _next_main(old_id)
 		assert_object(main).is_not_null()
 		auto_free(main)
-	assert_int(rooms).is_equal(8)
+	assert_int(rooms).is_equal(10)
 	assert_str(state.outcome).is_equal("won")
-	assert_int(state.history.size()).is_equal(8)
+	assert_int(state.history.size()).is_equal(10)
 	var nodes := int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT))
 	var orphans := int(Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT))
 	# The test node itself keeps the dead scenes' siblings until after_test, so allow a small margin, not growth per room.

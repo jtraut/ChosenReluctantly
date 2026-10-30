@@ -248,18 +248,18 @@ func test_dead_card_swap_never_casts_and_leaves_the_preview_alone() -> void:
 	assert_float(player.card_slots.get_slot("attack_single").cooldown_remaining).is_greater(0.0)
 
 
-func test_ctrl_digit_is_a_swap_not_a_cast_and_a_ctrl_release_still_ends_the_hold() -> void:
+func test_shift_digit_is_a_swap_not_a_cast_and_a_shift_release_still_ends_the_hold() -> void:
 	var player := await _ready_player()
 	var swap := InputEventKey.new()
 	swap.physical_keycode = KEY_1
-	swap.ctrl_pressed = true
+	swap.shift_pressed = true
 	swap.pressed = true
 	player._unhandled_input(swap)
 	await _frames(3)
 	assert_array(_casts).is_empty()
 	assert_bool(player.cast_input.is_previewing()).is_false()
 	assert_float(player.card_slots.get_slot("attack_single").cooldown_remaining).is_greater(0.0)
-	# Plain key 2 held, Ctrl pressed meanwhile, then 2 released with Ctrl down: still ends the hold.
+	# Plain key 2 held, Shift pressed meanwhile, then 2 released with Shift down: still ends the hold.
 	var down := InputEventKey.new()
 	down.physical_keycode = KEY_2
 	down.pressed = true
@@ -267,11 +267,45 @@ func test_ctrl_digit_is_a_swap_not_a_cast_and_a_ctrl_release_still_ends_the_hold
 	assert_int(player.cast_input.preview_slot).is_equal(1)
 	var up := InputEventKey.new()
 	up.physical_keycode = KEY_2
-	up.ctrl_pressed = true
+	up.shift_pressed = true
 	up.pressed = false
 	player._unhandled_input(up)
 	await _frames(3)
 	assert_array(_casts).has_size(1)
+
+
+func test_ctrl_digit_does_nothing_and_plain_digit_still_previews() -> void:
+	var player := await _ready_player()
+	var ctrl := InputEventKey.new()
+	ctrl.physical_keycode = KEY_1
+	ctrl.ctrl_pressed = true
+	ctrl.pressed = true
+	player._unhandled_input(ctrl)
+	await _frames(3)
+	assert_array(_casts).is_empty()
+	assert_bool(player.cast_input.is_previewing()).is_false()
+	assert_float(player.card_slots.get_slot("attack_single").cooldown_remaining).override_failure_message("Ctrl+1 must not swap").is_equal(0.0)
+	var up := InputEventKey.new()
+	up.physical_keycode = KEY_1
+	up.ctrl_pressed = true
+	up.pressed = false
+	player._unhandled_input(up)
+	await _frames(3)
+	assert_array(_casts).override_failure_message("Ctrl+1 must not cast").is_empty()
+	var plain := InputEventKey.new()
+	plain.physical_keycode = KEY_1
+	plain.pressed = true
+	player._unhandled_input(plain)
+	assert_int(player.cast_input.preview_slot).is_equal(0)
+
+
+func test_among_the_game_bindings_shift_is_used_only_by_the_five_swap_actions() -> void:
+	var bindings: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/input_bindings.json"))
+	for action_name: String in bindings.keys():
+		var action := StringName(action_name)
+		for event: InputEvent in InputMap.action_get_events(action):
+			if event is InputEventKey and (event as InputEventKey).shift_pressed:
+				assert_bool(String(action).begins_with("dead_card_swap_")).override_failure_message("%s uses Shift" % action).is_true()
 
 
 # --- UI consuming input ---------------------------------------------------------------------------

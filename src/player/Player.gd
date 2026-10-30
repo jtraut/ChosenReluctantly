@@ -126,6 +126,8 @@ var _forced_move_direction: Vector3 = Vector3.FORWARD
 var _forced_move_speed: float = 0.0
 var _forced_move_time_remaining: float = 0.0
 var _forced_move_invulnerable: bool = false
+## True while this forced move holds a pass-through grant (a dash card with the pass_through flag); released when the move ends.
+var _forced_move_pass: bool = false
 ## Element look for the dash card's trail and end puff; empty (dodge roll) means no trail.
 var _forced_move_look: Dictionary = {}
 var _forced_move_trail_timer: float = 0.0
@@ -310,6 +312,7 @@ func _on_died() -> void:
 	_dead = true
 	_forced_move_time_remaining = 0.0
 	_forced_move_invulnerable = false
+	_forced_move_pass = false
 	_forced_move_look = {}
 	_path_hit = {}
 	_end_all_pass_through()
@@ -404,11 +407,17 @@ func _handle_dodge_input() -> void:
 ## directly along `direction` at `speed`. Used by the dodge roll, and by the
 ## "dash" card effect template so Movement-slot cards can reuse the same
 ## motion/invulnerability machinery instead of duplicating it.
+## `pass_through` (optional, from the dash template's data flag): the body ignores enemy bodies for exactly this
+## move; if it ends inside one, the normal pass-through restore waits until the body is clear (no stuck player).
 ## `path_hit` (optional, from the dash template): {damage, damage_type, hit_radius, knockback_strength}
 ## damages each enemy the body sweeps through, at most once per move.
-func start_forced_move(direction: Vector3, speed: float, duration: float, invulnerable: bool = false, vfx_look: Dictionary = {}, path_hit: Dictionary = {}) -> void:
+func start_forced_move(direction: Vector3, speed: float, duration: float, invulnerable: bool = false, vfx_look: Dictionary = {}, path_hit: Dictionary = {}, pass_through: bool = false) -> void:
 	if _dead:
 		return
+	_release_forced_move_pass()  # a move started over a running one hands its grant back first
+	if pass_through and duration > 0.0 and is_inside_tree():
+		_forced_move_pass = true
+		_acquire_pass_through()
 	_path_hit = path_hit
 	_path_hit_ids.clear()
 	_path_prev = global_position if is_inside_tree() else Vector3.ZERO
@@ -448,6 +457,7 @@ func _apply_forced_move(delta: float) -> void:
 		if _forced_move_invulnerable and hurtbox != null:
 			hurtbox.set_invulnerable(false)
 		_forced_move_invulnerable = false
+		_release_forced_move_pass()
 
 
 ## Hits every enemy within hit_radius of the body's path since the last tick, once each per dash. The path
@@ -478,13 +488,23 @@ func _tick_path_hits() -> void:
 func grant_pass_through(duration: float) -> void:
 	if _dead or not is_inside_tree() or duration <= 0.0:
 		return
+	_acquire_pass_through()
+	get_tree().create_timer(duration, false).timeout.connect(_release_pass_through, CONNECT_ONE_SHOT)
+
+
+func _acquire_pass_through() -> void:
 	_pass_through_count += 1
 	if _pass_through_count == 1:
 		if _restore_pending:
 			_restore_pending = false  # still passing through; the new grant simply continues it
 		else:
 			_set_pass_through(true)
-	get_tree().create_timer(duration, false).timeout.connect(_release_pass_through, CONNECT_ONE_SHOT)
+
+
+func _release_forced_move_pass() -> void:
+	if _forced_move_pass:
+		_forced_move_pass = false
+		_release_pass_through()
 
 
 ## True while the body passes through enemies, including the short wait after the buff ended while still inside one.
@@ -512,6 +532,7 @@ func _tick_restore(delta: float) -> void:
 
 
 func _end_all_pass_through() -> void:
+	_forced_move_pass = false
 	if _pass_through_count > 0 or _restore_pending:
 		_pass_through_count = 0
 		_restore_pending = false
@@ -772,10 +793,10 @@ func _projectile_direction() -> Vector3:
 ## that consumes the event (pause or settings, later others) blocks them. Dodge and
 ## movement still poll Input.
 ##
-## Slot keys use exact_match=true on press: without it, Ctrl+1 would also register as
+## Slot keys use exact_match=true on press: without it, Shift+1 would also register as
 ## a plain "1" press and cast slot_1 as well as swap it. Release does NOT use exact
 ## match (press 1, press Ctrl, release 1 must still end the hold). The dead-card swap
-## (Ctrl+N) acts at once and never casts or changes the preview.
+## (Shift+N) acts at once and never casts or changes the preview.
 func _unhandled_input(event: InputEvent) -> void:
 	if _dead or event is InputEventMouseMotion:
 		return

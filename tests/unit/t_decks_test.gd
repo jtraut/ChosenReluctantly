@@ -161,14 +161,14 @@ func test_deck_without_a_name_is_an_error() -> void:
 
 
 func test_a_known_deck_continues_and_combines_with_the_other_run_args() -> void:
-	var launch := _resolve(["--run-seed=3", "--deck=physical-rogue", "--full-deck", "--run-room=8"])
+	var launch := _resolve(["--run-seed=3", "--deck=physical-rogue", "--full-deck", "--run-room=10"])
 	assert_int(int(launch["exit"])).is_equal(DebugDecks.EXIT_CONTINUE)
 	assert_str(String(launch["deck"])).is_equal("physical-rogue")
 	assert_array(launch["errors"]).is_empty()
 
 
 func test_no_deck_arg_changes_nothing() -> void:
-	var cases: Array = [[], ["--full-deck"], ["--run-seed=2", "--run-room=8"]]
+	var cases: Array = [[], ["--full-deck"], ["--run-seed=2", "--run-room=10"]]
 	for args: Array in cases:
 		var typed: Array[String] = []
 		typed.assign(args)

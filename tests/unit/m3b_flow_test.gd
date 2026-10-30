@@ -61,7 +61,7 @@ func test_winning_a_combat_room_opens_the_reward_with_offers_and_a_reject() -> v
 	assert_int(models.size()).is_equal(1)
 	assert_str(state.pending).is_equal(RunState.PENDING_REWARD)
 	assert_int(state.offer.size()).is_equal(RunConfig.offer_size())
-	assert_str(models[0]["next_line"]).starts_with("Next: Room 2 of 8 - ")
+	assert_str(models[0]["next_line"]).starts_with("Next: Room 2 of 10 - ")
 	var screen := main.get_node("RoomClearedScreen") as RunPromptScreen
 	assert_bool(screen.is_open()).is_true()
 	assert_int(screen.options_box.get_child_count()).is_equal(RunConfig.offer_size() + 1)
@@ -228,7 +228,7 @@ func test_cleared_panel_without_a_choice_has_a_next_line_and_no_healed_zero() ->
 	var screen := main.get_node("RoomClearedScreen") as RunPromptScreen
 	var rest_summary: Dictionary = {"index": 3, "type": "rest", "wave_id": "", "hp": 30.0, "max_hp": 30.0, "healed": 0.0, "seconds": 0.0}
 	screen._show_cleared(rest_summary)
-	assert_str(screen.hint_label.text).starts_with("Next: Room 2 of 8")
+	assert_str(screen.hint_label.text).starts_with("Next: Room 2 of 10")
 	assert_str(screen.line_label.text).not_contains("+0").not_contains("healed 0")
 	for child in screen.stats.get_children():
 		assert_str((child as Label).text).is_not_equal("+0")

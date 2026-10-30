@@ -6,6 +6,6 @@
     "cooldown_modifier": -0.3,
     "flavor_text": "Repositions. Grudgingly.",
     "effects": [
-        { "template": "dash", "params": { "distance": 4.5, "speed": 16.0 } }
+        { "template": "dash", "params": { "distance": 4.5, "speed": 16.0, "pass_through": true } }
     ]
 }

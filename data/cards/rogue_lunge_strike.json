@@ -11,6 +11,7 @@
             "params": {
                 "distance": 3.0,
                 "speed": 15.0,
+                "pass_through": true,
                 "damage": 8,
                 "damage_type": "physical",
                 "hit_radius": 0.9,

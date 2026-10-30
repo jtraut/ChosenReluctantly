@@ -27,7 +27,7 @@ func test_boss_always_spawns_inside_the_box_and_clear_of_the_player() -> void:
 	add_child(spawner)
 	spawner.target = target
 	spawner.plan = WavePlan.new(WaveConfig.get_config())
-	for seed_value in range(60):
+	for seed_value in range(300):
 		spawner.set_seed(seed_value)
 		for corner: Vector3 in [Vector3.ZERO, Vector3(15.0, 0.0, 15.0), Vector3(-15.0, 0.0, -15.0), Vector3(15.0, 0.0, -15.0), Vector3(-15.0, 0.0, 15.0)]:
 			target.global_position = corner

@@ -1,9 +1,9 @@
 {
-    "composition": { "combat": 5, "elite": 1, "rest": 1, "boss": 1 },
+    "composition": { "combat": 7, "elite": 1, "rest": 1, "boss": 1 },
     "placement": {
         "boss_last": true,
         "first_room": "combat",
-        "ranges": { "elite": [3, 6], "rest": [2, 6] }
+        "ranges": { "elite": [3, 8], "rest": [2, 8] }
     },
     "rest_heal_fraction": 0.3,
     "rejects_per_run": 3,

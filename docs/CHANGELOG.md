@@ -2,7 +2,39 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-10-30 (Slice F1: director feedback batch; Slice PL2: small polish; Slice W1a: a playable Fire Wizard; decisions for F1, P-dodge and W1b)
+## 2026-10-30 (Slice P-dodge: dodge charges, boss stagger, dodge pips; Slice F1: director feedback batch; Slice PL2: small polish; Slice W1a: a playable Fire Wizard; decisions for F1, P-dodge and W1b)
+
+### Slice P-dodge: dodge charges, boss stagger, dodge pips
+
+Commits fd49ca5..60d86fd, game-lead doc commits excluded. Gameplay 0209de4, 96bae8c, 3d74345, a8d0b71, 1fdca8a, 4986db4, 6243785, bc976ca; ux 8566b9e, 74a972c; qa review 14eadd1 (PASS, `docs/reviews/2026-10-30-p-dodge-qa.md`); short playtest 60d86fd (`docs/playtests/2026-10-30-p-dodge-short.md`, smoke PASS, no blocker).
+
+#### Added
+- **[Director decision, 2026-10-29] Dodge charges.** New `src/player/DodgeCharges.gd` (pure logic). Each dodge spends a charge; charges come back one at a time. `data/player.json` `dodge` has new required keys `charges` 3, `min_charges` 0, `max_charges` 4. The count is clamped to that range after `StatModifiers`. A lowered maximum clamps the current count at once and `Player.dodge_charges_changed` fires. (96bae8c, 1fdca8a)
+- **[Director decision, 2026-10-30] Per-class dodge counts:** Rogue 3, Wizard 2, through the new optional `characters.json` key `dodge_charges`. (96bae8c)
+- **[Director decision, D16 = B] The boss staggers at each phase threshold.** New `bosses.json` `transition.stagger` (optional, default 0.8 s, 0 = off). The stagger drops the boss's current attack, comes before the roar, and adds a `STAGGER` state plus `stagger_started` / `stagger_ended` signals on `Boss`. Player damage counts during it: the HP floor drops to the next threshold, so one hit cannot pass two thresholds. The stagger into the last phase keeps a 1 HP floor, so the boss cannot die in it. (3d74345, bc976ca)
+- **Dodge pips on the HUD** (`src/ui/DodgePips.gd`, `dodge_*` keys in `data/ui.json` `hud`): under the LMB and RMB meters, a "Space" label and one pip per charge, a recharge fill, and an EMPTY state (word plus red frame at 0 charges, NO DODGE at a maximum of 0). (8566b9e)
+- **Boss bar stagger cue:** a STAGGERED label, the phase line reads "Hit it now", and the phase notch counts as crossed from the stagger start. "Invulnerable" shows only in the roar. (8566b9e)
+- `tools/UxCapture.tscn` + `tools/ux_capture.gd`: HUD state captures, `-- --size=WxH --class= --mode=pips|pips_recharge|pips_empty|stagger --out=`; needs a renderer. (74a972c)
+- Tests: 1102 -> 1147. New: `tests/unit/p_dodge_test.gd`, `p_dodge_boss_test.gd`, `p_dodge_ux_test.gd`, `tests/support/boss_stagger.gd`. (96bae8c, 3d74345, 8566b9e)
+
+#### Changed
+- **[Director decision, 2026-10-29] Dodge cooldown is now a per-charge recharge:** `data/player.json` `dodge.cooldown` 0.8 -> 1.2 s per charge. (96bae8c)
+- **[Director decision, D13 = B] Recovery base cooldown** 8 -> 12 s (`data/slot_types.json`). (96bae8c)
+- **[Director decision] Wizard's Recovery is slightly longer:** 14 s (game-lead's number), through the new optional `characters.json` key `slot_base_cooldowns`. (96bae8c)
+- `rules.max_transition` 1.5 -> 2.0 s in `data/bosses.json`, so the 0.8 s stagger plus the 1.2 s roar fit. The validator rejects a total over the cap. Not a director decision (gameplay-dev call, accepted by game-lead). (3d74345)
+- Wave sim bot dodges whenever a charge is ready, throttled to the roll length (it was one dodge per 0.9 s). (6243785)
+- Arena hash baselines changed (seed 1). 30 s: 3513335656 -> 1867641457 (Recovery 12 s) -> 2484586390 (charge-aware bot). 90 s: 2081798188 -> 3255493562. (96bae8c, 6243785)
+
+#### Fixed
+- Upward launch when a pass-through move ends concentric with an enemy: `Enemy.clearing_offset` plus a horizontal nudge out of the body. A stale "Ctrl" comment was fixed too. (96bae8c, 1fdca8a)
+- The reload soak "damage immunity leaked" flake was a wrong assumption in the soak, not a game bug: a rest room is immune by design while its choice is open, and Try again picks a random seed, so about 1 in 7 landed on a rest room. The soak now expects immunity in rest rooms only and prints the room type and seed on failure. 8 of 8 soak runs clean in qa (before: about 1 in 5 failed). (0209de4)
+- The soak waits for the boss roar by state, not frame count. (a8d0b71)
+
+#### Docs and process
+- qa baseline for W1b (10 rooms, seeds 1-12, charge-aware bot): Rogue 12 of 12 won, boss fight mean 64.3 s (47.8 to 81.3). Wizard (kiting bot) 11 of 12 won, boss fight mean 55.0 s; its one loss died in the boss room (the "boss cliff" for W1b). Do not read charge balance from the 60 s arena sim: the bot's dodge use is a behaviour artefact.
+- The playtester committed 7 capture PNGs in `docs/playtests/img/` (our own captures, no third-party license). (60d86fd)
+- Not verified by qa: the roar frame of the boss bar visually (unit test only) and interactive play at a window.
+- README and `docs/ARCHITECTURE.md` updated: test count, dodge and boss data keys, hashes, UxCapture, dodge controls, DodgeCharges, boss stagger, DodgePips. No new third-party assets, so `docs/ASSETS.md` is unchanged.
 
 ### Slice F1: director feedback batch
 

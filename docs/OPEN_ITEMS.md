@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-10-30
-**Status: 1 waiting on a decision (D19; doesn't block). 5 new things to look at when you play (items 25-29), plus item 22 once loadouts exist.** Done: C1, Polish 1, 3a, 3b, 3c (the boss), A1 (armor), T-decks, W1a (a playable Fire Wizard), **PL2** (frame colours), **F1** (your checklist answers) and **P-dodge** (dodge charges, Recovery, boss stagger; tag `playtest-2026-10-30-P-dodge`). Next: **W1b** (Wizard cards and tuning, including the boss cliff), then **3d** (loadouts).
+**Status: 2 waiting on a decision (D19, D20; neither blocks). 5 new things to look at when you play (items 25-29), plus item 22 once loadouts exist.** Done: C1, Polish 1, 3a, 3b, 3c (the boss), A1 (armor), T-decks, W1a (a playable Fire Wizard), **PL2** (frame colours), **F1** (your checklist answers) and **P-dodge** (dodge charges, Recovery, boss stagger; tag `playtest-2026-10-30-P-dodge`). Next: **W1b** (Wizard cards and tuning, including the boss cliff), then **3d** (loadouts).
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
@@ -110,7 +110,14 @@ _Updated at every slice close._
 
 ## Needs your decision
 
-Doesn't block work. Until you answer, I use my default.
+Neither blocks work. Until you answer, I use my default.
+
+- **D20: Wizard HP: squishier, or safe from a one-shot?** You asked for a squishier Wizard. The boss's "Fan of regrets" volley does 25 damage if all 5 pellets hit, so at 25 HP or less one full volley from full health can kill it.
+  - **What the tuning did:** it made the Wizard harder through about 40% less damage (bolt 2.4 -> 1.5, blast 8.5 -> 5.5, its cards slightly weaker), 2 dodge charges and a 14 s Recovery.
+  - **Result in the bot sim:** Wizard rooms cost about 75% of the Rogue's HP, and its boss fight is 72-103% of the Rogue's length. No deaths in 48 boss fights, even at 22 HP.
+  - **A (as built now, my default):** keep 26 HP, so no single attack kills from full. The Wizard is harder, but not lower HP.
+  - **B:** 22 HP, truly squishier. A full volley from full HP could kill it; it never happened in the bot runs (12% of pellets hit).
+  - **C:** 22 HP, and the volley drops to 4 damage per pellet (20 total), which also makes the Rogue's boss slightly easier.
 
 - **D19: The dodge right after a movement card ends inside an enemy.** If a movement-card dash ends overlapping an enemy, you stay "ghosted" until you walk clear (at most 3 s), so you can't get stuck. A dodge during that short window also goes through enemies, which bends your "the dodge doesn't go through enemies" rule. qa found no way to chain it into a crowd exploit: the window ends as soon as you're clear, and the dodge can't extend it.
   - **A (my default, qa's pick):** keep it, and add a line to GDD §3 that the dodge can pass through only during that short window.

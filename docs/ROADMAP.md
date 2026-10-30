@@ -466,7 +466,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     - the armor cues are readable;
     - the playtest report and OPEN_ITEMS are updated.
 
-- [ ] **T-decks, debug preset decks (director request 2026-10-29; runs right after A1 closes, ahead of P-dodge; lightweight loop: gameplay-dev -> qa -> tech-writer -> close, no playtester)**
+- [x] **T-decks, debug preset decks (director request 2026-10-29; runs right after A1 closes, ahead of P-dodge; lightweight loop: gameplay-dev -> qa -> tech-writer -> close, no playtester)** — **DONE 2026-10-29.** Build 9b6e8a6; qa PASS deb6ff1; docs cddab25 (996/996). Tag `playtest-2026-10-29-T-decks`. 12-seed parity: fire-heavy 1.02x, physical 1.07x of standard. Backlog: a notice when `--deck` is ignored (scenario/arena); a sim log of deck makeup at the boss; the soak flake moved to P-dodge.
   - **Goal:** launch a run with a named preset deck and jump to any room, to test builds against elites and the boss without playing through the rounds.
   - **Acceptance:**
     1. **Preset files:** one JSON per preset in `data/debug_decks/`; the file name is the preset name. Format:

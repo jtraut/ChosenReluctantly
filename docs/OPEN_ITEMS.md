@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-10-29
-**Status: 1 waiting on a decision (D17, doesn't block).** Done: C1, Polish 1, 3a (runs of 8 rooms), 3b (card rewards and deck-clean), 3c (the boss) and **A1 (armor)**. Next: debug preset decks (T-decks), then the Fire Wizard (W1), then dodge charges, then loadouts.
+**Status: 1 waiting on a decision (D17, doesn't block).** Done: C1, Polish 1, 3a (runs of 8 rooms), 3b (card rewards and deck-clean), 3c (the boss) and **A1 (armor)** and **T-decks (preset test decks)**. Next: the Fire Wizard (W1), then dodge charges, then loadouts.
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
@@ -9,6 +9,7 @@ Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
 - **Play the latest known-good build:** `git checkout <tag>` (the tag is named in "While you were away" below), play, then `git checkout main` when you're done. If there's no tag yet, `main` runs too.
 - **Normal run:** `godot --path .` (or open `project.godot` and press Play). This starts an 8-room run. Useful extras: `godot --path . -- --run-seed=5` (replay a seed), `-- --run-room=8` (jump to the boss room). Test scenarios give you 9999 HP and the old endless arena.
+- **Preset test decks (from T-decks):** `godot --path . -- --list-decks` shows them. Fight the boss with one: `godot --path . -- --deck=fire-heavy-rogue --full-deck --run-room=8`, or swap in `physical-rogue` or `mixed-rogue`. Drop `--full-deck` to use the preset's 15-card starter, The elite room is somewhere in rooms 3-6 depending on the seed: fix the seed with `--run-seed=1` and check the room indicator to find it. A preset lasts the whole launch, including Try again. To add your own, copy a file in `data/debug_decks/` and rename it.
 - **Keys:** WASD move · mouse aims · left click = light attack (it also fires on its own) · right click = heavy attack · Space = dodge · 1-5 = cast the card in that slot · Ctrl+1-5 = dead-card swap (throw away that slot's card and draw the next one, with a short cooldown) · Esc = pause and settings · F3 = debug overlay.
 - **Hold-to-preview (the default):** hold a card key to see its hit area in your element colour, aim with the mouse, and let go to cast.
 - **Settings:** press Esc. The pause screen has the "Cast cards on: Release (preview) / Press" toggle. It saves at once.
@@ -18,7 +19,8 @@ Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
 _Updated at every slice close._
 
-- **Latest playtest tag:** `playtest-2026-10-29-A1` (qa PASS, 968/968). Earlier tags: `playtest-2026-10-29-3c`, `-3b`, `-3a`, `-C1`.
+- **Latest playtest tag:** `playtest-2026-10-29-T-decks` (qa PASS, 996/996). Earlier tags: `playtest-2026-10-29-A1`, `-3c`, `-3b`, `-3a`, `-C1`.
+- **New in T-decks (since the A1 tag), your preset-deck request:** `--deck=<name>` and `--list-decks`, with three Rogue presets (fire-heavy, physical, mixed). See "How to playtest" above. `physical-rogue` has to keep 2 Fire cards: without them there are only 2 Utility and 2 area cards, and each slot needs 3 different ones. A 12-seed bot re-check puts fire-heavy at 1.02x and physical at 1.07x of the standard deck's boss time, well inside your 70-130% band.
 - **New in A1 (since the 3c tag), your armor request:**
   - Elites and the boss now have **armor**. It cuts physical and neutral hits about as much as their resistance cuts fire, so a fire deck and a physical deck kill the boss in similar time. In the bot sim each family lands inside your 70-130% band of the standard deck.
   - **Visible cues:**

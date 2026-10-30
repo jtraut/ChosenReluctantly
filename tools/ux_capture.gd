@@ -6,6 +6,7 @@ extends Node
 ## threshold, mid-stagger). The player is made immune and the spawner off, so the shot is only the state being checked.
 
 const BOSS_PATH := "res://scenes/enemies/BossGuardian.tscn"
+const HIT_DAMAGE := 30.0  # stagger mode: a typical card hit
 
 
 func _ready() -> void:
@@ -55,7 +56,10 @@ func _ready() -> void:
 			boss.spawn_index = 0
 			main.add_child(boss)
 			await _wait(1.2)
-			boss.health.take_damage(99999.0, "physical")
+			# A normal-sized hit that crosses the first threshold (a 99999 number would be a capture artefact).
+			var thresholds: Array[float] = boss.phase_thresholds()
+			boss.health.current_health = boss.health.get_max_health() * thresholds[0] + HIT_DAMAGE * 0.25
+			boss.health.take_damage(HIT_DAMAGE, "physical")
 			await _wait(0.35)
 	await RenderingServer.frame_post_draw
 	var image := sub.get_texture().get_image()

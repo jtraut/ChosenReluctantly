@@ -32,6 +32,9 @@ const BOSS_KEYS: Array[String] = ["display_name", "max_health", "resistance", "a
 ## boss bar (top) and card bar (bottom) cover part of the view; the camera shows 7 m above and below the player.
 const SPAWN_KEYS: Array[String] = ["distance_min", "distance_max", "screen_half_width", "screen_up", "screen_down"]
 const TRANSITION_KEYS: Array[String] = ["duration", "shake", "shake_duration", "hit_stop", "ring_size"]
+## Optional transition key (D16): seconds the boss reels, vulnerable and interrupted, before the roar. Default DEFAULT_STAGGER.
+const TRANSITION_OPTIONAL_KEYS: Array[String] = ["stagger"]
+const DEFAULT_STAGGER := 0.8
 const DEATH_KEYS: Array[String] = ["beat_seconds", "slow_mo_scale", "shake", "shake_duration"]
 const PHASE_KEYS: Array[String] = ["name", "enters_at", "move_speed", "attack_gap", "windup_scale", "attacks", "summon"]
 
@@ -52,7 +55,7 @@ static func validate(config: Dictionary, known_enemies: Array[String]) -> Array[
 			if not RULE_KEYS.has(String(key)):
 				errors.append("rules: unknown key '%s'" % str(key))
 		_num(rules, "min_telegraph", 0.6, 10.0, "rules", errors)
-		_num(rules, "max_transition", 0.1, 1.5, "rules", errors)
+		_num(rules, "max_transition", 0.1, 3.0, "rules", errors)
 		_whole(rules, "max_adds_cap", 0, 10, "rules", errors)
 		_whole(rules, "min_attacks", 3, 20, "rules", errors)
 	if typeof(config.get("bosses")) != TYPE_DICTIONARY or (config["bosses"] as Dictionary).is_empty():
@@ -95,7 +98,13 @@ static func _validate_boss(id: String, def: Dictionary, rules: Dictionary, known
 		if def["spawn"] is Dictionary and _is_num((def["spawn"] as Dictionary).get("distance_min")) and _is_num((def["spawn"] as Dictionary).get("distance_max")) 				and float((def["spawn"] as Dictionary)["distance_max"]) < float((def["spawn"] as Dictionary)["distance_min"]):
 			errors.append("%s.spawn.distance_max must be >= distance_min" % where)
 	errors.append_array(_validate_block(where + ".transition", def.get("transition"), TRANSITION_KEYS, {
-		"duration": [0.1, float(rules.get("max_transition", 1.5))], "shake": [0.0, 5.0], "shake_duration": [0.0, 5.0], "hit_stop": [0.0, 1.0], "ring_size": [0.5, 30.0]}))
+		"duration": [0.1, float(rules.get("max_transition", 1.5))], "shake": [0.0, 5.0], "shake_duration": [0.0, 5.0], "hit_stop": [0.0, 1.0], "ring_size": [0.5, 30.0],
+		"stagger": [0.0, 3.0]}, TRANSITION_OPTIONAL_KEYS))
+	if def.get("transition") is Dictionary and _is_num((def["transition"] as Dictionary).get("duration")):
+		# The whole transition (stagger, then the roar) stays inside max_transition (D16).
+		var total: float = stagger_seconds(def) + float((def["transition"] as Dictionary)["duration"])
+		if total > float(rules.get("max_transition", 1.5)) + 0.0001:
+			errors.append("%s.transition: stagger + duration (%s s) is over rules.max_transition" % [where, str(total)])
 	errors.append_array(_validate_block(where + ".death", def.get("death"), DEATH_KEYS, {
 		"beat_seconds": [0.2, 5.0], "slow_mo_scale": [0.05, 1.0], "shake": [0.0, 5.0], "shake_duration": [0.0, 5.0]}))
 	var attack_ids: Array[String] = []
@@ -245,18 +254,30 @@ static func _total_weight(list: Array) -> float:
 	return total
 
 
-static func _validate_block(where: String, block: Variant, keys: Array[String], ranges: Dictionary) -> Array[String]:
+static func _validate_block(where: String, block: Variant, keys: Array[String], ranges: Dictionary, optional_keys: Array[String] = []) -> Array[String]:
 	var errors: Array[String] = []
 	if typeof(block) != TYPE_DICTIONARY:
 		errors.append("%s must be an object" % where)
 		return errors
 	for key: Variant in (block as Dictionary).keys():
-		if not keys.has(String(key)):
+		if not keys.has(String(key)) and not optional_keys.has(String(key)):
 			errors.append("%s: unknown key '%s'" % [where, str(key)])
 	for key: String in keys:
 		var pair: Array = ranges[key]
 		_num(block, key, float(pair[0]), float(pair[1]), where, errors)
+	for key: String in optional_keys:
+		if (block as Dictionary).has(key):
+			var pair: Array = ranges[key]
+			_num(block, key, float(pair[0]), float(pair[1]), where, errors)
 	return errors
+
+
+## The boss's stagger seconds (transition.stagger, else DEFAULT_STAGGER). Tolerates a malformed block (returns the default).
+static func stagger_seconds(def: Dictionary) -> float:
+	var block: Variant = def.get("transition")
+	if block is Dictionary and _is_num((block as Dictionary).get("stagger")):
+		return float((block as Dictionary)["stagger"])
+	return DEFAULT_STAGGER
 
 
 static func _is_num(value: Variant) -> bool:

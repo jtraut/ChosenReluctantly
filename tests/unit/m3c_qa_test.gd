@@ -12,6 +12,8 @@ const BOSS_ID := "boss_guardian"
 
 
 func before_test() -> void:
+	BossConfig.reset_cache()
+	BossStagger.disable()  # D16: this suite pins the roar; the stagger has its own suite (p_dodge_boss_test)
 	Juice.hit_stop_enabled = false
 	RunSession.clear()
 
@@ -173,7 +175,7 @@ func test_qa_more_bad_boss_data_is_refused() -> void:
 		"adds alive over the rules cap": func(c: Dictionary) -> void: c["bosses"][BOSS_ID]["max_adds_alive"] = 7,
 		"adds cap rule above 10": func(c: Dictionary) -> void: c["rules"]["max_adds_cap"] = 11,
 		"min attacks rule below 3": func(c: Dictionary) -> void: c["rules"]["min_attacks"] = 2,
-		"max transition rule above 1.5": func(c: Dictionary) -> void: c["rules"]["max_transition"] = 3.0,
+		"max transition rule above 1.5": func(c: Dictionary) -> void: c["rules"]["max_transition"] = 3.5,
 		"rules missing": func(c: Dictionary) -> void: c.erase("rules"),
 		"slow-mo scale zero": func(c: Dictionary) -> void: c["bosses"][BOSS_ID]["death"]["slow_mo_scale"] = 0.0,
 		"body radius zero": func(c: Dictionary) -> void: c["bosses"][BOSS_ID]["body_radius"] = 0.0,

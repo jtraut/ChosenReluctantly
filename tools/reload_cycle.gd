@@ -438,9 +438,10 @@ func _boss_soak(snaps: Array[Dictionary]) -> void:
 	_check(again != null and again != boss and is_equal_approx(again.health.current_health, again.health.max_health) and again.phase_index == 0, "boss reload mid-fight: the new boss is not fresh")
 	snaps.append(_snapshot("after boss mid-fight reload"))
 
-	# 2. Reload during a phase transition (the boss is invulnerable and roaring), through Try again.
+	# 2. Reload during a phase transition, through Try again: first in the stagger (D16: vulnerable, reeling), then in the
+	#    roar (invulnerable).
 	again.health.take_damage(again.health.max_health * 0.8, "physical")
-	_check(again.is_transitioning() and again.health.damage_immune, "boss soak: no transition after a big hit")
+	_check(again.is_staggered() and not again.health.damage_immune, "boss soak: no stagger after a big hit")
 	old_id = main.get_instance_id()
 	main.restart_arena()
 	await _frames(SETTLE_FRAMES)
@@ -454,6 +455,30 @@ func _boss_soak(snaps: Array[Dictionary]) -> void:
 		await get_tree().process_frame
 	_check_boss_gone("boss reload mid-transition, after the old transition would have ended")
 	snaps.append(_snapshot("after boss mid-transition reload"))
+
+	# 2b. The same during the roar.
+	RunSession.current.room_index = total - 1
+	main = await _enter_run_main()
+	var roaring := _spawn_boss_in(main)
+	_check(roaring != null, "boss soak: no Boss for the roar reload")
+	if roaring == null:
+		return
+	await _frames(3)
+	roaring.health.take_damage(roaring.health.max_health * 0.8, "physical")
+	var stagger_ticks: int = int(ceil((BossConfig.stagger_seconds(BossConfig.boss(roaring.enemy_id)) + 0.1) * float(Engine.physics_ticks_per_second)))
+	await _frames(stagger_ticks)
+	_check(roaring.is_transitioning() and roaring.health.damage_immune and not roaring.is_staggered(), "boss soak: no roar after the stagger")
+	old_id = main.get_instance_id()
+	main.restart_arena()
+	await _frames(SETTLE_FRAMES)
+	_check(_main().get_instance_id() != old_id, "boss reload mid-roar: scene not replaced")
+	_check_boss_gone("boss reload mid-roar")
+	_check_run_fresh("boss reload mid-roar", 1)
+	until_msec = Time.get_ticks_msec() + 1600
+	while Time.get_ticks_msec() < until_msec:
+		await get_tree().process_frame
+	_check_boss_gone("boss reload mid-roar, after the old roar would have ended")
+	snaps.append(_snapshot("after boss mid-roar reload"))
 
 	# 3. Reload during the death beat (slow-mo running, the player already protected).
 	RunSession.current.room_index = total - 1

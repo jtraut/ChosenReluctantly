@@ -13,6 +13,8 @@ const BOSS_BAR_RESOLUTIONS: Array[Vector2] = [Vector2(1024, 600), Vector2(1024, 
 
 
 func before_test() -> void:
+	BossConfig.reset_cache()
+	BossStagger.disable()  # D16: this suite pins the roar; the stagger has its own suite (p_dodge_boss_test)
 	Juice.hit_stop_enabled = false
 	RunSession.clear()
 
@@ -24,6 +26,7 @@ func after_test() -> void:
 	Engine.time_scale = 1.0
 	RunSession.clear()
 	RunSession.full_deck = false
+	BossConfig.reset_cache()
 
 
 func _spawn_main() -> Main:

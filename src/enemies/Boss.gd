@@ -21,6 +21,11 @@ signal phase_changed(phase_index: int, phase_name: String)
 ## A phase transition began (the boss is invulnerable and roaring) / ended. `phase_index` is the phase being entered.
 signal transition_started(phase_index: int, duration: float)
 signal transition_ended(phase_index: int)
+## D16: the boss reels at a phase threshold (its attack is interrupted; it is NOT immune and the player's hits count).
+## `stagger_started` fires at the threshold; `stagger_ended` when the roar begins (transition_started follows at once). ux: a "STAGGERED" cue on the bar while
+## is_staggered() / between these two signals.
+signal stagger_started(next_phase_index: int, duration: float)
+signal stagger_ended(next_phase_index: int)
 ## A wind-up began: which attack, its label and its telegraph time in seconds.
 signal attack_telegraphed(attack_id: String, label: String, windup: float)
 ## An attack landed (or, for a volley, was fired). `hit_player` is true when it damaged the target right away.
@@ -30,9 +35,12 @@ signal adds_summoned(adds: Array)
 ## The boss died; the death beat starts now. The body goes `DEATH_FADE`-ishly later, after `beat_seconds` of real time.
 signal defeated()
 
-enum State { CHASE, WINDUP, ACTIVE, RECOVER, TRANSITION, DEAD }
+enum State { CHASE, WINDUP, ACTIVE, RECOVER, TRANSITION, DEAD, STAGGER }
 
 const GROUP := "boss"
+## The reel at a phase threshold (D16): a pale-blue tint and a backward tilt (radians) that eases back over the stagger.
+const STAGGER_COLOR := Color(0.65, 0.85, 1.0)
+const STAGGER_TILT := 0.35
 ## The charge gives up this long after it should have finished (stuck against a wall).
 const CHARGE_SLACK := 0.5
 const RESTORE_MARGIN := 0.15
@@ -59,6 +67,8 @@ var _rng := RandomNumberGenerator.new()
 var _adds: Array[Enemy] = []
 var _entering_phase: int = 0
 var _transition_left: float = 0.0
+var _stagger_left: float = 0.0
+var _stagger_tween: Tween = null
 var _charge_traveled: float = 0.0
 var _charge_last: Vector3 = Vector3.ZERO
 var _charge_start: Vector3 = Vector3.ZERO
@@ -158,8 +168,15 @@ func phase_name() -> String:
 	return String((_phases[phase_index] as Dictionary)["name"]) if phase_index < _phases.size() else ""
 
 
+## True during the roar (the invulnerable part of a phase change). The stagger before it is is_staggered(); the boss is
+## vulnerable then, so ux must not show "Invulnerable" for it.
 func is_transitioning() -> bool:
 	return _state == State.TRANSITION
+
+
+## True only while the boss reels (D16): vulnerable, attack interrupted, before the roar.
+func is_staggered() -> bool:
+	return _state == State.STAGGER
 
 
 func is_defeated() -> bool:
@@ -283,6 +300,8 @@ func _physics_process(delta: float) -> void:
 	var move := Vector3.ZERO
 	if _state == State.DEAD:
 		pass
+	elif _state == State.STAGGER:
+		_tick_stagger(delta)
 	elif _state == State.TRANSITION:
 		_tick_transition(delta)
 	elif not _has_live_target():
@@ -476,6 +495,8 @@ func _cancel_attack() -> void:
 
 
 func _rest_color() -> Color:
+	if _state == State.STAGGER:
+		return STAGGER_COLOR
 	return TELEGRAPH_COLOR if _state == State.WINDUP else super()
 
 
@@ -608,17 +629,60 @@ func _on_damaged(amount: float, damage_type: String, knockback: Vector3) -> void
 	_knockback_velocity = knockback * float(_def.get("knockback_taken", 0.0))
 	_flash_body(HIT_FLASH_COLOR)
 	Juice.on_hit_landed(global_position + Vector3(0.0, 1.5, 0.0), amount, damage_type, health.last_kind, health.last_channel, health.last_reduction)
-	if _state == State.TRANSITION or _state == State.DEAD or phase_index + 1 >= _phases.size():
+	if is_transitioning() or is_staggered() or _state == State.DEAD or phase_index + 1 >= _phases.size():
 		return
 	if health.current_health <= health.hp_floor + 0.001:
 		_begin_transition(phase_index + 1)
 
 
+## A phase threshold was reached. First the stagger (D16): the current attack is dropped, the boss reels, and the floor
+## that held it at the threshold is lowered to the floor of the threshold after it, so hits during the stagger are real
+## damage (a hit can still never carry it past the following threshold; that one is held for the transition after).
+## Then the roar. A stagger of 0 in data goes straight to the roar.
 func _begin_transition(next_index: int) -> void:
 	_cancel_attack()
+	_entering_phase = next_index
+	var stagger: float = BossConfig.stagger_seconds(_def)
+	if stagger <= 0.0:
+		_begin_roar()
+		return
+	_state = State.STAGGER
+	_state_time = 0.0
+	_stagger_left = stagger
+	health.hp_floor = BossRules.floor_hp(_phases, next_index + 1, health.max_health)
+	_start_reel(stagger)
+	stagger_started.emit(next_index, stagger)
+
+
+func _tick_stagger(delta: float) -> void:
+	_stagger_left -= delta
+	if _stagger_left <= 0.0:
+		_stop_reel()
+		stagger_ended.emit(_entering_phase)
+		_begin_roar()
+
+
+## The visible reel: a backward tilt that eases back and a pale-blue tint, for the stagger's length.
+func _start_reel(seconds: float) -> void:
+	_set_body_color(STAGGER_COLOR)
+	if _stagger_tween != null and _stagger_tween.is_valid():
+		_stagger_tween.kill()
+	_stagger_tween = create_tween()
+	_stagger_tween.tween_property(body_mesh, "rotation:x", -STAGGER_TILT, seconds * 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_stagger_tween.tween_property(body_mesh, "rotation:x", 0.0, seconds * 0.75).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _stop_reel() -> void:
+	if _stagger_tween != null and _stagger_tween.is_valid():
+		_stagger_tween.kill()
+	_stagger_tween = null
+	body_mesh.rotation.x = 0.0
+
+
+## The roar: invulnerable for `transition.duration` seconds, then the phase changes.
+func _begin_roar() -> void:
 	_state = State.TRANSITION
 	_state_time = 0.0
-	_entering_phase = next_index
 	var cfg: Dictionary = _def["transition"]
 	_transition_left = float(cfg["duration"])
 	health.damage_immune = true
@@ -627,7 +691,7 @@ func _begin_transition(next_index: int) -> void:
 	_set_body_color(Color(1.0, 0.95, 0.7))
 	Juice.screen_shake(float(cfg["shake"]), float(cfg["shake_duration"]))
 	Juice.hit_stop(float(cfg["hit_stop"]), 0.05)
-	transition_started.emit(next_index, _transition_left)
+	transition_started.emit(_entering_phase, _transition_left)
 
 
 func _tick_transition(delta: float) -> void:
@@ -649,6 +713,10 @@ func _end_transition() -> void:
 	if (_phase() as Dictionary).has("summon"):
 		var summon: Dictionary = _phase()["summon"]
 		_summon(String(summon["enemy"]), int(summon["count"]))
+	# Stagger hits may have carried it all the way down to the next threshold; the floor holds it there, so no later hit
+	# would announce the crossing. Start that transition now.
+	if phase_index + 1 < _phases.size() and health.current_health <= health.hp_floor + 0.001:
+		_begin_transition(phase_index + 1)
 
 
 ## Spawns up to `count` of `enemy` around the boss, never more than max_adds_alive at once (BossConfig caps it far
@@ -680,6 +748,7 @@ func _on_died() -> void:
 	if _state == State.DEAD:
 		return
 	_stop_shot_lane()
+	_stop_reel()
 	_stop_telegraph_visual()
 	_telegraph_remaining = 0.0
 	_state = State.DEAD

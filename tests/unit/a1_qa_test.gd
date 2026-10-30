@@ -17,6 +17,8 @@ class Attacker extends Node:
 
 func before_test() -> void:
 	BodyFlag.set_collide(false)
+	BossConfig.reset_cache()
+	BossStagger.disable()  # D16: this suite pins the roar; the stagger has its own suite (p_dodge_boss_test)
 	Juice.hit_stop_enabled = false
 	Juice.reset()
 
@@ -27,6 +29,7 @@ func after_test() -> void:
 	Juice.reset()
 	Engine.time_scale = 1.0
 	Enemy.set_player_body_suppressed(false)
+	BossConfig.reset_cache()
 
 
 func _spawn_main() -> Main:

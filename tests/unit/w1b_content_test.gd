@@ -62,3 +62,14 @@ func test_armor_buff_wording_and_the_ward_grants_armor() -> void:
 	# 25 / (25 + 50) of physical and neutral damage is removed; elemental damage is not.
 	assert_float(health.get_armor_reduction()).is_equal_approx(1.0 / 3.0, 0.001)
 	health.free()
+
+
+func test_health_records_the_source_of_the_last_damage_event() -> void:
+	var health: Health = auto_free(Health.new())
+	health.max_health = 50.0
+	health.current_health = 50.0
+	var source: Node = auto_free(Node.new())
+	health.take_damage(3.0, "physical", Vector3.ZERO, source)
+	assert_int(health.last_source_id).is_equal(source.get_instance_id())
+	health.take_damage(3.0, "physical")
+	assert_int(health.last_source_id).is_equal(0)

@@ -492,10 +492,10 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
 
        Report how many cards of each family each preset contains.
     5. **`--list-decks`** prints the names and descriptions, then exits.
-    6. **Sim alignment (game-lead):** the wave sim's A1 `-Deck` families (`fire`, `physical`, `standard`, `lightheavy`) bypass the deck minimums through `RunSession.skip_deck_minimums`, and they clash in name with the new `--deck`.
+    6. **Sim alignment (gameplay-dev builds, qa measures):** the wave sim's A1 `-Deck` families (`fire`, `physical`, `standard`, `lightheavy`) bypass the deck minimums through `RunSession.skip_deck_minimums`, and they clash in name with the new `--deck`.
        - Point the sim's deck selection at the presets (`-Deck fire-heavy-rogue` and so on) and remove the bypass.
        - Keep "light and heavy only" as a separate bot attack-policy flag, since it isn't a deck.
-       - Log it. Re-run the A1 4-family comparison with the presets and report it.
+       - Log it. gameplay-dev makes the code change; **qa** re-runs the A1 4-family comparison with the presets in its review, using 10+ seeds (it settles the fire 0.80x vs 0.93x disagreement from A1). A family outside 70-130% of standard becomes a director item.
     7. **Tests:**
        - every shipped preset loads, both starter and full, and starter is a subset of full;
        - an unknown name gives an error listing the valid names;

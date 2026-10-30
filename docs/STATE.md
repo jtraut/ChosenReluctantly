@@ -12,7 +12,7 @@ Last updated: 2026-10-29. The director is away until the evening with an autonom
 
 ## In progress
 - **Slice A1: Armor** closed 2026-10-29 (tag `playtest-2026-10-29-A1`, 968/968). Docs 28587a9.
-- **T-decks**: not started. Brief in ROADMAP.
+- **T-decks**: handed to gameplay-dev 2026-10-29. **On resume:** check `git log` for T-decks commits.
 
 ## Exact next step
 1. **T-decks**: hand the ROADMAP brief to gameplay-dev (lightweight loop: gameplay-dev -> qa -> tech-writer -> close, no playtester). Its sim alignment step re-runs the A1 family comparison with 10+ seeds.

@@ -1090,3 +1090,9 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
 - **The dodge passing through during the post-dash ghost window goes to the director as D19** (it touches the wording of a GDD §3 director rule). Default A: accept it and add a carve-out line. It stays as built until answered. [Deciding the GDD wording myself.]
 - **The concentric launch quirk and a stale comment go to P-dodge,** which touches Player anyway. They're pre-existing and essentially unreachable in play (exact centre overlap). [Reopening F1.]
 - **Bot pick-rate outliers** (Wall 0.30x, because the bot doesn't aim walls) need no action; W1b's tuning watches card pick rates.
+
+### 2026-10-30 - F1 playtest triage (game-lead)
+- Playtest 027d65a: smoke PASS, no blocker. The boss in room 10 is clear of the HUD; Wall and Lunge read well.
+- **The Wizard's boss cliff** (killed at full HP in 6.4 s on seed 21) goes into W1b item 5a, under D18 = A. It's not a new director question. [Asking the director.]
+- **Run length (about 5 bot-minutes for 10 rooms)** stays as the standing prototype call (OPEN_ITEMS call #3, GDD §9 [PROPOSED] short runs); the director set "at least 10" and difficulty via tiers. I mention it to the director as FYI, not a decision. [A new D item.]
+- **A walking-enemy Wall scenario** goes into W1b item 5b.

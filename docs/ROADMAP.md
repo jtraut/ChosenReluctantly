@@ -597,6 +597,8 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     3. **Presets:** `fire-heavy-wizard` and `mixed-wizard` in `data/debug_decks/` with `"class": "wizard"` (plus an arcane-heavy one if it makes sense). Report the card counts per family.
     4. **A non-kiting Wizard bot policy** (`-WizardNoKite` or similar, the same pattern as `-LightHeavyOnly`): it holds a mid-range spot or walks in like the Rogue bot instead of kiting perfectly. qa and the playtester both said the kiting bot is a ceiling, not a typical player.
     5. **Balance table** for the Wizard cards in the hand-back, for DECISIONS.
+    5a. **From the F1 playtest:** the Wizard's risk is flat, then a cliff. Rooms 1-9 cost almost nothing, then on seed 21 the boss killed a full-HP Wizard in 6.4 s; seed 22 won at 11/26 HP. Find which boss attack does it (opening charge or volley vs 26 HP), and tune so the boss is a real threat but not a sudden one-shot. Use Wizard data only, or report it as a director item.
+    5b. A scenario with walking enemies crossing a Wall of Mild Fire, so the director's 1.5x buff can be checked (F1 playtest couldn't).
     6. **Tuning, last:**
        - With the kiting and non-kiting policies, 10+ seeds each, measure the Wizard's boss time against **P-dodge's** Rogue baseline (10 rooms, per-class charges, Recovery 12 s) (target 70-130%) and the HP lost per room.
        - Tune toward **D18 = A (director, 2026-10-30, GDD §5)**: Wizard rooms cost some HP, less than the Rogue's; the Wizard should be squishier than today (HP is a lever, 26 now). Its 2 dodge charges and longer Recovery already land in P-dodge.

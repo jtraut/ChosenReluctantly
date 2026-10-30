@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-10-29. The director is away until the evening with an autonomous run order: after C1 and Polish 1, go on to Milestone 3 (3a run structure, 3b rewards, 3c boss, 3d loadouts). Each slice gets the full loop and, at close, a `playtest-YYYY-MM-DD-<slice>` tag plus an update to OPEN_ITEMS "While you were away".
+Last updated: 2026-10-30. The director is away until the evening with an autonomous run order: after C1 and Polish 1, go on to Milestone 3 (3a run structure, 3b rewards, 3c boss, 3d loadouts). Each slice gets the full loop and, at close, a `playtest-YYYY-MM-DD-<slice>` tag plus an update to OPEN_ITEMS "While you were away".
 
 ## What's done
 - Milestone 2, and **Post-milestone polish 1** (all slices). **Content slice C1** and the **capture-tooling task** closed on 2026-10-29: qa PASS 76bca75 (696/696), playtest d94676a, docs pass 4c7b490. Tag **`playtest-2026-10-29-C1`**. **Milestone 3a** closed (tag `playtest-2026-10-29-3a`). **Milestone 3b** closed (tag `playtest-2026-10-29-3b`). **Milestone 3c** closed (tag `playtest-2026-10-29-3c`). **Slice A1 (armor)** closed (tag `playtest-2026-10-29-A1`). **T-decks** closed (tag `playtest-2026-10-29-T-decks`).
@@ -13,10 +13,10 @@ Last updated: 2026-10-29. The director is away until the evening with an autonom
 ## In progress
 - **Slice A1: Armor** closed 2026-10-29 (tag `playtest-2026-10-29-A1`, 968/968). Docs 28587a9.
 - **T-decks** closed 2026-10-29 (tag `playtest-2026-10-29-T-decks`, 996/996). Docs cddab25.
-- **W1a (a playable Wizard)**: handed to gameplay-dev 2026-10-29 (W1 is split into W1a and W1b; see ROADMAP). **On resume:** check `git log` for W1a commits.
+- **W1a (a playable Wizard)**: gameplay built 451eaf3..39fe0c6 (1025/1025). ux-designer next (pick screen, bolt look, telegraph, HUD). **On resume:** check `git log` for W1a ux commits.
 
 ## Exact next step
-1. **W1a**: gameplay-dev building -> ux-designer (pick screen, bolt and telegraph readability, HUD) -> qa -> playtester -> tech-writer -> close. Then **W1b** (cards, presets, balance).
+1. **W1a**: ux-designer (pick screen, bolt and telegraph readability, HUD) -> qa -> playtester -> tech-writer -> close. Then **W1b** (cards, presets, balance).
 2. Then **P-dodge** (carries D13 = B, D16 = B and the reload soak flake), then **3d**.
 3. Waiting on the director: D17 (card damage-type cue; default B, doesn't block).
 

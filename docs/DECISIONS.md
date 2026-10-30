@@ -960,3 +960,23 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
 - **W1a, a playable Wizard:** character data, the class pick, ranged light and heavy, a minimal 4-card Wizard pool (2 Utility, 2 Movement), sim plumbing.
 - **W1b, content and balance:** the full 6-8 card pool, presets, the sim balance report.
 - Reason: the brief is too big for one sitting, and the brief itself allows the split. A playable ranged Wizard is the part the director asked for, so it ships first. [One W1 slice, which risks a half-built class at a usage cutoff.]
+
+### 2026-10-30 - W1a gameplay build (gameplay-dev, logged by game-lead)
+- Built 451eaf3..39fe0c6 (1025/1025). The Rogue is unchanged: arena hash 2792856473, bot checksum 2281795515, and the `-Run` output is identical.
+- **New data:** `data/characters.json` (CharacterDatabase). `starting_deck` and `character_pools` were removed from `run.json`; the `RunConfig` wrappers return the Rogue's.
+- **Wizard numbers:**
+  - light bolt 2.4 neutral per 0.6 s = 4.0 DPS (80% of the Rogue's 5.0), 12 m, 24 m/s;
+  - heavy 8.5 per 1.8 s, a 2.0 m disc at up to 7 m, damage type physical -> neutral;
+  - 26 HP.
+- **4 Wizard cards:** Borrowed Focus and Footwork, Allegedly (utility cooldown buffs), Sideways Blink and Tactical Hover (movement dashes). There's a 15-card starter, and `--full-deck` gives the Wizard 18 cards.
+- **Calls:**
+  - **Class set before Player `_ready`** via `RunController.prepare`. The arena, scenarios and tests stay Rogue. [Rebuilding the Player after `_ready`.]
+  - **A preset may carry `class` (default rogue).** `--deck` alone sets the class; a `--class` that disagrees exits 2. [Silent override.]
+  - **`light_variants` in attacks.json.** `CardDamageRule` is still judged against the Rogue's light, the stricter bar. [Restructuring `light` per class.]
+  - **The bolt flies along the player-to-reticle line** for its full 12 m. [Stopping at the reticle.]
+  - **Projectile template gains code params `direction` and `lane`.**
+  - **A Wizard armor-buff card was dropped**, because the effect wording doesn't support armor. That's a W1b idea. [Editing qa's wording test.]
+  - **The last pick is remembered** in memory, plus `user://last_class.json` in windowed play only. [settings.json.]
+  - **Wizard sim bot** kites at 5-9 m.
+  - **4 existing tests changed**; they had pinned the Rogue-only world.
+- **Sim note (2 seeds, not a balance read):** Wizard boss 45 s and 52 s vs the Rogue's 63 s, ending rooms at full HP. W1b owns the balance.

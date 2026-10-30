@@ -189,6 +189,17 @@ const DEFAULT_HUD: Dictionary = {
 	"meter_border_color": "#f4ece8",
 	"meter_text_color": "#ffffff",
 	"meter_text_outline_color": "#0d080b",
+	"dodge_size": [220, 20],
+	"dodge_label": "Space",
+	"dodge_label_width": 44,
+	"dodge_pip_width": 34,
+	"dodge_pip_gap": 4,
+	"dodge_ready_color": "#7fe0ff",
+	"dodge_recharge_color": "#4fb0d8",
+	"dodge_empty_word": "EMPTY",
+	"dodge_none_word": "NO DODGE",
+	"dodge_empty_color": "#ff7a7a",
+	"dodge_pulse_duration": 0.3,
 }
 
 ## Small floating words (not damage numbers). The "IMMUNE" popup when a stun bounces.
@@ -563,6 +574,9 @@ const DEFAULT_BOSS_BAR: Dictionary = {
 	"armor_tint": "#c9d3da",
 	"info_min_font_size": 11,
 	"phase_width_fraction": 0.42,
+	"stagger_text": "STAGGERED",
+	"stagger_hint_text": "Hit it now",
+	"stagger_color": "#bfe6ff",
 }
 
 

@@ -14,6 +14,8 @@ var thresholds: Array[float] = []
 var crossed: int = 0
 var invulnerable: bool = false
 var invuln_phase: float = 0.0
+## The stagger window: a pulsing pale-blue frame (the boss's reel tint), no stripes: it is hittable, not immune.
+var staggered: bool = false
 ## Resistance tint with alpha > 0.5 = resistant (thicker frame + diamond), like the enemy bars.
 var resist_tint: Color = Color(0.0, 0.0, 0.0, 0.0)
 ## Armor tint with alpha > 0.5 = armored: a shield in the right pip (the diamond's counterpart on the left).
@@ -51,6 +53,10 @@ func _draw() -> void:
 		frame_color = Color(resist_tint.r, resist_tint.g, resist_tint.b, 1.0)
 	if invulnerable:
 		frame_color = Color.html(String(style.get("invuln_color", "#fff3c4")))
+	elif staggered:
+		var pale: Color = Color.html(String(style.get("stagger_color", "#bfe6ff")))
+		frame_color = pale.lerp(Color.WHITE, 0.5 + 0.5 * sin(invuln_phase * TAU))
+		frame_w = maxf(frame_w, maxf(4.0 * ui_scale, 3.0))
 	draw_rect(bar, frame_color)
 	var inner := Rect2(bar.position + Vector2(frame_w, frame_w), bar.size - Vector2(frame_w, frame_w) * 2.0)
 	draw_rect(inner, back)

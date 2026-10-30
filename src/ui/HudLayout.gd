@@ -52,6 +52,14 @@ static func attack_meter_rects(viewport_size: Vector2, cfg: Dictionary) -> Dicti
 	return {&"light": light, &"heavy": heavy}
 
 
+## The dodge pip row: under the RMB meter, same left edge.
+static func dodge_rect(viewport_size: Vector2, cfg: Dictionary) -> Rect2:
+	var s := ui_scale(viewport_size, cfg)
+	var heavy: Rect2 = attack_meter_rects(viewport_size, cfg)[&"heavy"]
+	var sz: Array = cfg["dodge_size"]
+	return Rect2(Vector2(heavy.position.x, heavy.end.y + float(cfg["meter_row_gap"]) * s), Vector2(float(sz[0]), float(sz[1])) * s)
+
+
 ## The "Room X of Y - Type" indicator: top right, at the safe margin (3c moved it from the top centre, which the
 ## boss bar owns). Clear of the health panel and meters (top left), the slots (bottom) and the F3 overlay.
 static func room_indicator_rect(viewport_size: Vector2, cfg: Dictionary) -> Rect2:

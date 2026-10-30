@@ -12,10 +12,14 @@ class_name Hud
 @onready var light_meter: AttackMeter = $Root/LightMeter
 @onready var heavy_meter: AttackMeter = $Root/HeavyMeter
 
+var dodge_pips: DodgePips = null
 var player: Player = null
 
 
 func _ready() -> void:
+	dodge_pips = DodgePips.new()
+	dodge_pips.name = "DodgePips"
+	$Root.add_child(dodge_pips)
 	_ignore_mouse_recursive($Root)
 	for i in range(slot_widgets.size()):
 		slot_widgets[i].set_key_hint(str(i + 1))
@@ -48,6 +52,11 @@ func _apply_layout() -> void:
 		m.position = r.position
 		m.size = r.size
 
+	var dr := HudLayout.dodge_rect(vp, cfg)
+	dodge_pips.configure(cfg, s)
+	dodge_pips.position = dr.position
+	dodge_pips.size = dr.size
+
 	var hp := HudLayout.health_rect(vp, cfg)
 	var panel: VBoxContainer = $Root/HealthPanel
 	panel.offset_left = hp.position.x
@@ -77,6 +86,7 @@ func set_player(p: Player) -> void:
 	player = p
 	light_meter.set_player(p)
 	heavy_meter.set_player(p)
+	dodge_pips.set_player(p)
 
 
 func _process(_delta: float) -> void:

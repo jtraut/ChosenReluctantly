@@ -22,6 +22,9 @@ var _fill: float = 1.0
 var _ghost: float = 1.0
 var _ghost_delay_left: float = 0.0
 var _transitioning: bool = false
+var _staggered: bool = false
+var _stagger_total: float = 0.001
+var _stagger_left: float = 0.0
 var _entering_phase: int = 0
 var _fade_left: float = -1.0
 var _cfg: Dictionary = {}
@@ -135,6 +138,26 @@ func current_boss() -> Boss:
 	return _boss
 
 
+## True while the STAGGERED cue is up (the reward window before the roar).
+func is_staggered_shown() -> bool:
+	return _staggered
+
+
+## Notches drawn as crossed right now (a stagger counts its notch as crossed at once).
+func crossed_notches() -> int:
+	return _meter.crossed if _meter != null else 0
+
+
+## The text on the attack line, or "" while it is hidden.
+func attack_line_text() -> String:
+	return _attack_label.text if _attack_label != null and _attack_label.visible else ""
+
+
+## The text on the phase line (phase name, "Hit it now" or "Invulnerable").
+func info_line_text() -> String:
+	return _phase_label.text if _phase_label != null else ""
+
+
 func _build() -> void:
 	_root = Control.new()
 	_root.name = "Root"
@@ -220,6 +243,7 @@ func _apply_layout() -> void:
 	_attack_label.add_theme_color_override("font_color", Color.html(String(_cfg["text_color"])))
 	_attack_label.add_theme_constant_override("outline_size", maxi(roundi(4.0 * s), 2))
 	_attack_strip.colors = _bars["colors"]
+	_attack_strip.stagger_color = Color.html(String(_cfg["stagger_color"]))
 	_attack_strip.warn_color = Color.html(String(_cfg["warn_color"]))
 	_attack_strip.ui_scale = s
 	_refresh_phase()
@@ -263,6 +287,8 @@ func _try_bind(node: Node) -> void:
 	_boss = boss
 	boss.health.health_changed.connect(_on_health_changed)
 	boss.phase_changed.connect(_on_phase_changed)
+	boss.stagger_started.connect(_on_stagger_started)
+	boss.stagger_ended.connect(_on_stagger_ended)
 	boss.transition_started.connect(_on_transition_started)
 	boss.transition_ended.connect(_on_transition_ended)
 	boss.attack_telegraphed.connect(_on_attack_telegraphed)
@@ -276,9 +302,14 @@ func _try_bind(node: Node) -> void:
 	_ghost = _fill
 	_ghost_delay_left = 0.0
 	_transitioning = boss.is_transitioning()
-	_entering_phase = boss.phase_index + (1 if _transitioning else 0)
+	_staggered = boss.is_staggered() and not _transitioning
+	_entering_phase = boss.phase_index + (1 if (_transitioning or _staggered) else 0)
 	_telegraph_active = false
 	_attack_label.visible = false
+	_attack_strip.stagger = false
+	if _staggered:
+		var total: float = BossConfig.stagger_seconds(BossConfig.boss(boss.enemy_id))
+		_show_stagger(total, total)
 	_fade_left = -1.0
 	_root.modulate.a = 1.0
 	_root.visible = true
@@ -308,6 +339,8 @@ func _unbind() -> void:
 	if _boss != null and is_instance_valid(_boss):
 		_disconnect(_boss.health.health_changed, _on_health_changed)
 		_disconnect(_boss.phase_changed, _on_phase_changed)
+		_disconnect(_boss.stagger_started, _on_stagger_started)
+		_disconnect(_boss.stagger_ended, _on_stagger_ended)
 		_disconnect(_boss.transition_started, _on_transition_started)
 		_disconnect(_boss.transition_ended, _on_transition_ended)
 		_disconnect(_boss.attack_telegraphed, _on_attack_telegraphed)
@@ -346,7 +379,45 @@ func _on_phase_changed(_index: int, _name: String) -> void:
 	_push_meter()
 
 
+func _on_stagger_started(next_phase_index: int, duration: float) -> void:
+	_staggered = true
+	_entering_phase = next_phase_index
+	_stop_telegraph()
+	_show_stagger(duration, duration)
+	_refresh_phase()
+	_push_meter()
+
+
+func _on_stagger_ended(_next_phase_index: int) -> void:
+	_end_stagger()
+	_refresh_phase()
+	_push_meter()
+
+
+## The STAGGERED cue goes on the attack line (the boss has no attack running then), with the strip draining over the
+## stagger so the window's length reads at a glance.
+func _show_stagger(total: float, left: float) -> void:
+	_stagger_total = maxf(total, 0.001)
+	_stagger_left = left
+	_attack_strip.stagger = true
+	_attack_label.text = String(_cfg["stagger_text"])
+	_attack_label.visible = true
+	_attack_strip.progress_left = clampf(left / _stagger_total, 0.0, 1.0)
+	_attack_strip.queue_redraw()
+
+
+func _end_stagger() -> void:
+	if not _staggered:
+		return
+	_staggered = false
+	_attack_strip.stagger = false
+	_attack_label.visible = false
+	_attack_strip.progress_left = 0.0
+	_attack_strip.queue_redraw()
+
+
 func _on_transition_started(phase_index: int, _duration: float) -> void:
+	_end_stagger()
 	_transitioning = true
 	_entering_phase = phase_index
 	_stop_telegraph()
@@ -361,6 +432,8 @@ func _on_transition_ended(_index: int) -> void:
 
 
 func _on_attack_telegraphed(_attack_id: String, label: String, _windup: float) -> void:
+	if _staggered:
+		return  # the stagger cue owns the attack line until the roar
 	_start_telegraph(label)
 
 
@@ -387,6 +460,7 @@ func _start_telegraph(label: String) -> void:
 
 func _stop_telegraph() -> void:
 	_telegraph_active = false
+	_attack_strip.stagger = false
 	_attack_label.visible = false
 	_attack_strip.progress_left = 0.0
 	_attack_strip.queue_redraw()
@@ -398,6 +472,9 @@ func _refresh_phase() -> void:
 	if _transitioning:
 		_phase_label.text = String(_cfg["invulnerable_text"])
 		_phase_label.add_theme_color_override("font_color", Color.html(String(_cfg["invuln_color"])))
+	elif _staggered:
+		_phase_label.text = String(_cfg["stagger_hint_text"])
+		_phase_label.add_theme_color_override("font_color", Color.html(String(_cfg["stagger_color"])))
 	else:
 		_phase_label.text = phase_text(String(_cfg["phase_format"]), _boss.phase_index, _boss.phase_count(), _boss.phase_name())
 		_phase_label.add_theme_color_override("font_color", Color.html(String(_cfg["info_color"])))
@@ -407,7 +484,8 @@ func _push_meter() -> void:
 	_meter.fill = _fill
 	_meter.ghost = _ghost
 	_meter.invulnerable = _transitioning
-	var phase: int = _entering_phase if _transitioning else (_boss.phase_index if _boss != null else 0)
+	_meter.staggered = _staggered and not _transitioning
+	var phase: int = _entering_phase if (_transitioning or _staggered) else (_boss.phase_index if _boss != null else 0)
 	_meter.crossed = crossed_count(phase, _meter.thresholds)
 	_meter.queue_redraw()
 
@@ -430,6 +508,16 @@ func _process(delta: float) -> void:
 		redraw = true
 	if _transitioning:
 		_meter.invuln_phase += delta * float(_cfg["invuln_pulse_hz"])
+		redraw = true
+	if _staggered and _boss != null:
+		if not _boss.is_staggered():
+			_end_stagger()  # a missed signal must not leave the cue up
+			_refresh_phase()
+		else:
+			_stagger_left = maxf(_stagger_left - delta, 0.0)
+			_attack_strip.progress_left = clampf(_stagger_left / _stagger_total, 0.0, 1.0)
+			_attack_strip.queue_redraw()
+			_meter.invuln_phase += delta * float(_cfg["invuln_pulse_hz"])  # the frame pulses
 		redraw = true
 	if _telegraph_active and _boss != null:
 		if _boss.telegraph_left() <= 0.0:

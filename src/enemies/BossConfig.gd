@@ -26,9 +26,11 @@ const KIND_KEYS: Dictionary = {
 const PLACES: Array[String] = ["self", "target"]
 const RULE_KEYS: Array[String] = ["min_telegraph", "max_transition", "max_adds_cap", "min_attacks"]
 const BOSS_KEYS: Array[String] = ["display_name", "max_health", "resistance", "armor", "knockback_taken", "body_radius", "max_adds_alive", "spawn_grace", "spawn", "transition", "death", "attacks", "phases"]
-## Optional: where the boss may appear, relative to the player. Distances are metres on the ground; the half extents are the
-## on-screen box (screen-right metres, and metres up the screen) the boss body must start inside, so it is fully visible.
-const SPAWN_KEYS: Array[String] = ["distance_min", "distance_max", "screen_half_width", "screen_half_height"]
+## Optional: where the boss may appear, relative to the player. Distances are metres on the ground; the on-screen box is
+## screen_half_width metres left/right, screen_up metres up the screen and screen_down metres down it, for the boss's GROUND point.
+## It is asymmetric because the body is drawn upward from that point (the guardian is 3.8 m tall, about 3.1 m on screen) and the
+## boss bar (top) and card bar (bottom) cover part of the view; the camera shows 7 m above and below the player.
+const SPAWN_KEYS: Array[String] = ["distance_min", "distance_max", "screen_half_width", "screen_up", "screen_down"]
 const TRANSITION_KEYS: Array[String] = ["duration", "shake", "shake_duration", "hit_stop", "ring_size"]
 const DEATH_KEYS: Array[String] = ["beat_seconds", "slow_mo_scale", "shake", "shake_duration"]
 const PHASE_KEYS: Array[String] = ["name", "enters_at", "move_speed", "attack_gap", "windup_scale", "attacks", "summon"]
@@ -89,7 +91,7 @@ static func _validate_boss(id: String, def: Dictionary, rules: Dictionary, known
 	_num(def, "spawn_grace", 0.0, 10.0, where, errors)
 	if def.has("spawn"):
 		errors.append_array(_validate_block(where + ".spawn", def["spawn"], SPAWN_KEYS, {
-			"distance_min": [1.0, 40.0], "distance_max": [1.0, 40.0], "screen_half_width": [2.0, 40.0], "screen_half_height": [1.0, 40.0]}))
+			"distance_min": [1.0, 40.0], "distance_max": [1.0, 40.0], "screen_half_width": [2.0, 40.0], "screen_up": [0.0, 40.0], "screen_down": [0.0, 40.0]}))
 		if def["spawn"] is Dictionary and _is_num((def["spawn"] as Dictionary).get("distance_min")) and _is_num((def["spawn"] as Dictionary).get("distance_max")) 				and float((def["spawn"] as Dictionary)["distance_max"]) < float((def["spawn"] as Dictionary)["distance_min"]):
 			errors.append("%s.spawn.distance_max must be >= distance_min" % where)
 	errors.append_array(_validate_block(where + ".transition", def.get("transition"), TRANSITION_KEYS, {

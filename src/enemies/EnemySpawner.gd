@@ -172,14 +172,14 @@ func _boss_spawn_position(spawn: Dictionary) -> Vector3:
 ## True when the ground point `pos` is inside the box around the target as the fixed isometric camera shows it (the camera in
 ## scenes/camera/CameraRig.tscn looks along (-1, -1, -1), so ground screen-right is (1, 0, -1)/sqrt 2 and a ground metre
 ## away from the camera is sin(35.26 degrees) of a metre up the screen).
-static func screen_box_contains(offset: Vector3, half_width: float, half_height: float) -> bool:
+static func screen_box_contains(offset: Vector3, half_width: float, up_limit: float, down_limit: float) -> bool:
 	var right: float = (offset.x - offset.z) * 0.70710678
 	var up: float = -(offset.x + offset.z) * 0.70710678 * 0.57735027
-	return absf(right) <= half_width and absf(up) <= half_height
+	return absf(right) <= half_width and up <= up_limit and up >= -down_limit
 
 
 func _inside_screen_box(pos: Vector3, spawn: Dictionary) -> bool:
-	return screen_box_contains(pos - target.global_position, float(spawn["screen_half_width"]), float(spawn["screen_half_height"]))
+	return screen_box_contains(pos - target.global_position, float(spawn["screen_half_width"]), float(spawn["screen_up"]), float(spawn["screen_down"]))
 
 
 func _ring_point(angle: float, dist: float) -> Vector3:

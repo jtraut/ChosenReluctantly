@@ -980,3 +980,19 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
   - **Wizard sim bot** kites at 5-9 m.
   - **4 existing tests changed**; they had pinned the Rogue-only world.
 - **Sim note (2 seeds, not a balance read):** Wizard boss 45 s and 52 s vs the Rogue's 63 s, ending rooms at full HP. W1b owns the balance.
+
+### 2026-10-30 - W1a ux (ux-designer, logged by game-lead)
+- Built 0b540d6..672622f (1044/1044).
+  - The class pick screen: `ClassPickScreen`, all from `CharacterDatabase` plus the `ui.json` `class_pick` block.
+  - The cyan Wizard bolt: `#3fd9ff`, `bolt_look` in `attacks.json`, and a code-only `look` template param.
+  - A heavy meter wind-up word per attack shape (SWING / CAST).
+  - The `wizard_bolt` scenario and the scenario `character` key.
+- **Calls:**
+  - **The pick screen pauses the already-built room via GamePause** until a pick is confirmed. [Delaying the room start in RunController/Main.]
+  - **The screen skips itself** when `character_forced`, headless, under `-s`, or outside a run. `--show-class-pick` forces it for captures. [Checking `character_forced` alone, which would hang the unforced tests, sims and soak.]
+  - **The same-run guard is a screen static,** not RunSession. [Touching gameplay files.]
+  - **1/2 and arrows highlight; only Enter or a click confirms,** matching the reward screen. [Number keys confirm.]
+  - **The bolt look is per attack (`bolt_look`),** not a new element. [An element entry in `pools.json`.]
+- **Known and accepted for now:**
+  - the HUD behind the dim shows the previous class's HP for one paused frame;
+  - the screen copy ("Pick your hero"...) is ux placeholder wording.

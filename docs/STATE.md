@@ -13,10 +13,10 @@ Last updated: 2026-10-30. The director is away until the evening with an autonom
 ## In progress
 - **Slice A1: Armor** closed 2026-10-29 (tag `playtest-2026-10-29-A1`, 968/968). Docs 28587a9.
 - **T-decks** closed 2026-10-29 (tag `playtest-2026-10-29-T-decks`, 996/996). Docs cddab25.
-- **W1a (a playable Wizard)**: gameplay built 451eaf3..39fe0c6 (1025/1025). ux-designer next (pick screen, bolt look, telegraph, HUD). **On resume:** check `git log` for W1a ux commits.
+- **W1a (a playable Wizard)**: gameplay built 451eaf3..39fe0c6; ux built 0b540d6..672622f (1044/1044). qa next. **On resume:** look for `docs/reviews/2026-10-30-w1a-qa.md`.
 
 ## Exact next step
-1. **W1a**: ux-designer (pick screen, bolt and telegraph readability, HUD) -> qa -> playtester -> tech-writer -> close. Then **W1b** (cards, presets, balance).
+1. **W1a**: qa -> playtester -> tech-writer -> close. Then **W1b** (cards, presets, balance).
 2. Then **P-dodge** (carries D13 = B, D16 = B and the reload soak flake), then **3d**.
 3. Waiting on the director: D17 (card damage-type cue; default B, doesn't block).
 

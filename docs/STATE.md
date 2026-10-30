@@ -14,7 +14,7 @@ Last updated: 2026-10-30. Standing run order (director): A1 -> T-decks -> W1 (W1
 - **Slice A1: Armor** closed 2026-10-29 (tag `playtest-2026-10-29-A1`, 968/968). Docs 28587a9.
 - **T-decks** closed 2026-10-29 (tag `playtest-2026-10-29-T-decks`, 996/996). Docs cddab25.
 - **W1a (a playable Wizard)** closed 2026-10-30 (tag `playtest-2026-10-30-W1a`, 1053/1053). Docs 031f321.
-- **PL2 (small polish, before W1b)**: IN PROGRESS (started 2026-10-30). Brief in ROADMAP, now including the director's card frame colours (items 6a and 9) and a short playtester pass. Step: gameplay-dev (items 1-6a).
+- **PL2 (small polish, before W1b)**: IN PROGRESS (started 2026-10-30). Brief in ROADMAP, now including the director's card frame colours (items 6a and 9) and a short playtester pass. gameplay-dev DONE 3b8359e..5079a2a (1064/1064). Step: ux-designer (items 7-9).
 - **W1b (Wizard cards, presets, balance)**: brief written in ROADMAP; runs after PL2.
 
 ## Exact next step

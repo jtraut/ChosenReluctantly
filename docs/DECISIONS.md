@@ -1028,3 +1028,13 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
 - **It goes into PL2, not W1b,** because it's ux polish on existing surfaces and W1b's new Wizard cards then show bronze from day one. [A separate slice.]
 - **The slot border already shows readiness** (`slot_ready_border_color`). The family colour must always be visible and ready-vs-cooling must stay readable; ux picks how (inner outline, fill, brightness). [Letting the family colour replace the ready cue.]
 - **PL2 now gets a short playtester pass** (it adds two player-visible changes: the melee cue and the frames). [qa captures only.]
+
+### 2026-10-30 - PL2 gameplay (gameplay-dev, logged by game-lead)
+- Built 3b8359e..5079a2a (1064/1064; arena hash 2792856473 unchanged). Boss spawns inside an on-screen box; `frame_color` on every pool with `PoolDatabase.frame_color_for_card` / `frame_color_for_pool`; quiet launch refusals; scenario body look; junk file removed.
+- **Findings:** the pink fan at the Wizard's feet is the enemy chaser's melee wind-up wedge (enemy team tint), not a player cue; no change. A bolt does stop on its first hit.
+- **Calls:**
+  - **Launch refusals use `printerr`, not `push_error`,** so there's no stack trace. [Suppressing the error inside `prepare`.]
+  - **Boss placement uses a data box (`bosses.json` `spawn`, optional per boss) on the fixed iso axes,** pinned by a test to `CameraRig.tscn`. [Projecting through the live camera, which needs a viewport and fails headless.] The box is asymmetric (2.2 m up, 3.6 m down) because the boss body is drawn upward from its ground point.
+  - **An unknown card or pool gets the neutral frame silently.** [`push_error`, which would spam the UI and test logs.]
+  - **A `_spent` guard on every `Projectile`:** a deferred `queue_free` could let two hurtboxes entered in the same physics step both take damage. It's a latent bug, never seen in play; it applies to enemy and card projectiles too. [Report only.]
+- **Rogue boss after the change (gameplay-dev, seeds 1-6, not the baseline):** 57.7-75.5 s, mean about 66.9 s, all won. qa's 10+ seed run sets the W1b baseline.

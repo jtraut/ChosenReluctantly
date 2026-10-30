@@ -73,6 +73,7 @@ var cast_preview: CastPreview = null
 @onready var body_mesh: MeshInstance3D = $BodyMesh
 
 var _attack_visuals: Dictionary = {}
+var _bolt_looks: Dictionary = {}
 ## Seedable RNG for element/status chances on hit (tests and captures set .seed).
 var status_rng := RandomNumberGenerator.new()
 ## Capture/test only: a fixed ground point returned by get_aim_point() instead of the mouse.
@@ -711,6 +712,7 @@ func _on_attack_fired(attack_id: StringName) -> void:
 			"knockback_strength": def["knockback"],
 			"direction": _projectile_direction(),
 			"lane": false,
+			"look": _bolt_look(attack_id, def),
 		}, context)
 		attack_fired.emit(attack_id)
 		return
@@ -731,6 +733,18 @@ func _on_attack_fired(attack_id: StringName) -> void:
 		Juice.hit_stop(float(def["hit_stop_duration"]), float(def["hit_stop_scale"]))
 		Juice.screen_shake(float(def["shake_strength"]), float(def["shake_duration"]))
 	attack_fired.emit(attack_id)
+
+
+## The bolt's own look ({"color", "scale"}) from the attack's `bolt_look` data, built once per attack (auto-fire shoots one
+## every 0.6 s, so nothing is allocated per shot). Empty when the attack has none: the element look is used.
+func _bolt_look(attack_id: StringName, def: Dictionary) -> Dictionary:
+	if not _bolt_looks.has(attack_id):
+		var data: Variant = def.get("bolt_look")
+		if typeof(data) == TYPE_DICTIONARY:
+			_bolt_looks[attack_id] = {"color": Color.html(String((data as Dictionary)["color"])), "scale": float((data as Dictionary)["scale"])}
+		else:
+			_bolt_looks[attack_id] = {}
+	return _bolt_looks[attack_id]
 
 
 ## The flat direction a projectile light attack flies and is gated on: from the player to the aim point (the reticle),

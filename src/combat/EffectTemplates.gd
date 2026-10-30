@@ -44,6 +44,8 @@ const STATUS_TARGETS: Array[String] = ["last_hits", "self"]
 ##   projectile (optional, 3c): yaw_degrees turns the shot's direction about the vertical axis (a fan of shots).
 ##   projectile (optional, W1a, code-only): direction (a Vector3, flattened by the caller) replaces the caster's facing; lane false
 ##     skips the player's hit-area strip (the auto-firing Wizard bolt would flood the effect pool with one per shot).
+##   projectile (optional, W1a ux, code-only): look ({"color": Color, "scale": float}) replaces the element look, so one caster's shots
+##     can read differently from a card's (the Wizard's light bolt). Cosmetic only.
 ##   aoe (optional, 3c): vfx false skips the impact visual, for a caller that draws its own at the right reach (the boss).
 ##   aoe (optional, C1-c): delay (seconds, 0..MAX_AOE_DELAY) locks the disc where it is at cast, shows the shared
 ##     ground telegraph growing for `delay`, then hits. A caster that dies or is freed in that time cancels the hit.
@@ -424,7 +426,10 @@ static func _projectile_shot(params: Dictionary, context: EffectContext, index: 
 		forward = forward.rotated(Vector3.UP, deg_to_rad(float(params["yaw_degrees"])))  # a fan of shots (boss volley)
 	var origin: Vector3 = context.caster.global_position + forward * PROJECTILE_MUZZLE_OFFSET
 	instance.set_hit_radius(params["hit_radius"])
-	instance.set_look(ElementVisuals.visual_for_team(String(params["damage_type"]), context.caster_team))
+	if params.has("look") and not (params["look"] as Dictionary).is_empty():
+		instance.set_look(params["look"] as Dictionary)
+	else:
+		instance.set_look(ElementVisuals.visual_for_team(String(params["damage_type"]), context.caster_team))
 	instance.knockback_strength = params.get("knockback_strength", 0.0)
 	instance.set_source(context.caster, _kind_for(index))
 	# Player shots only: an enemy shot's lane would look like a telegraph it is not.

@@ -94,6 +94,7 @@
             "shake_strength": 0.05,
             "shake_duration": 0.08,
             "color": "#c9a8ff",
+            "bolt_look": { "color": "#3fd9ff", "scale": 1.6 },
             "flash_duration": 0.1
         }
     }

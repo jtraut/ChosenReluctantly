@@ -132,6 +132,8 @@ static func validate_entry(entry: Dictionary) -> Array[String]:
 			errors.append("'%s' must be a non-empty string" % key)
 	if typeof(entry.get("color")) == TYPE_STRING and not Color.html_is_valid(String(entry["color"])):
 		errors.append("'color' is not a valid color string")
+	if entry.has("bolt_look"):
+		errors.append_array(_validate_bolt_look(entry["bolt_look"]))
 	_check_numbers(entry, COMMON_NUMBER_RULES, true, errors)
 	_check_numbers(entry, SHAPE_NUMBER_RULES[String(shape)], true, errors)
 	_check_numbers(entry, OPTIONAL_NUMBER_RULES, false, errors)
@@ -139,6 +141,21 @@ static func validate_entry(entry: Dictionary) -> Array[String]:
 		errors.append("'element_status_duration' is required when 'status_chance_multiplier' > 0")
 	if entry.has("on_hit_statuses"):
 		errors.append_array(_validate_on_hit_statuses(entry["on_hit_statuses"]))
+	return errors
+
+
+## Optional `bolt_look` (a projectile light's own look): {color: hex string, scale: number > 0}.
+static func _validate_bolt_look(look: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(look) != TYPE_DICTIONARY:
+		errors.append("'bolt_look' must be an object {color, scale}")
+		return errors
+	var dict: Dictionary = look
+	if typeof(dict.get("color")) != TYPE_STRING or not Color.html_is_valid(String(dict["color"])):
+		errors.append("bolt_look.color must be a hex color string")
+	var scale: Variant = dict.get("scale")
+	if (typeof(scale) != TYPE_FLOAT and typeof(scale) != TYPE_INT) or is_nan(float(scale)) or float(scale) <= 0.0:
+		errors.append("bolt_look.scale must be a number > 0")
 	return errors
 
 

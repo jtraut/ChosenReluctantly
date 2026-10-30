@@ -888,3 +888,17 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
 - **BossHpBar deferred-bind error fixed** by binding via instance id; proven by restoring the old code. The engine error itself can't be asserted in gdUnit4.
 - New scenarios: `boss_f3`, `elite_f3`, `armor_numbers` (key `elite_indices`).
 - **Housekeeping:** game-lead stopped 4 stray headless WaveSim processes left by the lightheavy repro (and left the director's game alone), and deleted `ws2.log`. The log showed class-cache parse errors from a run started mid-edit; qa re-verifies on a clean tree.
+
+### 2026-10-29 - A1 Part 3 qa PASS (qa, logged by game-lead)
+- PASS 9292e4b, 965/965 (`docs/reviews/2026-10-29-a1-armor-qa.md`). Parity is enforced at load and caught by mutated fixtures; a static audit test guards the single damage choke point.
+- **Boss fight vs standard, real HP:** fire 0.93x, physical 1.04x (1.11x in god mode). Before armor: fire 1.08x, physical 0.85x. Both families sit inside the director's 70-130% band.
+- **A pure light and heavy bot is about 3.2x** (it was about 3.5x before armor). **Game-lead call: not a director question.** GDD §3 says cards beat basic attacks, and a no-card build is meant to be weak. The bot also plays it badly. [Buffing basic attacks.]
+- **Fix before the playtest (ux):**
+  - N2: the boss bar overlaps the player HUD at 1024x768;
+  - the elite shield pip is illegible at 720p (about 6 px), so add a size knob in data;
+  - N1: "all elements" must compare against `TierRules.element_ids()`.
+- **Backlog:**
+  - N3: validate damage types against the known set (a typo escapes both channels);
+  - N4: the golem's fire resistance lives in its `.tscn`;
+  - N5: `armor_reduction(INF)` returns NaN (not reachable from data).
+- **The BossHpBar bind error couldn't be reproduced** on either the old or the new code over 32 sim runs; the fix stays, covered by a unit test.

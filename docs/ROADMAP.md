@@ -413,7 +413,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     - Gameplay side: `RunState.from_dict` rejects an unknown `pending`; the choice model carries `owned` and `next_room_type`.
   - **Owner sequence:** gameplay-dev -> ux-designer (boss bar, telegraph readability) -> qa -> playtester -> tech-writer -> close, tag `playtest-2026-10-29-3c`.
 - [ ] **Slice A1: Armor (director request 2026-10-29; runs right after the 3c close, ahead of P-dodge and 3d)**
-  - **Progress:** Part 1 BUILT b23d7df..e141dfe (923/923; elite x2.5 -> x2.0, boss 280 -> 195 HP; fire 0.93x and physical 1.11x of standard at the boss). Part 2 BUILT 1604f6b..bcf13a5 (939/939). Part 3 (qa) next.
+  - **Progress:** Part 1 BUILT b23d7df..e141dfe (923/923; elite x2.5 -> x2.0, boss 280 -> 195 HP; fire 0.93x and physical 1.11x of standard at the boss). Part 2 BUILT 1604f6b..bcf13a5 (939/939). Part 3 qa PASS 9292e4b (965/965; fire 0.93x, physical 1.04x of standard at the boss). Small ux fix (N2 1024x768 overlap, 720p elite pip, N1 "all elements") next, then Part 4 (playtester).
   - **Goal:** elites and bosses mitigate non-elemental damage about as much as elemental damage, so no build family is singled out at the final boss. GDD §7 "Armor" [DIRECTOR DECISION, 2026-10-29], points 1-10. This resolves D15.
   - **Today (to re-verify):** `CombatMath.apply_resistance` returns physical unchanged, and `neutral` effectively skips mitigation. At the final boss, physical and neutral take 0% while fire takes 50%.
   - **Part 1, gameplay-dev:**

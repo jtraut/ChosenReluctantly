@@ -12,10 +12,10 @@ Last updated: 2026-10-29. The director is away until the evening with an autonom
 
 ## In progress
 - **Milestone 3c closed** 2026-10-29 (tag `playtest-2026-10-29-3c`, 907/907).
-- **Slice A1: Armor** (director request): Part 1 built b23d7df..e141dfe (923/923). Part 2 built 1604f6b..bcf13a5 (939/939). Next role: qa (Part 3).
+- **Slice A1: Armor** (director request): Part 1 built b23d7df..e141dfe (923/923). Part 2 built 1604f6b..bcf13a5 (939/939). qa PASS 9292e4b (965/965). Next: a small ux fix, then playtester (Part 4).
 
 ## Exact next step
-1. **A1 Part 3** with qa. **On resume:** check `docs/reviews/` for an A1 review.
+1. **A1 ux fix** (N2 boss bar at 1024x768, elite pip size at 720p, N1). **On resume:** check `git log`.
 2. Then playtester (Part 4) -> tech-writer -> close, tag `playtest-2026-10-29-A1`.
 3. Then **T-decks** (debug preset decks; lightweight loop), then **P-dodge** (also carries D13 = B, the Recovery cooldown 8 -> 12 s, and D16 = B, the boss stagger at thresholds), then **3d**.
 

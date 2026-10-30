@@ -529,6 +529,22 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     12. **Gates:** suite green; zero errors on startup and in the 20 s headless run; reload soak (including a Wizard run); SceneSelfCheck; capture scenarios; the arena hash unchanged for the Rogue default.
   - **Quick win for the Rogue, from the same playtest (ux):** a new player can't tell the light attack is melee. Consider a short-range cue (e.g. the swing arc shown faintly at the player when nothing is in reach, or a "too far" tick when clicking at a distant reticle). Its own small item; doesn't block W1.
   - **Owner sequence:** gameplay-dev (character data, class pick logic, attacks, cards) -> ux-designer (pick screen, bolt and telegraph readability, HUD) -> qa -> playtester -> tech-writer -> close, tag `playtest-2026-10-29-W1`. If too big for one sitting, split into W1a (character data, pick, ranged attacks, minimal cards) and W1b (full card pool, presets, balance).
+  - **Split (game-lead, 2026-10-29): W1 is two slices, each with the full loop.**
+    - **W1a, a playable Wizard. Tag `playtest-2026-10-29-W1a`.**
+      - **gameplay-dev:**
+        - items 1, 3, 4, 6, 7 and 8;
+        - item 2's logic and `--class` (the pick screen itself is ux);
+        - a **minimal Wizard pool**: 2 Utility and 2 Movement cards, enough for Wizard + Fire + Neutral to meet 3 unique per slot, with a 15-card Wizard starter;
+        - item 10's sim plumbing (`-Class wizard` runs end to end), but no balance report yet;
+        - item 12's gates.
+      - **ux-designer:** item 9 (the pick screen, bolt and telegraph readability, per-class HUD meters).
+      - **qa, playtester, tech-writer, close.**
+    - **W1b, Wizard content and balance. Tag `playtest-2026-10-29-W1b`.**
+      - item 5 in full: about 6-8 Wizard cards in total, including 2-4 attack cards, plus the balance table;
+      - item 10's report (8+ seeds; Wizard boss time 70-130% of the Rogue's);
+      - item 11's presets;
+      - the Rogue melee cue as a small ux item.
+      - Then qa, playtester, tech-writer, close.
 
 - [ ] **P-dodge, dodge charges and indicator (director request 2026-10-29; runs after A1, T-decks and W1, before 3d; also carries the D13 and D16 answers)**
   - **Also carries (game-lead, from T-decks qa):** fix the reload soak flake "damage immunity leaked into a new room" (tools/reload_cycle.gd:248). It predates T-decks; reproduce it with a wave sim running alongside `run_reload_cycle.ps1 -Cycles 5`.

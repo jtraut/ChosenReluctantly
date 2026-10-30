@@ -955,3 +955,8 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
 - **Dilution:** rewards push physical-rogue from 2 to 4.2 Fire cards by the boss; fire-heavy keeps most of its contrast. **My call:** don't build a skip-rewards or start-at-boss sim mode now. The A1 goal is met and a hand test can use `--deck=... --run-room=8`. Revisit in W1 balancing if a pure comparison is needed. [Building it now.]
 - **Reload soak flake** ("damage immunity leaked into a new room", tools/reload_cycle.gd:248). It predates T-decks, failing 2 of 3 under load on e7b0029. **My call:** it's assigned to P-dodge, which reworks dodge and immunity anyway. Until then, a single soak failure on that line means re-run once and note it. [Fixing it now in a separate task, which delays W1.]
 - Backlog (gameplay-dev, small): print a notice when `--deck` is ignored (scenario or arena), and a permanent sim log of the deck makeup at the boss.
+
+### 2026-10-29 - W1 split into W1a and W1b (game-lead)
+- **W1a, a playable Wizard:** character data, the class pick, ranged light and heavy, a minimal 4-card Wizard pool (2 Utility, 2 Movement), sim plumbing.
+- **W1b, content and balance:** the full 6-8 card pool, presets, the sim balance report.
+- Reason: the brief is too big for one sitting, and the brief itself allows the split. A playable ranged Wizard is the part the director asked for, so it ships first. [One W1 slice, which risks a half-built class at a usage cutoff.]

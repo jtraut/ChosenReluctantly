@@ -17,7 +17,7 @@ A map of the code for a new agent. Read this first, then open the files it links
 | `src/main/` | `Main` (wiring, death beat, restart), `SceneSelfCheck` |
 | `src/run/` | Run structure (3a, 3b): `RunConfig` (loads and validates `data/run.json`), `RunGenerator` (seed to room list), `RunState` (what carries across rooms, save format v2, now also the `character`), `RunSession` (static holder), `CharacterPick` (W1a: the remembered last class pick), `DebugDecks` (debug preset decks and the `--deck` / `--list-decks` / `--class` args), `RunController` (one room's flow), `TierRules` (elite/boss maths), `RunChoices` (the post-room choice model: options and resolving one), `RewardOffer` (seeded card offer and the `requires` filter) |
 | `src/player/` | `Player`, `PlayerConfig` (`data/player.json`), `AttackController`, `AttackArcVisual`, `PlayerCues` (ghost, heal numbers, Leech drain), `PlayerOcclusionCue` (+ its `.gdshader`) |
-| `src/ui/` | `Hud`, `HudLayout`, `CardSlotWidget`, `AttackMeter`, `EnemyHpBar`, `GameOverScreen`, `SettingsScreen`, class pick (W1a): `ClassPickScreen`, `ClassPickCard`; run UI: `RunHud`, `RunPromptScreen`, `RunOptionCard` (one choice option drawn as a card, reject tile, action tile, grid cell or Back), `RunPromptRows`, `RunIcons`, `RunTypeIcon`, `TierMarker`, boss UI (3c): `BossHpBar`, `BossMeter`, `BossAttackStrip`, `AimIndicator`, `DebugOverlay`, `TextFit`, `UiConfig` |
+| `src/ui/` | `Hud`, `HudLayout`, `CardSlotWidget`, `AttackMeter`, `EnemyHpBar`, `GameOverScreen`, `SettingsScreen`, class pick (W1a): `ClassPickScreen`, `ClassPickCard`; run UI: `RunHud`, `RunPromptScreen`, `RunOptionCard` (one choice option drawn as a card, reject tile, action tile, grid cell or Back), `RunPromptRows`, `RunIcons`, `RunTypeIcon`, `TierMarker`, boss UI (3c): `BossHpBar`, `BossMeter`, `BossAttackStrip`, `AimIndicator`, `MeleeReachCue` (PL2), `DebugOverlay`, `TextFit`, `UiConfig` |
 | `scenes/` | `main/RunMain.tscn` (Main plus run nodes), `main/Main.tscn` (endless arena), `player/`, `camera/`, `enemies/` (3 types plus `BossGuardian.tscn`), `effects/` (Projectile, DamageNumber), `ui/`, `debug/TrainingDummy.tscn` |
 | `data/` | All content and tuning as JSON (section 6); `data/debug_decks/` holds the debug preset decks |
 | `assets/` | `icon.svg`, `shaders/enemy_hp_bar.gdshader` only. No art or audio |
@@ -154,7 +154,7 @@ A `StatusEffectManager` node on every body that can be affected. `StatusDatabase
 - **Rules:** `BossRules` ([src/enemies/BossRules.gd](../src/enemies/BossRules.gd)) is pure: which phase an HP fraction is in, attack picking, telegraph sizes (from `VfxSizing`, the same numbers the hit queries use) and `escape`, the fairness check (`escape`) that an attack can be walked or dodged out of; only a test applies it. `tests/unit/m3c_boss_test.gd` covers it.
 - **Brain:** `Boss` ([src/enemies/Boss.gd](../src/enemies/Boss.gd), extends `Enemy`, group `boss`; scene `scenes/enemies/BossGuardian.tscn`) is a state machine: chase, wind-up (telegraph), active, recover, transition, dead. Attacks go through `EffectTemplates` (cone, aoe, projectile with `yaw_degrees`); telegraphs are drawn at the vs-player reach. Not solid while charging (and solid again only once clear of the player), unstunnable, takes no knockback. Phase thresholds are held by `Health.hp_floor`; each crossing runs an invulnerable roar, then `phase_changed`. Adds (`summon`) are capped and killed on its death. The death beat (slow-mo, then the win) counts game time when hit-stop is off.
 - **Signals:** `phase_changed`, `transition_started/ended`, `attack_telegraphed(id, label, windup)`, `attack_landed`, `adds_summoned`, `defeated`. `RunController.boss_spawned(boss)` fires when it spawns; `current_boss()` returns the living boss or null.
-- **Spawning:** the boss room in `data/run.json` spawns `boss_guardian` like any enemy; it has no tier.
+- **Spawning:** the boss room in `data/run.json` spawns `boss_guardian` like any enemy; it has no tier. Unlike other enemies it spawns inside an on-screen box (PL2): the optional `spawn` block of `boss_guardian` in `data/bosses.json` (`distance_min`, `distance_max`, `screen_half_width`, `screen_up`, `screen_down`; meters). `EnemySpawner._boss_spawn_position` tries ring points in that box (16 random tries, then a sweep of angles, then the plain ring); `EnemySpawner.screen_box_contains` does the isometric math for the camera in `scenes/camera/CameraRig.tscn`, and `tests/unit/boss_spawn_pl2_test.gd` pins the box to that rig. Retune the box if the camera changes. Other enemies keep the plain ring.
 - **UI:** `BossHpBar` (a `CanvasLayer` in `Main.tscn`) finds the boss by class on `node_added`, so it also works in the capture scenarios, and reads the boss's live state on bind (a reload mid-fight starts correct). It draws a `BossMeter` (fill, ghost, threshold notches and lines, invulnerable stripes, resist frame) and a `BossAttackStrip` (attack label and draining wind-up strip). Placement: `HudLayout.boss_bar_rect` (top centre); `HudLayout.debug_overlay_top` puts the F3 overlay below it; the room indicator is top right. Look and sizes: `data/ui.json` `hud.boss_bar_size`, `hud.debug_overlay_gap`, the `boss_bar` block; boss lane alpha: `data/vfx.json` `boss_lane_alpha`.
 
 ### Effects and VFX
@@ -162,6 +162,9 @@ A `StatusEffectManager` node on every body that can be affected. `StatusDatabase
 
 ### HUD and UI
 - `Hud` polls the player each frame (no signals): five `CardSlotWidget`s, a health bar with "HP x / y", `AttackMeter`s for light and heavy. Layout comes from `data/ui.json` `hud` through `HudLayout`/`TextFit`.
+- **Card frame colours (PL2, director decision D17):** each pool in `data/pools.json` has a `frame_color` (validated on load by `PoolDatabase.validate_entry`). UI asks `PoolDatabase.frame_color_for_card(card_id)` (card -> pool -> colour; unknown falls back to neutral) or `frame_color_for_pool(pool_id)`. Used by `CardSlotWidget` (active card frame and next-up swatch), `RunOptionCard` (reward offers and removal cells). The reject tile keeps its own border. The slot "ready" cue is a plate and text brightness, not the border. Look keys are in `data/ui.json` (`hud.slot_frame_*`, `slot_plate_*`, `slot_next_swatch_width`; `run_ui.option_frame_width`, `option_card_focus_color`).
+- **Melee reach cue (PL2):** `MeleeReachCue` (`src/ui/MeleeReachCue.gd`, attached to the player by `Main`) draws a faint arc at the light attack's reach when no enemy is in reach, and brightens it on a whiffed click. It is keyed on the light attack's `arc` shape, so the Wizard (projectile light) never shows it, and it creates its band only when armed. Look: `data/ui.json` `melee_cue`.
+- The class pick screen hides the HUD while it is open (PL2).
 - `EnemyHpBar` is a billboard per enemy using `assets/shaders/enemy_hp_bar.gdshader`; visibility mode is `data/ui.json` `hp_bars.visibility_mode`.
 - `GameOverScreen` (listens to `Main.game_over_ready`; shows the run line in run mode), the run UI (see Run flow), `SettingsScreen` (Esc; one setting; calls `GamePause`), `DebugOverlay` (F3), `AimIndicator`.
 - All UI numbers, colors and strings go through `UiConfig` (`data/ui.json`), which validates the `hp_bars`, `death_beat`, `aim`, `popups` and `damage_numbers` blocks on load (others are read as is: unverified).
@@ -187,7 +190,7 @@ All in `data/`. Schema/validation lives in code; the file is not self-describing
 |---|---|---|
 | `cards/*.json` | One card per file: `id`, `name`, `slot_type`, `pool`, `cooldown_modifier`, `flavor_text`, `effects[]` of `{template, params}`, optional `requires` (reward filter: `slot_types`, `pools`, `status_sources`) | `src/cards/CardSchema.gd`, loaded by `CardDatabase.load_all` |
 | `slot_types.json` | Five slot types: display name, `base_cooldown`, `input_action` | `SlotTypeDatabase` |
-| `pools.json` | Classes, elements, neutral: `kind` (class / element / neutral), `visual {color, scale}`, element `status {status_id, base_chance}` | `PoolDatabase` |
+| `pools.json` | Classes, elements, neutral: `kind` (class / element / neutral), `frame_color` (required, PL2), `visual {color, scale}`, element `status {status_id, base_chance}` | `PoolDatabase` |
 | `statuses.json` | burn, bleed, regeneration, leech, stun | `StatusDatabase` |
 | `deck_rules.json` | Unique-card minimums (`min_unique_per_slot`, `slots`, `slot_groups`) | `DeckRules` |
 | `debug_decks/<name>.json` | Debug preset decks: `name` (= file name), `description`, `full`, `starter` (sub-multiset of `full`); both lists must pass the deck rules | `DebugDecks.validate_preset` |
@@ -226,7 +229,7 @@ Data is validated at first use and fails loudly (`push_error`) on bad content; s
 ## 8. How to add things
 
 ### A card
-1. Add `data/cards/<pool>_<name>.json` with the fields above. `slot_type` must be in `slot_types.json`, `pool` in `pools.json`, each effect `template` in `EffectTemplates.REQUIRED_PARAMS` with all its required params.
+1. Add `data/cards/<pool>_<name>.json` with the fields above. `slot_type` must be in `slot_types.json`, `pool` in `pools.json` (its `frame_color` sets the card's frame), each effect `template` in `EffectTemplates.REQUIRED_PARAMS` with all its required params.
 2. Names over `ui.json` `hud.name_warn_length` raise a warning (HUD shrinks/truncates).
 3. Attack cards must beat the free light attack (`CardDamageRule`); a load check and a test fail if not.
 4. Run the tests (`card_database_test`, `starter_card_set_test`, `card_schema_test` load real data). A new card is not in a character's 15-card `starting_deck` (`data/characters.json`); it appears only as a reward unless added there (or via `--full-deck`). A card also changes unique counts: the deck rules (`deck_rules.json`) must still pass (`DeckRules.validate_shipped_content`).
@@ -234,7 +237,7 @@ Data is validated at first use and fails loudly (`push_error`) on bad content; s
 6. A card is in a starter only if listed in that character's `starting_deck` in `data/characters.json`.
 
 ### A character (class)
-Add an entry in `data/characters.json` (fields in section 6); `CharacterDatabase.validate_table` checks it. Give it a class pool in `data/pools.json` and its cards in `data/cards/`. A new light shape or heavy goes in `data/attacks.json` (`light_variants` / `heavy.<id>`). The class pick screen lists the characters from the database. A preset deck names its class with `"class"`.
+Add an entry in `data/characters.json` (fields in section 6); `CharacterDatabase.validate_table` checks it. Give it a class pool in `data/pools.json` (with a `frame_color`) and its cards in `data/cards/`. A new light shape or heavy goes in `data/attacks.json` (`light_variants` / `heavy.<id>`). The class pick screen lists the characters from the database. A preset deck names its class with `"class"`.
 
 ### An enemy
 1. Duplicate a scene in `scenes/enemies/` (root script `Enemy`), set `enemy_id`, mesh, `Hurtbox` team "enemy", resistances on `Health`.
@@ -248,7 +251,7 @@ Add an entry in `data/statuses.json` using an existing `effect_type` (`damage_ov
 (For a new option on an existing template, extend `EffectTemplates.validate_params` and its header comment instead.) Add the id and required params to `EffectTemplates.REQUIRED_PARAMS`, add a case in `execute` and an `_execute_<name>`, add its VFX in `TemplateVfx` (sized through `VfxSizing`), add a preview shape if it has a hit area (`CastPreviewShapes`, `CastPreview`), and cover it in `tests/unit/effect_templates_test.gd`.
 
 ### An element
-Add a pool in `data/pools.json` with `kind: "element"`, a `visual` (color, scale) and optionally a `status`. Cards use the element id as `damage_type`. No code is needed for the look (`ElementVisuals`); a test proves a Water entry works.
+Add a pool in `data/pools.json` with `kind: "element"`, a `frame_color`, a `visual` (color, scale) and optionally a `status`. Cards use the element id as `damage_type`. No code is needed for the look (`ElementVisuals`); a test proves a Water entry works.
 
 ### A slot type
 `SLOT_TYPE_ORDER` in `CardSlotController` and `USE_ACTIONS`/`SWAP_ACTIONS` in `Player` are hardcoded to five. A new slot type needs code plus HUD and input binding changes, not just data.
@@ -279,7 +282,7 @@ Add an entry in `data/scenarios.json`; unknown or misspelled keys fail on load (
   - `run_wave_sim.ps1` + `WaveSim.tscn` + `wave_sim.gd` -> real Main scene with a bot. `-Deck standard|<preset name>` starts every run with a `data/debug_decks` preset (passed as `--sim-deck=`; only the starting deck, rewards change it). `-LightHeavyOnly` is a bot policy that never presses slots 1 and 2. `-Run` plays whole seeded runs through RunMain (`-Seed` first seed, `-Runs` count, `-RoomTimeout`): the bot also plays the choices with a seeded policy (rejects, picks, removals); it checks soft locks, empty decks and stuck cooldowns, reports card pick rates as a note (not a failure), prints HP at each room end, final deck composition and the choice counts, and prints the room-type distribution over 1000 seeds. A scene, so autoloads exist. Runs at `--fixed-fps 60` with hit-stop off, so a seed repeats exactly; prints `pinned:` and `climb:` lines.
   - `run_reload_cycle.ps1` + `ReloadCycle.tscn` + `reload_cycle.gd` -> death/restart soak.
   - `VpCapture.tscn` + `vp_capture.gd` (`capture_screenshot.ps1 -TrueSize WxH`) -> hosts the real Main in an oversized SubViewport (RunMain with `--run`, which `capture_screenshot.ps1` adds for `-Scenario ""`); Main registers with `WorldRef` so spawners, popups and effects find the arena when `current_scene` is null. Scene swaps work there too (`swap_to_fresh_scene`).
-  - `SlotStateCapture.tscn` + `slot_state_capture.gd` -> HUD slot capture.
+  - `SlotStateCapture.tscn` + `slot_state_capture.gd` -> HUD slot capture (PL2 rewrite): `godot --path . res://tools/SlotStateCapture.tscn -- 1280 720 <out.png>`.
 - **Windows binary:** the scripts prefer the `*_console.exe` Godot build. The windowed build can make PowerShell report a failing run as success.
 
 ## 10. Known sharp edges

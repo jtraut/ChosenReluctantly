@@ -2,7 +2,48 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-10-30 (Slice W1a: a playable Fire Wizard)
+## 2026-10-30 (Slice PL2: small polish; Slice W1a: a playable Fire Wizard; decisions for F1, P-dodge and W1b)
+
+### Slice PL2: small polish before W1b
+
+Commits 351840f..fab00a7. Gameplay 6a2c573, c29aa9d, 5079a2a, 3b8359e; ux ad77847, cb2be67; qa review b7ba7fe, delta re-review PASS 8a99ce4 (`docs/reviews/2026-10-30-pl2-qa.md`, FAIL on a Wizard node leak, then PASS); playtest 4dd2eaa, no blocker (`docs/playtests/2026-10-30-pl2-polish.md`). Tests 1053 -> 1082.
+
+#### Added
+- **[Director decision] Card frame colours by family (D17).** `frame_color` on every pool in `data/pools.json` (fire `#ff6a1f`, Rogue and Wizard class pools `#d9b48a` light bronze, neutral `#9a9a9a` grey), validated on load. Accessor `PoolDatabase.frame_color_for_card(card_id)` / `frame_color_for_pool(pool_id)`. Frames are drawn on `CardSlotWidget` (active card frame and next-up swatch), `RunOptionCard` reward offers and rest-room removal cells; the reject tile keeps its own border. (3b8359e, ad77847)
+- **Rogue melee reach cue:** new `src/ui/MeleeReachCue.gd` and a `melee_cue` block in `data/ui.json`. A faint pale-blue arc at light-attack reach, shown only when nothing is in reach, brighter on a whiffed click. It keys on the light attack's `arc` shape, so the Wizard never shows it. (ad77847, leak fix cb2be67)
+- New tests: `pool_frame_color_test.gd`, `boss_spawn_pl2_test.gd`, `projectile_first_hit_test.gd`, `pl2_ux_test.gd`, `pl2_qa_test.gd`; fixture `tests/fixtures/pools_noframe/`.
+
+#### Changed
+- **Boss spawns fully on screen in room 8.** New optional `spawn` block on `boss_guardian` in `data/bosses.json` (`distance_min` 7, `distance_max` 9, `screen_half_width` 9, `screen_up` 2.2, `screen_down` 3.6), used by `EnemySpawner._boss_spawn_position`. Old: a plain ring 9 to 13 m from the player. A test pins the box to `scenes/camera/CameraRig.tscn`. (6a2c573, 5079a2a)
+- **Slot ready cue moved off the border** to the plate and text brightness. Removed `slot_ready_border_color` and `slot_ready_border_width`; new keys `slot_frame_width`, `slot_frame_keyline_*`, `slot_plate_ready_color`, `slot_plate_cooling_color`, `slot_next_swatch_width`, `option_frame_width`, `option_card_focus_color`. (ad77847)
+- **HUD slot strip 8 px taller:** `hud.slot_size` [150, 118] -> [150, 126], `key_height` 20 -> 24, `preview_height` 34 -> 38. (ad77847)
+- The class pick screen now hides the HUD behind it (it showed the previous class's HUD). (ad77847)
+- Scenario `character` now also sets the body look, so `wizard_bolt` shows a purple Wizard. (3b8359e)
+- `SlotStateCapture` rewritten: `godot --path . res://tools/SlotStateCapture.tscn -- 1280 720 <out.png>`. (ad77847)
+
+#### Fixed
+- A projectile can no longer damage two hurtboxes in the same physics step (all projectiles; `_spent` guard). (c29aa9d)
+- A bad `--class` or `--deck` now prints only "Launch refused: ..." on stderr and exits 2, with no stack trace. (3b8359e)
+- Wizard node leak in `MeleeReachCue` (qa B1): the band is created only when the cue is armed. (cb2be67)
+
+#### Docs and process
+- qa measured a Rogue boss baseline over 12 seeds: mean 66.7 s (range 49.7 to 75.6). Recorded for the later difficulty work.
+- Removed junk `scratch_suite.txt`. (3b8359e)
+- **[Director decision] Run order changed to PL2 -> F1 -> P-dodge -> W1b -> 3d** (game-lead call). Director decisions below are recorded but not built yet.
+- README fixes: the stack-trace note and the `wizard_bolt` known issue are gone (both fixed), three command paths that had `tools...` mangled into a carriage return are repaired, the removal-capture example now uses `--run-seed=1 --run-room=5` (seed 1's rest room is room 5; the old `--run-room=3` example without a seed depended on the seed), and `frame_color` and `melee_cue` are documented. ARCHITECTURE gains the frame-colour accessor and data, `MeleeReachCue` and the boss spawn box.
+- No new third-party assets, so `docs/ASSETS.md` is unchanged.
+
+### Director decisions recorded, not yet built
+
+All are `[Director decision]`. Each is scheduled in the slice named; none is in the code yet.
+- **D18 = A: Wizard rooms cost some HP, less than the Rogue's.** The Wizard is squishier than today's 26 HP (the final value is set when built). Scheduled in P-dodge.
+- **Dodge charges:** Wizard 2, Rogue 3. Scheduled in P-dodge.
+- **Wizard Recovery slightly longer than the Rogue's.** game-lead set 14 s against the Rogue's 12 s. Scheduled in P-dodge.
+- **Wall of Mild Fire x1.5:** length 5 -> 7.5, width 1.2 -> 1.8. Scheduled in F1.
+- **Movement cards pass through enemies; the dodge does not.** Old: both are the same. Scheduled in F1.
+- **Dead-card swap key:** Ctrl+1-5 -> Shift+1-5. Scheduled in F1. (README controls still say Ctrl until it is built.)
+- **Runs are at least 10 rooms:** 8 -> 10 (7 combat, 1 elite, 1 rest, boss). Scheduled in F1.
+- **Difficulty tiers:** today's tuning becomes "Easy"; later tiers Normal, Hard and a top tier are planned (names open). Scheduled in W1b.
 
 ### Slice W1a: a playable Fire Wizard
 
@@ -26,7 +67,7 @@ Commits 451eaf3..HEAD. Gameplay 0c9704e and 39fe0c6; ux 7d93d1c, 82bce4e and 672
 - Captures should always pass `--class`, because the last pick persists in windowed play.
 
 #### Docs and process
-- **Process change:** the docs pass now happens per slice (game-lead runs tech-writer once at the end of each slice, as in `CLAUDE.md`).
+- **Process change:** the docs pass now happens per slice (game-lead runs tech-writer once at the end of each slice, as in `CLAUDE.md`). *Correction (PL2 docs pass): this rule dates from 2026-10-28, not from W1a; W1a only followed it.*
 - Docs pass for W1a: README, ARCHITECTURE and this file. No new third-party assets, so `docs/ASSETS.md` is unchanged.
 - README: fixed two mangled command paths (`tools\run_wave_sim.ps1` and `tools\run_tests.ps1` in the examples and "Last verification" had a stray carriage return).
 - Test count 996 -> 1053 across W1a (qa's figure; this pass re-ran it, see README).

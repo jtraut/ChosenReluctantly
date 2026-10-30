@@ -465,9 +465,11 @@ func _boss_soak(snaps: Array[Dictionary]) -> void:
 		return
 	await _frames(3)
 	roaring.health.take_damage(roaring.health.max_health * 0.8, "physical")
-	var stagger_ticks: int = int(ceil((BossConfig.stagger_seconds(BossConfig.boss(roaring.enemy_id)) + 0.1) * float(Engine.physics_ticks_per_second)))
-	await _frames(stagger_ticks)
-	_check(roaring.is_transitioning() and roaring.health.damage_immune and not roaring.is_staggered(), "boss soak: no roar after the stagger")
+	# Hit-stop and slow-mo are live in this soak, so wait for the roar by its state (with a real-time limit), not by a frame count.
+	var roar_deadline: int = Time.get_ticks_msec() + 6000
+	while not roaring.is_transitioning() and Time.get_ticks_msec() < roar_deadline:
+		await get_tree().physics_frame
+	_check(roaring.is_transitioning() and roaring.health.damage_immune and not roaring.is_staggered(), "boss soak: no roar after the stagger (state %s, immune %s)" % [roaring.state_name(), str(roaring.health.damage_immune)])
 	old_id = main.get_instance_id()
 	main.restart_arena()
 	await _frames(SETTLE_FRAMES)

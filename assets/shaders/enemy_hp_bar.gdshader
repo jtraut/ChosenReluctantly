@@ -9,6 +9,7 @@ render_mode unshaded, cull_disabled, depth_draw_opaque;
 uniform vec2 total_size = vec2(1.5, 0.15); // world units, whole quad
 uniform float bar_width = 1.1;
 uniform float pip_width = 0.19;
+uniform float left_pad = 0.38; // two pip slots left of the bar: [shield][diamond]; the right side mirrors the width
 uniform float border = 0.02;
 uniform float resist_border = 0.04;
 uniform vec4 fill_color : source_color = vec4(0.89, 0.28, 0.25, 1.0);
@@ -23,6 +24,8 @@ instance uniform vec4 status_flags = vec4(0.0); // x = burning, y = bleeding
 instance uniform float ghost = 1.0;
 // rgb = resistance tint, a > 0.5 means "resistant" (thicker frame + diamond pip).
 instance uniform vec4 resist_tint = vec4(0.0);
+// rgb = armor tint, a > 0.5 means "armored" (a shield pip left of the diamond slot).
+instance uniform vec4 armor_tint = vec4(0.0);
 
 void vertex() {
 	// Cylindrical-free full billboard: keep model translation, face the camera.
@@ -33,11 +36,12 @@ void fragment() {
 	vec2 p = UV * total_size;
 	float h = total_size.y;
 	bool resistant = resist_tint.a > 0.5;
+	bool armored = armor_tint.a > 0.5;
 	vec4 col = vec4(0.0);
 	bool inside = false;
 
-	float bar_x0 = pip_width;
-	float bar_x1 = pip_width + bar_width;
+	float bar_x0 = left_pad;
+	float bar_x1 = left_pad + bar_width;
 
 	if (p.x >= bar_x0 && p.x <= bar_x1) {
 		inside = true;
@@ -56,15 +60,28 @@ void fragment() {
 				col = back_color;
 			}
 		}
-	} else if (p.x < bar_x0 && resistant) {
-		// Left pip: diamond in the resistance tint, dark outline.
-		vec2 d = abs(p - vec2(pip_width * 0.5, h * 0.5));
+	} else if (p.x < pip_width && armored) {
+		// Outer left pip: a shield (flat top, pointed bottom) in the armor tint, dark outline. Different shape from
+		// the resistance diamond, so the two never rely on colour.
+		vec2 q = (p - vec2(pip_width * 0.5, h * 0.5)) / (h * 0.5);
+		float outer = min(0.85, 1.0 - q.y);
+		if (q.y > -1.0 && q.y < 1.0 && abs(q.x) < outer) {
+			inside = true;
+			float inner_r = 0.6;
+			vec2 qi = vec2(q.x, q.y - 0.12) / inner_r;
+			float inner_w = min(0.85, 1.0 - qi.y);
+			bool in_inner = qi.y > -1.0 && qi.y < 1.0 && abs(qi.x) < inner_w;
+			col = in_inner ? vec4(armor_tint.rgb, 1.0) : frame_color;
+		}
+	} else if (p.x >= pip_width && p.x < bar_x0 && resistant) {
+		// Inner left pip: diamond in the resistance tint, dark outline.
+		vec2 d = abs(p - vec2(pip_width * 1.5, h * 0.5));
 		float m = d.x + d.y;
 		if (m < h * 0.5) {
 			inside = true;
 			col = m < h * 0.32 ? vec4(resist_tint.rgb, 1.0) : frame_color;
 		}
-	} else if (p.x > bar_x1 && (status_flags.x > 0.5 || status_flags.y > 0.5)) {
+	} else if (p.x > bar_x1 && p.x <= bar_x1 + pip_width && (status_flags.x > 0.5 || status_flags.y > 0.5)) {
 		// Right pip: one slot for both statuses. Burn = upward flame triangle. Bleed = downward drop triangle
 		// (the opposite point), so the two differ by shape as well as colour. With both on, they alternate.
 		bool burning = status_flags.x > 0.5;

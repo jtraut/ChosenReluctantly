@@ -32,6 +32,7 @@ var _ghost_speed: float = 1.5
 var _ghost_enabled: bool = true
 var _was_damaged: bool = false
 var _dead: bool = false
+var _armor_shown: bool = false
 var _burn_id: String = "burn"
 var _bleed_id: String = "bleed"
 var _burning: bool = false
@@ -153,6 +154,7 @@ func _initialize() -> void:
 		set_instance_shader_parameter("resist_tint", Color(tint.r, tint.g, tint.b, 1.0))
 	else:
 		set_instance_shader_parameter("resist_tint", Color(0.0, 0.0, 0.0, 0.0))
+	_push_armor()
 	_set_burning(_status != null and _status.has_status(_burn_id))
 	_set_bleeding(_status != null and _status.has_status(_bleed_id))
 	_update_visibility()
@@ -181,6 +183,7 @@ func _on_health_changed(current: float, maximum: float) -> void:
 		_ghost_delay_left = _ghost_delay
 		set_process(true)
 	_push_fill()
+	_push_armor()
 	_update_visibility()
 
 
@@ -205,6 +208,21 @@ func _on_status_expired(status_id: String) -> void:
 
 
 # ---- Helpers ----
+
+## Whether a bar shows the armor shield: any real armor reduction. Pure, so the rule is tested.
+static func shows_armor(armor_reduction: float) -> bool:
+	return armor_reduction > 0.0
+
+
+## The armor shield tint (alpha 0 = no shield). `hp_bars.armor_tint` is the colour.
+func _push_armor() -> void:
+	var on: bool = _health != null and is_instance_valid(_health) and shows_armor(_health.get_armor_reduction())
+	if on == _armor_shown:
+		return
+	_armor_shown = on
+	var tint := Color.html(str(_shared_config["armor_tint"]))
+	set_instance_shader_parameter("armor_tint", Color(tint.r, tint.g, tint.b, 1.0 if on else 0.0))
+
 
 func _push_fill() -> void:
 	set_instance_shader_parameter("fill", _fill)
@@ -239,7 +257,7 @@ static func _ensure_shared() -> void:
 	var width: float = float(c["width"])
 	var height: float = float(c["height"])
 	var pip: float = height + 0.04
-	var total := Vector2(width + 2.0 * pip, height)
+	var total := Vector2(width + 4.0 * pip, height)  # [shield][diamond] [bar] [status][spare]: the bar stays centred
 	_shared_mesh = QuadMesh.new()
 	_shared_mesh.size = total
 	var colors: Dictionary = c["colors"]
@@ -249,6 +267,7 @@ static func _ensure_shared() -> void:
 	mat.set_shader_parameter("total_size", total)
 	mat.set_shader_parameter("bar_width", width)
 	mat.set_shader_parameter("pip_width", pip)
+	mat.set_shader_parameter("left_pad", 2.0 * pip)
 	mat.set_shader_parameter("border", float(c["border"]))
 	mat.set_shader_parameter("resist_border", float(c["resist_border"]))
 	mat.set_shader_parameter("fill_color", Color.html(str(colors["fill"])))

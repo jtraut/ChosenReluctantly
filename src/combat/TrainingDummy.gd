@@ -13,7 +13,7 @@ func _ready() -> void:
 
 func _on_damaged(amount: float, damage_type: String, _knockback: Vector3) -> void:
 	print("TrainingDummy took %.1f %s damage (%.1f/%.1f hp)" % [amount, damage_type, health.current_health, health.max_health])
-	Juice.on_hit_landed(global_position, amount, damage_type, health.last_kind)
+	Juice.on_hit_landed(global_position, amount, damage_type, health.last_kind, health.last_channel, health.last_reduction)
 
 
 func _on_died() -> void:

@@ -607,7 +607,7 @@ func _overlaps_target() -> bool:
 func _on_damaged(amount: float, damage_type: String, knockback: Vector3) -> void:
 	_knockback_velocity = knockback * float(_def.get("knockback_taken", 0.0))
 	_flash_body(HIT_FLASH_COLOR)
-	Juice.on_hit_landed(global_position + Vector3(0.0, 1.5, 0.0), amount, damage_type, health.last_kind)
+	Juice.on_hit_landed(global_position + Vector3(0.0, 1.5, 0.0), amount, damage_type, health.last_kind, health.last_channel, health.last_reduction)
 	if _state == State.TRANSITION or _state == State.DEAD or phase_index + 1 >= _phases.size():
 		return
 	if health.current_health <= health.hp_floor + 0.001:

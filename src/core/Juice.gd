@@ -105,8 +105,9 @@ func screen_shake(strength: float, duration: float) -> void:
 ## `kind` (Health.KIND_*): only a direct "hit" gets hit-stop and shake. Follow-up hits of a
 ## multi-hit ("echo") and status ticks ("dot") show the number only, so a flurry or a
 ## Bleed cannot chain stutters.
-func on_hit_landed(world_pos: Vector3, amount: float, damage_type: String, kind: StringName = Health.KIND_HIT) -> void:
-	spawn_damage_number(world_pos, amount, damage_type)
+## `channel`/`reduction` (Health.last_channel / last_reduction) pick the armor or resisted number style.
+func on_hit_landed(world_pos: Vector3, amount: float, damage_type: String, kind: StringName = Health.KIND_HIT, channel: StringName = Health.CHANNEL_NONE, reduction: float = 0.0) -> void:
+	spawn_damage_number(world_pos, amount, damage_type, null, "", channel, reduction)
 	if kind != Health.KIND_HIT:
 		return
 	if amount >= HEAVY_HIT_THRESHOLD:
@@ -140,18 +141,19 @@ func spawn_heal_number(world_pos: Vector3, amount: float) -> void:
 	spawn_damage_number(world_pos, amount, HEAL_TYPE, VfxConfig.heal_color().lerp(Color.WHITE, 0.25), "+")
 
 
-func spawn_damage_number(world_pos: Vector3, amount: float, damage_type: String, color_override: Variant = null, prefix: String = "") -> void:
+func spawn_damage_number(world_pos: Vector3, amount: float, damage_type: String, color_override: Variant = null, prefix: String = "", channel: StringName = Health.CHANNEL_NONE, reduction: float = 0.0) -> void:
 	var tree := Engine.get_main_loop() as SceneTree
 	if tree == null or WorldRef.get_world(tree) == null:
 		return
 	var cfg: Dictionary = UiConfig.damage_numbers()
 	var spot: Vector3 = world_pos + Vector3(0.0, float(cfg["spawn_height"]), 0.0)
 	var is_big: bool = amount >= HEAVY_HIT_THRESHOLD
+	var style: StringName = DamageNumber.style_for(channel, reduction, cfg)
 	_prune_numbers()
 	var entries: Array = []
 	for live: DamageNumber in _live_numbers:
-		entries.append({"pos": live.global_position, "type": live.damage_type, "idle": live.idle_time()})
-	var merge_at: int = DamageNumber.find_merge_index(entries, spot, damage_type, float(cfg["merge_radius"]), float(cfg["merge_window"]))
+		entries.append({"pos": live.global_position, "type": live.merge_key(), "idle": live.idle_time()})
+	var merge_at: int = DamageNumber.find_merge_index(entries, spot, damage_type + "|" + String(style), float(cfg["merge_radius"]), float(cfg["merge_window"]))
 	if merge_at >= 0:
 		var merged: DamageNumber = _live_numbers[merge_at]
 		merged.merge_hit(amount, is_big)
@@ -167,8 +169,8 @@ func spawn_damage_number(world_pos: Vector3, amount: float, damage_type: String,
 	instance.configure(cfg)
 	WorldRef.get_world(tree).add_child(instance)
 	instance.global_position = spot
-	var color: Color = color_override if color_override is Color else DamageNumber.color_for(damage_type, float(cfg["color_lighten"]))
-	instance.show_amount(amount, damage_type, color, is_big, prefix)
+	var color: Color = color_override if color_override is Color else DamageNumber.styled_color(style, damage_type, cfg)
+	instance.show_amount(amount, damage_type, color, is_big, prefix, style, DamageNumber.brackets_for(style, cfg))
 	_live_numbers.append(instance)
 
 

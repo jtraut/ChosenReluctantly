@@ -1048,3 +1048,12 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
   - **Reward focus is a white ring outside the frame** (`option_card_focus_color`), since the peach focus colour is close to bronze. Grey + white ring is the weakest pair; check in play. [Reusing `option_focus_color`.]
   - **The HUD slot strip is 8 px taller** (`slot_size` 150x118 -> 150x126, `key_height` 20 -> 24, `preview_height` 34 -> 38) so the frame doesn't clip the key digit or a two-line Next name. [Thinner frame.]
   - **Melee cue:** a thin pale-blue arc at true light reach, shown only when nothing is in reach, brightening on a whiffed click; keyed on the light attack's `arc` shape, not the class id. No side edges or fill, so it can't be mistaken for the heavy wind-up. [Always on; a filled wedge.]
+
+### 2026-10-30 - Scheduling the director's checklist answers (game-lead)
+- The director answered checklist items 11-24 and D18 = A. Directives are recorded in GDD §3, §4, §5 and §9; only my calls are here.
+- **Run order PL2 -> F1 -> P-dodge -> W1b -> 3d** (was W1b -> P-dodge). Wizard tuning must come after every change that shifts its risk (10 rooms, movement pass-through, the Wall buff, per-class charges, Recovery 8 -> 12 and the Wizard's 14 s), or it would be tuned twice. W1b's Rogue baseline moves from PL2 to P-dodge. [Keeping W1b content first and splitting its tuning off to the end; more slices for the same result.] Told to the director as easy to reverse.
+- **New slice F1** for the four small global changes (Wall 1.5x, movement pass-through, Shift+1-5 swap, 10 rooms). [Folding them into P-dodge, which would no longer fit one sitting.]
+- **10-room mix: 7 combat, 1 elite, 1 rest, boss.** The smallest change from 5/1/1/1; the director wants harder play to come from the difficulty tiers. [6 combat + 2 elites, which also raises difficulty.]
+- **"1.5x size" for Wall of Mild Fire = length and width both x1.5** (5.0 -> 7.5 m, 1.2 -> 1.8 m). [Length only, which doesn't fix walkers barely touching it.]
+- **"Movement cards pass through"** applies to every `movement`-slot card while it moves the player. Reluctant Lunge then hits every enemy on its line; qa checks the damage change. [Only blink/leap cards; the director said movement cards.]
+- **Wizard Recovery 14 s vs the Rogue's 12 s** ("slightly longer"). [16 s.] Per-character overrides in `characters.json` for charges and Recovery. [Separate per-class data files.]

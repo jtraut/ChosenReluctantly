@@ -59,6 +59,8 @@ Fewer, more impactful enemies. Telegraphed attacks, readable danger, and dodge s
 - **Dodge roll:** Space bar. **[OPEN]** how this relates to the Movement slot (see section 4).
   - **[DIRECTOR DECISION, 2026-10-28]** The dodge is a modest escape, about 5 m, and may be lowered later. Its distance must stay easy to tune (data). Critical survival manoeuvres should come from Movement cards, not the dodge.
   - **[DIRECTOR DECISION, 2026-10-29]** The dodge has **charges**: start with 3 (may drop to 2; data value). Each charge recharges on a slightly longer cooldown than the old single-dodge cooldown (0.8 s). The HUD must show the dodge charges and their cooldown.
+  - **[DIRECTOR DECISION, 2026-10-30]** The starting charge count is per class: **Rogue 3, Wizard 2** (see §5).
+  - **[DIRECTOR DECISION, 2026-10-30]** The dodge **does not pass through enemies** (enemy bodies are solid). **Movement cards do** pass through enemies during their move.
   - **[DIRECTOR DECISION, 2026-10-29]** Passives (class and element trees, possibly subclass passives) may raise or lower the baseline dodge charges as a trade-off (for example a tankier Knight, Guardian or Paladin build with fewer charges). Level-up boosts must never change dodge charges, because a repeatable pick could stack them. **Hard limits: minimum 0, maximum 4 charges** after all modifiers.
 - **Controller:** late stretch goal, not in scope.
 
@@ -86,6 +88,7 @@ Notes:
 - **Cooldown = slot base cooldown + card modifier.** The modifier can be negative, so fast cards (for example a quick slash) can shorten the slot's cooldown and be chained rapidly. This gives every card a built-in power budget.
 - Slot base cooldowns can be modified by character passives, passive-tree nodes, and equipment.
 - **Dead-card swap:** the player may discard the currently revealed card and draw the next one at the cost of a short penalty cooldown on that slot. Exact penalty is a tuning value.
+  - **[DIRECTOR DECISION, 2026-10-30]** The input is **Shift + 1-5** (was Ctrl + 1-5, too much of a stretch). The swap is expected to matter more once decks have real synergies.
 - **No resource system (mana, energy) in the initial version.** May be revisited much later depending on how gameplay feels.
 - **Shuffle bag [DIRECTOR DECISION, 2026-10-28]:** every card in a slot is drawn once before any card repeats. After a reshuffle, the first card of the new cycle is never the same as the last card of the previous cycle, as long as the slot has more than one unique card.
 
@@ -126,6 +129,7 @@ Pick one **class** and one **element** (for example Fire Rogue).
 
 ### Wizard moved earlier **[DIRECTOR DECISION, 2026-10-29]**
 - The **Wizard** is added now, ahead of Milestone 4, as a ranged class: its **light and heavy attacks are ranged** and aimed at the reticle. Reason: an outside playtester expected left click to hit distant enemies under the reticle, and found the Rogue's melee swing confusing. Water and the subclasses stay in Milestone 4.
+- **Wizard risk [DIRECTOR DECISION, 2026-10-30] (D18 = A):** the Wizard must not be the "easy way out". Its rooms should cost some HP, but less than the Rogue's. It should be squishier than it is today (HP is a tuning lever), starts with **2 dodge charges** (the Rogue starts with 3), and has a slightly longer **Recovery** slot cooldown than the Rogue. All three are per-class data values.
 
 ### Card pools
 A character may only draw cards from:
@@ -206,6 +210,8 @@ Rather than a full strength/weakness wheel, elements apply status effects (for e
 ### Bosses **[DIRECTOR DECISION, 2026-10-29] (D16 = B)**
 - At each phase threshold the boss **staggers briefly**. The stagger **interrupts its current attack or action**. The length is a data value.
 
+- **Run length [DIRECTOR DECISION, 2026-10-30]:** a full run is **at least 10 rooms** (stages).
+- **Difficulty tiers [DIRECTOR DECISION, 2026-10-30]:** today's tuning is the **lowest tier ("Easy")**. Later tiers add more challenge: working names Normal, Hard, and a top tier such as "Torment". The names are not set; better ones that fit the cheerful-world, weary-hero tone are welcome. Tiers are data multipliers picked at run start. (game-lead, 2026-10-30: so the base game isn't retuned harder now; challenge comes from the tiers.)
 - Target run length: 30 to 60 minutes. **[PROPOSED]** prototype shorter runs (15 to 25 minutes) for faster iteration.
 - Procedurally generated room sequence with elites, bosses, and a final boss.
 ### Starting decks and loadouts **[DECIDED]**

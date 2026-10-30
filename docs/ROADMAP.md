@@ -335,7 +335,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
 - [ ] **Backlog (C1 and 3a playtests, qa follow-ups) (not scheduled; small UX/content items, game-lead picks them up between M3 slices if cheap):** real-cast C1 scenarios in `data/scenarios.json`; a brief card-name pop-up on cast; a stronger Bleed cue and four distinct Flurry flashes; a brighter enemy projectile and stronger player outline in dense crowds; the Lunge preview shows the full path even when a body stops it; `Main.gd:74`/`GameOverScreen.gd:26` use `current_scene` (qa N5); bot-sim charter checks (qa N3, done in 3a). From 3a: keep elites from spawning under the card row; the LOST line shows a stale HP; the `--run-room` win count; run-mode sim results depend on earlier runs in the same process; +1 object per soak cycle; `-RoomTimeout` clamps silently.
 
 ## Later (director, 2026-10-28)
-- **Difficulty tiers Easy / Normal / Hard (director note 2026-10-29, unscheduled).** The director finds the opening and busy waves comfortable and would lean toward a harder run overall. Plan the tiers as data multipliers (enemy HP and damage, wave density and pacing, maybe elite and boss numbers), picked at run start. Don't retune the base game until then.
+- **Difficulty tiers (director 2026-10-29, confirmed 2026-10-30, GDD §9; unscheduled).** Today's tuning is the lowest tier ("Easy"); later tiers working names Normal, Hard, and a top tier like "Torment" (names open, tone-fitting ideas welcome). The director finds the opening and busy waves comfortable and would lean toward a harder run overall. Plan the tiers as data multipliers (enemy HP and damage, wave density and pacing, maybe elite and boss numbers), picked at run start. Don't retune the base game until then.
 - **Heavy attack (director note 2026-10-29):** it feels good now. It may later be weakened or given a longer cooldown. No change scheduled.
 - **Pause shows card details (director request 2026-10-29, unscheduled; ux-designer, with a small gameplay hook if needed).**
   - When the player pauses (Esc), every slot's **active card and next-up card** (including slots on cooldown) expand upward so the player can read what each card does before resuming.
@@ -540,7 +540,25 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
         - item 12's gates.
       - **ux-designer:** item 9 (the pick screen, bolt and telegraph readability, per-class HUD meters).
       - **qa, playtester, tech-writer, close.**
-    - [ ] **W1b, Wizard content and balance.** Runs after PL2. Full brief below.
+    - [ ] **F1, director feedback batch (director checklist answers 2026-10-30; loop: gameplay-dev -> ux-designer -> qa -> playtester (short) -> tech-writer -> close; tag `playtest-2026-10-30-F1`)**
+  - **Run order (game-lead, 2026-10-30):** PL2 -> **F1 -> P-dodge -> W1b** -> 3d. Wizard *tuning* must come after every change that shifts its risk (10 rooms, movement pass-through, Wall buff, per-class charges, Recovery 8 -> 12 and the Wizard's 14 s), so W1b moved after P-dodge. See DECISIONS.
+  - **gameplay-dev:**
+    1. **Wall of Mild Fire 1.5x size (director):** `data/cards/fire_wall.json` `length` 5.0 -> 7.5, `width` 1.2 -> 1.8. Everything else unchanged. The cast preview and the burn-down visual follow the new size.
+    2. **Movement cards pass through enemies (director, GDD §3):** every card whose `slot_type` is `movement` ignores enemy bodies while it moves the player (today only Shadow Step does). Cards: Blaze and Bail, Nope Leaping Away, Reluctant Lunge, Walk Through Everyone, Ugh Fine Moving, Sideways Blink, Tactical Hover. Check each one's templates.
+       - A move that ends inside a body resolves the overlap the way Shadow Step does (no stuck player).
+       - A movement card that doesn't move the player is unaffected.
+       - **The dodge stays blocked by bodies.**
+       - **Reluctant Lunge** then hits every enemy on its line instead of stopping at the first body. That's a damage change: report its before/after on a line of 3 enemies, and the Lunge preview now matches the real path (old backlog item).
+       - Prefer a template-level flag set in data over per-card code.
+    3. **Dead-card swap on Shift + 1-5 (director, GDD §4):** `data/input_bindings.json` `ctrl` -> `shift`. **Check how a plain slot key ignores the modifier today:** Shift+N must swap only, with no preview or cast; plain N is unchanged; Ctrl+N does nothing. Make sure Shift isn't already bound. Tests.
+    4. **Runs of 10 rooms (director, GDD §9):** `data/run.json` composition 5/1/1/1 -> **7 combat, 1 elite, 1 rest, 1 boss** (game-lead call, the smallest change; harder runs come from the tiers). Update `placement.ranges` for 10 rooms (elite about [3, 8], rest about [2, 8]). Grep `src/`, `tests/`, `tools/` and `data/` for a hard-coded 8 (the boss index, `--run-room=8`, "of 8", the sim). The boss is room 10.
+  - **ux-designer:**
+    5. Every "Ctrl+1-5" hint (HUD, pause screen, any tooltip) now says Shift; "Room X of 10" fits at every supported size.
+  - **qa:** the usual gates; the Wall preview matches its hitbox; the pass-through for each movement card, including no stuck-in-body cases and the dodge still blocked; Shift+N swap with no cast; the 10-room run end to end; a 10+ seed Rogue `-Run` report (informational; P-dodge sets the W1b baseline).
+  - **Playtester (short):** a 10-room run; do movement cards feel like real escapes; does the Wall now catch walkers.
+  - **Docs:** tech-writer, with the `[Director decision]` old/new values; README's `--run-room=8` examples become 10.
+
+- [ ] **W1b, Wizard content and balance.** Runs after PL2. Full brief below.
 
 - [ ] **PL2, small polish before W1b (game-lead, 2026-10-30; loop: gameplay-dev -> ux-designer -> qa -> playtester (short) -> tech-writer -> close; tag `playtest-2026-10-30-PL2`)**
   - **Goal:** clear the non-Wizard fixes from the W1a qa and playtest, so W1b tunes against a stable baseline. The boss spawn fix changes the Rogue's boss fight.
@@ -566,7 +584,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
   - **Playtester (short):** smoke check, the boss on screen, the melee cue, and whether the frame colours read as fire / class / neutral without explanation.
   - **Docs:** tech-writer, at the close.
 
-- [ ] **W1b, Wizard content and balance (brief, game-lead 2026-10-30). Full loop: gameplay-dev -> qa -> playtester -> tech-writer -> close. Tag `playtest-2026-10-30-W1b`. Closing it also ticks the parent W1 item.**
+- [ ] **W1b, Wizard content and balance (brief, game-lead 2026-10-30; runs after F1 and P-dodge, see the 2026-10-30 run order). Full loop: gameplay-dev -> qa -> playtester -> tech-writer -> close. Tag `playtest-2026-10-30-W1b`. Closing it also ticks the parent W1 item.**
   - **Goal:** the Wizard plays like a caster: its own attack cards, a caster starter, and test presets. It's tuned so its risk matches D18. GDD §3 (cards beat basic attacks), §4 (deck rules), §5 (Wizard), §7 (armor).
   - **Order inside the slice:** content first, tuning last, so D18 can be answered before any tuning depends on it.
   - **Acceptance, gameplay-dev:**
@@ -578,19 +596,19 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     4. **A non-kiting Wizard bot policy** (`-WizardNoKite` or similar, the same pattern as `-LightHeavyOnly`): it holds a mid-range spot or walks in like the Rogue bot instead of kiting perfectly. qa and the playtester both said the kiting bot is a ceiling, not a typical player.
     5. **Balance table** for the Wizard cards in the hand-back, for DECISIONS.
     6. **Tuning, last:**
-       - With the kiting and non-kiting policies, 10+ seeds each, measure the Wizard's boss time against PL2's Rogue baseline (target 70-130%) and the HP lost per room.
-       - Tune toward D18: default A means Wizard rooms cost some HP, less than the Rogue's. If the director has answered, use the answer.
+       - With the kiting and non-kiting policies, 10+ seeds each, measure the Wizard's boss time against **P-dodge's** Rogue baseline (10 rooms, per-class charges, Recovery 12 s) (target 70-130%) and the HP lost per room.
+       - Tune toward **D18 = A (director, 2026-10-30, GDD §5)**: Wizard rooms cost some HP, less than the Rogue's; the Wizard should be squishier than today (HP is a lever, 26 now). Its 2 dodge charges and longer Recovery already land in P-dodge.
        - **Tune only Wizard data:** bolt range, fire rate and damage, heavy numbers, Wizard HP, Wizard card numbers. **No enemy changes.** If the target needs enemy changes, stop and report: it's a director item.
        - Log every before and after number.
   - **qa:**
-    - the suite and the usual gates; the Rogue unchanged against the PL2 baseline (`-Run` output and arena hash);
+    - the suite and the usual gates; the Rogue unchanged against the P-dodge baseline (`-Run` output and arena hash);
     - the 3 presets valid;
     - `CardDamageRule` for the new cards;
     - an independent 10+ seed re-run under both bot policies.
   - **Playtester:** a Wizard run (captures plus sim). Do the caster cards make the Wizard feel distinct? Is the risk level right?
   - **Docs:** tech-writer, plus a CHANGELOG fix: the 2026-10-30 W1a entry says the docs pass "now happens per slice", but that rule dates from 2026-10-28. Correct or remove it, and note the fix.
 
-- [ ] **P-dodge, dodge charges and indicator (director request 2026-10-29; runs after A1, T-decks and W1, before 3d; also carries the D13 and D16 answers)**
+- [ ] **P-dodge, dodge charges and indicator (director request 2026-10-29; runs after F1 and before W1b (2026-10-30 run order); also carries D13, D16 and the 2026-10-30 per-class charges and Wizard Recovery)**
   - **Also carries (game-lead, from T-decks qa):** fix the reload soak flake "damage immunity leaked into a new room" (tools/reload_cycle.gd:248). It predates T-decks; reproduce it with a wave sim running alongside `run_reload_cycle.ps1 -Cycles 5`.
   - **Goal:** the dodge has charges and the player can see them. GDD §3 [DIRECTOR DECISION, 2026-10-29].
   - **Acceptance:**
@@ -600,12 +618,14 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     4. Pause, death, reload and the 2-tick post-pause block still work. Tests for the charge logic and the recharge timing.
     4a. **qa N11 (from the 3c fix check):** the reload soak intermittently fails with "reward pick: damage immunity leaked into a new room" (about 1 in 5, also at 64df947). Find out whether `Health.damage_immune` really leaks into the next room after a reward pick (a real bug: the player would be invulnerable) or the soak is racing. Fix it and add a test.
     4b. **D13 = B (director):** `data/slot_types.json` recovery `base_cooldown` 8.0 -> 12.0. Check that Recovery is still the longest effective cooldown and update any test that pins 8.
+    4d. **Per-class dodge charges (director, 2026-10-30, GDD §3/§5):** Rogue 3, Wizard 2, as a per-character override in `data/characters.json` (the `player.json` default stays 3). Still clamped 0-4. The pip indicator shows 2 for the Wizard. Tests.
+    4e. **Wizard Recovery cooldown (director, 2026-10-30: "slightly longer" than the Rogue's):** Wizard Recovery 14 s vs the Rogue's 12 s (game-lead call), as a per-character slot cooldown override in data. Recovery stays the longest cooldown for both classes. Tests.
     4c. **D16 = B (director):** at each phase threshold the boss staggers briefly (`bosses.json` `transition.stagger` seconds, default 0.8, a game-lead call), which **interrupts its current attack or action**.
        - A visible reel: a stagger pose or tilt, a flash, and a "STAGGERED" cue on the boss bar (ux).
        - The stagger plays before the existing roar.
        - Design it as a reward: player damage dealt during the stagger counts (it isn't eaten by `hp_floor`). Explain how.
        - Keep the total transition within the 1.5 s cap, or raise the cap in data and log it.
-    5. Rerun the seeded wave sim and the whole-run sim and report the HP lost before/after (3 charges is a big survival buff, which may feed D13 and the solid-enemies call).
+    5. Rerun the seeded wave sim and the whole-run sim and report the HP lost before/after (3 charges is a big survival buff, which may feed D13 and the solid-enemies call). **qa re-measures the Rogue on 10+ seeds (`-Run`, 10 rooms): this is the baseline W1b tunes against.** Also report the Wizard (kiting bot) on the same seeds, for reference only.
   - **Owner sequence:** gameplay-dev -> ux-designer -> qa -> playtester (short) -> tech-writer (folded into the next docs pass if small) -> close.
 
 - [ ] **3d, loadouts**

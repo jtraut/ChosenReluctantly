@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-10-30
-**Status: 1 waiting on a decision (D18; doesn't block).** Done: C1, Polish 1, 3a (runs of 8 rooms), 3b (card rewards and deck-clean), 3c (the boss) and **A1 (armor)**, **T-decks (preset test decks)** and **W1a (a playable Fire Wizard)**. Next: a small polish slice, **PL2, in progress** (boss starts on screen, a Rogue melee cue, and your card frame colours), then W1b (Wizard cards and balance), then dodge charges, then loadouts.
+**Status: nothing waiting on a decision. 1 checklist item left for later (22, loadouts, once they exist).** Done: C1, Polish 1, 3a (runs of 8 rooms), 3b (card rewards and deck-clean), 3c (the boss) and **A1 (armor)**, **T-decks (preset test decks)** and **W1a (a playable Fire Wizard)**. Next: **PL2, in qa** (boss on screen, Rogue melee cue, your card frame colours), then **F1** (your 2026-10-30 checklist answers: bigger Fire Wall, movement cards pass through enemies, Shift+1-5 swap, 10-room runs), then **P-dodge** (dodge charges: Rogue 3, Wizard 2; Recovery cooldowns), then **W1b** (Wizard cards and tuning, now after the dodge work so it's tuned once), then loadouts.
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
@@ -74,6 +74,8 @@ _Updated at every slice close._
 
 - **2026-10-29: Debug preset decks** (`--deck=<name>`, `--list-decks`, presets in `data/debug_decks/`). **Built** in `playtest-2026-10-29-T-decks`; see "How to playtest". The wave sim uses the same presets, with no rule bypass.
 
+- **2026-10-30: checklist answers 11-24 and D18.** Recorded in GDD §3, §4, §5 and §9 and scheduled: F1 (Wall 1.5x, movement pass-through, Shift+1-5, 10 rooms), P-dodge (Wizard 2 charges, Rogue 3, Wizard Recovery 14 s), W1b (Wizard squishier, tuned to D18 = A). See the table under "Your checklist answers (2026-10-30)".
+
 - **2026-10-30: "Card frame colours show the family"** (fire red/orange, class light bronze, neutral grey). Recorded in GDD §4 as your decision (answers D17). **In progress** in PL2; Wizard cards are class cards, so they'll be bronze too.
 
 - **2026-10-29: "On pause, expand the active and next-up cards in every slot so I can read what they do."** Logged in ROADMAP under "Later" as unscheduled, as you said it can wait. Tell me when to schedule it.
@@ -89,20 +91,15 @@ _Updated at every slice close._
 
 ## Needs your decision
 
-Neither blocks work. Until you answer, I use my default.
-
-- **D18: Should the Wizard be the "easy class"?** In the bot sim it finishes 31 of 32 rooms untouched; the Rogue loses HP in most rooms. Its boss time is fine, at about 77% of the Rogue's. This sets W1b's tuning target.
-  - **A (my default):** the Wizard's rooms should cost some HP, but less than the Rogue's. W1b tunes the Wizard's own numbers (range, fire rate, damage, HP); enemies stay as they are.
-  - **B:** it's fine as the easier, beginner-friendly class; tune only its boss time.
-  - **C:** match the Rogue's risk.
+Nothing right now.
 
 ## Calls I made while you were away (easy to change)
 
 Each entry says what I chose and the one-line way to change it.
 
-1. **Enemies are now solid to you (from C1).** Before, you could walk straight through enemies, which made Shadow Step's "pass through enemies" meaningless. Now bodies block you; Shadow Step lets you through and the dodge doesn't. **Change:** set `data/player.json` `body.collide_with_enemies` to false.
+1. **Enemies are solid to you (from C1; you confirmed it 2026-10-30).** The dodge doesn't go through bodies; from F1 every Movement card does (today only Shadow Step). **Change:** set `data/player.json` `body.collide_with_enemies` to false.
 2. **Runs are a straight line of rooms (3a), no branching map yet.** Routing choices come later. **Change:** ask for a branching map (it's a generator change).
-3. **A run is 8 rooms: 5 combat, 1 elite, 1 rest, and the boss last** (short prototype runs, per GDD §9). **Change:** edit the room counts in `data/run.json`.
+3. **Runs become 10 rooms in F1 (your call: at least 10). My mix: 7 combat, 1 elite, 1 rest, boss last** (the smallest change; harder runs come from the difficulty tiers). **Change:** edit the room counts in `data/run.json`, or say "2 elites".
 4. **The rest room heals 30% of max HP.** **Change:** `data/run.json` rest heal value.
 5. **Elite enemies resist every element at least 25%** (they keep their own if it's higher, e.g. the fire golem), capped at 50%, per GDD §7. **Change:** the elite resistance value in `data/run.json`.
 6. **Your starting deck will shrink to 15 cards (3 per slot) in 3b,** so rewards have new cards to offer. It's the original starters plus Nope, Leaping Away (an escape) and Eventual Healing; the other 9 cards come from rewards. **Change:** edit `data/run.json` `starting_deck`. To play with every card, launch with `--full-deck` (from 3b).
@@ -113,34 +110,35 @@ Each entry says what I chose and the one-line way to change it.
 11. **Boss-tier resistance floor 25% -> 35% (A1),** to match GDD §7's boss value and the armor. **Change:** `data/run.json` `tiers.boss.resistance_floor`.
 12. **Damage over time (A1):** Bleed goes through armor, Burn through resistance, and heals are never reduced. **Change:** ask; it's a rule in the damage code.
 13. **A build with no damage cards (only light and heavy attacks) stays slow against the boss (about 3x).** GDD §3 says cards beat basic attacks, so I didn't add a safety net. **Change:** ask for a basic-attack buff or a boss tweak.
+14. **Wizard Recovery 14 s vs the Rogue's 12 s** (your "slightly longer"; built in P-dodge). **Change:** the Wizard's Recovery override in data.
+15. **Run order changed: F1 and P-dodge now come before W1b,** so the Wizard is tuned once, after everything that changes its risk (10 rooms, charges, Recovery). **Change:** say "W1b first".
 
 ## Needs your eyes: play-session checklist (about 20-30 minutes)
 
 Play a normal run, not a test scenario. Reply with the item number and a word or two ("3: fine", "8: too short").
 
-_Items 1-10 are answered (see "Your checklist answers" below). The remaining items keep their numbers so your replies still line up._
+_Items 1-21, 23 and 24 are answered (see "Your checklist answers" below)._
 
-**C. Try the cards**
-11. **Cards vs the free light attack.** Look for: every damage card feels clearly better than the auto attack. The three area cards are only about 7-10% better than light on a single enemy: do they still feel worth casting on one?
-12. **Every new card.** (Most now come from rewards; launch with `-- --full-deck` to start with all of them.) Try each one: Slash, Then Bleed · Four Quick Stabs · Fireball, Incoming · Wall of Mild Fire · Walk Through Everyone (Shadow Step) · Reluctant Lunge · Nope, Leaping Away · Heal By Hurting (Leech) · Eventual Healing (Regeneration). Also check the names and flavor lines fit the voice. Look for: which feel great, which feel dull, and which to cut or rework.
-13. **Solid enemies.** Look for: you never get stuck or pinned with no way out, and Shadow Step feels like a real escape through a crowd. If it feels worse than walking through enemies, say so (one data flag).
-14. **Recovery slot.** Look for: is it ready often enough to matter, without being something you can lean on?
-15. **Dead-card swap.** Press Ctrl+1-5 to throw away a card you don't want right now. Look for: is it useful, or a chore? (This feeds Vision check question 4.)
+22. **Loadouts (after 3d, not built yet).** This is about a feature still to come: from your second run on, you'll be able to build your own starting deck from your cards, save it, and pick it before a run. (The "Pick your hero" screen you saw is the class pick from W1a.) Look for, once it lands: it's easy to understand.
 
-**D. Die once**
-16. **Death.** Let yourself die. Look for: you can clearly tell you died (white then red flash, grey-out, topple), the reticle vanishes, and the slow-mo feels "longer", "shorter" or "fine". Then press "Try again": the restart is clean.
+## Your checklist answers (2026-10-30)
 
-**E. Settings and pause**
-17. **Pause screen.** Press Esc, switch "Cast cards on" to Press, play a moment, then switch it back. Look for: it works both ways, and pressing Space on Resume doesn't make you dodge.
-18. **Pause text tone.** "Paused" / "The world will wait. It is very patient and very cheerful." / "Esc also resumes". Is the tone right? (Placeholder text.)
-
-**F. The run loop (only after each Milestone 3 slice lands; see "While you were away")**
-19. **Full run (after 3a).** Play several rooms in a row. Look for: "Room X of Y" is clear, your HP and deck carry over, and the win and lose screens make sense.
-20. **Card rewards (after 3b).** After each won room: pick 1 of 3, or reject the offer (3 rejects per run). Look for: offers fit your build, and the deck-clean option is clear.
-21. **Boss (after 3c).** Look for: the phases and telegraphs are readable, and it's fair.
-22. **Loadouts (after 3d).** On run 2, save and pick a starting deck. Look for: it's easy to understand.
-23. **Armor (after A1).** Fight an elite and the boss with a fire-heavy deck, then a physical-heavy one (Slash, Lunge, light and heavy). Use `-- --full-deck --run-room=8` for the boss. Look for: the fights feel about as long; the boss bar's armor line and the `[9]` / `<4>` numbers explain the smaller hits.
-24. **Wizard (after W1a).** Start a run, pick Wizard on the new screen, and play a few rooms and the boss (`-- --class=wizard --run-room=8` jumps there). Look for: the pick screen is clear with a real mouse and keyboard; the bolt hits what's under your reticle; the right-click blast lands where you aim; and whether the Wizard feels too safe (D18). A bolt stops at the first enemy on its line, so check that this feels fair.
+| # | Item | Your answer | Follow-up |
+|---|---|---|---|
+| 11 | Area cards vs light | Area cards should excel against groups; slightly better on one enemy is fine. | No change. |
+| 12 | New cards | Feel nice. Wall of Mild Fire underperforms: enemies barely touch it. Try 1.5x size. | **F1:** length 5 -> 7.5 m, width 1.2 -> 1.8 m. |
+| 13 | Solid enemies | Feels nice. Dodge should not go through; movement cards should. | **F1:** every Movement card passes through. GDD §3. |
+| 14 | Recovery slot | Up plenty; not challenged yet with either class. | No change (Recovery 8 -> 12 s still lands in P-dodge, your D13). |
+| 15 | Dead-card swap | More useful once decks have synergies. Ctrl+1-5 is a stretch: use Shift+1-5. | **F1:** Shift+1-5. GDD §4. |
+| 16 | Death | Nice. | None. |
+| 17 | Pause screen | Good and functional. | None. |
+| 18 | Pause tone | Good. | None. |
+| 19 | Full run | Getting fun, not very challenging: call today's tuning "Easy", with Normal, Hard and a top tier ("Torment"?) later; names open. A run should be at least 10 stages. | Tiers recorded in GDD §9 (ROADMAP "Later"). **F1:** 10-room runs. |
+| 20 | Card rewards | Good so far. | None. |
+| 21 | Boss | Looks nice, feels good, not too hard yet. | None (the tiers will cover difficulty). |
+| 22 | Loadouts | Unsure what "saving a deck" meant. | Reworded above; it's for 3d. |
+| 23 | Armor | No strong favouritism between fire and physical. | None. |
+| 24 | Wizard | Alright; should be slightly harder / squishier, not the easy way out. Wizard 2 dodge charges, Rogue 3. Wizard slightly longer Recovery. | D18 = A. GDD §5. Charges and Recovery in **P-dodge**; HP and tuning in **W1b**. |
 
 ## Your checklist answers (2026-10-29)
 
@@ -166,6 +164,7 @@ _Items 1-10 are answered (see "Your checklist answers" below). The remaining ite
 
 | ID | Question | Your answer | Date |
 |---|---|---|---|
+| D18 | Should the Wizard be the "easy class"? | A: its rooms cost some HP, less than the Rogue's. Also: squishier, 2 dodge charges (Rogue 3), slightly longer Recovery. GDD §5. | 2026-10-30 |
 | D17 | Show each card's damage type? | Your own answer: colour the card frames by family. Fire cards red/orange, class cards light bronze, neutral cards grey. The pause card details still come later. Recorded in GDD §4; being built in PL2. Starting colours: Fire `#ff6a1f`, bronze `#d9b48a`, grey `#9a9a9a` (ux may nudge them for contrast). | 2026-10-30 |
 | D13 | Is healing too strong? | B: Recovery cooldown 8 s -> 12 s (built in the P-dodge slice). | 2026-10-29 |
 | D16 | Should the boss ever stagger? | B: a short stagger at each phase threshold, which interrupts its attack or action (built in the P-dodge slice). | 2026-10-29 |

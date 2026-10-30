@@ -253,7 +253,14 @@ func _check_run_fresh(label: String, expected_room: int) -> void:
 	_check(main.run_controller.room_number() == expected_room, "%s: room %d, expected %d" % [label, main.run_controller.room_number(), expected_room])
 	_check(not main.is_game_over(), "%s: game over still announced" % label)
 	_check(not main.player.is_dead(), "%s: player dead in a new room" % label)
-	_check(not main.player.health.damage_immune, "%s: damage immunity leaked into a new room" % label)
+	# A rest room is cleared at once and its heal-or-remove choice is open, so the player is immune there by design
+	# (RunController._finish_room). That is not a leak. The new room's seed is random after a Try again, so a rest room
+	# landed here about 1 run in 7 (index 2 is in the rest window) and made this check flake (P-dodge 4a).
+	var is_rest: bool = main.run_controller.room_type() == "rest"
+	if is_rest:
+		_check(main.player.health.damage_immune and main.run_controller.has_choice(), "%s: rest room: expected the choice open and the player immune" % label)
+	else:
+		_check(not main.player.health.damage_immune, "%s: damage immunity leaked into a new %s room (seed %d)" % [label, main.run_controller.room_type(), RunSession.current.seed_value])
 	_check(is_equal_approx(Engine.time_scale, 1.0) and not get_tree().paused, "%s: time scale or pause leaked" % label)
 	_check(not Enemy.is_player_body_suppressed(), "%s: pass-through flag leaked" % label)
 	_check(_enemy_count(main) == 0, "%s: %d enemies in a fresh room" % [label, _enemy_count(main)])

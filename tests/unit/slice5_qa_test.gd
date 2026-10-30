@@ -668,6 +668,7 @@ func test_hp_bar_block_validates_every_key() -> void:
 		"burn_status_id": ["", 4],
 		"bleed_status_id": ["", 4],
 		"default_resistance_tint": ["zzz", 5],
+		"armor_tint": ["zzz", 5],
 		"colors": ["x", {"fill": "#e2483f"}, {"fill": "nope", "ghost": "#fff", "back": "#fff", "frame": "#fff", "burn": "#fff", "bleed": "#fff"}],
 		"resistance_tints": ["x", {"fire": "nope"}],
 	}
@@ -814,7 +815,8 @@ func test_damage_number_list_survives_expiry_and_a_long_run_without_leaking() ->
 func test_damage_numbers_bad_values_each_key() -> void:
 	for key: String in UiConfig.DEFAULT_DAMAGE_NUMBERS:
 		var bad: Dictionary = UiConfig.DEFAULT_DAMAGE_NUMBERS.duplicate()
-		for value: Variant in ["x", null, -1, 0, NAN]:
+		var is_mark: bool = ["armor_open", "armor_close", "resist_open", "resist_close"].has(key)  # any non-empty text is a valid mark
+		for value: Variant in ([""] if is_mark else ["x"]) + [null, -1, 0, NAN]:
 			bad[key] = value
 			assert_array(UiConfig.validate_damage_numbers(bad)).override_failure_message("%s = %s should be rejected" % [key, str(value)]).is_not_empty()
 	var missing: Dictionary = UiConfig.DEFAULT_DAMAGE_NUMBERS.duplicate()

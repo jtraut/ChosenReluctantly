@@ -28,6 +28,7 @@ const DEFAULT_HP_BARS: Dictionary = {
 		"burn": "#ff9a1f",
 		"bleed": "#e0123f",
 	},
+	"armor_tint": "#c9d3da",
 	"default_resistance_tint": "#cfd8dc",
 	"resistance_tints": {"fire": "#ff8a3d", "water": "#4aa8ff"},
 }
@@ -117,7 +118,7 @@ const DEFAULT_HUD: Dictionary = {
 	"reference_height": 720,
 	"safe_margin": 16,
 	"room_indicator_size": [280, 36],
-	"boss_bar_size": [480, 104],
+	"boss_bar_size": [560, 104],
 	"debug_overlay_gap": 16,
 	"fit_padding": 12,
 	"slot_size": [150, 118],
@@ -196,7 +197,19 @@ const DEFAULT_DAMAGE_NUMBERS: Dictionary = {
 	"merge_window": 0.3,
 	"max_alive": 16,
 	"render_priority": 20,
+	"armor_min_reduction": 0.10,
+	"resist_min_reduction": 0.10,
+	"muted_scale": 0.85,
+	"resist_mute": 0.4,
+	"armor_color": "#aab6bf",
+	"armor_open": "[",
+	"armor_close": "]",
+	"resist_open": "<",
+	"resist_close": ">",
 }
+
+## damage_numbers keys that hold text or colours rather than a number > 0.
+const DAMAGE_NUMBER_TEXT_KEYS: Array[String] = ["outline_color", "armor_color", "armor_open", "armor_close", "resist_open", "resist_close"]
 
 static var _table := JsonDataTable.new("res://data/ui.json")
 
@@ -240,6 +253,9 @@ static func validate_hp_bars(block: Dictionary) -> Array[String]:
 	var tint: Variant = block.get("default_resistance_tint")
 	if typeof(tint) != TYPE_STRING or not String(tint).is_valid_html_color():
 		problems.append("default_resistance_tint must be a hex color")
+	var armor_tint: Variant = block.get("armor_tint")
+	if typeof(armor_tint) != TYPE_STRING or not String(armor_tint).is_valid_html_color():
+		problems.append("armor_tint must be a hex color")
 	problems.append_array(_validate_color_map(block.get("colors"), "colors", DEFAULT_HP_BARS["colors"] as Dictionary))
 	problems.append_array(_validate_color_map(block.get("resistance_tints"), "resistance_tints", {}))
 	return problems
@@ -350,17 +366,22 @@ static func damage_numbers() -> Dictionary:
 
 static func validate_damage_numbers(block: Dictionary) -> Array[String]:
 	var problems: Array[String] = []
-	var color: Variant = block.get("outline_color")
-	if typeof(color) != TYPE_STRING or not String(color).is_valid_html_color():
-		problems.append("outline_color must be a hex color")
+	for key: String in ["outline_color", "armor_color"]:
+		var color: Variant = block.get(key)
+		if typeof(color) != TYPE_STRING or not String(color).is_valid_html_color():
+			problems.append("%s must be a hex color" % key)
+	for key: String in ["armor_open", "armor_close", "resist_open", "resist_close"]:
+		var mark: Variant = block.get(key)
+		if typeof(mark) != TYPE_STRING or String(mark).strip_edges().is_empty():
+			problems.append("%s must be a non-empty string (the shape cue)" % key)
 	for key: String in DEFAULT_DAMAGE_NUMBERS:
-		if key == "outline_color":
+		if DAMAGE_NUMBER_TEXT_KEYS.has(key):
 			continue
 		var value: Variant = block.get(key)
 		if not (value is float or value is int) or is_nan(float(value)) or float(value) <= 0.0:
 			problems.append("%s must be a number > 0" % key)
-		elif key == "color_lighten" and float(value) > 1.0:
-			problems.append("color_lighten must be <= 1")
+		elif (key == "color_lighten" or key.ends_with("_reduction") or key == "resist_mute") and float(value) > 1.0:
+			problems.append("%s must be <= 1" % key)
 	return problems
 
 
@@ -483,6 +504,11 @@ const DEFAULT_BOSS_BAR: Dictionary = {
 	"invulnerable_text": "Invulnerable",
 	"resist_all_format": "Resists all elements %d%%",
 	"resist_some_format": "Resists some elements (up to %d%%)",
+	"armor_format": "Armor %d%%",
+	"defense_joiner": "  \u00b7  ",
+	"armor_tint": "#c9d3da",
+	"info_min_font_size": 11,
+	"phase_width_fraction": 0.42,
 }
 
 

@@ -40,6 +40,7 @@
             "burn": "#ff9a1f",
             "bleed": "#e0123f"
         },
+        "armor_tint": "#c9d3da",
         "default_resistance_tint": "#cfd8dc",
         "resistance_tints": {
             "fire": "#ff8a3d",
@@ -50,7 +51,7 @@
         "reference_height": 720,
         "safe_margin": 16,
         "room_indicator_size": [280, 36],
-        "boss_bar_size": [480, 104],
+        "boss_bar_size": [560, 104],
         "debug_overlay_gap": 16,
         "fit_padding": 12,
         "slot_size": [150, 118],
@@ -114,7 +115,16 @@
         "merge_radius": 0.8,
         "merge_window": 0.3,
         "max_alive": 16,
-        "render_priority": 20
+        "render_priority": 20,
+        "armor_min_reduction": 0.10,
+        "resist_min_reduction": 0.10,
+        "muted_scale": 0.85,
+        "resist_mute": 0.4,
+        "armor_color": "#aab6bf",
+        "armor_open": "[",
+        "armor_close": "]",
+        "resist_open": "<",
+        "resist_close": ">"
     },
     "popups": {
         "immune_text": "IMMUNE",
@@ -149,7 +159,12 @@
         "phase_format": "Phase %d of %d: %s",
         "invulnerable_text": "Invulnerable",
         "resist_all_format": "Resists all elements %d%%",
-        "resist_some_format": "Resists some elements (up to %d%%)"
+        "resist_some_format": "Resists some elements (up to %d%%)",
+        "armor_format": "Armor %d%%",
+        "defense_joiner": "  \u00b7  ",
+        "armor_tint": "#c9d3da",
+        "info_min_font_size": 11,
+        "phase_width_fraction": 0.42
     },
     "run_ui": {
         "reference_height": 720,

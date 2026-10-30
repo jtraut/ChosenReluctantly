@@ -934,3 +934,12 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
   - **Playtest readability findings go to the ux backlog** (numbers blurring in a clump, the shield pip hidden behind neighbours, F3 covering the arena, unlabeled boss-bar glyphs). [Fix before the A1 close.]
   - **Card damage-type cue is D17 for the director,** default B (schedule it with the pause card-details request). [Building a tag now unasked.]
   - **The playtester's "safety net for a no-card build" question** is covered by the existing 3.2x call above, so it isn't a director item. [Escalating it.]
+
+### 2026-10-29 - T-decks build (gameplay-dev, logged by game-lead)
+- Built 9b6e8a6 (987/987). New `src/run/DebugDecks.gd`, `data/debug_decks/*.json`, `RunSession.debug_deck` (lasts for the whole launch). `RunSession.skip_deck_minimums` is removed.
+- **physical-rogue has 2 Fire cards** (`fire_hot_head` for Utility, `fire_fine_burn_then` for AoE). The non-Fire pool has only 2 Utility and 2 AoE cards, and the rules need 3 unique per slot. A test pins the minimum. [Zero Fire through a rule bypass.]
+- **Sim Godot arg renamed `--sim-deck=`.** The PowerShell `-Deck` name is kept, and the old families `fire`/`physical`/`lightheavy` are gone. [Sharing `--deck=` with the launch flag.]
+- **A preset is only the starting deck.** Rewards change it as in a normal run, which may weaken the family contrast in sim measurements. [Re-imposing the preset after each reward: a bypass in another form.]
+- **`-LightHeavyOnly`** is a bot policy that skips the attack slots; seeds don't shift. [Emptying the slots needs a bypass.]
+- **A bad `--deck` or `--list-decks` quits from `RunController.begin`** with exit 2 (0 for the list). `--deck` is ignored with `--scenario` or in the arena. [A pre-Main autoload check.]
+- **Only the selected preset must be valid.** `--list-decks` marks broken files `INVALID` and exits 2. `name` must equal the file name. Only `--deck=name` is accepted.

@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-10-29
-**Status: 3 small balance questions (D13, D14, D16), nothing blocked.** Done: C1, Polish 1, **3a (runs of 8 rooms)**, **3b (card rewards and deck-clean)** and **3c (the boss)**. Next: Slice A1 (armor), then dodge charges, then loadouts.
+**Status: nothing waiting on a decision.** Done: C1, Polish 1, **3a (runs of 8 rooms)**, **3b (card rewards and deck-clean)** and **3c (the boss)**. Next: Slice A1 (armor), then dodge charges, then loadouts.
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
@@ -52,13 +52,13 @@ _Updated at every slice close._
 
 - **2026-10-29: Armor for elites and bosses** (non-elemental damage mitigated about as much as elemental). Recorded in GDD §7 as your decision. Queued as **Slice A1** right after the boss slice closes, ahead of dodge charges and loadouts, in your order; I see no reason to change it. It also answers D15 (fire against the boss), so D15 is withdrawn.
 
+- **2026-10-29: Debug preset decks** (`--deck=<name>`, `--list-decks`, presets in `data/debug_decks/`). Queued as **T-decks** right after armor (A1) closes, ahead of dodge charges. The wave sim's armor-test deck families get folded into your presets, so there's one deck system with no rule bypass.
+
 ## Needs your decision
 
 Neither blocks work. Until you answer, I keep the current values.
 
-- **D13. Is healing too strong?** The playtester estimates the Recovery slot is ready 5-6 times a minute. With a 30 HP pool that out-heals what the waves deal, so slow chip damage can't kill you. Options: **A** keep it (judge it in play first; my default); **B** Recovery cooldown 8 s -> 12 s; **C** smaller heals (e.g. the potion 16 -> 10). This matters more once runs are several rooms long (3a), because HP carries over.
-- **D16. Should the boss ever stagger?** Right now nothing you do staggers it during the 60 s fight, which may make your hits feel weightless. Options: **A** keep it unstaggerable (my default); **B** a short stagger at each phase threshold; **C** a stagger meter that fills from heavy attacks.
-- **D14. Wall of Mild Fire on a single enemy.** It only hurts while enemies stand in it, so a lone enemy walks out. Options: **A** keep it as a crowd card (my default); **B** it also slows enemies inside it; **C** raise its tick damage 2.5 -> 3.5.
+Nothing waiting. D13, D14 and D16 were answered on 2026-10-29 (see Recently resolved).
 
 ## Calls I made while you were away (easy to change)
 
@@ -125,6 +125,9 @@ Play a normal run, not a test scenario. Reply with the item number and a word or
 
 | ID | Question | Your answer | Date |
 |---|---|---|---|
+| D13 | Is healing too strong? | B: Recovery cooldown 8 s -> 12 s (built in the P-dodge slice). | 2026-10-29 |
+| D16 | Should the boss ever stagger? | B: a short stagger at each phase threshold, which interrupts its attack or action (built in the P-dodge slice). | 2026-10-29 |
+| D14 | Wall of Mild Fire on a single enemy? | A: keep it as a crowd card. | 2026-10-29 |
 | D15 | Fire against the boss (fire resisted 50%, physical not)? | Superseded by your armor request (Slice A1, GDD §7 Armor). | 2026-10-29 |
 | D8 | How far should the dodge go? | C: about 5 m. It may go lower later, so keep it easy to tune. Critical survival moves should come from Movement cards. | 2026-10-28 |
 | D9 | Should Stealth also drop enemy aggro? | A: pass-through only for this pass. Aggro drop is planned for later. | 2026-10-28 |

@@ -78,6 +78,7 @@ Each slot has a **type** and its own **mini-deck** drawn from the cards of that 
 Notes:
 - The Attack slot may be split into Single and AoE if it plays better. Classes and builds can lean toward either. **[PROPOSED]** build the prototype with the split and merge later if it feels cluttered.
 - Slot count and types are data-driven so they can change without code rewrites.
+- **[DIRECTOR DECISION, 2026-10-29] (D13 = B)** Healing was too strong for a 30 HP pool: the Recovery slot's base cooldown goes from 8 s to 12 s (data). Recovery keeps the longest base cooldown of any slot.
 
 ### Cycling rules
 - When a card is used, its slot goes on cooldown. When the cooldown ends, the slot reveals the next card from its mini-deck.
@@ -193,6 +194,9 @@ Rather than a full strength/weakness wheel, elements apply status effects (for e
 ---
 
 ## 9. Run Structure
+
+### Bosses **[DIRECTOR DECISION, 2026-10-29] (D16 = B)**
+- At each phase threshold the boss **staggers briefly**. The stagger **interrupts its current attack or action**. The length is a data value.
 
 - Target run length: 30 to 60 minutes. **[PROPOSED]** prototype shorter runs (15 to 25 minutes) for faster iteration.
 - Procedurally generated room sequence with elites, bosses, and a final boss.

@@ -460,7 +460,50 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     - the armor cues are readable;
     - the playtest report and OPEN_ITEMS are updated.
 
-- [ ] **P-dodge, dodge charges and indicator (director request 2026-10-29; runs after A1, before 3d)**
+- [ ] **T-decks, debug preset decks (director request 2026-10-29; runs right after A1 closes, ahead of P-dodge; lightweight loop: gameplay-dev -> qa -> tech-writer -> close, no playtester)**
+  - **Goal:** launch a run with a named preset deck and jump to any room, to test builds against elites and the boss without playing through the rounds.
+  - **Acceptance:**
+    1. **Preset files:** one JSON per preset in `data/debug_decks/`; the file name is the preset name. Format:
+       - `name`, plus a one-line `description`;
+       - `full`: the whole intended deck (card ids, duplicates allowed);
+       - `starter`: a subset of `full`, about 15 cards (3 per slot), used by default.
+
+       Adding a preset means adding one file and nothing else.
+    2. **Launch:**
+       - `--deck=<name>` starts with that preset's `starter`;
+       - `--deck=<name> --full-deck` starts with its `full`;
+       - with no `--deck`, behaviour is unchanged (`--full-deck` still means the whole character pool);
+       - `--deck` combines with `--run-room`, `--run-seed` and `--full-deck`, and applies to the whole launch (Try again keeps it).
+    3. **Errors:**
+       - an unknown name refuses to launch and lists the valid names;
+       - `--deck` given twice is an error;
+       - a bad preset refuses to launch with a message naming the preset, the problem and the shortfall: invalid card id, deck-rule failure, or `starter` not a subset of `full`.
+       - No rule-bypass flag.
+    4. **Shipped presets** (all Rogue; the character is in the name so Wizard presets can follow):
+       - `fire-heavy-rogue`: as many Fire cards as the rules allow, the rest neutral or class;
+       - `physical-rogue`: Rogue and neutral physical cards, no Fire;
+       - `mixed-rogue`: the current starter plus the matching full deck.
+
+       Report how many cards of each family each preset contains.
+    5. **`--list-decks`** prints the names and descriptions, then exits.
+    6. **Sim alignment (game-lead):** the wave sim's A1 `-Deck` families (`fire`, `physical`, `standard`, `lightheavy`) bypass the deck minimums through `RunSession.skip_deck_minimums`, and they clash in name with the new `--deck`.
+       - Point the sim's deck selection at the presets (`-Deck fire-heavy-rogue` and so on) and remove the bypass.
+       - Keep "light and heavy only" as a separate bot attack-policy flag, since it isn't a deck.
+       - Log it. Re-run the A1 4-family comparison with the presets and report it.
+    7. **Tests:**
+       - every shipped preset loads, both starter and full, and starter is a subset of full;
+       - an unknown name gives an error listing the valid names;
+       - `--deck` given twice;
+       - an invalid card id;
+       - a deck-rule failure gives a clear error;
+       - `--full-deck` with and without a preset;
+       - the `--list-decks` output;
+       - a normal launch with no `--deck` is unchanged.
+    8. **Docs:**
+       - tech-writer: one "Launch options" table in README listing every launch option, with an example each; a CHANGELOG entry.
+       - game-lead: boss-room examples in OPEN_ITEMS "How to playtest".
+
+- [ ] **P-dodge, dodge charges and indicator (director request 2026-10-29; runs after A1 and T-decks, before 3d; also carries the D13 and D16 answers)**
   - **Goal:** the dodge has charges and the player can see them. GDD §3 [DIRECTOR DECISION, 2026-10-29].
   - **Acceptance:**
     1. `data/player.json` `dodge.charges` (default 3). The effective count is read through the existing StatModifiers as a stat (e.g. `dodge_charges`) so future passives can raise or lower it, **clamped to a hard 0-4** after all modifiers (`dodge.min_charges` 0 and `dodge.max_charges` 4 in data, validated). At 0 the dodge is unavailable and the indicator shows that clearly. Tests cover the clamp at both ends and a mid-run change (the current charges clamp down). No passive or level-up content now; only the hook and `dodge.cooldown` is the per-charge recharge time. Charges recharge one at a time while below max. Each dodge spends one charge. A dodge can't start during another dodge (the roll lasts 0.25 s). Distance stays 5 m.
@@ -468,6 +511,12 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     3. **HUD (ux-designer):** a dodge indicator near the LMB/RMB meters: one pip per charge (filled = ready) with the recharging pip filling over time, plus a "Space" label. It's readable at 720p, 1080p and 1440p and works for 0-4 charges. Charges reset each room and on Try again.
     4. Pause, death, reload and the 2-tick post-pause block still work. Tests for the charge logic and the recharge timing.
     4a. **qa N11 (from the 3c fix check):** the reload soak intermittently fails with "reward pick: damage immunity leaked into a new room" (about 1 in 5, also at 64df947). Find out whether `Health.damage_immune` really leaks into the next room after a reward pick (a real bug: the player would be invulnerable) or the soak is racing. Fix it and add a test.
+    4b. **D13 = B (director):** `data/slot_types.json` recovery `base_cooldown` 8.0 -> 12.0. Check that Recovery is still the longest effective cooldown and update any test that pins 8.
+    4c. **D16 = B (director):** at each phase threshold the boss staggers briefly (`bosses.json` `transition.stagger` seconds, default 0.8, a game-lead call), which **interrupts its current attack or action**.
+       - A visible reel: a stagger pose or tilt, a flash, and a "STAGGERED" cue on the boss bar (ux).
+       - The stagger plays before the existing roar.
+       - Design it as a reward: player damage dealt during the stagger counts (it isn't eaten by `hp_floor`). Explain how.
+       - Keep the total transition within the 1.5 s cap, or raise the cap in data and log it.
     5. Rerun the seeded wave sim and the whole-run sim and report the HP lost before/after (3 charges is a big survival buff, which may feed D13 and the solid-enemies call).
   - **Owner sequence:** gameplay-dev -> ux-designer -> qa -> playtester (short) -> tech-writer (folded into the next docs pass if small) -> close.
 

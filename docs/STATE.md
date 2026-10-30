@@ -17,7 +17,7 @@ Last updated: 2026-10-29. The director is away until the evening with an autonom
 ## Exact next step
 1. **A1 Part 2** with ux-designer. **On resume:** check `git log` for A1 ux commits.
 2. Then qa (Part 3) -> playtester (Part 4) -> tech-writer -> close, tag `playtest-2026-10-29-A1`.
-3. Then **P-dodge** (brief in ROADMAP; it includes qa N11, the damage-immunity soak flake), then **3d** loadouts (brief in ROADMAP).
+3. Then **T-decks** (debug preset decks; lightweight loop), then **P-dodge** (also carries D13 = B, the Recovery cooldown 8 -> 12 s, and D16 = B, the boss stagger at thresholds), then **3d**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 

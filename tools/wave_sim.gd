@@ -145,6 +145,14 @@ func _ready() -> void:
 			RunSession.selected_character = _sim_class
 		elif arg.begins_with("--room-timeout="):
 			_room_timeout = maxf(10.0, float(arg.substr(15)))
+	# A preset deck is for one class: refuse a clash like a real launch does, and let a preset alone pick its class.
+	if not RunSession.debug_deck.is_empty():
+		var preset_class: String = RunSession.preset_character(RunSession.debug_deck)
+		if _sim_class != "" and _sim_class != preset_class:
+			push_error("wave sim: -Deck %s is a %s deck but -Class %s was given; they must agree" % [_deck_family, preset_class, _sim_class])
+			get_tree().quit(2)
+			return
+		RunSession.selected_character = preset_class
 	if _sim_class != "" and not _run_mode:
 		print("note: -Class only applies to whole runs (-Run); the endless arena always plays the Rogue")
 	_run_all.call_deferred()

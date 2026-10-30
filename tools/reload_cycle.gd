@@ -26,6 +26,14 @@ func _ready() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--cycles="):
 			_cycles = maxi(1, int(arg.substr(9)))
+		elif arg.begins_with("--class="):
+			# The run-mode parts (reward reload, Try again, boss reload, win) play as this character. The endless-arena
+			# parts always play the Rogue, by design (the arena has no class).
+			if not CharacterDatabase.has(arg.substr(8)):
+				push_error("reload cycle: --class must be one of %s" % ", ".join(CharacterDatabase.ids()))
+				get_tree().quit(2)
+				return
+			RunSession.selected_character = arg.substr(8)
 	_run.call_deferred()
 
 
@@ -335,7 +343,7 @@ func _run_mode_soak(snaps: Array[Dictionary]) -> void:
 	_check(_main().get_instance_id() != reward_id, "try again from reward: scene not replaced")
 	_check(RunSession.current != open_state and RunSession.current.seed_value != reward_seed, "try again from reward: the run kept its state or seed")
 	_check(not RunSession.current.has_pending() and RunSession.current.offer.is_empty() and RunSession.current.choice_log.is_empty(), "try again from reward: reward state leaked")
-	_check(RunSession.current.rejects_remaining == 3 and RunSession.current.deck == RunConfig.starting_deck(), "try again from reward: rejects or deck leaked")
+	_check(RunSession.current.rejects_remaining == 3 and RunSession.current.deck == CharacterDatabase.starting_deck(RunSession.chosen_character()), "try again from reward: rejects or deck leaked")
 	_check_run_fresh("try again from reward", 1)
 	snaps.append(_snapshot("after try again from reward"))
 

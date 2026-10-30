@@ -219,3 +219,9 @@ func test_the_reject_option_and_actions_keep_their_own_border() -> void:
 	assert_object((reject.get_theme_stylebox("normal") as StyleBoxFlat).border_color).is_equal(Color.html(String(cfg["option_reject_border_color"])))
 	var heal := _card({"id": "heal", "kind": "heal", "label": "Heal", "enabled": true}, RunOptionCard.Look.ACTION)
 	assert_object((heal.get_theme_stylebox("normal") as StyleBoxFlat).border_color).is_equal(Color.html(String(cfg["option_card_border_color"])))
+
+
+func test_the_focus_ring_width_has_a_floor_and_scales() -> void:
+	var cfg: Dictionary = UiConfig.run_ui()
+	assert_int(RunOptionCard.focus_ring_width(cfg, 0.1)).is_equal(2)
+	assert_int(RunOptionCard.focus_ring_width(cfg, 2.0)).is_equal(roundi(float(cfg["option_focus_width"]) * 2.0))

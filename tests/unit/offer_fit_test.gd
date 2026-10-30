@@ -51,8 +51,8 @@ func _open(size: Vector2, options: Array[Dictionary]) -> RunPromptScreen:
 	var screen: RunPromptScreen = (load(SCREEN_PATH) as PackedScene).instantiate()
 	viewport.add_child(screen)
 	await _frames(2)
-	screen.show_choice({"room_type": "combat", "title": "Room cleared", "room_label": "Room 1 of 8", "room_type_name": "Combat",
-		"line": "Pick a card, or reject the offer.", "options": options, "rejects_remaining": 3, "rejects_max": 3, "next_line": "Next: Room 2 of 8 - Combat"})
+	screen.show_choice({"room_type": "combat", "title": "Room cleared", "room_label": "Room 1 of 10", "room_type_name": "Combat",
+		"line": "Pick a card, or reject the offer.", "options": options, "rejects_remaining": 3, "rejects_max": 3, "next_line": "Next: Room 2 of 10 - Combat"})
 	await _frames(4)
 	return screen
 

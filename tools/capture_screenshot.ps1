@@ -8,7 +8,7 @@ param(
     [string]$Scenario = "hp_bars",
     [string]$Resolution = "1280x720",
     [string]$TrueSize = "",  # e.g. "2560x1440": render in an oversized SubViewport (not clamped to the monitor)
-    [string[]]$Extra = @()   # more user args, e.g. "--run-room=8","--run-clear-after=2" (Milestone 3a run launch args)
+    [string[]]$Extra = @()   # more user args, e.g. "--run-room=10","--run-clear-after=2" (Milestone 3a run launch args)
 )
 
 $root = Split-Path -Parent $PSScriptRoot

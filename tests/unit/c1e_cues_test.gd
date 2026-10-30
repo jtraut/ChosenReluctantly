@@ -170,14 +170,16 @@ func test_pass_through_ghosts_the_body_and_survives_a_hit_flash() -> void:
 	var player: Player = main.player
 	var cues: PlayerCues = _cues(main)
 	assert_bool(cues.is_ghosted()).is_false()
-	player.grant_pass_through(0.5)
+	player.grant_pass_through(1.0)
+	assert_float(player.body_mesh.transparency).is_equal(0.0)  # not yet: a short dash must not flicker
+	await get_tree().create_timer(VfxConfig.marker("ghost_show_delay") + 0.1, false).timeout
 	assert_float(player.body_mesh.transparency).is_greater(0.0)
 	assert_object(cues._ghost_ring).is_not_null()
 	player.health.take_damage(1.0)  # the hit flash tweens the albedo, never the transparency
 	assert_float(player.body_mesh.transparency).is_greater(0.0)
 	var pool: EffectPool = EffectPool.for_world(main)
 	assert_bool(pool.is_running(cues._ghost_ring, cues._ghost_ring_generation)).is_true()
-	await get_tree().create_timer(0.8, false).timeout
+	await get_tree().create_timer(1.0, false).timeout
 	await _frames(3)
 	assert_bool(player.is_pass_through()).is_false()
 	assert_float(player.body_mesh.transparency).is_equal(0.0)
@@ -191,8 +193,7 @@ func test_the_ghost_look_lasts_until_the_player_is_clear_of_enemies() -> void:
 	var player: Player = main.player
 	var cues: PlayerCues = _cues(main)
 	player.grant_pass_through(0.2)
-	assert_bool(cues.is_ghosted()).is_true()
-	await get_tree().create_timer(0.6, false).timeout
+	await get_tree().create_timer(VfxConfig.marker("ghost_show_delay") + 0.25, false).timeout
 	await _frames(3)
 	# The buff ended, but the body is still inside an enemy, so it is still non-solid and still drawn ghosted.
 	assert_bool(player.is_pass_through()).is_true()
@@ -429,3 +430,16 @@ func test_count_lines_mark_shortfalls_with_text_and_colour() -> void:
 	var lines: Array[String] = DebugOverlay.count_lines(check)
 	assert_int(lines.size()).is_equal(2)
 	assert_str(lines[1]).contains("Attack group 8/10  SHORT -2")
+
+
+func test_a_short_dash_grant_never_shows_the_ghost() -> void:
+	var main: Main = _main()
+	await _frames(2)
+	var player: Player = main.player
+	var cues: PlayerCues = _cues(main)
+	player.grant_pass_through(0.15)
+	await get_tree().create_timer(VfxConfig.marker("ghost_show_delay") + 0.2, false).timeout
+	await _frames(3)
+	assert_bool(player.is_pass_through()).is_false()
+	assert_bool(cues.is_ghosted()).is_false()
+	assert_float(player.body_mesh.transparency).is_equal(0.0)

@@ -273,6 +273,12 @@ func frame_color() -> Color:
 	return PoolDatabase.frame_color_for_card(frame_card_id()) if frame_card_id() != "" else Color.html(String(_cfg["option_card_border_color"]))
 
 
+## Pixel width of the focus ring at `scale` (data: option_focus_width). The family-card ring is drawn this far outside the
+## card, so whatever clips the cards (the prompt's ScrollContainer) must leave this much room on every side.
+static func focus_ring_width(cfg: Dictionary, scale: float) -> int:
+	return maxi(roundi(float(cfg["option_focus_width"]) * scale), 2)
+
+
 func _apply_styles(enabled: bool) -> void:
 	var border_w: int = maxi(roundi(2.0 * _scale), 1)
 	var radius: int = roundi(8.0 * _scale)
@@ -300,7 +306,7 @@ func _apply_styles(enabled: bool) -> void:
 	var focus := StyleBoxFlat.new()
 	focus.draw_center = false
 	focus.set_corner_radius_all(radius)
-	var focus_w: int = maxi(roundi(float(_cfg["option_focus_width"]) * _scale), 2)
+	var focus_w: int = focus_ring_width(_cfg, _scale)
 	focus.set_border_width_all(focus_w)
 	focus.border_color = Color.html(String(_cfg["option_focus_color"]))
 	if family:

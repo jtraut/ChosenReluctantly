@@ -4,7 +4,9 @@ extends Node
 ## AimIndicator and PlayerOcclusionCue), so Player and its flash code stay untouched. Pure display:
 ## it listens to signals the Player and its Health and StatusEffectManager already emit.
 ##
-##   Ghost (Player.pass_through_changed): the body fades (GeometryInstance3D.transparency, which the hit flash
+##   Ghost (Player.pass_through_changed), shown only once pass-through has lasted ghost_show_delay: a movement
+##   dash grants it for 0.1-0.3 s, and a flash that short is noise. Shadow Step and the post-dash "stuck inside
+##   a body" restore window last longer and do show it. The body fades (GeometryInstance3D.transparency, which the hit flash
 ##   and the death tween do not touch, unlike the albedo) and a ring breathes at the feet while pass-through is
 ##   on. The ring is the cue that does not rely on the fade or on a colour.
 ##   Heal number (Health.health_changed): every HP the player gains is shown as "+N", batched so a Flurry's
@@ -17,6 +19,7 @@ extends Node
 var _player: Player = null
 var _ghost_ring: PooledEffect = null
 var _ghost_ring_generation: int = 0
+var _ghost_request: int = 0  ## bumped on every pass-through change; a pending delayed show only fires for its own request
 var _last_hp: float = -1.0
 var _pending_heal: float = 0.0
 var _heal_wait: float = 0.0
@@ -86,15 +89,32 @@ static func drain_allowed(now_msec: int, last_msec: int, min_interval: float) ->
 func _on_pass_through_changed(active: bool) -> void:
 	if _player == null or not is_instance_valid(_player) or _player.body_mesh == null:
 		return
+	_ghost_request += 1
 	if active:
-		_player.body_mesh.transparency = ghost_transparency(VfxConfig.marker("ghost_body_alpha"))
-		if _ghost_ring == null:
-			var pool := EffectPool.for_world(_player.get_parent())
-			_ghost_ring = TemplateVfx.ghost_ring(pool, _player)
-			_ghost_ring_generation = _ghost_ring.generation if _ghost_ring != null else 0
+		var delay: float = VfxConfig.marker("ghost_show_delay")
+		if delay <= 0.0:
+			_show_ghost()
+		else:
+			_show_ghost_after(delay, _ghost_request)
 	else:
 		_player.body_mesh.transparency = 0.0
 		_stop_ghost_ring()
+
+
+func _show_ghost_after(delay: float, request: int) -> void:
+	await get_tree().create_timer(delay, false).timeout
+	if request == _ghost_request and _player != null and is_instance_valid(_player) and _player.is_pass_through():
+		_show_ghost()
+
+
+func _show_ghost() -> void:
+	if _player == null or _player.body_mesh == null:
+		return
+	_player.body_mesh.transparency = ghost_transparency(VfxConfig.marker("ghost_body_alpha"))
+	if _ghost_ring == null:
+		var pool := EffectPool.for_world(_player.get_parent())
+		_ghost_ring = TemplateVfx.ghost_ring(pool, _player)
+		_ghost_ring_generation = _ghost_ring.generation if _ghost_ring != null else 0
 
 
 func _stop_ghost_ring() -> void:

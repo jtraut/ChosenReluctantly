@@ -120,7 +120,7 @@ func _next_room_type() -> String:
 	return String(rooms[next_index]["type"]) if next_index < rooms.size() else ""
 
 
-## "Next: Room N of 8 - Type" above the usual hint text (no next room after the last).
+## "Next: Room N of M - Type" above the usual hint text (no next room after the last).
 func _next_hint(hint: String) -> String:
 	var next_line: String = _controller.next_room_line() if _controller != null else ""
 	if next_line == "":
@@ -359,6 +359,11 @@ func _fill_options(options: Array, content: Dictionary = {}) -> void:
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var cfg := UiConfig.run_ui()
 	var s := _scale(cfg)
+	# The ScrollContainer clips its children, and the family-card focus ring sits outside the card: pad it so the ring
+	# is not cut off (the notch at the left and top edges, PL2).
+	var ring := StyleBoxEmpty.new()
+	ring.set_content_margin_all(float(RunOptionCard.focus_ring_width(cfg, s)))
+	scroll.add_theme_stylebox_override("panel", ring)
 	var texts: Dictionary = RunConfig.ui().get("option", {})
 	var owned: Dictionary = content.get("owned", {})
 	_layout = layout_for(options)
@@ -608,13 +613,13 @@ func _fit_panel() -> void:
 		# The removal grid scrolls when it would not fit: give the scroll area what the rest of the panel leaves.
 		var rest_h: float = panel.get_combined_minimum_size().y - scroll.get_combined_minimum_size().y
 		var room: float = _avail_height(cfg) - rest_h
-		var content_h: float = options_box.get_combined_minimum_size().y
+		var content_h: float = options_box.get_combined_minimum_size().y + scroll.get_theme_stylebox("panel").get_minimum_size().y
 		var wanted: float = minf(content_h, maxf(room, 120.0 * _scale(cfg)))
 		if not is_equal_approx(scroll.custom_minimum_size.y, wanted):
 			scroll.custom_minimum_size.y = wanted
 	elif scroll.visible:
 		# An offer never scrolls: the area is exactly as tall as its content and the whole panel shrinks to fit.
-		var whole_h: float = options_box.get_combined_minimum_size().y
+		var whole_h: float = options_box.get_combined_minimum_size().y + scroll.get_theme_stylebox("panel").get_minimum_size().y
 		if not is_equal_approx(scroll.custom_minimum_size.y, whole_h):
 			scroll.custom_minimum_size.y = whole_h
 		floor_scale = float(cfg["offer_min_fit_scale"])

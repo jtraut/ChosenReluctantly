@@ -312,7 +312,7 @@ func has_choice() -> bool:
 	return _state != null and _state.has_pending()
 
 
-## "Next: Room 4 of 8 - Elite" (data ui.next_line), or "" after the last room.
+## "Next: Room 4 of 10 - Elite" (data ui.next_line), or "" after the last room.
 func next_room_line() -> String:
 	if _state == null or _state.room_index + 1 >= _rooms.size():
 		return ""
@@ -354,7 +354,7 @@ func room_total() -> int:
 	return _rooms.size()
 
 
-## "Room 3 of 8" text from data (ui.room_label).
+## "Room 3 of 10" text from data (ui.room_label).
 func room_label() -> String:
 	return String(RunConfig.ui()["room_label"]) % [room_number(), room_total()]
 

@@ -28,5 +28,5 @@ script = ExtResource("2")
 [node name="Label" type="Label" parent="Panel/Row"]
 layout_mode = 2
 size_flags_vertical = 4
-text = "Room 1 of 8  -  Combat"
+text = "Room 1 of 10  -  Combat"
 mouse_filter = 2

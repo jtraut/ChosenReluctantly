@@ -1,6 +1,6 @@
 # Chosen, Reluctantly
 
-A 3D isometric action RPG where your skills are cards: real-time combat driven by typed card slots, each with its own shuffled mini-deck. Built around deep class/element build combinations and roguelite runs with persistent between-run progression. Currently a placeholder-visuals prototype: two playable classes (a Fire Rogue and a Fire Wizard, picked at the start of each run), a seeded 8-room run (combat, elite, rest, boss) with card rewards after fights, a deck-clean choice in the rest room, and a three-phase final boss, The Overly Enthusiastic Guardian (placeholder name). See `docs/GDD.md` for the design and `docs/ROADMAP.md` for status.
+A 3D isometric action RPG where your skills are cards: real-time combat driven by typed card slots, each with its own shuffled mini-deck. Built around deep class/element build combinations and roguelite runs with persistent between-run progression. Currently a placeholder-visuals prototype: two playable classes (a Fire Rogue and a Fire Wizard, picked at the start of each run), a seeded 10-room run (combat, elite, rest, boss) with card rewards after fights, a deck-clean choice in the rest room, and a three-phase final boss, The Overly Enthusiastic Guardian (placeholder name). See `docs/GDD.md` for the design and `docs/ROADMAP.md` for status.
 
 ## Docs
 | File | What it is |
@@ -35,15 +35,15 @@ godot --path . --quit   # smoke-check with no window (verified: exits 0)
 godot --path .          # play it: starts a run
 ```
 
-A normal launch shows the **class pick** (Rogue or Wizard; 1/2 or the arrows highlight, Enter or a click confirms; the HUD is hidden behind it), then starts a **run**: 8 rooms in a row (5 combat, 1 elite, 1 rest, boss last), built from a seed; see `data/run.json` and `docs/ARCHITECTURE.md` section 2. The room indicator at the top right shows "Room X of Y - Type" with a shape per type (circle combat, diamond elite, plus rest, star boss). After a won combat or elite room you pick a reward card (see below); a rest room offers heal or remove a card; any other room shows a "Room cleared" panel with Continue. The last room is the boss (`data/bosses.json`): its HP bar shows at the top centre with its name, phase notches and the attack it is winding up. Killing it ends with a short death beat, then the stats screen; Game Over shows "Reached room X of Y". Try again and New run start a new seed. `scenes/main/Main.tscn` is the endless arena, still used by tests, scenarios, the wave sim and VpCapture without `--run`.
+A normal launch shows the **class pick** (Rogue or Wizard; 1/2 or the arrows highlight, Enter or a click confirms; the HUD is hidden behind it), then starts a **run**: 10 rooms in a row (7 combat, 1 elite, 1 rest, boss last), built from a seed; see `data/run.json` and `docs/ARCHITECTURE.md` section 2. The room indicator at the top right shows "Room X of Y - Type" with a shape per type (circle combat, diamond elite, plus rest, star boss). After a won combat or elite room you pick a reward card (see below); a rest room offers heal or remove a card; any other room shows a "Room cleared" panel with Continue. The last room is the boss (`data/bosses.json`): its HP bar shows at the top centre with its name, phase notches and the attack it is winding up. Killing it ends with a short death beat, then the stats screen; Game Over shows "Reached room X of Y". Try again and New run start a new seed. `scenes/main/Main.tscn` is the endless arena, still used by tests, scenarios, the wave sim and VpCapture without `--run`.
 
 ### Launch options
-Game args go after `--`, for example `godot --path . -- --run-seed=7 --run-room=8`. Options marked "run" are read only by a normal run launch (RunMain) and are ignored with `--scenario` or in the endless arena. "First run" means Try again and New run do not repeat it; "whole launch" means they do. Parsed in `src/run/RunController.gd` (`_apply_launch_args`), `src/run/DebugDecks.gd` (also `--class`), `src/ui/ClassPickScreen.gd`, `src/ui/RunPromptScreen.gd` and `src/debug/CaptureArgs.gd`.
+Game args go after `--`, for example `godot --path . -- --run-seed=7 --run-room=10`. Options marked "run" are read only by a normal run launch (RunMain) and are ignored with `--scenario` or in the endless arena. "First run" means Try again and New run do not repeat it; "whole launch" means they do. Parsed in `src/run/RunController.gd` (`_apply_launch_args`), `src/run/DebugDecks.gd` (also `--class`), `src/ui/ClassPickScreen.gd`, `src/ui/RunPromptScreen.gd` and `src/debug/CaptureArgs.gd`.
 
 | Option | What it does | Example |
 |---|---|---|
 | `--run-seed=N` | Run: seed for the first run only. Later runs get random seeds. | `godot --path . -- --run-seed=7` |
-| `--run-room=K` | Run: start at room K (1-based), first run only. | `godot --path . -- --run-seed=1 --run-room=8` (boss room) |
+| `--run-room=K` | Run: start at room K (1-based), first run only. | `godot --path . -- --run-seed=1 --run-room=10` (boss room) |
 | `--run-clear-after=S` | Run: clear the first room after S seconds (debug, for captures). | `godot --path . -- --run-clear-after=1` |
 | `--run-auto-choose=<id>[,<id>...]` | Run: the choice screen picks those option ids in turn, skipping the arm delay (debug). | `godot --path . -- --run-seed=1 --run-room=5 --full-deck --run-auto-choose=remove_menu` |
 | `--full-deck` | Run: start with the full card list instead of the starter (every card of the character's pools: 24 for the Rogue, 18 for the Wizard; or the preset's `full` list with `--deck`). Whole launch. | `godot --path . -- --full-deck` |
@@ -64,16 +64,16 @@ Notes:
 - `--deck` is ignored with `--scenario` and in the arena, because only the run reads it. `--list-decks` needs the run too (a plain launch).
 - Preset files (`data/debug_decks/<name>.json`): `name` (equals the file name), `description`, `full` (card ids, copies allowed) and `starter` (a sub-multiset of `full`). Adding a file needs no code. Shipped: `fire-heavy-rogue`, `physical-rogue` (has 2 Fire cards, the rules' minimum) and `mixed-rogue`; `--list-decks` prints the current set. A preset is only the starting deck: rewards and removals change it during the run.
 - `tools/VpCapture.tscn` has its own args: `--size=WxH` (required) and `--run` (host the run instead of the arena). Everything else is the capture args above. `tools/capture_screenshot.ps1` builds these for you.
-- To jump straight to the boss: `-- --run-seed=1 --run-room=8`, or capture it with `-Scenario "" -Extra "--run-seed=1","--run-room=8"`.
+- To jump straight to the boss: `-- --run-seed=1 --run-room=10`, or capture it with `-Scenario "" -Extra "--run-seed=1","--run-room=10"`.
 - `--scenario=...` always keeps the endless arena, even on a normal launch.
 
 ### Rewards and deck-clean (Milestone 3b)
 - After each won **combat or elite** room (never the last): 3 card offers (`rewards.offer_size` in `data/run.json`). Pick one, or reject all (3 rejects per run, `rejects_per_run`). Offers are seeded, drawn only from the character's pools, and cards you do not own are weighted 4:1 over owned ones. A card may carry an optional `requires` filter.
 - **Rest room:** Heal 30% of max HP, or remove a card. A card whose removal would break a deck minimum is greyed out with the reason; if none can go, the remove tile is disabled.
 - **Starter deck:** 15 cards, 3 per slot, per class (`starting_deck` in `data/characters.json`; it used to be in `data/run.json`). It was the full 24-card Rogue pool before 3b. The deck minimum is 3 unique per slot, so with the plain starter the removal menu is disabled until picks add cards.
-- The choice screen shows card tiles, a reject tile with pips, and a "Next: Room N of 8 - Type" line. Keys 1-N highlight, Enter or a click confirms. Options ignore input for 0.4 s after opening (`prompt_option_arm_delay` in `data/ui.json`), and Space is swallowed (the Continue and New run buttons have the same delay, and Space no longer confirms them). The offer panel shrinks to fit the window and never scrolls (tested from 1024x600 up); only the removal grid scrolls. Card tiles show "Slot N now: A / B / C". A reload mid-reward resumes the same offer.
+- The choice screen shows card tiles, a reject tile with pips, and a "Next: Room N of 10 - Type" line. Keys 1-N highlight, Enter or a click confirms. Options ignore input for 0.4 s after opening (`prompt_option_arm_delay` in `data/ui.json`), and Space is swallowed (the Continue and New run buttons have the same delay, and Space no longer confirms them). The offer panel shrinks to fit the window and never scrolls (tested from 1024x600 up); only the removal grid scrolls. Card tiles show "Slot N now: A / B / C". A reload mid-reward resumes the same offer.
 
-Controls (from `data/input_bindings.json`): WASD move, mouse aim, Space dodge, left click light attack, right click heavy attack, 1-5 use a card slot, Ctrl+1-5 swap a dead card, Esc pause/settings, F3 debug overlay. Holding a slot key shows the card's hit area and releasing casts it (change with the `cast_trigger` setting in the pause screen).
+Controls (from `data/input_bindings.json`): WASD move, mouse aim, Space dodge, left click light attack, right click heavy attack, 1-5 use a card slot, Shift+1-5 swap a dead card (Ctrl+1-5 does nothing), Esc pause/settings, F3 debug overlay. Movement cards (dashes, blinks, leaps) pass through enemies while they move; the dodge does not. The ghost look on the player appears only after `ghost_show_delay` in `data/vfx.json`. Holding a slot key shows the card's hit area and releasing casts it (change with the `cast_trigger` setting in the pause screen).
 
 `godot` must be on PATH, or set `GODOT_BIN` to the full path of the Godot executable, or call it directly: `"C:\path\to\Godot.exe" --path .`. All `tools\*.ps1` scripts resolve the binary from `GODOT_BIN` first, then `godot_console`/`godot` on PATH, and prefer a `*_console.exe` sibling.
 
@@ -84,7 +84,7 @@ Tests use [gdUnit4](https://github.com/godot-gdunit-labs/gdUnit4), vendored in `
 powershell -File tools\run_tests.ps1
 ```
 
-This runs every suite under `/tests` and exits non-zero on any failure. Last run: see "Last verification" below (PL2: 1082 test cases). Reports go to `reports/` (gitignored). The script uses the console-subsystem `*_console.exe` build when one sits next to the resolved binary, because PowerShell cannot reliably wait on or read the windowed build, which made failures look like passes (see `docs/DECISIONS.md`).
+This runs every suite under `/tests` and exits non-zero on any failure. Last run: see "Last verification" below (PL2: 1102 test cases). Reports go to `reports/` (gitignored). The script uses the console-subsystem `*_console.exe` build when one sits next to the resolved binary, because PowerShell cannot reliably wait on or read the windowed build, which made failures look like passes (see `docs/DECISIONS.md`).
 
 > After adding a new global class (`class_name`) the plain headless run may fail with "Could not find type X in current scope". Run `godot --headless --editor --quit --path .` once to rebuild the class cache (verified: exits 0), then re-run the tests.
 
@@ -112,7 +112,7 @@ godot --path . -- --screenshot-count=3 --screenshot-interval=2.0 --screenshot-ou
 godot --path . -- --scenario=hp_bars                                          # play a scenario by hand, no capture
 ```
 
-`capture_screenshot.ps1` parameters: `-After` (seconds, comma list, default "3.0"), `-Out` (default `screenshots\shot.png`), `-Scenario` (default `hp_bars`; `-Scenario ""` captures the normal run), `-Resolution` (default `1280x720`), `-Extra` (more game args, comma-split, for example `-Extra "--run-seed=7,--run-room=8"`). Without `--screenshot-out` the game writes to `user://screenshot.png`. Run-screen examples (both verified, each saved a PNG, exit 0; `-Extra` also accepts several quoted args):
+`capture_screenshot.ps1` parameters: `-After` (seconds, comma list, default "3.0"), `-Out` (default `screenshots\shot.png`), `-Scenario` (default `hp_bars`; `-Scenario ""` captures the normal run), `-Resolution` (default `1280x720`), `-Extra` (more game args, comma-split, for example `-Extra "--run-seed=7,--run-room=10"`). Without `--screenshot-out` the game writes to `user://screenshot.png`. Run-screen examples (both verified, each saved a PNG, exit 0; `-Extra` also accepts several quoted args):
 
 ```
 powershell -File tools\capture_screenshot.ps1 -Scenario "" -After "3.0" -Out screenshots/reward.png -Extra "--run-seed=3","--run-room=1","--run-clear-after=1"   # reward screen
@@ -181,7 +181,7 @@ powershell -File tools\run_wave_sim.ps1 -Seed 1 -Seconds 150 -Runs 3
 powershell -File tools\run_wave_sim.ps1 -Seed 1 -Seconds 120 -God
 powershell -File tools\run_wave_sim.ps1 -Seed 20 -Seconds 60 -Runs 3 -Idle -Scale 1
 powershell -File tools\run_wave_sim.ps1 -Seed 1 -Seconds 20 -God -Deck fire-heavy-rogue    # verified: WAVE SIM OK, exit 0
-powershell -File toolsun_wave_sim.ps1 -Seed 1 -Seconds 20 -God -Deck physical-rogue -LightHeavyOnly    # verified: WAVE SIM OK, exit 0
+powershell -File tools\run_wave_sim.ps1 -Seed 1 -Seconds 20 -God -Deck physical-rogue -LightHeavyOnly    # verified: WAVE SIM OK, exit 0
 ```
 ```
 powershell -File tools\run_wave_sim.ps1 -Run -Seed 1 -Runs 2    # whole runs; verified in the 3b pass: both runs WON, prints WAVE SIM OK
@@ -190,20 +190,20 @@ powershell -File tools\run_wave_sim.ps1 -Run -Seed 1 -Runs 2    # whole runs; ve
 
 All forms run and end with `WAVE SIM OK` (verified with shorter `-Seconds`; the 150 s and 120 s forms use the same code path). The wave table and the simultaneous-enemy cap live in `data/waves.json` (validated by `src/enemies/WaveConfig.gd`; enemy ids and scenes in `data/enemies.json`). Headless frame times exclude rendering.
 
-**Seeds repeat exactly** on the same machine and build. The same `-Seed` (at `-Scale` 1) gives the same `result:` line: HP lost, kills, casts and a `state_hash` of final positions (verified: two runs of `-Seed 1 -Seconds 30` were identical, `state_hash` 2792856473; the default 90 s run of seed 1 gives 4120250839). A windowed run, a `-Scale` above 1, or another machine or Godot version can differ. Besides the `result:` line the sim prints a `pinned:` line (frames where the bot was commanded to move but the player barely moved, and the longest stretch) and a `climb:` line (the player's maximum feet height), which watch for solid enemies pinning or lifting the player.
+**Seeds repeat exactly** on the same machine and build. The same `-Seed` (at `-Scale` 1) gives the same `result:` line: HP lost, kills, casts and a `state_hash` of final positions (verified: two runs of `-Seed 1 -Seconds 30` were identical, `state_hash` 3513335656; the default 90 s run of seed 1 gives 2081798188). A windowed run, a `-Scale` above 1, or another machine or Godot version can differ. Besides the `result:` line the sim prints a `pinned:` line (frames where the bot was commanded to move but the player barely moved, and the longest stretch) and a `climb:` line (the player's maximum feet height), which watch for solid enemies pinning or lifting the player.
 
 ## Death / restart soak (real scene reload)
 Kills the player in the real Main scene, waits for `game_over_ready`, calls `restart_arena()` (twice, on purpose), repeats, and also restarts mid slow-mo. It also places a Fire Wall zone and a Shadow Step pass-through grant, and reloads with the buff live, then checks the zone manager, the static pass-through flag and the enemy mask. It checks HP, `Engine.time_scale`, enemy count, wave timer, Game Over screen state and orphan/object/node counts, and fails on any engine ERROR/WARNING line.
 
 ```
 powershell -File tools\run_reload_cycle.ps1 -Cycles 5     # verified: prints "RELOAD CYCLE OK", exit 0
-powershell -File toolsun_reload_cycle.ps1 -Cycles 2 -Class wizard    # verified: prints "RELOAD CYCLE OK", exit 0
+powershell -File tools\run_reload_cycle.ps1 -Cycles 2 -Class wizard    # verified: prints "RELOAD CYCLE OK", exit 0
 ```
 `-Class rogue|wizard` runs the soak as that class (passed as `--class=`). It runs `tools/ReloadCycle.tscn` headless; it must be a scene so autoloads resolve. Re-run it whenever `Main`, `Juice`, `Player` or the autoloads change.
 
 ## Last verification
-PL2 docs pass, 2026-10-30, Windows, Godot 4.7.2 (console build via `GODOT_BIN`), HEAD fab00a7:
-- `toolsun_tests.ps1`: 1082 of 1082, 0 failures, exit 0 (5 min 31 s).
+F1 docs pass, 2026-10-30, Windows, Godot 4.7.2 (console build via `GODOT_BIN`), HEAD 4904390. Only the first line below was re-run in the F1 pass; the rest is carried from the PL2 pass (HEAD fab00a7):
+- `tools\run_tests.ps1`: 1102 of 1102, 0 failures, exit 0 (5 min 56 s, F1 pass).
 - `--class=nope`, a bare `--class` and `--deck=nope` (headless): each exit 2, only "Launch refused: ..." on stderr, no stack trace.
 - `capture_screenshot.ps1` removal-grid example (`--class=rogue --run-seed=1 --run-room=5 --full-deck --run-auto-choose=remove_menu`): saved a PNG, exit 0. `SlotStateCapture.tscn -- 1280 720 <out.png>`: saved a PNG, exit 0.
 - Not re-run in this pass: the other captures (including `wizard_bolt` and the class pick screen), the bot sim, the wave sim, the reload soak, `-Deck` sims, `-TrueSize`, and the seeded-hash checks (last verified in the W1a pass). Not run interactively: plain `godot --path .`, which opens a window and waits for a person.

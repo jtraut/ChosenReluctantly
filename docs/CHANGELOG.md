@@ -2,7 +2,30 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-10-30 (Slice PL2: small polish; Slice W1a: a playable Fire Wizard; decisions for F1, P-dodge and W1b)
+## 2026-10-30 (Slice F1: director feedback batch; Slice PL2: small polish; Slice W1a: a playable Fire Wizard; decisions for F1, P-dodge and W1b)
+
+### Slice F1: director feedback batch
+
+Commits 937a388..4904390. Gameplay efb0516, cef82c5; ux a1504cc; qa review c4c93ff, f305fae (PASS, `docs/reviews/2026-10-30-f1-qa.md`); short playtest 027d65a (`docs/playtests/2026-10-30-f1-short.md`, no blocker).
+
+#### Added
+- **[Director decision] Movement cards pass through enemies while they move.** New optional `dash` template param `pass_through` (bool, `src/combat/EffectTemplates.gd`). Set on the six movement dash cards: `fire_blaze_and_bail`, `neutral_backward_leap`, `rogue_lunge_strike`, `rogue_ugh_fine_moving`, `wizard_sideways_blink`, `wizard_tactical_hover`. Shadow Step (a buff) is unchanged. The dodge still does not pass through. `Player.start_forced_move` takes a new `pass_through` argument; the grant lasts exactly the move. A dash that ends inside a body reuses Shadow Step's restore (ghosted for up to 3 s until clear). Reluctant Lunge on 3 enemies in a line: damage [8, 0, 0] -> [8, 8, 8], travel 0.73 m -> 3.0 m. (efb0516)
+- `ghost_show_delay` in `data/vfx.json` (0.35 s): the ghost look shows only after pass-through has lasted that long, so short dashes do not flicker. (a1504cc)
+- Tests: 1082 -> 1102. New: `tests/unit/f1_movement_test.gd`, `tests/unit/f1_qa_test.gd`. (efb0516, c4c93ff)
+
+#### Changed
+- **[Director decision] Wall of Mild Fire is bigger** (`data/cards/fire_wall.json`): length 5.0 -> 7.5 m, width 1.2 -> 1.8 m. The preview and burn-down follow. (efb0516, cef82c5)
+- **[Director decision] Dead-card swap key:** Ctrl+1-5 -> Shift+1-5 (`data/input_bindings.json`). Shift+N only swaps; Ctrl+N does nothing. (efb0516)
+- **[Director decision] Runs are 10 rooms, not 8** (`data/run.json`): composition 5 combat / 1 elite / 1 rest / 1 boss -> 7 / 1 / 1 / 1. Placement ranges: elite [3, 6] -> [3, 8], rest [2, 6] -> [2, 8]. The boss is room 10 (`--run-room=10`). "of 10" strings, fixtures and comments updated. (efb0516, a1504cc)
+- Boss spawn box `screen_up` 2.2 -> 1.5 (`data/bosses.json`) so the boss's head clears the HUD at 1024x600. Not a director decision. The fallback sweep is finer: `BOSS_SWEEP_ANGLES` 72, tried at three distances (`src/enemies/EnemySpawner.gd`). (efb0516)
+- Arena sim hash baselines changed. The Wall change caused it (bisected). 30 s seed 1: 2792856473 -> 3513335656. 90 s seed 1: 4120250839 -> 2081798188. (efb0516)
+
+#### Fixed
+- The focus ring on reward cards is no longer clipped by the scroll area (`RunOptionCard.focus_ring_width` helper). (a1504cc)
+
+#### Docs and process
+- Open item: D19 (should the dodge work during the post-dash ghost window?) waits on the director. As built, the dodge passes through enemies in that window. A launch quirk was routed to P-dodge. (eb8b3ad)
+- README: run length, `--run-room=10`, swap key, test count, arena hashes, and two `tools\run_...` paths that had lost a backslash (a literal carriage return) are fixed.
 
 ### Slice PL2: small polish before W1b
 

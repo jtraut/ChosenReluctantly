@@ -55,7 +55,7 @@ func test_shipped_data_has_the_flag_on_and_is_valid() -> void:
 
 
 func test_validation_of_the_body_block() -> void:
-	var good: Dictionary = {"dodge": {"speed": 20.0, "duration": 0.25, "cooldown": 0.8, "block_ticks_after_pause": 2}}
+	var good: Dictionary = {"dodge": {"speed": 20.0, "duration": 0.25, "cooldown": 1.2, "block_ticks_after_pause": 2, "charges": 3, "min_charges": 0, "max_charges": 4}}
 	assert_array(PlayerConfig.validate(good)).override_failure_message("no body block = defaults").is_empty()
 	for value: Variant in [true, false]:
 		var ok: Dictionary = good.duplicate(true)

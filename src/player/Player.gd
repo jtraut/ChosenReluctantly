@@ -22,6 +22,11 @@ signal attack_cancelled(attack_id: StringName)
 ## ends, on death, and on leaving the tree. ux: the ghosted-player cue listens here or reads is_pass_through().
 signal pass_through_changed(active: bool)
 
+## The dodge charge pool changed: a charge was spent, one recharged, the maximum changed, or the pool was reset.
+## ux: the pip indicator listens here for the pip count and filled pips, and reads get_dodge_state() each frame
+## for the recharging pip's fill (`recharge_progress`).
+signal dodge_charges_changed(current: int, maximum: int)
+
 @export var move_speed: float = 6.0
 @export var acceleration: float = 24.0
 @export var friction: float = 28.0
@@ -35,7 +40,13 @@ static var default_rng_seed: int = -1
 ## Dodge roll tuning, loaded from data/player.json (PlayerConfig) in _ready.
 var dodge_speed: float = 20.0
 var dodge_duration: float = 0.25
-var dodge_cooldown: float = 0.8
+## dodge_cooldown is the recharge time of ONE charge (seconds).
+var dodge_cooldown: float = 1.2
+## The hard clamp on the effective charge count (data/player.json dodge.min_charges / max_charges).
+var dodge_min_charges: int = 0
+var dodge_max_charges: int = 4
+## Charge pool (src/player/DodgeCharges.gd). Built in _ready.
+var dodge_charges: DodgeCharges = null
 
 ## Which character this is (a key of data/characters.json: rogue, wizard). "" = work it out from `owned_pools`, else the
 ## default (Rogue). Main sets it before _ready in a run, from the run's class. It picks the pools, max HP, body colour,
@@ -96,7 +107,6 @@ const CAST_QUEUE_LIMIT := 8
 ## The pool the telegraphs were drawn in, found once at wind-up start (not every frame).
 var _telegraph_pool: EffectPool = null
 var _telegraph_generations: Dictionary = {}
-var _dodge_cooldown_remaining: float = 0.0
 ## Dodge presses are ignored until this physics frame (set when the game pauses or resumes).
 var _dodge_blocked_until_frame: int = -1
 var _base_body_color: Color = Color.WHITE
@@ -161,7 +171,11 @@ func _ready() -> void:
 	dodge_duration = float(dodge_cfg["duration"])
 	dodge_cooldown = float(dodge_cfg["cooldown"])
 	dodge_block_ticks_after_pause = int(dodge_cfg["block_ticks_after_pause"])
-	card_slots = CardSlotController.new(self, WorldRef.get_world(get_tree()), team, stat_modifiers, owned_pools, card_rng)
+	dodge_min_charges = int(dodge_cfg["min_charges"])
+	dodge_max_charges = int(dodge_cfg["max_charges"])
+	dodge_charges = DodgeCharges.new(dodge_cooldown, 0)
+	dodge_charges.reset(dodge_charges_max())
+	card_slots = CardSlotController.new(self, WorldRef.get_world(get_tree()), team, stat_modifiers, owned_pools, card_rng, CharacterDatabase.slot_base_cooldowns(character_id))
 	card_slots.status_rng = status_rng
 	damage_dealt.connect(_on_damage_dealt)
 	_setup_attacks()
@@ -387,11 +401,44 @@ func _flash_body(color: Color) -> void:
 
 
 func _tick_cooldowns(delta: float) -> void:
-	_dodge_cooldown_remaining = maxf(_dodge_cooldown_remaining - delta, 0.0)
+	if dodge_charges.advance(delta, dodge_charges_max()):
+		_emit_dodge_charges()
+
+
+## The effective dodge charge maximum: this character's count (data/characters.json, else the data/player.json default)
+## through the `dodge_charges` stat modifiers, rounded and clamped to dodge.min_charges..max_charges.
+func dodge_charges_max() -> int:
+	var dodge_cfg: Dictionary = PlayerConfig.dodge()
+	var base: int = CharacterDatabase.dodge_charges(character_id, int(dodge_cfg["charges"]))
+	return DodgeCharges.effective_max(base, stat_modifiers, PlayerConfig.CHARGES_STAT, dodge_min_charges, dodge_max_charges)
+
+
+## For the dodge pip indicator: {current: ready charges, max: pips to draw, recharging: bool, recharge_progress: 0..1
+## fill of the pip that is coming back (1.0 when full), recharge_remaining: seconds, available: a dodge could start now}.
+func get_dodge_state() -> Dictionary:
+	var maximum: int = dodge_charges_max()
+	return {
+		"current": mini(dodge_charges.current, maximum),
+		"max": maximum,
+		"recharging": dodge_charges.is_recharging(maximum),
+		"recharge_progress": dodge_charges.recharge_progress(maximum),
+		"recharge_remaining": dodge_charges.recharge_remaining(maximum),
+		"available": dodge_charges.current > 0 and _forced_move_time_remaining <= 0.0,
+	}
+
+
+## Fills the pool (a new room, Try again). A fresh Player starts full; Main swaps in a fresh scene for both.
+func reset_dodge_charges() -> void:
+	dodge_charges.reset(dodge_charges_max())
+	_emit_dodge_charges()
+
+
+func _emit_dodge_charges() -> void:
+	dodge_charges_changed.emit(dodge_charges.current, dodge_charges_max())
 
 
 func _handle_dodge_input() -> void:
-	if _forced_move_time_remaining > 0.0 or _dodge_cooldown_remaining > 0.0:
+	if _forced_move_time_remaining > 0.0 or dodge_charges.current <= 0:
 		return
 	if Engine.get_physics_frames() <= _dodge_blocked_until_frame:
 		return
@@ -399,7 +446,9 @@ func _handle_dodge_input() -> void:
 		return
 	var input_dir := _movement_input_direction()
 	var dodge_direction := input_dir if input_dir.length_squared() > 0.0001 else -global_transform.basis.z
-	_dodge_cooldown_remaining = dodge_cooldown
+	if not dodge_charges.try_spend(dodge_charges_max()):
+		return
+	_emit_dodge_charges()
 	start_forced_move(dodge_direction, dodge_speed, dodge_duration, true)
 
 
@@ -539,12 +588,24 @@ func _end_all_pass_through() -> void:
 		_set_pass_through(false)
 
 
+## Pass-through is ending and the body may still overlap an enemy (the restore cap ran out, or a thin overlap): move
+## it out horizontally and zero vertical speed, so solid-body depenetration can never launch it upward (an enemy centred
+## exactly on the player gave no push direction and the player shot up; f1 qa). Concentric: back away from the aim.
+func _nudge_out_of_enemies() -> void:
+	var offset: Vector3 = Enemy.clearing_offset(global_position, PLAYER_BODY_RADIUS, global_transform.basis.z)
+	if offset != Vector3.ZERO:
+		global_position += offset
+	velocity.y = 0.0
+
+
 func _set_pass_through(active: bool) -> void:
 	if active:
 		_mask_before_pass_through = collision_mask
 		collision_mask = collision_mask & ~CollisionLayers.ENEMY_BODY
 	else:
 		collision_mask = (collision_mask & ~CollisionLayers.ENEMY_BODY) | (_mask_before_pass_through & CollisionLayers.ENEMY_BODY)
+	if not active and is_inside_tree() and PlayerConfig.collide_with_enemies():
+		_nudge_out_of_enemies()
 	Enemy.set_player_body_suppressed(active)
 	pass_through_changed.emit(active)
 
@@ -795,7 +856,7 @@ func _projectile_direction() -> Vector3:
 ##
 ## Slot keys use exact_match=true on press: without it, Shift+1 would also register as
 ## a plain "1" press and cast slot_1 as well as swap it. Release does NOT use exact
-## match (press 1, press Ctrl, release 1 must still end the hold). The dead-card swap
+## match (press 1, press Shift, release 1 must still end the hold). The dead-card swap
 ## (Shift+N) acts at once and never casts or changes the preview.
 func _unhandled_input(event: InputEvent) -> void:
 	if _dead or event is InputEventMouseMotion:

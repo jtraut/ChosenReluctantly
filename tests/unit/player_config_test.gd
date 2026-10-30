@@ -18,7 +18,7 @@ func test_shipped_data_is_valid_and_dodge_travels_5_metres() -> void:
 	var dodge: Dictionary = PlayerConfig.dodge()
 	assert_float(float(dodge["speed"])).is_equal(20.0)
 	assert_float(float(dodge["duration"])).is_equal(0.25)
-	assert_float(float(dodge["cooldown"])).is_equal(0.8)
+	assert_float(float(dodge["cooldown"])).is_equal(1.2)
 	assert_int(int(dodge["block_ticks_after_pause"])).is_equal(2)
 	assert_float(float(dodge["speed"]) * float(dodge["duration"])).is_equal_approx(5.0, 0.0001)
 
@@ -46,7 +46,7 @@ func test_player_takes_dodge_values_from_data_and_travels_the_data_distance() ->
 
 
 func test_validation_rejects_bad_dodge_data() -> void:
-	var good: Dictionary = {"dodge": {"speed": 20.0, "duration": 0.25, "cooldown": 0.8, "block_ticks_after_pause": 2}}
+	var good: Dictionary = {"dodge": {"speed": 20.0, "duration": 0.25, "cooldown": 1.2, "block_ticks_after_pause": 2, "charges": 3, "min_charges": 0, "max_charges": 4}}
 	assert_array(PlayerConfig.validate(good)).is_empty()
 	assert_array(PlayerConfig.validate("nope")).is_not_empty()
 	assert_array(PlayerConfig.validate({})).is_not_empty()

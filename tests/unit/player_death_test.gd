@@ -91,7 +91,7 @@ func test_actions_blocked_after_death() -> void:
 	TestInput.release(&"slot_1")
 	assert_array(fired).is_empty()
 	assert_float(player.get_attack_progress(&"light")).is_equal(progress_before)
-	assert_float(player._dodge_cooldown_remaining).is_equal(0.0)
+	assert_int(player.dodge_charges.current).is_equal(player.dodge_charges_max())
 	assert_float(player.global_position.distance_to(start)).is_less(0.05)
 	# Dead player cannot be damaged (Health guard) and is not targetable.
 	assert_bool(player.hurtbox.collision_layer == 0).is_true()

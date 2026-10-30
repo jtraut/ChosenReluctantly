@@ -6,6 +6,7 @@
         "element_pool": "fire",
         "pools": ["rogue", "fire", "neutral"],
         "max_hp": 30.0,
+        "dodge_charges": 3,
         "body_color": "#338ce6",
         "attacks": { "light": "default", "heavy": "rogue" },
         "starting_deck": [
@@ -23,6 +24,8 @@
         "element_pool": "fire",
         "pools": ["wizard", "fire", "neutral"],
         "max_hp": 26.0,
+        "dodge_charges": 2,
+        "slot_base_cooldowns": { "recovery": 14.0 },
         "body_color": "#8a4fe0",
         "attacks": { "light": "wizard", "heavy": "wizard" },
         "starting_deck": [

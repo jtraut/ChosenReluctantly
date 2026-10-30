@@ -11,6 +11,8 @@ const HIT_FLASH_COLOR := Color(1.0, 1.0, 1.0)
 const HIT_FLASH_DURATION := 0.12
 const KNOCKBACK_DECAY := 18.0
 const ARRIVAL_MARGIN := 0.3
+## Extra distance past contact when clearing_offset pushes a body out of an enemy.
+const CLEARING_SLACK := 0.02
 ## Sideways bias (fraction of the push length) so a queue of chasers fans out around the target.
 const SWIRL := 0.6
 ## Fallback stun tint (the real one is `visual.tint_color` / `tint_amount` in data/statuses.json).
@@ -159,6 +161,32 @@ static func any_body_overlaps(position: Vector3, radius: float) -> bool:
 		if flat.length() < radius + enemy.body_radius:
 			return true
 	return false
+
+
+## The horizontal move that takes a body of `radius` at `position` clear of every live enemy body, or ZERO when it is
+## already clear. Each pass pushes out of the deepest overlap along the line from that enemy's centre; when the centres
+## coincide (no direction) it pushes along `fallback_direction`. Used to put a player who is still inside an enemy when
+## pass-through ends back outside it, instead of letting the physics depenetration launch them (f1 qa).
+static func clearing_offset(position: Vector3, radius: float, fallback_direction: Vector3) -> Vector3:
+	var fallback := Vector3(fallback_direction.x, 0.0, fallback_direction.z)
+	fallback = fallback.normalized() if fallback.length_squared() > 0.0001 else Vector3.BACK
+	var total := Vector3.ZERO
+	for _pass in range(4):
+		var here: Vector3 = position + total
+		var deepest: float = 0.0
+		var push: Vector3 = Vector3.ZERO
+		for enemy: Enemy in _roster:
+			if enemy.health != null and enemy.health.is_dead():
+				continue
+			var flat := Vector3(here.x - enemy.global_position.x, 0.0, here.z - enemy.global_position.z)
+			var need: float = radius + enemy.body_radius - flat.length()
+			if need > deepest:
+				deepest = need
+				push = (flat.normalized() if flat.length() > 0.001 else fallback) * (need + CLEARING_SLACK)
+		if deepest <= 0.0:
+			break
+		total += push
+	return total
 
 
 static func is_player_body_suppressed() -> bool:

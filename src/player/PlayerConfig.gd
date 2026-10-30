@@ -6,7 +6,7 @@ extends RefCounted
 
 const PATH := "res://data/player.json"
 const DEFAULTS: Dictionary = {
-	"dodge": {"speed": 20.0, "duration": 0.25, "cooldown": 0.8, "block_ticks_after_pause": 2},
+	"dodge": {"speed": 20.0, "duration": 0.25, "cooldown": 1.2, "block_ticks_after_pause": 2, "charges": 3, "min_charges": 0, "max_charges": 4},
 	"body": {"collide_with_enemies": true},
 }
 ## body keys (all booleans). collide_with_enemies: player and enemy bodies block each other (both ways).
@@ -18,12 +18,18 @@ const DODGE_RULES: Dictionary = {
 	"duration": [0.02, 5.0, false],
 	"cooldown": [0.0, 60.0, false],
 	"block_ticks_after_pause": [0.0, 30.0, true],
+	"charges": [0.0, 10.0, true],
+	"min_charges": [0.0, 10.0, true],
+	"max_charges": [0.0, 10.0, true],
 }
+## The stat name a passive or piece of equipment modifies to change the dodge charge count.
+const CHARGES_STAT := "dodge_charges"
 
 static var _cache: Dictionary = {}
 
 
-## The validated dodge block: speed, duration, cooldown (floats) and block_ticks_after_pause (int).
+## The validated dodge block: speed, duration, cooldown (floats; cooldown is the recharge time of ONE charge),
+## block_ticks_after_pause (int) and the charge counts charges (default base), min_charges and max_charges (the hard clamp).
 static func dodge() -> Dictionary:
 	if _cache.is_empty():
 		_cache = load_from(PATH)
@@ -78,6 +84,14 @@ static func validate(data: Variant) -> Array[String]:
 			errors.append("dodge.%s must be between %s and %s" % [key, rule[0], rule[1]])
 		elif bool(rule[2]) and number != floorf(number):
 			errors.append("dodge.%s must be a whole number" % key)
+	if errors.is_empty():
+		var low: int = int((block as Dictionary)["min_charges"])
+		var high: int = int((block as Dictionary)["max_charges"])
+		var base: int = int((block as Dictionary)["charges"])
+		if low > high:
+			errors.append("dodge.min_charges must not exceed dodge.max_charges")
+		elif base < low or base > high:
+			errors.append("dodge.charges must be between dodge.min_charges and dodge.max_charges")
 	for key: Variant in (block as Dictionary).keys():
 		if not DODGE_RULES.has(String(key)):
 			errors.append("dodge.%s is not a known key" % key)

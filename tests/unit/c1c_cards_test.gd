@@ -138,17 +138,21 @@ func test_multi_hit_and_timed_cards_fit_inside_their_own_cooldowns() -> void:
 		assert_float(float(timed[card_id][0])).override_failure_message(card_id).is_less(cooldown)
 
 
+func _recovery_base() -> float:
+	return float(SlotTypeDatabase.get_definition("recovery")["base_cooldown"])
+
+
 func test_recovery_value_per_second_is_in_the_band_of_the_existing_recovery_cards() -> void:
 	var statuses := _statuses()
 	var potion := CardDatabase.get_card("neutral_healing_potion")
-	var potion_hps := float(_effect(potion, "heal")["amount"]) / (8.0 + float(potion["cooldown_modifier"]))
+	var potion_hps := float(_effect(potion, "heal")["amount"]) / (_recovery_base() + float(potion["cooldown_modifier"]))
 	var nap := CardDatabase.get_card("rogue_nap_time")
-	var nap_hps := float(_effect(nap, "heal")["amount"]) / (8.0 + float(nap["cooldown_modifier"]))
+	var nap_hps := float(_effect(nap, "heal")["amount"]) / (_recovery_base() + float(nap["cooldown_modifier"]))
 	var regen_card := CardDatabase.get_card("neutral_regeneration")
 	var regen_def: Dictionary = statuses["regeneration"]
 	var regen_params := _effect(regen_card, "apply_status")
 	var regen_total := floorf(float(regen_params["duration"]) / float(regen_def["tick_interval"])) * float(regen_def["heal_per_tick"])
-	var regen_hps := regen_total / (8.0 + float(regen_card["cooldown_modifier"]))
+	var regen_hps := regen_total / (_recovery_base() + float(regen_card["cooldown_modifier"]))
 	assert_float(regen_hps).is_greater(nap_hps)
 	assert_float(regen_hps).is_less_equal(potion_hps)  # slower than the instant heal
 	assert_float(regen_total).is_equal_approx(14.0, 0.001)

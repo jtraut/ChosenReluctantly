@@ -92,6 +92,24 @@ static func body_color(character_id: String) -> Color:
 	return Color.html(text) if Color.html_is_valid(text) else Color.WHITE
 
 
+## The character's own dodge charge count (data/characters.json `dodge_charges`), or `fallback` (the data/player.json
+## default) when the entry has none. Still clamped by the Player's min/max after modifiers.
+static func dodge_charges(character_id: String, fallback: int) -> int:
+	var value: Variant = get_entry(character_id).get("dodge_charges")
+	if typeof(value) == TYPE_FLOAT or typeof(value) == TYPE_INT:
+		return int(value)
+	return fallback
+
+
+## Per-character slot base cooldown overrides: {slot_type: seconds} (data/characters.json `slot_base_cooldowns`).
+## Slots not listed keep their data/slot_types.json base_cooldown. Empty when the character has none.
+static func slot_base_cooldowns(character_id: String) -> Dictionary:
+	var value: Variant = get_entry(character_id).get("slot_base_cooldowns")
+	if typeof(value) == TYPE_DICTIONARY:
+		return (value as Dictionary).duplicate()
+	return {}
+
+
 ## The attacks.json light variant name ("default" for the plain light).
 static func light_variant(character_id: String) -> String:
 	return String((get_entry(character_id).get("attacks", {}) as Dictionary).get("light", AttackDatabase.DEFAULT_LIGHT))
@@ -176,9 +194,33 @@ static func validate_entry(character_id: String, entry: Dictionary) -> Array[Str
 				errors.append("pools: '%s' is listed twice" % str(pool_id))
 			else:
 				owned.append(String(pool_id))
+	errors.append_array(_tuning_problems(entry))
 	errors.append_array(_pool_kind_problems(entry, owned))
 	errors.append_array(_attack_problems(entry.get("attacks")))
 	errors.append_array(_deck_problems(entry.get("starting_deck"), owned))
+	return errors
+
+
+## Optional per-character tuning: `dodge_charges` (a whole number inside the player.json min/max) and
+## `slot_base_cooldowns` ({known slot type: seconds > 0}).
+static func _tuning_problems(entry: Dictionary) -> Array[String]:
+	var errors: Array[String] = []
+	if entry.has("dodge_charges"):
+		var charges: Variant = entry["dodge_charges"]
+		var dodge: Dictionary = PlayerConfig.dodge()
+		if (typeof(charges) != TYPE_FLOAT and typeof(charges) != TYPE_INT) or float(charges) != floorf(float(charges)) 				or int(charges) < int(dodge["min_charges"]) or int(charges) > int(dodge["max_charges"]):
+			errors.append("'dodge_charges' must be a whole number from %d to %d" % [int(dodge["min_charges"]), int(dodge["max_charges"])])
+	if entry.has("slot_base_cooldowns"):
+		var overrides: Variant = entry["slot_base_cooldowns"]
+		if typeof(overrides) != TYPE_DICTIONARY:
+			errors.append("'slot_base_cooldowns' must be an object {slot type: seconds}")
+		else:
+			for slot_type: Variant in (overrides as Dictionary).keys():
+				var seconds: Variant = (overrides as Dictionary)[slot_type]
+				if not SlotTypeDatabase.has(String(slot_type)):
+					errors.append("slot_base_cooldowns: unknown slot type '%s'" % str(slot_type))
+				elif (typeof(seconds) != TYPE_FLOAT and typeof(seconds) != TYPE_INT) or is_nan(float(seconds)) or float(seconds) <= 0.0 or float(seconds) > 600.0:
+					errors.append("slot_base_cooldowns.%s must be a number above 0 and up to 600" % str(slot_type))
 	return errors
 
 

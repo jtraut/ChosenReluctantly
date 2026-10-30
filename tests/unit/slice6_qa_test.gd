@@ -379,12 +379,12 @@ func test_space_on_the_focused_resume_button_closes_the_screen_and_does_not_dodg
 	await _frames(4)
 	assert_bool(_screen(main).is_open()).is_false()
 	await _frames(3)
-	assert_bool(player._forced_move_time_remaining > 0.0 or player._dodge_cooldown_remaining > 0.0).override_failure_message("Space on Resume started a dodge").is_false()
+	assert_bool(player._forced_move_time_remaining > 0.0 or player.dodge_charges.current < player.dodge_charges_max()).override_failure_message("Space on Resume started a dodge").is_false()
 	# A later deliberate press does dodge.
 	_key(KEY_SPACE, true)
 	await _frames(3)
 	_key(KEY_SPACE, false)
-	assert_bool(player._forced_move_time_remaining > 0.0 or player._dodge_cooldown_remaining > 0.0).override_failure_message("a fresh Space press after closing did not dodge").is_true()
+	assert_bool(player._forced_move_time_remaining > 0.0 or player.dodge_charges.current < player.dodge_charges_max()).override_failure_message("a fresh Space press after closing did not dodge").is_true()
 
 
 func test_dodge_ends_at_its_drive_distance_and_does_not_coast() -> void:
@@ -689,7 +689,7 @@ func _dodged_after_resume(wait_ticks: int) -> bool:
 	await get_tree().physics_frame
 	await get_tree().physics_frame
 	TestInput.release(&"dodge")
-	var dodged: bool = player._forced_move_time_remaining > 0.0 or player._dodge_cooldown_remaining > 0.0
+	var dodged: bool = player._forced_move_time_remaining > 0.0 or player.dodge_charges.current < player.dodge_charges_max()
 	get_tree().current_scene = null
 	_main.free()
 	_main = null
@@ -715,4 +715,4 @@ func test_s6_5_hit_stop_does_not_block_a_dodge() -> void:
 	await get_tree().physics_frame
 	await get_tree().physics_frame
 	TestInput.release(&"dodge")
-	assert_bool(main.player._forced_move_time_remaining > 0.0 or main.player._dodge_cooldown_remaining > 0.0).override_failure_message("a dodge during hit-stop was blocked").is_true()
+	assert_bool(main.player._forced_move_time_remaining > 0.0 or main.player.dodge_charges.current < main.player.dodge_charges_max()).override_failure_message("a dodge during hit-stop was blocked").is_true()

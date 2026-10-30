@@ -20,20 +20,29 @@ var slots: Dictionary = {}
 ## so deck order never depends on how many status rolls happened.
 var status_rng: RandomNumberGenerator = null
 var _shuffle_rng: RandomNumberGenerator = null
+## Per-character slot base cooldowns {slot_type: seconds} (CharacterDatabase.slot_base_cooldowns); a slot not listed uses slot_types.json.
+var _base_cooldown_overrides: Dictionary = {}
 
 
 ## `rng` (optional) is shared by every slot's shuffles, so a seeded one makes decks repeat.
-func _init(p_caster: Node3D, p_spawn_parent: Node, p_caster_team: String, p_stat_modifiers: StatModifiers, owned_pools: Array[String], rng: RandomNumberGenerator = null) -> void:
+func _init(p_caster: Node3D, p_spawn_parent: Node, p_caster_team: String, p_stat_modifiers: StatModifiers, owned_pools: Array[String], rng: RandomNumberGenerator = null, base_cooldown_overrides: Dictionary = {}) -> void:
+	_base_cooldown_overrides = base_cooldown_overrides.duplicate()
 	caster = p_caster
 	spawn_parent = p_spawn_parent
 	caster_team = p_caster_team
 	stat_modifiers = p_stat_modifiers
 	_shuffle_rng = rng
 	for slot_type: String in SLOT_TYPE_ORDER:
-		var definition := SlotTypeDatabase.get_definition(slot_type)
-		var base_cooldown: float = definition.get("base_cooldown", 1.0)
+		var base_cooldown: float = base_cooldown_for(slot_type)
 		var owned_card_ids := _owned_card_ids_for_slot(slot_type, owned_pools)
 		slots[slot_type] = CardSlot.new(slot_type, base_cooldown, owned_card_ids, DEFAULT_SWAP_PENALTY, rng)
+
+
+## A slot's base cooldown: the character's override when it has one, else the slot type's data value.
+func base_cooldown_for(slot_type: String) -> float:
+	if _base_cooldown_overrides.has(slot_type):
+		return float(_base_cooldown_overrides[slot_type])
+	return float(SlotTypeDatabase.get_definition(slot_type).get("base_cooldown", 1.0))
 
 
 ## Replaces the deck with exactly these card ids (copies allowed), sorted into their slots by each card's
@@ -53,8 +62,7 @@ func set_deck(card_ids: Array[String]) -> Array[String]:
 		(by_slot[slot_type] as Array[String]).append(card_id)
 		placed.append(card_id)
 	for slot_type: String in SLOT_TYPE_ORDER:
-		var definition := SlotTypeDatabase.get_definition(slot_type)
-		slots[slot_type] = CardSlot.new(slot_type, float(definition.get("base_cooldown", 1.0)), by_slot[slot_type] as Array[String], DEFAULT_SWAP_PENALTY, _shuffle_rng)
+		slots[slot_type] = CardSlot.new(slot_type, base_cooldown_for(slot_type), by_slot[slot_type] as Array[String], DEFAULT_SWAP_PENALTY, _shuffle_rng)
 	return placed
 
 

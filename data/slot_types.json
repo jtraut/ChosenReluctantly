@@ -21,7 +21,7 @@
     },
     "recovery": {
         "display_name": "Recovery",
-        "base_cooldown": 8.0,
+        "base_cooldown": 12.0,
         "input_action": "slot_5"
     }
 }

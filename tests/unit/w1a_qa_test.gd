@@ -206,10 +206,14 @@ func test_every_required_character_field_missing_or_wrongly_typed_is_reported_wi
 	var keys: Array = good.keys()
 	assert_array(keys).contains(["display_name", "max_hp", "pools", "attacks", "starting_deck", "body_color", "class_pool", "element_pool"])
 	for key: Variant in keys:
+		var optional: bool = ["dodge_charges", "slot_base_cooldowns"].has(key)  # P-dodge: optional per-character tuning
 		var missing: Dictionary = good.duplicate(true)
 		missing.erase(key)
-		assert_array(CharacterDatabase.validate_entry("wizard", missing)).override_failure_message("missing '%s' was accepted" % str(key)).is_not_empty()
+		if not optional:
+			assert_array(CharacterDatabase.validate_entry("wizard", missing)).override_failure_message("missing '%s' was accepted" % str(key)).is_not_empty()
 		for wrong: Variant in [null, true, [], {}]:  # never a valid value for any field
+			if key == "slot_base_cooldowns" and wrong is Dictionary:
+				continue  # an empty override table is valid
 			var bad: Dictionary = good.duplicate(true)
 			bad[key] = wrong
 			var problems: Array[String] = CharacterDatabase.validate_entry("wizard", bad)

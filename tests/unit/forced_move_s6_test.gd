@@ -50,10 +50,10 @@ func test_distance_is_speed_times_duration_at_any_physics_rate_and_does_not_coas
 		_main = null
 
 
-func test_dodge_invulnerability_lasts_its_duration_and_cooldown_is_unchanged() -> void:
+func test_dodge_invulnerability_lasts_its_duration_and_cooldown_is_the_data_value() -> void:
 	var player := await _spawn()
 	assert_float(player.dodge_duration).is_equal(0.25)
-	assert_float(player.dodge_cooldown).is_equal(0.8)
+	assert_float(player.dodge_cooldown).is_equal(1.2)
 	player.start_forced_move(player.get_aim_direction(), player.dodge_speed, player.dodge_duration, true)
 	assert_bool(player.hurtbox.collision_layer == 0).is_true()
 	var ticks := 0

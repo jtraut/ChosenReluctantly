@@ -2,7 +2,10 @@
     "dodge": {
         "speed": 20.0,
         "duration": 0.25,
-        "cooldown": 0.8,
+        "cooldown": 1.2,
+        "charges": 3,
+        "min_charges": 0,
+        "max_charges": 4,
         "block_ticks_after_pause": 2
     },
     "body": {

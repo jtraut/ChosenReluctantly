@@ -1127,3 +1127,38 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
 - **A charge-return flash near the player** goes to the director's eyes (checklist 28), not a build. [Building it from a still capture.]
 - **The STAGGERED banner overlapping the armor line** goes to W1b 5e (ux, small).
 - The playtester committed 7 capture PNGs (440 KB) in `docs/playtests/img/`. They're small, so I'm keeping them. [Removing them.]
+
+### 2026-10-30 - W1b content (gameplay-dev, logged by game-lead)
+- Built aaa933a, 8b1778a, 45ed585 (1151/1151; Rogue `-Run` seeds 1-12 and arena hash 2484586390 unchanged).
+  - 4 Wizard cards: Three Bolts, Reluctantly; Overqualified Bolt; Personal Space, Enforced; Ward, Technically.
+  - A caster starter: Pointy Stick, Ember Whatever, Shrug Bomb and Blaze and Bail are out.
+  - 3 Wizard presets.
+  - Sim flags `-BossLog`, `-WizardNoKite` and `-DodgePellets`.
+  - The `wall_crossing` scenario.
+  - `Health.last_source_id` (telemetry only).
+- **Balance table, new Wizard damage cards (CardDamageRule bar: cast 4.5, the 5.0 DPS light):**
+
+  | Card | Slot | Cast | Cycle | DPS |
+  |---|---|---|---|---|
+  | wizard_bolt_volley | attack_single | 7.5 | 1.2 s | 6.25 |
+  | wizard_overqualified_bolt | attack_single | 12.0 | 1.8 s | 6.67 |
+  | wizard_arcane_nova | attack_aoe | 11.0 | 2.0 s | 5.50 |
+
+  Ward: +25 armor (33% off physical/neutral) for 6 s on a 5 s cycle. It's the first player armor source.
+- **The bot never dodged pellets in flight.** With `-DodgePellets`, the kiting Wizard's boss-room damage drops from 14.9 to 5.0. About two thirds of the "cliff" was a sim artefact. The kiting stand-off (5-9 m) also selects the volley (`min_range` 4), the one attack it can't escape.
+- **Wizard boss (new starter, current tuning, 12 seeds):**
+  - kiting: 53.8 s (84% of the Rogue's), 12/12 won;
+  - non-kiting: 38.2 s (59%, under the 70% floor), 12/12 won.
+- **Offer mix:** about 1.27 of 3 offers are new cards (58% duplicates), against 86% duplicates before.
+- **Calls (gameplay-dev):**
+  - pellet dodging is opt-in, so baselines hold. [Default on.]
+  - the no-kite policy reuses the Rogue bot's numbers. [A new mid-range hold.]
+  - Fine, Burn Then stays in the starter. [Wall of Mild Fire.]
+  - Ward is in the pool but not the starter. [In the starter.]
+  - the cards use "neutral" damage. [A new "arcane" damage type.]
+  - telemetry goes through `last_source_id`. [Matching boss hits by damage amount, which collides with add damage.]
+- **My calls for the tuning run:**
+  - **No piercing beam.** It needs a new `pierce` projectile param, and the pool has enough caster feel without it. [Adding the param now.]
+  - **Tuning reads the pellet-dodging bot as the primary measure for both classes**, since a human dodges visible pellets. The default bot is reported too. Rogue reference with `-DodgePellets`: boss 66.5 s. [Tuning to the default bot, which over-punishes the Wizard for a bot gap.]
+  - **`-DodgePellets` stays opt-in for now,** so P-dodge's baselines still compare. Making it the default is a later tooling call. [Flipping it now and re-baselining mid-slice.]
+  - **Ward duration must end up below its cycle** (no permanent armor with 2 copies).

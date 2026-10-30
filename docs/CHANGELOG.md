@@ -2,6 +2,35 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
+## 2026-10-30 (Slice W1a: a playable Fire Wizard)
+
+### Slice W1a: a playable Fire Wizard
+
+Commits 451eaf3..HEAD. Gameplay 0c9704e and 39fe0c6; ux 7d93d1c, 82bce4e and 672622f; qa PASS b799153 (1053 of 1053; `docs/reviews/2026-10-30-w1a-qa.md`); playtest b5f2e02, no blocker (`docs/playtests/2026-10-30-w1a-wizard.md`). Judgment calls are in `docs/DECISIONS.md` under 2026-10-30 ("W1a gameplay build", "W1a ux"); the W1 split is under 2026-10-29.
+
+#### Added
+- **[Director decision] A second playable class, the Fire Wizard** (GDD section 5, "Wizard moved earlier"). New `data/characters.json` (read by `CharacterDatabase`): per class id, name, description, pools, starting deck, max HP and body colour. (0c9704e)
+- **Wizard stats:** 26 HP (Rogue 30), purple body. Light attack: an auto-firing bolt, 2.4 neutral damage every 0.6 s = 4.0 DPS (80% of the Rogue's 5.0), range 12 m, speed 24 m/s, drawn cyan `#3fd9ff` via `attacks.json` `light_variants.wizard.bolt_look`. Heavy (`heavy.wizard`): a 2.0 m disc at up to 7 m, damage type physical -> neutral. (0c9704e, 7d93d1c)
+- **Four Wizard cards** (pool `wizard`): Borrowed Focus, Footwork Allegedly, Sideways Blink, Tactical Hover. The Wizard starter is 15 cards; `--full-deck` gives 18 cards for the Wizard (24 for the Rogue). (0c9704e)
+- **Class pick screen** (`ClassPickScreen`, `ClassPickCard`): opens on every run, including Try again and New run, and pauses the room behind it. 1/2 or the arrows highlight, Enter or a click confirms, Space is ignored during the arm delay, and the last pick is preselected. It is skipped when `--class` or `--deck` is given, headless, and in the arena. The last pick is remembered in `user://last_class.json` in windowed play only (`CharacterPick`). New `ui.json` blocks: `class_pick`, and `hud.meter_windup_words` / `hud.meter_ready_word`. (82bce4e)
+- **The heavy meter says CAST for a targeted heavy (Wizard) and SWING for the Rogue's arc**, from data. (672622f)
+- **Launch options** `--class=rogue|wizard` and `--show-class-pick` (forces the screen, for captures). Presets may carry `"class"`, and `--deck` alone sets the class. A `--class`/`--deck` mismatch, a bare `--class`, `--class` twice or an unknown class exits 2 with "Launch refused: ...". (0c9704e, 82bce4e)
+- **Tools:** `run_wave_sim.ps1 -Class wizard` (whole runs, with `-Run`) and `run_reload_cycle.ps1 -Class wizard`; a `-Deck`/`-Class` clash is refused. (0c9704e, 39fe0c6)
+- **Scenario** `wizard_bolt` and the new scenario key `character`. Known issue: the scenario body stays Rogue-coloured. (672622f)
+- The projectile effect template gains the code-only params `direction`, `lane` and `look`. (0c9704e, 7d93d1c)
+
+#### Changed
+- **`starting_deck` and `character_pools` moved from `data/run.json` to `data/characters.json`** (per class). The Rogue's starter is unchanged. (0c9704e)
+- **`RunState` saves a `character`;** a save without it loads as the Rogue. (0c9704e)
+- `Player.owned_pools` is no longer a fixed export default: it is filled from the character unless a test or capture sets its own. (0c9704e)
+- Captures should always pass `--class`, because the last pick persists in windowed play.
+
+#### Docs and process
+- **Process change:** the docs pass now happens per slice (game-lead runs tech-writer once at the end of each slice, as in `CLAUDE.md`).
+- Docs pass for W1a: README, ARCHITECTURE and this file. No new third-party assets, so `docs/ASSETS.md` is unchanged.
+- README: fixed two mangled command paths (`tools\run_wave_sim.ps1` and `tools\run_tests.ps1` in the examples and "Last verification" had a stray carriage return).
+- Test count 996 -> 1053 across W1a (qa's figure; this pass re-ran it, see README).
+
 ## 2026-10-29 (Slice T-decks debug preset decks; Slice A1 armor; Milestone 3c boss encounter; Milestone 3b rewards and deck-clean; Milestone 3a run structure; content slice C1: deck rules, nine Fire Rogue cards, solid enemies, status cues)
 
 ### Slice T-decks: debug preset decks

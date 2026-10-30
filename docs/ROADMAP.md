@@ -601,7 +601,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     5c. **Bot caveat (P-dodge):** the charge-aware bot loses more HP in the 60 s arena with 3 charges than with 1 (extra rolls break its kiting). Read charge effects from whole runs, and note in the hand-back whether the non-kiting policy shows the same artefact.
     5b. A scenario with walking enemies crossing a Wall of Mild Fire, so the director's 1.5x buff can be checked (F1 playtest couldn't).
     6. **Tuning, last:**
-       - With the kiting and non-kiting policies, 10+ seeds each, measure the Wizard's boss time against **P-dodge's** Rogue baseline (10 rooms, per-class charges, Recovery 12 s) (target 70-130%) and the HP lost per room.
+       - With the kiting and non-kiting policies, 10+ seeds each, measure the Wizard's boss time against **P-dodge's** Rogue baseline (10 rooms, per-class charges, Recovery 12 s) — **set by qa 14eadd1: Rogue boss 64.3 s mean (47.8-81.3), 70-130% band = 45.0-83.6 s; per-room HP lost 2.0-6.8** (target 70-130%) and the HP lost per room.
        - Tune toward **D18 = A (director, 2026-10-30, GDD §5)**: Wizard rooms cost some HP, less than the Rogue's; the Wizard should be squishier than today (HP is a lever, 26 now). Its 2 dodge charges and longer Recovery already land in P-dodge.
        - **Tune only Wizard data:** bolt range, fire rate and damage, heavy numbers, Wizard HP, Wizard card numbers. **No enemy changes.** If the target needs enemy changes, stop and report: it's a director item.
        - Log every before and after number.

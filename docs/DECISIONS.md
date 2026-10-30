@@ -1115,3 +1115,7 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
 ### 2026-10-30 - P-dodge ux (ux-designer, logged by game-lead)
 - Built 8566b9e (DodgePips, the boss bar STAGGERED cue, tests) and 74a972c (`tools/ux_capture`). ux's final hand-back didn't arrive, so its gate results and call list are unknown; qa runs every gate independently.
 - **Call visible in the commit:** the phase notch is marked crossed when the stagger starts, and the phase line reads "Hit it now" during the stagger. [Marking it at the roar.]
+
+### 2026-10-30 - P-dodge qa (game-lead)
+- qa PASS 14eadd1 (1147/1147; soak 8 of 8 clean; hash 2484586390). The ux gates were all re-run by qa.
+- **W1b baseline (10 rooms, seeds 1-12, charge-aware bot):** Rogue 12/12 won, boss 64.3 s mean (47.8-81.3), boss-fight lowest HP 24.7/30 mean; per-room HP lost 2.0-6.8. Wizard (kiting) 11/12 won, boss 55.0 s mean; per-room HP lost about 0-1.7 in rooms 1-9, then 11.5 in the boss room (1 death at 13.6 s). This is the "cliff" W1b item 5a fixes.

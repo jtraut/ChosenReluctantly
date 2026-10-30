@@ -26,6 +26,8 @@ var _trail_timer: float = 0.0
 ## orphan nodes), in which case the scene's own Mesh stays visible, recolored.
 var _ball: PooledEffect = null
 var _ball_generation: int = 0
+## Set on the first hit: queue_free is deferred, so two hurtboxes entered in the same physics step must not both be hit.
+var _spent: bool = false
 
 ## Seconds between trail puffs (not every frame, so a few shots cannot flood the pool).
 const TRAIL_INTERVAL := 0.04
@@ -127,12 +129,13 @@ func _physics_process(delta: float) -> void:
 
 
 func _on_area_entered(area: Area3D) -> void:
-	if not (area is Hurtbox):
+	if _spent or not (area is Hurtbox):
 		return
 	var hurtbox: Hurtbox = area
 	if hurtbox.team == _exclude_team:
 		return
 	var knockback := _direction * knockback_strength if knockback_strength > 0.0 else Vector3.ZERO
+	_spent = true
 	hurtbox.receive_damage(_damage, _damage_type, knockback, instance_from_id(_source_id) as Node if _source_id != 0 else null, _hit_kind)
 	_burst()
 	queue_free()

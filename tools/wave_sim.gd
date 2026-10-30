@@ -95,6 +95,16 @@ var _light_heavy_only: bool = false
 ## `--sim-class=<id>` (wave sim -Class): play whole runs (-Run) as that character (data/characters.json). "" = the default Rogue.
 ## A ranged class (its light attack is a projectile) gets a different bot stand-off, see _bot_step.
 var _sim_class: String = ""
+## `--wizard-no-kite` (wave sim -WizardNoKite): a ranged class does not back off to a stand-off; it uses the melee bot's numbers (backs off
+## inside 2.3 m, closes in beyond 4.5 m, crowd radius 3 m), i.e. it walks in like the Rogue bot. A bot movement policy only; the Rogue is untouched.
+var _no_kite: bool = false
+## `--boss-log` (wave sim -BossLog): in a boss room, record every boss attack and every hit the player takes from it (see _boss_hit).
+var _boss_log: bool = false
+## `--dodge-pellets` (wave sim -DodgePellets, run mode): the bot also reacts to enemy projectiles already in flight. Without it the bot only
+## leaves a boss wind-up area and rolls just before the attack lands (the pellets arrive about half a second later), so it never dodges a pellet.
+var _dodge_pellets: bool = false
+var _boss_runs: Array[Dictionary] = []
+var _boss_cur: Dictionary = {}
 var _run_results: Array[Dictionary] = []
 var _card_casts: Dictionary = {}
 var _slot_stuck_since: Dictionary = {}
@@ -125,6 +135,12 @@ func _ready() -> void:
 			_run_mode = true
 		elif arg == "--light-heavy-only":
 			_light_heavy_only = true
+		elif arg == "--wizard-no-kite":
+			_no_kite = true
+		elif arg == "--boss-log":
+			_boss_log = true
+		elif arg == "--dodge-pellets":
+			_dodge_pellets = true
 		elif arg.begins_with("--sim-deck="):
 			_deck_family = arg.substr(11)
 			if _deck_family == "standard":
@@ -221,6 +237,8 @@ func _reset_run_state(run_seed: int) -> void:
 	_pair_min_all = INF
 	_dodge_cooldown_until = 0.0
 	_heavy_until = 0.0
+	_pellet_sidestep = Vector3.ZERO
+	_pellet_imminent = false
 	_profiled_alive = 0
 	_query_usec = 0.0
 	_query_calls = 0
@@ -470,7 +488,7 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 		if d < nearest_d:
 			nearest_d = d
 			nearest = enemy
-		if d < (RANGED_CROWD_RADIUS if _is_ranged_class() else 3.0):
+		if d < (RANGED_CROWD_RADIUS if _kites() else 3.0):
 			crowd += 1
 		var wind: float = float(enemy.get("_telegraph_remaining"))
 		if wind > 0.0 and wind < 0.2 and d < (enemy.attack_range + 1.0 if not enemy.is_ranged else 9.0):
@@ -483,7 +501,7 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 	var want: Vector3 = Vector3.ZERO
 	# A ranged character (projectile light) keeps its distance: back off inside RANGED_BACK_OFF, close in beyond
 	# RANGED_CLOSE_IN, otherwise strafe. The melee numbers are untouched, so Rogue sims repeat exactly.
-	var ranged: bool = _is_ranged_class()
+	var ranged: bool = _kites()
 	var back_off: float = RANGED_BACK_OFF if ranged else 2.3
 	var close_in: float = RANGED_CLOSE_IN if ranged else 4.5
 	if nearest_d < back_off:
@@ -510,6 +528,8 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 				if (enemy as Boss).state_name() == "ACTIVE" or left < 0.3:
 					danger = enemy
 				break
+	if _dodge_pellets and _run_mode and _scan_pellets(me):
+		want = _pellet_sidestep
 	_pin_want = want
 	_drive(want)
 	# Dodge whenever the player could: the Player's own availability (a charge and no roll under way) is the gate,
@@ -517,9 +537,18 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 	var can_dodge: bool = _sim_time >= _dodge_cooldown_until and bool(_player.get_dodge_state()["available"])
 	if boss_threat and danger != null and can_dodge:
 		_press(&"dodge")
+		if _boss_log and not _boss_cur.is_empty():
+			_boss_cur["dodges"] = int(_boss_cur.get("dodges", 0)) + 1
 		_dodge_cooldown_until = _sim_time + _player.dodge_duration
+	elif _pellet_imminent and can_dodge:
+		_press(&"dodge")
+		_dodge_cooldown_until = _sim_time + _player.dodge_duration
+		if _boss_log and not _boss_cur.is_empty():
+			_boss_cur["dodges"] = int(_boss_cur.get("dodges", 0)) + 1
 	elif danger != null and not (danger is Boss) and can_dodge:
 		_press(&"dodge")
+		if _boss_log and not _boss_cur.is_empty():
+			_boss_cur["dodges"] = int(_boss_cur.get("dodges", 0)) + 1
 		_dodge_cooldown_until = _sim_time + _player.dodge_duration
 	if crowd >= 2 and _sim_time >= _heavy_until:
 		_press(&"attack_heavy")
@@ -536,6 +565,46 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 const RANGED_BACK_OFF := 5.0
 const RANGED_CLOSE_IN := 9.0
 const RANGED_CROWD_RADIUS := 6.0
+
+
+## --dodge-pellets: looks at every enemy-team projectile in the room. One that flies toward the bot and would pass within PELLET_LANE of it
+## sets `_pellet_sidestep` (a step out of its lane) and, when it is within PELLET_ROLL_TIME of hitting, `_pellet_imminent` (roll now).
+const PELLET_LANE := 0.9
+const PELLET_SEE_TIME := 0.7
+const PELLET_ROLL_TIME := 0.2
+var _pellet_sidestep: Vector3 = Vector3.ZERO
+var _pellet_imminent: bool = false
+
+
+func _scan_pellets(me: Vector3) -> bool:
+	_pellet_sidestep = Vector3.ZERO
+	_pellet_imminent = false
+	var soonest: float = INF
+	for child in _main.get_children():
+		if not (child is Projectile) or String((child as Projectile)._exclude_team) != "enemy":
+			continue
+		var pellet: Projectile = child
+		var rel: Vector3 = me - pellet.global_position
+		rel.y = 0.0
+		var dir: Vector3 = pellet._direction
+		dir.y = 0.0
+		var along: float = rel.dot(dir)
+		if along <= 0.0 or pellet._speed <= 0.0:
+			continue
+		var across: Vector3 = rel - dir * along
+		if across.length() > PELLET_LANE:
+			continue
+		var time_left: float = along / pellet._speed
+		if time_left < PELLET_SEE_TIME and time_left < soonest:
+			soonest = time_left
+			_pellet_sidestep = across.normalized() if across.length() > 0.05 else Vector3(-dir.z, 0.0, dir.x).normalized()
+			_pellet_imminent = time_left < PELLET_ROLL_TIME
+	return _pellet_sidestep != Vector3.ZERO
+
+
+## True when the bot should kite: a ranged class, unless `--wizard-no-kite`.
+func _kites() -> bool:
+	return _is_ranged_class() and not _no_kite
 
 
 ## True when the played character's light attack is a projectile (it can hit from far away).
@@ -668,6 +737,8 @@ func _run_whole(run_seed: int) -> void:
 			var fight: float = (_boss_end if _boss_end >= 0.0 else _sim_time) - _boss_start
 			result["boss_fight_s"] = snappedf(fight, 0.1)
 			print("    boss fight (spawn to death): %.1f s, %s | player lowest HP %.1f" % [fight, "boss died" if _boss_end >= 0.0 else "boss NOT dead", _room_min_hp])
+		if _boss_log:
+			_boss_room_done(run_seed, room_result)
 		run_sim_total += _sim_time
 		if room_result == "lost":
 			result["outcome"] = "lost"
@@ -879,10 +950,132 @@ func _track_boss(enemies: Array[Enemy]) -> void:
 	for enemy in enemies:
 		if enemy is Boss:
 			has_boss = true
+			if _boss_log and not bool(_boss_cur.get("hooked", false)):
+				_hook_boss_log(enemy as Boss)
 	if has_boss and _boss_start < 0.0:
 		_boss_start = _sim_time
 	elif not has_boss and _boss_start >= 0.0 and _boss_end < 0.0:
 		_boss_end = _sim_time
+
+
+## --boss-log. Hooks the boss's attack signal and the player's damage signal for this room. Boss hits are told apart by the damage
+## source (Health.last_source_id is a Boss) and the attack by its raw damage in data/bosses.json (the boss attacks have distinct damage
+## values; a tie would list both ids). Anything else the player takes in the room (the adds) is "adds".
+func _hook_boss_log(boss: Boss) -> void:
+	_boss_cur["hooked"] = true
+	_boss_cur["boss_id"] = boss.enemy_id
+	_boss_cur["attacks"] = {}
+	_boss_cur["adds"] = {"hits": 0, "hp": 0.0}
+	_boss_cur["dodges"] = 0
+	_boss_cur["phase_hp"] = [0.0, 0.0, 0.0]
+	_boss_cur["volleys_in_lane"] = 0
+	_boss_cur["hp_at_spawn"] = _player.health.current_health
+	boss.attack_landed.connect(func(attack_id: String, _hit_player: bool) -> void:
+		var entry: Dictionary = _boss_entry(attack_id)
+		entry["thrown"] = int(entry["thrown"]) + 1
+		if attack_id == "volley" and is_instance_valid(_player) and boss.in_threat(_player.global_position):
+			_boss_cur["volleys_in_lane"] = int(_boss_cur["volleys_in_lane"]) + 1)
+	_player.health.damaged.connect(func(amount: float, damage_type: String, _knockback: Vector3) -> void:
+		_boss_hit(boss, amount, damage_type))
+
+
+func _boss_entry(attack_id: String) -> Dictionary:
+	var attacks: Dictionary = _boss_cur["attacks"]
+	if not attacks.has(attack_id):
+		attacks[attack_id] = {"thrown": 0, "hits": 0, "hp": 0.0}
+	return attacks[attack_id]
+
+
+func _boss_hit(boss: Boss, amount: float, damage_type: String) -> void:
+	var health: Health = _player.health
+	var source: Object = instance_from_id(health.last_source_id) if health.last_source_id != 0 else null
+	if not (source is Boss):
+		var adds: Dictionary = _boss_cur["adds"]
+		adds["hits"] = int(adds["hits"]) + 1
+		adds["hp"] = float(adds["hp"]) + amount
+		return
+	var ids: Array[String] = []
+	var table: Dictionary = (BossConfig.boss(boss.enemy_id)["attacks"] as Dictionary)
+	for id: Variant in table.keys():
+		var attack: Dictionary = table[id]
+		if is_equal_approx(float(attack["damage"]), health.last_raw_amount) and String(attack["damage_type"]) == damage_type:
+			ids.append(String(id))
+	var key: String = "|".join(ids) if not ids.is_empty() else "unknown"
+	var entry: Dictionary = _boss_entry(key)
+	entry["hits"] = int(entry["hits"]) + 1
+	entry["hp"] = float(entry["hp"]) + amount
+	var phase: int = clampi(boss.phase_index, 0, 2)
+	(_boss_cur["phase_hp"] as Array)[phase] = float((_boss_cur["phase_hp"] as Array)[phase]) + amount
+
+
+## One boss room's log line, then stored for the summary.
+func _boss_room_done(run_seed: int, outcome: String) -> void:
+	if _boss_cur.is_empty() or not bool(_boss_cur.get("hooked", false)):
+		_boss_cur = {}
+		return
+	_boss_cur["seed"] = run_seed
+	_boss_cur["outcome"] = outcome
+	var parts: Array[String] = []
+	var total: float = float((_boss_cur["adds"] as Dictionary)["hp"])
+	for id: Variant in (_boss_cur["attacks"] as Dictionary).keys():
+		var entry: Dictionary = (_boss_cur["attacks"] as Dictionary)[id]
+		total += float(entry["hp"])
+		parts.append("%s: %d thrown, %d hits, %.1f HP" % [id, int(entry["thrown"]), int(entry["hits"]), float(entry["hp"])])
+	var adds: Dictionary = _boss_cur["adds"]
+	print("    boss log seed %d (%s): %.1f HP taken in the boss room (phase 1/2/3: %s) | %s | adds: %d hits, %.1f HP | dodges pressed %d | volleys fired with the bot inside a lane: %d" % [
+		run_seed, outcome, total, str(_boss_cur["phase_hp"]), "; ".join(parts), int(adds["hits"]), float(adds["hp"]), int(_boss_cur["dodges"]), int(_boss_cur["volleys_in_lane"])])
+	_boss_runs.append(_boss_cur)
+	_boss_cur = {}
+
+
+## --boss-log summary over all the runs that reached the boss: per attack, thrown, hits, HP, the hit rate, and the share of all boss-room HP.
+func _boss_summary() -> void:
+	if _boss_runs.is_empty():
+		print("BOSS LOG: no run reached the boss room")
+		return
+	var totals: Dictionary = {}
+	var adds_hp: float = 0.0
+	var adds_hits: int = 0
+	var all_hp: float = 0.0
+	var dodges: int = 0
+	var lane: int = 0
+	var phase_hp: Array[float] = [0.0, 0.0, 0.0]
+	var deaths: int = 0
+	var wins: int = 0
+	for run: Dictionary in _boss_runs:
+		adds_hp += float((run["adds"] as Dictionary)["hp"])
+		adds_hits += int((run["adds"] as Dictionary)["hits"])
+		dodges += int(run["dodges"])
+		lane += int(run["volleys_in_lane"])
+		for i in range(3):
+			phase_hp[i] += float((run["phase_hp"] as Array)[i])
+		if String(run["outcome"]) == "lost":
+			deaths += 1
+		elif String(run["outcome"]) == "cleared":
+			wins += 1
+		for id: Variant in (run["attacks"] as Dictionary).keys():
+			var entry: Dictionary = (run["attacks"] as Dictionary)[id]
+			if not totals.has(id):
+				totals[id] = {"thrown": 0, "hits": 0, "hp": 0.0}
+			totals[id]["thrown"] = int(totals[id]["thrown"]) + int(entry["thrown"])
+			totals[id]["hits"] = int(totals[id]["hits"]) + int(entry["hits"])
+			totals[id]["hp"] = float(totals[id]["hp"]) + float(entry["hp"])
+			all_hp += float(entry["hp"])
+	all_hp += adds_hp
+	var n: float = float(_boss_runs.size())
+	print("BOSS LOG over %d run(s) that reached the boss (%d won, %d died there): mean boss-room HP taken %.1f (phase 1/2/3 %.1f / %.1f / %.1f), dodges pressed per run %.1f" % [
+		_boss_runs.size(), wins, deaths, all_hp / n, phase_hp[0] / n, phase_hp[1] / n, phase_hp[2] / n, float(dodges) / n])
+	var volley_count: int = int(BossConfig.boss(String((_boss_runs[0])["boss_id"]))["attacks"]["volley"]["count"])
+	for id: Variant in totals.keys():
+		var t: Dictionary = totals[id]
+		var rate_text: String = ""
+		if String(id) == "volley":
+			var pellets: int = int(t["thrown"]) * volley_count
+			rate_text = " | %d of %d pellets hit (%.0f%%); bot inside a lane at fire time in %d of %d volleys" % [int(t["hits"]), pellets, 100.0 * float(t["hits"]) / maxf(float(pellets), 1.0), lane, int(t["thrown"])]
+		elif int(t["thrown"]) > 0:
+			rate_text = " | hit rate %.0f%%" % (100.0 * float(t["hits"]) / float(t["thrown"]))
+		print("  %-8s thrown %3d, hits %3d, HP %6.1f (%.0f%% of boss-room damage, %.1f HP per run)%s" % [id, int(t["thrown"]), int(t["hits"]), float(t["hp"]), 100.0 * float(t["hp"]) / maxf(all_hp, 0.001), float(t["hp"]) / n, rate_text])
+	print("  adds     hits %3d, HP %6.1f (%.0f%%, %.1f HP per run)" % [adds_hits, adds_hp, 100.0 * adds_hp / maxf(all_hp, 0.001), adds_hp / n])
 
 
 ## N3: a slot cooldown that is negative, longer than its own duration, or frozen above zero for 10 s.
@@ -937,6 +1130,8 @@ func _run_summary() -> void:
 				parts.append("room %d: %.0f%%" % [index, 100.0 * float(n) / float(seeds)])
 		print("    %s position: %s" % [room_type, ", ".join(parts)])
 	_print_pick_rates()
+	if _boss_log:
+		_boss_summary()
 
 
 ## 3b: HP at the end of each room, averaged over the runs that got that far (is there attrition?), and the deck sizes.

@@ -899,5 +899,23 @@
         "groups": [
             {"scene": "res://scenes/enemies/RangedShooter.tscn", "count": 2}
         ]
+    },
+    "wall_crossing": {
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "freeze_aim": true,
+        "aim_preview_distance": 7.0,
+        "enemy_max_health": 2000,
+        "disable_auto_attack": true,
+        "origin_offset": [-3.0, 0.0, -10.0],
+        "spacing": [2.0, -1.4],
+        "columns": 4,
+        "groups": [
+            {"scene": "res://scenes/enemies/MeleeChaser.tscn", "count": 4},
+            {"scene": "res://scenes/enemies/FireResistantGolem.tscn", "count": 2}
+        ],
+        "casts": [
+            {"at": 0.3, "slot": "attack_aoe", "card": "fire_wall"}
+        ]
     }
 }

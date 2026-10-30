@@ -47,6 +47,8 @@ var last_channel: StringName = CHANNEL_NONE
 ## Fraction of the raw hit the last event removed (0 to the cap), and the raw amount before mitigation.
 var last_reduction: float = 0.0
 var last_raw_amount: float = 0.0
+## Instance id of whoever dealt the last damage event (0 = unknown or none). Read-only telemetry for tools (the wave sim's boss log); no gameplay reads it.
+var last_source_id: int = 0
 
 
 func _ready() -> void:
@@ -81,6 +83,7 @@ func take_damage(amount: float, damage_type: String = "physical", knockback: Vec
 	last_kind = kind
 	last_channel = channel
 	last_raw_amount = amount
+	last_source_id = source.get_instance_id() if source != null and is_instance_valid(source) else 0
 	last_reduction = 1.0 - final_amount / amount
 	damaged.emit(final_amount, damage_type, knockback)
 	health_changed.emit(current_health, max_health)

@@ -1,10 +1,13 @@
 # Headless wave-density bot-sim (Slice 5a). Plays the real Main scene with a bot at the
 # data/waves.json density and reports crashes, NaN, soft locks and rough frame cost.
-# Usage: powershell -File tools\run_wave_sim.ps1 [-Seed 1] [-Seconds 90] [-Runs 3] [-Scale 3] [-God] [-Idle] [-Run] [-Deck <debug deck name>] [-LightHeavyOnly] [-Class <character id>]
+# Usage: powershell -File tools\run_wave_sim.ps1 [-Seed 1] [-Seconds 90] [-Runs 3] [-Scale 3] [-God] [-Idle] [-Run] [-Deck <debug deck name>] [-LightHeavyOnly] [-Class <character id>] [-WizardNoKite] [-BossLog] [-DodgePellets]
 # -Class rogue|wizard plays the whole runs (-Run) as that character (passed as --sim-class=).
+# -WizardNoKite: a ranged class (the Wizard) walks in like the Rogue bot instead of kiting at a stand-off (--wizard-no-kite).
+# -BossLog (needs -Run): per boss attack, how often it was thrown, how often it hit and the HP it cost (--boss-log); prints a line per run and a summary.
+# -DodgePellets (needs -Run): the bot also steps out of and rolls through enemy projectiles in flight (--dodge-pellets, default off: it changes run results).
 # -Run plays whole seeded runs (Milestone 3a): -Seed is the first run seed, -Runs the number of runs, -RoomTimeout sim seconds before a room counts as a soft lock.
 # Fails on a failed check OR any ERROR / SCRIPT ERROR / WARNING line in the engine output.
-param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "")
+param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets)
 
 $root = Split-Path -Parent $PSScriptRoot
 $godot = $env:GODOT_BIN
@@ -33,6 +36,9 @@ if ($Idle) { $extra += "--idle" }
 if ($Deck) { $extra += "--sim-deck=$Deck" }
 if ($LightHeavyOnly) { $extra += "--light-heavy-only" }
 if ($Class) { $extra += "--sim-class=$Class" }
+if ($WizardNoKite) { $extra += "--wizard-no-kite" }
+if ($BossLog) { $extra += "--boss-log" }
+if ($DodgePellets) { $extra += "--dodge-pellets" }
 if ($Run) { $extra += "--run"; $extra += "--room-timeout=$RoomTimeout" }
 Push-Location $root
 try {

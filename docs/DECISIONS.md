@@ -1057,3 +1057,10 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
 - **"1.5x size" for Wall of Mild Fire = length and width both x1.5** (5.0 -> 7.5 m, 1.2 -> 1.8 m). [Length only, which doesn't fix walkers barely touching it.]
 - **"Movement cards pass through"** applies to every `movement`-slot card while it moves the player. Reluctant Lunge then hits every enemy on its line; qa checks the damage change. [Only blink/leap cards; the director said movement cards.]
 - **Wizard Recovery 14 s vs the Rogue's 12 s** ("slightly longer"). [16 s.] Per-character overrides in `characters.json` for charges and Recovery. [Separate per-class data files.]
+
+### 2026-10-30 - PL2 qa and playtest triage (game-lead)
+- qa FAIL b7ba7fe (B1: the melee cue leaked a node for the Wizard) -> fixed cb2be67 -> delta PASS 8a99ce4 (1082/1082, 0 orphans). The soak failure was the known P-dodge flake (Rogue only, "damage immunity leaked"). Playtest 4dd2eaa: smoke PASS, no blocker; the frame colours read as three families without labels.
+- **Rogue boss baseline (qa, 12 seeds, 8 rooms):** mean 66.7 s (49.7-75.6), boss-room HP lost mean 10.6. Superseded for W1b by P-dodge's re-measure.
+- **Calls:**
+  - **Boss head behind the RMB meter at 1024x600 (N1) goes to F1** as a data margin tweak, not a PL2 blocker. Nothing is clipped by the screen edge. [Reopening PL2.]
+  - **Bronze vs grey, the grey focus ring's contrast, and whether the melee arc teaches "melee"** go to the director's eyes, not to tuning: the playtester only had stills, and all three are subjective. The ring's notch artefact is a plain bug and goes to F1. [Tuning colours now from stills.]

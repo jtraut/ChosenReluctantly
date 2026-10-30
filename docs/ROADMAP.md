@@ -551,8 +551,10 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
        - **Reluctant Lunge** then hits every enemy on its line instead of stopping at the first body. That's a damage change: report its before/after on a line of 3 enemies, and the Lunge preview now matches the real path (old backlog item).
        - Prefer a template-level flag set in data over per-card code.
     3. **Dead-card swap on Shift + 1-5 (director, GDD §4):** `data/input_bindings.json` `ctrl` -> `shift`. **Check how a plain slot key ignores the modifier today:** Shift+N must swap only, with no preview or cast; plain N is unchanged; Ctrl+N does nothing. Make sure Shift isn't already bound. Tests.
+    3a. **From the PL2 playtest (N1):** at 1024x600 (Rogue, seed 7) the boss's head sits about 15 px behind the RMB meter. Raise the top margin of the `bosses.json` `spawn` box so the head clears the HUD.
     4. **Runs of 10 rooms (director, GDD §9):** `data/run.json` composition 5/1/1/1 -> **7 combat, 1 elite, 1 rest, 1 boss** (game-lead call, the smallest change; harder runs come from the tiers). Update `placement.ranges` for 10 rooms (elite about [3, 8], rest about [2, 8]). Grep `src/`, `tests/`, `tools/` and `data/` for a hard-coded 8 (the boss index, `--run-room=8`, "of 8", the sim). The boss is room 10.
   - **ux-designer:**
+    5a. **From the PL2 playtest:** the white focus ring on a grey reward card has a small notch at its left and top edges; fix the notch (ring contrast waits on the director's eyes).
     5. Every "Ctrl+1-5" hint (HUD, pause screen, any tooltip) now says Shift; "Room X of 10" fits at every supported size.
   - **qa:** the usual gates; the Wall preview matches its hitbox; the pass-through for each movement card, including no stuck-in-body cases and the dodge still blocked; Shift+N swap with no cast; the 10-room run end to end; a 10+ seed Rogue `-Run` report (informational; P-dodge sets the W1b baseline).
   - **Playtester (short):** a 10-room run; do movement cards feel like real escapes; does the Wall now catch walkers.

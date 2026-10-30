@@ -11,6 +11,9 @@ static var forced_seed: int = -1
 ## `--full-deck`: new runs start with every card of the character's pools instead of the starter list.
 ## Sticky for the launch (Try again keeps it); a tool or test sets and clears it.
 static var full_deck: bool = false
+## Tool-only (tools/wave_sim.gd `--deck=`): skip the "3 unique cards per slot" run-start block so a deck-family test deck
+## (for example fire-only attacks) can start. Never set by the game.
+static var skip_deck_minimums: bool = false
 
 
 static func has_run() -> bool:

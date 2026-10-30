@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-10-30
-**Status: 2 waiting on a decision (D17, D18; neither blocks).** Done: C1, Polish 1, 3a (runs of 8 rooms), 3b (card rewards and deck-clean), 3c (the boss) and **A1 (armor)**, **T-decks (preset test decks)** and **W1a (a playable Fire Wizard)**. Next: W1b (Wizard cards and balance), then dodge charges, then loadouts.
+**Status: 2 waiting on a decision (D17, D18; neither blocks).** Done: C1, Polish 1, 3a (runs of 8 rooms), 3b (card rewards and deck-clean), 3c (the boss) and **A1 (armor)**, **T-decks (preset test decks)** and **W1a (a playable Fire Wizard)**. Next: a small polish slice (boss starts on screen, a Rogue melee cue), then W1b (Wizard cards and balance), then dodge charges, then loadouts.
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
@@ -94,7 +94,7 @@ Neither blocks work. Until you answer, I use my default.
   - **B (my default):** fold it into the pause card-details request you already logged, and schedule both together.
   - **C:** no cue; the boss bar is enough.
 - **D18: Should the Wizard be the "easy class"?** In the bot sim it finishes 31 of 32 rooms untouched; the Rogue loses HP in most rooms. Its boss time is fine, at about 77% of the Rogue's. This sets W1b's tuning target.
-  - **A (my default):** the Wizard's rooms should cost some HP, but less than the Rogue's. W1b tunes range, fire rate or enemy pressure on it.
+  - **A (my default):** the Wizard's rooms should cost some HP, but less than the Rogue's. W1b tunes the Wizard's own numbers (range, fire rate, damage, HP); enemies stay as they are.
   - **B:** it's fine as the easier, beginner-friendly class; tune only its boss time.
   - **C:** match the Rogue's risk.
 

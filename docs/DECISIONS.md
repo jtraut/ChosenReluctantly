@@ -1010,3 +1010,10 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
   - the pick backdrop HUD showing the previous class's HP;
   - check by hand that a bolt hits only the first enemy on its line;
   - identify the pink fan at the Wizard's feet in a room-1 capture.
+
+### 2026-10-30 - W1b brief and the PL2 split (game-lead)
+- **The non-Wizard fixes become a small slice PL2, run before W1b:** the boss spawn on screen, no stack trace on a bad `--class`, the scenario body look, junk file removal, the pink fan check, the bolt-line check, the stale HP behind the pick screen, and the Rogue melee cue.
+  - Reasons: the boss spawn fix changes the Rogue's boss times, so W1b must tune against the new baseline; a combined W1b wouldn't fit one sitting; and it gives the director time to answer D18. [Everything in W1b.]
+- **W1b tunes Wizard data only.** Enemy changes would hit the Rogue too, so if the target needs them, that's a director item. [Using "enemy pressure" as a W1b lever, as my D18 wording allowed.]
+- **A non-kiting Wizard bot policy is added before tuning,** and tuning is checked under both policies. The perfect-kiting bot is a ceiling, and tuning to it would over-nerf the Wizard for real players. [Tune to the kiting bot only.]
+- **New Wizard damage cards must still pass `CardDamageRule` against the Rogue's 5.0 DPS light.**

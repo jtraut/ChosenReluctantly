@@ -539,22 +539,49 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
         - item 12's gates.
       - **ux-designer:** item 9 (the pick screen, bolt and telegraph readability, per-class HUD meters).
       - **qa, playtester, tech-writer, close.**
-    - [ ] **W1b, Wizard content and balance. Tag `playtest-2026-10-30-W1b`.**
-      - item 5 in full: about 6-8 Wizard cards in total, including 2-4 attack cards, plus the balance table;
-      - item 10's report (8+ seeds; Wizard boss time 70-130% of the Rogue's);
-      - item 11's presets;
-      - the Rogue melee cue as a small ux item.
-      - From the W1a playtest (b5f2e02):
-        - the Wizard starter is rebuilt around the new Wizard attack cards (no melee-flavoured cards);
-        - the scenario `character` key also sets the body look;
-        - fix the boss starting mostly off-screen;
-        - the pick backdrop shows the previous class's HP;
-        - verify the bolt hits only the first enemy on its line;
-        - identify the pink fan at the Wizard's feet in a room-1 capture.
-        - A bare or unknown `--class` exits 2 correctly but also dumps a stack trace from `RunController.prepare` (docs 031f321); print only the message.
-        - The tuning target follows D18 (default A: Wizard rooms cost HP, less than the Rogue's).
-      - From W1a qa (b799153): gameplay-dev deletes the tracked junk `scratch_suite.txt` (repo root); check whether the Wizard bot kiting or the 12 m auto-fire is too safe (the bot ends rooms at full HP).
-      - Then qa, playtester, tech-writer, close.
+    - [ ] **W1b, Wizard content and balance.** Runs after PL2. Full brief below.
+
+- [ ] **PL2, small polish before W1b (game-lead, 2026-10-30; lightweight loop: gameplay-dev -> ux-designer -> qa -> tech-writer -> close; tag `playtest-2026-10-30-PL2`)**
+  - **Goal:** clear the non-Wizard fixes from the W1a qa and playtest, so W1b tunes against a stable baseline. The boss spawn fix changes the Rogue's boss fight.
+  - **gameplay-dev:**
+    1. **Boss spawn:** the boss starts fully on screen in room 8 (3c backlog; the W1a playtest saw only about a quarter of its body). The camera framing must not change for other rooms. **The Rogue `-Run` output and boss times are expected to change. The arena hash (2792856473) must still match**, since the arena has no boss.
+    2. A bare or unknown `--class` (and `--deck`) prints only the "Launch refused" message, with no stack trace from `RunController.prepare`, and still exits 2.
+    3. The scenario `character` key also sets the body look (W1a captures showed a Rogue body).
+    4. Delete the tracked junk `scratch_suite.txt` (repo root, from 0c9704e).
+    5. Identify the pink fan at the Wizard's feet in a room-1 capture (`--class=wizard`). Is it an enemy telegraph or the player's own cue? Fix it only if it's wrong.
+    6. Check that a bolt hits only the first enemy on its line, and report it. No change unless it's a bug; the playtest and D18 decide.
+  - **ux-designer:**
+    7. The pick-screen backdrop HUD no longer shows the previous class's HP (one paused frame).
+    8. **Rogue melee cue** (the W1 brief's "Quick win"): a new player can tell the light attack is melee. For example, a faint swing arc at the player when nothing is in reach, or a "too far" tick when clicking at a distant reticle. Unobtrusive in a crowd, with data in ui.json.
+  - **qa:**
+    - the suite, `--quit`, the 20 s headless run, SceneSelfCheck, and the reload soak (Main and Player likely change; the known flake belongs to P-dodge);
+    - a boss capture showing the boss fully on screen at 1024x600 and 1280x720;
+    - **re-measure the Rogue's boss time, 10+ seeds, as the new baseline for W1b.**
+  - **Docs:** tech-writer, at the close.
+
+- [ ] **W1b, Wizard content and balance (brief, game-lead 2026-10-30). Full loop: gameplay-dev -> qa -> playtester -> tech-writer -> close. Tag `playtest-2026-10-30-W1b`. Closing it also ticks the parent W1 item.**
+  - **Goal:** the Wizard plays like a caster: its own attack cards, a caster starter, and test presets. It's tuned so its risk matches D18. GDD §3 (cards beat basic attacks), §4 (deck rules), §5 (Wizard), §7 (armor).
+  - **Order inside the slice:** content first, tuning last, so D18 can be answered before any tuning depends on it.
+  - **Acceptance, gameplay-dev:**
+    1. **Wizard attack cards:** 2-4 attack cards in pool `wizard` (attack_single and/or attack_aoe) with a ranged or caster feel, e.g. a bolt volley, an arcane nova, a piercing beam. Existing effect templates only, unless one is unavoidable (log it). That brings the Wizard pool to about 6-8 cards in total. Placeholder names in the game's dry, weary tone.
+       - **Every new damage card must pass `CardDamageRule` against the Rogue's 5.0 DPS light**, the existing stricter bar.
+       - Optionally a ward or armor buff card, which needs `CardSummary` wording support for armor (see the W1a calls).
+    2. **The Wizard starter is rebuilt** around the Wizard cards: 15 cards, 3 per slot, no melee-flavoured cards where a caster card exists (e.g. Pointy Stick out). The full deck is updated too.
+    3. **Presets:** `fire-heavy-wizard` and `mixed-wizard` in `data/debug_decks/` with `"class": "wizard"` (plus an arcane-heavy one if it makes sense). Report the card counts per family.
+    4. **A non-kiting Wizard bot policy** (`-WizardNoKite` or similar, the same pattern as `-LightHeavyOnly`): it holds a mid-range spot or walks in like the Rogue bot instead of kiting perfectly. qa and the playtester both said the kiting bot is a ceiling, not a typical player.
+    5. **Balance table** for the Wizard cards in the hand-back, for DECISIONS.
+    6. **Tuning, last:**
+       - With the kiting and non-kiting policies, 10+ seeds each, measure the Wizard's boss time against PL2's Rogue baseline (target 70-130%) and the HP lost per room.
+       - Tune toward D18: default A means Wizard rooms cost some HP, less than the Rogue's. If the director has answered, use the answer.
+       - **Tune only Wizard data:** bolt range, fire rate and damage, heavy numbers, Wizard HP, Wizard card numbers. **No enemy changes.** If the target needs enemy changes, stop and report: it's a director item.
+       - Log every before and after number.
+  - **qa:**
+    - the suite and the usual gates; the Rogue unchanged against the PL2 baseline (`-Run` output and arena hash);
+    - the 3 presets valid;
+    - `CardDamageRule` for the new cards;
+    - an independent 10+ seed re-run under both bot policies.
+  - **Playtester:** a Wizard run (captures plus sim). Do the caster cards make the Wizard feel distinct? Is the risk level right?
+  - **Docs:** tech-writer, plus a CHANGELOG fix: the 2026-10-30 W1a entry says the docs pass "now happens per slice", but that rule dates from 2026-10-28. Correct or remove it, and note the fix.
 
 - [ ] **P-dodge, dodge charges and indicator (director request 2026-10-29; runs after A1, T-decks and W1, before 3d; also carries the D13 and D16 answers)**
   - **Also carries (game-lead, from T-decks qa):** fix the reload soak flake "damage immunity leaked into a new room" (tools/reload_cycle.gd:248). It predates T-decks; reproduce it with a wave sim running alongside `run_reload_cycle.ps1 -Cycles 5`.

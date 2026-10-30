@@ -15,9 +15,9 @@ Last updated: 2026-10-29. The director is away until the evening with an autonom
 - **Milestone 3c, boss encounter:** the brief is in ROADMAP Gameplay built a35501d..2234dc8 (875/875). ux b8af93f..5245779; qa PASS 64df947 (903/903). Next role: playtester. The 3d brief is written in ROADMAP.
 
 ## Exact next step
-1. **ux-designer: the director's no-scroll reward fix plus cheap 3c playtest items** (running; playtest 81b03d8 done). **On resume:** check `git log` for the ux fix commits.
-2. Then qa quick check -> tech-writer -> close, tag `playtest-2026-10-29-3c`.
-3. Then **P-dodge** (director request: dodge charges plus a HUD indicator; brief in ROADMAP), then 3d (loadouts; brief in ROADMAP).
+1. **3c docs pass** (tech-writer, running). Fix pass 741c624..b7a6a01; qa PASS 8bc7241 (907). **On resume:** check `git log` for the tech-writer 3c commit.
+2. Then game-lead closes 3c, tag `playtest-2026-10-29-3c`.
+3. Then **Slice A1: Armor** (director request; brief in ROADMAP; full loop; tag `playtest-2026-10-29-A1`), then **P-dodge**, then **3d**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 

@@ -155,19 +155,31 @@ Subclass lists above exceed 2 per source in some cases. They are brainstorm mate
 
 ---
 
-## 7. Elements, Status Effects, and Resistances
+## 7. Elements, Status Effects, Resistances, and Armor
 
 ### Elements work through status effects
 Rather than a full strength/weakness wheel, elements apply status effects (for example Fire: Burn, Water: Soaked/Chilled, Dark: Weakened). **[OPEN]** whether cross-element reactions exist (for example Fire + Soaked produces steam). **[PROPOSED]** consider reactions after core combat feels good.
 
 ### Enemy resistances
 - Enemies can have element resistances (for example a Fire Golem highly resistant to Fire).
-- Resistances apply to **elemental damage only**. Class cards should lean physical or non-elemental so no build is shut down. **[PROPOSED]**
+- Resistances apply to **elemental damage only**. (The old [PROPOSED] reasoning, that class cards should lean physical so no build is shut down, is replaced by the parity principle under Armor below.)
 - **Normal enemies:** per-enemy resistances as designed, with a **cap of 50%**.
 - **Elites:** 25% resistance across elements.
 - **Bosses:** 35% across elements.
 - **Final boss:** 50% across all elements, equal, so no element or build is singled out as unplayable.
 - **Fallback:** if resistances become hard to balance, drop them and use armor points only.
+
+### Armor **[DIRECTOR DECISION, 2026-10-29]**
+1. **Two mitigation channels.** Elemental damage is reduced by elemental resistance. **Non-elemental damage (`physical`, `neutral`, and any future non-elemental type) is reduced by armor.** Armor never reduces elemental damage, and resistance never reduces non-elemental damage. This covers basic light and heavy attacks and class-based attacks.
+2. **Parity principle:** at every enemy tier, armor and elemental resistance give comparable mitigation, so no damage source is a safe or superior choice against elites and bosses. Otherwise everyone would build class, single-target and heavy attacks instead of their chosen element.
+3. **Formula (hyperbolic, diminishing returns):** `damage_taken = raw * K / (K + armor)`, i.e. `reduction = armor / (armor + K)`. It never reaches 100%; the reduction is 50% when armor = K.
+4. **K is one data value.** [PROPOSED] K = 50 (hits are small, about 5-16, so armor numbers stay small and readable).
+5. **Tier targets:** armor = K * r / (1 - r) for target reduction r. With K = 50: elites about 17 (25%), bosses about 27 (35%), final boss 50 (50%). Armor points are stored in data as designer numbers, with a test that proves parity with the tier's resistance.
+6. **Hard cap:** `armor_reduction_cap` in data ([PROPOSED] 0.5, matching the resistance cap), so stacked armor modifiers can't exceed it.
+7. **Normal enemies:** armor 0 by default; an optional per-enemy `armor` in data.
+8. **Penetration (plumbing only):** armor is read through the stat-modifier system, and an `armor_penetration` stat (flat, subtracted before the formula, floored at 0) lets future passives and gear reduce enemy armor. No content uses it yet.
+9. **Player armor (plumbing only):** the player has the same armor stat (default 0) so gear and passives can grant it later; enemy non-elemental attacks go through it.
+10. **Damage over time:** non-elemental ticks (Bleed) are mitigated by armor on each tick; Burn is elemental and goes through resistance. [PROPOSED] No minimum-damage floor beyond the existing behaviour, unless tiny ticks round to zero (then a minimum goes in data and is logged).
 
 ---
 

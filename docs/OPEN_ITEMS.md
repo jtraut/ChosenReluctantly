@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-10-29
-**Status: 4 small balance questions (D13-D16), nothing blocked.** Done: C1, Polish 1, **3a (runs of 8 rooms)** and **3b (card rewards and deck-clean)**. In progress: 3c, a real boss fight.
+**Status: 3 small balance questions (D13, D14, D16), nothing blocked.** Done: C1, Polish 1, **3a (runs of 8 rooms)** and **3b (card rewards and deck-clean)**. In progress: 3c, a real boss fight.
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
@@ -48,12 +48,13 @@ _Updated at every slice close._
 
 - **2026-10-29: "No cooldown indicator for the dodge; dodge should have 3 charges (maybe 2) and a slightly longer cooldown."** Recorded in GDD §3 as your decision. It's scheduled right after the boss slice closes and before loadouts. I'm setting each charge's recharge to **1.2 s** (was 0.8 s); the charge count and cooldown are both data values (`data/player.json` `dodge.charges`, `dodge.cooldown`). There will be a pip indicator near the attack meters. Also recorded: passives may raise or lower the charges as a trade-off, level-ups never touch them, and the hard limits are 0 and 4. The code gets the hook now; the passives come later.
 
+- **2026-10-29: Armor for elites and bosses** (non-elemental damage mitigated about as much as elemental). Recorded in GDD §7 as your decision. Queued as **Slice A1** right after the boss slice closes, ahead of dodge charges and loadouts, in your order; I see no reason to change it. It also answers D15 (fire against the boss), so D15 is withdrawn.
+
 ## Needs your decision
 
 Neither blocks work. Until you answer, I keep the current values.
 
 - **D13. Is healing too strong?** The playtester estimates the Recovery slot is ready 5-6 times a minute. With a 30 HP pool that out-heals what the waves deal, so slow chip damage can't kill you. Options: **A** keep it (judge it in play first; my default); **B** Recovery cooldown 8 s -> 12 s; **C** smaller heals (e.g. the potion 16 -> 10). This matters more once runs are several rooms long (3a), because HP carries over.
-- **D15. Fire against the boss.** The boss resists every element 50% (GDD §7: equal resistance for the final boss), but physical damage ignores resistance. With only Fire in the game, fire cards are strictly weaker than physical ones against the boss. Options: **A** keep it, since it stops mattering once more elements exist (my default); **B** give the final boss a matching physical armour; **C** lower its elemental resistance to 25% for now.
 - **D16. Should the boss ever stagger?** Right now nothing you do staggers it during the 60 s fight, which may make your hits feel weightless. Options: **A** keep it unstaggerable (my default); **B** a short stagger at each phase threshold; **C** a stagger meter that fills from heavy attacks.
 - **D14. Wall of Mild Fire on a single enemy.** It only hurts while enemies stand in it, so a lone enemy walks out. Options: **A** keep it as a crowd card (my default); **B** it also slows enemies inside it; **C** raise its tick damage 2.5 -> 3.5.
 
@@ -122,6 +123,7 @@ Play a normal run, not a test scenario. Reply with the item number and a word or
 
 | ID | Question | Your answer | Date |
 |---|---|---|---|
+| D15 | Fire against the boss (fire resisted 50%, physical not)? | Superseded by your armor request (Slice A1, GDD §7 Armor). | 2026-10-29 |
 | D8 | How far should the dodge go? | C: about 5 m. It may go lower later, so keep it easy to tune. Critical survival moves should come from Movement cards. | 2026-10-28 |
 | D9 | Should Stealth also drop enemy aggro? | A: pass-through only for this pass. Aggro drop is planned for later. | 2026-10-28 |
 | D10 | Duplicate cards in a deck? | A: allowed (they never count toward the unique minimum). | 2026-10-28 |

@@ -385,7 +385,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     Reward-only at start: Flaming Nonsense, Pointy Stick, Slash Then Bleed, Four Quick Stabs, Fireball, Wall of Mild Fire, Walk Through Everyone, Reluctant Lunge, Heal By Hurting.
   - **Known limit:** Utility has exactly 3 cards in the whole pool, so it can never be cleaned or grow until more Utility cards exist. Accepted for the prototype.
   - **Owner sequence:** gameplay-dev (logic, data, a placeholder screen) -> ux-designer (the choice screen) -> qa -> playtester -> tech-writer -> close, tag `playtest-2026-10-29-3b`.
-- [ ] **3c, boss encounter** — gameplay BUILT a35501d..2234dc8 (875/875; bot boss fight mean 61 s, 8/8 won); ux BUILT b8af93f..5245779 (894/894, including the 3b follow-ups); qa PASS 64df947 (903/903). playtest 81b03d8 (no blocker; readable telegraphs; adds hide the cone; "Slot N now" lists ambiguous because names contain commas). ux fix pass running. **Director feedback 2026-10-29 (first hands-on run):** the reward selection scrolls by default (window about 1150x680; cards clipped at the top, scrollbar). Fix before the 3c tag (ux-designer): reward offers fit with no scrolling down to about 1024x600, scroll stays only on the removal grid, tests pin it.
+- [ ] **3c, boss encounter** — gameplay BUILT a35501d..2234dc8 (875/875; bot boss fight mean 61 s, 8/8 won); ux BUILT b8af93f..5245779 (894/894, including the 3b follow-ups); qa PASS 64df947 (903/903). playtest 81b03d8 (no blocker; readable telegraphs; adds hide the cone; "Slot N now" lists ambiguous because names contain commas). ux fix pass 741c624..b7a6a01 done; qa fix check PASS 8bc7241 (907). docs pass running. **Director feedback 2026-10-29 (first hands-on run):** the reward selection scrolls by default (window about 1150x680; cards clipped at the top, scrollbar). Fix before the 3c tag (ux-designer): reward offers fit with no scrolling down to about 1024x600, scroll stays only on the removal grid, tests pin it.
   - **Goal:** the last room ends the run with a real fight: one boss with readable phases and telegraphed attacks, replacing the 3a placeholder (a golem with HP x7). GDD §7 (final boss: 50% resistance to every element, equal), §11 (telegraphs, feel).
   - **Acceptance:**
     1. **Data-driven boss** (`data/bosses.json` or a `boss` block in `data/enemies.json`, schema-validated): HP, move speed, 50% resistance to every element (physical ignores resistance as usual), and a phase list with HP thresholds (default 3 phases: 100-66%, 66-33%, 33-0%).
@@ -406,13 +406,67 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     - the Continue / New run button gets the arm delay, and its hint drops "Space".
     - Gameplay side: `RunState.from_dict` rejects an unknown `pending`; the choice model carries `owned` and `next_room_type`.
   - **Owner sequence:** gameplay-dev -> ux-designer (boss bar, telegraph readability) -> qa -> playtester -> tech-writer -> close, tag `playtest-2026-10-29-3c`.
-- [ ] **P-dodge, dodge charges and indicator (director request 2026-10-29; runs after the 3c close, before 3d)**
+- [ ] **Slice A1: Armor (director request 2026-10-29; runs right after the 3c close, ahead of P-dodge and 3d)**
+  - **Goal:** elites and bosses mitigate non-elemental damage about as much as elemental damage, so no build family is singled out at the final boss. GDD §7 "Armor" [DIRECTOR DECISION, 2026-10-29], points 1-10. This resolves D15.
+  - **Today (to re-verify):** `CombatMath.apply_resistance` returns physical unchanged, and `neutral` effectively skips mitigation. At the final boss, physical and neutral take 0% while fire takes 50%.
+  - **Part 1, gameplay-dev:**
+    1. Armor and the formula go in `CombatMath` (pure), wired into `Health.take_damage` as the single choke point for every non-elemental hit: cards, light and heavy attacks, boss attacks on the player, status ticks, and path and zone damage.
+    2. **Data:**
+       - `armor` on the `run.json` elite and boss tiers, on the boss in `bosses.json`, and as an optional per-enemy override in `enemies.json`.
+       - K (50) and `armor_reduction_cap` (0.5) in one shared data location (log which).
+       - Validators fail loud on negative armor, a missing K or K <= 0, a cap outside [0, 1], or a tier with no armor.
+    3. Tier armor is validated against the tier's resistance through `armor = K*r/(1-r)`, so a test catches any drift.
+    4. **Plumbing only, no content:** an `armor_penetration` stat via StatModifiers (flat, floored at 0), and a player armor stat (default 0) that enemy non-elemental hits go through.
+    5. **DoT:** Bleed ticks go through armor, Burn through resistance, and heals are untouched. Check whether tiny ticks round to zero; if they do, propose a data minimum and log it.
+    6. **Re-tune:**
+       - With the bot sim, measure the median time-to-kill for the standard deck against an elite and the boss, BEFORE and AFTER armor.
+       - Adjust only elite `hp_multiplier` and boss `max_health`, so fight lengths stay near today's (boss about 61 s).
+       - No enemy-damage or player changes. Log every number.
+  - **Part 2, ux-designer:**
+    - The boss bar shows armor next to resistance, in the same style.
+    - Elite bars get a small armor cue.
+    - Armor-reduced hits get a distinct muted damage-number style, told apart from the resisted style by more than colour.
+    - The F3 overlay shows the nearest or under-cursor enemy's armor and resistance, plus the player's armor.
+    - All of it stays unobtrusive in a crowd.
+  - **Part 3, qa:**
+    - **Formula:** armor 0 gives 0% reduction; armor = K gives exactly 50%; large armor approaches but never reaches 100%; the cap applies; bad inputs are rejected.
+    - **Channels:** each one affects only its own damage types.
+    - **Parity test:** for each tier (elite, boss, final boss), armor reduction and resistance agree within 2 points. The test must fail when one is changed without the other.
+    - **Penetration and player armor:** flat penetration floors at 0, and a player with armor mitigates enemy physical attacks.
+    - **DoT:** Bleed ticks are mitigated by armor, Burn ticks by resistance, and heals are untouched.
+    - **Data validation** fails loud.
+    - **Bot sim:**
+      - Elite and boss time-to-kill for 4 decks (fire-only, physical/class-only, light and heavy only, standard mixed), before and after armor.
+      - Headline: no family kills the final boss in under about 70% or over about 130% of the standard deck's time.
+      - Say what the sim can't isolate.
+    - **Gates:** full suite, 20 s headless run, reload soak, SceneSelfCheck.
+  - **Part 4, playtester:**
+    - Fight an elite and the boss with a fire-heavy deck and a physical-heavy deck (`--full-deck`, `--run-room`).
+    - Do the fight lengths feel similar? Are the armor cues readable? Do damage numbers explain the smaller hits?
+    - Screenshots of each cue.
+  - **Part 5, close:**
+    - OPEN_ITEMS:
+      - an eyes item: element-heavy vs class-heavy deck at an elite and the boss;
+      - calls: K = 50, the cap, the retuned HP and the DoT rule, each with its one-line change.
+    - tech-writer: README if commands changed; ARCHITECTURE (damage and mitigation flow); CHANGELOG with `[Director decision]`.
+    - Close with tag `playtest-2026-10-29-A1`.
+  - **Done when:**
+    - zero errors on startup and in the 20 s headless run;
+    - the full suite passes, including the parity test;
+    - the formula and cap live in data;
+    - tier armor matches tier resistance;
+    - standard-deck fight lengths are retuned, with before/after numbers logged;
+    - the armor cues are readable;
+    - the playtest report and OPEN_ITEMS are updated.
+
+- [ ] **P-dodge, dodge charges and indicator (director request 2026-10-29; runs after A1, before 3d)**
   - **Goal:** the dodge has charges and the player can see them. GDD §3 [DIRECTOR DECISION, 2026-10-29].
   - **Acceptance:**
     1. `data/player.json` `dodge.charges` (default 3). The effective count is read through the existing StatModifiers as a stat (e.g. `dodge_charges`) so future passives can raise or lower it, **clamped to a hard 0-4** after all modifiers (`dodge.min_charges` 0 and `dodge.max_charges` 4 in data, validated). At 0 the dodge is unavailable and the indicator shows that clearly. Tests cover the clamp at both ends and a mid-run change (the current charges clamp down). No passive or level-up content now; only the hook and `dodge.cooldown` is the per-charge recharge time. Charges recharge one at a time while below max. Each dodge spends one charge. A dodge can't start during another dodge (the roll lasts 0.25 s). Distance stays 5 m.
     2. **Cooldown default (game-lead call):** 0.8 s -> 1.2 s per charge ("slightly longer"). It's one data value.
     3. **HUD (ux-designer):** a dodge indicator near the LMB/RMB meters: one pip per charge (filled = ready) with the recharging pip filling over time, plus a "Space" label. It's readable at 720p, 1080p and 1440p and works for 0-4 charges. Charges reset each room and on Try again.
     4. Pause, death, reload and the 2-tick post-pause block still work. Tests for the charge logic and the recharge timing.
+    4a. **qa N11 (from the 3c fix check):** the reload soak intermittently fails with "reward pick: damage immunity leaked into a new room" (about 1 in 5, also at 64df947). Find out whether `Health.damage_immune` really leaks into the next room after a reward pick (a real bug: the player would be invulnerable) or the soak is racing. Fix it and add a test.
     5. Rerun the seeded wave sim and the whole-run sim and report the HP lost before/after (3 charges is a big survival buff, which may feed D13 and the solid-enemies call).
   - **Owner sequence:** gameplay-dev -> ux-designer -> qa -> playtester (short) -> tech-writer (folded into the next docs pass if small) -> close.
 

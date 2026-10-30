@@ -512,12 +512,15 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 				break
 	_pin_want = want
 	_drive(want)
-	if boss_threat and danger != null and _sim_time >= _dodge_cooldown_until:
+	# Dodge whenever the player could: the Player's own availability (a charge and no roll under way) is the gate,
+	# and the throttle is only the roll length, so charges (not a timer) limit the bot.
+	var can_dodge: bool = _sim_time >= _dodge_cooldown_until and bool(_player.get_dodge_state()["available"])
+	if boss_threat and danger != null and can_dodge:
 		_press(&"dodge")
-		_dodge_cooldown_until = _sim_time + 0.9
-	elif danger != null and not (danger is Boss) and _sim_time >= _dodge_cooldown_until:
+		_dodge_cooldown_until = _sim_time + _player.dodge_duration
+	elif danger != null and not (danger is Boss) and can_dodge:
 		_press(&"dodge")
-		_dodge_cooldown_until = _sim_time + 0.9
+		_dodge_cooldown_until = _sim_time + _player.dodge_duration
 	if crowd >= 2 and _sim_time >= _heavy_until:
 		_press(&"attack_heavy")
 		_heavy_until = _sim_time + 1.9

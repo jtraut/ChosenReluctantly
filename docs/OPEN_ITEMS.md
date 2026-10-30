@@ -1,6 +1,6 @@
 # Director open items
 
-Last updated: 2026-10-29
+Last updated: 2026-10-30
 **Status: 2 waiting on a decision (D17, D18; neither blocks).** Done: C1, Polish 1, 3a (runs of 8 rooms), 3b (card rewards and deck-clean), 3c (the boss) and **A1 (armor)**, **T-decks (preset test decks)** and **W1a (a playable Fire Wizard)**. Next: W1b (Wizard cards and balance), then dodge charges, then loadouts.
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
@@ -72,7 +72,7 @@ _Updated at every slice close._
 
 - **2026-10-29: Armor for elites and bosses** (non-elemental damage mitigated about as much as elemental). **Built** in `playtest-2026-10-29-A1`; see "While you were away" and checklist item 23. It also answers D15 (fire against the boss), so D15 is withdrawn.
 
-- **2026-10-29: Debug preset decks** (`--deck=<name>`, `--list-decks`, presets in `data/debug_decks/`). Queued as **T-decks** right after armor (A1) closes, ahead of dodge charges. The wave sim's armor-test deck families get folded into your presets, so there's one deck system with no rule bypass.
+- **2026-10-29: Debug preset decks** (`--deck=<name>`, `--list-decks`, presets in `data/debug_decks/`). **Built** in `playtest-2026-10-29-T-decks`; see "How to playtest". The wave sim uses the same presets, with no rule bypass.
 
 - **2026-10-29: "On pause, expand the active and next-up cards in every slot so I can read what they do."** Logged in ROADMAP under "Later" as unscheduled, as you said it can wait. Tell me when to schedule it.
 
@@ -83,11 +83,11 @@ _Updated at every slice close._
   - 6-8 Wizard cards;
   - 26 HP.
 
-  **Order (my call, tell me if you want it different):** armor (A1, finishing now) -> debug decks (T-decks, small, so you can launch Wizard test decks) -> **Wizard** -> dodge charges plus D13/D16 -> loadouts. Also logged: a small Rogue cue so new players can tell the light attack is melee.
+  **Status:** **W1a built** (`playtest-2026-10-30-W1a`: class pick, ranged bolt and blast, 26 HP, 4 Wizard cards). **W1b next:** Wizard attack cards, a caster starter, Wizard presets and balance (see D18). After that: dodge charges plus D13/D16, then loadouts. Also logged: a small Rogue cue so new players can tell the light attack is melee (in W1b).
 
 ## Needs your decision
 
-It doesn't block work. Until you answer, I keep the current behaviour.
+Neither blocks work. Until you answer, I use my default.
 
 - **D17: Show each card's damage type?** Armor only matters if you can tell which of your cards it affects, and right now nothing on a card says physical or fire.
   - **A:** add a small damage-type tag to card tiles and slots (a short ux task before the Wizard).

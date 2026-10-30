@@ -273,6 +273,19 @@ func test_lowering_the_maximum_mid_run_clamps_the_player() -> void:
 	assert_int(main.player.dodge_charges.current).override_failure_message("recharges to 3 after the curse is gone").is_equal(3)
 
 
+func test_the_signal_fires_when_only_the_maximum_changes() -> void:
+	var main := _spawn_main("rogue")
+	await _frames(3)
+	var seen: Array[Vector2i] = []
+	main.player.dodge_charges_changed.connect(func(current: int, maximum: int) -> void: seen.append(Vector2i(current, maximum)))
+	main.player.stat_modifiers.add_modifier("dodge_charges", "boots", StatModifiers.ADDITIVE, 1.0)
+	await _frames(2)
+	assert_array(seen).override_failure_message("raising the maximum at full charges must announce 3 of 4 at once").contains([Vector2i(3, 4)])
+	main.player.stat_modifiers.remove_modifier("dodge_charges", "boots")
+	await _frames(2)
+	assert_array(seen).contains([Vector2i(3, 3)])
+
+
 func test_reset_dodge_charges_and_a_fresh_room_start_full() -> void:
 	var main := _spawn_main("rogue")
 	await _frames(3)
@@ -382,6 +395,28 @@ func test_pass_through_ending_on_an_enemy_centre_does_not_launch_the_player() ->
 	assert_float(max_y - rest_y).override_failure_message("launched %.2f m up" % (max_y - rest_y)).is_less(0.3)
 	var flat: float = Vector2(player.global_position.x - enemy.global_position.x, player.global_position.z - enemy.global_position.z).length()
 	assert_float(flat).override_failure_message("still inside the body (%.2f m)" % flat).is_greater_equal(0.8)
+
+
+## qa's probe (f1 review): a LIVE chaser exactly where the 4.5 m Ugh, Fine, Moving dash ends, then past the restore cap.
+## Before the nudge the player was launched upward (y about 93 to 135 m in qa's runs).
+func test_a_live_chaser_at_the_exact_dash_end_does_not_launch_the_player() -> void:
+	var main := _spawn_main("rogue")
+	await _frames(30)
+	var player := main.player
+	var rest_y: float = player.global_position.y
+	var facing: Vector3 = player.get_aim_direction()
+	var enemy: Enemy = (load(CHASER_PATH) as PackedScene).instantiate()
+	enemy.position = player.global_position + facing * 4.5
+	main.add_child(enemy)
+	var card := CardDatabase.get_card("rogue_ugh_fine_moving")
+	var context := EffectContext.new(player, main, "player")
+	for effect: Dictionary in card["effects"]:
+		EffectTemplates.execute(effect["template"], effect["params"], context)
+	var max_y: float = rest_y
+	for i in range(420):  # the dash, the 3 s restore cap, and a margin
+		await _frames(1)
+		max_y = maxf(max_y, player.global_position.y)
+	assert_float(max_y - rest_y).override_failure_message("launched %.1f m up" % (max_y - rest_y)).is_less(0.5)
 
 
 # ---- 4a: the soak's "immunity leak" ----

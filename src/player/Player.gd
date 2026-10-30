@@ -47,6 +47,8 @@ var dodge_min_charges: int = 0
 var dodge_max_charges: int = 4
 ## Charge pool (src/player/DodgeCharges.gd). Built in _ready.
 var dodge_charges: DodgeCharges = null
+## The maximum the last dodge_charges_changed carried, so a modifier that raises or lowers it fires the signal at once.
+var _last_emitted_dodge_max: int = -1
 
 ## Which character this is (a key of data/characters.json: rogue, wizard). "" = work it out from `owned_pools`, else the
 ## default (Rogue). Main sets it before _ready in a run, from the run's class. It picks the pools, max HP, body colour,
@@ -175,6 +177,7 @@ func _ready() -> void:
 	dodge_max_charges = int(dodge_cfg["max_charges"])
 	dodge_charges = DodgeCharges.new(dodge_cooldown, 0)
 	dodge_charges.reset(dodge_charges_max())
+	_last_emitted_dodge_max = dodge_charges_max()
 	card_slots = CardSlotController.new(self, WorldRef.get_world(get_tree()), team, stat_modifiers, owned_pools, card_rng, CharacterDatabase.slot_base_cooldowns(character_id))
 	card_slots.status_rng = status_rng
 	damage_dealt.connect(_on_damage_dealt)
@@ -401,7 +404,8 @@ func _flash_body(color: Color) -> void:
 
 
 func _tick_cooldowns(delta: float) -> void:
-	if dodge_charges.advance(delta, dodge_charges_max()):
+	var maximum: int = dodge_charges_max()
+	if dodge_charges.advance(delta, maximum) or maximum != _last_emitted_dodge_max:
 		_emit_dodge_charges()
 
 
@@ -434,7 +438,8 @@ func reset_dodge_charges() -> void:
 
 
 func _emit_dodge_charges() -> void:
-	dodge_charges_changed.emit(dodge_charges.current, dodge_charges_max())
+	_last_emitted_dodge_max = dodge_charges_max()
+	dodge_charges_changed.emit(dodge_charges.current, _last_emitted_dodge_max)
 
 
 func _handle_dodge_input() -> void:

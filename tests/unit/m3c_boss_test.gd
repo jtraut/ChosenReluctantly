@@ -54,6 +54,7 @@ func _boss(main: Main, distance: float = 8.0) -> Boss:
 	boss.spawn_index = 0
 	main.add_child(boss)
 	boss.set_seed(7)
+	boss.health.base_armor = 0.0  # phase and HP-bar tests count raw HP; armor has its own tests (a1_armor_test.gd)
 	return boss
 
 
@@ -291,8 +292,9 @@ func test_spawned_boss_takes_its_stats_from_data_and_resists_every_element_by_ha
 	boss.health.take_damage(10.0, "fire")
 	assert_float(before - boss.health.current_health).is_equal_approx(5.0, 0.001)
 	before = boss.health.current_health
+	boss.health.base_armor = float(def["armor"])  # the helper zeroes it; the data value halves a physical hit (armor 50, K 50)
 	boss.health.take_damage(10.0, "physical")
-	assert_float(before - boss.health.current_health).override_failure_message("physical ignores resistance").is_equal_approx(10.0, 0.001)
+	assert_float(before - boss.health.current_health).override_failure_message("physical goes through armor, not resistance").is_equal_approx(5.0, 0.001)
 	assert_array(boss.phase_thresholds()).is_equal([0.66, 0.33])
 	assert_int(boss.phase_count()).is_equal(3)
 

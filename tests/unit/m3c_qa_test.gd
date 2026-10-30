@@ -44,6 +44,7 @@ func _boss(main: Main, distance: float = 8.0) -> Boss:
 	boss.spawn_index = 0
 	main.add_child(boss)
 	boss.set_seed(7)
+	boss.health.base_armor = 0.0  # phase and HP-bar tests count raw HP; armor has its own tests (a1_armor_test.gd)
 	return boss
 
 
@@ -137,8 +138,9 @@ func test_qa_the_boss_resists_every_element_by_half_and_physical_not_at_all() ->
 		boss.health.take_damage(10.0, element)
 		assert_float(before - boss.health.current_health).override_failure_message("%s: boss did not take exactly half" % element).is_equal_approx(5.0, 0.001)
 	var before_physical: float = boss.health.current_health
+	boss.health.base_armor = float(BossConfig.boss(BOSS_ID)["armor"])  # the helper zeroes it; physical is halved by armor, not resistance
 	boss.health.take_damage(10.0, "physical")
-	assert_float(before_physical - boss.health.current_health).is_equal_approx(10.0, 0.001)
+	assert_float(before_physical - boss.health.current_health).is_equal_approx(5.0, 0.001)
 	# The shipped number is exactly the GDD's cap, so nothing can stack past it.
 	assert_float(boss.health.resistance_cap).is_equal(0.5)
 	for element: String in elements:

@@ -144,7 +144,7 @@ func _build() -> void:
 			enemy.health.heal(enemy.health.get_max_health())
 	# Capture-only: start below full HP so a heal is observable.
 	if _def.has("player_start_damage"):
-		player.health.take_damage(float(_def["player_start_damage"]), "physical")
+		_hit_unmitigated(player.health, float(_def["player_start_damage"]))
 
 	# Capture-only (3c): start the boss in a later phase and/or script its attack order, so each attack can be shot.
 	for enemy in _enemies:
@@ -162,7 +162,7 @@ func _build() -> void:
 		var health: Health = _enemies[i].health
 		var lost: float = health.get_max_health() * (1.0 - float(fractions[i]))
 		if lost > 0.0:
-			health.take_damage(lost, "physical")
+			_hit_unmitigated(health, lost)
 
 	# Capture-only: ranks and a scripted stun (stun_indices at stun_at seconds), for the stun cue shots.
 	for boss_index: int in _def.get("boss_indices", []):
@@ -179,13 +179,24 @@ func _build() -> void:
 			bleeder.apply_status("bleed", StatusDatabase.get_status("bleed"), float(_def.get("bleed_duration", 8.0)))
 
 
+## Scenario setup hits (start HP, hp_fractions, the scripted death) must remove exactly what the file says, so they skip armor.
+func _hit_unmitigated(health: Health, amount: float) -> void:
+	var saved: float = health.base_armor
+	var modifiers: StatModifiers = health.stat_modifiers
+	health.base_armor = 0.0
+	health.stat_modifiers = null
+	health.take_damage(amount, "physical")
+	health.base_armor = saved
+	health.stat_modifiers = modifiers
+
+
 func _process(delta: float) -> void:
 	_elapsed += delta
 	# Scenario-only death trigger (capture tooling; there is no debug key for it).
 	if not _kill_done and _def.has("kill_player_at") and _elapsed >= float(_def["kill_player_at"]):
 		_kill_done = true
 		var player: Player = _main.get_node("Player")
-		player.health.take_damage(player.health.get_max_health() * 2.0, "physical")
+		_hit_unmitigated(player.health, player.health.get_max_health() * 2.0)
 	# Scenario-only scripted right click (heavy attack) for captures.
 	if not _heavy_press_done and _def.has("heavy_at") and _elapsed >= float(_def["heavy_at"]):
 		_heavy_press_done = true
@@ -213,7 +224,7 @@ func _process(delta: float) -> void:
 	_late_hit_done = true
 	for hit_index: int in late.get("indices", []):
 		if hit_index < _enemies.size() and is_instance_valid(_enemies[hit_index]):
-			_enemies[hit_index].health.take_damage(float(late.get("amount", 5.0)), "physical")
+			_hit_unmitigated(_enemies[hit_index].health, float(late.get("amount", 5.0)))
 
 
 ## Scripted stun (scenario "stun_indices" at "stun_at" seconds, base length "stun_duration"),

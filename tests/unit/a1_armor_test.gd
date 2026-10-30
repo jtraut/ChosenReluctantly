@@ -224,3 +224,14 @@ func test_shipped_tier_armor_matches_resistance_within_two_points() -> void:
 		var reduction := CombatMath.armor_reduction(float(c["armor"]), ArmorConfig.k(), ArmorConfig.reduction_cap())
 		assert_float(absf(reduction - float(c["res"]))).override_failure_message("%s: armor %s -> %s vs resistance %s" % [c["label"], c["armor"], reduction, c["res"]]).is_less(0.02)
 	assert_array(ArmorConfig.parity_errors("t", 17.0, 0.5, 50.0, 0.02)).is_not_empty()  # the check itself can fail
+
+
+func test_penetration_applies_to_dot_ticks_from_the_source() -> void:
+	var h := _health(50.0)
+	var attacker: Attacker = auto_free(Attacker.new())
+	attacker.stat_modifiers.add_modifier("armor_penetration", "pen", StatModifiers.ADDITIVE, 50.0)
+	var manager: StatusEffectManager = auto_free(StatusEffectManager.new())
+	manager.health = h
+	manager.apply_status("bleed", {"damage_per_tick": 1.0, "damage_type": "physical", "tick_interval": 1.0}, 1.0, attacker)
+	manager._process(1.0)
+	assert_float(_lost(h, 1000.0)).is_equal_approx(1.0, 0.0001)

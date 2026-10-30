@@ -42,6 +42,7 @@ func _boss(main: Main) -> Boss:
 	boss.spawn_index = 0
 	main.add_child(boss)
 	boss.set_seed(7)
+	boss.health.base_armor = 0.0  # the HP-bar tests count raw HP; armor has its own tests (a1_armor_test.gd)
 	return boss
 
 

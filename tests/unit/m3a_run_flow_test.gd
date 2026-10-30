@@ -254,7 +254,7 @@ func test_elite_golem_keeps_its_own_resistance_and_gets_hp() -> void:
 	var base_hp := golem.health.max_health
 	var own_fire := golem.health.get_resistance("fire")
 	golem.apply_tier("elite", RunConfig.tier("elite"))
-	assert_float(golem.health.max_health).is_equal(base_hp * 2.5)
+	assert_float(golem.health.max_health).is_equal(base_hp * float(RunConfig.tier("elite")["hp_multiplier"]))
 	assert_float(golem.health.current_health).is_equal(golem.health.max_health)
 	assert_float(golem.health.get_resistance("fire")).is_equal(minf(maxf(own_fire, 0.25), 0.5))
 	assert_str(golem.tier).is_equal("elite")
@@ -263,13 +263,13 @@ func test_elite_golem_keeps_its_own_resistance_and_gets_hp() -> void:
 	assert_str(golem.status_manager.rank).is_equal("elite")
 
 
-func test_elite_chaser_gets_twenty_five_percent_fire_and_physical_is_untouched() -> void:
+func test_elite_chaser_gets_twenty_five_percent_fire_and_physical_goes_through_armor() -> void:
 	var chaser := _tiered("res://scenes/enemies/MeleeChaser.tscn")
 	chaser.apply_tier("elite", RunConfig.tier("elite"))
 	assert_float(chaser.health.get_resistance("fire")).is_equal(0.25)
 	var before := chaser.health.current_health
 	chaser.health.take_damage(10.0, "physical")
-	assert_float(before - chaser.health.current_health).is_equal(10.0)
+	assert_float(before - chaser.health.current_health).is_equal_approx(10.0 * 50.0 / (50.0 + 17.0), 0.001)  # armor 17, K 50, not resistance
 	var before_fire := chaser.health.current_health
 	chaser.health.take_damage(10.0, "fire")
 	assert_float(before_fire - chaser.health.current_health).is_equal_approx(7.5, 0.001)

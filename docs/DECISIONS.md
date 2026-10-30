@@ -1096,3 +1096,16 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
 - **The Wizard's boss cliff** (killed at full HP in 6.4 s on seed 21) goes into W1b item 5a, under D18 = A. It's not a new director question. [Asking the director.]
 - **Run length (about 5 bot-minutes for 10 rooms)** stays as the standing prototype call (OPEN_ITEMS call #3, GDD §9 [PROPOSED] short runs); the director set "at least 10" and difficulty via tiers. I mention it to the director as FYI, not a decision. [A new D item.]
 - **A walking-enemy Wall scenario** goes into W1b item 5b.
+
+### 2026-10-30 - P-dodge gameplay (gameplay-dev, logged by game-lead)
+- Built 0209de4..HEAD (1140/1140). Dodge charges (`DodgeCharges`, 1.2 s each, clamped 0-4; Rogue 3, Wizard 2 via `characters.json` `dodge_charges`); Recovery 8 -> 12 s, Wizard 14 s (`slot_base_cooldowns`); boss stagger 0.8 s before the roar (STAGGER state); a nudge-out when pass-through ends inside a body (the launch bug).
+- **The soak flake was not a real leak:** after Try again the seed is random, and a rest room is correctly immune while its choice is open. The soak now expects immunity in rest rooms only and prints the room type and seed on failure.
+- **Arena hash 3513335656 -> 1867641457, caused only by Recovery 8 -> 12** (bisected; the charges don't change this seed). Accepted as the new baseline.
+- **Calls (gameplay-dev):**
+  - **Stagger damage counts** because the HP floor drops to the next threshold for the stagger only; one hit can't pass two thresholds (a new stagger starts). [Making the boss immune during the stagger.]
+  - **`max_transition` 1.5 -> 2.0 s** to fit stagger 0.8 + roar 1.2. [Shortening the roar to 0.7 s.]
+  - **The new `characters.json` keys are optional;** `player.json` charge keys are required. [All required.]
+- **My calls on gameplay-dev's three questions (none touch a GDD rule, all cheap to reverse):**
+  - **Accept 0.8 s stagger and the 2.0 s cap.** The GDD makes the length a data value. [Asking the director.]
+  - **The last-phase stagger keeps a 1 HP floor,** so the boss can't skip phase 3 and its adds. It's unreachable today, but the 3-phase fight is the design. [Allowing a kill during the stagger.]
+  - **The sim bot becomes charge-aware now** (throttled to the roll length, gated by charges), in P-dodge, before qa takes the baseline. Otherwise W1b would tune the Wizard's 2 vs the Rogue's 3 charges with a bot that can't see them. A new baseline is accepted. [Leaving the bot at one dodge per 0.9 s.]

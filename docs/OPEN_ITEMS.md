@@ -54,6 +54,8 @@ _Updated at every slice close._
 
 - **2026-10-29: Debug preset decks** (`--deck=<name>`, `--list-decks`, presets in `data/debug_decks/`). Queued as **T-decks** right after armor (A1) closes, ahead of dodge charges. The wave sim's armor-test deck families get folded into your presets, so there's one deck system with no rule bypass.
 
+- **2026-10-29: "On pause, expand the active and next-up cards in every slot so I can read what they do."** Logged in ROADMAP under "Later" as unscheduled, as you said it can wait. Tell me when to schedule it.
+
 ## Needs your decision
 
 Neither blocks work. Until you answer, I keep the current values.

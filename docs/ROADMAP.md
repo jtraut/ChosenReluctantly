@@ -335,6 +335,10 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
 - [ ] **Backlog (C1 and 3a playtests, qa follow-ups) (not scheduled; small UX/content items, game-lead picks them up between M3 slices if cheap):** real-cast C1 scenarios in `data/scenarios.json`; a brief card-name pop-up on cast; a stronger Bleed cue and four distinct Flurry flashes; a brighter enemy projectile and stronger player outline in dense crowds; the Lunge preview shows the full path even when a body stops it; `Main.gd:74`/`GameOverScreen.gd:26` use `current_scene` (qa N5); bot-sim charter checks (qa N3, done in 3a). From 3a: keep elites from spawning under the card row; the LOST line shows a stale HP; the `--run-room` win count; run-mode sim results depend on earlier runs in the same process; +1 object per soak cycle; `-RoomTimeout` clamps silently.
 
 ## Later (director, 2026-10-28)
+- **Pause shows card details (director request 2026-10-29, unscheduled; ux-designer, with a small gameplay hook if needed).**
+  - When the player pauses (Esc), every slot's **active card and next-up card** (including slots on cooldown) expand upward so the player can read what each card does before resuming.
+  - Show the name, the effect line (reuse `CardSummary.effect_line`, as on the reward screen), the cooldown, and the remaining cooldown for cooling slots.
+  - It must coexist with the pause/settings panel and fit at 720p, 1080p and 1440p with no scrolling. It collapses on resume.
 - Stealth makes enemies drop aggro (GDD §15 "Stealth drops enemy aggro [PLANNED, later]"). Do it with the enemy targeting/AI pass.
 
 ## Milestone 3 — Card system and run loop

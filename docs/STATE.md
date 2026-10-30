@@ -12,11 +12,11 @@ Last updated: 2026-10-29. The director is away until the evening with an autonom
 
 ## In progress
 - **Milestone 3c closed** 2026-10-29 (tag `playtest-2026-10-29-3c`, 907/907).
-- **Slice A1: Armor** (director request): Part 1 built b23d7df..e141dfe (923/923). Part 2 built 1604f6b..bcf13a5 (939/939). qa PASS 9292e4b (965/965). ux readability fix done f0cb109 (boss bar at 1024x768, elite pip_scale, N1). qa delta PASS 70a761f (966/966 + 2 qa tests). Next: playtester (Part 4).
+- **Slice A1: Armor** (director request): Part 1 built b23d7df..e141dfe (923/923). Part 2 built 1604f6b..bcf13a5 (939/939). qa PASS 9292e4b (965/965). ux readability fix done f0cb109 (boss bar at 1024x768, elite pip_scale, N1). qa delta PASS 70a761f (966/966 + 2 qa tests). Playtest ff6e7f6 (no blocker). Next: tech-writer docs pass, then close.
 
 ## Exact next step
-1. **A1 playtester (Part 4)** (qa delta PASS 70a761f). **On resume:** check `docs/playtests/` for a 2026-10-29 a1 report.
-2. Then tech-writer -> close, tag `playtest-2026-10-29-A1`.
+1. **A1 tech-writer docs pass** (playtest ff6e7f6, no blocker). **On resume:** check `git log` for a docs commit.
+2. Then game-lead close: OPEN_ITEMS, tag `playtest-2026-10-29-A1`.
 3. Then **T-decks** (debug preset decks; lightweight loop), then **W1 Fire Wizard** (director request; brief in ROADMAP), then **P-dodge** (also carries D13 = B, the Recovery cooldown 8 -> 12 s, and D16 = B, the boss stagger at thresholds), then **3d**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.

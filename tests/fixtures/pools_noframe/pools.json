@@ -1,0 +1,5 @@
+{
+    "rogue": { "kind": "class", "display_name": "Rogue" },
+    "fire": { "kind": "element", "display_name": "Fire", "frame_color": "not-a-colour", "visual": { "color": "#ff6a1f", "scale": 1.0 } },
+    "neutral": { "kind": "neutral", "display_name": "Neutral", "frame_color": "#9a9a9a", "visual": { "color": "#f2ecd8", "scale": 1.0 } }
+}

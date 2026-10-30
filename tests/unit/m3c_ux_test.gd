@@ -8,6 +8,8 @@ const MAIN_PATH := "res://scenes/main/Main.tscn"
 const RUN_MAIN_PATH := "res://scenes/main/RunMain.tscn"
 const BOSS_PATH := "res://scenes/enemies/BossGuardian.tscn"
 const RESOLUTIONS: Array[Vector2] = [Vector2(1280, 720), Vector2(1920, 1080), Vector2(2560, 1440)]
+## Includes the narrow 4:3 and short windows, where the boss bar has to shrink (N2).
+const BOSS_BAR_RESOLUTIONS: Array[Vector2] = [Vector2(1024, 600), Vector2(1024, 768), Vector2(1280, 720), Vector2(1920, 1080), Vector2(2560, 1440)]
 
 
 func before_test() -> void:
@@ -63,7 +65,7 @@ func _key(code: Key) -> void:
 
 func test_boss_bar_clears_every_other_hud_piece_at_all_resolutions() -> void:
 	var cfg := UiConfig.hud()
-	for vp in RESOLUTIONS:
+	for vp in BOSS_BAR_RESOLUTIONS:
 		var rect := HudLayout.boss_bar_rect(vp, cfg)
 		assert_bool(HudLayout.safe_area(vp, cfg).encloses(rect)).override_failure_message("inside safe area at %s" % vp).is_true()
 		assert_bool(rect.intersects(HudLayout.room_indicator_rect(vp, cfg))).override_failure_message("room indicator at %s" % vp).is_false()
@@ -77,6 +79,27 @@ func test_boss_bar_clears_every_other_hud_piece_at_all_resolutions() -> void:
 		assert_float(rect.position.x - (meters[&"heavy"] as Rect2).end.x).is_greater_equal(gap)
 		assert_float(HudLayout.room_indicator_rect(vp, cfg).position.x - rect.end.x).is_greater_equal(gap)
 		assert_float(HudLayout.slot_bar_rect(vp, cfg, 5).position.y - rect.end.y).is_greater_equal(gap)
+		# N2: it stays centred and never narrower than a readable minimum (half the authored width).
+		assert_float(rect.get_center().x).is_equal_approx(vp.x * 0.5, 0.01)
+		assert_float(rect.size.x).is_greater_equal(0.5 * float((cfg["boss_bar_size"] as Array)[0]) * HudLayout.ui_scale(vp, cfg))
+		assert_float(rect.size.x).is_less_equal(float((cfg["boss_bar_size"] as Array)[0]) * HudLayout.ui_scale(vp, cfg) + 0.01)
+		assert_float(rect.size.x).is_greater(0.0)
+
+
+func test_the_boss_block_stacks_its_info_rows_only_when_narrow_and_stays_tall_enough() -> void:
+	var hud := UiConfig.hud()
+	var bar := UiConfig.boss_bar()
+	var rows: float = 0.0
+	for key: String in ["name_height", "meter_height", "info_height", "attack_height"]:
+		rows += float(bar[key])
+	rows += 3.0 * float(bar["row_gap"])
+	var stacked_rows: float = rows + float(bar["info_height"]) + float(bar["row_gap"])
+	assert_bool(HudLayout.boss_bar_stacked(Vector2(1024, 768), hud)).is_true()
+	for vp in [Vector2(1024, 600), Vector2(1280, 720), Vector2(1920, 1080), Vector2(2560, 1440)]:
+		assert_bool(HudLayout.boss_bar_stacked(vp, hud)).override_failure_message("not stacked at %s" % vp).is_false()
+	assert_float(float(hud["boss_bar_stack_extra"])).is_greater_equal(float(bar["info_height"]) + float(bar["row_gap"]))
+	var s: float = HudLayout.ui_scale(Vector2(1024, 768), hud)
+	assert_float(HudLayout.boss_bar_rect(Vector2(1024, 768), hud).size.y).is_greater_equal(stacked_rows * s)
 
 
 func test_the_f3_overlay_starts_under_the_boss_bar_and_the_meters() -> void:
@@ -146,19 +169,26 @@ func test_resistance_tint_and_words_for_equal_and_unequal_resistance() -> void:
 	var bars := UiConfig.hp_bars()
 	var neutral := Color.html(String(bars["default_resistance_tint"]))
 	var even: Dictionary = {"fire": 0.5, "water": 0.5}
-	assert_bool(BossHpBar.resists_uniformly(even)).is_true()
-	assert_bool(BossHpBar.resist_tint(even, bars).is_equal_approx(Color(neutral.r, neutral.g, neutral.b, 1.0))).is_true()
+	var both: Array[String] = ["fire", "water"]
+	assert_bool(BossHpBar.resists_uniformly(even, both)).is_true()
+	assert_bool(BossHpBar.resist_tint(even, bars, both).is_equal_approx(Color(neutral.r, neutral.g, neutral.b, 1.0))).is_true()
 	assert_bool(BossHpBar.resist_tint({"fire": 0.5}, bars).is_equal_approx(Color(neutral.r, neutral.g, neutral.b, 1.0))).is_true()
 	var uneven: Dictionary = {"fire": 0.5, "water": 0.25}
 	var fire_tint := Color.html(String(bars["resistance_tints"]["fire"]))
-	assert_bool(BossHpBar.resists_uniformly(uneven)).is_false()
-	assert_bool(BossHpBar.resist_tint(uneven, bars).is_equal_approx(Color(fire_tint.r, fire_tint.g, fire_tint.b, 1.0))).is_true()
+	assert_bool(BossHpBar.resists_uniformly(uneven, both)).is_false()
+	assert_bool(BossHpBar.resist_tint(uneven, bars, both).is_equal_approx(Color(fire_tint.r, fire_tint.g, fire_tint.b, 1.0))).is_true()
 	assert_float(BossHpBar.resist_tint({}, bars).a).is_equal(0.0)
 	assert_float(BossHpBar.resist_tint({"fire": 0.0}, bars).a).is_equal(0.0)
 	var cfg := UiConfig.boss_bar()
-	assert_str(BossHpBar.resist_text(even, cfg)).is_equal("Resists all elements 50%")
-	assert_str(BossHpBar.resist_text(uneven, cfg)).is_equal("Resists some elements (up to 50%)")
+	assert_str(BossHpBar.resist_text(even, cfg, both)).is_equal("Resists all elements 50%")
+	assert_str(BossHpBar.resist_text(uneven, cfg, both)).is_equal("Resists some elements (up to 50%)")
 	assert_str(BossHpBar.resist_text({}, cfg)).is_empty()
+	# N1: "all" is judged against the game's elements, not the table's own keys.
+	assert_bool(BossHpBar.resists_uniformly({"fire": 0.5}, both)).is_false()
+	assert_str(BossHpBar.resist_text({"fire": 0.5}, cfg, both)).is_equal("Resists some elements (up to 50%)")
+	assert_bool(BossHpBar.resists_uniformly({"fire": 0.5}, ["fire"] as Array[String])).is_true()
+	assert_bool(BossHpBar.resists_uniformly({"fire": 0.5}, [] as Array[String])).is_false()
+	assert_bool(BossHpBar.resists_uniformly({"fire": 0.5}, TierRules.element_ids())).is_equal(TierRules.element_ids().size() == 1)
 	# The shared enemy-bar helper is untouched: it still picks the first strongest key.
 	assert_str(EnemyHpBar.dominant_resistance(even)).is_equal("fire")
 

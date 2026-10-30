@@ -256,8 +256,10 @@ static func _ensure_shared() -> void:
 	var c: Dictionary = _shared_config
 	var width: float = float(c["width"])
 	var height: float = float(c["height"])
-	var pip: float = height + 0.04
-	var total := Vector2(width + 4.0 * pip, height)  # [shield][diamond] [bar] [status][spare]: the bar stays centred
+	var pip_scale: float = maxf(float(c["pip_scale"]), 1.0)  # pips (shield, diamond, status) are this many times the bar's height
+	var quad_h: float = height * pip_scale
+	var pip: float = quad_h + 0.04
+	var total := Vector2(width + 4.0 * pip, quad_h)  # [shield][diamond] [bar] [status][spare]: the bar stays centred
 	_shared_mesh = QuadMesh.new()
 	_shared_mesh.size = total
 	var colors: Dictionary = c["colors"]
@@ -266,6 +268,7 @@ static func _ensure_shared() -> void:
 	mat.render_priority = int(c["render_priority"])
 	mat.set_shader_parameter("total_size", total)
 	mat.set_shader_parameter("bar_width", width)
+	mat.set_shader_parameter("bar_height", height)
 	mat.set_shader_parameter("pip_width", pip)
 	mat.set_shader_parameter("left_pad", 2.0 * pip)
 	mat.set_shader_parameter("border", float(c["border"]))

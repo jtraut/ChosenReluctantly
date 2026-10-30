@@ -128,11 +128,11 @@ static func pick_target(aim: Variant, origin: Vector3, positions: Array[Vector3]
 
 
 ## "Resist: all elements 50%", "Resist: fire 50%, water 10%", or "Resist: none".
-static func resist_summary(resistances: Dictionary) -> String:
+static func resist_summary(resistances: Dictionary, elements: Array[String] = TierRules.element_ids()) -> String:
 	var best: float = EnemyHpBar.max_resistance(resistances)
 	if best <= 0.0:
 		return "Resist: none"
-	if BossHpBar.resists_uniformly(resistances):
+	if BossHpBar.resists_uniformly(resistances, elements):
 		return "Resist: all elements %d%%" % roundi(best * 100.0)
 	var parts: Array[String] = []
 	for key: Variant in resistances:
@@ -141,7 +141,7 @@ static func resist_summary(resistances: Dictionary) -> String:
 	return "Resist: " + ", ".join(parts)
 
 
-## "Under cursor: boss_guardian (boss)  Armor 50 (50% off physical)  Resist: all elements 50%".
+## "Under cursor: boss_guardian (boss)  Armor 50 (50%)  Resist: all elements 50%" (armor points, then the damage fraction armor removes).
 static func target_line(mode: String, name_: String, tier: String, armor: float, armor_reduction: float, resistances: Dictionary) -> String:
 	var who: String = "Under cursor" if mode == "cursor" else "Nearest"
 	var rank: String = "" if tier == "" else " (%s)" % tier

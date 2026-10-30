@@ -62,13 +62,35 @@ static func room_indicator_rect(viewport_size: Vector2, cfg: Dictionary) -> Rect
 	return Rect2(Vector2(viewport_size.x - margin - size.x, margin), size)
 
 
-## The boss HP bar block (name, bar, phase line, attack line): top centre at the safe margin.
+## The boss HP bar block (name, bar, phase line, attack line): top centre at the safe margin. It is centred, and
+## its width is the authored width shrunk, if needed, to fit between the player's HUD (health panel and attack
+## meters, top left) and the room indicator (top right) with `boss_bar_gap` between: it never overlaps either.
 static func boss_bar_rect(viewport_size: Vector2, cfg: Dictionary) -> Rect2:
 	var s := ui_scale(viewport_size, cfg)
 	var sz: Array = cfg["boss_bar_size"]
 	var size := Vector2(float(sz[0]), float(sz[1])) * s
 	var margin := float(cfg["safe_margin"]) * s
-	return Rect2(Vector2((viewport_size.x - size.x) * 0.5, margin), size)
+	var centre: float = viewport_size.x * 0.5
+	var left_end: float = health_rect(viewport_size, cfg).end.x
+	var meters := attack_meter_rects(viewport_size, cfg)
+	for key: StringName in meters:
+		left_end = maxf(left_end, (meters[key] as Rect2).end.x)
+	var right_start: float = room_indicator_rect(viewport_size, cfg).position.x
+	var half: float = minf(centre - left_end, right_start - centre) - float(cfg.get("boss_bar_gap", 8.0)) * s
+	size.x = clampf(2.0 * half, 0.0, size.x)
+	if boss_bar_stacked_width(size.x / s, cfg):
+		size.y += float(cfg["boss_bar_stack_extra"]) * s
+	return Rect2(Vector2(centre - size.x * 0.5, margin), size)
+
+
+## True when the boss bar is too narrow to share one row between the phase line and the armor / resistance line, so
+## the latter gets a row of its own (and the block grows by `boss_bar_stack_extra`). `width_ref` is in reference px.
+static func boss_bar_stacked_width(width_ref: float, cfg: Dictionary) -> bool:
+	return width_ref < float(cfg["boss_bar_stack_below"])
+
+
+static func boss_bar_stacked(viewport_size: Vector2, cfg: Dictionary) -> bool:
+	return boss_bar_stacked_width(boss_bar_rect(viewport_size, cfg).size.x / ui_scale(viewport_size, cfg), cfg)
 
 
 ## Top edge (pixels) of the F3 debug overlay: just under the boss bar block. The overlay itself is not scaled,

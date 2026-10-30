@@ -40,45 +40,47 @@ static func phase_text(format: String, phase_index: int, count: int, phase_name:
 ## The resistance tint for the boss bar: like an enemy bar's (the strongest element's tint), except that equal
 ## resistance to every listed element (the final boss resists all alike) uses the neutral default tint: "all" has no
 ## element colour, and the shared `dominant_resistance` would pick whichever key comes first. Alpha 0 = no resistance. `hp_bars` is the `hp_bars` config block.
-static func resist_tint(resistances: Dictionary, hp_bars: Dictionary) -> Color:
+static func resist_tint(resistances: Dictionary, hp_bars: Dictionary, elements: Array[String] = TierRules.element_ids()) -> Color:
 	var best: float = EnemyHpBar.max_resistance(resistances)
 	if best <= 0.0:
 		return Color(0.0, 0.0, 0.0, 0.0)
 	var tints: Dictionary = hp_bars["resistance_tints"]
 	var hex: String = String(hp_bars["default_resistance_tint"])
-	if not resists_uniformly(resistances):
+	if not resists_uniformly(resistances, elements):
 		hex = String(tints.get(EnemyHpBar.dominant_resistance(resistances), hex))
 	var color := Color.html(hex)
 	return Color(color.r, color.g, color.b, 1.0)
 
 
-## True when every element listed has the same positive resistance (words: "Resists all elements 50%").
-static func resists_uniformly(resistances: Dictionary) -> bool:
+## True when every element in the game (`elements`, normally `TierRules.element_ids()`) has the same positive
+## resistance, a missing key counting as 0 (words: "Resists all elements 50%"). A table that lists fewer elements than
+## the game has is "some", so a fire-only golem stops reading "all" the day a second element ships.
+static func resists_uniformly(resistances: Dictionary, elements: Array[String] = TierRules.element_ids()) -> bool:
 	var best: float = EnemyHpBar.max_resistance(resistances)
-	if best <= 0.0:
+	if best <= 0.0 or elements.is_empty():
 		return false
-	for key: Variant in resistances:
-		if not is_equal_approx(float(resistances[key]), best):
+	for element: String in elements:
+		if not is_equal_approx(float(resistances.get(element, 0.0)), best):
 			return false
 	return true
 
 
 ## "Resists all elements 50%" / "Resists some elements (up to 50%)", or "" without resistance.
-static func resist_text(resistances: Dictionary, cfg: Dictionary) -> String:
+static func resist_text(resistances: Dictionary, cfg: Dictionary, elements: Array[String] = TierRules.element_ids()) -> String:
 	var best: float = EnemyHpBar.max_resistance(resistances)
 	if best <= 0.0:
 		return ""
-	var key: String = "resist_all_format" if resists_uniformly(resistances) else "resist_some_format"
+	var key: String = "resist_all_format" if resists_uniformly(resistances, elements) else "resist_some_format"
 	return String(cfg[key]) % roundi(best * 100.0)
 
 
 ## "Armor 50% - Resists all elements 50%": armor first, then resistance; either part is left out at 0. "" with neither.
 ## `armor_reduction` is the fraction of non-elemental damage armor removes (Health.get_armor_reduction()).
-static func defense_text(armor_reduction: float, resistances: Dictionary, cfg: Dictionary) -> String:
+static func defense_text(armor_reduction: float, resistances: Dictionary, cfg: Dictionary, elements: Array[String] = TierRules.element_ids()) -> String:
 	var parts: Array[String] = []
 	if armor_reduction > 0.0:
 		parts.append(String(cfg["armor_format"]) % roundi(armor_reduction * 100.0))
-	var resist: String = resist_text(resistances, cfg)
+	var resist: String = resist_text(resistances, cfg, elements)
 	if resist != "":
 		parts.append(resist)
 	return String(cfg["defense_joiner"]).join(parts)
@@ -199,8 +201,14 @@ func _apply_layout() -> void:
 	var info_h: float = float(_cfg["info_height"]) * s
 	var pad: float = _meter.pip
 	var phase_w: float = rect.size.x * float(_cfg["phase_width_fraction"])
-	_place(_phase_label, pad, y, phase_w - pad, info_h)
-	_place(_resist_label, phase_w, y, rect.size.x - phase_w - pad, info_h)
+	if HudLayout.boss_bar_stacked(vp, hud_cfg):
+		# Too narrow for both on one row (1024x768): the phase line, then the armor / resistance line on its own row.
+		_place(_phase_label, pad, y, rect.size.x - 2.0 * pad, info_h)
+		y += info_h + gap
+		_place(_resist_label, pad, y, rect.size.x - 2.0 * pad, info_h)
+	else:
+		_place(_phase_label, pad, y, phase_w - pad, info_h)
+		_place(_resist_label, phase_w, y, rect.size.x - phase_w - pad, info_h)
 	for label: Label in [_phase_label, _resist_label]:
 		label.add_theme_font_size_override("font_size", roundi(float(_cfg["info_font_size"]) * s))
 		label.add_theme_color_override("font_color", Color.html(String(_cfg["info_color"])))

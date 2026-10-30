@@ -95,10 +95,12 @@ func test_the_boss_bar_shows_armor_text_and_a_shield_pip_and_the_line_fits() -> 
 	assert_float(bar._meter.armor_tint.a).is_equal(1.0)
 	# The longest wording ("some elements") must still fit its label at the smallest font, at every size.
 	var cfg := UiConfig.boss_bar()
-	var longest: String = BossHpBar.defense_text(0.5, {"fire": 0.5, "water": 0.1}, cfg)
-	for vp: Vector2 in [Vector2(1280, 720), Vector2(1920, 1080), Vector2(2560, 1440)]:
+	var longest: String = BossHpBar.defense_text(0.5, {"fire": 0.5, "water": 0.1}, cfg, ["fire", "water"] as Array[String])
+	for vp: Vector2 in [Vector2(1024, 600), Vector2(1024, 768), Vector2(1280, 720), Vector2(1920, 1080), Vector2(2560, 1440)]:
 		var s: float = HudLayout.ui_scale(vp, UiConfig.hud())
-		var width: float = HudLayout.boss_bar_rect(vp, UiConfig.hud()).size.x * (1.0 - float(cfg["phase_width_fraction"])) - 20.0 * s
+		var bar_w: float = HudLayout.boss_bar_rect(vp, UiConfig.hud()).size.x
+		var share: float = 1.0 if HudLayout.boss_bar_stacked(vp, UiConfig.hud()) else (1.0 - float(cfg["phase_width_fraction"]))
+		var width: float = bar_w * share - (40.0 if share == 1.0 else 20.0) * s
 		var size: int = roundi(float(cfg["info_min_font_size"]) * s)
 		var text_w: float = bar._resist_label.get_theme_font("font").get_string_size(longest, HORIZONTAL_ALIGNMENT_LEFT, -1.0, size).x
 		assert_float(text_w).is_less(width)
@@ -264,9 +266,11 @@ func test_pick_target_prefers_the_cursor_then_the_nearest() -> void:
 
 
 func test_the_defense_lines_name_armor_and_resistance() -> void:
-	assert_str(DebugOverlay.resist_summary({"fire": 0.5, "water": 0.5})).is_equal("Resist: all elements 50%")
-	assert_str(DebugOverlay.resist_summary({"fire": 0.5, "water": 0.1})).is_equal("Resist: fire 50%, water 10%")
-	assert_str(DebugOverlay.resist_summary({"fire": 0.0})).is_equal("Resist: none")
-	assert_str(DebugOverlay.target_line("cursor", "boss_guardian", "boss", 50.0, 0.5, {"fire": 0.5, "water": 0.5})).is_equal("Under cursor: boss_guardian (boss)  Armor 50 (50%)  Resist: all elements 50%")
+	var both: Array[String] = ["fire", "water"]
+	assert_str(DebugOverlay.resist_summary({"fire": 0.5, "water": 0.5}, both)).is_equal("Resist: all elements 50%")
+	assert_str(DebugOverlay.resist_summary({"fire": 0.5, "water": 0.1}, both)).is_equal("Resist: fire 50%, water 10%")
+	assert_str(DebugOverlay.resist_summary({"fire": 0.5}, both)).is_equal("Resist: fire 50%")  # N1: a fire-only table is not "all" once water exists
+	assert_str(DebugOverlay.resist_summary({"fire": 0.0}, both)).is_equal("Resist: none")
+	assert_str(DebugOverlay.target_line("cursor", "boss_guardian", "boss", 50.0, 0.5, {"fire": 0.5})).is_equal("Under cursor: boss_guardian (boss)  Armor 50 (50%)  Resist: all elements 50%")
 	assert_str(DebugOverlay.target_line("nearest", "melee_chaser", "", 0.0, 0.0, {})).is_equal("Nearest: melee_chaser  Armor 0 (0%)  Resist: none")
 	assert_str(DebugOverlay.player_line(0.0, 0.0)).is_equal("Player: Armor 0 (0%)")

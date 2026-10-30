@@ -8,6 +8,7 @@ render_mode unshaded, cull_disabled, depth_draw_opaque;
 
 uniform vec2 total_size = vec2(1.5, 0.15); // world units, whole quad
 uniform float bar_width = 1.1;
+uniform float bar_height = 0.15; // the bar itself; the quad is taller (pip_scale) so the pips can be bigger than the bar, bar centred
 uniform float pip_width = 0.19;
 uniform float left_pad = 0.38; // two pip slots left of the bar: [shield][diamond]; the right side mirrors the width
 uniform float border = 0.02;
@@ -34,7 +35,9 @@ void vertex() {
 
 void fragment() {
 	vec2 p = UV * total_size;
-	float h = total_size.y;
+	float h = total_size.y; // pip glyph height (the full quad)
+	float bar_y0 = (total_size.y - bar_height) * 0.5;
+	float by = p.y - bar_y0; // y inside the bar
 	bool resistant = resist_tint.a > 0.5;
 	bool armored = armor_tint.a > 0.5;
 	vec4 col = vec4(0.0);
@@ -44,11 +47,11 @@ void fragment() {
 	float bar_x1 = left_pad + bar_width;
 
 	if (p.x >= bar_x0 && p.x <= bar_x1) {
-		inside = true;
+		inside = by >= 0.0 && by <= bar_height;
 		float b = resistant ? resist_border : border;
 		vec4 frame = resistant ? vec4(resist_tint.rgb, 1.0) : frame_color;
 		float ix = p.x - bar_x0;
-		if (ix < b || ix > bar_width - b || p.y < b || p.y > h - b) {
+		if (ix < b || ix > bar_width - b || by < b || by > bar_height - b) {
 			col = frame;
 		} else {
 			float t = (ix - b) / (bar_width - 2.0 * b);

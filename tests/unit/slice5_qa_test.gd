@@ -667,6 +667,7 @@ func test_hp_bar_block_validates_every_key() -> void:
 		"ghost_enabled": ["yes", 1],
 		"burn_status_id": ["", 4],
 		"bleed_status_id": ["", 4],
+		"pip_scale": ["x", 0.5, 0.0, -1.0],
 		"default_resistance_tint": ["zzz", 5],
 		"armor_tint": ["zzz", 5],
 		"colors": ["x", {"fill": "#e2483f"}, {"fill": "nope", "ghost": "#fff", "back": "#fff", "frame": "#fff", "burn": "#fff", "bleed": "#fff"}],

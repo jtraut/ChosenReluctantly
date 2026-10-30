@@ -11,6 +11,7 @@ const DEFAULT_HP_BARS: Dictionary = {
 	"visibility_mode": "always_alive",
 	"width": 1.2,
 	"height": 0.16,
+	"pip_scale": 1.0,
 	"render_priority": 10,
 	"border": 0.02,
 	"resist_border": 0.04,
@@ -234,6 +235,8 @@ static func validate_hp_bars(block: Dictionary) -> Array[String]:
 	for key: String in ["width", "height", "ghost_drain_per_sec"]:
 		if not _is_number(block.get(key)) or float(block[key]) <= 0.0:
 			problems.append("%s must be a number > 0" % key)
+	if not _is_number(block.get("pip_scale")) or float(block["pip_scale"]) < 1.0:
+		problems.append("pip_scale must be a number >= 1")
 	for key: String in ["border", "resist_border", "y_offset", "ghost_delay"]:
 		if not _is_number(block.get(key)) or float(block[key]) < 0.0:
 			problems.append("%s must be a number >= 0" % key)

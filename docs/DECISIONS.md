@@ -1119,3 +1119,11 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
 ### 2026-10-30 - P-dodge qa (game-lead)
 - qa PASS 14eadd1 (1147/1147; soak 8 of 8 clean; hash 2484586390). The ux gates were all re-run by qa.
 - **W1b baseline (10 rooms, seeds 1-12, charge-aware bot):** Rogue 12/12 won, boss 64.3 s mean (47.8-81.3), boss-fight lowest HP 24.7/30 mean; per-room HP lost 2.0-6.8. Wizard (kiting) 11/12 won, boss 55.0 s mean; per-room HP lost about 0-1.7 in rooms 1-9, then 11.5 in the boss room (1 death at 13.6 s). This is the "cliff" W1b item 5a fixes.
+
+### 2026-10-30 - P-dodge playtest triage (game-lead)
+- Playtest 60d86fd: smoke PASS, no blocker. The pips read and don't crowd the meters; the stagger reads as a reward window; Recovery matters without being leaned on.
+- **The Wizard's cliff** is four "Fan of regrets" volleys in a row in phase 1 (about 10 HP each, 26 HP total). It goes into W1b 5d, which first checks whether the bot dodges pellets at all. [Tuning straight away.]
+- **"Is the Rogue boss fight meant to be nearly damage-free?"** isn't a new director question. The director already called today's tuning "Easy" and wants difficulty to come from the tiers. [A new D item.]
+- **A charge-return flash near the player** goes to the director's eyes (checklist 28), not a build. [Building it from a still capture.]
+- **The STAGGERED banner overlapping the armor line** goes to W1b 5e (ux, small).
+- The playtester committed 7 capture PNGs (440 KB) in `docs/playtests/img/`. They're small, so I'm keeping them. [Removing them.]

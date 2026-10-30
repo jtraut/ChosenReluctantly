@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-10-30
-**Status: 1 waiting on a decision (D19; doesn't block). 3 new things to look at when you play (items 25-27), plus item 22 once loadouts exist.** Done: C1, Polish 1, 3a (runs of 8 rooms), 3b (card rewards and deck-clean), 3c (the boss) and **A1 (armor)**, **T-decks (preset test decks)** and **W1a (a playable Fire Wizard)**. Done: **PL2** and **F1** (tag `playtest-2026-10-30-F1`). Next: **P-dodge, in progress** (your 2026-10-30 checklist answers: bigger Fire Wall, movement cards pass through enemies, Shift+1-5 swap, 10-room runs), then **P-dodge** (dodge charges: Rogue 3, Wizard 2; Recovery cooldowns), then **W1b** (Wizard cards and tuning, now after the dodge work so it's tuned once), then loadouts.
+**Status: 1 waiting on a decision (D19; doesn't block). 5 new things to look at when you play (items 25-29), plus item 22 once loadouts exist.** Done: C1, Polish 1, 3a (runs of 8 rooms), 3b (card rewards and deck-clean), 3c (the boss) and **A1 (armor)**, **T-decks (preset test decks)** and **W1a (a playable Fire Wizard)**. Done: **PL2** and **F1** (tag `playtest-2026-10-30-F1`). Next: **P-dodge, in progress** (your 2026-10-30 checklist answers: bigger Fire Wall, movement cards pass through enemies, Shift+1-5 swap, 10-room runs), then **P-dodge** (dodge charges: Rogue 3, Wizard 2; Recovery cooldowns), then **W1b** (Wizard cards and tuning, now after the dodge work so it's tuned once), then loadouts.
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
@@ -140,6 +140,10 @@ _Items 1-21, 23 and 24 are answered (see "Your checklist answers" below)._
 25. **Frame colours.** Look for: at a glance in a fight, can you tell orange (fire), bronze (class) and grey (neutral) apart on the card strip, especially bronze vs grey?
 26. **Highlighted grey reward card.** Look for: the white ring around a highlighted grey card is easy to see. (A small notch in it is a known bug, fixed in F1.)
 27. **Rogue melee arc.** Look for: does the faint arc tell you the light attack is melee, or would a first run need a hint?
+
+**H. P-dodge (new)**
+28. **Dodge pips.** The charges show as small pips under the attack meters, top-left. Look for: can you keep track of your charges mid-fight, or do you want a small "charge back" flash near your character too?
+29. **Boss stagger.** Look for: the reel plus "STAGGERED / Hit it now" feels like a real opening, and the stagger-then-roar pause (2 s) isn't too long.
 
 22. **Loadouts (after 3d, not built yet).** This is about a feature still to come: from your second run on, you'll be able to build your own starting deck from your cards, save it, and pick it before a run. (The "Pick your hero" screen you saw is the class pick from W1a.) Look for, once it lands: it's easy to understand.
 

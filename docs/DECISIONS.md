@@ -1038,3 +1038,13 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
   - **An unknown card or pool gets the neutral frame silently.** [`push_error`, which would spam the UI and test logs.]
   - **A `_spent` guard on every `Projectile`:** a deferred `queue_free` could let two hurtboxes entered in the same physics step both take damage. It's a latent bug, never seen in play; it applies to enemy and card projectiles too. [Report only.]
 - **Rogue boss after the change (gameplay-dev, seeds 1-6, not the baseline):** 57.7-75.5 s, mean about 66.9 s, all won. qa's 10+ seed run sets the W1b baseline.
+
+### 2026-10-30 - PL2 ux (ux-designer, logged by game-lead)
+- Built ad77847 (1079/1079). Card frames in the family colour on slots, reward offers and removal cells; the Rogue melee reach cue (`MeleeReachCue`, `ui.json` `melee_cue`); the class pick hides the HUD behind it.
+- **Final frame colours:** unchanged from the starting values (fire `#ff6a1f`, class `#d9b48a`, neutral `#9a9a9a`); distinct at 720p, ready or cooling.
+- **Calls:**
+  - **The pick screen hides the whole HUD** (it showed the build-time class's HUD for the whole pick, not one frame). [Showing the highlighted class's HP, which needs a rebuild per highlight; a refresh fix, which wouldn't help.]
+  - **The ready cue moved from the border to a plate plus text brightness;** cooling slots dim only their contents, never the frame. `slot_ready_border_*` removed. [A bright inner outline (merged with grey, crowded the digit); a ready fill tint (poor text contrast).]
+  - **Reward focus is a white ring outside the frame** (`option_card_focus_color`), since the peach focus colour is close to bronze. Grey + white ring is the weakest pair; check in play. [Reusing `option_focus_color`.]
+  - **The HUD slot strip is 8 px taller** (`slot_size` 150x118 -> 150x126, `key_height` 20 -> 24, `preview_height` 34 -> 38) so the frame doesn't clip the key digit or a two-line Next name. [Thinner frame.]
+  - **Melee cue:** a thin pale-blue arc at true light reach, shown only when nothing is in reach, brightening on a whiffed click; keyed on the light attack's `arc` shape, not the class id. No side edges or fill, so it can't be mistaken for the heavy wind-up. [Always on; a filled wedge.]

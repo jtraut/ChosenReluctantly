@@ -1205,3 +1205,11 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
 - **N2, the pellet-blind kiting bot died 3/12 on seeds 13-24** (two volleys, not a one-shot). With pellet dodging there were 0 of 48 deaths; the playtester checks the "Fan of regrets" telegraph is readable. [Tuning to the pellet-blind bot.]
 - **N3, the Wizard's light is now 50% of the Rogue's DPS (was 80%) and its heavy 5.5 (was 8.5).** These were tuning choices, not director values. Told to the director as FYI alongside D20, not as a separate question. [A new D item.]
 - **N6, generated files are untracked** (`*.uid` for new tests and tools; `docs/playtests/img/*.import`, which Godot creates because it scans `docs/`). Housekeeping: each owner commits its `.uid`, and a `docs/.gdignore` stops the imports. Logged in STATE. [Ignoring them.]
+
+### 2026-10-30 - W1b playtest triage (game-lead)
+- Playtest d74e0df: smoke PASS, no blocker. The caster cards and names fit the tone; Personal Space, Enforced is the standout. The "Fan of regrets" telegraph reads well enough for a human to dodge. 72 runs on seeds 31-42: no Wizard deaths. Non-kiting Wizard boss at 77% of the Rogue's.
+- **The missing Ward cue, the look-alike card bolts, the long smash knockback and the volley damage numbers go to a new small polish slice PL3,** not a W1b reopen. They're readability polish on content that works. [Fixing them inside W1b, which adds another full qa cycle before the director can play.]
+- **"A kiting Wizard is nearly free until the boss" is accepted for now** (same call as qa N1/N2). Making room enemies threaten a kiter needs enemy changes, which is a director call. It goes with D20 and his own play. [Enemy changes now.]
+- **The auto bolt stays at 50% for the director's first hands-on run.** [Tuning before any human has felt it.]
+- **The Rogue loss on seed 36 (default bot, room 2)** is a bot loss, not a bug: the same seed wins with pellet dodging. No action.
+- Note: the playtest commit's trailer says "Sonnet 5.5" (the harness's attribution), not "Opus 5.5" as briefed. History isn't rewritten.

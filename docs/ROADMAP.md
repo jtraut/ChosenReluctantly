@@ -636,6 +636,17 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     5. Rerun the seeded wave sim and the whole-run sim and report the HP lost before/after (3 charges is a big survival buff, which may feed D13 and the solid-enemies call). **qa re-measures the Rogue on 10+ seeds (`-Run`, 10 rooms): this is the baseline W1b tunes against.** Also report the Wizard (kiting bot) on the same seeds, for reference only.
   - **Owner sequence:** gameplay-dev -> ux-designer -> qa -> playtester (short) -> tech-writer (folded into the next docs pass if small) -> close.
 
+- [ ] **PL3, small polish after W1b (game-lead, 2026-10-30; not started; runs before 3d unless the director's D20 answer or his hands-on Wizard play reorders things)**
+  - **From the W1b playtest (docs/playtests/2026-10-30-w1b-wizard-cards.md):**
+    1. **Ward has no visible cue while it's up** (only a 0.5 s ring on cast). Add a persistent cue for player armor buffs (ring, tint or buff pip), data-driven. ux, with a gameplay hook if needed.
+    2. **Three Bolts and Overqualified Bolt look like the auto bolt.** Give card projectiles a distinct look (size, colour, trail) via `look` params. Overqualified Bolt should read as heavy. ux.
+    3. **The boss smash knocks an idle Wizard about 8 m to the arena edge** (void in view, boss off screen). Check the knockback against the arena bounds and clamp it if needed. gameplay-dev.
+    4. **Volley hits may show as one faded "4"** (unconfirmed). Check how damage numbers merge for multi-pellet hits. ux.
+    5. **Damage numbers drawing over the boss bar** (from the W1b ux backlog).
+  - **Tooling (gameplay-dev):** scenarios give the Wizard its own deck (today they show the Rogue's card row); a capture trigger on a boss attack starting.
+  - **Housekeeping:** commit the untracked `.uid` files; add `docs/.gdignore` so Godot stops importing playtest PNGs.
+  - **Loop:** gameplay-dev -> ux -> qa -> playtester (short) -> tech-writer -> close.
+
 - [ ] **3d, loadouts**
   - **Goal:** from the second run on, you can build a starting deck, save it as a loadout and start runs with it. GDD §9 ("Starting decks and loadouts [DECIDED]"), §4 (deck rules).
   - **Acceptance:**

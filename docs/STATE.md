@@ -18,7 +18,7 @@ Last updated: 2026-10-30. Run order (game-lead 2026-10-30, after the director's 
 - **PL2** closed 2026-10-30 (tag `playtest-2026-10-30-PL2`, 1082/1082). Docs d175b51.
 - **F1** closed 2026-10-30 (tag `playtest-2026-10-30-F1`, 1102/1102). Docs 47fde95.
 - **P-dodge** closed 2026-10-30 (tag `playtest-2026-10-30-P-dodge`, 1147/1147). Docs ee18b08.
-- **W1b**: IN PROGRESS. Content DONE aaa933a..45ed585 (1151/1151). Tuning DONE 2128ae4, 0754483 (1153/1153; Wizard HP 26, see D20). ux 245d8e3 (5e: no real overlap). qa PASS 6f26ff9 (1156/1156). Step: playtester -> tech-writer -> close.
+- **W1b**: IN PROGRESS. Content DONE aaa933a..45ed585 (1151/1151). Tuning DONE 2128ae4, 0754483 (1153/1153; Wizard HP 26, see D20). ux 245d8e3 (5e: no real overlap). qa PASS 6f26ff9 (1156/1156). Playtest d74e0df (no blocker). Step: tech-writer -> close. Then PL3 (brief in ROADMAP), then 3d.
 
 ## Exact next step
 1. **W1b**: gameplay-dev (content first: items 1-4, 5b, 5d's pellet-dodge check and `--boss-log`; then tuning item 6 incl. 5a cliff) -> ux-designer (5e banner overlap) -> qa (independent 10+ seed re-run, both bot policies) -> playtester -> tech-writer -> close. Baseline: Rogue boss 64.3 s mean (band 45.0-83.6 s).

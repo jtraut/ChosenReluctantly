@@ -1198,3 +1198,10 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
 - 245d8e3 (`tools/ux_capture.gd` only). **5e: no banner overlap.** STAGGERED sits on its own row at all four sizes. The playtest's overlap was a world-space damage number over the boss's head landing on the bar. The stagger capture now uses a normal 30-damage hit. The 4 new Wizard cards fit the slot strip and reward offers at 1024x600, with bronze frames and no clipping.
 - **Damage numbers drawing over the boss bar** when the boss stands just under it goes to the backlog as a ux readability item, not to the director. It's readability, not feel. [A director question.]
 - **Flake for qa:** `w1a_test:482` (Wizard bolt autofire, "less than 20.0 but was 20.0") failed once in a full suite run and passed 30/30 alone.
+
+### 2026-10-30 - W1b qa triage (game-lead)
+- qa PASS 6f26ff9 (1156/1156). The flake was test timing: the bolt tests now poll up to 4 s. 24-seed re-run on both bots.
+- **N1, the non-kiting Wizard's boss time sits at the floor** (pooled 70.7-73.1%, one cell 69.8%). Accepted for now: the mean is inside the band, and the director's D20 answer may change the tuning anyway. Revisit after his hands-on play. [One more notch of Wizard damage now, which pulls against "squishier".]
+- **N2, the pellet-blind kiting bot died 3/12 on seeds 13-24** (two volleys, not a one-shot). With pellet dodging there were 0 of 48 deaths; the playtester checks the "Fan of regrets" telegraph is readable. [Tuning to the pellet-blind bot.]
+- **N3, the Wizard's light is now 50% of the Rogue's DPS (was 80%) and its heavy 5.5 (was 8.5).** These were tuning choices, not director values. Told to the director as FYI alongside D20, not as a separate question. [A new D item.]
+- **N6, generated files are untracked** (`*.uid` for new tests and tools; `docs/playtests/img/*.import`, which Godot creates because it scans `docs/`). Housekeeping: each owner commits its `.uid`, and a `docs/.gdignore` stops the imports. Logged in STATE. [Ignoring them.]

@@ -115,6 +115,7 @@ Neither blocks work. Until you answer, I use my default.
 - **D20: Wizard HP: squishier, or safe from a one-shot?** You asked for a squishier Wizard. The boss's "Fan of regrets" volley does 25 damage if all 5 pellets hit, so at 25 HP or less one full volley from full health can kill it.
   - **What the tuning did:** it made the Wizard harder through about 40% less damage (bolt 2.4 -> 1.5, blast 8.5 -> 5.5, its cards slightly weaker), 2 dodge charges and a 14 s Recovery.
   - **Result in the bot sim:** Wizard rooms cost about 75% of the Rogue's HP, and its boss fight is 72-103% of the Rogue's length. No deaths in 48 boss fights, even at 22 HP.
+  - **FYI, the tuning's other numbers:** the Wizard's auto bolt now does 50% of the Rogue's light-attack damage per second (was 80%), and its right-click blast does 5.5 (was 8.5). That's the price of range I chose; say so if it feels too weak in your hands.
   - **A (as built now, my default):** keep 26 HP, so no single attack kills from full. The Wizard is harder, but not lower HP.
   - **B:** 22 HP, truly squishier. A full volley from full HP could kill it; it never happened in the bot runs (12% of pellets hit).
   - **C:** 22 HP, and the volley drops to 4 damage per pellet (20 total), which also makes the Rogue's boss slightly easier.

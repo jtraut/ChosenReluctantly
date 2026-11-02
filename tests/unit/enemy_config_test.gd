@@ -43,3 +43,15 @@ func test_pressure_knobs_are_read_from_data() -> void:
 	var parsed: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(EnemyConfig.PATH))
 	assert_float(EnemyConfig.speed_scale()).is_equal(float(parsed["pressure"]["speed_scale"]))
 	assert_float(EnemyConfig.attack_rate_scale()).is_equal(float(parsed["pressure"]["attack_rate_scale"]))
+
+
+## H1: with the shipped knobs, no normal or elite enemy walks faster than the player (Player.move_speed).
+func test_no_scaled_enemy_outruns_the_player_walk() -> void:
+	var player: Player = Player.new()
+	var walk: float = player.move_speed
+	player.free()
+	for id: String in EnemyConfig.enemy_ids():
+		if EnemyConfig.rank_for(id) == "boss":
+			continue
+		var speed: float = float(EnemyConfig.stats_for(id)["move_speed"]) * EnemyConfig.speed_scale()
+		assert_float(speed).override_failure_message("%s at %s m/s outruns the player's %s" % [id, speed, walk]).is_less(walk)

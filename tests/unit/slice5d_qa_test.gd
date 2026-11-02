@@ -102,7 +102,7 @@ func test_crowd_around_the_player_never_exceeds_move_speed_on_any_frame() -> voi
 			await get_tree().physics_frame
 			for e in list:
 				worst = maxf(worst, Vector2(e.velocity.x, e.velocity.z).length())
-		assert_float(worst).is_less_equal(4.0 + 0.01)
+		assert_float(worst).is_less_equal(4.0 * EnemyConfig.speed_scale() + 0.01)
 		get_tree().current_scene = null
 		_main.free()
 		_main = null

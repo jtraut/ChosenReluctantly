@@ -4,7 +4,7 @@
         "melee_half_angle_degrees": 60.0
     },
     "pressure": {
-        "speed_scale": 1.0,
+        "speed_scale": 1.25,
         "attack_rate_scale": 1.0
     },
     "separation": {

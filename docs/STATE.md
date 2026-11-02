@@ -13,7 +13,7 @@ Last updated: 2026-11-02. **Run order (director, 2026-11-02):** W1b is closed. N
 - The repo runs. Suite 1156/1156 at 0119999. Arena hash baseline 2484586390 (30 s seed 1; 90 s 3255493562). **H1 will change the sim hashes; re-baseline and record them here at its close.**
 
 ## In progress
-- **K1 started 2026-11-02:** gameplay-dev is on items 1-4 (label helper, R for slot 5, binding validator, data for ux). Pre-check: R is not bound to anything today; `InputBindings.gd` builds key events with `physical_keycode`, so the helper must convert for display. If this session stops mid-K1, check `git log` for gameplay-dev's K1 commits, then continue with ux-designer.
+- **K1 started 2026-11-02:** gameplay-dev items 1-4 done (04ac813, 7f4b136; suite 1170/1170). `InputLabels` static class + `InputBindings.bindings_changed`. Next: ux-designer items 5-8, plus the fix that stops slot/swap keys reaching the Player behind RunPromptScreen. Then qa (incl. reload soak) -> playtester -> tech-writer -> close. DECISIONS entries to write at close: the 5 gameplay-dev technical choices and game-lead's menu-digit call (see ux brief).
 - Untracked on disk, not ours to commit: `tools/ux_capture.gd.uid` (ux) and `docs/playtests/img/*.import` (Godot imports; PL3 adds `docs/.gdignore`). Don't sweep them into other commits.
 
 ## Exact next step

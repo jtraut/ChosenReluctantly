@@ -89,8 +89,9 @@ var _room_timeout: float = 240.0
 ## armor comparisons use legal decks. "" or "standard" = the normal starting deck. The preset is the whole run's deck
 ## start (Try again is not used in the sim); rewards then change it as usual.
 var _deck_family: String = ""
-## `--light-heavy-only`: the bot never presses the two attack card slots (1 and 2), so only light and heavy attacks hit.
-## A bot attack policy, not a deck. It draws the same random numbers as without the flag.
+## `--light-heavy-only`: the bot never presses any card slot (H1: it used to skip only the two attack slots, which left Ward, blinks and
+## heals in play), so only light, heavy and dodge are used. Rest rooms still run through the reward policy.
+## A bot attack policy, not a deck. It draws the same random numbers as without the flag, so the standard policy is unchanged.
 var _light_heavy_only: bool = false
 ## `--sim-class=<id>` (wave sim -Class): play whole runs (-Run) as that character (data/characters.json). "" = the default Rogue.
 ## A ranged class (its light attack is a projectile) gets a different bot stand-off, see _bot_step.
@@ -555,7 +556,7 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 		_heavy_until = _sim_time + 1.9
 	if _rng.randf() < 0.3:
 		var slot_number: int = _rng.randi_range(1, 5)
-		if not (_light_heavy_only and slot_number <= 2):
+		if not _light_heavy_only:
 			_press(StringName("slot_%d" % slot_number))
 	if _rng.randf() < 0.5:
 		_press(&"attack_light")

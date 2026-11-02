@@ -17,11 +17,11 @@ Last updated: 2026-11-02. **Run order (director, 2026-11-02):** finish W1b (tech
 - The repo runs. Suite 1156/1156 (W1b qa). Arena hash baseline 2484586390 (30 s seed 1; 90 s 3255493562). **H1 will change the sim hashes; re-baseline and record them here at its close.**
 
 ## In progress
-- **W1b**: built, qa PASS 6f26ff9 (1156/1156), playtest d74e0df (no blocker). **Remaining: tech-writer docs pass -> game-lead close** (tag `playtest-2026-11-0X-W1b` on the close date; tick the parent W1 item).
+- **W1b**: built, qa PASS 6f26ff9 (1156/1156), playtest d74e0df (no blocker), docs pass ab00c50. **Blocking close:** suite is 1153/1156 at ab00c50 because the director's keybind commit 24530e4 broke 3 assertions in `tests/unit/cast_input_6a_test.gd` (hardcoded KEY_1/KEY_2 = slots 1/2). qa is fixing the tests to read keys from the bindings (test-only). When qa reports green, game-lead closes W1b (tag `playtest-2026-11-02-W1b`, tick W1).
 - Uncommitted on disk, not ours to commit now: `tests/unit/w1b_content_test.gd.uid` (qa), `tools/ux_capture.gd.uid` (ux), `docs/playtests/img/*.import` (Godot imports; PL3 adds `docs/.gdignore`). Don't sweep them into other commits.
 
 ## Exact next step
-1. **tech-writer, W1b docs pass.** Handoff note must include:
+1. ~~tech-writer, W1b docs pass~~ DONE ab00c50. **Now: qa keybind test fix (in progress)**, then step 2. Original handoff note, for reference:
    - W1b commit range aaa933a..ecec528 (content, tuning, ux, qa, playtest), new Wizard cards and presets, `-BossLog` / `-WizardNoKite` / `-DodgePellets` sim flags, Wizard HP 26 (D20 open), and the CHANGELOG fix the W1b brief asks for (W1a entry's "now happens per slice" wording).
    - **The 2026-11-02 director decisions** from commit 0e2e60c, as `[Director decision]` CHANGELOG entries: Q/E bindings (24530e4, the director's own commit) and Recovery-on-R plan; key labels follow the bindings; pressure pass (enemy speed, then attack rate; exception to the no-retune rule); no-card runs should not win; build depth as pillar-1 priority with relics/enchants reset per run; loadouts (5 named slots per class, card availability flags, passive_allocation field); free respec; passives linked to loadouts; run order K1 -> H1 -> BD0 -> PL3 -> BD1 -> 3d.
    - README: the keys are now Q, E, 1, 2, 3 (Shift + same key for swap); K1 changes 3 to R.

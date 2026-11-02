@@ -14,16 +14,16 @@ Last updated: 2026-11-02. **Run order (director, 2026-11-02):** W1b and K1 are c
 - The repo runs. Suite 1190/1190 at 8752a1c (K1). Arena hash baseline 2484586390 (30 s seed 1; 90 s 3255493562). **H1 will change the sim hashes; re-baseline and record them here at its close.**
 
 ## In progress
-- **H1: gameplay-dev building (started 2026-11-02).** Knobs + bot policy checks + lever sweep. If cut off, check `git log` for H1 commits and resume gameplay-dev from the H1 brief.
+- **H1: gameplay-dev DONE (0c834a0..e4f4cbe); qa next.** Ships `pressure` block in `data/enemies.json`: speed_scale 1.25, attack_rate_scale 1.0; boss unscaled; `-LightHeavyOnly` fixed to press no slot. Candidate hashes pending qa: arena 30 s seed 1 **2816045921**, 90 s **3667433295**; bot sim `-Rooms 20 -Seed 3` 2281795515 unchanged (spawns no enemies). Suite 1193/1193. Wizard kiting HP-loss target missed (0% at every variant); final targets in DECISIONS "2026-11-02 - H1"; D27 raised.
 - Untracked on disk, not ours to commit: `tools/ux_capture.gd.uid` (ux) and `docs/playtests/img/*.import` (Godot imports; PL3 adds `docs/.gdignore`). Don't sweep them into other commits.
 
 ## Exact next step
-1. **H1, gameplay-dev first,** per the H1 brief in ROADMAP: enemy speed first (+10/20/25% tested), attack rate only if needed, behind shared data knobs. Then qa -> playtester (short) -> tech-writer -> close, tag `playtest-YYYY-MM-DD-H1`. **H1 changes the sim hashes; re-baseline at close** (today: arena 2484586390 for 30 s seed 1, 3255493562 for 90 s; bot sim `-Rooms 20 -Seed 3` 2281795515).
+1. **H1, qa next** (gameplay-dev done), per the H1 brief in ROADMAP: enemy speed first (+10/20/25% tested), attack rate only if needed, behind shared data knobs. Then qa -> playtester (short) -> tech-writer -> close, tag `playtest-YYYY-MM-DD-H1`. **H1 changes the sim hashes; re-baseline at close** (today: arena 2484586390 for 30 s seed 1, 3255493562 for 90 s; bot sim `-Rooms 20 -Seed 3` 2281795515).
 2. Then BD0 (game-lead alone, docs only), PL3, BD1, 3d per ROADMAP.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).
 
-**D-number reservation:** D21 = run order, D23 = loadout card flags (director-assigned). **D22, D24, D25 are reserved for BD0's questions** (at most 3). D26 = menu key text (K1). Next free: D27.
+**D-number reservation:** D21 = run order, D23 = loadout card flags (director-assigned). **D22, D24, D25 are reserved for BD0's questions** (at most 3). D26 = menu key text (K1). D27 = H1 attack speed / next lever. Next free: D28.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 

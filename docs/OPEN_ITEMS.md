@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-11-02
-**Status: 5 waiting on a decision (D19, D20, D21, D23, D26; none blocks). 10 things to look at when you play (items 25-32, 36-37), plus items 22 and 33-35 once their slices land.** Done: C1, Polish 1, 3a, 3b, 3c (the boss), A1 (armor), T-decks, W1a (a playable Fire Wizard), PL2 (frame colours), F1 (your checklist answers), P-dodge (dodge charges, Recovery, boss stagger), W1b (Wizard cards and tuning) and **K1** (key labels follow your bindings; Recovery on R; tag `playtest-2026-11-02-K1`). Next is H1. Then, in your 2026-11-02 order: ~~K1~~ -> **H1** (harder enemies) -> **BD0** (build-depth design doc) -> **PL3** (polish and housekeeping) -> **BD1** (first build-depth engine slice) -> **3d** (loadouts).
+**Status: 6 waiting on a decision (D19, D20, D21, D23, D26, D27; none blocks). 10 things to look at when you play (items 25-32, 36-37), plus items 22 and 33-35 once their slices land.** Done: C1, Polish 1, 3a, 3b, 3c (the boss), A1 (armor), T-decks, W1a (a playable Fire Wizard), PL2 (frame colours), F1 (your checklist answers), P-dodge (dodge charges, Recovery, boss stagger), W1b (Wizard cards and tuning) and **K1** (key labels follow your bindings; Recovery on R; tag `playtest-2026-11-02-K1`). Next is H1. Then, in your 2026-11-02 order: ~~K1~~ -> **H1** (harder enemies) -> **BD0** (build-depth design doc) -> **PL3** (polish and housekeeping) -> **BD1** (first build-depth engine slice) -> **3d** (loadouts).
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
@@ -141,8 +141,13 @@ Your round-1 answers are under "Recently resolved". Best asked after BD1, when t
 
 ## Needs your decision
 
-None blocks work. Until you answer, I use my default. **D22, D24 and D25 are reserved** for BD0's questions (at most 3); D23 is taken by the loadout card flags below.
+None blocks work. Until you answer, I use my default. **D22, D24 and D25 are reserved** for BD0's questions (at most 3); D23 is taken by the loadout card flags below. Next new number: D28.
 
+- **D27: Enemy attack speed, and what to try if the Wizard still doesn't bite (new, from H1).** You said: raise enemy speed until the Wizard takes damage, then attack speed if that's not enough. H1 raised enemy speed 25% (the chaser is now 5.0 against your walk of 6.0, the most it can be without outrunning you). In the sim, the kiting Wizard still takes **zero** damage, even with enemies attacking twice as often. Faster attacks did hurt the Rogue: at +25% attack speed, his clear rate fell from 100% to about 56%. So I shipped speed +25% and left attack speed unchanged. The bot is weaker than you are, so your hands decide (checklist item 33).
+  - **A (default):** keep speed +25% and attack speed unchanged.
+  - **B:** add +25% attack speed anyway and accept a harder Rogue.
+  - **C:** after you play, if the Wizard still doesn't bite, approve a different lever for a follow-up: enemy HP, more enemies per wave, or longer shooter range. This one isn't built; it's outside H1.
+  - Any of these is a one-line data change, so none blocks work.
 - **D21: Run order after W1b.** You set K1 -> H1 -> BD0 -> PL3 -> BD1 -> 3d. I agree with it. The one thing I'd move: **PL3's housekeeping** (the untracked `.uid` files, `docs/.gdignore` and the one-time line-ending fix with a `.gitattributes`). It takes minutes, and until it's done every slice's commits risk sweeping in stray files and showing whole-file diffs on docs that mix line endings. BD0 alone will rewrite large parts of the docs. The polish items in PL3 stay where you put them.
   - **A (my default, your order):** housekeeping stays in PL3, after BD0.
   - **B:** do only the housekeeping now, before H1 (K1 is already done). The rest of PL3 is unchanged.

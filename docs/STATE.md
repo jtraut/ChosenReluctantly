@@ -10,10 +10,10 @@ Last updated: 2026-11-02. **Run order (director, 2026-11-02):** W1b is closed. N
 - **W1b closed 2026-11-02:** content aaa933a .. playtest d74e0df; docs ab00c50 + d6a449a. The director's keybind commit 24530e4 left 3 stale input tests failing; qa fixed them test-only in 0119999 (tests now read slot keys from the InputMap). Carry-overs: kiting Wizard nearly unhurt in rooms 1-9 (H1); Fan of regrets telegraph added to PL3 as item 6.
 - Director answers D1-D18 and checklist items 11-24 are recorded and built.
 - **2026-11-02, Part 0 of the director's 10/31-11/2 notes (docs only, game-lead):** GDD §1, §3, §4, new §4a, §8, §9, §14 items 11-12; ROADMAP briefs for K1, H1, BD0, BD1, PL3 housekeeping, 3d changes A-F; OPEN_ITEMS updates; human playtest entries; DECISIONS "2026-11-02 - Recording the director's 10/31-11/2 notes". All 2026-11-02 director decisions are in the CHANGELOG (ab00c50).
-- The repo runs. Suite 1156/1156 at 0119999. Arena hash baseline 2484586390 (30 s seed 1; 90 s 3255493562). **H1 will change the sim hashes; re-baseline and record them here at its close.**
+- The repo runs. Suite 1190/1190 at 8752a1c (K1). Arena hash baseline 2484586390 (30 s seed 1; 90 s 3255493562). **H1 will change the sim hashes; re-baseline and record them here at its close.**
 
 ## In progress
-- **K1 in progress 2026-11-02:** gameplay-dev done (04ac813, 7f4b136). ux-designer done (6204f2a, 81abc85; suite 1181/1181; prompt now swallows slot/swap actions; captures `docs/playtests/img/k1-*.png`). Next: qa slice review (incl. reload soak) -> playtester (short) -> tech-writer -> close. At close: DECISIONS for gameplay-dev's 5 and ux's 5 technical choices plus game-lead's menu-digit call; add to PL3 a game-over mashed-Space guard (arm delay like other prompts) and a watch item for menu digits vs slot keys on the removal grid.
+- **K1 in progress 2026-11-02:** gameplay-dev (04ac813, 7f4b136), ux (6204f2a, 81abc85), **qa PASS** (8752a1c, `docs/reviews/2026-11-02-k1-qa.md`; suite 1190/1190; soak OK; arena hashes unchanged). Next: playtester short smoke -> tech-writer -> close. At close: DECISIONS for gameplay-dev's 5 and ux's 5 technical choices, qa's Space-scan choice, and game-lead's menu-digit call; add to PL3 a game-over mashed-Space guard and a watch item for menu digits vs slot keys on the removal grid.
 - Untracked on disk, not ours to commit: `tools/ux_capture.gd.uid` (ux) and `docs/playtests/img/*.import` (Godot imports; PL3 adds `docs/.gdignore`). Don't sweep them into other commits.
 
 ## Exact next step

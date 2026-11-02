@@ -10,12 +10,12 @@
     "slot_2": [{ "type": "key", "keycode": "E" }],
     "slot_3": [{ "type": "key", "keycode": "1" }],
     "slot_4": [{ "type": "key", "keycode": "2" }],
-    "slot_5": [{ "type": "key", "keycode": "3" }],
+    "slot_5": [{ "type": "key", "keycode": "R" }],
     "dead_card_swap_1": [{ "type": "key", "keycode": "Q", "shift": true }],
     "dead_card_swap_2": [{ "type": "key", "keycode": "E", "shift": true }],
     "dead_card_swap_3": [{ "type": "key", "keycode": "1", "shift": true }],
     "dead_card_swap_4": [{ "type": "key", "keycode": "2", "shift": true }],
-    "dead_card_swap_5": [{ "type": "key", "keycode": "3", "shift": true }],
+    "dead_card_swap_5": [{ "type": "key", "keycode": "R", "shift": true }],
     "pause": [{ "type": "key", "keycode": "Escape" }],
     "debug_overlay": [{ "type": "key", "keycode": "F3" }]
 }

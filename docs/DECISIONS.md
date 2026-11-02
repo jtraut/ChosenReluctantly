@@ -1213,3 +1213,19 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
 - **The auto bolt stays at 50% for the director's first hands-on run.** [Tuning before any human has felt it.]
 - **The Rogue loss on seed 36 (default bot, room 2)** is a bot loss, not a bug: the same seed wins with pellet dodging. No action.
 - Note: the playtest commit's trailer says "Sonnet 5.5" (the harness's attribution), not "Opus 5.5" as briefed. History isn't rewritten.
+
+### 2026-11-02 - Recording the director's 10/31-11/2 notes (game-lead)
+- **"Face" read as "pace".** The director's note says the "face" could be a bit faster; he asked me to read it as pace and log the reading. It feeds H1's enemy speed lever; no separate pace change. [Reading it as a visual or UI note.]
+- **Vision check round 1 mapped from his notes.** He didn't answer the six questions one by one; questions 2-6 each match a specific note, quoted in the OPEN_ITEMS table. Question 1 (combat feel) has no direct answer, so it's marked "not answered directly" and asked again in round 2. [Inferring an answer for Q1.]
+- **Human playtests are logged as dated files in `docs/playtests/`** (`2026-10-31-director-wizard-no-cards.md`, `2026-11-01-luke-keybinds.md`), labelled as human sessions recorded by game-lead, next to the playtester reports. There was no separate playtest log file. [A new single log file, which would split the playtest record in two places.]
+- **D-number reservation.** The director numbered D21 (run order) and D23 (loadout card flags), and asked for BD0's questions "as D22 onward". So D22, D24 and D25 are reserved for BD0 (at most 3); D23 stays the loadout one. Written in STATE and OPEN_ITEMS so BD0 doesn't overwrite it. [Renumbering the director's D23.]
+- **D21 raised, default = his order.** My one genuine reorder reason is the PL3 housekeeping (stray untracked files, mixed CRLF/LF docs) before the doc-heavy BD0. It's small enough to offer as option B; I proceed with his order. [Reordering without asking.]
+- **D23 default = every existing card is `starter`.** Both class starting decks are exactly 15 cards, 3 per slot, at the 3-unique minimum (`data/characters.json`), so a "today's 15 only" reading leaves the loadout editor nothing to vary but copies. "Starter" therefore means "allowed in a loadout's starting deck"; `reward` and `locked` are for BD1+ content. [Tagging only today's 15 as starter.]
+- **H1 telegraph floor: 0.45 s** (today's shortest, chaser and shooter; `data/enemies.json`), with boss attacks keeping their 0.6 s minimum (3c). Attack-rate changes may shorten cooldowns but never push a telegraph under it. [A lower floor such as 0.35 s, which risks undodgeable hits.]
+- **H1 speed ratios use the player's walk of 6.0** (`Player.gd` `move_speed`, an export, not data). At +25% the chaser is 5.0 (0.83 of walk), still below the director's ceiling. [Moving player speed to data inside H1, which H1 forbids touching.]
+- **K1 runs the reload soak** (it touches the HUD and input), per the standing rule.
+- **PL3 `.gitattributes` owner: gameplay-dev** (repo config), in a commit of its own with no other changes; tech-writer checks its docs after. No role owned repo config. [tech-writer, which would have it touch code files it doesn't own.]
+- **OPEN_ITEMS "How to playtest" corrected now** to the director's 24530e4 bindings, 10 rooms and `--run-room=10`. It was stale; OPEN_ITEMS is game-lead's. K1 updates it again for R. [Waiting for K1.]
+- **OPEN_ITEMS call 13 marked superseded** (no-card builds "stay slow"): the 10/31 run won anyway.
+- **3d tag renamed** from the stale `playtest-2026-10-29-3d` to the close date, and its "sim hashes unchanged" gate now means H1's re-baselined hashes.
+- **The new GDD section is §4a,** placed after §4 so existing § references (§9 and others, used throughout the docs) don't shift. [Renumbering the GDD.]

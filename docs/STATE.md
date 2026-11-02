@@ -3,32 +3,37 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-10-30. Run order (game-lead 2026-10-30, after the director's checklist answers): PL2 -> F1 -> P-dodge -> W1b -> 3d (W1b moved after P-dodge so the Wizard is tuned once). Each slice gets the full loop and, at close, a `playtest-YYYY-MM-DD-<slice>` tag plus an update to OPEN_ITEMS "While you were away". Done so far: A1, T-decks, W1a, PL2, F1, P-dodge.
+Last updated: 2026-11-02. **Run order (director, 2026-11-02):** finish W1b (tech-writer docs pass -> close), then **K1 -> H1 -> BD0 -> PL3 -> BD1 -> 3d**. Briefs for all six are in ROADMAP ("Run order after W1b"). Each build slice gets the full loop and, at close, a `playtest-YYYY-MM-DD-<slice>` tag plus an update to OPEN_ITEMS "While you were away" and the tag list. BD0 is docs only (game-lead alone, no tag). Done so far: A1, T-decks, W1a, PL2, F1, P-dodge.
 
 ## What's done
-- Milestone 2, and **Post-milestone polish 1** (all slices). **Content slice C1** and the **capture-tooling task** closed on 2026-10-29: qa PASS 76bca75 (696/696), playtest d94676a, docs pass 4c7b490. Tag **`playtest-2026-10-29-C1`**. **Milestone 3a** closed (tag `playtest-2026-10-29-3a`). **Milestone 3b** closed (tag `playtest-2026-10-29-3b`). **Milestone 3c** closed (tag `playtest-2026-10-29-3c`). **Slice A1 (armor)** closed (tag `playtest-2026-10-29-A1`). **T-decks** closed (tag `playtest-2026-10-29-T-decks`). **W1a** closed (tag `playtest-2026-10-30-W1a`). **PL2** closed (tag `playtest-2026-10-30-PL2`). **F1** closed (tag `playtest-2026-10-30-F1`). **P-dodge** closed (tag `playtest-2026-10-30-P-dodge`).
-- Director answers D1-D18 and checklist items 11-24 (2026-10-30) are recorded in the GDD and scheduled into F1, P-dodge and W1b.
-- Director answers D1-D17 are recorded (D13 = B and D16 = B are built in P-dodge; D17 = card frame colours by family, built in PL2, GDD §4).
-- The repo runs. Suite 1147/1147. Arena hash baseline 2484586390 (30 s seed 1; 90 s 3255493562).
+- Milestone 2, Post-milestone polish 1, C1, 3a, 3b, 3c, A1, T-decks, W1a, PL2, F1, P-dodge (tags `playtest-2026-10-29-C1`, `-3a`, `-3b`, `-3c`, `-A1`, `-T-decks`, `playtest-2026-10-30-W1a`, `-PL2`, `-F1`, `-P-dodge`).
+- Director answers D1-D18 and checklist items 11-24 are recorded and built.
+- **2026-11-02, Part 0 of the director's 10/31-11/2 notes (docs only, game-lead):**
+  - GDD: §1 pillar 1 note, §3 (bindings rule, Q/E/1/2/R, no-card runs not viable), §4 (swap on Shift+slot key; swap unchanged for now), new **§4a Build depth and synergy**, §8 (passives linked to loadouts, free respec), §9 (pressure pass exception, loadout changes), §14 items 11-12. All tagged [DIRECTOR DECISION, 2026-11-02] or [PROPOSED].
+  - ROADMAP: briefs for K1, H1, BD0, BD1 (provisional), PL3 housekeeping (`.uid`, `docs/.gdignore`, `.gitattributes` + normalisation), 3d changes A-F, and the H1 exception in "Later".
+  - OPEN_ITEMS: the notes under "Your feedback in progress", Vision check round 1 resolved, round 2 posted (7 questions), D21 and D23 added, eyes items 30-35 queued, "How to playtest" keys fixed to 24530e4.
+  - Human playtest entries: `docs/playtests/2026-10-31-director-wizard-no-cards.md`, `docs/playtests/2026-11-01-luke-keybinds.md`.
+  - DECISIONS: "2026-11-02 - Recording the director's 10/31-11/2 notes".
+- The repo runs. Suite 1156/1156 (W1b qa). Arena hash baseline 2484586390 (30 s seed 1; 90 s 3255493562). **H1 will change the sim hashes; re-baseline and record them here at its close.**
 
 ## In progress
-- **Slice A1: Armor** closed 2026-10-29 (tag `playtest-2026-10-29-A1`, 968/968). Docs 28587a9.
-- **T-decks** closed 2026-10-29 (tag `playtest-2026-10-29-T-decks`, 996/996). Docs cddab25.
-- **W1a (a playable Wizard)** closed 2026-10-30 (tag `playtest-2026-10-30-W1a`, 1053/1053). Docs 031f321.
-- **PL2** closed 2026-10-30 (tag `playtest-2026-10-30-PL2`, 1082/1082). Docs d175b51.
-- **F1** closed 2026-10-30 (tag `playtest-2026-10-30-F1`, 1102/1102). Docs 47fde95.
-- **P-dodge** closed 2026-10-30 (tag `playtest-2026-10-30-P-dodge`, 1147/1147). Docs ee18b08.
-- **W1b**: IN PROGRESS. Content DONE aaa933a..45ed585 (1151/1151). Tuning DONE 2128ae4, 0754483 (1153/1153; Wizard HP 26, see D20). ux 245d8e3 (5e: no real overlap). qa PASS 6f26ff9 (1156/1156). Playtest d74e0df (no blocker). Step: tech-writer -> close. Then PL3 (brief in ROADMAP), then 3d.
+- **W1b**: built, qa PASS 6f26ff9 (1156/1156), playtest d74e0df (no blocker). **Remaining: tech-writer docs pass -> game-lead close** (tag `playtest-2026-11-0X-W1b` on the close date; tick the parent W1 item).
+- Uncommitted on disk, not ours to commit now: `tests/unit/w1b_content_test.gd.uid` (qa), `tools/ux_capture.gd.uid` (ux), `docs/playtests/img/*.import` (Godot imports; PL3 adds `docs/.gdignore`). Don't sweep them into other commits.
 
 ## Exact next step
-1. **W1b**: gameplay-dev (content first: items 1-4, 5b, 5d's pellet-dodge check and `--boss-log`; then tuning item 6 incl. 5a cliff) -> ux-designer (5e banner overlap) -> qa (independent 10+ seed re-run, both bot policies) -> playtester -> tech-writer -> close. Baseline: Rogue boss 64.3 s mean (band 45.0-83.6 s).
-2. Then **3d** (loadouts).
-3. Waiting on the director: D19 (default A, as built) and D20 (Wizard HP 26 vs squishier; default A, as built). Neither blocks.
-4. Housekeeping (not scheduled): untracked `tests/unit/w1b_content_test.gd.uid`, `tools/ux_capture.gd.uid` (owners commit them) and `docs/playtests/img/*.import` (add a `docs/.gdignore`). Also: docs have mixed CRLF/LF line endings; a one-time normalisation (tech-writer offered) plus a `.gitattributes` would stop whole-file diffs.
+1. **tech-writer, W1b docs pass.** Handoff note must include:
+   - W1b commit range aaa933a..ecec528 (content, tuning, ux, qa, playtest), new Wizard cards and presets, `-BossLog` / `-WizardNoKite` / `-DodgePellets` sim flags, Wizard HP 26 (D20 open), and the CHANGELOG fix the W1b brief asks for (W1a entry's "now happens per slice" wording).
+   - **The 2026-11-02 director decisions** from this session's commit, as `[Director decision]` CHANGELOG entries: Q/E bindings (24530e4, the director's own commit) and Recovery-on-R plan; key labels follow the bindings; pressure pass (enemy speed, then attack rate; exception to the no-retune rule); no-card runs should not win; build depth as pillar-1 priority with relics/enchants reset per run; loadouts (5 named slots per class, card availability flags, passive_allocation field); free respec; passives linked to loadouts; run order K1 -> H1 -> BD0 -> PL3 -> BD1 -> 3d.
+   - README: the keys are now Q, E, 1, 2, 3 (Shift + same key for swap); K1 changes 3 to R.
+2. **game-lead closes W1b** (ROADMAP, STATE, OPEN_ITEMS "While you were away", tag).
+3. **K1:** gameplay-dev (helper, R binding, validator) -> ux-designer -> qa (incl. reload soak) -> playtester (short) -> tech-writer -> close.
+4. Then H1, BD0, PL3, BD1, 3d per ROADMAP.
 
-Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
+Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).
+
+**D-number reservation:** D21 = run order, D23 = loadout card flags (director-assigned). **D22, D24, D25 are reserved for BD0's questions** (at most 3). Next free after that: D26.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`.
+All director-facing items are in `docs/OPEN_ITEMS.md` (D19, D20, D21, D23 waiting; none blocks).

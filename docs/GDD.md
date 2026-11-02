@@ -2,6 +2,7 @@
 
 Status: v0.2, rebuilt from the director's design interview (2026-10-26). Engine, perspective, and slice classes and elements are now decided.
 Updated 2026-10-27 with director decisions: reward offer format (section 9), density principle (section 1), light/heavy attack controls (section 3), and a parked-ideas section (section 15).
+Updated 2026-11-02 with the director's notes of 10/31-11/2: key labels follow the bindings (§3), no-card runs not viable (§3), the build-depth section (§4a), passives linked to loadouts and free respec (§8), the pressure pass and loadout changes (§9).
 Items marked **[OPEN]** are undecided. Items marked **[PROPOSED]** are suggestions awaiting approval.
 This file is the source of truth. If it is not here, it is not decided.
 
@@ -15,6 +16,7 @@ Passion project. Targets: playable by the director, fiancee, family, and friends
 
 ### Pillars (non-negotiables, in priority order)
 1. **Deep theorycrafting.** Class + element combinations, subclass choices, passives, and equipment must create real build decisions.
+   - **[DIRECTOR DECISION, 2026-11-02]** This pillar is behind and is the top priority before more screens, art or staging. Card choice must change how a run plays: a player should be able to go into runs with wildly different plans on the same class and element, repeatedly, and removing a card the plan depends on must hurt. See §4a.
 2. **No two runs alike.** Randomly generated runs with meaningful variance in rooms, rewards, and card availability.
 3. **A unique blend of ARPG and deck-builder.** Real-time combat driven by typed card slots.
 
@@ -54,7 +56,9 @@ Fewer, more impactful enemies. Telegraphed attacks, readable danger, and dodge s
   - **Basic attacks are weaker than active card plays.** Cards are the heart of the game. A card should always feel better than the free attack it competes with.
   - **Heavy attacks trade sustained damage for burst and utility.** A heavy attack may have lower single-target DPS than the light attack, but offers burst, a larger area, and class and element flavor (for example stun, a boosted element status chance, or a ranged targeted area for casters). Heavy attacks are defined per class in data and support different shapes (wide melee arc, targeted ranged area). **[PROPOSED]** Rogue heavy: wide arc, burst, brief stun on hit. **[PROPOSED]** Wizard heavy: targeted ranged area at the mouse point.
   - **Heavy wind-up slows the player slightly. It never roots.**
-- **Card slots:** keys 1 to 5.
+  - **[DIRECTOR DECISION, 2026-11-02]** A run won with no cards at all (light and heavy attacks, dodge and rest rooms only) should not be possible. The director did exactly that with the Wizard on 2026-10-31 (10 rooms, no cards, no healing, 5:25). The one future exception is a deliberate build that invests in light and heavy attacks through deep build mechanics (relics, passives); see §4a.
+- **Card slots:** five card keys, read from `data/input_bindings.json`. Defaults **[DIRECTOR DECISION, 2026-11-01/02]:** Q, E, 1, 2, R for slots 1-5 (Attack single, Attack AoE, Utility, Movement, Recovery). Movement may later move to F; that must be a one-line data change with no code change.
+- **Key labels follow the bindings [DIRECTOR DECISION, 2026-11-02]:** whatever is in `data/input_bindings.json` is what the UI shows, so the screen and the keys can never disagree. No UI text may hardcode a key. Two actions may not share the exact same key plus modifiers; a conflict fails loudly at startup.
 - **Hold-to-preview casting [DIRECTOR DECISION, 2026-10-28]:** by default, holding a card's key shows its exact hit area on the ground (drawn from the same data as the hitbox), and the card casts on release. A setting switches casting to trigger on press instead.
 - **Dodge roll:** Space bar. **[OPEN]** how this relates to the Movement slot (see section 4).
   - **[DIRECTOR DECISION, 2026-10-28]** The dodge is a modest escape, about 5 m, and may be lowered later. Its distance must stay easy to tune (data). Critical survival manoeuvres should come from Movement cards, not the dodge.
@@ -88,7 +92,8 @@ Notes:
 - **Cooldown = slot base cooldown + card modifier.** The modifier can be negative, so fast cards (for example a quick slash) can shorten the slot's cooldown and be chained rapidly. This gives every card a built-in power budget.
 - Slot base cooldowns can be modified by character passives, passive-tree nodes, and equipment.
 - **Dead-card swap:** the player may discard the currently revealed card and draw the next one at the cost of a short penalty cooldown on that slot. Exact penalty is a tuning value.
-  - **[DIRECTOR DECISION, 2026-10-30]** The input is **Shift + 1-5** (was Ctrl + 1-5, too much of a stretch). The swap is expected to matter more once decks have real synergies.
+  - **[DIRECTOR DECISION, 2026-10-30]** The input is **Shift + the slot's key** (was Ctrl + 1-5, too much of a stretch; with the 2026-11-02 bindings that is Shift+Q, Shift+E, Shift+1, Shift+2, Shift+R). The swap is expected to matter more once decks have real synergies.
+  - **[DIRECTOR DECISION, 2026-11-02]** The swap feels pointless today because nothing makes a card worth saving. Don't change it yet; it should earn its place once synergies exist (§4a).
 - **No resource system (mana, energy) in the initial version.** May be revisited much later depending on how gameplay feels.
 - **Shuffle bag [DIRECTOR DECISION, 2026-10-28]:** every card in a slot is drawn once before any card repeats. After a reshuffle, the first card of the new cycle is never the same as the last card of the previous cycle, as long as the slot has more than one unique card.
 
@@ -113,6 +118,34 @@ Notes:
 ### Open items
 - **[OPEN]** Does Space dodge roll replace the Movement slot's basic function, or is the Movement slot only for special movement cards (blink, charge, leap)? **[PROPOSED]** dodge roll is a universal, always-available action with its own short cooldown; Movement cards are special movement abilities.
 - ~~**[OPEN]** What happens when a mini-deck runs out?~~ Resolved: a shuffle bag with no back-to-back repeat across reshuffles (see Cycling rules).
+
+---
+
+## 4a. Build depth and synergy
+
+Added 2026-11-02 from the director's notes. The goals are director decisions. The mechanics are **[PROPOSED]** until the director approves the BD0 design doc (`docs/BUILD_DEPTH.md`, written by game-lead).
+
+### The problem, in the director's words (2026-11-02)
+- The slots don't create synergy or real decisions yet. Any slot can be spammed blindly with the same kind of outcome.
+- Decks lack variability. Every run of the same class and element feels the same.
+- Almost any card can be added or removed without suffering, and the run is still an easy win. That is the symptom to fix.
+
+### Goals **[DIRECTOR DECISION, 2026-11-02]**
+1. A player can go into a run with wildly different plans or playstyles, even on the same class and element, again and again.
+2. Cards and decks must change how a run plays. A card the plan depends on should be painful to lose.
+3. Variation also comes from **relics/enchants found during a run and reset between runs** (in the spirit of Slay the Spire's relics and The Last Flame). Leaning into them gives deep synergies or specialisations. Director's example: "Burns now explode in an AoE when they expire and/or on death."
+4. Basic attacks become a real archetype only through deliberate investment (relics, later passives). Without it, a no-card run is not viable (§3).
+5. This comes before refining graphics and staging.
+
+### Inspiration **[DIRECTOR DECISION, 2026-11-02]**
+Ideas may come from: Slay the Spire, Across the Obelisk, Darkest Dungeon, Hearthstone, Gwent, Combo Card Clashers, Decktamer, The Elder Scrolls Legends, Eternal Card Game, Hadean Tactics, Hellcard, Lightseekers, Monster Train 1 and 2, Roguebook, Erannorth Chronicles. The director's favourites, to lean on most: **Erannorth Chronicles, Gwent, Slay the Spire, Monster Train.** Design docs say which idea comes from which game, and say "unsure" rather than invent details about a game.
+
+### Balance inputs from the director (2026-11-02; inputs, not tasks)
+- The AoE cards that burst around the character feel strongest.
+- Wall of Mild Fire felt underwhelming before its 1.5x size boost. Keep the new size.
+
+### Mechanics **[PROPOSED]**
+To be filled from BD0 (`docs/BUILD_DEPTH.md`): card tags and keywords, conditions and payoffs, cross-slot hooks, scaling stacks, the relic system (sources, count per run, data format, event hooks, reset, HUD), archetypes per class, and measurable checks (removal pain, run fingerprint spread, archetype parity, no-cards run not viable). All of it data-driven on the existing effect templates, with new effect types only when generic and reusable.
 
 ---
 
@@ -202,6 +235,8 @@ Rather than a full strength/weakness wheel, elements apply status effects (for e
 - **Equipment and loot** gathered between and during runs, with depth modeled loosely on Tower of Babel: Survivors of Chaos. Equipment can modify slot cooldowns and card behavior.
 - **[OPEN]** what currency or XP earns passive points, and how fast.
 - **[PROPOSED]** start each tree small (30 to 40 nodes) for the vertical slice, and design the tree format as data so it can grow.
+- **Passive choices belong to loadouts [DIRECTOR DECISION, 2026-11-02]:** passive-tree allocations are linked to loadouts (§9), so each saved loadout can carry its own passive build. Until the tree exists, a loadout only reserves an empty, versioned `passive_allocation` field.
+- **Respec is cheap, preferably free [DIRECTOR DECISION, 2026-11-02]:** respeccing passive choices is available between runs, so a player who went deep into the tree can switch completely with no penalty. Because it is free, loadouts with their own allocations are the natural way to hold several builds.
 
 ---
 
@@ -212,11 +247,17 @@ Rather than a full strength/weakness wheel, elements apply status effects (for e
 
 - **Run length [DIRECTOR DECISION, 2026-10-30]:** a full run is **at least 10 rooms** (stages).
 - **Difficulty tiers [DIRECTOR DECISION, 2026-10-30]:** today's tuning is the **lowest tier ("Easy")**. Later tiers add more challenge: working names Normal, Hard, and a top tier such as "Torment". The names are not set; better ones that fit the cheerful-world, weary-hero tone are welcome. Tiers are data multipliers picked at run start. (game-lead, 2026-10-30: so the base game isn't retuned harder now; challenge comes from the tiers.)
+- **Pressure pass on the base game [DIRECTOR DECISION, 2026-11-02]:** the one deliberate exception to "don't retune the base game until the tiers exist". The Wizard never seems to take damage, and a no-card run was won (§3). Raise all enemy movement speed slightly, at least until Wizard runs take some damage; if speed alone isn't enough, follow up with attack speed. The pace could be a bit faster. The change sits behind shared data knobs (an enemy speed scale and an enemy attack-rate scale) that the future tiers reuse. Player stats, card numbers and boss mechanics are not changed by it. (Scheduled as slice H1.)
 - Target run length: 30 to 60 minutes. **[PROPOSED]** prototype shorter runs (15 to 25 minutes) for faster iteration.
 - Procedurally generated room sequence with elites, bosses, and a final boss.
 ### Starting decks and loadouts **[DECIDED]**
 - The very first run uses preset defaults: the chosen class, element, and neutral starter cards.
 - From the second run on, the player can tune their starting deck and save it as a **loadout**.
+- **Loadouts [DIRECTOR DECISION, 2026-11-02]:**
+  - A loadout screen before each run (from run 2) customises the starting deck.
+  - Each class has **at least 5 loadout slots** (a data value). The player names them freely, so one class can hold, for example, "Water Rogue", "Fire Rogue", "Dark Rogue", "Dark Rogue alt". Only Fire exists today, so names are free text and the element is not enforced yet.
+  - Cards that are only available later are **flagged**, so the director can plan for them. **[PROPOSED] (D23 default):** each card has an `availability` in data: `starter` (can go in a loadout's starting deck), `reward` (found only as a run reward) or `locked` (until an unlock condition, **[OPEN]**). The editor shows a badge on each card. A loadout may list reward-only and locked cards as a **plan** next to its starting deck, and reward screens highlight plan cards ("On your plan"). The starting deck holds only `starter` cards and obeys the deck rules (§4).
+  - Each loadout reserves an empty, versioned `passive_allocation` field for the passive tree (§8).
 
 ### Card rewards during a run **[DECIDED, details open]**
 - After each won room, the player is offered **3 cards** and either **picks one** or **rejects the whole offer**. **[DIRECTOR DECISION]**
@@ -289,6 +330,8 @@ The director provides top-level design direction only. Roles are defined as docu
 8. Subclass pick timing in a run.
 9. Game name. Front-runner: **Chosen, Reluctantly** (also fits the "choose your cards carefully" mechanic).
 10. Final tone: how far to push the satire.
+11. Card unlock conditions for `locked` cards (§9 Loadouts).
+12. Relic sources and how many per run (BD0 proposes defaults, §4a).
 
 Resolved: engine (Godot), perspective (3D isometric), slice classes and elements (Rogue, Wizard, Fire, Water), card offer format (pick 1 of 3 or reject all).
 

@@ -335,7 +335,7 @@ Director-approved combined polish pass before Milestone 3 (2026-10-27). **Not Mi
 - [ ] **Backlog (C1 and 3a playtests, qa follow-ups) (not scheduled; small UX/content items, game-lead picks them up between M3 slices if cheap):** real-cast C1 scenarios in `data/scenarios.json`; a brief card-name pop-up on cast; a stronger Bleed cue and four distinct Flurry flashes; a brighter enemy projectile and stronger player outline in dense crowds; the Lunge preview shows the full path even when a body stops it; `Main.gd:74`/`GameOverScreen.gd:26` use `current_scene` (qa N5); bot-sim charter checks (qa N3, done in 3a). From 3a: keep elites from spawning under the card row; the LOST line shows a stale HP; the `--run-room` win count; run-mode sim results depend on earlier runs in the same process; +1 object per soak cycle; `-RoomTimeout` clamps silently. From W1b (ux): world-space damage numbers can draw over the boss bar when the boss stands right under it; keep them below the HUD or draw them under it.
 
 ## Later (director, 2026-10-28)
-- **Difficulty tiers (director 2026-10-29, confirmed 2026-10-30, GDD §9; unscheduled).** Today's tuning is the lowest tier ("Easy"); later tiers working names Normal, Hard, and a top tier like "Torment" (names open, tone-fitting ideas welcome). The director finds the opening and busy waves comfortable and would lean toward a harder run overall. Plan the tiers as data multipliers (enemy HP and damage, wave density and pacing, maybe elite and boss numbers), picked at run start. Don't retune the base game until then.
+- **Difficulty tiers (director 2026-10-29, confirmed 2026-10-30, GDD §9; unscheduled).** Today's tuning is the lowest tier ("Easy"); later tiers working names Normal, Hard, and a top tier like "Torment" (names open, tone-fitting ideas welcome). The director finds the opening and busy waves comfortable and would lean toward a harder run overall. Plan the tiers as data multipliers (enemy HP and damage, wave density and pacing, maybe elite and boss numbers), picked at run start. Don't retune the base game until then. **Exception (director, 2026-11-02):** the director asked for one pressure pass now (slice H1: enemy movement speed, then attack rate if needed, behind shared data knobs the tiers will reuse). It is the only exception; the tiers themselves are still unscheduled.
 - **Heavy attack (director note 2026-10-29):** it feels good now. It may later be weakened or given a longer cooldown. No change scheduled.
 - **Pause shows card details (director request 2026-10-29, unscheduled; ux-designer, with a small gameplay hook if needed).**
   - When the player pauses (Esc), every slot's **active card and next-up card** (including slots on cooldown) expand upward so the player can read what each card does before resuming.
@@ -636,7 +636,65 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     5. Rerun the seeded wave sim and the whole-run sim and report the HP lost before/after (3 charges is a big survival buff, which may feed D13 and the solid-enemies call). **qa re-measures the Rogue on 10+ seeds (`-Run`, 10 rooms): this is the baseline W1b tunes against.** Also report the Wizard (kiting bot) on the same seeds, for reference only.
   - **Owner sequence:** gameplay-dev -> ux-designer -> qa -> playtester (short) -> tech-writer (folded into the next docs pass if small) -> close.
 
-- [ ] **PL3, small polish after W1b (game-lead, 2026-10-30; not started; runs before 3d unless the director's D20 answer or his hands-on Wizard play reorders things)**
+### Run order after W1b (director, 2026-11-02)
+W1b finishes as planned (tech-writer docs pass, then close). Then, in this order: **K1 -> H1 -> BD0 -> PL3 -> BD1 -> 3d.** Reason (director): cards and decks don't yet change how a run plays, and that must be settled before more screens, art or staging. game-lead's reorder note is D21 in OPEN_ITEMS (default: this order). Every build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag; each role commits only its own paths.
+
+- [ ] **K1, key labels follow the bindings (director, 2026-11-02; small). Loop: gameplay-dev -> ux-designer -> qa -> playtester (short smoke) -> tech-writer -> close. Tag `playtest-YYYY-MM-DD-K1`.**
+  - **Goal:** whatever is in `data/input_bindings.json` is what the UI shows. No UI text hardcodes a key. GDD §3 "Key labels follow the bindings" and "Card slots" [DIRECTOR DECISION].
+  - **Today:** `data/input_bindings.json` (24530e4, the director's own change after Luke's playtest) has slot_1..slot_5 on Q, E, 1, 2, 3 and the swaps on Shift plus the same keys. `src/ui/Hud.gd:25` builds slot labels with `str(i + 1)`, so the HUD still shows 1-5. Reward screens say "Slot %d now", option cards say "Slot %d", and README, the pause screen and OPEN_ITEMS describe old keys.
+  - **gameplay-dev:**
+    1. **One helper** (for example `InputLabels.for_action(&"slot_1")`) turns an action name into display text by reading the live InputMap. It handles plain keys, Shift/Ctrl/Alt combos ("Shift+Q") and mouse buttons ("LMB", "RMB"). It reads the first binding and falls back to "?" when an action has none. It caches nothing that can go stale: it updates when bindings change at runtime (a signal or a refresh hook).
+    2. **Data change:** Recovery on R (`slot_5` = R, `dead_card_swap_5` = Shift+R). Movement stays on 2; moving it to F later must be a one-line data change.
+    3. **Binding validator:** no two actions may share the exact same key plus modifiers; the swap bindings keep the exact-match rule (`Player.gd` documents why). It fails loudly at startup on a conflict.
+    4. Expose whatever ux needs (slot display name plus key text).
+  - **ux-designer:**
+    5. Card slot key labels use the helper.
+    6. Wherever the UI says "Slot N" for a slot, show the slot's name and bound key instead (for example "Attack (Q)", "Movement (2)"). Keep the wording elsewhere.
+    7. The pause/settings screen, the class pick hints and every hint (dodge, light/heavy click, dead-card swap, hold-to-preview) read from the helper. Search `src/` and `data/` for hardcoded "1-5", "Slot %d", "Shift+", "Ctrl+" and fix every hit.
+    8. **Fit:** the key label box fits the longest label the helper can produce at the minimum HUD scale (the hud_layout test). "R", "Q", "Shift+Q" and "LMB" must not overflow or clip.
+  - **qa:**
+    - For each slot, the HUD label equals the helper's text for that slot's bound key.
+    - Rebind in a test (Recovery on F, a Shift combo, a mouse button): the HUD, the reward screen text and the pause screen follow with no code change.
+    - A scan test: no `.gd` or `.json` UI string holds a hardcoded digit key hint for a slot.
+    - The validator rejects duplicates and accepts the shipped file.
+    - Full suite, the 20 s headless run, SceneSelfCheck, and the **reload soak** (K1 touches the HUD and input).
+  - **Playtester (short):** smoke check; captures of the card strip, a reward screen and the pause screen showing Q, E, 1, 2, R.
+  - **Docs:** tech-writer updates README controls and any screenshots with old labels. game-lead updates the OPEN_ITEMS "How to playtest" keys line and adds the "Needs your eyes" checks (labels match Q, E, 1, 2, R; hold-to-preview and cast-on-release still work on the new keys; Shift+key still swaps without casting).
+
+- [ ] **H1, pressure pass: harder enemies, data first (director, 2026-11-02; small). Loop: gameplay-dev -> qa -> playtester (short) -> tech-writer -> close. Tag `playtest-YYYY-MM-DD-H1`.**
+  - **Goal:** a run with no cards (light, heavy, dodge, rest rooms allowed) is no longer a safe win for either class, while a normal card-using run stays winnable at today's tier (future "Easy"). Cards must clearly matter (GDD §3). GDD §9 "Pressure pass" [DIRECTOR DECISION]. This is the one deliberate exception to "don't retune the base game until the tiers exist" (ROADMAP "Later"); the director asked for it.
+  - **Evidence:** the director cleared 10 rooms as the Wizard on 2026-10-31 with no cards and no healing in 5:25. The bot says the Wizard loses some HP; his hands say otherwise. **Treat the sim as a floor, not the truth.**
+  - **Levers, in order (stop when the targets are met):**
+    1. **Enemy movement speed**, every type including elites. Test +10%, +20% and +25%. Today: chaser 4.0, shooter 3.0, golem 2.0, boss 2.6 (phases 2.6/3.0/3.4). The player walks at 6.0 (`Player.gd` `move_speed`, not data). Ratios today: chaser 0.67, shooter 0.50, golem 0.33; at +25% the chaser is 5.0 (0.83). No normal enemy faster than the player's walk unless logged why. Chasers stay beatable by good dodging and kiting. Log the ratios.
+    2. **Only if speed alone misses the targets: attack rate.** Shorter attack cooldowns first, then slightly shorter wind-ups. **Telegraph floor (game-lead default): no enemy telegraph shorter than today's shortest, 0.45 s** (chaser and shooter); boss attacks keep their 0.6 s minimum. D6 and the readability rules still hold.
+  - **Knobs:** one shared data knob for enemy speed scale and one for enemy attack-rate scale, applied on top of the per-enemy values, so the future tiers (GDD §9) reuse them. Don't build tiers.
+  - **Not in H1:** player stats, card numbers, boss mechanics. The boss uses the speed scale only if needed to keep its fight length; if so, say why.
+  - **gameplay-dev:** the knobs and their validation; bot policy checks (the `-LightHeavyOnly` policy works for both classes, with and without Wizard kiting, on full 10-room runs and with rest-room use); run the lever sweep and hand qa the candidate values.
+  - **qa (12+ seeds, before and after, report in DECISIONS):**
+    - Policies: the standard card policy and `-LightHeavyOnly`, both classes, Wizard kiting and `-WizardNoKite`, full 10-room runs.
+    - **Targets (game-lead may adjust with reasons; log the final ones):** the no-cards policy clears at most about 25% of runs on either class; the standard policy's clear rate stays within about 15 points of today's; the Wizard (standard, kiting) ends fight rooms with a median HP loss of at least about 10% of max HP; the Rogue's standard boss time stays in the A1 band of 45-84 s.
+    - Say what the sim can't tell us.
+    - Sim hashes will change: re-baseline them, and game-lead logs the new values in STATE.
+    - Full suite, the 20 s headless run, SceneSelfCheck.
+  - **Playtester (short):** a run per class with cards and one with no cards; does pressure feel fair and readable?
+  - **Close:** OPEN_ITEMS asks the director to play the Wizard again with and without cards and say whether it bites, and to run with no cards and see whether he now loses before the boss.
+
+- [ ] **BD0, build-depth design doc (director, 2026-11-02; game-lead alone, docs only, no code). No tag (no build).**
+  - **Goal:** a concrete, data-driven plan for GDD §4a's goals, in a new `docs/BUILD_DEPTH.md` plus a GDD §4a summary marked [PROPOSED].
+  - **Contents:**
+    1. **Diagnosis table:** why a card is interchangeable today (flat damage, no conditions, no tags, one-use effects, no cross-slot interaction), tied to real cards in `data/cards/`.
+    2. **Goals as measurable checks** (future sim and qa tests): removal pain (removing a keystone drops an archetype deck's bot performance by a clear margin; removing a random off-plan card barely does); run fingerprint spread (same class and element, different picks, clearly different damage-source mixes by slot and status); archetype parity (each archetype's boss time inside 70-130% of the standard deck); no-cards run not viable (H1).
+    3. **Synergy framework:** tags and keywords (Burn, Bleed, Projectile, Melee, Zone, Dash, Heal, later Summon-style), conditions and payoffs ("if the target is Burning", "after a Movement card", "per distinct tag in your deck", "while a Zone is active"), cross-slot hooks (a slot primes the next within a short window), scaling stacks. Say which are new generic effect types and which are data on existing templates.
+    4. **Relics/enchants:** run-scoped, rule-changing. Sources (elite and boss drops, a reward-screen alternative to cards, a rest-room choice; pick defaults), count per run, data format, how a relic hooks the same event bus as statuses, reset between runs, HUD display. **10 relic sketches** for Fire Rogue and Fire Wizard, including the director's burn-explosion example, plus **5 that reward light and heavy attacks**.
+    5. **Archetypes:** at least 4 per class on Fire, each with 4-6 cards (today's pool plus marked new ones), 2-3 relics, and a keystone card.
+    6. **Slot decisions:** how timing, cooldown reading and the dead-card swap start to matter.
+    7. **Readability:** tag chips on cards, a condition line, a glow when a condition is live; reuse `CardSummary`.
+    8. **Content budget and slices:** BD1 (engine plus first 2 archetypes per class), BD2 (relics), BD3 (more cards and archetypes) and so on, each one sitting, with acceptance, owners and the loop. Loosely coupled to specific cards. Slices go into this ROADMAP.
+    9. **Sources:** say which idea comes from which game, leaning on Erannorth Chronicles, Gwent, Slay the Spire and Monster Train. No web access: only mechanics game-lead is confident about, "unsure" otherwise. A research-digest request goes in OPEN_ITEMS if wanted.
+    10. **Director questions:** at most 3, each with a default, as **D22, D24, D25** (D23 is taken by loadout availability). Don't wait for answers.
+  - **Done when:** `docs/BUILD_DEPTH.md` exists with all of the above, GDD §4a has the [PROPOSED] summary, BD1's brief below is rewritten from it, and OPEN_ITEMS has the questions.
+
+- [ ] **PL3, small polish after W1b (game-lead, 2026-10-30; runs after BD0 per the director's 2026-11-02 order)**
   - **From the W1b playtest (docs/playtests/2026-10-30-w1b-wizard-cards.md):**
     1. **Ward has no visible cue while it's up** (only a 0.5 s ring on cast). Add a persistent cue for player armor buffs (ring, tint or buff pip), data-driven. ux, with a gameplay hook if needed.
     2. **Three Bolts and Overqualified Bolt look like the auto bolt.** Give card projectiles a distinct look (size, colour, trail) via `look` params. Overqualified Bolt should read as heavy. ux.
@@ -644,11 +702,32 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     4. **Volley hits may show as one faded "4"** (unconfirmed). Check how damage numbers merge for multi-pellet hits. ux.
     5. **Damage numbers drawing over the boss bar** (from the W1b ux backlog).
   - **Tooling (gameplay-dev):** scenarios give the Wizard its own deck (today they show the Rogue's card row); a capture trigger on a boss attack starting.
-  - **Housekeeping:** commit the untracked `.uid` files; add `docs/.gdignore` so Godot stops importing playtest PNGs.
-  - **Loop:** gameplay-dev -> ux -> qa -> playtester (short) -> tech-writer -> close.
+  - **Housekeeping (director, 2026-11-02, from STATE):**
+    - commit the untracked `.uid` files (`tests/unit/w1b_content_test.gd.uid`: qa; `tools/ux_capture.gd.uid`: ux-designer);
+    - add `docs/.gdignore` so Godot stops importing playtest PNGs, and delete the stray `docs/playtests/img/*.import` files (game-lead);
+    - add a `.gitattributes` (text=auto, LF in the repo for `.md`, `.gd`, `.json`, `.tscn`, `.tres`, `.cfg`, `.godot`; binaries marked binary) and do the one-time line-ending normalisation in a **single commit of its own with no other changes**, so later diffs stay readable. Owner: gameplay-dev (repo config; it runs the suite afterwards to prove nothing broke). tech-writer checks its docs still render.
+  - **Loop:** gameplay-dev -> ux -> qa -> playtester (short) -> tech-writer -> close. Tag `playtest-YYYY-MM-DD-PL3`.
 
-- [ ] **3d, loadouts**
-  - **Goal:** from the second run on, you can build a starting deck, save it as a loadout and start runs with it. GDD §9 ("Starting decks and loadouts [DECIDED]"), §4 (deck rules).
+- [ ] **BD1, the first build-depth engine slice (director, 2026-11-02; after PL3). Full loop. Tag `playtest-YYYY-MM-DD-BD1`.**
+  - **Provisional brief. The final acceptance is written at the end of BD0, from `docs/BUILD_DEPTH.md`.**
+  - **Scope:** build the engine and the first slice of content exactly as BD0 plans:
+    - the tag/keyword/condition system;
+    - the relic framework: data format, loader, validation, HUD display, reset between runs;
+    - 2 archetypes per class on Fire with their keystone cards;
+    - a handful of relics, including the director's burn-explosion example.
+  - **Not in BD1:** new art, audio, the passive tree.
+  - **qa:** adds the three measurable checks (removal pain, run fingerprint spread, archetype parity) as sim reports, informational at first and gating once tuned.
+  - **Close:** "Needs your eyes": build the same class and element twice with different plans; do the two runs feel different, and does removing a keystone card hurt?
+
+- [ ] **3d, loadouts (runs last in the 2026-11-02 order, after BD1)**
+  - **Goal:** from the second run on, you can build a starting deck, save it as a loadout and start runs with it. GDD §9 ("Starting decks and loadouts [DECIDED]", "Loadouts [DIRECTOR DECISION, 2026-11-02]"), §8 (passives linked to loadouts, free respec), §4 (deck rules).
+  - **Changes from the director, 2026-11-02 (they override the items below where they conflict):**
+    - **A. Slots:** at least **5 loadout slots per class** (data; replaces "3 save slots"). The player names each loadout (free text). Only Fire exists, so the element isn't enforced.
+    - **B. Availability (D23 default):** each card gets an `availability` field in data: `starter`, `reward` or `locked` (the unlock condition is [OPEN]; `locked` cards carry a condition text or "TBD"). Validated. The editor shows a badge on each card ("Starter", "Reward", "Locked: <condition or TBD>"). **Today every existing card is tagged `starter`** (see D23 for why); BD1+ content decides per card.
+    - **C. Plan list:** a loadout may hold reward-only and locked cards as a **plan** next to its starting deck. Reward screens highlight offered cards on the current loadout's plan ("On your plan"). The starting deck holds only `starter` cards and obeys the deck rules.
+    - **D. Passive hook:** each loadout reserves an empty, versioned `passive_allocation` field. Don't build the tree; nothing else to build for respec.
+    - **E. Coupling:** loadout code stays on the deck APIs only, so BD1's tags and relics slot in without rework.
+    - **F. Gates:** "sim hashes unchanged" means H1's re-baselined hashes. Tag `playtest-YYYY-MM-DD-3d` (replaces the stale 2026-10-29 name).
   - **Acceptance:**
     1. **Profile:** a small persisted profile (`user://profile.json`, versioned, validated) counts finished runs (won or lost). Run 1 starts straight away with the preset (today's behaviour). The path is injectable so tests never touch the real user folder.
     2. **Start screen (from run 2):** before a run, a screen offers: Start with the preset; start with a saved loadout; edit or create a loadout. The last-used choice is preselected, so one Enter starts a run. Try again and New run go to this screen from run 2 on.
@@ -663,9 +742,9 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
     - Every card in the character's pools is available. Unlock rules are [OPEN] and come with meta-progression.
     - At most 2 copies per card.
     - Deck size 15-20.
-    - 3 save slots.
+    - ~~3 save slots~~ 5 per class (director, 2026-11-02).
     - A finished run counts whether it was won or lost.
-  - **Owner sequence:** gameplay-dev (profile, storage, rules, placeholder screens) -> ux-designer (start screen and editor) -> qa -> playtester -> tech-writer -> close, tag `playtest-2026-10-29-3d`. **This closes Milestone 3** except the out-of-scope items below.
+  - **Owner sequence:** gameplay-dev (profile, storage, rules, placeholder screens) -> ux-designer (start screen and editor) -> qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-3d`. **This closes Milestone 3** except the out-of-scope items below.
 - Later in M3 or after: shops and drops (GDD §14 item 1, [OPEN], not started); branching routes.
 
 ## Milestone 4 — Second class/element, subclasses, passive tree prototype, balance sim

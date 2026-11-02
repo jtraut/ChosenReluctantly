@@ -1,16 +1,16 @@
 # Director open items
 
-Last updated: 2026-10-30
-**Status: 2 waiting on a decision (D19, D20; neither blocks). 5 new things to look at when you play (items 25-29), plus item 22 once loadouts exist.** Done: C1, Polish 1, 3a, 3b, 3c (the boss), A1 (armor), T-decks, W1a (a playable Fire Wizard), **PL2** (frame colours), **F1** (your checklist answers) and **P-dodge** (dodge charges, Recovery, boss stagger; tag `playtest-2026-10-30-P-dodge`). Next: **W1b** (Wizard cards and tuning, including the boss cliff), then **3d** (loadouts).
+Last updated: 2026-11-02
+**Status: 4 waiting on a decision (D19, D20, D21, D23; none blocks). 5 things to look at when you play (items 25-29), plus items 22 and 30-35 once their slices land.** Done: C1, Polish 1, 3a, 3b, 3c (the boss), A1 (armor), T-decks, W1a (a playable Fire Wizard), **PL2** (frame colours), **F1** (your checklist answers) and **P-dodge** (dodge charges, Recovery, boss stagger; tag `playtest-2026-10-30-P-dodge`). **W1b** (Wizard cards and tuning) is built, qa-passed and playtested; its docs pass and close are next. Then, in your 2026-11-02 order: **K1** (key labels) -> **H1** (harder enemies) -> **BD0** (build-depth design doc) -> **PL3** (polish and housekeeping) -> **BD1** (first build-depth engine slice) -> **3d** (loadouts).
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
 ## How to playtest
 
 - **Play the latest known-good build:** `git checkout <tag>` (the tag is named in "While you were away" below), play, then `git checkout main` when you're done. If there's no tag yet, `main` runs too.
-- **Normal run:** `godot --path .` (or open `project.godot` and press Play). This starts an 8-room run. Useful extras: `godot --path . -- --run-seed=5` (replay a seed), `-- --run-room=8` (jump to the boss room). Test scenarios give you 9999 HP and the old endless arena.
-- **Preset test decks (from T-decks):** `godot --path . -- --list-decks` shows them. Fight the boss with one: `godot --path . -- --deck=fire-heavy-rogue --full-deck --run-room=8`, or swap in `physical-rogue` or `mixed-rogue`. Drop `--full-deck` to use the preset's 15-card starter, The elite room is somewhere in rooms 3-6 depending on the seed: fix the seed with `--run-seed=1` and check the room indicator to find it. A preset lasts the whole launch, including Try again. To add your own, copy a file in `data/debug_decks/` and rename it.
-- **Keys:** WASD move · mouse aims · left click = light attack (it also fires on its own) · right click = heavy attack · Space = dodge · 1-5 = cast the card in that slot · Ctrl+1-5 = dead-card swap (throw away that slot's card and draw the next one, with a short cooldown) · Esc = pause and settings · F3 = debug overlay.
+- **Normal run:** `godot --path .` (or open `project.godot` and press Play). This starts a 10-room run. Useful extras: `godot --path . -- --run-seed=5` (replay a seed), `-- --run-room=10` (jump to the boss room), `-- --class=wizard` (skip the class pick). Test scenarios give you 9999 HP and the old endless arena.
+- **Preset test decks (from T-decks):** `godot --path . -- --list-decks` shows them. Fight the boss with one: `godot --path . -- --deck=fire-heavy-rogue --full-deck --run-room=10`, or swap in `physical-rogue`, `mixed-rogue`, `fire-heavy-wizard`, `mixed-wizard` or `arcane-heavy-wizard`. Drop `--full-deck` to use the preset's 15-card starter, The elite room is somewhere in rooms 3-6 depending on the seed: fix the seed with `--run-seed=1` and check the room indicator to find it. A preset lasts the whole launch, including Try again. To add your own, copy a file in `data/debug_decks/` and rename it.
+- **Keys (your 2026-11-01 bindings):** WASD move · mouse aims · left click = light attack (it also fires on its own) · right click = heavy attack · Space = dodge · **Q, E, 1, 2, 3** = cast the card in slots 1-5 (Attack, Area, Utility, Movement, Recovery) · **Shift + the same key** = dead-card swap (throw away that slot's card and draw the next one, with a short cooldown) · Esc = pause and settings · F3 = debug overlay. **Known gap until K1:** the card strip still shows 1-5. K1 fixes the labels and moves Recovery to **R**.
 - **Hold-to-preview (the default):** hold a card key to see its hit area in your element colour, aim with the mouse, and let go to cast.
 - **Settings:** press Esc. The pause screen has the "Cast cards on: Release (preview) / Press" toggle. It saves at once.
 - **Test scenarios** (9999 HP, for looking at one thing): `godot --path . -- --scenario=<name>` with `waves`, `attacks`, `card_cast`, `c1_status`, `c1_placed`, `c1_moves`, `cast_preview`, `targeted_aoe`, `stun_crowd`, `hp_bars`, `bar_modes`, `game_over`, `settings_open`, and others in `data/scenarios.json`.
@@ -74,16 +74,35 @@ _Updated at every slice close._
 - **What to try first:** checklist items 12 (every new card) and 13 (solid enemies): push into a crowd for a minute, and see whether being blocked feels fair and whether the escape cards feel good.
 - **Playtester's headline (scripted, no hands):** Fireball and the backward leap are the standouts. Fire Wall is weak against one enemy. Healing may be too strong for 30 HP (D13). In big crowds you can lose sight of yourself and of enemy shots.
 
-## Vision check (answer after playing)
+## Vision check, round 2 (answer after playing BD1)
+
+Your round-1 answers are under "Recently resolved". Best asked after BD1, when the first synergies and relics exist.
 
 1. Does moment-to-moment combat feel good?
 2. Do the five card slots create interesting decisions in real time, or do you mostly ignore them?
 3. Does the same deck feel different from fight to fight, and from run to run? Which slots feel samey?
-4. Do you use the dead-card swap (Ctrl+1-5), and does it feel good or like a chore?
+4. Do you use the dead-card swap (Shift + the slot's key), and does it feel good or like a chore?
 5. Which cards are great, which are dull, and what is missing?
-6. Is the game fun enough to keep building on, or does something need to change first? (The run-loop work is kept loosely coupled to specific cards, so a card-system change won't strand it.)
+6. Is the game fun enough to keep building on, or does something need to change first?
+7. Could you win with a deck you built on purpose in a different style from last run?
 
 ## Your feedback in progress
+
+- **2026-11-02: Difficulty. "The Wizard never seems to take damage. Slightly raise all enemy movement speed, at least until Wizard test runs take some damage. If speed alone is not enough, follow up with attack speed."** You also said the pace could be a bit faster. (Your note says "face"; I read it as "pace" and logged that reading.) **Recorded** in GDD §9 as your decision, as the one exception to "no retune before the tiers". **Scheduled as H1**, right after K1: enemy speed first (+10/20/25% tested), attack rate only if needed, behind shared data knobs the future tiers reuse.
+
+- **2026-11-02: 10/31 Wizard playtest. "I beat the 10-room run as the Wizard without using a single card (no healing either), only light attacks, heavy attacks and dodging. The run took 5:25. This should not be possible, except later, once deep build mechanics exist that let a player build specifically into maximizing light and heavy attack damage."** **Recorded** in GDD §3 and in `docs/playtests/2026-10-31-director-wizard-no-cards.md`. **H1** targets it: a no-cards run should clear at most about 25% of the time on either class. BD0 sketches 5 relics for a deliberate light/heavy build. It supersedes my old call 13 below.
+
+- **2026-11-02: 11/1, Luke's playtest. "His only suggestion so far was friendlier keybindings, using Q and E. I already changed data/input_bindings.json (commit 24530e4). The UI still shows 1-5."** Also: Recovery on R rather than 3; Movement may move to F later. **Recorded** in GDD §3 (the UI shows whatever the bindings say; no hardcoded keys) and in `docs/playtests/2026-11-01-luke-keybinds.md`. **Scheduled as K1**, the next slice after W1b closes. "How to playtest" above already lists your new keys.
+
+- **2026-11-02: Build depth (your main concern). "Card selection does not make much of a difference yet. There are not enough themes or unique features to build into. I feel behind on the theorycrafting and deep build customization pillar."** **Recorded** in GDD §1 (pillar 1) and a new GDD §4a "Build depth and synergy" (your goals as decisions, the mechanics as proposals). **Scheduled:** BD0 (my design doc, `docs/BUILD_DEPTH.md`) after H1, then BD1 (the engine and first archetypes) after PL3. Your inputs are noted in §4a: the burst-around-you AoE cards feel strongest, and the Wall felt weak before its 1.5x boost (size kept).
+
+- **2026-11-02: "Loadouts screen before a run."** At least 5 named loadouts per class, flags on cards only available later, an empty passive-tree field per loadout. **Recorded** in GDD §9 and the 3d brief in ROADMAP. **Scheduled** last in your order, after BD1. My reading of the card flags is D23 below.
+
+- **2026-11-02: "Relics/enchants found during a run, reset between runs."** Like Slay the Spire's relics and The Last Flame; your example: "Burns now explode in an AoE when they expire and/or on death." Leaning into them should give deep synergies or specialisations. **Recorded** in GDD §4a. **Designed in BD0**, first ones built in BD1 (your burn explosion included).
+
+- **2026-11-02: "Respec should be cheap, preferably free."** It's available between runs, so a player who went deep can switch completely with no penalty, which makes loadouts the natural way to hold several builds. **Recorded** in GDD §8, with passive choices linked to loadouts. Nothing to build until the passive tree exists; 3d reserves the field.
+
+- **2026-11-02: Dead-card swap "feels pointless right now because nothing makes a card worth saving."** **Recorded** in GDD §4: no change now; BD0 designs synergies that make a card worth saving.
 
 - **2026-10-29: "No scrolling by default on the round-end reward selection."** **Fixed** in `playtest-2026-10-29-3c`. Cause: the panel's shrink-to-fit was being undone by its container. Offers now fit with no scrollbar from 1024x600 up; only the rest-room removal list can scroll.
 
@@ -110,7 +129,16 @@ _Updated at every slice close._
 
 ## Needs your decision
 
-Neither blocks work. Until you answer, I use my default.
+None blocks work. Until you answer, I use my default. **D22, D24 and D25 are reserved** for BD0's questions (at most 3); D23 is taken by the loadout card flags below.
+
+- **D21: Run order after W1b.** You set K1 -> H1 -> BD0 -> PL3 -> BD1 -> 3d. I agree with it. The one thing I'd move: **PL3's housekeeping** (the untracked `.uid` files, `docs/.gdignore` and the one-time line-ending fix with a `.gitattributes`). It takes minutes, and until it's done every slice's commits risk sweeping in stray files and showing whole-file diffs on docs that mix line endings. BD0 alone will rewrite large parts of the docs. The polish items in PL3 stay where you put them.
+  - **A (my default, your order):** housekeeping stays in PL3, after BD0.
+  - **B:** do only the housekeeping right after W1b closes, before K1. The rest of PL3 is unchanged.
+
+- **D23: What "flag cards that are only available later" means for loadouts.** You suggested: each card gets an availability (starter, reward, or locked until a condition), the editor shows a badge, a loadout can list reward and locked cards as a "plan", reward screens mark "On your plan", and the starting deck holds only starter cards. I'm building that, with **one catch I found in the data:** today each class's starting deck is exactly 15 cards, 3 per slot, and every slot needs 3 different cards. If only those 15 counted as "starter", the editor could only add copies, so the loadout screen would have almost nothing to customise.
+  - **A (my default, the simpler option):** "starter" means "allowed in a loadout's starting deck", not "in the class's default deck". **Every card that exists today is tagged starter**, as the old 3d plan had it. "Reward" and "Locked" are for new cards from BD1 on (for example a keystone you must find in a run). Badges, the plan list and "On your plan" are all built, and start showing once such cards exist.
+  - **B:** today's 15 default cards per class are starter and the rest are reward-only. Loadouts can then only vary copies until more starter cards are added.
+  - **C:** you meant something else; tell me and I'll take the simpler reading.
 
 - **D20: Wizard HP: squishier, or safe from a one-shot?** You asked for a squishier Wizard. The boss's "Fan of regrets" volley does 25 damage if all 5 pellets hit, so at 25 HP or less one full volley from full health can kill it.
   - **What the tuning did:** it made the Wizard harder through about 40% less damage (bolt 2.4 -> 1.5, blast 8.5 -> 5.5, its cards slightly weaker), 2 dodge charges and a 14 s Recovery.
@@ -140,7 +168,7 @@ Each entry says what I chose and the one-line way to change it.
 10. **Elite and boss HP cut to keep fight lengths (A1).** Elite HP x2.5 -> x2.0; boss 280 -> 195 HP (the boss fight stays near 1 minute in the bot sim). **Change:** `data/run.json` elite `hp_multiplier`, `data/bosses.json` `max_health`.
 11. **Boss-tier resistance floor 25% -> 35% (A1),** to match GDD §7's boss value and the armor. **Change:** `data/run.json` `tiers.boss.resistance_floor`.
 12. **Damage over time (A1):** Bleed goes through armor, Burn through resistance, and heals are never reduced. **Change:** ask; it's a rule in the damage code.
-13. **A build with no damage cards (only light and heavy attacks) stays slow against the boss (about 3x).** GDD §3 says cards beat basic attacks, so I didn't add a safety net. **Change:** ask for a basic-attack buff or a boss tweak.
+13. ~~**A build with no damage cards (only light and heavy attacks) stays slow against the boss (about 3x).**~~ **Superseded 2026-11-02:** your no-card Wizard win on 10/31 shows slow isn't the same as losing. H1 makes no-card runs unsafe; BD0 designs the deliberate basic-attack build.
 14. **Wizard Recovery 14 s vs the Rogue's 12 s** (your "slightly longer"; built in P-dodge). **Change:** the Wizard's Recovery override in data.
 15. **Run order changed: F1 and P-dodge now come before W1b,** so the Wizard is tuned once, after everything that changes its risk (10 rooms, charges, Recovery). **Change:** say "W1b first".
 
@@ -159,7 +187,15 @@ _Items 1-21, 23 and 24 are answered (see "Your checklist answers" below)._
 28. **Dodge pips.** The charges show as small pips under the attack meters, top-left. Look for: can you keep track of your charges mid-fight, or do you want a small "charge back" flash near your character too?
 29. **Boss stagger.** Look for: the reel plus "STAGGERED / Hit it now" feels like a real opening, and the stagger-then-roar pause (2 s) isn't too long.
 
-22. **Loadouts (after 3d, not built yet).** This is about a feature still to come: from your second run on, you'll be able to build your own starting deck from your cards, save it, and pick it before a run. (The "Pick your hero" screen you saw is the class pick from W1a.) Look for, once it lands: it's easy to understand.
+22. **Loadouts (after 3d, not built yet).** This is about a feature still to come: from your second run on, you'll be able to build your own starting deck from your cards, save it under a name (5 per class), and pick it before a run. (The "Pick your hero" screen you saw is the class pick from W1a.) Look for, once it lands: it's easy to understand.
+
+**I. Coming in your 2026-11-02 order (not built yet; I'll say when each lands)**
+30. **K1 key labels.** Look for: the labels on the card strip match the keys you press (Q, E, 1, 2, R).
+31. **K1 casting on the new keys.** Look for: you can still hold to preview and cast on release with Q, E, 1, 2, R.
+32. **K1 swap.** Look for: Shift+key still swaps the card without casting it.
+33. **H1 Wizard.** Play the Wizard again, once with cards and once without. Does it bite now?
+34. **H1 no cards.** Run with no cards at all. Do you now lose before the boss?
+35. **BD1 builds.** Build the same class and element twice with different plans. Do the two runs feel different? Does removing a keystone card hurt?
 
 ## Your checklist answers (2026-10-30)
 
@@ -201,6 +237,21 @@ _Items 1-21, 23 and 24 are answered (see "Your checklist answers" below)._
 - **Temporary:** the first-run deck holds every Fire Rogue card so you can try them all. Unlock rules come with the run loop.
 
 ## Recently resolved
+
+### Vision check, round 1 (answered 2026-11-02)
+
+Your answers come from your 10/31-11/2 notes; the right column says which note answers each.
+
+| # | Question | Your answer | Where it went |
+|---|---|---|---|
+| 1 | Does moment-to-moment combat feel good? | Not answered directly. Closest note: the pace could be a bit faster, and the Wizard never seems to take damage. | H1 (pressure pass). Asked again in round 2. |
+| 2 | Do the five slots create interesting decisions in real time? | No: "The slots do not create synergy or real decisions yet. I can spam each slot blindly and get the same kind of outcome." | GDD §4a; BD0, BD1. |
+| 3 | Does the same deck feel different fight to fight and run to run? | No: "Decks lack variability. Every run of the same class and element feels the same." Also: "I can add or remove almost any card without suffering and still win easily." | GDD §4a goals; BD0's removal-pain and fingerprint checks. |
+| 4 | Do you use the dead-card swap? | It "feels pointless right now because nothing makes a card worth saving." Don't change it yet. | GDD §4; BD0 slot decisions. |
+| 5 | Which cards are great, which dull, what's missing? | The AoE cards that burst around the character feel strongest. Wall of Mild Fire felt underwhelming before the 1.5x boost. Missing: themes and unique features to build into; relics/enchants. | GDD §4a balance inputs and relics; BD0. |
+| 6 | Fun enough to keep building on, or change something first? | Keep building, but build depth comes first: "cards and decks do not yet change how a run plays", settled "before more screens, art or staging". | Run order K1 -> H1 -> BD0 -> PL3 -> BD1 -> 3d (D21). |
+
+### Decisions
 
 | ID | Question | Your answer | Date |
 |---|---|---|---|

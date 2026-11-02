@@ -18,9 +18,12 @@ Recorded by game-lead in 0e2e60c and fe1bf72 from the director's notes of 2026-1
 
 ## 2026-11-01
 
+### Fixed
+- The three failing assertions in `tests/unit/cast_input_6a_test.gd` (see the known side effect below) are fixed. Test-only change by qa: the tests now read slot keys from the InputMap instead of hardcoding `KEY_1`/`KEY_2`, three tests were renamed, and `tests/unit/slice6_qa_test.gd` was hardened the same way. The suite is green again at 1156 of 1156 (98 suites) and arena hash 2484586390 is unchanged. (0119999)
+
 ### Changed
 - **[Director decision] Card slot keys are Q, E, 1, 2, 3** (slots 1 to 5 in order), and the dead-card swap is Shift plus the same key. Old: 1-5 and Shift+1-5. The director changed `data/input_bindings.json` himself after Luke's playtest, whose only suggestion was friendlier keys (`docs/playtests/2026-11-01-luke-keybinds.md`). The HUD slot hints and the "Slot N" text on reward screens still show 1-5 until K1. (24530e4)
-- **Known side effect:** the keybind change broke three assertions in `tests/unit/cast_input_6a_test.gd` (two test cases), which send `KEY_1` and `KEY_2` and expect slots 1 and 2. The full suite is 1156 cases with 3 failures at fe1bf72 (it was green at qa's W1b review). Found in the W1b docs pass; not yet fixed.
+- **Known side effect:** the keybind change broke three assertions in `tests/unit/cast_input_6a_test.gd` (two test cases), which send `KEY_1` and `KEY_2` and expect slots 1 and 2. The full suite is 1156 cases with 3 failures at fe1bf72 (it was green at qa's W1b review). Found in the W1b docs pass. Fixed in 0119999; the suite was red between 24530e4 and 0119999.
 
 ## 2026-10-30 (Slice W1b: Wizard content and balance; Slice P-dodge: dodge charges, boss stagger, dodge pips; Slice F1: director feedback batch; Slice PL2: small polish; Slice W1a: a playable Fire Wizard; decisions for F1, P-dodge and W1b)
 

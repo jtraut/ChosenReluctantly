@@ -14,7 +14,7 @@ Last updated: 2026-11-02. **Run order (director, 2026-11-02):** W1b and K1 are c
 - The repo runs. Suite 1190/1190 at 8752a1c (K1). Arena hash baseline 2484586390 (30 s seed 1; 90 s 3255493562). **H1 will change the sim hashes; re-baseline and record them here at its close.**
 
 ## In progress
-- Nothing mid-build.
+- **H1: gameplay-dev building (started 2026-11-02).** Knobs + bot policy checks + lever sweep. If cut off, check `git log` for H1 commits and resume gameplay-dev from the H1 brief.
 - Untracked on disk, not ours to commit: `tools/ux_capture.gd.uid` (ux) and `docs/playtests/img/*.import` (Godot imports; PL3 adds `docs/.gdignore`). Don't sweep them into other commits.
 
 ## Exact next step

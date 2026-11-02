@@ -23,9 +23,9 @@ Last updated: 2026-11-02. **Run order (director, 2026-11-02):** W1b and K1 are c
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).
 
-**D-number reservation:** D21 = run order, D23 = loadout card flags (director-assigned). **D22, D24, D25 are reserved for BD0's questions** (at most 3). Next free after that: D26.
+**D-number reservation:** D21 = run order, D23 = loadout card flags (director-assigned). **D22, D24, D25 are reserved for BD0's questions** (at most 3). D26 = menu key text (K1). Next free: D27.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md` (D19, D20, D21, D23 waiting; none blocks).
+All director-facing items are in `docs/OPEN_ITEMS.md` (D19, D20, D21, D23, D26 waiting; none blocks).

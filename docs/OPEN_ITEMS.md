@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-11-02
-**Status: 4 waiting on a decision (D19, D20, D21, D23; none blocks). 10 things to look at when you play (items 25-32, 36-37), plus items 22 and 33-35 once their slices land.** Done: C1, Polish 1, 3a, 3b, 3c (the boss), A1 (armor), T-decks, W1a (a playable Fire Wizard), PL2 (frame colours), F1 (your checklist answers), P-dodge (dodge charges, Recovery, boss stagger), W1b (Wizard cards and tuning) and **K1** (key labels follow your bindings; Recovery on R; tag `playtest-2026-11-02-K1`). Next is H1. Then, in your 2026-11-02 order: ~~K1~~ -> **H1** (harder enemies) -> **BD0** (build-depth design doc) -> **PL3** (polish and housekeeping) -> **BD1** (first build-depth engine slice) -> **3d** (loadouts).
+**Status: 5 waiting on a decision (D19, D20, D21, D23, D26; none blocks). 10 things to look at when you play (items 25-32, 36-37), plus items 22 and 33-35 once their slices land.** Done: C1, Polish 1, 3a, 3b, 3c (the boss), A1 (armor), T-decks, W1a (a playable Fire Wizard), PL2 (frame colours), F1 (your checklist answers), P-dodge (dodge charges, Recovery, boss stagger), W1b (Wizard cards and tuning) and **K1** (key labels follow your bindings; Recovery on R; tag `playtest-2026-11-02-K1`). Next is H1. Then, in your 2026-11-02 order: ~~K1~~ -> **H1** (harder enemies) -> **BD0** (build-depth design doc) -> **PL3** (polish and housekeeping) -> **BD1** (first build-depth engine slice) -> **3d** (loadouts).
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
@@ -105,7 +105,6 @@ Your round-1 answers are under "Recently resolved". Best asked after BD1, when t
 
 - **2026-11-02: 10/31 Wizard playtest. "I beat the 10-room run as the Wizard without using a single card (no healing either), only light attacks, heavy attacks and dodging. The run took 5:25. This should not be possible, except later, once deep build mechanics exist that let a player build specifically into maximizing light and heavy attack damage."** **Recorded** in GDD §3 and in `docs/playtests/2026-10-31-director-wizard-no-cards.md`. **H1** targets it: a no-cards run should clear at most about 25% of the time on either class. BD0 sketches 5 relics for a deliberate light/heavy build. It supersedes my old call 13 below.
 
-- **2026-11-02: 11/1, Luke's playtest. "His only suggestion so far was friendlier keybindings, using Q and E. I already changed data/input_bindings.json (commit 24530e4). The UI still shows 1-5."** Also: Recovery on R rather than 3; Movement may move to F later. **Recorded** in GDD §3 (the UI shows whatever the bindings say; no hardcoded keys) and in `docs/playtests/2026-11-01-luke-keybinds.md`. **Scheduled as K1**, the next slice after W1b closes. "How to playtest" above already lists your new keys.
 
 - **2026-11-02: Build depth (your main concern). "Card selection does not make much of a difference yet. There are not enough themes or unique features to build into. I feel behind on the theorycrafting and deep build customization pillar."** **Recorded** in GDD §1 (pillar 1) and a new GDD §4a "Build depth and synergy" (your goals as decisions, the mechanics as proposals). **Scheduled:** BD0 (my design doc, `docs/BUILD_DEPTH.md`) after H1, then BD1 (the engine and first archetypes) after PL3. Your inputs are noted in §4a: the burst-around-you AoE cards feel strongest, and the Wall felt weak before its 1.5x boost (size kept).
 
@@ -146,7 +145,16 @@ None blocks work. Until you answer, I use my default. **D22, D24 and D25 are res
 
 - **D21: Run order after W1b.** You set K1 -> H1 -> BD0 -> PL3 -> BD1 -> 3d. I agree with it. The one thing I'd move: **PL3's housekeeping** (the untracked `.uid` files, `docs/.gdignore` and the one-time line-ending fix with a `.gitattributes`). It takes minutes, and until it's done every slice's commits risk sweeping in stray files and showing whole-file diffs on docs that mix line endings. BD0 alone will rewrite large parts of the docs. The polish items in PL3 stay where you put them.
   - **A (my default, your order):** housekeeping stays in PL3, after BD0.
-  - **B:** do only the housekeeping right after W1b closes, before K1. The rest of PL3 is unchanged.
+  - **B:** do only the housekeeping now, before H1 (K1 is already done). The rest of PL3 is unchanged.
+
+- **D26: Can menu keys stay written out on screen? (new, from K1)** Your rule (GDD §3) says no UI text may hardcode a key. K1 made every *game* key (cards, attacks, dodge, pause) come from `data/input_bindings.json`. Three menu hints still name keys directly, because the menus read those keys in code rather than from the bindings file:
+  - Game over: "Enter or Space".
+  - Class pick: "1 / 2 or the arrow keys".
+  - Reward and remove screens: "Keys 1-4 highlight" and "Keys 1-5 jump to a column".
+
+  Since those keys are fixed in code, the screen and the keys can't disagree today. They just aren't rebindable.
+  - **A (my default):** menu navigation keys that aren't in `input_bindings.json` are exempt. Proposed GDD §3 addition: "Menu navigation keys (Enter, arrows, number keys to pick an option) are fixed and may be named in UI text. Every gameplay key comes from the bindings." The scan test already allows exactly these three.
+  - **B:** move menu navigation into the bindings file too, so those hints come from it like everything else. That's a small extra job, which I'd fold into PL3.
 
 - **D23: What "flag cards that are only available later" means for loadouts.** You suggested: each card gets an availability (starter, reward, or locked until a condition), the editor shows a badge, a loadout can list reward and locked cards as a "plan", reward screens mark "On your plan", and the starting deck holds only starter cards. I'm building that, with **one catch I found in the data:** today each class's starting deck is exactly 15 cards, 3 per slot, and every slot needs 3 different cards. If only the default decks' cards counted as "starter", each class could add just 3 more cards (the other class's Fire and Neutral starters, none for Utility) plus copies, so the loadout screen would have almost nothing to customise.
   - **A (my default, the simpler option):** "starter" means "allowed in a loadout's starting deck", not "in the class's default deck". **Every card that exists today is tagged starter**, as the old 3d plan had it. "Reward" and "Locked" are for new cards from BD1 on (for example a keystone you must find in a run). Badges, the plan list and "On your plan" are all built, and start showing once such cards exist.
@@ -184,6 +192,7 @@ Each entry says what I chose and the one-line way to change it.
 13. ~~**A build with no damage cards (only light and heavy attacks) stays slow against the boss (about 3x).**~~ **Superseded 2026-11-02:** your no-card Wizard win on 10/31 shows slow isn't the same as losing. H1 makes no-card runs unsafe; BD0 designs the deliberate basic-attack build.
 14. **Wizard Recovery 14 s vs the Rogue's 12 s** (your "slightly longer"; built in P-dodge). **Change:** the Wizard's Recovery override in data.
 15. **Run order changed: F1 and P-dodge now come before W1b,** so the Wizard is tuned once, after everything that changes its risk (10 rooms, charges, Recovery). **Change:** say "W1b first".
+16. **Menu number keys pick by position (K1).** On reward and remove screens, 1 is the first option or column, even where a card's own key is also a number (Utility is on 1, but it's the third column). The two clashes the playtester saw (option badge "1" next to a "Key 1" chip, and the "Utility (1)" header) get a visual fix in PL3. **Change:** ask for menu numbers to follow the card keys, or to drop the number keys on those screens.
 
 ## Needs your eyes: play-session checklist (about 20-30 minutes)
 
@@ -256,6 +265,8 @@ _Items 1-21, 23 and 24 are answered (see "Your checklist answers" below)._
 - **Temporary:** the first-run deck holds every Fire Rogue card so you can try them all. Unlock rules come with the run loop.
 
 ## Recently resolved
+
+- **2026-11-02: 11/1, Luke's playtest. "His only suggestion so far was friendlier keybindings, using Q and E. I already changed data/input_bindings.json (commit 24530e4). The UI still shows 1-5."** Also: Recovery on R rather than 3; Movement may move to F later. **Recorded** in GDD §3 (the UI shows whatever the bindings say; no hardcoded keys) and in `docs/playtests/2026-11-01-luke-keybinds.md`. **Built in K1** (tag `playtest-2026-11-02-K1`): the screen shows Q E 1 2 R, and Recovery is on R.
 
 ### Vision check, round 1 (answered 2026-11-02)
 

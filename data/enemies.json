@@ -3,6 +3,10 @@
         "projectile_hit_radius": 0.3,
         "melee_half_angle_degrees": 60.0
     },
+    "pressure": {
+        "speed_scale": 1.0,
+        "attack_rate_scale": 1.0
+    },
     "separation": {
         "radius": 2.5,
         "strength": 1.5,

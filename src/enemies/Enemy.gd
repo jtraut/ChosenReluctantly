@@ -120,13 +120,13 @@ func _apply_stats(stats: Dictionary) -> void:
 	if stats.is_empty():
 		return
 	health.base_armor = float(stats.get("armor", 0.0))
-	move_speed = float(stats["move_speed"])
+	move_speed = float(stats["move_speed"]) * EnemyConfig.speed_scale()
 	is_ranged = bool(stats["is_ranged"])
 	attack_range = float(stats["attack_range"])
 	preferred_range = float(stats["preferred_range"])
 	attack_damage = float(stats["attack_damage"])
 	attack_damage_type = String(stats["attack_damage_type"])
-	attack_cooldown = float(stats["attack_cooldown"])
+	attack_cooldown = float(stats["attack_cooldown"]) / EnemyConfig.attack_rate_scale()
 	telegraph_duration = float(stats["telegraph_duration"])
 	projectile_speed = float(stats["projectile_speed"])
 	projectile_max_range = float(stats["projectile_max_range"])

@@ -12,6 +12,7 @@ const DEFAULT_RANK := "normal"
 const DEFAULTS: Dictionary = {
 	"projectile_hit_radius": 0.3,
 	"melee_half_angle_degrees": 60.0,
+	"pressure": {"speed_scale": 1.0, "attack_rate_scale": 1.0},
 	"separation": {"radius": 1.8, "strength": 0.8, "readable_spacing": 1.2, "near_player_radius": 4.0},
 }
 
@@ -48,6 +49,7 @@ static func validate(config: Dictionary) -> Array[String]:
 	var errors: Array[String] = []
 	errors.append_array(validate_enemies(config.get("enemies")))
 	errors.append_array(validate_separation(config.get("separation")))
+	errors.append_array(validate_pressure(config.get("pressure")))
 	var shapes: Variant = config.get("attack_shapes")
 	if typeof(shapes) != TYPE_DICTIONARY:
 		errors.append("'attack_shapes' must be an object")
@@ -55,6 +57,29 @@ static func validate(config: Dictionary) -> Array[String]:
 	var dict: Dictionary = shapes
 	_check_number(dict, "projectile_hit_radius", 0.0, 5.0, true, errors)
 	_check_number(dict, "melee_half_angle_degrees", 0.0, 180.0, true, errors)
+	return errors
+
+
+## Pressure knobs (H1; the future difficulty tiers reuse them): `speed_scale` multiplies every normal and elite
+## enemy's move_speed, `attack_rate_scale` divides every one's attack_cooldown (2.0 = attacks twice as often).
+## 1.0 is the unscaled base game. Neither touches the boss, whose speeds and gaps live in data/bosses.json phases.
+const PRESSURE_RANGE: Array[float] = [0.25, 4.0]
+
+static func validate_pressure(block: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(block) != TYPE_DICTIONARY:
+		errors.append("'pressure' must be an object")
+		return errors
+	var dict: Dictionary = block
+	for key: String in ["speed_scale", "attack_rate_scale"]:
+		var value: Variant = dict.get(key)
+		if typeof(value) != TYPE_INT and typeof(value) != TYPE_FLOAT:
+			errors.append("pressure: '%s' must be a number" % key)
+		elif is_nan(float(value)) or float(value) < PRESSURE_RANGE[0] or float(value) > PRESSURE_RANGE[1]:
+			errors.append("pressure: '%s' must be between %s and %s" % [key, PRESSURE_RANGE[0], PRESSURE_RANGE[1]])
+	for key: String in dict.keys():
+		if key != "speed_scale" and key != "attack_rate_scale":
+			errors.append("pressure: unknown key '%s'" % key)
 	return errors
 
 
@@ -182,6 +207,7 @@ static func get_config() -> Dictionary:
 		push_error("EnemyConfig: invalid %s: %s" % [PATH, "; ".join(errors)])
 		return _cache
 	_cache.merge(parsed["attack_shapes"], true)
+	_cache["pressure"] = (parsed["pressure"] as Dictionary).duplicate()
 	_cache["separation"] = (parsed["separation"] as Dictionary).duplicate()
 	for enemy_id: String in (parsed["enemies"] as Dictionary).keys():
 		_ranks[enemy_id] = String(parsed["enemies"][enemy_id]["rank"])
@@ -248,3 +274,13 @@ static func readable_spacing() -> float:
 ## How close to the player counts as "near the player" for that metric.
 static func near_player_radius() -> float:
 	return float((get_config()["separation"] as Dictionary)["near_player_radius"])
+
+
+## Shared enemy move-speed multiplier (data/enemies.json "pressure.speed_scale"; 1.0 = base game).
+static func speed_scale() -> float:
+	return float((get_config()["pressure"] as Dictionary)["speed_scale"])
+
+
+## Shared enemy attack-rate multiplier ("pressure.attack_rate_scale"): attack cooldowns are divided by it.
+static func attack_rate_scale() -> float:
+	return float((get_config()["pressure"] as Dictionary)["attack_rate_scale"])

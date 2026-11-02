@@ -27,3 +27,19 @@ func test_bad_data_is_rejected_with_a_message() -> void:
 	]
 	for bad in bad_cases:
 		assert_array(EnemyConfig.validate(bad)).override_failure_message("should reject %s" % str(bad)).is_not_empty()
+
+
+func test_pressure_knobs_validate() -> void:
+	assert_array(EnemyConfig.validate_pressure({"speed_scale": 1.0, "attack_rate_scale": 1.0})).is_empty()
+	assert_array(EnemyConfig.validate_pressure({"speed_scale": 1.25, "attack_rate_scale": 1})).is_empty()
+	var bad_cases: Array = [null, {}, {"speed_scale": 1.0}, {"speed_scale": 0.0, "attack_rate_scale": 1.0},
+		{"speed_scale": 1.0, "attack_rate_scale": 9.0}, {"speed_scale": "fast", "attack_rate_scale": 1.0},
+		{"speed_scale": 1.0, "attack_rate_scale": 1.0, "tier": 2}]
+	for bad: Variant in bad_cases:
+		assert_array(EnemyConfig.validate_pressure(bad)).override_failure_message("should reject %s" % str(bad)).is_not_empty()
+
+
+func test_pressure_knobs_are_read_from_data() -> void:
+	var parsed: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(EnemyConfig.PATH))
+	assert_float(EnemyConfig.speed_scale()).is_equal(float(parsed["pressure"]["speed_scale"]))
+	assert_float(EnemyConfig.attack_rate_scale()).is_equal(float(parsed["pressure"]["attack_rate_scale"]))

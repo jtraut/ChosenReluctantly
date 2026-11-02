@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-11-02
-**Status: 4 waiting on a decision (D19, D20, D21, D23; none blocks). 7 things to look at when you play (items 25-29, 36-37), plus items 22 and 30-35 once their slices land.** Done: C1, Polish 1, 3a, 3b, 3c (the boss), A1 (armor), T-decks, W1a (a playable Fire Wizard), PL2 (frame colours), F1 (your checklist answers), P-dodge (dodge charges, Recovery, boss stagger) and **W1b** (Wizard cards and tuning; tag `playtest-2026-11-02-W1b`). Next is K1. Then, in your 2026-11-02 order: **K1** (key labels) -> **H1** (harder enemies) -> **BD0** (build-depth design doc) -> **PL3** (polish and housekeeping) -> **BD1** (first build-depth engine slice) -> **3d** (loadouts).
+**Status: 4 waiting on a decision (D19, D20, D21, D23; none blocks). 10 things to look at when you play (items 25-32, 36-37), plus items 22 and 33-35 once their slices land.** Done: C1, Polish 1, 3a, 3b, 3c (the boss), A1 (armor), T-decks, W1a (a playable Fire Wizard), PL2 (frame colours), F1 (your checklist answers), P-dodge (dodge charges, Recovery, boss stagger), W1b (Wizard cards and tuning) and **K1** (key labels follow your bindings; Recovery on R; tag `playtest-2026-11-02-K1`). Next is H1. Then, in your 2026-11-02 order: ~~K1~~ -> **H1** (harder enemies) -> **BD0** (build-depth design doc) -> **PL3** (polish and housekeeping) -> **BD1** (first build-depth engine slice) -> **3d** (loadouts).
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
@@ -10,7 +10,7 @@ Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 - **Play the latest known-good build:** `git checkout <tag>` (the tag is named in "While you were away" below), play, then `git checkout main` when you're done. If there's no tag yet, `main` runs too.
 - **Normal run:** `godot --path .` (or open `project.godot` and press Play). This starts a 10-room run. Useful extras: `godot --path . -- --run-seed=5` (replay a seed), `-- --run-room=10` (jump to the boss room), `-- --class=wizard` (skip the class pick). Test scenarios give you 9999 HP and the old endless arena.
 - **Preset test decks (from T-decks):** `godot --path . -- --list-decks` shows them. Fight the boss with one: `godot --path . -- --deck=fire-heavy-rogue --full-deck --run-room=10`, or swap in `physical-rogue`, `mixed-rogue`, `fire-heavy-wizard`, `mixed-wizard` or `arcane-heavy-wizard`. Drop `--full-deck` to use the preset's 15-card starter, The elite room is somewhere in rooms 3-6 depending on the seed: fix the seed with `--run-seed=1` and check the room indicator to find it. A preset lasts the whole launch, including Try again. To add your own, copy a file in `data/debug_decks/` and rename it.
-- **Keys (your 2026-11-01 bindings):** WASD move · mouse aims · left click = light attack (it also fires on its own) · right click = heavy attack · Space = dodge · **Q, E, 1, 2, 3** = cast the card in slots 1-5 (Attack, Area, Utility, Movement, Recovery) · **Shift + the same key** = dead-card swap (throw away that slot's card and draw the next one, with a short cooldown) · Esc = pause and settings · F3 = debug overlay. **Known gap until K1:** the card strip still shows 1-5. K1 fixes the labels and moves Recovery to **R**.
+- **Keys (your bindings, Recovery on R since K1):** WASD move · mouse aims · left click = light attack (it also fires on its own) · right click = heavy attack · Space = dodge · **Q, E, 1, 2, R** = cast the card in Attack, Area, Utility, Movement, Recovery · **Shift + the same key** = dead-card swap (throw away that slot's card and draw the next one, with a short cooldown) · Esc = pause and settings · F3 = debug overlay. Every key label on screen comes from `data/input_bindings.json`, so if you change a key there the screen follows. A duplicate key is reported as an error at startup.
 - **Hold-to-preview (the default):** hold a card key to see its hit area in your element colour, aim with the mouse, and let go to cast.
 - **Settings:** press Esc. The pause screen has the "Cast cards on: Release (preview) / Press" toggle. It saves at once.
 - **Test scenarios** (9999 HP, for looking at one thing): `godot --path . -- --scenario=<name>` with `waves`, `attacks`, `card_cast`, `c1_status`, `c1_placed`, `c1_moves`, `cast_preview`, `targeted_aoe`, `stun_crowd`, `hp_bars`, `bar_modes`, `game_over`, `settings_open`, and others in `data/scenarios.json`.
@@ -19,7 +19,13 @@ Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
 _Updated at every slice close._
 
-- **Latest playtest tag:** `playtest-2026-11-02-W1b` (qa PASS, 1156/1156). Earlier tags: `playtest-2026-10-30-P-dodge`, `playtest-2026-10-30-F1`, `playtest-2026-10-30-PL2`, `playtest-2026-10-30-W1a`, `playtest-2026-10-29-T-decks`, `-A1`, `-3c`, `-3b`, `-3a`, `-C1`.
+- **Latest playtest tag:** `playtest-2026-11-02-K1` (qa PASS, 1190/1190). Earlier tags: `playtest-2026-11-02-W1b`, `playtest-2026-10-30-P-dodge`, `playtest-2026-10-30-F1`, `playtest-2026-10-30-PL2`, `playtest-2026-10-30-W1a`, `playtest-2026-10-29-T-decks`, `-A1`, `-3c`, `-3b`, `-3a`, `-C1`.
+- **New in K1 (since the W1b tag), from Luke's playtest and your binding change:**
+  - **The screen now shows your keys:** the card strip reads **Q E 1 2 R**, the meters LMB/RMB, the dodge Space. Reward cards say "Recovery (R) now: ...", the remove screen's columns say "Utility (1)", "Movement (2)", and the pause screen says "Escape also resumes".
+  - **Recovery moved from 3 to R** (Shift+R swaps it). Movement stays on 2; moving it to F is a one-line edit in `data/input_bindings.json`.
+  - **Bug fixed:** pressing Q, E or R behind an open reward panel could cast a card. The panel now blocks every card key.
+  - **Playtester's notes (scripted):** you can tell which key casts which card at a glance. Two small confusions are queued for PL3: on reward screens the option number (1-4) sits near a "Key 1" chip, and on the remove screen pressing 1 jumps to the first column even though "Utility (1)" is the third. Also for PL3: mashing Space as you die might hit "Try again" on the game-over screen.
+- **Try first in K1:** checklist items 30-32.
 - **New in W1b (since the P-dodge tag):**
   - **Keys:** your binding change is in this tag: cards on Q, E, 1, 2, 3, and Shift + the same key swaps. The strip and prompts still *label* them 1-5; K1 fixes that and moves the last slot to R.
   - **4 Wizard cards:** a bolt volley ("Three Bolts, Reluctantly"), a heavy bolt ("Overqualified Bolt"), a nova ("Personal Space, Enforced") and a ward ("Ward, Technically": +25 armor for 4 s). The Wizard's starting deck is rebuilt around them, with no melee cards.
@@ -198,12 +204,14 @@ _Items 1-21, 23 and 24 are answered (see "Your checklist answers" below)._
 36. **Wizard cards.** Play a Wizard run. Look for: do the caster cards make it feel like a different class from the Rogue, and is Ward worth casting?
 37. **Wizard risk.** Look for: do rooms 1-9 cost you anything, and does the boss feel dangerous without feeling like a sudden one-shot? (This feeds D20 and H1.)
 
+**K. K1 (new)**
+30. **Key labels.** Look for: the labels on the card strip match the keys you press (Q, E, 1, 2, R).
+31. **Casting on the new keys.** Look for: you can still hold to preview and cast on release with Q, E, 1, 2, R.
+32. **Swap.** Look for: Shift+key still swaps the card without casting it.
+
 22. **Loadouts (after 3d, not built yet).** This is about a feature still to come: from your second run on, you'll be able to build your own starting deck from your cards, save it under a name (5 per class), and pick it before a run. (The "Pick your hero" screen you saw is the class pick from W1a.) Look for, once it lands: it's easy to understand.
 
 **I. Coming in your 2026-11-02 order (not built yet; I'll say when each lands)**
-30. **K1 key labels.** Look for: the labels on the card strip match the keys you press (Q, E, 1, 2, R).
-31. **K1 casting on the new keys.** Look for: you can still hold to preview and cast on release with Q, E, 1, 2, R.
-32. **K1 swap.** Look for: Shift+key still swaps the card without casting it.
 33. **H1 Wizard.** Play the Wizard again, once with cards and once without. Does it bite now?
 34. **H1 no cards.** Run with no cards at all. Do you now lose before the boss?
 35. **BD1 builds.** Build the same class and element twice with different plans. Do the two runs feel different? Does removing a keystone card hurt?

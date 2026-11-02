@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-11-02
-**Status: 4 waiting on a decision (D19, D20, D21, D23; none blocks). 5 things to look at when you play (items 25-29), plus items 22 and 30-35 once their slices land.** Done: C1, Polish 1, 3a, 3b, 3c (the boss), A1 (armor), T-decks, W1a (a playable Fire Wizard), **PL2** (frame colours), **F1** (your checklist answers) and **P-dodge** (dodge charges, Recovery, boss stagger; tag `playtest-2026-10-30-P-dodge`). **W1b** (Wizard cards and tuning) is built, qa-passed and playtested; its docs pass and close are next. Then, in your 2026-11-02 order: **K1** (key labels) -> **H1** (harder enemies) -> **BD0** (build-depth design doc) -> **PL3** (polish and housekeeping) -> **BD1** (first build-depth engine slice) -> **3d** (loadouts).
+**Status: 4 waiting on a decision (D19, D20, D21, D23; none blocks). 7 things to look at when you play (items 25-29, 36-37), plus items 22 and 30-35 once their slices land.** Done: C1, Polish 1, 3a, 3b, 3c (the boss), A1 (armor), T-decks, W1a (a playable Fire Wizard), PL2 (frame colours), F1 (your checklist answers), P-dodge (dodge charges, Recovery, boss stagger) and **W1b** (Wizard cards and tuning; tag `playtest-2026-11-02-W1b`). Next is K1. Then, in your 2026-11-02 order: **K1** (key labels) -> **H1** (harder enemies) -> **BD0** (build-depth design doc) -> **PL3** (polish and housekeeping) -> **BD1** (first build-depth engine slice) -> **3d** (loadouts).
 
 Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
@@ -19,7 +19,14 @@ Owned by game-lead. Answer in chat with the ID, for example "D13 = A".
 
 _Updated at every slice close._
 
-- **Latest playtest tag:** `playtest-2026-10-30-P-dodge` (qa PASS, 1147/1147). Earlier tags: `playtest-2026-10-30-F1`, `playtest-2026-10-30-PL2`, `playtest-2026-10-30-W1a`, `playtest-2026-10-29-T-decks`, `-A1`, `-3c`, `-3b`, `-3a`, `-C1`.
+- **Latest playtest tag:** `playtest-2026-11-02-W1b` (qa PASS, 1156/1156). Earlier tags: `playtest-2026-10-30-P-dodge`, `playtest-2026-10-30-F1`, `playtest-2026-10-30-PL2`, `playtest-2026-10-30-W1a`, `playtest-2026-10-29-T-decks`, `-A1`, `-3c`, `-3b`, `-3a`, `-C1`.
+- **New in W1b (since the P-dodge tag):**
+  - **Keys:** your binding change is in this tag: cards on Q, E, 1, 2, 3, and Shift + the same key swaps. The strip and prompts still *label* them 1-5; K1 fixes that and moves the last slot to R.
+  - **4 Wizard cards:** a bolt volley ("Three Bolts, Reluctantly"), a heavy bolt ("Overqualified Bolt"), a nova ("Personal Space, Enforced") and a ward ("Ward, Technically": +25 armor for 4 s). The Wizard's starting deck is rebuilt around them, with no melee cards.
+  - **Wizard tuning:** light bolt 2.4 -> 1.5, heavy 8.5 -> 5.5, card numbers trimmed, Ward 6 -> 4 s. HP stays 26, so one full boss volley (25) can't kill you from full. Whether that's "squishier" enough is **D20**.
+  - **Test presets:** `--deck=fire-heavy-wizard`, `mixed-wizard` and `arcane-heavy-wizard`.
+  - **Playtester's notes (bot):** the caster cards make the Wizard play differently. A Wizard who kites spends rooms 1-9 nearly unhurt, so the boss is the only threat; H1 (harder enemies) is the fix. The Fan of regrets is fair but its lanes run off screen (PL3).
+- **Try first in W1b:** checklist items 36-37.
 - **New in P-dodge (since the F1 tag):**
   - **Dodge charges:** Rogue 3, Wizard 2, each recharging in 1.2 s, shown as pips under the attack meters (with an EMPTY state).
   - **Recovery cooldown 12 s** (your D13); the Wizard's is 14 s.
@@ -186,6 +193,10 @@ _Items 1-21, 23 and 24 are answered (see "Your checklist answers" below)._
 **H. P-dodge (new)**
 28. **Dodge pips.** The charges show as small pips under the attack meters, top-left. Look for: can you keep track of your charges mid-fight, or do you want a small "charge back" flash near your character too?
 29. **Boss stagger.** Look for: the reel plus "STAGGERED / Hit it now" feels like a real opening, and the stagger-then-roar pause (2 s) isn't too long.
+
+**J. W1b (new)**
+36. **Wizard cards.** Play a Wizard run. Look for: do the caster cards make it feel like a different class from the Rogue, and is Ward worth casting?
+37. **Wizard risk.** Look for: do rooms 1-9 cost you anything, and does the boss feel dangerous without feeling like a sudden one-shot? (This feeds D20 and H1.)
 
 22. **Loadouts (after 3d, not built yet).** This is about a feature still to come: from your second run on, you'll be able to build your own starting deck from your cards, save it under a name (5 per class), and pick it before a run. (The "Pick your hero" screen you saw is the class pick from W1a.) Look for, once it lands: it's easy to understand.
 

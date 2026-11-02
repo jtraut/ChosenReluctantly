@@ -510,7 +510,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
        - tech-writer: one "Launch options" table in README listing every launch option, with an example each; a CHANGELOG entry.
        - game-lead: boss-room examples in OPEN_ITEMS "How to playtest".
 
-- [ ] **W1: Fire Wizard, a ranged class (director request 2026-10-29; runs after A1 and T-decks, ahead of P-dodge and 3d)**
+- [x] **W1: Fire Wizard, a ranged class** — **DONE 2026-11-02** (W1a 2026-10-30, W1b 2026-11-02; see each below). (Original header: director request 2026-10-29; runs after A1 and T-decks, ahead of P-dodge and 3d)
   - **Goal:** a second playable class whose basic attacks shoot where you aim, chosen at run start. GDD §5 "Wizard moved earlier" [DIRECTOR DECISION], §3 (cards beat basic attacks), §4 (deck rules), §7 (armor and resistance).
   - **Acceptance:**
     1. **Character data:** `data/characters.json` (validated) holds the class id, display name, element, pools, starting deck, max HP, body colour and attack set per class. It replaces the hardcoded `Player.owned_pools` and `run.json` `character_pools`. Rogue's behaviour is unchanged.
@@ -560,7 +560,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
   - **Playtester (short):** a 10-room run; do movement cards feel like real escapes; does the Wall now catch walkers.
   - **Docs:** tech-writer, with the `[Director decision]` old/new values; README's `--run-room=8` examples become 10.
 
-- [ ] **W1b, Wizard content and balance.** Runs after PL2. Full brief below.
+- [x] **W1b, Wizard content and balance.** **DONE 2026-11-02**, see the full entry below.
 
 - [x] **PL2, small polish before W1b** — **DONE 2026-10-30.** Gameplay 3b8359e..5079a2a; ux ad77847, B1 fix cb2be67; qa FAIL b7ba7fe then delta PASS 8a99ce4 (1082/1082); playtest 4dd2eaa (no blocker); docs d175b51. Tag `playtest-2026-10-30-PL2`. Rogue boss baseline (8 rooms, 12 seeds) 66.7 s mean. Follow-ups (N1 boss head margin, focus-ring notch) in F1. (Original header: game-lead, 2026-10-30; loop: gameplay-dev -> ux-designer -> qa -> playtester (short) -> tech-writer -> close; tag `playtest-2026-10-30-PL2`)**
   - **Goal:** clear the non-Wizard fixes from the W1a qa and playtest, so W1b tunes against a stable baseline. The boss spawn fix changes the Rogue's boss fight.
@@ -586,7 +586,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
   - **Playtester (short):** smoke check, the boss on screen, the melee cue, and whether the frame colours read as fire / class / neutral without explanation.
   - **Docs:** tech-writer, at the close.
 
-- [ ] **W1b, Wizard content and balance (brief, game-lead 2026-10-30; runs after F1 and P-dodge, see the 2026-10-30 run order). Full loop: gameplay-dev -> qa -> playtester -> tech-writer -> close. Tag `playtest-2026-10-30-W1b`. Closing it also ticks the parent W1 item.**
+- [x] **W1b, Wizard content and balance** — **DONE 2026-11-02.** Content aaa933a, tooling 8b1778a/45ed585, tuning 2128ae4 + 0754483 (Wizard HP net 26, D20 open); ux 245d8e3 (5e: no overlap, no fix needed); qa PASS 6f26ff9 (1156/1156); playtest d74e0df (no blocker); docs ab00c50 + red-suite correction. After the director's keybind commit 24530e4, 3 stale input tests failed; qa fixed them test-only in 0119999 (1156/1156, arena hash 2484586390). Tag `playtest-2026-11-02-W1b`. Carry-overs: the kiting Wizard's rooms 1-9 are nearly free (H1), Fan of regrets lane length/ramp and damage numbers over the boss bar (PL3). (Original header: brief, game-lead 2026-10-30; runs after F1 and P-dodge. Full loop: gameplay-dev -> qa -> playtester -> tech-writer -> close. Planned tag `playtest-2026-10-30-W1b`; closing it also ticks the parent W1 item.)**
   - **Goal:** the Wizard plays like a caster: its own attack cards, a caster starter, and test presets. It's tuned so its risk matches D18. GDD §3 (cards beat basic attacks), §4 (deck rules), §5 (Wizard), §7 (armor).
   - **Order inside the slice:** content first, tuning last, so D18 can be answered before any tuning depends on it.
   - **Acceptance, gameplay-dev:**
@@ -701,9 +701,10 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
     3. **The boss smash knocks an idle Wizard about 8 m to the arena edge** (void in view, boss off screen). Check the knockback against the arena bounds and clamp it if needed. gameplay-dev.
     4. **Volley hits may show as one faded "4"** (unconfirmed). Check how damage numbers merge for multi-pellet hits. ux.
     5. **Damage numbers drawing over the boss bar** (from the W1b ux backlog).
+    6. **Fan of regrets telegraph** (W1b playtest problem 3, added at W1b close): cap the lane length to what's on screen and ramp lane brightness toward the end of the wind-up so the "now" moment reads. Telegraph look only, no timing or damage change. ux.
   - **Tooling (gameplay-dev):** scenarios give the Wizard its own deck (today they show the Rogue's card row); a capture trigger on a boss attack starting.
   - **Housekeeping (director, 2026-11-02, from STATE):**
-    - commit the untracked `.uid` files (`tests/unit/w1b_content_test.gd.uid`: qa; `tools/ux_capture.gd.uid`: ux-designer);
+    - commit the untracked `.uid` files (`tests/unit/w1b_content_test.gd.uid`: qa, **done in 0119999**; `tools/ux_capture.gd.uid`: ux-designer);
     - add `docs/.gdignore` so Godot stops importing playtest PNGs, and delete the stray `docs/playtests/img/*.import` files (game-lead);
     - add a `.gitattributes` (text=auto, LF in the repo for `.md`, `.gd`, `.json`, `.tscn`, `.tres`, `.cfg`, `.godot`; binaries marked binary) and do the one-time line-ending normalisation in a **single commit of its own with no other changes**, so later diffs stay readable. Owner: gameplay-dev (repo config; it runs the suite afterwards to prove nothing broke). tech-writer checks its docs still render.
   - **Loop:** gameplay-dev -> ux -> qa -> playtester (short) -> tech-writer -> close. Tag `playtest-YYYY-MM-DD-PL3`.

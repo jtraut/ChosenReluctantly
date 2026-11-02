@@ -2,7 +2,61 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-10-30 (Slice P-dodge: dodge charges, boss stagger, dodge pips; Slice F1: director feedback batch; Slice PL2: small polish; Slice W1a: a playable Fire Wizard; decisions for F1, P-dodge and W1b)
+## 2026-11-02 (director decisions: build depth, pressure pass, loadouts, run order)
+
+Recorded by game-lead in 0e2e60c and fe1bf72 from the director's notes of 2026-10-31 to 2026-11-02. Design lives in `docs/GDD.md`; these are decisions, not builds.
+
+### Docs and process
+- **[Director decision, 2026-11-02] Run order after W1b: K1 -> H1 -> BD0 -> PL3 -> BD1 -> 3d.** Reason: cards and decks do not yet change how a run plays, and that comes before more screens, art or staging. game-lead's one reorder suggestion (move the PL3 housekeeping earlier) is D21, open; the default is the director's order. (`docs/ROADMAP.md`)
+- **[Director decision, 2026-11-02] Build depth and synergy are the top pillar-1 priority (new GDD section 4a).** A player should be able to enter runs with very different plans on the same class and element, and removing a card the plan depends on should hurt. Relics and enchants reset every run. The dead-card swap stays as is until synergies give a card a reason to be saved.
+- **[Director decision, 2026-11-02] A no-card run should not be able to win.** The director won a 10-room Wizard run with no cards and no healing in 5:25 on 2026-10-31 (`docs/playtests/2026-10-31-director-wizard-no-cards.md`). One future exception: a deliberate build that invests in light and heavy attacks through relics and passives.
+- **[Director decision, 2026-11-02] Pressure pass (slice H1):** an explicit exception to "do not retune the base game until the tiers exist". First raise all enemy movement speed slightly; if that is not enough, raise attack rate. It sits behind two shared data knobs (an enemy speed scale and an attack-rate scale). Player stats, card numbers and boss mechanics are not changed. No numbers are changed yet.
+- game-lead's default for H1 (a judgment call in `docs/DECISIONS.md`, not a director directive): telegraphs never shorter than 0.45 s; boss attacks keep their 0.6 s minimum.
+- **[Director decision, 2026-11-02] Key labels follow the bindings (slice K1).** Whatever is in `data/input_bindings.json` is what the UI shows; no UI text may hardcode a key; two actions with the same key and modifiers must fail loudly at startup. K1 also moves Recovery (slot 5) from 3 to R. Not built yet.
+- **[Director decision, 2026-11-02] Loadouts and passives:** at least 5 named loadouts per class (a data value), card availability flags (default under D23: every existing card is `starter`), and an empty versioned `passive_allocation` field on each loadout. Passive allocations are linked to loadouts, and respeccing is free between runs. Scheduled with the loadout screen in 3d, the last slice in the run order; nothing built.
+- Open decisions for the director are D19, D20, D21 and D23; D22, D24 and D25 are reserved for BD0's questions (`docs/OPEN_ITEMS.md`).
+
+## 2026-11-01
+
+### Changed
+- **[Director decision] Card slot keys are Q, E, 1, 2, 3** (slots 1 to 5 in order), and the dead-card swap is Shift plus the same key. Old: 1-5 and Shift+1-5. The director changed `data/input_bindings.json` himself after Luke's playtest, whose only suggestion was friendlier keys (`docs/playtests/2026-11-01-luke-keybinds.md`). The HUD slot hints and the "Slot N" text on reward screens still show 1-5 until K1. (24530e4)
+- **Known side effect:** the keybind change broke three assertions in `tests/unit/cast_input_6a_test.gd` (two test cases), which send `KEY_1` and `KEY_2` and expect slots 1 and 2. The full suite is 1156 cases with 3 failures at fe1bf72 (it was green at qa's W1b review). Found in the W1b docs pass; not yet fixed.
+
+## 2026-10-30 (Slice W1b: Wizard content and balance; Slice P-dodge: dodge charges, boss stagger, dodge pips; Slice F1: director feedback batch; Slice PL2: small polish; Slice W1a: a playable Fire Wizard; decisions for F1, P-dodge and W1b)
+
+### Slice W1b: Wizard content and balance
+
+Commits aaa933a..ecec528, game-lead doc commits excluded. Content aaa933a; tooling 8b1778a, 45ed585; tuning 2128ae4, 0754483; ux 245d8e3; qa d531102 and review 6f26ff9 (PASS, `docs/reviews/2026-10-30-w1b-qa.md`, suite 1156 of 1156); playtest d74e0df (`docs/playtests/2026-10-30-w1b-wizard-cards.md`, smoke PASS, no blocker).
+
+#### Added
+- **Four Wizard cards in the `wizard` pool (now 8 cards), all data, no new template.** Three Bolts, Reluctantly (`wizard_bolt_volley`, Attack: Single, a 3-hit projectile), Overqualified Bolt (`wizard_overqualified_bolt`, Attack: Single), Personal Space, Enforced (`wizard_arcane_nova`, Attack: AoE with knockback) and Ward, Technically (`wizard_ward`, Utility, a `buff` of additive armor). They deal `neutral` damage, so armor applies. (aaa933a)
+- **Ward, Technically is the first player armor source.** It is in the pool but not in the starter. Its duration is kept below its own cycle so two copies cannot give permanent armor. (aaa933a, 2128ae4)
+- **A caster starter for the Wizard** (still 15 cards, 3 per slot). Out: Pointy Stick, Ember Whatever, Shrug Bomb, Blaze and Bail. In: Three Bolts, Overqualified Bolt, Personal Space, Tactical Hover. About 58% of reward offers are now duplicates, against 86% before (gameplay-dev, 12 seeds). (aaa933a)
+- **Three Wizard debug presets** with a `"class": "wizard"` key: `fire-heavy-wizard`, `arcane-heavy-wizard`, `mixed-wizard` (`--list-decks` shows six presets now). (aaa933a)
+- **Wave sim flags** `-WizardNoKite` (a non-kiting Wizard bot policy), `-DodgePellets` (the bot dodges projectiles in flight; off by default) and `-BossLog` (per boss attack: thrown, hits, HP cost; needs `-Run`). (8b1778a)
+- **`wall_crossing` scenario:** walking enemies cross a Fire Wall, to check the Wall buff by eye (the F1 playtest could not). No automated check. (8b1778a)
+- **`Health.last_source_id`:** the instance id of the last damage source, used only as sim telemetry (a test pins it). (8b1778a, 45ed585)
+- qa tests: a live Ward path test, an invariant that an armor buff survives a recast, and a volley invariant over every class. (d531102)
+
+#### Changed
+- **Card text:** an additive armor stat reads "+25 armor" in `CardSummary`. (aaa933a)
+- **Balance, Wizard tuning (2128ae4), old -> new:**
+  - Wizard max HP 26 -> 22, then 22 -> 26 again in 0754483, so the net change from before W1b is none (see below).
+  - Wizard auto light 2.4 -> 1.5 damage per hit (about 50% of the Rogue's light DPS; it was about 80%, a W1a test pin rather than a GDD rule).
+  - Wizard heavy 8.5 -> 5.5.
+  - Three Bolts, Reluctantly damage per hit 2.5 -> 2.2; Overqualified Bolt 12 -> 10.5; Personal Space, Enforced 11 -> 10.5. (These three cards were new in aaa933a; the old values are their first values.)
+  - Ward, Technically duration 6 s -> 4 s (its cycle is 5 s).
+  - Card cooldown modifiers and enemy data did not change. Exact values: `data/attacks.json`, `data/cards/wizard_*.json`.
+- **Wizard max HP 22 -> 26 (0754483).** One full "Fan of regrets" boss volley is 5 pellets x 5 = 25 physical damage, and the player has no armor. At 26 HP a volley cannot kill from full HP. A test pins "max HP above one full volley" for every class from data. The Wizard's HP is therefore the same as before W1b, which does not match the GDD line that the Wizard should be "squishier". That conflict is **D20**, open with the director (`docs/OPEN_ITEMS.md`); it is a one-value change in `data/characters.json` (the test then has to be relaxed or the volley changed).
+- **Sim findings that shaped the tuning (gameplay-dev and qa, pellet-dodging bot, 12 seeds):** the bot used to never dodge pellets, so about two thirds of the Wizard's "boss cliff" was a sim artefact. After tuning, the Wizard's boss fight takes about 103% of the Rogue's time when kiting and about 72% when walking in; every run was won and rooms cost HP, less than the Rogue's. qa's 24-seed re-run puts the non-kiting boss time at 70.7-73.1%, on the 70% floor (N1, accepted for now). A pellet-blind kiting bot died in 3 of 12 runs on seeds 13-24 (two volleys, not one-shots); with pellet dodging, 0 of 48 died (N2). Playtest, 72 runs on seeds 31-42: no Wizard deaths, non-kiting boss at about 77%.
+- **STAGGERED banner vs boss bar (ux 5e, 245d8e3), checked, no fix needed:** there was no real overlap. The playtest overlap was a world-space damage number over the boss's head. The stagger capture now uses a normal-sized hit so the shot is representative. Damage numbers drawing over the boss bar when the boss stands under it stay in the backlog.
+
+#### Fixed
+- qa: the `w1a` bolt auto-fire tests were flaky under load; they now poll on real time (up to 4 s). (d531102)
+
+#### Docs and process
+- Open after W1b: the Ward cast has no visible cue, the new bolt cards look alike, the boss smash knockback is long, and volley damage numbers are hard to read. They go to a new polish slice PL3, not a W1b reopen (ecec528). The Wizard's auto bolt stays at 50% until the director has played it.
+- Generated files (`*.uid`, `docs/playtests/img/*.import`) are untracked; housekeeping goes to PL3.
 
 ### Slice P-dodge: dodge charges, boss stagger, dodge pips
 
@@ -122,7 +176,7 @@ Commits 451eaf3..HEAD. Gameplay 0c9704e and 39fe0c6; ux 7d93d1c, 82bce4e and 672
 - Captures should always pass `--class`, because the last pick persists in windowed play.
 
 #### Docs and process
-- **Process change:** the docs pass now happens per slice (game-lead runs tech-writer once at the end of each slice, as in `CLAUDE.md`). *Correction (PL2 docs pass): this rule dates from 2026-10-28, not from W1a; W1a only followed it.*
+- **Process:** W1a's docs pass followed the per-slice rule (game-lead runs tech-writer once at the end of each slice, as in `CLAUDE.md`; the rule dates from 2026-10-28). *Correction (PL2 docs pass): this rule dates from 2026-10-28, not from W1a; W1a only followed it. Correction (W1b docs pass): the bullet is reworded; it used to say the docs pass "now happens per slice", which read as if W1a introduced it.*
 - Docs pass for W1a: README, ARCHITECTURE and this file. No new third-party assets, so `docs/ASSETS.md` is unchanged.
 - README: fixed two mangled command paths (`tools\run_wave_sim.ps1` and `tools\run_tests.ps1` in the examples and "Last verification" had a stray carriage return).
 - Test count 996 -> 1053 across W1a (qa's figure; this pass re-ran it, see README).

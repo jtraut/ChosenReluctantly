@@ -1254,3 +1254,9 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
   - **No-cards ≤25%:** met, but **not evidence**. The corrected no-cards bot already clears 0% at the 1.0 baseline, so this metric can't tell 1.0 from 1.25, and the director's human 5:25 clear contradicts it. The human test (OPEN_ITEMS 33) judges it.
   - **Wizard kiting HP loss ≥10%: dropped as a gate.** It's 0.0% at every variant (speed to 1.25, attack rate to 2.0). With speed capped below walk, the kiting bot is never hit. It isn't reachable with H1's two levers. Recorded as missed; D27 offers the next lever. [Holding the slice open for a lever H1 doesn't allow.]
 - **HP-loss metric:** the median over combat and elite rooms of (HP at room start - HP at room end) / max. The death room and rooms after a rest room are excluded. A "dip" variant measures to the lowest HP in the room. (gameplay-dev)
+- **qa PASS 42cdb13 (20 seeds, `docs/reviews/2026-11-02-h1-qa.md`).**
+  - Reproduced the sweep: at 1.25/1.0, Rogue standard clears 100% with a 66.1 s boss median; the kiting Wizard standard clears 95%.
+  - At 1.25/1.25 the Rogue standard clear rate drops to 65% (7 deaths of 20 vs 0 of 20, p≈0.008), so it's not noise.
+  - **Why the kiting Wizard isn't hit:** shooters do fire (574 shots, 8 seeds), but about 4% land. A shot holds the lane it had when its 0.45 s wind-up started and takes about 0.78 s to arrive, and a player walking at 6.0 leaves that lane in about 0.1 s. More attack rate only means more dodgeable shots.
+  - **Metric note:** end-of-room HP loss is 0% for every standard deck (they heal in-room). Any future pressure target uses the in-room dip instead.
+  - **Watch item:** the boss carries scaled `move_speed` and `attack_cooldown` fields it doesn't use. That's a trap if later code reads them. (qa)

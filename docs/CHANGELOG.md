@@ -2,7 +2,41 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-11-02 (director decisions: build depth, pressure pass, loadouts, run order)
+## 2026-11-02 (Slice K1: key labels follow the bindings; director decisions: build depth, pressure pass, loadouts, run order)
+
+### Slice K1: key labels follow the bindings
+
+Commit range a848395..2c0d185. qa review: PASS (`docs/reviews/2026-11-02-k1-qa.md`). Playtester smoke: PASS (`docs/playtests/2026-11-02-k1-short.md`).
+
+#### Added
+- `src/core/InputLabels.gd`, a static helper that turns the live bindings into UI text: "Q", "Shift+Q", "LMB", or "?" for an unbound action. Slot helpers (`slot_name`, `slot_key`, `slot_label`, `slot_swap_key`, and `_at(i)` variants) take names from `data/slot_types.json`, so Recovery shows as "Recovery (R)". Physical keycodes are shown as the player's keyboard layout names them. (04ac813, 7f4b136)
+- `InputBindings.bindings_changed` signal and `InputBindings.last_conflicts`. No new autoload. (04ac813)
+- A binding validator, `InputLabels.find_conflicts`: two actions with the same key plus modifiers (or the same mouse button) are reported by `InputBindings.load_bindings` with `push_error` at startup. It does not quit the game. Plain R and Shift+R are not a conflict. (04ac813)
+- `HudLayout.key_label_width`, so longer key labels (for example "Shift+Q") fit their label slot. (6204f2a)
+- Tests: `tests/unit/input_labels_test.gd`, `k1_ux_test.gd`, `k1_qa_test.gd`, and `k1_key_hint_scan_test.gd`, which fails if a hardcoded slot, mouse or modifier key hint appears in `src/` or `data/`. The suite is now 1190 of 1190 (was 1156); qa's reload soak is OK and the arena hashes are unchanged (2484586390 for 30 s seed 1, 3255493562 for 90 s). (04ac813, 6204f2a, 8752a1c)
+- Captures `docs/playtests/img/k1-*.png` (HUD strip, reward, removal grid, pause) and `k1-pt-*.png` (playtest). (81abc85, 2c0d185)
+
+#### Changed
+- **[Director decision, GDD section 3] Key labels follow `data/input_bindings.json`; no UI text may hardcode a key.** Recorded 2026-11-02 and built here. The HUD slot keys, the LMB and RMB meters and the dodge label are read from InputLabels and refresh on `bindings_changed`. (04ac813, 6204f2a)
+- **[Director decision, GDD section 3] The Recovery slot moved from 3 to R.** `slot_5`: 3 -> R. `dead_card_swap_5`: Shift+3 -> Shift+R. Default slot keys are now Q, E, 1, 2, R (were Q, E, 1, 2, 3). (04ac813)
+- **[Director decision, GDD section 3] Duplicate key plus modifier bindings fail loudly at startup** (see the validator above).
+- UI text values (old -> new):
+  - `data/ui.json` `dodge_label`: "Space" -> removed; the label comes from InputLabels.
+  - `data/ui.json` pause hint: "Esc also resumes" -> template "%s also resumes" (now reads "Escape also resumes").
+  - `data/run.json` option `slot_now`: "Slot %d now: %s" -> "%s now: %s" (for example "Recovery (R) now: ...").
+  - `data/run.json` option `slot_key`: "Slot %d" -> "Key %s".
+  - `data/run.json` option `slot_label`: new, "%s (%s)".
+  - `data/run.json` option `remove_list_hint`: "Keys 1-%d jump to that slot column, Enter confirms" -> "Keys 1-%d jump to a column, Enter confirms" (menu digits are positional and are allowed by the scan test). (6204f2a)
+
+#### Fixed
+- **Slot and swap keys leaked through an open reward prompt.** `RunPromptScreen` did not stop Q, E, R (and Shift plus them) from reaching the Player, so a card could cast behind the reward screen. It now swallows press and release of every slot and swap action (`RunPromptScreen.swallows_slot_action`, via `event.is_action`). (6204f2a)
+
+#### Docs and process
+- The 2026-11-02 decision entry below says K1 is "not built yet", and the 2026-11-01 entry says the UI shows 1-5 "until K1"; both were true when written and are now superseded by this slice.
+- Replaced the notes saying the UI "still shows 1-5 until K1" in `README.md` and `docs/ARCHITECTURE.md`; the K1 rules are now in ARCHITECTURE section 4 (HUD and UI).
+- No new commands and no new third-party assets.
+
+### Director decisions of 2026-10-31 to 2026-11-02 (no code)
 
 Recorded by game-lead in 0e2e60c and fe1bf72 from the director's notes of 2026-10-31 to 2026-11-02. Design lives in `docs/GDD.md`; these are decisions, not builds.
 
@@ -142,7 +176,8 @@ Commits 351840f..fab00a7. Gameplay 6a2c573, c29aa9d, 5079a2a, 3b8359e; ux ad7784
 - qa measured a Rogue boss baseline over 12 seeds: mean 66.7 s (range 49.7 to 75.6). Recorded for the later difficulty work.
 - Removed junk `scratch_suite.txt`. (3b8359e)
 - **[Director decision] Run order changed to PL2 -> F1 -> P-dodge -> W1b -> 3d** (game-lead call). Director decisions below are recorded but not built yet.
-- README fixes: the stack-trace note and the `wizard_bolt` known issue are gone (both fixed), three command paths that had `tools...` mangled into a carriage return are repaired, the removal-capture example now uses `--run-seed=1 --run-room=5` (seed 1's rest room is room 5; the old `--run-room=3` example without a seed depended on the seed), and `frame_color` and `melee_cue` are documented. ARCHITECTURE gains the frame-colour accessor and data, `MeleeReachCue` and the boss spawn box.
+- README fixes: the stack-trace note and the `wizard_bolt` known issue are gone (both fixed), three command paths that had `tools
+...` mangled into a carriage return are repaired, the removal-capture example now uses `--run-seed=1 --run-room=5` (seed 1's rest room is room 5; the old `--run-room=3` example without a seed depended on the seed), and `frame_color` and `melee_cue` are documented. ARCHITECTURE gains the frame-colour accessor and data, `MeleeReachCue` and the boss spawn box.
 - No new third-party assets, so `docs/ASSETS.md` is unchanged.
 
 ### Director decisions recorded, not yet built

@@ -447,7 +447,7 @@ func _place_grid(cfg: Dictionary, s: float, texts: Dictionary) -> void:
 		var first: Dictionary = _options[(by_slot[slot_type] as Array)[0]]
 		var key: int = RunOptionCard.slot_key_for(slot_type)
 		var head := Label.new()
-		head.text = ("%s  %s" % [String(texts.get("slot_key", "Slot %d")) % key, String(first.get("slot_name", ""))]) if key > 0 else String(first.get("slot_name", ""))
+		head.text = (String(texts.get("slot_label", "%s (%s)")) % [InputLabels.slot_name(slot_type), InputLabels.slot_key(slot_type)]) if key > 0 else String(first.get("slot_name", ""))
 		head.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		head.custom_minimum_size.x = cell_w
 		head.add_theme_font_size_override("font_size", roundi(float(cfg["option_small_font_size"]) * s))
@@ -490,15 +490,23 @@ func _focus_option(index: int) -> void:
 		_option_buttons[index].grab_focus()
 
 
-## Number keys move the highlight (`digit_target`; Enter or a click confirms it), and every digit key is swallowed
-## while options are open so the Player never casts a slot behind the screen. Space is swallowed too: it is the
+## Number keys move the highlight (`digit_target`; Enter or a click confirms it) and are swallowed while options are
+## open. The panel does not pause the tree, so Player._unhandled_input would still see the slot keys (Q, E, 1, 2, R
+## today) and their Shift swaps: any event matching a `slot_N` or `dead_card_swap_N` action is swallowed here too, by
+## action and not by key, so it follows rebinding. Space is swallowed as well: it is the
 ## dodge key, the player is mashing it as the panel opens, and a focused button would otherwise confirm on it.
 ## Accidental picks are also held off by the short arm delay after opening (`options_armed`). Does nothing while paused.
 func _input(event: InputEvent) -> void:
 	if not visible or GamePause.is_paused():
 		return
 	var key := event as InputEventKey
-	if key == null or not key.pressed:
+	if key == null:
+		return
+	var slot_action: bool = swallows_slot_action(key)
+	if not key.pressed:
+		# Releases too: with cast-on-release a slot key held as the panel opened would cast when let go.
+		if slot_action:
+			get_viewport().set_input_as_handled()
 		return
 	if key.keycode == KEY_SPACE:
 		# Never confirms anything here (a focused Button would take it as ui_accept), with options or with the lone
@@ -506,7 +514,10 @@ func _input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		return
 	if _options.is_empty():
+		if slot_action:
+			get_viewport().set_input_as_handled()
 		return
+	# Digits stay menu navigation (positional) even when a digit is also a slot key (1 and 2 are Utility and Movement).
 	var number: int = key.keycode - KEY_1
 	var is_digit: bool = (key.keycode >= KEY_0 and key.keycode <= KEY_9) or (key.keycode >= KEY_KP_0 and key.keycode <= KEY_KP_9)
 	if number < 0 or number > 8:
@@ -515,8 +526,20 @@ func _input(event: InputEvent) -> void:
 		var target: int = digit_target(_options, _layout, number)
 		if target >= 0:
 			_focus_option(target)
-	if is_digit:
+	if is_digit or slot_action:
 		get_viewport().set_input_as_handled()
+
+
+## True when the event is a slot cast or a dead-card swap (any binding of slot_1..5 / dead_card_swap_1..5, modifiers
+## ignored so Shift+Q is held back from Q's slot as well).
+static func swallows_slot_action(event: InputEvent) -> bool:
+	for action: StringName in Player.USE_ACTIONS:
+		if event.is_action(action):
+			return true
+	for action: StringName in Player.SWAP_ACTIONS:
+		if event.is_action(action):
+			return true
+	return false
 
 
 func _on_option_pressed(option_id: String) -> void:

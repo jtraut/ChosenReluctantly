@@ -44,6 +44,7 @@ func _ready() -> void:
 	resume_button.pressed.connect(close)
 	Settings.changed.connect(_on_setting_changed)
 	get_viewport().size_changed.connect(_apply_config)
+	InputBindings.bindings_changed.connect(_apply_config)
 
 
 func _exit_tree() -> void:
@@ -152,7 +153,7 @@ func _apply_config() -> void:
 	title_label.text = cfg["title"]
 	line_label.text = cfg["line"]
 	resume_button.text = cfg["resume"]
-	hint_label.text = cfg["hint"]
+	hint_label.text = String(cfg["hint"]) % InputLabels.for_action(&"pause")
 	save_note_label.text = cfg["save_failed"]
 	save_note_label.add_theme_color_override("font_color", Color.html(cfg["save_failed_color"]))
 	_set_font(save_note_label, int(cfg["hint_font_size"]), s)

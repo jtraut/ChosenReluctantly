@@ -105,3 +105,9 @@ static func boss_bar_stacked(viewport_size: Vector2, cfg: Dictionary) -> bool:
 ## so at 1080p and 1440p it sits lower, clear of the scaled HUD pieces above it.
 static func debug_overlay_top(viewport_size: Vector2, cfg: Dictionary) -> float:
 	return boss_bar_rect(viewport_size, cfg).end.y + float(cfg["debug_overlay_gap"]) * ui_scale(viewport_size, cfg)
+
+
+## Width of a key label column: the configured width, grown when the live key text ("Shift+LMB") is wider, so a
+## rebound key is never clipped. `font_size` and `pad` are in pixels (already scaled).
+static func key_label_width(font: Font, text: String, font_size: int, base_width: float, pad: float) -> float:
+	return maxf(base_width, font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size).x + pad)

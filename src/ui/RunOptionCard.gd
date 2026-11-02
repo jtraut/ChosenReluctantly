@@ -36,7 +36,8 @@ var _rejects_remaining: int = 0
 var _rejects_max: int = 0
 
 
-## 1-based HUD key of a slot type (the order of the five HUD slots); 0 when unknown.
+## 1-based position of a slot type in the HUD order (used to order columns); 0 when unknown. NOT the key the
+## player presses: that is InputLabels.slot_key().
 static func slot_key_for(slot_type: String) -> int:
 	return CardSlotController.SLOT_TYPE_ORDER.find(slot_type) + 1
 
@@ -50,15 +51,15 @@ static func owned_text(count: int, format: String) -> String:
 const SLOT_NOW_SEPARATOR: String = " / "
 
 
-## "Slot 2 now: A / B / C": the distinct cards already held in the offered card's slot (data/run.json ui.option.slot_now).
-## "" when the slot holds nothing yet or the slot is unknown.
-static func slot_now_text(key: int, names: Array, format: String) -> String:
-	if key <= 0 or names.is_empty():
+## "Utility (1) now: A / B / C": the distinct cards already held in the offered card's slot (data/run.json
+## ui.option.slot_now, first %s = the slot's name and live key). "" when the slot holds nothing yet or is unknown.
+static func slot_now_text(slot_type: String, names: Array, format: String) -> String:
+	if slot_key_for(slot_type) <= 0 or names.is_empty():
 		return ""
 	var joined: PackedStringArray = PackedStringArray()
 	for entry: Variant in names:
 		joined.append(String(entry))
-	return format % [key, SLOT_NOW_SEPARATOR.join(joined)]
+	return format % [InputLabels.slot_label(slot_type), SLOT_NOW_SEPARATOR.join(joined)]
 
 
 ## Builds the card. `extra`: index (0-based, -1 = no number), owned (int), rejects_remaining, rejects_max, texts (run.json ui.option).
@@ -147,7 +148,7 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 		_pips.draw.connect(_draw_pips)
 		_inner.add_child(_pips)
 	if look == Look.CARD:
-		var now_text: String = slot_now_text(slot_key_for(String(opt.get("slot_type", ""))), opt.get("slot_contents", []), String(texts.get("slot_now", "Slot %d now: %s")))
+		var now_text: String = slot_now_text(String(opt.get("slot_type", "")), opt.get("slot_contents", []), String(texts.get("slot_now", "%s now: %s")))
 		if now_text != "":
 			slot_now_label = _label(now_text, small_size, body_color, true)
 			slot_now_label.custom_minimum_size.x = inner_width
@@ -227,7 +228,7 @@ func _badge(badge_text: String, font_size: int, enabled: bool) -> PanelContainer
 	return panel
 
 
-## "Slot 2" in a dark outlined pill (the HUD's key hint for that slot) and the slot's name beside it.
+## The slot's live key ("Key Q") in a dark outlined pill (the HUD's key hint for that slot) and the slot's name beside it.
 func _slot_chip(opt: Dictionary, texts: Dictionary, font_size: int, enabled: bool, body_color: Color) -> PanelContainer:
 	var slot_name: String = String(opt.get("slot_name", ""))
 	var key: int = slot_key_for(String(opt.get("slot_type", "")))
@@ -253,7 +254,7 @@ func _slot_chip(opt: Dictionary, texts: Dictionary, font_size: int, enabled: boo
 		style.content_margin_top = 1.0 * _scale
 		style.content_margin_bottom = 1.0 * _scale
 		pill.add_theme_stylebox_override("panel", style)
-		pill.add_child(_label(String(texts.get("slot_key", "Slot %d")) % key, font_size, _text_color(enabled, Color.html(String(_cfg["prompt_value_color"]))), false))
+		pill.add_child(_label(String(texts.get("slot_key", "Key %s")) % InputLabels.slot_key(String(opt.get("slot_type", ""))), font_size, _text_color(enabled, Color.html(String(_cfg["prompt_value_color"]))), false))
 		row.add_child(pill)
 	var name_label := _label(slot_name, font_size, body_color, false)
 	name_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER

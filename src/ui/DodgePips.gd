@@ -1,6 +1,6 @@
 class_name DodgePips
 extends Control
-## Dodge charge indicator (P-dodge 3), under the RMB meter: a "Space" label and one pip per charge. A ready charge is a
+## Dodge charge indicator (P-dodge 3), under the RMB meter: a label with the live dodge key ("Space") and one pip per charge. A ready charge is a
 ## solid pip with a bright frame, an empty one is a hollow frame, and the charge that is coming back fills left to right.
 ## With nothing left to spend the frame goes red and the word EMPTY sits after the pips (shape and word, not colour alone);
 ## with no charges at all the word is NO DODGE. Reads Player.get_dodge_state() each frame; display only.
@@ -83,12 +83,12 @@ func _draw() -> void:
 	var s := _scale
 	var font := get_theme_default_font()
 	var fsize := roundi(float(_cfg["meter_font_size"]) * s)
-	var label_w := float(_cfg["dodge_label_width"]) * s
+	var label := InputLabels.for_action(&"dodge")  # live; Hud rebuilds the layout on bindings_changed
+	var label_w := HudLayout.key_label_width(font, label, fsize, float(_cfg["dodge_label_width"]) * s, 4.0 * s)
 	var outline := maxi(2, roundi(2.0 * s))
 	var outline_col := Color.html(String(_cfg["meter_text_outline_color"]))
 	var text_col := Color.html(String(_cfg["meter_text_color"]))
 	var ty := (size.y + font.get_ascent(fsize) - font.get_descent(fsize)) * 0.5
-	var label := String(_cfg["dodge_label"])
 	draw_string_outline(font, Vector2(0.0, ty), label, HORIZONTAL_ALIGNMENT_LEFT, label_w, fsize, outline, outline_col)
 	draw_string(font, Vector2(0.0, ty), label, HORIZONTAL_ALIGNMENT_LEFT, label_w, fsize, text_col)
 

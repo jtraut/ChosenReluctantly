@@ -97,10 +97,10 @@ func _draw() -> void:
 	var base := Color.html(String(_cfg["heavy_meter_color" if is_prominent else "light_meter_color"]))
 	var alpha := 1.0 if is_prominent else float(_cfg["meter_light_alpha"])
 	var st := state()
-	var label_w := float(_cfg["meter_label_width"]) * s
-	var bar := Rect2(Vector2(label_w, 0.0), Vector2(maxf(size.x - label_w, 1.0), size.y))
 	var font := get_theme_default_font()
 	var fsize := roundi(float(_cfg["meter_font_size"]) * s)
+	var label_w := HudLayout.key_label_width(font, label_text, fsize, float(_cfg["meter_label_width"]) * s, 4.0 * s)
+	var bar := Rect2(Vector2(label_w, 0.0), Vector2(maxf(size.x - label_w, 1.0), size.y))
 	var text_col := Color.html(String(_cfg["meter_text_color"]))
 	text_col.a = 1.0 if is_prominent else 0.9
 	var outline_col := Color.html(String(_cfg["meter_text_outline_color"]))

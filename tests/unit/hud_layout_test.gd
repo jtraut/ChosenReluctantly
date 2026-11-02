@@ -179,3 +179,23 @@ func test_name_over_limit_warns_but_still_validates() -> void:
 	card["name"] = "x".repeat(26)
 	assert_array(CardSchema.warnings(card)).has_size(1)
 	assert_array(CardSchema.validate(card)).is_empty()
+
+
+## K1: the key row must hold the longest realistic label. 1280x720 (scale 1.0) is the smallest supported HUD size;
+## the check also runs at the larger sizes, where the font and box scale together.
+func test_slot_key_label_fits_its_box_for_the_longest_labels() -> void:
+	var cfg := UiConfig.hud()
+	for vp in RESOLUTIONS:
+		var s := HudLayout.ui_scale(vp, cfg)
+		var widget: CardSlotWidget = (load("res://scenes/ui/CardSlotWidget.tscn") as PackedScene).instantiate()
+		add_child(widget)
+		auto_free(widget)
+		widget.apply_layout(cfg, s)
+		for text: String in ["Shift+Q", "Ctrl+Q", "LMB", "R", "?"]:
+			widget.set_key_hint(text)
+			await get_tree().process_frame
+			var size_before := widget.size
+			var need := widget.key_label.get_minimum_size()
+			assert_float(need.x).override_failure_message("'%s' needs %s in a %s box at %s" % [text, need.x, widget.key_label.size.x, vp]).is_less_equal(widget.key_label.size.x - float(cfg["fit_padding"]) * s * 0.5)
+			assert_float(need.y).override_failure_message("'%s' needs height %s of %s at %s" % [text, need.y, widget.key_label.size.y, vp]).is_less_equal(widget.key_label.size.y)
+			assert_vector(widget.size).is_equal(size_before)

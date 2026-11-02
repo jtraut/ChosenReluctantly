@@ -21,10 +21,9 @@ func _ready() -> void:
 	dodge_pips.name = "DodgePips"
 	$Root.add_child(dodge_pips)
 	_ignore_mouse_recursive($Root)
-	for i in range(slot_widgets.size()):
-		slot_widgets[i].set_key_hint(str(i + 1))
 	_apply_layout()
 	get_viewport().size_changed.connect(_apply_layout)
+	InputBindings.bindings_changed.connect(_apply_layout)
 
 
 ## Sizes and anchors the HUD from data/ui.json `hud` for the current viewport.
@@ -40,12 +39,13 @@ func _apply_layout() -> void:
 	slot_bar.offset_top = bar.position.y - vp.y
 	slot_bar.offset_bottom = bar.end.y - vp.y
 	slot_bar.add_theme_constant_override("separation", roundi(float(cfg["slot_gap"]) * s))
-	for widget in slot_widgets:
-		widget.apply_layout(cfg, s)
+	for i in range(slot_widgets.size()):
+		slot_widgets[i].apply_layout(cfg, s)
+		slot_widgets[i].set_key_hint(InputLabels.slot_key_at(i))  # live: follows a rebind (bindings_changed)
 
 	var meters := HudLayout.attack_meter_rects(vp, cfg)
-	light_meter.configure(&"light", "LMB", false, cfg, s)
-	heavy_meter.configure(&"heavy", "RMB", true, cfg, s)
+	light_meter.configure(&"light", InputLabels.for_action(&"attack_light"), false, cfg, s)
+	heavy_meter.configure(&"heavy", InputLabels.for_action(&"attack_heavy"), true, cfg, s)
 	for pair in [[light_meter, &"light"], [heavy_meter, &"heavy"]]:
 		var m: AttackMeter = pair[0]
 		var r: Rect2 = meters[pair[1]]

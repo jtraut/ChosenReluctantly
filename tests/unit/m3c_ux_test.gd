@@ -302,10 +302,12 @@ func test_binding_mid_transition_reads_the_live_state() -> void:
 
 func test_slot_now_text() -> void:
 	var fmt: String = String(RunConfig.ui()["option"]["slot_now"])
-	assert_str(RunOptionCard.slot_now_text(1, ["A", "B", "C"], fmt)).is_equal("Slot 1 now: A / B / C")
-	assert_str(RunOptionCard.slot_now_text(4, ["A"], fmt)).is_equal("Slot 4 now: A")
-	assert_str(RunOptionCard.slot_now_text(2, [], fmt)).is_empty()
-	assert_str(RunOptionCard.slot_now_text(0, ["A"], fmt)).is_empty()
+	var first: String = CardSlotController.SLOT_TYPE_ORDER[0]
+	var fourth: String = CardSlotController.SLOT_TYPE_ORDER[3]
+	assert_str(RunOptionCard.slot_now_text(first, ["A", "B", "C"], fmt)).is_equal("%s now: A / B / C" % InputLabels.slot_label(first))
+	assert_str(RunOptionCard.slot_now_text(fourth, ["A"], fmt)).is_equal("%s now: A" % InputLabels.slot_label(fourth))
+	assert_str(RunOptionCard.slot_now_text(fourth, [], fmt)).is_empty()
+	assert_str(RunOptionCard.slot_now_text("nope", ["A"], fmt)).is_empty()
 
 
 func test_an_offer_card_lists_the_slot_contents_from_the_model() -> void:
@@ -323,8 +325,7 @@ func test_an_offer_card_lists_the_slot_contents_from_the_model() -> void:
 		card.setup(option, RunOptionCard.Look.CARD, float(cfg["option_card_width"]), cfg, 1.0, {"index": 0, "texts": RunConfig.ui()["option"], "owned": 0})
 		auto_free(card)
 		assert_object(card.slot_now_label).is_not_null()
-		var key: int = RunOptionCard.slot_key_for(String(option["slot_type"]))
-		assert_str(card.slot_now_label.text).starts_with("Slot %d now: " % key)
+		assert_str(card.slot_now_label.text).starts_with("%s now: " % InputLabels.slot_label(String(option["slot_type"])))
 		for card_name: String in option["slot_contents"]:
 			assert_str(card.slot_now_label.text).contains(card_name)
 

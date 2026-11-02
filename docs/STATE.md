@@ -13,7 +13,7 @@ Last updated: 2026-11-02. **Run order (director, 2026-11-02):** W1b is closed. N
 - The repo runs. Suite 1156/1156 at 0119999. Arena hash baseline 2484586390 (30 s seed 1; 90 s 3255493562). **H1 will change the sim hashes; re-baseline and record them here at its close.**
 
 ## In progress
-- **K1 started 2026-11-02:** gameplay-dev items 1-4 done (04ac813, 7f4b136; suite 1170/1170). `InputLabels` static class + `InputBindings.bindings_changed`. Next: ux-designer items 5-8, plus the fix that stops slot/swap keys reaching the Player behind RunPromptScreen. Then qa (incl. reload soak) -> playtester -> tech-writer -> close. DECISIONS entries to write at close: the 5 gameplay-dev technical choices and game-lead's menu-digit call (see ux brief).
+- **K1 in progress 2026-11-02:** gameplay-dev done (04ac813, 7f4b136). ux-designer done (6204f2a, 81abc85; suite 1181/1181; prompt now swallows slot/swap actions; captures `docs/playtests/img/k1-*.png`). Next: qa slice review (incl. reload soak) -> playtester (short) -> tech-writer -> close. At close: DECISIONS for gameplay-dev's 5 and ux's 5 technical choices plus game-lead's menu-digit call; add to PL3 a game-over mashed-Space guard (arm delay like other prompts) and a watch item for menu digits vs slot keys on the removal grid.
 - Untracked on disk, not ours to commit: `tools/ux_capture.gd.uid` (ux) and `docs/playtests/img/*.import` (Godot imports; PL3 adds `docs/.gdignore`). Don't sweep them into other commits.
 
 ## Exact next step

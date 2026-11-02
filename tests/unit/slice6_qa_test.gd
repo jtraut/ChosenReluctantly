@@ -443,12 +443,13 @@ func test_setting_change_mid_hold_cancels_and_the_release_is_not_a_cast() -> voi
 	assert_array(_casts).is_empty()
 
 
-func test_dead_card_swap_with_real_shift_digit_never_casts() -> void:
+func test_dead_card_swap_with_real_shift_slot_key_never_casts() -> void:
 	var main := _spawn()
 	await _frames(2)
 	var event := InputEventKey.new()
-	event.keycode = KEY_1
-	event.physical_keycode = KEY_1
+	var slot_key := (InputMap.action_get_events(&"slot_1")[0] as InputEventKey).physical_keycode
+	event.keycode = slot_key
+	event.physical_keycode = slot_key
 	event.shift_pressed = true
 	event.pressed = true
 	Input.parse_input_event(event)

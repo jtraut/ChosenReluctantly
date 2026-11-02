@@ -248,10 +248,21 @@ func test_dead_card_swap_never_casts_and_leaves_the_preview_alone() -> void:
 	assert_float(player.card_slots.get_slot("attack_single").cooldown_remaining).is_greater(0.0)
 
 
-func test_shift_digit_is_a_swap_not_a_cast_and_a_shift_release_still_ends_the_hold() -> void:
+## The physical key bound to a slot action, read from the live InputMap (built from data/input_bindings.json),
+## ignoring bindings that need a modifier (those are the swap actions).
+func _slot_key(action: StringName) -> Key:
+	for event: InputEvent in InputMap.action_get_events(action):
+		var key_event := event as InputEventKey
+		if key_event != null and not key_event.shift_pressed and not key_event.ctrl_pressed and not key_event.alt_pressed:
+			return key_event.physical_keycode
+	assert_bool(false).override_failure_message("no plain key bound to %s" % action).is_true()
+	return KEY_NONE
+
+
+func test_shift_slot_key_is_a_swap_not_a_cast_and_a_shift_release_still_ends_the_hold() -> void:
 	var player := await _ready_player()
 	var swap := InputEventKey.new()
-	swap.physical_keycode = KEY_1
+	swap.physical_keycode = _slot_key(SLOT_1)
 	swap.shift_pressed = true
 	swap.pressed = true
 	player._unhandled_input(swap)
@@ -259,14 +270,14 @@ func test_shift_digit_is_a_swap_not_a_cast_and_a_shift_release_still_ends_the_ho
 	assert_array(_casts).is_empty()
 	assert_bool(player.cast_input.is_previewing()).is_false()
 	assert_float(player.card_slots.get_slot("attack_single").cooldown_remaining).is_greater(0.0)
-	# Plain key 2 held, Shift pressed meanwhile, then 2 released with Shift down: still ends the hold.
+	# Plain slot-2 key held, Shift pressed meanwhile, then 2 released with Shift down: still ends the hold.
 	var down := InputEventKey.new()
-	down.physical_keycode = KEY_2
+	down.physical_keycode = _slot_key(SLOT_2)
 	down.pressed = true
 	player._unhandled_input(down)
 	assert_int(player.cast_input.preview_slot).is_equal(1)
 	var up := InputEventKey.new()
-	up.physical_keycode = KEY_2
+	up.physical_keycode = _slot_key(SLOT_2)
 	up.shift_pressed = true
 	up.pressed = false
 	player._unhandled_input(up)
@@ -274,26 +285,26 @@ func test_shift_digit_is_a_swap_not_a_cast_and_a_shift_release_still_ends_the_ho
 	assert_array(_casts).has_size(1)
 
 
-func test_ctrl_digit_does_nothing_and_plain_digit_still_previews() -> void:
+func test_ctrl_slot_key_does_nothing_and_plain_slot_key_still_previews() -> void:
 	var player := await _ready_player()
 	var ctrl := InputEventKey.new()
-	ctrl.physical_keycode = KEY_1
+	ctrl.physical_keycode = _slot_key(SLOT_1)
 	ctrl.ctrl_pressed = true
 	ctrl.pressed = true
 	player._unhandled_input(ctrl)
 	await _frames(3)
 	assert_array(_casts).is_empty()
 	assert_bool(player.cast_input.is_previewing()).is_false()
-	assert_float(player.card_slots.get_slot("attack_single").cooldown_remaining).override_failure_message("Ctrl+1 must not swap").is_equal(0.0)
+	assert_float(player.card_slots.get_slot("attack_single").cooldown_remaining).override_failure_message("Ctrl+slot key must not swap").is_equal(0.0)
 	var up := InputEventKey.new()
-	up.physical_keycode = KEY_1
+	up.physical_keycode = _slot_key(SLOT_1)
 	up.ctrl_pressed = true
 	up.pressed = false
 	player._unhandled_input(up)
 	await _frames(3)
-	assert_array(_casts).override_failure_message("Ctrl+1 must not cast").is_empty()
+	assert_array(_casts).override_failure_message("Ctrl+slot key must not cast").is_empty()
 	var plain := InputEventKey.new()
-	plain.physical_keycode = KEY_1
+	plain.physical_keycode = _slot_key(SLOT_1)
 	plain.pressed = true
 	player._unhandled_input(plain)
 	assert_int(player.cast_input.preview_slot).is_equal(0)

@@ -1290,3 +1290,8 @@ His answers are recorded verbatim in `docs/playtests/2026-11-02-director-open-it
   - The dodge-on copy matches H1's hashes. New baselines: arena 2591372848 / 4009010406; bot sim 2281795515 unchanged. Suite 1220/1220 (105 suites). (qa)
 - **w1a flake fix: waits are bounded in physics ticks (`MAX_WAIT_TICKS` 1800), not wall-clock seconds.** The bolt test asserts the first hit is exactly 1.5. [A longer wall-clock wait, which only moves the threshold.] Wall-clock waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`; fix them if they flake. (qa)
 - **Pause keeps accepting Space on its focused button.** The tree is paused, so the press never casts. Arm the pause screen only if a playtest shows a mash closing it. (qa, game-lead agrees)
+- **H2 close (game-lead).**
+  - **D29 raised, default A** (the dodge stays off until the director has played). The trial's answer is his hands, not the bot.
+  - **The playtester's D20 question is not re-asked:** the director already said a full volley killing the Wizard is acceptable. Its pause-arming question is closed by qa's view.
+  - **Pause before BD0:** I stop after H2's close rather than start BD0 straight away, because D29 changes what BD0 designs for the Movement slot. BD0 can still start on default A if he says "continue". [Starting BD0 immediately, which risks redoing its Movement section.]
+  - **The H2 playtest's volley observation** (pellets hitting outside the lane at the fire moment) went into PL3 item 6 as a possible correctness fix.

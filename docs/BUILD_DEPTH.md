@@ -2,7 +2,7 @@
 
 Owner: game-lead. Written 2026-11-02 for ROADMAP slice BD0. Status: **[PROPOSED]** until the director approves it (GDD §4a). Everything here is a plan; nothing is built yet.
 
-**Assumption:** D29 is unanswered, so this doc uses its default A: **the dodge stays off**, and the Movement slot is the player's only escape. Section 8 says what changes if he picks B or C.
+**Director answers (2026-11-02):** D22 = C in his own wording (relic sources and count, §4.1), D24 = A (relics in BD2, §9), D25 = A plus passive nodes (§3.4), D29 = B (the dodge is back, §8). This doc was first written assuming the dodge stayed off; §8 now describes the dodge-on version.
 
 Card ids below are real ids from `data/cards/`. Cards marked **NEW** don't exist yet. Numbers are starting values for tuning, not final.
 
@@ -37,7 +37,7 @@ Every card today is "do X damage in shape Y" or "heal Z" or "shorten slot S for 
 
 These become sim reports in BD1 (informational) and gates once tuned (BD3). Each uses the bot sim (`tools/run_bot_sim.ps1`) over 12+ seeds and 10-room runs.
 
-**Precondition: a plan-aware bot.** Today's bots press cards at random (H2 noted it). With random presses, a keystone looks no better than any other card and every check below reads as noise. BD1 adds a **plan policy**: the bot casts a card when its condition is live (or after a hold limit, default 1.5 s), uses the dead-card swap on a card whose condition can't come true soon, and **keeps one Movement card for escape** (it casts Movement offensively only when HP is above 50% or the Movement slot's next card is also ready). The policy reads hints from the card data (the `condition` block), not a per-card script.
+**Precondition: a plan-aware bot.** Today's bots press cards at random (H2 noted it). With random presses, a keystone looks no better than any other card and every check below reads as noise. BD1 adds a **plan policy**: the bot casts a card when its condition is live (or after a hold limit, default 1.5 s), uses the dead-card swap on a card whose condition can't come true soon, and **uses its dodge charges to escape** (dodge back since D29 = B; the earlier "keep one Movement for escape" rule is dropped, §8). The policy reads hints from the card data (the `condition` block), not a per-card script.
 
 | Check | Measure | Target (start; tune in BD3) |
 |---|---|---|
@@ -90,7 +90,7 @@ Any effect in a card's `effects` list may carry a `condition`. If the condition 
 - Statuses gain optional `"stacking": {"max_stacks": N, "decay_after": s}`. Today every status refreshes (`max_stacks` 1), so nothing changes until data says so.
   - `damage_over_time` multiplies its tick by stacks.
   - A self-status can carry `"per_stack": {"stat": "...", "value": ...}` through `StatModifiers`.
-- The max stack count is read through `StatModifiers` (`status_max_stacks.burn`), so a relic or keystone can raise it (D25 asks whether Burn and Bleed should stack in the base game).
+- The max stack count is read through `StatModifiers` (`status_max_stacks.burn`), so a relic, keystone or (later) passive-tree node can raise it. **Director, 2026-11-02 (D25 = A):** Burn and Bleed don't stack in the base game; only those special sources make them stack.
 - **New self-status `charge`** (Wizard): stacks to 10, decays 4 s after the last gain. It powers the Bolt Barrage archetype through `scale`.
 - Inspiration: Slay the Spire's Poison (stacks; Catalyst doubles it) and Strength (a stacking scaler). Confident.
 
@@ -115,19 +115,22 @@ Any effect in a card's `effects` list may carry a `condition`. If the condition 
 
 A relic is a passive, run-scoped item that changes a rule. It's found during a run, kept for that run only, and reset when the run ends. (Slay the Spire's relics are the model: passive, from elites, chests and shops, some with a downside. Confident.) The director's example is the first one built: "Burns now explode in an AoE when they expire and/or on death."
 
-### 4.1 Sources and count (defaults; D22 asks the director)
+### 4.1 Sources and count (director, 2026-11-02: D22 = C, his wording)
 
-Today's run is 10 rooms: 7 combat, 1 elite (rooms 3-8), 1 rest (rooms 2-8) and the boss last. A boss relic only means something once runs have more than one act, so it's reserved, not used.
+**The director's rule:** a player focused on relic hunting should be able to reach **about 6-8 relics per run**, with a **hard cap of 10**. Relics come from a **merchant** (buy several at once if you have the gold), a **dedicated relic stage** (pick a relic), and **elites**. GDD §4a.
 
-| Source | Default | Notes |
+Two of the three sources are map nodes, and gold doesn't exist yet. So relics arrive in two steps:
+
+| Source | BD2 (today's straight 10-room run) | First map build (after MAP0) |
 |---|---|---|
-| **Elite room cleared** | A relic choice: pick 1 of 3 or skip. Replaces that room's card offer. | Always. The elite becomes the room you want. |
-| **Rest room** | Choose: heal 30% (today) **or** pick 1 of 2 relics. | A real trade-off, and it fits the director's note that the rest heal may go later. |
-| **Card reward screen** | In 1 of every 4 reward rooms (seeded), one of the 3 card slots shows a relic instead. Picking it takes the relic. | Keeps relics showing up in a straight-line run. Reject still declines the whole offer. |
-| Boss (multi-act later) | Reserved: `boss` source, rarer relics. | Not used while the boss ends the run. |
-| Map nodes (later, §4.6) | Reserved: `merchant`, `curse_room`, `buff_room`, `mini_boss`. | Data only now, so the map needs no relic rework. |
+| **Elite room cleared** | A relic choice: pick 1 of 3 or skip. Replaces that room's card offer. | Same, on every elite node. |
+| **Relic room** (the dedicated relic stage) | New room type in the straight run, like the rest room: 1 per run, rooms 2-8, never next to the rest room or the elite. No fight; pick 1 of 3 relics or skip. | A map node type. A relic-hunting route passes several. |
+| **Merchant** | Not yet (needs gold). | A map node. Relics have a price from `rarity` (in `run.json`); the player can buy several if they have the gold. |
+| Mini-boss, curse/buff rooms | Reserved `sources` values. | MAP0 decides. |
+| Boss (multi-act later) | Reserved: `boss` source. | Not used while the boss ends the run. |
+| ~~Rest room (heal or relic)~~, ~~1 in 4 reward screens~~ | **Dropped**: not in the director's list (game-lead reading, D30 asks him to confirm). | Same. |
 
-**Count per run:** about **3-4** in a 10-room run (1 elite, 1 rest if taken, 1-2 reward swaps). That's enough to steer a build and few enough that each one matters. No starting relic for now. All of these numbers are data in `run.json` (`relics` block).
+**Count per run:** BD2's straight run gives about **2** (1 elite, 1 relic room). The map is what makes 6-8 reachable for a relic hunter; MAP0 lays out routes so a relic route reaches 6-8 and a route that ignores relics ends with about 2-3. **Hard cap 10** (`run.json` `relics.max_owned`). At the cap, relic offers are skipped: an elite gives its normal card offer, and a relic room shows a card offer instead. No starting relic for now. All numbers are data in `run.json` (`relics` block).
 
 ### 4.2 Data format (`data/relics/*.json`, one file per relic, like cards)
 
@@ -137,7 +140,7 @@ Today's run is 10 rooms: 7 combat, 1 elite (rooms 3-8), 1 rest (rooms 2-8) and t
   "name": "Pyre Insurance",
   "pool": "fire",
   "rarity": "common",
-  "sources": ["elite", "rest", "reward", "merchant", "mini_boss"],
+  "sources": ["elite", "relic_room", "merchant", "mini_boss"],
   "keywords": ["Burn"],
   "modifiers": [],
   "triggers": [
@@ -220,11 +223,11 @@ There's no event bus today (§1). BD1 adds a **`CombatEvents` autoload** (its ca
 
 ### 4.6 Branching map hooks (GDD §9; the map itself isn't designed here)
 
-- **`sources`** already names the future map nodes (`merchant`, `curse_room`, `buff_room`, `mini_boss`), so a node only has to call the same "offer relics from source X" function the elite and rest rooms use.
+- **`sources`** already names the future map nodes (`merchant`, `curse_room`, `buff_room`, `mini_boss`), so a node only has to call the same "offer relics from source X" function the elite and relic rooms use.
 - **`rarity`** lets harder nodes (mini-bosses) roll better relics: "the hardest path is the most rewarding".
 - **`curse`** is reserved for curse/buff rooms ("usually both at once"): a curse room offers a strong relic with a curse block attached (a downside modifier or trigger). It uses the same format, so there's no rework.
-- **Merchant:** relics carry no price yet. When gold exists, a price comes from `rarity` in `run.json`, not per relic.
-- The offer function takes (source, count, rng), filters by pool, source and owned relics, and weights by rarity. Elite, rest and reward rooms use it in BD2, and the map uses it later.
+- **Merchant (director: several relics can be bought at once):** relics carry no price yet. When gold exists, a price comes from `rarity` in `run.json`, not per relic. MAP0 designs the merchant screen and gold income.
+- The offer function takes (source, count, rng), filters by pool, source and owned relics, and weights by rarity. Elite and relic rooms use it in BD2, and the map uses it later. It respects the cap (`relics.max_owned`).
 
 ---
 
@@ -304,7 +307,7 @@ These are the numbers worked out on paper; BD1/BD3's content test (`CardDamageRu
 - **Timing.** A payoff is worth twice as much while its condition is live, so pressing it blindly wastes it. Kindling holds Fan the Flames until a group is Burning. Hit and Run casts Drive-By inside the 2 s after a dash. Controlled Burn lays a Zone before Heat Sink.
 - **Reading cooldowns.** The next card is always visible (GDD §4). With primes, the player plans a pair ("Momentum is up next in Movement, and Drive-By in Single, so dash then stab"). The cooldown bar becomes a countdown to a combo, not to "more damage".
 - **The dead-card swap earns its place** (the director's 2026-11-02 note): an off-plan card in front of the keystone is worth swapping past, and a payoff whose condition can't come true soon (no Zone up, nothing Burning) is worth cycling. No rule change is needed; the swap stays as it is (GDD §4 says don't change it yet).
-- **Slots pull against each other.** In Hit and Run, the Movement slot is both offense and the only escape (§8). In Kindling, the Utility slot feeds Burn instead of shortening cooldowns.
+- **Slots pull against each other.** In Hit and Run, the Movement slot is both offense and an escape, with only 1-2 dodge charges as backup (§8). In Kindling, the Utility slot feeds Burn instead of shortening cooldowns.
 - **Scaling with the deck.** `deck_count_at_least` lets a later card say "if your deck holds 6+ Burn cards", which makes reward picks matter for the plan (Monster Train's clan-focused drafting is the feel I'm after; I'm unsure of its exact card wording).
 
 ---
@@ -322,16 +325,16 @@ These are the numbers worked out on paper; BD1/BD3's content test (`CardDamageRu
 
 ---
 
-## 8. Dodge-off: what it means for Movement cards (D29 default A)
+## 8. The dodge and Movement cards (director, 2026-11-02: D29 = B)
 
-With the dodge off, **the Movement slot is the only escape**. That shapes every archetype:
+The dodge-off trial ended: the director found the game less fluid and fun without it. **The dodge is back on Space with Rogue 2 and Wizard 1 charges, Movement cards move to Ctrl, and enemy attacks and telegraphs get a little faster** (slice H3). What that means here:
 
-1. **Every archetype deck keeps at least one pure escape card** (`neutral_backward_leap`, `wizard_sideways_blink` or `wizard_tactical_hover`). The legal decks above all do.
-2. **Offensive Movement is a real risk**, not a free bonus. Hit and Run and Departure Lounge spend escapes for damage. That's the tension that makes the slot a decision. Second Wind and Controlled Panic are the relics that soften it, and they're optional.
-3. **Movement cooldowns stay as they are in BD1.** H2's bots died early, but they press cards at random and never save Movement to escape (H2 playtest). BD1's plan-aware bot keeps one Movement for escape; its numbers show whether Movement cooldowns really need a look. D29's sub-question ("should Movement cooldowns be looked at?") waits for that.
-4. **The bot policy must model it** (§2): no offensive Movement cast below 50% HP unless the next Movement card is ready too.
+1. **One pure escape card per deck is a recommendation, not a deck rule.** The legal archetype decks in §5 keep theirs anyway; nothing needs to change.
+2. **Offensive Movement can lean harder into damage.** Hit and Run's Momentum and Departure Lounge's leftovers can be tuned as offense first; the dodge covers emergencies, with only 1-2 charges.
+3. **Movement cooldowns stay as they are.** The D29 sub-question about them is moot with the dodge back.
+4. **The plan-aware bot (§2) dodges** with its charges and can spend Movement offensively; the "no offensive Movement below 50% HP" rule is dropped.
 
-**If D29 comes back B or C** (the dodge returns), Movement cards can lean more offensive: Hit and Run's Momentum could drop its escape value, and the "one pure escape per deck" rule becomes a recommendation, not a deck-design rule. Nothing else in this doc changes.
+(The first version of this section, written for the dodge-off trial, is in git history at commit 0ddd630.)
 
 ---
 
@@ -342,13 +345,13 @@ Each slice should fit one sitting and gets the full loop (gameplay-dev -> ux-des
 | Slice | Engine | Content | Gate |
 |---|---|---|---|
 | **BD1: synergy core** | derived tags + `keywords.json`; effect `condition` (`target_has_status`, `cast_within`, `zone_active`); `CombatEvents` autoload with `card_cast` + cast history; primed buff (`consume_on_cast`, `charges`); stat `status_damage_mult.<id>`; `aoe` `anchor: "caster"` | 8 NEW cards (R-A, R-B, W-A, W-C); 4 debug decks; tag chips, condition line, live glow, primed marker (ux) | plan-aware bot; removal pain, fingerprint spread, parity reported (informational) |
-| **BD2: relics** | rest of `CombatEvents` (`hit_landed` with origin, `status_ended` with reason incl. `owner_died`, `enemy_killed`, `attack_fired`, `dash_ended`, `player_damaged`); `RelicManager`; relic loader + validator; `RunState.relics` + save; relic offers (elite, rest, reward swap); recursion guard | 7 relics incl. Pyre Insurance; HUD relic row, relic offer panel (ux) | relic-aware bot; checks rerun with relics; no-card check still holds |
+| **BD2: relics** | rest of `CombatEvents` (`hit_landed` with origin, `status_ended` with reason incl. `owner_died`, `enemy_killed`, `attack_fired`, `dash_ended`, `player_damaged`); `RelicManager`; relic loader + validator; `RunState.relics` + save; relic offers (elite, relic room; cap 10); recursion guard | 7 relics incl. Pyre Insurance; HUD relic row, relic offer panel (ux) | relic-aware bot; checks rerun with relics; no-card check still holds |
 | **BD3: depth 2** | stacking statuses + `per_stack`; `scale`; `detonate_status`; card triggers on buffs; conditions `self_stacks_at_least`, `deck_count_at_least`, `hp_below` | R-C, R-D, W-B, W-D (about 9 NEW cards); the other 8 relics; stack counts on enemies (ux) | checks become **gating** after tuning; Grudge Brawler parity row |
 | BD4+ (later) | `spread_status`, cross-element hooks when Water lands (M4) | more archetypes, curse relics (with the map) | — |
 
 **Budget so far:** about 17 new cards, 15 relics (+2 extra sketches), 2 new effect types, 6 condition types, 1 autoload, 1 manager.
 
-**Order (default; D24 asks):** BD0 -> PL3 -> **BD1 -> BD2** -> 3d -> BD3. D28's map slots in where the director puts it (its default: a MAP0 doc after BD0, the first map build after BD1 and before 3d; BD2 then sits before the map build so map nodes can offer relics from day one).
+**Order (director, 2026-11-02: D24 = A, D28 = A):** BD0 -> H3 (dodge return) -> MAP0 -> PL3 -> **BD1 -> BD2** -> first map build -> 3d -> BD3. BD2 sits before the map build so map nodes can offer relics from day one.
 
 ---
 
@@ -374,22 +377,12 @@ No web access was used. "Confident" means I know the mechanic well; "unsure" mea
 
 ---
 
-## 11. Questions for the director (at most 3)
+## 11. Questions for the director (answered 2026-11-02)
 
-Each has a default. Work goes ahead on the default until he answers. They're also in `docs/OPEN_ITEMS.md`.
-
-- **D22. Relic sources and count.**
-  - **A (default):** an elite gives a relic choice instead of cards; a rest room offers heal 30% or a relic; 1 in 4 reward screens shows a relic in one of the 3 slots. About 3-4 relics per run.
-  - **B:** fewer: elites and rest rooms only, about 2 per run.
-  - **C:** more: any reward screen can show a relic, about 5-6 per run.
-- **D24. When relics are built.** The provisional BD1 brief had relics in BD1; the BD0 brief split them into BD2.
-  - **A (default):** BD1 builds the synergy core and 2 archetypes per class; BD2 builds relics right after, still before 3d. Each slice fits one sitting.
-  - **B:** one bigger BD1 with relics included. Fewer stops, but a bigger slice that's more likely to be cut off mid-way.
-  - **C:** relics after 3d.
-- **D25. Should Burn and Bleed stack in the base game?**
-  - **A (default):** no. They refresh like today; stacking comes only from relics and keystones (Kindling Jar, Bleed Out). Base balance doesn't move.
-  - **B:** yes, up to 3 stacks for everyone. Fire gets stronger across the board, and every Burn card is retuned.
-  - **C:** never. Depth comes from conditions, triggers and spreading only.
+- **D22 = C, in his wording:** 6-8 relics for a relic hunter, hard cap 10; sources are a merchant (several at once with gold), a dedicated relic stage, and elites. §4.1.
+- **D24 = A:** BD1 synergy core, then BD2 relics, before 3d. §9.
+- **D25 = A:** no base stacking for Burn and Bleed; relics, keystones and potential passive nodes can allow it. §3.4.
+- Follow-up **D30** (game-lead reading of D22, default applied): rest rooms and card reward screens no longer offer relics.
 
 ---
 
@@ -399,5 +392,5 @@ Each has a default. Work goes ahead on the default until he answers. They're als
 - Tags are derived from effects; only `Primer`, `Payoff`, `Keystone` (and later keywords) are authored.
 - Relics use the card effect format; a relay autoload (`CombatEvents`) is the event bus, introduced in BD1 (cast history) and finished in BD2.
 - New keystones are `reward`, other new cards `starter` (applied in 3d).
-- Every archetype deck keeps a pure escape Movement card while the dodge is off.
+- ~~Every archetype deck keeps a pure escape Movement card while the dodge is off.~~ Now a recommendation (D29 = B, §8).
 - The sim checks need a plan-aware bot; BD1 builds it.

@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-02 (H2 closed)
-**Status: 3 waiting on a decision. D29 (should the dodge stay off?) is the one I'd like answered before BD0, so I've paused there: say "continue" and I start BD0 assuming the dodge stays off. D26 and D28 don't block. 5 things to look at when you play (38-42), plus item 35 after BD1.** Next: **BD0** (build-depth design doc), then PL3 -> BD1 -> 3d.
+Last updated: 2026-11-02 (BD0 done)
+**Status: 6 waiting on a decision, none blocking. BD0 is done: the build-depth plan is in `docs/BUILD_DEPTH.md` (a 1-page summary is in GDD §4a). It asks D22, D24 and D25. I wrote it assuming the dodge stays off (D29's default). 5 things to look at when you play (38-42), plus item 35 after BD2.** Next: **MAP0** (map design doc, docs only; D28's default), then PL3 -> BD1 -> BD2.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D28 = A".
 
@@ -15,6 +15,8 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## What's new since you last played
 
+- **BD0 (docs only, nothing to play):** `docs/BUILD_DEPTH.md` is the plan for making cards matter. Worth a skim: §5 (4 archetypes per class, each with a keystone card and a full deck), §4.5 (15 relic ideas, including your "burns explode" as Pyre Insurance, and 5 for light/heavy builds) and §11 (the three questions below). Nothing in it is built yet; BD1 starts it.
+
 - **H2 (tag `playtest-2026-11-02-H2`), your dodge-off request:**
   - **The dodge is off,** and its row under the attack meters is gone. The code is kept behind the switch above.
   - **Movement is on Space and Utility on F,** so the strip reads Q E F Space R.
@@ -25,9 +27,24 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## Needs your decision
 
-Until you answer, I use my default. **D29 is the exception:** I paused before BD0 for it (BD0 designs the Movement cards, which depend on it). "Continue" means "use the default". **D22, D24 and D25 are reserved** for BD0's questions. Next new number: D30.
+Until you answer, I use my default, and none of these blocks work. Next new number: D30.
 
-- **D29: Should the dodge stay off? (new, from H2; please play first, items 40-42.)** With the dodge off the bots lose most runs even with cards (above), and you were winning comfortably with it on. Two questions behind it: how often should a careful player win a run with cards on today's "Easy" tier? And with Movement as your only escape, is "sometimes you have no escape" the point, or should Movement cooldowns be looked at?
+- **D22: Where relics come from, and how many per run (new, BD0).** Relics are run-only items that change a rule (your "burns explode" idea is the first one).
+  - **A (my default):** an elite room gives a relic choice instead of cards; a rest room offers heal 30% **or** a relic; 1 in 4 reward screens shows a relic in one of its 3 places. About 3-4 relics per run.
+  - **B:** fewer: elites and rest rooms only, about 2 per run.
+  - **C:** more: any reward screen can show one, about 5-6 per run.
+
+- **D24: When relics get built (new, BD0).** Your provisional BD1 had relics in it; BD0's brief split them out.
+  - **A (my default):** BD1 builds the card-synergy core (tags, "if Burning" style conditions, combos after a Movement card) with 2 new builds per class; **BD2** builds relics straight after, still before loadouts (3d). Each fits one sitting.
+  - **B:** one bigger BD1 with relics in it.
+  - **C:** relics after loadouts.
+
+- **D25: Should Burn and Bleed stack in the base game? (new, BD0)** Today a second Burn just refreshes the first.
+  - **A (my default):** no; only certain relics and keystone cards make them stack (for example a "Kindling Jar" relic: Burn stacks up to 3). Base balance doesn't move.
+  - **B:** yes, up to 3 stacks for everyone. Fire gets stronger everywhere and the Burn cards get retuned.
+  - **C:** never; build depth comes from conditions and explosions only.
+
+- **D29: Should the dodge stay off? (from H2; please play first, items 40-42.)** BD0 assumed A. If you pick B or C, only BD0's Movement-card guidance changes (BUILD_DEPTH §8). With the dodge off the bots lose most runs even with cards (above), and you were winning comfortably with it on. Two questions behind it: how often should a careful player win a run with cards on today's "Easy" tier? And with Movement as your only escape, is "sometimes you have no escape" the point, or should Movement cooldowns be looked at?
   - **A (my default until you play):** keep it off for now. BD0 designs Movement cards as the escape slot.
   - **B:** bring it back with fewer charges (for example 1 for both classes) on a key other than Space.
   - **C:** bring it back as it was (Rogue 3, Wizard 2 charges), on a key other than Space. Movement stays on Space.
@@ -53,9 +70,13 @@ Reply with the number and a word or two.
 40. **H2 with cards, no dodge.** Play one run per class. Does danger read as fair? Watch rooms 1-3 especially, and one boss "Fan of regrets" volley.
 41. **H2 no cards, no dodge.** Do you lose before the boss now?
 42. **H2 keys.** Does Space feel right for Movement, and F for Utility?
-35. **BD1 builds (after BD1).** Build the same class and element twice with different plans. Do the two runs feel different? Does removing a keystone card hurt?
+35. **Builds (after BD2).** Build the same class and element twice with different plans. Do the two runs feel different? Does removing a keystone card hurt?
 
-## Vision check, round 2 (answer after playing BD1)
+## Later, optional
+
+- **Research digest.** BD0 used no web research, so it marks some ideas from Erannorth Chronicles, Gwent and Monster Train as "unsure". If you'd like, a later task can research your four favourite games and firm those up. Say "digest" to schedule it; otherwise I won't.
+
+## Vision check, round 2 (answer after playing BD2)
 
 Your round-1 answers are in `docs/RESOLVED.md`.
 

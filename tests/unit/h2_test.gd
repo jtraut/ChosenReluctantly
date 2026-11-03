@@ -6,6 +6,7 @@ extends GdUnitTestSuite
 
 const MAIN_SCENE_PATH := "res://scenes/main/Main.tscn"
 const DEFAULTS := "res://data/settings.json"
+const RUN_MAIN_PATH := "res://scenes/main/RunMain.tscn"
 
 var _original_store: SettingsStore = null
 var _casts: Array[String] = []
@@ -22,6 +23,8 @@ func before_test() -> void:
 
 func after_test() -> void:
 	DodgeSwitch.reset()
+	ClassPickScreen.enabled_override = false
+	GamePause.reset()
 	Settings.use_store(_original_store)
 	if _main != null and is_instance_valid(_main):
 		get_tree().current_scene = null
@@ -190,6 +193,77 @@ func test_shift_space_and_shift_f_swap_without_casting_or_previewing() -> void:
 		_key(pair[0], false, true)
 		await _frames(2)
 	assert_array(_casts).is_empty()
+
+
+# ---- Space still reaches the Player after every screen that used it (it is ui_accept too) ----
+
+func _run_main() -> Main:
+	RunSession.begin_new_run(42)
+	var main: Main = (load(RUN_MAIN_PATH) as PackedScene).instantiate()
+	add_child(main)
+	auto_free(main)
+	await _frames(3)
+	main.player.card_slots.card_cast.connect(func(slot_type: String, _card: String) -> void: _casts.append(slot_type))
+	return main
+
+
+## No Control may hold focus during play (it would take Space as ui_accept), and Space press then release casts Movement once.
+func _assert_space_casts_movement_once(main: Main, where: String) -> void:
+	assert_object(main.get_viewport().gui_get_focus_owner()).override_failure_message("%s: a Control still has focus" % where).is_null()
+	_casts.clear()
+	main.player.card_slots.get_slot("movement").cooldown_remaining = 0.0
+	_key(KEY_SPACE, true)
+	await _frames(2)
+	_key(KEY_SPACE, false)
+	await _frames(3)
+	assert_array(_casts).override_failure_message("%s: Space did not cast Movement exactly once" % where).contains_exactly(["movement"])
+
+
+func test_space_casts_movement_after_the_class_pick_closes() -> void:
+	ClassPickScreen.enabled_override = true
+	var main: Main = await _run_main()
+	var screen := main.get_node("ClassPickScreen") as ClassPickScreen
+	assert_bool(screen.is_open()).is_true()
+	screen.disarm()
+	_key(KEY_SPACE, true)
+	_key(KEY_SPACE, false)
+	await _frames(2)
+	assert_bool(screen.is_open()).override_failure_message("Space confirmed the class pick").is_true()
+	screen.confirm()
+	await _frames(3)
+	assert_bool(screen.is_open()).is_false()
+	await _assert_space_casts_movement_once(main, "after the class pick")
+
+
+func test_space_casts_movement_after_a_run_prompt_closes() -> void:
+	var main: Main = await _run_main()
+	var prompt := main.get_node("RoomClearedScreen") as RunPromptScreen
+	prompt.show_content({"title": "t", "rows": [], "button": "Continue"})
+	prompt.disarm()
+	_key(KEY_SPACE, true)
+	_key(KEY_SPACE, false)
+	await _frames(2)
+	assert_bool(prompt.visible).override_failure_message("Space confirmed the prompt").is_true()
+	prompt.button.pressed.emit()
+	await _frames(3)
+	await _assert_space_casts_movement_once(main, "after Continue")
+
+
+func test_space_casts_movement_after_resuming_from_the_pause_screen() -> void:
+	var main: Main = await _run_main()
+	var settings := main.get_node("SettingsScreen") as SettingsScreen
+	settings.open()
+	await _frames(2)
+	assert_bool(settings.is_open()).is_true()
+	# Pause and settings keep Space as ui_accept: on the focused Resume button it closes the screen (deliberate menu), and
+	# it must not also cast on the way out.
+	_key(KEY_SPACE, true)
+	_key(KEY_SPACE, false)
+	await _frames(4)
+	assert_bool(settings.is_open()).is_false()
+	assert_array(_casts).override_failure_message("Space on Resume also cast").is_empty()
+	await _frames(8)  # past the post-resume dodge/cast block ticks
+	await _assert_space_casts_movement_once(main, "after Resume")
 
 
 # ---- Game Over ----

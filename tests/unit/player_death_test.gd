@@ -14,6 +14,7 @@ func _spawn_main() -> Main:
 
 
 func after_test() -> void:
+	DodgeSwitch.reset()
 	Juice.reset()
 
 
@@ -65,6 +66,7 @@ func test_hit_plus_burn_tick_same_frame_one_death() -> void:
 
 
 func test_actions_blocked_after_death() -> void:
+	DodgeSwitch.enable()  # H2: with the shipped switch off this test could not fail on the dodge
 	var main := _spawn_main()
 	await get_tree().process_frame
 	var player := main.player

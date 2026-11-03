@@ -19,7 +19,6 @@ const FORBIDDEN: Array[String] = [
 
 ## Exact strings that are allowed, with the reason.
 const ALLOWED_EXACT: Array[String] = [
-	"Enter or Space",  # game-over confirm: menu accept (Enter / ui_accept), not the dodge binding
 ]
 
 ## Files that legitimately produce the text.

@@ -2,7 +2,7 @@
 
 Owner: game-lead. Written 2026-11-02 for ROADMAP slice BD0. Status: **[PROPOSED]** until the director approves it (GDD §4a). Everything here is a plan; nothing is built yet.
 
-**Assumption:** D29 is unanswered, so this doc uses its default A: **the dodge stays off**, and the Movement slot is the player's only escape. Section 12 says what changes if he picks B or C.
+**Assumption:** D29 is unanswered, so this doc uses its default A: **the dodge stays off**, and the Movement slot is the player's only escape. Section 8 says what changes if he picks B or C.
 
 Card ids below are real ids from `data/cards/`. Cards marked **NEW** don't exist yet. Numbers are starting values for tuning, not final.
 
@@ -304,7 +304,7 @@ These are the numbers worked out on paper; BD1/BD3's content test (`CardDamageRu
 - **Timing.** A payoff is worth twice as much while its condition is live, so pressing it blindly wastes it. Kindling holds Fan the Flames until a group is Burning. Hit and Run casts Drive-By inside the 2 s after a dash. Controlled Burn lays a Zone before Heat Sink.
 - **Reading cooldowns.** The next card is always visible (GDD §4). With primes, the player plans a pair ("Momentum is up next in Movement, and Drive-By in Single, so dash then stab"). The cooldown bar becomes a countdown to a combo, not to "more damage".
 - **The dead-card swap earns its place** (the director's 2026-11-02 note): an off-plan card in front of the keystone is worth swapping past, and a payoff whose condition can't come true soon (no Zone up, nothing Burning) is worth cycling. No rule change is needed; the swap stays as it is (GDD §4 says don't change it yet).
-- **Slots pull against each other.** In Hit and Run, the Movement slot is both offense and the only escape (§12). In Kindling, the Utility slot feeds Burn instead of shortening cooldowns.
+- **Slots pull against each other.** In Hit and Run, the Movement slot is both offense and the only escape (§8). In Kindling, the Utility slot feeds Burn instead of shortening cooldowns.
 - **Scaling with the deck.** `deck_count_at_least` lets a later card say "if your deck holds 6+ Burn cards", which makes reward picks matter for the plan (Monster Train's clan-focused drafting is the feel I'm after; I'm unsure of its exact card wording).
 
 ---
@@ -322,7 +322,7 @@ These are the numbers worked out on paper; BD1/BD3's content test (`CardDamageRu
 
 ---
 
-## 12. Dodge-off: what it means for Movement cards (D29 default A)
+## 8. Dodge-off: what it means for Movement cards (D29 default A)
 
 With the dodge off, **the Movement slot is the only escape**. That shapes every archetype:
 
@@ -332,3 +332,72 @@ With the dodge off, **the Movement slot is the only escape**. That shapes every 
 4. **The bot policy must model it** (§2): no offensive Movement cast below 50% HP unless the next Movement card is ready too.
 
 **If D29 comes back B or C** (the dodge returns), Movement cards can lean more offensive: Hit and Run's Momentum could drop its escape value, and the "one pure escape per deck" rule becomes a recommendation, not a deck-design rule. Nothing else in this doc changes.
+
+---
+
+## 9. Content budget and slices
+
+Each slice should fit one sitting and gets the full loop (gameplay-dev -> ux-designer -> qa -> playtester -> tech-writer -> close) and a `playtest-YYYY-MM-DD-<slice>` tag. Slices are tied to mechanics, not specific cards: if a card doesn't work, swap it for another card using the same mechanic.
+
+| Slice | Engine | Content | Gate |
+|---|---|---|---|
+| **BD1: synergy core** | derived tags + `keywords.json`; effect `condition` (`target_has_status`, `cast_within`, `zone_active`); `CombatEvents` autoload with `card_cast` + cast history; primed buff (`consume_on_cast`, `charges`); stat `status_damage_mult.<id>`; `aoe` `anchor: "caster"` | 8 NEW cards (R-A, R-B, W-A, W-C); 4 debug decks; tag chips, condition line, live glow, primed marker (ux) | plan-aware bot; removal pain, fingerprint spread, parity reported (informational) |
+| **BD2: relics** | rest of `CombatEvents` (`hit_landed` with origin, `status_ended` with reason incl. `owner_died`, `enemy_killed`, `attack_fired`, `dash_ended`, `player_damaged`); `RelicManager`; relic loader + validator; `RunState.relics` + save; relic offers (elite, rest, reward swap); recursion guard | 7 relics incl. Pyre Insurance; HUD relic row, relic offer panel (ux) | relic-aware bot; checks rerun with relics; no-card check still holds |
+| **BD3: depth 2** | stacking statuses + `per_stack`; `scale`; `detonate_status`; card triggers on buffs; conditions `self_stacks_at_least`, `deck_count_at_least`, `hp_below` | R-C, R-D, W-B, W-D (about 9 NEW cards); the other 8 relics; stack counts on enemies (ux) | checks become **gating** after tuning; Grudge Brawler parity row |
+| BD4+ (later) | `spread_status`, cross-element hooks when Water lands (M4) | more archetypes, curse relics (with the map) | — |
+
+**Budget so far:** about 17 new cards, 15 relics (+2 extra sketches), 2 new effect types, 6 condition types, 1 autoload, 1 manager.
+
+**Order (default; D24 asks):** BD0 -> PL3 -> **BD1 -> BD2** -> 3d -> BD3. D28's map slots in where the director puts it (its default: a MAP0 doc after BD0, the first map build after BD1 and before 3d; BD2 then sits before the map build so map nodes can offer relics from day one).
+
+---
+
+## 10. Sources
+
+No web access was used. "Confident" means I know the mechanic well; "unsure" means I'm not certain how that game does it, so the idea is ours.
+
+| Idea here | From | How sure |
+|---|---|---|
+| Relics: passive, run-scoped, from elites/rest/shops, some with downsides (Overtime, curse relics) | Slay the Spire | Confident |
+| Payoff on a status (Fan the Flames: "if Burning, hit again") | Slay the Spire's Bane ("if the enemy is Poisoned, deal the damage again") | Confident |
+| Stacking DoT, cashing it in (Kindling Jar, Open a Vein) | Slay the Spire's Poison and Catalyst | Confident; detonate is our twist |
+| Stacking self-scaler (Charge) | Slay the Spire's Strength; also Hearthstone's Spell Damage (`status_damage_mult`) | Confident |
+| "Next Attack" primes (Momentum) | Slay the Spire's Double Tap | Confident |
+| `cast_within` (Drive-By, Well, Actually) | Hearthstone's Rogue Combo ("bonus if you played another card first this turn") | Confident |
+| On-death triggers (Pyre Insurance, Second Wind) | Monster Train's death-triggered abilities | Fairly sure the keyword is "Harvest"; the trigger idea is certain |
+| Clan-like focus: reward picks steer toward a plan (`deck_count_at_least`) | Monster Train's primary and allied clans | Confident about clans; unsure about specific card wording |
+| Threshold statuses (a status that matters at N stacks) | Gwent's Bleeding/Poison-style statuses | Unsure of the exact rules |
+| Gear-shaped decks, many small synergies | Erannorth Chronicles | Unsure; I don't know its mechanics well enough to borrow specifics |
+| Burn explosion on expire or death | The director (citing The Last Flame) | The idea is his; unsure how The Last Flame does it |
+
+**Optional:** a research digest on the director's four favourites (Erannorth Chronicles, Gwent, Slay the Spire, Monster Train) would firm up the "unsure" rows. It needs web access, which BD0 doesn't use. It's offered in OPEN_ITEMS, not scheduled.
+
+---
+
+## 11. Questions for the director (at most 3)
+
+Each has a default. Work goes ahead on the default until he answers. They're also in `docs/OPEN_ITEMS.md`.
+
+- **D22. Relic sources and count.**
+  - **A (default):** an elite gives a relic choice instead of cards; a rest room offers heal 30% or a relic; 1 in 4 reward screens shows a relic in one of the 3 slots. About 3-4 relics per run.
+  - **B:** fewer: elites and rest rooms only, about 2 per run.
+  - **C:** more: any reward screen can show a relic, about 5-6 per run.
+- **D24. When relics are built.** The provisional BD1 brief had relics in BD1; the BD0 brief split them into BD2.
+  - **A (default):** BD1 builds the synergy core and 2 archetypes per class; BD2 builds relics right after, still before 3d. Each slice fits one sitting.
+  - **B:** one bigger BD1 with relics included. Fewer stops, but a bigger slice that's more likely to be cut off mid-way.
+  - **C:** relics after 3d.
+- **D25. Should Burn and Bleed stack in the base game?**
+  - **A (default):** no. They refresh like today; stacking comes only from relics and keystones (Kindling Jar, Bleed Out). Base balance doesn't move.
+  - **B:** yes, up to 3 stacks for everyone. Fire gets stronger across the board, and every Burn card is retuned.
+  - **C:** never. Depth comes from conditions, triggers and spreading only.
+
+---
+
+## Decided in this doc (game-lead defaults, logged in DECISIONS "2026-11-02 - BD0")
+
+- Conditional and scaled damage doesn't count toward `CardDamageRule`; payoffs pass on base damage.
+- Tags are derived from effects; only `Primer`, `Payoff`, `Keystone` (and later keywords) are authored.
+- Relics use the card effect format; a relay autoload (`CombatEvents`) is the event bus, introduced in BD1 (cast history) and finished in BD2.
+- New keystones are `reward`, other new cards `starter` (applied in 3d).
+- Every archetype deck keeps a pure escape Movement card while the dodge is off.
+- The sim checks need a plan-aware bot; BD1 builds it.

@@ -18,7 +18,7 @@ Last updated: 2026-11-02 (director answers D22/D24/D25/D26/D28/D29 recorded). **
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- Nothing in progress once the tech-writer docs pass for the director's answers is committed (handoff: game-lead commits a6c33e6..HEAD). If that pass is missing from the CHANGELOG, run it first.
+- Nothing in progress. The director-answers docs pass is done (tech-writer 1851da9: CHANGELOG + RESOLVED). Working tree clean.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes; fix them the way w1a was fixed in 4aa7141 if they fire).
 
 ## Exact next step

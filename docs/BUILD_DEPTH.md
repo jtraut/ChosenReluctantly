@@ -225,3 +225,110 @@ There's no event bus today (§1). BD1 adds a **`CombatEvents` autoload** (its ca
 - **`curse`** is reserved for curse/buff rooms ("usually both at once"): a curse room offers a strong relic with a curse block attached (a downside modifier or trigger). It uses the same format, so there's no rework.
 - **Merchant:** relics carry no price yet. When gold exists, a price comes from `rarity` in `run.json`, not per relic.
 - The offer function takes (source, count, rng), filters by pool, source and owned relics, and weights by rarity. Elite, rest and reward rooms use it in BD2, and the map uses it later.
+
+---
+
+## 5. Archetypes (Fire only, 4 per class)
+
+Each archetype has a **core** (4-6 cards, the keystone marked), 2-3 relics that push it, and **one full legal deck** (at least 3 unique per slot, 15+ cards, only the class, Fire and Neutral pools). Those decks become `data/debug_decks/` presets (for example `--deck=rogue-kindling`), and the sim checks use them.
+
+**Damage rule check for the new cards** (light hit 3, light DPS 5; Attack: Single base 1.0 s, Attack: AoE base 2.5 s; Burn = 2/s, counted over min(duration, cycle)). Every NEW Attack card passes on its **unconditional** damage:
+
+| NEW card | Unconditional cast | Cooldown mod | Cycle | DPS | Pass? |
+|---|---|---|---|---|---|
+| `fire_fan_the_flames` | 10 + Burn (3 ticks, 6) | +0.5 | 3.0 s | 5.33 | yes |
+| `fire_heat_sink` | 10 + Burn (3 ticks, 6) | +0.5 | 3.0 s | 5.33 | yes |
+| `fire_slow_burn` (zone) | 2.5 x 8 ticks = 20 | +0.8 | 3.3 s | 6.06 | yes |
+| `wizard_well_actually` | 13 | 0.0 | 2.5 s | 5.2 | yes |
+| `rogue_drive_by` | 6 | +0.1 | 1.1 s | 5.45 | yes |
+| `wizard_thesis_defense` | 7 | +0.3 | 1.3 s | 5.38 | yes |
+| `wizard_footnotes` | 4 x 1.8 = 7.2 | +0.2 | 1.2 s | 6.0 | yes |
+| `rogue_open_a_vein` | 6 | +0.1 | 1.1 s | 5.45 | yes |
+| `rogue_paper_cuts` | 4 x 1.5 = 6 + Bleed (2 ticks, 2) | +0.3 | 1.3 s | 6.15 | yes |
+
+These are the numbers worked out on paper; BD1/BD3's content test (`CardDamageRule`) is the real gate. The rule is the gate: BD1 sets the final numbers so every new Attack card passes **without** its conditional bonus. Area cards hit several enemies, which the single-target rule doesn't credit; that's an existing property of the rule, not something BD0 changes.
+
+### Fire Rogue
+
+**R-A. Kindling** ("set it alight, then make it worse"). *Plays like:* spread Burn wide with cheap area cards, then cash it in on clusters. Damage is mostly Burn ticks and the payoff. Slice: **BD1**.
+- Core: `fire_fan_the_flames` **NEW, Keystone** (Attack: AoE, cooldown +0.5. Area r3.0, 10 fire, applies Burn 4 s. **If the target is Burning: +10 fire and its Burn refreshes to 5 s.**) · `fire_kindling` **NEW, Primer** (Utility. For 8 s, Burn you apply ticks for +50%. New stat `status_damage_mult.burn`.) · `fire_ember_whatever` · `fire_fine_burn_then` · `fire_wall` · `fire_blaze_and_bail`.
+- Relics: Pyre Insurance, Smoldering Grudge, Kindling Jar.
+- Deck (15): single `fire_ember_whatever`, `rogue_quick_slash`, `rogue_overhand_whatever` · AoE `fire_fan_the_flames`, `fire_fine_burn_then`, `fire_wall` · utility `fire_kindling`, `fire_hot_head`, `neutral_deep_sigh` · movement `fire_blaze_and_bail`, `rogue_ugh_fine_moving`, `neutral_backward_leap` · recovery `neutral_healing_potion`, `rogue_nap_time`, `neutral_regeneration`.
+
+**R-B. Hit and Run** (Hearthstone's Combo idea, in real time). *Plays like:* dash in, hit hard in the 2 s after, dash out. Damage is mostly the Attack: Single slot. The risk: every offensive dash spends your escape. Slice: **BD1**.
+- Core: `rogue_drive_by` **NEW, Keystone, Payoff** (Attack: Single. Cone 6 physical, cooldown +0.1. **If you cast a Movement card in the last 2 s: +12 physical and knockback 3.**) · `rogue_momentum` **NEW, Primer** (Movement. Dash 4 m, pass-through. **Primes: your next Attack: Single within 3 s has no cooldown.**) · `rogue_lunge_strike` · `rogue_ugh_fine_moving` · `rogue_quick_slash` · `rogue_not_my_problem`.
+- Relics: Second Wind, Exit Strategy, Controlled Panic.
+- Deck (16): single `rogue_drive_by`, `rogue_quick_slash`, `rogue_flurry` · AoE `rogue_everyone_calm_down`, `neutral_shrug_bomb`, `fire_fine_burn_then` · utility `rogue_not_my_problem`, `fire_hot_head`, `neutral_deep_sigh` · movement `rogue_momentum`, `rogue_lunge_strike`, `rogue_ugh_fine_moving`, `neutral_backward_leap` · recovery `neutral_healing_potion`, `rogue_nap_time`, `neutral_leech`.
+
+**R-C. Bleed Out.** *Plays like:* many small cuts that stack Bleed, then one cut that cashes them all in. Physical, so armor matters, not resistance: the answer to the fire-resistant golem. Slice: **BD3** (needs stacking and `detonate_status`).
+- Core: `rogue_open_a_vein` **NEW, Keystone** (Attack: Single. Cone 6 physical, cooldown +0.1. **Detonates Bleed: deals its remaining damage x2 at once.**) · `rogue_paper_cuts` **NEW** (Attack: Single. 4 hits of 1.5, cooldown +0.3, each adds a Bleed stack.) · `rogue_bad_influence` **NEW** (Utility. For 6 s your Bleeds tick 50% faster. It also gives the Rogue a 4th Utility card, so Rogue Utility slots can finally differ.) · `rogue_bleed_slash` · `rogue_flurry`.
+- Relics: Second Wind, Serrated Excuse (**extra sketch**: Bleed stacks to 5), Smoldering Grudge's Bleed twin (later).
+- Deck (16): single `rogue_open_a_vein`, `rogue_paper_cuts`, `rogue_bleed_slash`, `rogue_flurry` · AoE `rogue_everyone_calm_down`, `neutral_shrug_bomb`, `fire_fine_burn_then` · utility `rogue_bad_influence`, `rogue_not_my_problem`, `neutral_deep_sigh` · movement `rogue_lunge_strike`, `rogue_ugh_fine_moving`, `neutral_backward_leap` · recovery `neutral_leech`, `neutral_healing_potion`, `neutral_regeneration`.
+
+**R-D. Grudge Brawler** (the basic-attack archetype; GDD §4a goal 4). *Plays like:* the light and heavy attacks do the work; cards keep you alive and buy windows. **Only viable with its relics**, by design: without them it's the no-card run the GDD rules out. Slice: **BD3**.
+- Core: `rogue_warm_up` **NEW, Keystone** (Utility. For 6 s, light attacks 30% faster and heavy cooldown -30%.) · `rogue_everyone_calm_down` · `rogue_shadow_step` · `rogue_not_my_problem`.
+- Relics: Spite Knuckles, Heavy Sigh, Muscle Memory, Overtime (Unpaid).
+- Deck (15): single `rogue_quick_slash`, `rogue_overhand_whatever`, `fire_ember_whatever` · AoE `rogue_everyone_calm_down`, `neutral_shrug_bomb`, `fire_fine_burn_then` · utility `rogue_warm_up`, `rogue_not_my_problem`, `neutral_deep_sigh` · movement `rogue_shadow_step`, `rogue_ugh_fine_moving`, `neutral_backward_leap` · recovery `neutral_healing_potion`, `rogue_nap_time`, `neutral_regeneration`.
+
+### Fire Wizard
+
+**W-A. Controlled Burn** (zone control). *Plays like:* lay fire on the ground and fight inside it; area cards hit harder while a Zone is up. Damage is mostly Zones and Burn. Slice: **BD1**.
+- Core: `fire_heat_sink` **NEW, Keystone, Payoff** (Attack: AoE at the aim point, max range 8. Area r2.5, 10 fire, Burn 4 s, cooldown +0.5. **While one of your Zones is active: +10 fire.**) · `fire_slow_burn` **NEW** (Attack: AoE. A circle Zone r2.5 at the aim point for 4 s, 2.5 fire every 0.5 s, Burn 100%, cooldown +0.8.) · `fire_wall` · `fire_fireball` · `wizard_borrowed_focus`.
+- Relics: Lingering Embers, Pyre Insurance, Grading Curve.
+- Deck (16): single `fire_flaming_nonsense`, `wizard_bolt_volley`, `wizard_overqualified_bolt` · AoE `fire_heat_sink`, `fire_slow_burn`, `fire_wall`, `fire_fireball` · utility `wizard_borrowed_focus`, `fire_hot_head`, `wizard_ward` · movement `wizard_sideways_blink`, `wizard_tactical_hover`, `neutral_backward_leap` · recovery `neutral_healing_potion`, `neutral_leech`, `neutral_regeneration`.
+
+**W-B. Thesis** (stacking charge). *Plays like:* fast multi-shot cards build Charge, and one big bolt spends it. Damage is mostly Attack: Single, in spikes. Slice: **BD3** (needs stacking and `scale`).
+- Core: `wizard_thesis_defense` **NEW, Keystone** (Attack: Single. Projectile 7 neutral, cooldown +0.3, **+1.5 per Charge, consumes all Charge** (max 10).) · `wizard_footnotes` **NEW, Primer** (Attack: Single. 4 hits of 1.8, cooldown +0.2; the cast gives you 2 Charge.) · `wizard_bolt_volley` · `fire_flaming_nonsense` · `wizard_borrowed_focus`.
+- Relics: Paperwork Fire, Extra Credit (**extra sketch**: every 5th card projectile fires twice), Hot Streak.
+- Deck (16): single `wizard_thesis_defense`, `wizard_footnotes`, `wizard_bolt_volley`, `fire_flaming_nonsense` · AoE `wizard_arcane_nova`, `fire_fireball`, `neutral_shrug_bomb` · utility `wizard_borrowed_focus`, `neutral_deep_sigh`, `wizard_footwork_allegedly` · movement `wizard_sideways_blink`, `wizard_tactical_hover`, `neutral_backward_leap` · recovery `neutral_healing_potion`, `neutral_leech`, `neutral_regeneration`.
+
+**W-C. Departure Lounge** (blink-kiting). *Plays like:* every escape leaves a present behind, and area cards hit harder right after a blink. Damage is split between Movement leftovers and the AoE slot. Slice: **BD1**.
+- Core: `wizard_parting_gift` **NEW, Keystone** (Movement. Blink 5 m, invulnerable. **Leaves a delayed blast at your start point**: area r2.2, 10 fire, 0.6 s telegraph.) · `wizard_well_actually` **NEW, Payoff** (Attack: AoE. Area r3.0 around you, 13 neutral, cooldown 0. **If you cast a Movement card in the last 1.5 s: +8 and knockback 6.**) · `wizard_footwork_allegedly` · `wizard_sideways_blink` · `wizard_tactical_hover`.
+  - Engine note: a delayed `aoe` locks its centre at the aim point today (`EffectTemplates.gd:328`). Parting Gift needs a small generic `anchor: "caster"` param.
+- Relics: Exit Strategy, Second Wind, Controlled Panic.
+- Deck (16): single `wizard_overqualified_bolt`, `wizard_bolt_volley`, `fire_flaming_nonsense` · AoE `wizard_well_actually`, `wizard_arcane_nova`, `fire_fireball` · utility `wizard_footwork_allegedly`, `wizard_borrowed_focus`, `neutral_deep_sigh` · movement `wizard_parting_gift`, `wizard_sideways_blink`, `wizard_tactical_hover`, `neutral_backward_leap` · recovery `neutral_healing_potion`, `neutral_regeneration`, `neutral_leech`.
+
+**W-D. Ward Battlemage** (a caster that stands in close). *Plays like:* armor up, stay in the crowd, punish what hits you. Damage is AoE plus retaliation. The squishy class fighting up close is the risk. Slice: **BD3** (needs card triggers).
+- Core: `wizard_spiteful_ward` **NEW, Keystone** (Utility. +25 armor for 4 s; **while it lasts, each hit you take releases a 6-neutral nova r2.5**, 0.5 s internal cooldown.) · `wizard_ward` · `wizard_arcane_nova` · `neutral_leech` · `fire_fine_burn_then`.
+- Relics: Thermal Ward, Heavy Sigh, Grading Curve.
+- Deck (15): single `fire_ember_whatever`, `wizard_overqualified_bolt`, `fire_flaming_nonsense` · AoE `wizard_arcane_nova`, `fire_fine_burn_then`, `neutral_shrug_bomb` · utility `wizard_spiteful_ward`, `wizard_ward`, `fire_hot_head` · movement `wizard_sideways_blink`, `wizard_tactical_hover`, `neutral_backward_leap` · recovery `neutral_leech`, `neutral_healing_potion`, `neutral_regeneration`.
+
+**Shared Fire cards.** Fire cards are in both classes' pools, so `fire_fan_the_flames`, `fire_kindling`, `fire_heat_sink` and `fire_slow_burn` show up for both. That's intended: a Wizard can drift into Kindling, and a Rogue into Controlled Burn.
+
+**Availability (feeds 3d and D23):** today every card is `starter`. Default for the new cards: **keystones are `reward`, everything else `starter`.** Keystones are found during a run, or planned in a loadout (3d's plan list), and the debug decks give them to testers. 3d adds the field itself; until then it's a label in this doc.
+
+---
+
+## 6. Slot decisions: how timing, cooldowns and the swap start to matter
+
+- **Timing.** A payoff is worth twice as much while its condition is live, so pressing it blindly wastes it. Kindling holds Fan the Flames until a group is Burning. Hit and Run casts Drive-By inside the 2 s after a dash. Controlled Burn lays a Zone before Heat Sink.
+- **Reading cooldowns.** The next card is always visible (GDD §4). With primes, the player plans a pair ("Momentum is up next in Movement, and Drive-By in Single, so dash then stab"). The cooldown bar becomes a countdown to a combo, not to "more damage".
+- **The dead-card swap earns its place** (the director's 2026-11-02 note): an off-plan card in front of the keystone is worth swapping past, and a payoff whose condition can't come true soon (no Zone up, nothing Burning) is worth cycling. No rule change is needed; the swap stays as it is (GDD §4 says don't change it yet).
+- **Slots pull against each other.** In Hit and Run, the Movement slot is both offense and the only escape (§12). In Kindling, the Utility slot feeds Burn instead of shortening cooldowns.
+- **Scaling with the deck.** `deck_count_at_least` lets a later card say "if your deck holds 6+ Burn cards", which makes reward picks matter for the plan (Monster Train's clan-focused drafting is the feel I'm after; I'm unsure of its exact card wording).
+
+---
+
+## 7. Readability
+
+- **Tag chips:** a card shows up to 3 tag chips (keywords first, then derived tags) under its name. In slots, a small icon row; in reward offers and the pause card view, text chips. Data: `keywords.json` gives the display names.
+- **Condition line:** `CardSummary` gets one more line type: "If Burning: +9 fire". It's built from the `condition` block and the UI strings in `run.json` (`ui.effect.condition.*`), so no card text is hardcoded.
+- **Live glow:** a slot glows when its card's condition is live: a target condition counts if at least one enemy inside the card's preview area meets it (the same shape the hold-to-preview draws); a caster condition when it's true. The glow uses the card frame colour, brighter. It's the "now!" cue.
+- **Primed state:** a primed slot shows a small marker (an arrow chip) and the remaining window as a thin bar.
+- **Stacks:** stacking statuses show a count next to the status cue on the enemy (BD3).
+- **Relics:** the HUD chip row and trigger flash (§4.4).
+- **Reward screen:** cards with the Keystone keyword get a "Keystone" chip; 3d's "On your plan" highlight sits next to it.
+- All of this reuses `CardSummary` and the existing frame colours; ux-designer owns the look.
+
+---
+
+## 12. Dodge-off: what it means for Movement cards (D29 default A)
+
+With the dodge off, **the Movement slot is the only escape**. That shapes every archetype:
+
+1. **Every archetype deck keeps at least one pure escape card** (`neutral_backward_leap`, `wizard_sideways_blink` or `wizard_tactical_hover`). The legal decks above all do.
+2. **Offensive Movement is a real risk**, not a free bonus. Hit and Run and Departure Lounge spend escapes for damage. That's the tension that makes the slot a decision. Second Wind and Controlled Panic are the relics that soften it, and they're optional.
+3. **Movement cooldowns stay as they are in BD1.** H2's bots died early, but they press cards at random and never save Movement to escape (H2 playtest). BD1's plan-aware bot keeps one Movement for escape; its numbers show whether Movement cooldowns really need a look. D29's sub-question ("should Movement cooldowns be looked at?") waits for that.
+4. **The bot policy must model it** (§2): no offensive Movement cast below 50% HP unless the next Movement card is ready too.
+
+**If D29 comes back B or C** (the dodge returns), Movement cards can lean more offensive: Hit and Run's Momentum could drop its escape value, and the "one pure escape per deck" rule becomes a recommendation, not a deck-design rule. Nothing else in this doc changes.

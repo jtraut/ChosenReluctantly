@@ -2,7 +2,42 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-11-02 (Slice K1: key labels follow the bindings; director decisions: build depth, pressure pass, loadouts, run order)
+## 2026-11-02 (Slice H1: enemy pressure pass; Slice K1: key labels follow the bindings; director decisions: build depth, pressure pass, loadouts, run order, OPEN_ITEMS pass)
+
+### Slice H1: enemy pressure pass
+
+Commit range 36d7315..98595d4. qa review: PASS (`docs/reviews/2026-11-02-h1-qa.md`, 42cdb13). Playtester (short): no blocker (`docs/playtests/2026-11-02-h1-short.md`, a8123b5). Decisions: `docs/DECISIONS.md` "2026-11-02 - H1".
+
+**Outcome, plainly:** the gates were met (standard runs still clear; Rogue boss time 66.1 s), but the goal was missed in the director's hands. A Wizard with no cards still looked winnable at enemy speed x1.25, only slower. The follow-up is H2, the dodge-off trial (below).
+
+#### Added
+- `pressure` block in `data/enemies.json` with two shared knobs, `speed_scale` and `attack_rate_scale`. Each is validated to 0.25-4.0 and unknown keys are rejected (`EnemyConfig.validate_pressure`). Applied in `Enemy._apply_stats`: move speed is multiplied by `speed_scale`, attack cooldown is divided by `attack_rate_scale`. The boss is not scaled; its adds are. The future difficulty tiers reuse these knobs. (0c834a0)
+- Tests: `tests/unit/h1_qa_test.gd` (elites, boss adds, boss unscaled, validation edges), knob tests in `tests/unit/enemy_config_test.gd`, and updates to `enemy_stats_5d_test.gd` and `slice5d_qa_test.gd`. Suite 1190 -> **1197**. (0c834a0, 4e72dda, 42cdb13)
+
+#### Changed
+- **[Director decision, 2026-11-02] Slightly raise all enemy movement speed, then attack speed only if needed.** Balance (old -> new): `pressure.speed_scale` 1.0 -> 1.25, so chaser 4.0 -> 5.0, shooter 3.0 -> 3.75, golem 2.0 -> 2.5. The boss is unscaled (2.6 / 3.0 / 3.4). `attack_rate_scale` stays 1.0: at 1.25 or more it dropped the Rogue's standard clear rate from 100% to 50-62% and still did not touch the kiting Wizard. (4e72dda)
+- Sim baselines moved: arena seed 1, 30 s `state_hash` 2484586390 -> **2816045921**; 90 s 3255493562 -> **3667433295**. Bot sim `-Rooms 20 -Seed 3` checksum 2281795515 is unchanged. (4e72dda)
+- `tools/wave_sim.gd` `-LightHeavyOnly` now presses no card slot at all (it used to skip only slots 1 and 2, which left Ward, blinks and heals in play). RNG draws are unchanged. (e4f4cbe)
+
+### Director decisions on his OPEN_ITEMS pass (2026-11-02)
+
+Verbatim in `docs/playtests/2026-11-02-director-open-items-pass.md`, recorded in 3befb9d; answers archived in `docs/RESOLVED.md`.
+
+#### Changed
+- **[Director decision, D19 = A, GDD section 3]** A dodge in the post-dash ghost window may pass through enemies. The "dodge does not go through enemies" rule keeps this one exception.
+- **[Director decision, D20 = B, GDD section 5]** Wizard HP 26 -> 22 ("a player realistically shouldn't be hit by a full volley, only partial"). Decided now, built in H2.
+- **[Director decision, D21 = B]** Housekeeping before H2 (done, see Docs and process below).
+- **[Director decision, D23 = A, GDD section 9]** Every current card is `starter`. Reward and merchant offers flag a loadout-plan card you don't own. Built in 3d.
+- **[Director decision, dodge-off trial]** The dodge is removed behind a data switch (code kept, easy to bring back). Movement moves 2 -> Space, Utility 1 -> F. Decided now, built in H2.
+- **[Director decision, call 16]** Reward and removal screens drop their number keys; mouse, arrows and Enter remain. Built in PL3 (not yet built; the screens still have number keys today).
+- **[Director decision]** A branching map is wanted soon (GDD section 9). When to build it is open as D28.
+- **[Director decision]** Rest heal of 30% is kept (it may be removed later). Resistance floors confirmed, to stay similar to armor. No-card runs shouldn't be easy to complete, regardless of duration.
+- D27 (enemy attack speed) was not answered directly. game-lead read it as A: speed x1.25, attack rate unchanged (`docs/DECISIONS.md`).
+
+#### Docs and process
+- **[Director decision]** `docs/OPEN_ITEMS.md` holds only active items. Resolved, received and acknowledged items move to `docs/RESOLVED.md`, owned by tech-writer (`CLAUDE.md`). New file `docs/RESOLVED.md` created with the history up to 3befb9d.
+- Housekeeping (D21): `docs/.gdignore` so Godot stops importing playtest PNGs (642d546); missing `.uid` files tracked (c3f5ac1); `.gitattributes` extended: `text=auto`, LF for text types, binaries marked (98595d4). No renormalisation commit was needed; the index was already LF.
+- README: removed 4 stray CR bytes that made git treat it as binary (they had turned `tools\run_*.ps1` into `toolsun_*.ps1` in the "Last verification" list), updated the test count, hashes and `-LightHeavyOnly` description, and added notes on LF and `docs/.gdignore`. ARCHITECTURE: added the pressure knobs and the `-LightHeavyOnly` fix.
 
 ### Slice K1: key labels follow the bindings
 

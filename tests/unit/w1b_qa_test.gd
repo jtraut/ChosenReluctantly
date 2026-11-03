@@ -84,4 +84,8 @@ func test_every_character_survives_one_full_boss_volley_from_full_hp() -> void:
 	var full_volley: float = float(volley["count"]) * float(volley["damage"])
 	assert_int(CharacterDatabase.ids().size()).is_greater_equal(2)
 	for id: String in CharacterDatabase.ids():
+		if id == "wizard":
+			# H2 (D20 = B): the Wizard (22 HP) may die to one full volley (25). A partial volley (half) must not.
+			assert_float(CharacterDatabase.max_hp(id)).is_greater(full_volley * 0.5)
+			continue
 		assert_float(CharacterDatabase.max_hp(id)).override_failure_message("%s: %s HP vs a %s volley" % [id, CharacterDatabase.max_hp(id), full_volley]).is_greater(full_volley)

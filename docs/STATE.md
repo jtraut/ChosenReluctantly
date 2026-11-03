@@ -3,9 +3,10 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-02 (BD0 closed). **Run order (D24 = A, D28 = A defaults):** BD0 done -> **MAP0 (next; game-lead alone, docs only, no tag)** -> PL3 (rest) -> BD1 -> BD2 (relics) -> first map build -> 3d -> BD3. Briefs are in ROADMAP (MAP0's brief is still to write). Each build slice gets the full loop and, at close, a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0.
+Last updated: 2026-11-02 (director answers D22/D24/D25/D26/D28/D29 recorded). **Run order (director D24 = A, D28 = A; H3 placement game-lead):** BD0 done -> **H3 (next; the dodge returns, D29 = B)** -> MAP0 (game-lead alone, docs only, no tag) -> PL3 (rest) -> BD1 -> BD2 (relics) -> first map build -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and, at close, a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0.
 
 ## What's done
+- **Director answers recorded 2026-11-02 (game-lead, docs only):** a6c33e6 (GDD §3/§4a/§5/§9/§14), 803c42b (BUILD_DEPTH §3.4, §4.1, §8, §9, §11), 6bd0f70 (ROADMAP: H3 + MAP0 briefs, BD1/BD2 edits, PL3 item 6 -> H3), c065762 (DECISIONS "Applying the director's answers"), plus OPEN_ITEMS/STATE. D22 = C (merchant, relic stage, elites; 6-8 for a relic hunter, cap 10), D24 = A, D25 = A (+ passive nodes), D26 = A, D28 = A, D29 = B (dodge on Space, Rogue 2 / Wizard 1, Movement on Ctrl, enemies and boss volley a bit faster). New D30 (rest/reward relics; default A = no).
 - **BD0 closed 2026-11-02 (docs only, no tag):** game-lead 81fb65e..0ddd630, docs 995befe. New `docs/BUILD_DEPTH.md` (game-lead owns it). GDD §4a [PROPOSED] summary. ROADMAP: BD1 rewritten, BD2 (relics) and BD3 added. DECISIONS "2026-11-02 - BD0". The director said "continue" without answering D29, so BD0 assumed D29 = A (dodge off); BUILD_DEPTH §8 says what changes for B/C. New questions D22, D24, D25 (defaults A).
 - **H2 closed 2026-11-02 (dodge-off trial):** gameplay-dev 120bfef..dacc680, ux e155c3e/ff3ef4f, qa PASS 4aa7141, playtest ebde769, docs edef5c0/0e47a70. Tag `playtest-2026-11-02-H2`. Dodge off (`data/player.json` `dodge.enabled`), Movement Space, Utility F, Wizard 22 HP, game-over arm delay. Bot standard clears with the dodge off: Rogue 3/16, Wizard kite 8/16, no-kite 7/16 (16/16 each with it on); not retuned. D29 asks whether the dodge stays off. **Baselines now: suite 1220/1220 (105 suites); arena 30 s seed 1 = 2591372848, 90 s = 4009010406 (dodge-on copies still give H1's 2816045921 / 3667433295); bot sim `-Rooms 20 -Seed 3` = 2281795515.**
 - **H1 closed 2026-11-02 (gates met, goal missed):** 0c834a0..e4f4cbe, qa PASS 42cdb13, playtest a8123b5, housekeeping 642d546/c3f5ac1/98595d4 (D21 = B; no renormalisation needed, index already LF), docs f8238c1 (incl. new `docs/RESOLVED.md`). Tag `playtest-2026-11-02-H1`. (H1 baselines, superseded by H2's above.)
@@ -17,21 +18,19 @@ Last updated: 2026-11-02 (BD0 closed). **Run order (D24 = A, D28 = A defaults):*
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **2026-11-02: recording the director's answers D22 = C (his wording), D24 = A, D25 = A (+ passive nodes), D26 = A, D28 = A, D29 = B (Rogue 2 / Wizard 1 charges, dodge on Space, Movement on Ctrl, enemies/boss volley a bit faster).** game-lead docs only: GDD, BUILD_DEPTH, ROADMAP (new slice H3 = dodge return), DECISIONS, OPEN_ITEMS. If cut off mid-way: finish those files, then the tech-writer CHANGELOG pass, then H3.
+- Nothing in progress once the tech-writer docs pass for the director's answers is committed (handoff: game-lead commits a6c33e6..HEAD). If that pass is missing from the CHANGELOG, run it first.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes; fix them the way w1a was fixed in 4aa7141 if they fire).
 
 ## Exact next step
-1. **MAP0, game-lead alone, docs only** (D28 default A). Write its brief in ROADMAP first, then a `docs/MAP.md`. It covers node types (combat, elite, rest, merchant, curse/buff, mini-boss), choices per step, layout for a 10-room run, the reward currencies it needs (gold, XP, between-run points: GDD §8 [OPEN]), and how nodes call the relic offer function (BUILD_DEPTH §4.6). At most 3 director questions, numbered from D30. Then a tech-writer CHANGELOG pass. No tag.
-   - If the director answers D28 = B or C first, skip MAP0 and go to PL3.
-2. Then **PL3** (rest), per its ROADMAP brief. Full loop, tag.
-3. Then **BD1** (brief rewritten at BD0), **BD2**, the first map build, **3d**, then **BD3**.
-4. If the director answers D22/D24/D25/D29 differently from the defaults, update BUILD_DEPTH and the BD1/BD2 briefs before BD1 starts.
+1. **H3, the dodge returns** (ROADMAP brief). Hand to **gameplay-dev** first: dodge on (Rogue 2, Wizard 1), Space dodge / Ctrl Movement / Shift+Ctrl swap (Ctrl reliability is an acceptance test; stop and report if it fails), the Fan of regrets lane check, then the speed-up in its own commit (`attack_rate_scale` 1.1, new `telegraph_scale` 0.85, volley windup 0.75), bots in three columns with the no-card gate, new hashes. Then ux-designer -> qa -> playtester (short) -> tech-writer -> close, tag `playtest-YYYY-MM-DD-H3`.
+2. Then **MAP0** (game-lead alone, docs only; brief in ROADMAP; questions from D31).
+3. Then **PL3** (rest), **BD1**, **BD2** (relic room + elites, cap 10; D30 may add rest-room relics), the first map build, **3d**, **BD3**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).
 
-**D-numbers:** D21 = run order, D23 = loadout card flags. D22 = relic sources/count, D24 = relic slice placement, D25 = Burn/Bleed base stacking (BD0). D26 = menu key text (K1). D27 = H1 attack speed (read as A). D28 = branching map placement. D29 = dodge stays off? Next free: D30.
+**D-numbers:** D21-D29 answered (D22 = C, D24 = A, D25 = A, D26 = A, D28 = A, D29 = B on 2026-11-02). D30 = rest/reward relics (open). Next free: D31.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: D22, D24, D25 (new, BD0), D29 (dodge), D28 (map), D26 (menu keys); none blocks. Answered items are in `docs/RESOLVED.md`.
+All director-facing items are in `docs/OPEN_ITEMS.md`: D30 (non-blocking). Answered items are in `docs/RESOLVED.md` (D22/D24/D25/D26/D28/D29 go there in the next tech-writer pass).

@@ -108,3 +108,120 @@ Any effect in a card's `effects` list may carry a `condition`. If the condition 
 | New effect types (BD3) | `detonate_status` (consume a status for its remaining damage x mult), `spread_status` (copy a status to enemies nearby) | params |
 
 `CardDamageRule` (decided, see DECISIONS "BD0"): **conditional and scaled damage doesn't count.** Every Attack-slot card must pass the rule on its unconditional damage alone, so a payoff is never a dead card when its condition isn't live. No new `rule_exception` for payoffs.
+
+---
+
+## 4. Relics (run-scoped, rule-changing)
+
+A relic is a passive, run-scoped item that changes a rule. It's found during a run, kept for that run only, and reset when the run ends. (Slay the Spire's relics are the model: passive, from elites, chests and shops, some with a downside. Confident.) The director's example is the first one built: "Burns now explode in an AoE when they expire and/or on death."
+
+### 4.1 Sources and count (defaults; D22 asks the director)
+
+Today's run is 10 rooms: 7 combat, 1 elite (rooms 3-8), 1 rest (rooms 2-8) and the boss last. A boss relic only means something once runs have more than one act, so it's reserved, not used.
+
+| Source | Default | Notes |
+|---|---|---|
+| **Elite room cleared** | A relic choice: pick 1 of 3 or skip. Replaces that room's card offer. | Always. The elite becomes the room you want. |
+| **Rest room** | Choose: heal 30% (today) **or** pick 1 of 2 relics. | A real trade-off, and it fits the director's note that the rest heal may go later. |
+| **Card reward screen** | In 1 of every 4 reward rooms (seeded), one of the 3 card slots shows a relic instead. Picking it takes the relic. | Keeps relics showing up in a straight-line run. Reject still declines the whole offer. |
+| Boss (multi-act later) | Reserved: `boss` source, rarer relics. | Not used while the boss ends the run. |
+| Map nodes (later, §4.6) | Reserved: `merchant`, `curse_room`, `buff_room`, `mini_boss`. | Data only now, so the map needs no relic rework. |
+
+**Count per run:** about **3-4** in a 10-room run (1 elite, 1 rest if taken, 1-2 reward swaps). That's enough to steer a build and few enough that each one matters. No starting relic for now. All of these numbers are data in `run.json` (`relics` block).
+
+### 4.2 Data format (`data/relics/*.json`, one file per relic, like cards)
+
+```json
+{
+  "id": "pyre_insurance",
+  "name": "Pyre Insurance",
+  "pool": "fire",
+  "rarity": "common",
+  "sources": ["elite", "rest", "reward", "merchant", "mini_boss"],
+  "keywords": ["Burn"],
+  "modifiers": [],
+  "triggers": [
+    {
+      "event": "status_ended",
+      "filter": { "status_id": "burn", "reason": ["expired", "owner_died"], "target_team": "enemy" },
+      "at": "event_position",
+      "internal_cooldown": 0.0,
+      "effects": [ { "template": "aoe", "params": { "damage": 4, "damage_type": "fire", "radius": 2.0 } } ]
+    }
+  ],
+  "curse": null,
+  "flavor_text": "Covers fire damage caused by fire. Read the small print."
+}
+```
+
+- `pool` uses the card pools (class, element, neutral), so a Fire Rogue only sees `rogue`, `fire` and `neutral` relics.
+- `modifiers`: permanent `StatModifiers` entries for the run (same shape as `buff` params, without a duration).
+- `triggers`: `event` + `filter` + `effects`. **`effects` uses the card effect format and templates**, so a relic is data on the existing templates. `at` picks the origin (`player`, `event_position`, `event_target`).
+- `curse`: reserved for curse rooms (a downside modifier block). `null` for now.
+- `rarity`: `common`, `uncommon`, `rare`, `boss`. The weights live in `run.json`.
+- The validator works like the card validator: known events and filters, valid effects, a known pool, known sources, and an id that matches the filename.
+
+### 4.3 Event hooks: the CombatEvents relay (new)
+
+There's no event bus today (§1). BD1 adds a **`CombatEvents` autoload** (its cast history feeds `cast_within`), and BD2 adds the rest of the events. It only relays, and owns no state. Emitters call it next to their existing signals; nothing that connects to those signals changes.
+
+| Relay event | Fired from | Payload | What's new |
+|---|---|---|---|
+| `hit_landed` | `Health.take_damage` | target, amount, damage_type, kind, **origin**, position | **`origin`**: `light`, `heavy`, `card:<id>`, `status:<id>`, `relic:<id>`, `enemy`. Passed down from AttackController, EffectTemplates and status ticks. |
+| `enemy_killed` | `Health.died` on an enemy | target, position, last origin, statuses held at death | — |
+| `status_applied` | StatusEffectManager | target, status_id, stacks, source, position | adds target/position |
+| `status_ended` | StatusEffectManager | target, status_id, **reason** (`expired`, `owner_died`, `consumed`), position, source | **today there's no event on death**; it fires before the node frees |
+| `card_cast` | CardSlotController | slot_type, card_id, tags | adds tags; also feeds the cast history (§3.3) |
+| `attack_fired` | AttackController | `light` / `heavy`, aim point | — |
+| `dash_ended` | Player | start, end position, card_id | new |
+| `player_damaged` | Player Health | amount, origin | — |
+| `zone_started/ended` | ZoneManager | zone id, shape, position | relay only |
+| `room_started/cleared` | RunController | index, type | relay only |
+
+- **`RelicManager`** (a child of the run, not an autoload) holds the run's relics, adds their `modifiers` at room start, and connects their triggers to the relay.
+- **Recursion guard:** relic-triggered damage has `origin = relic:<id>`. Triggers ignore events whose origin is a relic unless the filter says `"allow_relic_origin": true`, and the chain depth is capped at 1. So a burn explosion that applies Burn can't loop forever.
+- `internal_cooldown` per trigger stops a relic from firing 30 times in one frame when it doesn't need to.
+- **Cards can use triggers too** (later): the same block on a buff ("for 6 s, when an enemy dies...") so one mechanic serves both.
+
+### 4.4 Reset, saving, HUD
+
+- **Reset:** relics live in `RunState.relics` (an array of ids, in save order). A new run starts empty, and the run save round-trips them. `RelicManager` rebuilds from `RunState` on load. Nothing persists between runs.
+- **HUD:** a row of small relic chips (initials or icon, pool frame colour) top-left under the HP bar. Hover or the pause screen shows name, rule text and flavour. When a trigger fires, its chip flashes (readability: "why did that explode?").
+- **Reward screen:** a relic option is drawn as a card-sized panel with a relic frame and the word "Relic", so it can't be mistaken for a card. ux owns the look.
+
+### 4.5 Relic sketches
+
+**Ten for Fire Rogue and Fire Wizard** (pool in brackets):
+
+| # | Name | Rule | Hooks | Slice |
+|---|---|---|---|---|
+| 1 | **Pyre Insurance** [fire] | **The director's example.** When Burn on an enemy ends (expires or the enemy dies), it explodes: 4 fire, radius 2. | `status_ended` | BD2 |
+| 2 | **Smoldering Grudge** [fire] | Your card hits deal +25% to Burning enemies. | modifier with condition | BD2 |
+| 3 | **Lingering Embers** [fire] | Your Zones last 50% longer, and their Burn chance becomes 100%. | modifiers `zone_duration_mult`, `zone_status_chance` | BD2 |
+| 4 | **Exit Strategy** [fire] | Movement cards leave a 2 s line of fire along the path (2 dmg/0.5 s). | `dash_ended` -> `zone` | BD2 |
+| 5 | **Kindling Jar** [fire] | Burn stacks up to 3 (tick damage x stacks). | modifier `status_max_stacks.burn` | BD3 (needs stacking) |
+| 6 | **Second Wind, Unwillingly** [neutral] | Killing a Burning or Bleeding enemy takes 1 s off your Movement cooldown. | `enemy_killed` | BD2 |
+| 7 | **Hot Streak** [fire] | Three Fire-tag casts within 4 s reset your Attack: AoE cooldown. 8 s internal cooldown. | `card_cast` + cast history | BD3 |
+| 8 | **Controlled Panic** [neutral] | The first time each room you drop below 30% HP, your Movement slot is ready at once and the cast releases a 6-fire nova. | `player_damaged` | BD3 |
+| 9 | **Paperwork Fire** [wizard] | Every 5th card projectile hit sets the target Burning. | `hit_landed` origin `card:*`, Projectile tag | BD3 |
+| 10 | **Thermal Ward** [wizard] | While you have bonus armor, enemies that hit you in melee start Burning. | `player_damaged` + condition | BD3 |
+
+**Five that reward light and heavy attacks** (the basic-attack archetype only exists through these, GDD §4a goal 4):
+
+| # | Name | Rule | Hooks | Slice |
+|---|---|---|---|---|
+| L1 | **Spite Knuckles** [rogue] | Every 4th light hit sets the target Burning (100%). | `hit_landed` origin `light` | BD2 |
+| L2 | **Heavy Sigh** [neutral] | A heavy hit on a Burning enemy explodes: 6 fire, radius 2. | `hit_landed` origin `heavy` + `target_has_status` | BD2 |
+| L3 | **Muscle Memory** [neutral] | Each light hit takes 0.15 s off the heavy attack's cooldown. | `hit_landed` origin `light` | BD3 |
+| L4 | **Overtime (Unpaid)** [neutral] | Light attacks are 25% faster; card cooldowns are 10% longer. (A trade-off: the first relic with a built-in downside.) | modifiers `attack_interval.light`, `slot_cooldown.*` | BD3 |
+| L5 | **Grading Curve** [wizard] | The Wizard's heavy (targeted area) leaves a 2 s burning zone where it lands. | `attack_fired` heavy -> `zone` | BD3 |
+
+**BD2 builds seven:** 1 Pyre Insurance, 2 Smoldering Grudge, 3 Lingering Embers, 4 Exit Strategy, 6 Second Wind, L1 Spite Knuckles, L2 Heavy Sigh. If the slice runs long, Exit Strategy moves to BD3.
+
+### 4.6 Branching map hooks (GDD §9; the map itself isn't designed here)
+
+- **`sources`** already names the future map nodes (`merchant`, `curse_room`, `buff_room`, `mini_boss`), so a node only has to call the same "offer relics from source X" function the elite and rest rooms use.
+- **`rarity`** lets harder nodes (mini-bosses) roll better relics: "the hardest path is the most rewarding".
+- **`curse`** is reserved for curse/buff rooms ("usually both at once"): a curse room offers a strong relic with a curse block attached (a downside modifier or trigger). It uses the same format, so there's no rework.
+- **Merchant:** relics carry no price yet. When gold exists, a price comes from `rarity` in `run.json`, not per relic.
+- The offer function takes (source, count, rng), filters by pool, source and owned relics, and weights by rarity. Elite, rest and reward rooms use it in BD2, and the map uses it later.

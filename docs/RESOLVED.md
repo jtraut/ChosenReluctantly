@@ -4,6 +4,11 @@ The archive of the director's answered, received and acknowledged items, moved h
 
 ## 2026-11-02
 
+### H1 "What's new" note acknowledged
+
+You played the H1 build (enemies +25% speed) before H2. The note from OPEN_ITEMS ("What's new since you last played"): "**H1 (tag `playtest-2026-11-02-H1`):** every normal and elite enemy is 25% faster (chaser 5.0 against your walk of 6.0), and attack speed is unchanged. The boss's own speed is unchanged, but its adds are faster. You've already played this build; your answer (with cards good, no cards still winnable) is what started H2." game-lead removes it from OPEN_ITEMS at close.
+
+
 Source: the director's OPEN_ITEMS pass, verbatim in `docs/playtests/2026-11-02-director-open-items-pass.md` (recorded in commit 3befb9d). game-lead's readings are in `docs/DECISIONS.md` ("2026-11-02 - Director's OPEN_ITEMS pass").
 
 ### Process request: RESOLVED.md

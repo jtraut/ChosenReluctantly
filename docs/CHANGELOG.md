@@ -2,7 +2,36 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-11-02 (Slice H1: enemy pressure pass; Slice K1: key labels follow the bindings; director decisions: build depth, pressure pass, loadouts, run order, OPEN_ITEMS pass)
+## 2026-11-02 (Slice H2: dodge-off trial; Slice H1: enemy pressure pass; Slice K1: key labels follow the bindings; director decisions: build depth, pressure pass, loadouts, run order, OPEN_ITEMS pass)
+
+### Slice H2: dodge-off trial
+
+Commit range d88bf9e..ebde769 (gameplay-dev 120bfef..dacc680; ux e155c3e, ff3ef4f). qa review: PASS (`docs/reviews/2026-11-02-h2-qa.md`, 4aa7141). Playtester (short): no blocker (`docs/playtests/2026-11-02-h2-short.md`, ebde769). Decisions: `docs/DECISIONS.md` "2026-11-02 - H2".
+
+**Outcome, plainly:** the dodge is off in the shipped data and the game is much harder without it. The bots' numbers are pessimistic (they press cards at random and never escape on purpose). Nothing was retuned to compensate. The director decides whether the dodge stays off.
+
+#### Added
+- `dodge.enabled` in `data/player.json` (shipped false; a missing value reads as false). While off, the dodge never fires, charges freeze, and the HUD dodge row is hidden. Code: `PlayerConfig.dodge_enabled()` / `set_dodge_enabled`, `Player.get_dodge_state()["enabled"]`, `DodgePips` visibility.
+- To restore the dodge: set `dodge.enabled` to true and give `dodge` a non-clashing key in `data/input_bindings.json` (it is `[]` now; for example G). With the dodge on and no key, startup logs an error (`InputLabels.find_missing_required`).
+- Tests: `tests/unit/h2_test.gd`, `tests/unit/h2_qa_test.gd`, helper `tests/support/dodge_switch.gd` (`DodgeSwitch.enable()` binds the dodge to F9 for tests). Suite 1197 -> **1220**, 103 -> 105 suites.
+
+#### Changed
+- **[Director decision, dodge-off trial]** Keys (old -> new): Movement `slot_4` 2 -> **Space** (swap Shift+2 -> Shift+Space); Utility `slot_3` 1 -> **F** (swap Shift+1 -> Shift+F); dodge Space -> unbound. The card strip now reads Q E F Space R.
+- **[Director decision, D20 = B]** Wizard max HP 26 -> **22** (`data/characters.json`).
+- Game over screen: a 0.4 s arm delay (reuses `run_ui.prompt_option_arm_delay`), Space is swallowed, and the hint "Enter or Space" -> "Enter".
+- The binding validator now allows an action bound to an empty list.
+- Sim baselines moved: arena seed 1, 30 s `state_hash` 2816045921 -> **2591372848**; 90 s 3667433295 -> **4009010406**. With the dodge on, the arena hashes equal H1's. Bot sim `-Rooms 20 -Seed 3` checksum 2281795515 is unchanged.
+
+#### Trial result (bots, 16 seeds, 10-room runs)
+- Standard-deck clears, dodge on -> off: Rogue 16/16 -> 3/16; kiting Wizard 16/16 -> 8/16; non-kiting Wizard 16/16 -> 7/16.
+- Wizard at 22 HP alone, dodge on: kiting Wizard 15/16.
+- No-card runs clear 0/16 in every column, and now die in room 1.
+
+#### Fixed
+- `tests/unit/w1a_test.gd` waits are bounded in physics ticks (flake fix). (4aa7141)
+
+### Earlier on 2026-11-02 (H1, K1 and the director's decisions)
+
 
 ### Slice H1: enemy pressure pass
 

@@ -17,7 +17,7 @@ Last updated: 2026-11-02 (BD0 closed). **Run order (D24 = A, D28 = A defaults):*
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- Nothing in progress. Working tree clean.
+- **2026-11-02: recording the director's answers D22 = C (his wording), D24 = A, D25 = A (+ passive nodes), D26 = A, D28 = A, D29 = B (Rogue 2 / Wizard 1 charges, dodge on Space, Movement on Ctrl, enemies/boss volley a bit faster).** game-lead docs only: GDD, BUILD_DEPTH, ROADMAP (new slice H3 = dodge return), DECISIONS, OPEN_ITEMS. If cut off mid-way: finish those files, then the tech-writer CHANGELOG pass, then H3.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes; fix them the way w1a was fixed in 4aa7141 if they fire).
 
 ## Exact next step

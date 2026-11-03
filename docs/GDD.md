@@ -57,16 +57,18 @@ Fewer, more impactful enemies. Telegraphed attacks, readable danger, and dodge s
   - **Heavy attacks trade sustained damage for burst and utility.** A heavy attack may have lower single-target DPS than the light attack, but offers burst, a larger area, and class and element flavor (for example stun, a boosted element status chance, or a ranged targeted area for casters). Heavy attacks are defined per class in data and support different shapes (wide melee arc, targeted ranged area). **[PROPOSED]** Rogue heavy: wide arc, burst, brief stun on hit. **[PROPOSED]** Wizard heavy: targeted ranged area at the mouse point.
   - **Heavy wind-up slows the player slightly. It never roots.**
   - **[DIRECTOR DECISION, 2026-11-02]** A run won with no cards at all (light and heavy attacks, dodge and rest rooms only) should not be possible. The director did exactly that with the Wizard on 2026-10-31 (10 rooms, no cards, no healing, 5:25). The one future exception is a deliberate build that invests in light and heavy attacks through deep build mechanics (relics, passives); see §4a. **[DIRECTOR DECISION, 2026-11-02]** No-card runs shouldn't be easy to complete, regardless of how long they take: a slow no-card win still counts as too easy.
-- **Card slots:** five card keys, read from `data/input_bindings.json`. Defaults **[DIRECTOR DECISION, 2026-11-01/02]:** Q, E, 1, 2, R for slots 1-5 (Attack single, Attack AoE, Utility, Movement, Recovery). **[DIRECTOR DECISION, 2026-11-02] While the dodge is off (dodge-off trial below):** Movement on **Space** and Utility on **F**, so the slots are Q, E, F, Space, R and no slot sits on a number key. Shift + the same key still swaps.
+- **Card slots:** five card keys, read from `data/input_bindings.json`. Defaults **[DIRECTOR DECISION, 2026-11-01/02]:** Q, E, 1, 2, R for slots 1-5 (Attack single, Attack AoE, Utility, Movement, Recovery). **[DIRECTOR DECISION, 2026-11-02] While the dodge is off (dodge-off trial below):** Movement on **Space** and Utility on **F**, so the slots are Q, E, F, Space, R and no slot sits on a number key. Shift + the same key still swaps. **[DIRECTOR DECISION, 2026-11-02] (D29 = B), the dodge is back:** the dodge returns to **Space** and the Movement slot moves to **Ctrl**, so the slots are **Q, E, F, Ctrl, R**. Utility stays on F. Shift + the same key still swaps (Shift+Ctrl for Movement).
 - **Key labels follow the bindings [DIRECTOR DECISION, 2026-11-02]:** whatever is in `data/input_bindings.json` is what the UI shows, so the screen and the keys can never disagree. No UI text may hardcode a key. Two actions may not share the exact same key plus modifiers; a conflict fails loudly at startup.
+  - **[DIRECTOR DECISION, 2026-11-02] (D26 = A):** fixed menu keys (Enter, the arrow keys, and 1 / 2 on the class pick) may be named on screen without coming from the bindings file. Every gameplay key still comes from the bindings.
 - **Hold-to-preview casting [DIRECTOR DECISION, 2026-10-28]:** by default, holding a card's key shows its exact hit area on the ground (drawn from the same data as the hitbox), and the card casts on release. A setting switches casting to trigger on press instead.
 - **Reward and removal screens pick by mouse [DIRECTOR DECISION, 2026-11-02]:** the number keys that picked an option or jumped to a column are dropped ("mouse selection is sufficient"), so a number can't be mistaken for a card key.
-- **Dodge roll:** Space bar. **[OPEN]** how this relates to the Movement slot (see section 4).
-  - **Dodge-off trial [DIRECTOR DECISION, 2026-11-02]:** a no-card Wizard run still looked winnable after the H1 pressure pass, so the dodge is **removed from play** to see what happens. The code stays, and a data switch brings it back. While it's off, Space casts the Movement slot (see Card slots). The rules below describe the dodge when it's on.
+- **Dodge roll:** Space bar. **[DIRECTOR DECISION, 2026-11-02] (D29 = B)** The dodge is a universal action with its own charges; Movement cards are separate special moves on their own key (Ctrl). This settles the old open question (§4).
+  - **Dodge-off trial [DIRECTOR DECISION, 2026-11-02], ended the same day:** a no-card Wizard run still looked winnable after the H1 pressure pass, so the dodge was removed from play (slice H2). The code stayed behind a data switch.
+  - **Trial result [DIRECTOR DECISION, 2026-11-02] (D29 = B):** without the dodge the game "didn't feel as fluid or fun", though runs were still very winnable (no trouble with the Rogue). **The dodge comes back with fewer charges: Rogue 2, Wizard 1.** Because the dodge returns, **enemy attacks get a little faster**: general enemy attack speed and especially the telegraphs, above all the boss's "Fan of regrets" fan-out volley. Data values, tuned in slice H3.
   - **[DIRECTOR DECISION, 2026-11-02] (D19 = A):** if a Movement card's dash ends overlapping an enemy, the player stays ghosted until clear (at most 3 s), and a dodge in that short window also passes through enemies. It is the only time the dodge passes through.
   - **[DIRECTOR DECISION, 2026-10-28]** The dodge is a modest escape, about 5 m, and may be lowered later. Its distance must stay easy to tune (data). Critical survival manoeuvres should come from Movement cards, not the dodge.
   - **[DIRECTOR DECISION, 2026-10-29]** The dodge has **charges**: start with 3 (may drop to 2; data value). Each charge recharges on a slightly longer cooldown than the old single-dodge cooldown (0.8 s). The HUD must show the dodge charges and their cooldown.
-  - **[DIRECTOR DECISION, 2026-10-30]** The starting charge count is per class: **Rogue 3, Wizard 2** (see §5).
+  - **[DIRECTOR DECISION, 2026-10-30]** The starting charge count is per class: ~~Rogue 3, Wizard 2~~ **Rogue 2, Wizard 1** since 2026-11-02 (D29 = B; see §5).
   - **[DIRECTOR DECISION, 2026-10-30]** The dodge **does not pass through enemies** (enemy bodies are solid). **Movement cards do** pass through enemies during their move.
   - **[DIRECTOR DECISION, 2026-10-29]** Passives (class and element trees, possibly subclass passives) may raise or lower the baseline dodge charges as a trade-off (for example a tankier Knight, Guardian or Paladin build with fewer charges). Level-up boosts must never change dodge charges, because a repeatable pick could stack them. **Hard limits: minimum 0, maximum 4 charges** after all modifiers.
 - **Controller:** late stretch goal, not in scope.
@@ -119,7 +121,7 @@ Notes:
 - **Temporary testing default:** for the prototype, the preset first-run deck contains every available Fire Rogue card (class, element, neutral). Unlock and tuning rules come with the run loop.
 
 ### Open items
-- **[OPEN]** Does Space dodge roll replace the Movement slot's basic function, or is the Movement slot only for special movement cards (blink, charge, leap)? **[PROPOSED]** dodge roll is a universal, always-available action with its own short cooldown; Movement cards are special movement abilities.
+- ~~**[OPEN]** Does Space dodge roll replace the Movement slot's basic function, or is the Movement slot only for special movement cards (blink, charge, leap)?~~ Resolved 2026-11-02 (D29 = B, §3): the dodge is universal on Space with its own charges; Movement cards are special moves on Ctrl.
 - ~~**[OPEN]** What happens when a mini-deck runs out?~~ Resolved: a shuffle bag with no back-to-back repeat across reshuffles (see Cycling rules).
 
 ---
@@ -140,6 +142,14 @@ Added 2026-11-02 from the director's notes. The goals are director decisions. Th
 4. Basic attacks become a real archetype only through deliberate investment (relics, later passives). Without it, a no-card run is not viable (§3).
 5. This comes before refining graphics and staging.
 
+### Relic sources and stacking **[DIRECTOR DECISION, 2026-11-02]**
+- **(D22 = C, director's wording)** A player focused on relic hunting, trying to collect as many as possible, should be able to reach **about 6-8 relics per run**, with a **hard cap of about 10**. Relics come from:
+  - a **merchant** stage, where the player can buy **several relics at once** if they have enough gold;
+  - a **dedicated relic reward stage** (pick a relic);
+  - **elites** (a relic after an elite).
+- **(D25 = A)** Burn and Bleed do **not** stack in the base game; a second application refreshes the first. Stacking the same status comes only from special conditions: **relics, keystone cards, and potential passive-tree nodes** (§8). The director likes this.
+- **(D24 = A)** Relics are built in their own slice (BD2) straight after the synergy core (BD1), before loadouts (3d).
+
 ### Inspiration **[DIRECTOR DECISION, 2026-11-02]**
 Ideas may come from: Slay the Spire, Across the Obelisk, Darkest Dungeon, Hearthstone, Gwent, Combo Card Clashers, Decktamer, The Elder Scrolls Legends, Eternal Card Game, Hadean Tactics, Hellcard, Lightseekers, Monster Train 1 and 2, Roguebook, Erannorth Chronicles. The director's favourites, to lean on most: **Erannorth Chronicles, Gwent, Slay the Spire, Monster Train.** Design docs say which idea comes from which game, and say "unsure" rather than invent details about a game.
 
@@ -148,17 +158,17 @@ Ideas may come from: Slay the Spire, Across the Obelisk, Darkest Dungeon, Hearth
 - Wall of Mild Fire felt underwhelming before its 1.5x size boost. Keep the new size.
 
 ### Mechanics **[PROPOSED]**
-Summary of BD0 (`docs/BUILD_DEPTH.md`, 2026-11-02). The full plan, numbers and card lists are there. All of it is data on the existing effect templates, with new code only for generic mechanics. Written assuming the dodge stays off (D29's default).
+Summary of BD0 (`docs/BUILD_DEPTH.md`, 2026-11-02). The full plan, numbers and card lists are there. All of it is data on the existing effect templates, with new code only for generic mechanics. Written assuming the dodge stayed off; the director brought it back (D29 = B), and BUILD_DEPTH §8 was updated for that. Where a bullet below conflicts with "Relic sources and stacking" above, the director's decision wins.
 - **Tags:** derived from a card's effects (Projectile, Melee, Area, Zone, Dash, Heal, Burn, Bleed, Buff) plus a few authored keywords (Primer, Payoff, Keystone) from `data/keywords.json`.
 - **Conditions and payoffs:** any card effect may carry a `condition` (target is Burning; you cast a Movement card in the last N s; one of your Zones is active; later: self stacks, deck tag count, low HP). Payoffs must still beat the free attack on their unconditional damage.
 - **Cross-slot hooks:** `cast_within` conditions, and primed buffs ("your next Attack: Single within 3 s has no cooldown").
-- **Scaling stacks:** statuses may stack (off by default), and a self-status like the Wizard's Charge can scale a payoff. Whether Burn and Bleed stack in the base game is D25 (default: no, only through relics and keystones).
-- **Relics:** run-scoped, reset between runs, one JSON file each, using the card effect format plus triggers on a new `CombatEvents` relay (there is no event bus today). Default sources (D22): an elite gives a relic choice, a rest room offers heal or a relic, and 1 in 4 reward screens shows one; about 3-4 per run. Relic data already names future map nodes (merchant, curse/buff rooms, mini-bosses). 15 sketches, including the director's burn explosion ("Pyre Insurance") and 5 that reward light and heavy attacks.
+- **Scaling stacks:** statuses may stack (off by default), and a self-status like the Wizard's Charge can scale a payoff. Burn and Bleed don't stack in the base game; relics, keystones and later passive nodes can make them stack (D25 = A, above).
+- **Relics:** run-scoped, reset between runs, one JSON file each, using the card effect format plus triggers on a new `CombatEvents` relay (there is no event bus today). Sources and count: see "Relic sources and stacking" above (elites, a relic stage, a merchant; 6-8 for a relic hunter, cap about 10). Relic data already names future map nodes (merchant, curse/buff rooms, mini-bosses). 15 sketches, including the director's burn explosion ("Pyre Insurance") and 5 that reward light and heavy attacks.
 - **Archetypes:** 4 per class on Fire, each with a keystone card and a full legal deck. Rogue: Kindling, Hit and Run, Bleed Out, Grudge Brawler (the light/heavy build, only viable with its relics). Wizard: Controlled Burn, Thesis, Departure Lounge, Ward Battlemage.
-- **Movement with the dodge off:** every archetype deck keeps a pure escape card; offensive Movement cards are a deliberate risk.
+- **Movement cards:** with the dodge back (D29 = B), offensive Movement cards can lean harder into damage; keeping a pure escape card in a deck is a recommendation, not a deck rule.
 - **Readability:** tag chips, a condition line in `CardSummary`, a slot glow when the condition is live, and a primed marker.
 - **Measurable checks** (need a plan-aware bot, built in BD1): removal pain, run fingerprint spread, archetype parity (70-130% of the standard deck's boss time), and no-card runs at most 25% clears.
-- **Slices:** BD1 synergy core with 2 archetypes per class; BD2 relics (D24: before 3d); BD3 stacking, the other archetypes and relics.
+- **Slices:** BD1 synergy core with 2 archetypes per class; BD2 relics (D24 = A: before 3d); BD3 stacking, the other archetypes and relics.
 
 ---
 
@@ -175,7 +185,7 @@ Pick one **class** and one **element** (for example Fire Rogue).
 
 ### Wizard moved earlier **[DIRECTOR DECISION, 2026-10-29]**
 - The **Wizard** is added now, ahead of Milestone 4, as a ranged class: its **light and heavy attacks are ranged** and aimed at the reticle. Reason: an outside playtester expected left click to hit distant enemies under the reticle, and found the Rogue's melee swing confusing. Water and the subclasses stay in Milestone 4.
-- **Wizard risk [DIRECTOR DECISION, 2026-10-30] (D18 = A):** the Wizard must not be the "easy way out". Its rooms should cost some HP, but less than the Rogue's. It should be squishier than it is today (HP is a tuning lever), starts with **2 dodge charges** (the Rogue starts with 3), and has a slightly longer **Recovery** slot cooldown than the Rogue. All three are per-class data values.
+- **Wizard risk [DIRECTOR DECISION, 2026-10-30] (D18 = A):** the Wizard must not be the "easy way out". Its rooms should cost some HP, but less than the Rogue's. It should be squishier than it is today (HP is a tuning lever), starts with ~~2~~ **1 dodge charge** (the Rogue starts with ~~3~~ **2**; D29 = B, 2026-11-02), and has a slightly longer **Recovery** slot cooldown than the Rogue. All three are per-class data values.
 - **Wizard HP 22 [DIRECTOR DECISION, 2026-11-02] (D20 = B):** truly squishier. A full boss "Fan of regrets" volley (25) from full HP can kill the Wizard, and that's acceptable: "a player realistically shouldn't be hit by a full volley, only partial, and if they do that's their fault."
 
 ### Card pools
@@ -272,6 +282,7 @@ Rather than a full strength/weakness wheel, elements apply status effects (for e
   - harder rooms and mini-bosses that give better loot, rewards and XP.
 
   The most rewarding path (most gold, XP and points to spend between runs) tends to be the most difficult. **[OPEN]** node types, how many choices per step, and the map layout. Gold, XP and between-run points don't exist yet (§8). Today's run is a straight line of 10 rooms.
+  - **[DIRECTOR DECISION, 2026-11-02] (D28 = A):** a map design doc (MAP0, docs only) comes first, and the first map build comes after BD1 and BD2 and before loadouts (3d). The map must include the merchant (relics bought with gold, several at once) and a dedicated relic stage (D22, §4a).
 ### Starting decks and loadouts **[DECIDED]**
 - The very first run uses preset defaults: the chosen class, element, and neutral starter cards.
 - From the second run on, the player can tune their starting deck and save it as a **loadout**.
@@ -343,7 +354,7 @@ The director provides top-level design direction only. Roles are defined as docu
 
 ## 14. Open Questions Summary
 1. Whether shops or drops exist alongside post-battle rewards. (Offer format resolved: pick 1 of 3 or reject all, see section 9. A merchant stop is wanted as a branching-map node, §9; its details are open.)
-2. Space dodge roll vs the Movement slot. (Dodge-off trial since 2026-11-02, §3: Space casts Movement while the dodge is off.)
+2. ~~Space dodge roll vs the Movement slot.~~ Resolved 2026-11-02 (D29 = B, §3): dodge on Space, Movement cards on Ctrl.
 3. Attack split into Single and AoE for the prototype?
 4. Elementalist: all elements, or pick one extra?
 5. Do elemental reactions exist, and when?
@@ -353,7 +364,7 @@ The director provides top-level design direction only. Roles are defined as docu
 9. Game name. Front-runner: **Chosen, Reluctantly** (also fits the "choose your cards carefully" mechanic).
 10. Final tone: how far to push the satire.
 11. Card unlock conditions for `locked` cards (§9 Loadouts).
-12. Relic sources and how many per run (BD0 proposes defaults, §4a; D22). Whether Burn and Bleed stack in the base game (D25).
+12. ~~Relic sources and how many per run; whether Burn and Bleed stack.~~ Resolved 2026-11-02 (D22 = C, D25 = A, §4a). Still open: relic prices at the merchant (MAP0).
 13. Branching map: node types, choices per step, layout, and the reward currencies (gold, XP, between-run points) (§9).
 
 Resolved: engine (Godot), perspective (3D isometric), slice classes and elements (Rogue, Wizard, Fire, Water), card offer format (pick 1 of 3 or reject all).

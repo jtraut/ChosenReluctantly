@@ -43,6 +43,7 @@ func test_try_again_has_focus_and_calls_restart() -> void:
 	screen.retry_requested.connect(func() -> void: retries.append(1))
 	stub.game_over_ready.emit()
 	assert_bool(screen.try_again.has_focus()).is_true()
+	screen.disarm()  # H2: Try again ignores presses for the arm delay
 	screen.try_again.pressed.emit()
 	assert_int(stub.restarts).is_equal(1)
 	assert_array(retries).has_size(1)

@@ -80,7 +80,7 @@ const DEFAULT_GAME_OVER: Dictionary = {
 	"title": "Well. That went badly.",
 	"line": "The world is still cheerful about it. You are not.",
 	"button": "Try again",
-	"hint": "Enter or Space",
+	"hint": "Enter",
 	"reference_height": 720,
 	"title_font_size": 56,
 	"line_font_size": 24,

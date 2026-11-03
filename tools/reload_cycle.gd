@@ -362,6 +362,7 @@ func _run_mode_soak(snaps: Array[Dictionary]) -> void:
 	_check((main.get_node("GameOverScreen") as CanvasLayer).visible, "run death: Game Over screen not visible")
 	_check(RunSession.current.outcome == "lost", "run death: outcome %s" % RunSession.current.outcome)
 	var dead_id := main.get_instance_id()
+	(main.get_node("GameOverScreen") as GameOverScreen).disarm()  # H2: Try again ignores presses for the arm delay
 	((main.get_node("GameOverScreen") as GameOverScreen).get_node("Root/Center/Column/TryAgain") as Button).pressed.emit()
 	await _frames(SETTLE_FRAMES)
 	_check(_main().get_instance_id() != dead_id, "run death: Try again did not replace the scene")

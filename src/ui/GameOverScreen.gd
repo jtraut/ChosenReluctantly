@@ -15,6 +15,10 @@ signal retry_requested()
 @onready var hint_label: Label = $Root/Center/Column/Hint
 
 var _main: Node = null
+## Real time (ms ticks) before which Try again ignores presses (H2): the screen opens while the player is mashing Space (now the
+## Movement card) and the card keys. Same delay as RunPromptScreen: data/ui.json run_ui.prompt_option_arm_delay.
+var _armed_at_msec: int = 0
+var _arm_generation: int = 0
 
 
 func _ready() -> void:
@@ -52,7 +56,42 @@ func show_screen() -> void:
 		return
 	line_label.text = String(UiConfig.game_over()["line"]) + run_line()
 	visible = true
+	var delay: float = float(UiConfig.run_ui().get("prompt_option_arm_delay", 0.4))
+	_armed_at_msec = Time.get_ticks_msec() + roundi(delay * 1000.0)
+	_dim_until_armed(delay)
 	try_again.grab_focus()
+
+
+## True once the short arm delay after opening has passed (Try again ignores presses before that).
+func is_armed() -> bool:
+	return Time.get_ticks_msec() >= _armed_at_msec
+
+
+## Skips the arm delay (tests and scripted input).
+func disarm() -> void:
+	_armed_at_msec = 0
+	try_again.modulate.a = 1.0
+
+
+## Space never confirms here: it is a card key (Movement) and a mashed Space must not restart the run. A focused Button
+## takes Space as ui_accept, so it is swallowed before the button sees it. Enter and a click still confirm, once armed.
+func _input(event: InputEvent) -> void:
+	if not visible:
+		return
+	var key := event as InputEventKey
+	if key != null and key.keycode == KEY_SPACE:
+		get_viewport().set_input_as_handled()
+
+
+func _dim_until_armed(delay: float) -> void:
+	_arm_generation += 1
+	var generation: int = _arm_generation
+	try_again.modulate.a = 1.0 if delay <= 0.0 else 0.55
+	if delay <= 0.0:
+		return
+	await get_tree().create_timer(delay, true, false, true).timeout
+	if generation == _arm_generation:
+		try_again.modulate.a = 1.0
 
 
 ## In a run: a newline and "Reached room X of Y." (text from data/run.json ui.lose.run_line). Empty in the endless arena.
@@ -99,6 +138,8 @@ func _set_font(control: Control, base_size: int, s: float) -> void:
 
 
 func _on_try_again_pressed() -> void:
+	if not is_armed():
+		return
 	retry_requested.emit()
 	if _main != null and _main.has_method("restart_arena"):
 		_main.call("restart_arena")

@@ -1311,3 +1311,15 @@ His answers are recorded verbatim in `docs/playtests/2026-11-02-director-open-it
 - **The measurable checks need a plan-aware bot** (`-Plan`), built in BD1. With random presses, removal pain and parity would read as noise.
 - **No web research.** Sources list only mechanics I'm confident about and mark the rest "unsure". A research digest is offered in OPEN_ITEMS, not scheduled.
 - **`docs/BUILD_DEPTH.md` is a game-lead doc,** added to CLAUDE.md's ownership list (a design doc alongside the GDD).
+
+## 2026-11-02 - Applying the director's answers D22/D24/D25/D26/D28/D29 (game-lead)
+The answers themselves are recorded in GDD §3, §4a, §5 and §9 (director decisions). These are my own calls in applying them:
+- **D22 = C read as his three named sources only:** elites, a dedicated relic stage, and a merchant. BD0's rest-room "heal or relic" and the 1-in-4 reward-screen relic are dropped, because he didn't list them. Asked as D30 (non-blocking). [Keeping them as extra sources, which matches option C's "any reward screen can show one", but not his own description.]
+- **Interim relic source before the map:** BD2 adds a **relic room** to the straight 10-room run (1 per run, rooms 2-8, not next to the rest room or the elite; pick 1 of 3 or skip) as the first version of his "dedicated relic reward stage". With 1 elite, a run gives about 2 relics until the map adds merchants and more relic stages. The 6-8 target is MAP0's job. [Relics only from elites in BD2, about 1 per run, which is too thin to playtest relics.]
+- **Cap 10 is a data value** (`run.json` `relics.max_owned`). At the cap, relic sources fall back to a card offer. [Hiding the reward entirely.]
+- **D25's passive nodes:** the stacking hook (`status_max_stacks.<id>` through StatModifiers) already covers passives; no plan change. Recorded in BUILD_DEPTH §3.4.
+- **H3 runs before MAP0.** D29 changes how the game plays today, so the director gets a playable build sooner; MAP0 is docs only and doesn't depend on it. Order: H3 -> MAP0 -> PL3 -> BD1 -> BD2 -> map build -> 3d -> BD3. [MAP0 first, as STATE had it.]
+- **H3 speed-up starting values** ("a little bit faster", no numbers given): `pressure.attack_rate_scale` 1.0 -> 1.1; a new `pressure.telegraph_scale` 0.85 on non-boss telegraphs; boss "Fan of regrets" windup 0.9 -> 0.75 (phase 3: 0.64, above the 0.6 floor). Other boss attacks unchanged, since he singled out the fan-out. [A single bigger cut on the volley only; or scaling every boss windup.]
+- **PL3 item 6 (Fan of regrets lanes) moves into H3.** Speeding up a volley whose lanes may not match its pellets would be unfair; the correctness check comes first. [Leaving it in PL3 after the speed-up.]
+- **Ctrl reliability is an H3 acceptance test, not a key change I make.** If Ctrl can't hold-to-preview while WASD and clicks work, gameplay-dev stops and I take it to the director. [Silently picking another key.]
+- **BUILD_DEPTH §8 rewritten for the dodge-on case:** one pure escape per deck becomes a recommendation; the plan-aware bot dodges and drops the "no offensive Movement below 50% HP" rule. The dodge-off version is in git at 0ddd630.

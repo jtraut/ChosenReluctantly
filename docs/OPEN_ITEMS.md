@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-11-02 (H2 closed)
-**Status: 3 waiting on a decision (D29 is the important one; D26 and D28 don't block). 5 things to look at when you play (38-42), plus item 35 after BD1.** Next: **BD0** (build-depth design doc), then PL3 -> BD1 -> 3d.
+**Status: 3 waiting on a decision. D29 (should the dodge stay off?) is the one I'd like answered before BD0, so I've paused there: say "continue" and I start BD0 assuming the dodge stays off. D26 and D28 don't block. 5 things to look at when you play (38-42), plus item 35 after BD1.** Next: **BD0** (build-depth design doc), then PL3 -> BD1 -> 3d.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D28 = A".
 
@@ -25,7 +25,7 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## Needs your decision
 
-None blocks work. Until you answer, I use my default. **D22, D24 and D25 are reserved** for BD0's questions. Next new number: D30.
+Until you answer, I use my default. **D29 is the exception:** I paused before BD0 for it (BD0 designs the Movement cards, which depend on it). "Continue" means "use the default". **D22, D24 and D25 are reserved** for BD0's questions. Next new number: D30.
 
 - **D29: Should the dodge stay off? (new, from H2; please play first, items 40-42.)** With the dodge off the bots lose most runs even with cards (above), and you were winning comfortably with it on. Two questions behind it: how often should a careful player win a run with cards on today's "Easy" tier? And with Movement as your only escape, is "sometimes you have no escape" the point, or should Movement cooldowns be looked at?
   - **A (my default until you play):** keep it off for now. BD0 designs Movement cards as the escape slot.
@@ -38,8 +38,8 @@ None blocks work. Until you answer, I use my default. **D22, D24 and D25 are res
   - **B:** build a simple map now, right after H2 and before BD0, with card rewards only until the currencies exist.
   - **C:** after 3d.
 
-- **D26 (narrowed): Can two menu hints stay written out?** Your rule (GDD §3) says no UI text hardcodes a key. Your call-16 answer drops the number keys on the reward and remove screens (built in PL3), so only two hints are left, and the menus read both keys in code rather than from `data/input_bindings.json`:
-  - Game over: "Enter or Space". Space becomes the Movement key in H2, so H2 also adds a short arm delay there.
+- **D26 (narrowed): Can two menu hints stay written out?** Your rule (GDD §3) says no UI text hardcodes a key. Your call-16 answer drops the number keys on the reward and remove screens (built in PL3). Two hints are left, and both menus read their keys in code rather than from `data/input_bindings.json`:
+  - Game over: "Enter" (since H2; Space no longer confirms it).
   - Class pick: "1 / 2 or the arrow keys".
   - **A (my default):** fixed menu keys (Enter, arrows, class-pick 1/2) may be named on screen. Every gameplay key comes from the bindings.
   - **B:** move them into the bindings file too (a small job in PL3).

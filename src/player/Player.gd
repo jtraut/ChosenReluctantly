@@ -404,6 +404,8 @@ func _flash_body(color: Color) -> void:
 
 
 func _tick_cooldowns(delta: float) -> void:
+	if not PlayerConfig.dodge_enabled():
+		return  # H2 dodge-off trial: the charge pool is frozen (no recharge, no signal)
 	var maximum: int = dodge_charges_max()
 	if dodge_charges.advance(delta, maximum) or maximum != _last_emitted_dodge_max:
 		_emit_dodge_charges()
@@ -417,17 +419,23 @@ func dodge_charges_max() -> int:
 	return DodgeCharges.effective_max(base, stat_modifiers, PlayerConfig.CHARGES_STAT, dodge_min_charges, dodge_max_charges)
 
 
-## For the dodge pip indicator: {current: ready charges, max: pips to draw, recharging: bool, recharge_progress: 0..1
+## True while the dodge is in play (data/player.json dodge.enabled). The HUD hides the pips and key label when false.
+func dodge_enabled() -> bool:
+	return PlayerConfig.dodge_enabled()
+
+
+## For the dodge pip indicator: {enabled: false while the dodge is switched off (hide the pips), current: ready charges, max: pips to draw, recharging: bool, recharge_progress: 0..1
 ## fill of the pip that is coming back (1.0 when full), recharge_remaining: seconds, available: a dodge could start now}.
 func get_dodge_state() -> Dictionary:
 	var maximum: int = dodge_charges_max()
 	return {
+		"enabled": PlayerConfig.dodge_enabled(),
 		"current": mini(dodge_charges.current, maximum),
 		"max": maximum,
 		"recharging": dodge_charges.is_recharging(maximum),
 		"recharge_progress": dodge_charges.recharge_progress(maximum),
 		"recharge_remaining": dodge_charges.recharge_remaining(maximum),
-		"available": dodge_charges.current > 0 and _forced_move_time_remaining <= 0.0,
+		"available": PlayerConfig.dodge_enabled() and dodge_charges.current > 0 and _forced_move_time_remaining <= 0.0,
 	}
 
 
@@ -443,6 +451,8 @@ func _emit_dodge_charges() -> void:
 
 
 func _handle_dodge_input() -> void:
+	if not PlayerConfig.dodge_enabled():
+		return
 	if _forced_move_time_remaining > 0.0 or dodge_charges.current <= 0:
 		return
 	if Engine.get_physics_frames() <= _dodge_blocked_until_frame:

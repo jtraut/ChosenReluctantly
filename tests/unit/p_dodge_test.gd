@@ -9,8 +9,12 @@ const RUN_MAIN_PATH := "res://scenes/main/RunMain.tscn"
 const CHASER_PATH := "res://scenes/enemies/MeleeChaser.tscn"
 
 
+func before_test() -> void:
+	DodgeSwitch.enable()  # H2: the shipped data has the dodge off; these tests cover the dodge itself
+
+
 func after_test() -> void:
-	PlayerConfig.reload()
+	DodgeSwitch.reset()
 	Enemy.set_player_body_suppressed(false)
 	RunSession.clear()
 	Juice.reset()

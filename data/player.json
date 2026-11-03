@@ -1,5 +1,6 @@
 {
     "dodge": {
+        "enabled": false,
         "speed": 20.0,
         "duration": 0.25,
         "cooldown": 1.2,

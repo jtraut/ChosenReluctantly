@@ -6,7 +6,7 @@ extends RefCounted
 
 const PATH := "res://data/player.json"
 const DEFAULTS: Dictionary = {
-	"dodge": {"speed": 20.0, "duration": 0.25, "cooldown": 1.2, "block_ticks_after_pause": 2, "charges": 3, "min_charges": 0, "max_charges": 4},
+	"dodge": {"enabled": false, "speed": 20.0, "duration": 0.25, "cooldown": 1.2, "block_ticks_after_pause": 2, "charges": 3, "min_charges": 0, "max_charges": 4},
 	"body": {"collide_with_enemies": true},
 }
 ## body keys (all booleans). collide_with_enemies: player and enemy bodies block each other (both ways).
@@ -22,6 +22,9 @@ const DODGE_RULES: Dictionary = {
 	"min_charges": [0.0, 10.0, true],
 	"max_charges": [0.0, 10.0, true],
 }
+## H2 dodge-off trial: dodge.enabled (boolean) is the one switch. false = the dodge never fires and its charges do not tick; all the
+## dodge code and tuning stays. It is optional in a file (a missing value reads as DEFAULTS["dodge"]["enabled"], false), and the shipped
+## file states it. Turning it on also needs a key for the "dodge" action in data/input_bindings.json (see InputBindings).
 ## The stat name a passive or piece of equipment modifies to change the dodge charge count.
 const CHARGES_STAT := "dodge_charges"
 
@@ -34,6 +37,16 @@ static func dodge() -> Dictionary:
 	if _cache.is_empty():
 		_cache = load_from(PATH)
 	return _cache["dodge"]
+
+
+## True when the dodge is in play (data/player.json dodge.enabled; shipped false in the H2 trial). Player, the sims and the HUD read this.
+static func dodge_enabled() -> bool:
+	return bool(dodge()["enabled"])
+
+
+## Tests and sims only: flips the switch in the loaded cache without touching the file. reload() restores the file's value.
+static func set_dodge_enabled(value: bool) -> void:
+	dodge()["enabled"] = value
 
 
 ## True when the player and enemy bodies collide (data/player.json body.collide_with_enemies).
@@ -58,6 +71,8 @@ static func load_from(path: String) -> Dictionary:
 		push_error("PlayerConfig: '%s' invalid: %s; using defaults" % [path, "; ".join(problems)])
 		return DEFAULTS.duplicate(true)
 	var loaded: Dictionary = (parsed as Dictionary).duplicate(true)
+	if not (loaded["dodge"] as Dictionary).has("enabled"):
+		(loaded["dodge"] as Dictionary)["enabled"] = bool((DEFAULTS["dodge"] as Dictionary)["enabled"])
 	if not loaded.has("body"):
 		loaded["body"] = (DEFAULTS["body"] as Dictionary).duplicate()
 	return loaded
@@ -92,8 +107,10 @@ static func validate(data: Variant) -> Array[String]:
 			errors.append("dodge.min_charges must not exceed dodge.max_charges")
 		elif base < low or base > high:
 			errors.append("dodge.charges must be between dodge.min_charges and dodge.max_charges")
+	if (block as Dictionary).has("enabled") and typeof((block as Dictionary)["enabled"]) != TYPE_BOOL:
+		errors.append("dodge.enabled must be true or false")
 	for key: Variant in (block as Dictionary).keys():
-		if not DODGE_RULES.has(String(key)):
+		if String(key) != "enabled" and not DODGE_RULES.has(String(key)):
 			errors.append("dodge.%s is not a known key" % key)
 	if (data as Dictionary).has("body"):
 		var body: Variant = (data as Dictionary)["body"]

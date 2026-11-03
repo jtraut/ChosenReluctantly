@@ -18,12 +18,14 @@ var _casts: Array[String] = []
 
 func before_test() -> void:
 	CardDatabase.load_all()
+	DodgeSwitch.enable()  # H2: the shipped data has the dodge off; these tests cover the dodge itself
 	_original_store = Settings.store
 	Settings.use_store(SettingsStore.new(DEFAULTS, TEMP_SETTINGS))
 	_casts = []
 
 
 func after_test() -> void:
+	DodgeSwitch.reset()
 	GamePause.resume()
 	GamePause.reset()
 	get_tree().paused = false
@@ -369,6 +371,11 @@ func test_s6_2_dash_ends_where_the_preview_says() -> void:
 func test_space_on_the_focused_resume_button_closes_the_screen_and_does_not_dodge() -> void:
 	# Was a PIN for S6-5: Resume has focus and Space is both ui_accept and dodge; the press closed the
 	# screen and the dodge poll still saw the same press on the first tick after resume.
+	# H2: the shipped dodge has no key, so this switch-on case gives the dodge Space (the pre-H2 binding) for the test.
+	var space := InputEventKey.new()
+	space.physical_keycode = KEY_SPACE
+	InputMap.action_erase_events(&"dodge")
+	InputMap.action_add_event(&"dodge", space)
 	var main := _spawn()
 	await _frames(2)
 	var player := main.player

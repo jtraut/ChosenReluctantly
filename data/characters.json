@@ -23,7 +23,7 @@
         "class_pool": "wizard",
         "element_pool": "fire",
         "pools": ["wizard", "fire", "neutral"],
-        "max_hp": 26.0,
+        "max_hp": 22.0,
         "dodge_charges": 2,
         "slot_base_cooldowns": { "recovery": 14.0 },
         "body_color": "#8a4fe0",

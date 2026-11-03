@@ -74,7 +74,7 @@ func test_shipped_characters_are_valid_and_listed_rogue_first() -> void:
 	var list: Array[Dictionary] = CharacterDatabase.list()
 	assert_str(String(list[0]["display_name"])).is_equal("Rogue")
 	assert_str(String(list[1]["display_name"])).is_equal("Wizard")
-	assert_float(float(list[1]["max_hp"])).is_equal(26.0)
+	assert_float(float(list[1]["max_hp"])).is_equal(22.0)
 
 
 func test_rogue_data_is_what_the_hardcoded_values_were() -> void:
@@ -206,8 +206,8 @@ func test_a_run_main_launch_plays_the_selected_class() -> void:
 	assert_str(player.character_id).is_equal("wizard")
 	assert_str(main.run_controller.character_id()).is_equal("wizard")
 	assert_array(player.owned_pools).is_equal(["wizard", "fire", "neutral"])
-	assert_float(player.health.max_health).is_equal(26.0)
-	assert_float(RunSession.current.max_hp).is_equal(26.0)
+	assert_float(player.health.max_health).is_equal(22.0)
+	assert_float(RunSession.current.max_hp).is_equal(22.0)
 	assert_array(player.card_slots.owned_card_ids()).contains_exactly_in_any_order(CharacterDatabase.starting_deck("wizard"))
 	assert_str(String(player.attacks.get_def(&"light")["shape"])).is_equal("projectile")
 
@@ -384,8 +384,8 @@ func test_wizard_body_is_a_different_colour_with_26_hp_and_the_rogue_unchanged()
 	await get_tree().process_frame
 	var wizard: Player = wizard_main.player
 	var rogue: Player = rogue_main.player
-	assert_float(wizard.health.max_health).is_equal(26.0)
-	assert_float(wizard.health.current_health).is_equal(26.0)
+	assert_float(wizard.health.max_health).is_equal(22.0)
+	assert_float(wizard.health.current_health).is_equal(22.0)
 	assert_float(rogue.health.max_health).is_equal(30.0)
 	var wizard_color: Color = (wizard.body_mesh.material_override as StandardMaterial3D).albedo_color
 	var rogue_color: Color = (rogue.body_mesh.material_override as StandardMaterial3D).albedo_color
@@ -519,9 +519,13 @@ func test_auto_fire_does_not_flood_the_effect_pool_or_recycle_the_heavy_telegrap
 ## Pinned from data (game-lead, 2026-10-30): one full boss "Fan of regrets" volley, every pellet landing, must not
 ## kill any class from full HP with no Ward. The player has no armor and physical damage ignores resistance, so
 ## the volley is count x damage. A boss or HP edit that reintroduces the one-shot fails here.
+## H2 (D20 = B, 2026-11-02): the Wizard (22 HP) is deliberately squishier than a full volley (25) and may die to one,
+## so this pin now covers the Rogue only; the Wizard's bound is checked below.
 func test_no_class_can_be_killed_from_full_hp_by_one_full_boss_volley() -> void:
 	var volley: Dictionary = (BossConfig.boss("boss_guardian")["attacks"] as Dictionary)["volley"]
 	var full_volley: float = float(volley["count"]) * float(volley["damage"])
 	assert_float(full_volley).is_greater(0.0)
-	for id: String in ["rogue", "wizard"]:
+	for id: String in ["rogue"]:
 		assert_float(CharacterDatabase.max_hp(id)).override_failure_message("%s max HP must exceed a full volley (%s)" % [id, full_volley]).is_greater(full_volley)
+	# The Wizard may be one-volleyed (D20 = B) but a partial volley (half the pellets) must never kill it.
+	assert_float(CharacterDatabase.max_hp("wizard")).is_greater(full_volley * 0.5)

@@ -31,6 +31,8 @@ func load_bindings(path: String) -> void:
 	last_conflicts = InputLabels.find_conflicts(bindings)
 	for conflict: String in last_conflicts:
 		push_error("InputBindings: binding conflict in '%s': %s" % [path, conflict])
+	for problem: String in InputLabels.find_missing_required(bindings, PlayerConfig.dodge_enabled()):
+		push_error("InputBindings: %s" % problem)
 	if not last_conflicts.is_empty():
 		push_error("InputBindings: %d binding conflict(s); fix data/input_bindings.json (each key plus modifiers may serve one action)" % last_conflicts.size())
 	bindings_changed.emit()

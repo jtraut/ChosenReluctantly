@@ -150,6 +150,24 @@ static func find_conflicts(bindings: Dictionary) -> Array[String]:
 	return conflicts
 
 
+## Pure. The "no binding" rule (H2): an action may map to an empty list, meaning it has no key (the dodge while it is
+## switched off). That is never a conflict and never an error by itself. The only action that must have a key when its feature is
+## on is "dodge" with dodge.enabled = true: returns one message for that case, else nothing. A missing "dodge" entry counts as unbound.
+static func find_missing_required(bindings: Dictionary, dodge_enabled: bool) -> Array[String]:
+	var problems: Array[String] = []
+	if not dodge_enabled:
+		return problems
+	var specs: Variant = bindings.get("dodge")
+	var has_key: bool = false
+	if typeof(specs) == TYPE_ARRAY:
+		for spec: Variant in specs as Array:
+			if typeof(spec) == TYPE_DICTIONARY and _signature(spec as Dictionary) != "":
+				has_key = true
+	if not has_key:
+		problems.append("dodge.enabled is true in data/player.json but the 'dodge' action has no key in data/input_bindings.json")
+	return problems
+
+
 static func signature_text(signature: String) -> String:
 	return signature.get_slice(":", 1) if signature.begins_with("mouse:") else signature.get_slice(":", 1).replace("|", "+")
 

@@ -11,7 +11,7 @@ var _saved: Dictionary = {}
 
 func before_test() -> void:
 	_saved = {}
-	for action: StringName in [&"slot_5", &"slot_2", &"dodge", &"attack_light", &"pause"]:
+	for action: StringName in [&"slot_5", &"slot_4", &"slot_2", &"dodge", &"attack_light", &"pause"]:
 		_saved[action] = InputMap.action_get_events(action)
 
 
@@ -118,9 +118,9 @@ func test_swallow_matches_slot_casts_and_swaps_and_follows_a_rebind() -> void:
 		var swap: InputEventKey = InputMap.action_get_events(Player.SWAP_ACTIONS[i])[0] as InputEventKey
 		assert_bool(RunPromptScreen.swallows_slot_action(swap)).is_true()
 	assert_bool(RunPromptScreen.swallows_slot_action(_key(KEY_ENTER))).is_false()
-	assert_bool(RunPromptScreen.swallows_slot_action(_key(KEY_F))).is_false()
-	_rebind(&"slot_5", _key(KEY_F))
-	assert_bool(RunPromptScreen.swallows_slot_action(_key(KEY_F))).is_true()
+	assert_bool(RunPromptScreen.swallows_slot_action(_key(KEY_G))).is_false()
+	_rebind(&"slot_5", _key(KEY_G))
+	assert_bool(RunPromptScreen.swallows_slot_action(_key(KEY_G))).is_true()
 
 
 func _open_main() -> Main:
@@ -180,7 +180,9 @@ func test_digit_navigation_still_works_when_a_digit_is_also_a_slot_key() -> void
 	prompt.disarm()
 	var target: int = RunPromptScreen.digit_target(options, "row", 1)
 	assert_int(target).is_greater(0)
-	# slot_4 is bound to the digit 2 today: it must still move the highlight, and must not cast.
+	# H2 moved the slot keys off the digits (Utility = F, Movement = Space), so rebind slot_4 to the digit 2 here:
+	# a digit that is also a slot key must still move the highlight, and must not cast.
+	_rebind(&"slot_4", _key(KEY_2))
 	var digit_two := _action_event(&"slot_4", true)
 	assert_int(digit_two.physical_keycode).is_equal(KEY_2)
 	digit_two.keycode = KEY_2

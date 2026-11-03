@@ -191,7 +191,7 @@ func test_slot_key_label_fits_its_box_for_the_longest_labels() -> void:
 		add_child(widget)
 		auto_free(widget)
 		widget.apply_layout(cfg, s)
-		for text: String in ["Shift+Q", "Ctrl+Q", "LMB", "R", "?"]:
+		for text: String in ["Shift+Q", "Ctrl+Q", "LMB", "R", "?", "Space", "Shift+Space", "Shift+F"]:
 			widget.set_key_hint(text)
 			await get_tree().process_frame
 			var size_before := widget.size

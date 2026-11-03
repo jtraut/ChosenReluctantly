@@ -19,6 +19,7 @@ var player: Player = null
 func _ready() -> void:
 	dodge_pips = DodgePips.new()
 	dodge_pips.name = "DodgePips"
+	dodge_pips.visible = PlayerConfig.dodge_enabled()  # H2: hidden while the dodge is off (DodgePips keeps it in step)
 	$Root.add_child(dodge_pips)
 	_ignore_mouse_recursive($Root)
 	_apply_layout()

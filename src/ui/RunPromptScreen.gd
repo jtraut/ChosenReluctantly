@@ -48,7 +48,7 @@ var _arm_generation: int = 0
 var _shown: Dictionary = {}
 var _auto_chosen: int = 0
 ## Real time (ms ticks) before which option presses are ignored: the panel opens right after a fight, while
-## the player is still mashing the card keys, Space (dodge) and LMB. Length: data/ui.json run_ui.prompt_option_arm_delay.
+## the player is still mashing the card keys (Space is Movement) and LMB. Length: data/ui.json run_ui.prompt_option_arm_delay.
 var _armed_at_msec: int = 0
 var _fit_scale: float = 1.0
 
@@ -494,7 +494,7 @@ func _focus_option(index: int) -> void:
 ## open. The panel does not pause the tree, so Player._unhandled_input would still see the slot keys (Q, E, 1, 2, R
 ## today) and their Shift swaps: any event matching a `slot_N` or `dead_card_swap_N` action is swallowed here too, by
 ## action and not by key, so it follows rebinding. Space is swallowed as well: it is the
-## dodge key, the player is mashing it as the panel opens, and a focused button would otherwise confirm on it.
+## Movement card key (slot_4 by default), the player is mashing it as the panel opens, and a focused button would otherwise confirm on it.
 ## Accidental picks are also held off by the short arm delay after opening (`options_armed`). Does nothing while paused.
 func _input(event: InputEvent) -> void:
 	if not visible or GamePause.is_paused():
@@ -510,7 +510,7 @@ func _input(event: InputEvent) -> void:
 		return
 	if key.keycode == KEY_SPACE:
 		# Never confirms anything here (a focused Button would take it as ui_accept), with options or with the lone
-		# Continue / New run button: the player is mashing Space (dodge) as the panel opens.
+		# Continue / New run button: the player is mashing Space (Movement) as the panel opens.
 		get_viewport().set_input_as_handled()
 		return
 	if _options.is_empty():

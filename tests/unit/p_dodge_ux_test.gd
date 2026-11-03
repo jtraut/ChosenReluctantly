@@ -151,3 +151,18 @@ func test_boss_bar_shows_staggered_then_hands_over_to_invulnerable() -> void:
 	assert_str(bar.info_line_text()).is_equal(String(cfg["invulnerable_text"]))
 	assert_str(bar.attack_line_text()).is_empty()
 	assert_int(bar.crossed_notches()).is_equal(1)
+
+
+## H2: the pip row (and its key column) is hidden while the dodge switch is off, and back when it is on. No "?" ever shows.
+func test_pips_hidden_with_the_switch_off_and_shown_with_it_on() -> void:
+	var off := _spawn_main("rogue")
+	await _idle(3)
+	assert_bool(PlayerConfig.dodge_enabled()).override_failure_message("shipped data has the dodge off").is_false()
+	assert_bool(off.hud.dodge_pips.visible).is_false()
+	DodgeSwitch.enable()
+	await _idle(3)
+	assert_bool(off.hud.dodge_pips.visible).is_true()
+	assert_str(InputLabels.for_action(&"dodge")).override_failure_message("the on state shows a real key, not '?'").is_not_equal("?")
+	DodgeSwitch.reset()
+	await _idle(3)
+	assert_bool(off.hud.dodge_pips.visible).is_false()

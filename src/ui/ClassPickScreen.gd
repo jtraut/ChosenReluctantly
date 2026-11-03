@@ -15,7 +15,7 @@ extends CanvasLayer
 ## even with `--class` (which then is the preselection).
 ##
 ## Input: keys 1..N and the arrow keys move the one highlight (never confirm), Enter or a click confirms, Space is swallowed
-## (it is the dodge key, so a mashed Space never starts a run). Presses are ignored for `run_ui.prompt_option_arm_delay`
+## (it is the Movement card key, so a mashed Space never starts a run). Presses are ignored for `run_ui.prompt_option_arm_delay`
 ## seconds after opening, like the reward screen. Words and sizes: data/ui.json `class_pick`.
 
 signal opened()

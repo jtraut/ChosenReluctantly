@@ -65,7 +65,12 @@ func word() -> String:
 	return status_word(int(_state["current"]), int(_state["max"]), _cfg) if not _cfg.is_empty() else ""
 
 
+## H2: the whole row (key label and pips) is hidden while the dodge is off, so no "?" key and no empty gap show.
+## Hud's dodge row is the last in the top-left stack, so hiding it leaves nothing to re-flow.
 func _process(delta: float) -> void:
+	var on: bool = PlayerConfig.dodge_enabled()
+	if visible != on:
+		visible = on
 	if _player == null or _player.dodge_charges == null:
 		return
 	_state = _player.get_dodge_state()

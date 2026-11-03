@@ -4,6 +4,30 @@ A plain-language history of the project for the director, grouped by date (from 
 
 ## 2026-11-02 (Slice BD0: build-depth design doc; Slice H2: dodge-off trial; Slice H1: enemy pressure pass; Slice K1: key labels follow the bindings; director decisions: build depth, pressure pass, loadouts, run order, OPEN_ITEMS pass)
 
+### Director answers: dodge return (D29), relics (D22, D24), stacking (D25), menu keys (D26), map (D28)
+
+Docs only: no code, no new commands, no new assets. Commit range a6c33e6..c475c58 (touched GDD, BUILD_DEPTH, ROADMAP, DECISIONS, OPEN_ITEMS, STATE). **Nothing in the game has changed yet:** the dodge change is built in the upcoming slice H3.
+
+#### Changed
+- **[Director decision, D29 = B: the dodge is back]** Recorded in GDD §3 and §5, built in H3. His reason: without the dodge the game didn't feel as fluid or fun, though it was still very winnable. Old -> new:
+  - `dodge.enabled` false -> **true**.
+  - Dodge charges: Rogue 3 -> **2**, Wizard 2 -> **1** (the `data/player.json` default 3 -> **2**).
+  - Dodge key: none -> **Space**. Movement slot: Space -> **Ctrl**. Movement swap: Shift+Space -> **Shift+Ctrl**. Utility stays **F**.
+  - Enemy attacks and telegraphs get "a little faster", especially the boss's Fan of regrets.
+- Game-lead starting values for that speed-up, **not** a director decision, all planned for H3: `pressure.attack_rate_scale` 1.0 -> **1.1**; new `pressure.telegraph_scale` **0.85** on non-boss telegraphs; volley windup 0.9 -> **0.75**.
+- **[Director decision, D22 = C]** Relics (GDD §4a, BUILD_DEPTH §4.1). In his words: a relic-hunting player can reach about 6-8 relics per run, hard cap 10. Sources: a merchant (buy several at once with gold), a dedicated relic stage, and elites. Old plan (BD0 default A): elite relic choice, rest room heal-or-relic, 1 in 4 reward screens, about 3-4 per run.
+  - Game-lead interim, not a director decision: BD2 adds one relic room to the straight run (about 2 per run until the map exists). Rest and reward relics are dropped pending the new question D30.
+- **[Director decision, D24 = A]** Relics get their own slice BD2, after BD1 and before 3d.
+- **[Director decision, D25 = A]** Burn and Bleed don't stack in the base game. Stacking comes only from relics, keystone cards and potential passive-tree nodes (he added the passive nodes).
+- **[Director decision, D26 = A]** Fixed menu keys (Enter, arrows, class-pick 1/2) may be named on screen. Gameplay keys still come from the bindings.
+- **[Director decision, D28 = A]** The MAP0 design doc comes first, then the first map build after BD2 and before 3d.
+
+#### Docs and process
+- New slice H3 (dodge return) is next, then MAP0, PL3, BD1, BD2, the map build, 3d and BD3. PL3 item 6 (Fan of regrets lanes) moved into H3.
+- BUILD_DEPTH §8 was rewritten for the dodge-on case: one pure escape card per deck is now a recommendation.
+- New director question D30 added to OPEN_ITEMS.
+- Answered items moved from OPEN_ITEMS to `docs/RESOLVED.md`.
+
 ### Slice BD0: build-depth design doc
 
 Docs only: no code, no tag. Commit range 81fb65e..0ddd630. Everything here is [PROPOSED]; the director has not approved it. The director's own directives for BD0 were recorded earlier (ab00c50).

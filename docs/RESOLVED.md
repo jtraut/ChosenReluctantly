@@ -4,6 +4,29 @@ The archive of the director's answered, received and acknowledged items, moved h
 
 ## 2026-11-02
 
+### Answers recorded in c475c58 (D22, D24, D25, D26, D28, D29; checklist items 40-42; what's-new notes)
+
+Removed from OPEN_ITEMS in c475c58. Their full original text is in the parent commit: `git show c065762:docs/OPEN_ITEMS.md`.
+
+#### Decisions
+
+| ID | Your answer | Where it went |
+|---|---|---|
+| D29 | **B**: the dodge is back. Rogue 2 charges, Wizard 1, dodge on Space, Movement on Ctrl; enemy attacks and the volley a little faster. Its two sub-questions (win rate on Easy; Movement cooldowns) are moot now that the dodge is back. | GDD §3 and §5; ROADMAP H3. |
+| D28 | **A**: MAP0 design doc first, then the first map build after BD2 and before 3d. | GDD §9; ROADMAP. |
+| D26 | **A**: fixed menu keys (Enter, arrows, class-pick 1/2) may be named on screen; gameplay keys still come from the bindings. | GDD §3. |
+| D25 | **A**, plus passive nodes: Burn and Bleed don't stack in the base game; stacking comes only from relics, keystone cards and potential passive-tree nodes. | GDD §4a; BUILD_DEPTH §3.4. |
+| D24 | **A**: relics in their own slice BD2, after BD1 and before 3d. | GDD §4a; ROADMAP. |
+| D22 | **C**: a relic-hunting player can reach about 6-8 relics per run, hard cap 10. Sources: a merchant (buy several at once with gold), a dedicated relic stage, and elites. | GDD §4a; BUILD_DEPTH §4.1. |
+
+#### Needs-your-eyes items
+- **40** (H2 with cards, no dodge): answered by D29. The game felt less fluid and fun but was very winnable, and the Rogue had no trouble.
+- **41** (H2 no cards, no dodge): retired, superseded by H3, whose close will ask about a no-card run again.
+- **42** (H2 keys Space/F): superseded. Movement moves to Ctrl; Utility stays on F.
+
+#### "What's new" notes
+- H2 and BD0 notes: played and read. The director answered BD0's questions (D22, D24, D25).
+
 ### H1 "What's new" note acknowledged
 
 You played the H1 build (enemies +25% speed) before H2. The note from OPEN_ITEMS ("What's new since you last played"): "**H1 (tag `playtest-2026-11-02-H1`):** every normal and elite enemy is 25% faster (chaser 5.0 against your walk of 6.0), and attack speed is unchanged. The boss's own speed is unchanged, but its adds are faster. You've already played this build; your answer (with cards good, no cards still winnable) is what started H2." game-lead removes it from OPEN_ITEMS at close.

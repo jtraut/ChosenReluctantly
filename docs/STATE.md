@@ -15,7 +15,7 @@ Last updated: 2026-11-02 (H1 closed). **Run order (director, 2026-11-02, updated
 - The repo runs. Baselines: see the H1 line above.
 
 ## In progress
-- Nothing mid-build. Working tree clean after housekeeping.
+- **H2: gameplay-dev building (started 2026-11-02 after the H1 close d88bf9e).** If cut off, check `git log` for H2 commits and resume gameplay-dev from the H2 brief.
 - Known flaky: `tests/unit/w1a_test.gd:485` (auto-fire wait at time_scale 0.25) failed once under full-suite load, then passed alone and in the next full run. qa looks at it in H2.
 
 ## Exact next step

@@ -3,6 +3,8 @@ extends GdUnitTestSuite
 ## W1a, a playable Wizard (gameplay half): data/characters.json, the class in run state, the `--class` / `--deck` launch
 ## rules, the Wizard's ranged light and neutral heavy, class-only reward pools and the minimal Wizard card pool.
 
+## Upper bound, in physics ticks, for waits that end at the first hit (qa, H2). Not a timeout in seconds: see the auto-fire test.
+const MAX_WAIT_TICKS := 1800
 const RUN_MAIN_PATH := "res://scenes/main/RunMain.tscn"
 const MAIN_SCENE_PATH := "res://scenes/main/Main.tscn"
 const CHASER_PATH := "res://scenes/enemies/MeleeChaser.tscn"
@@ -447,16 +449,25 @@ func test_the_wizard_bolt_flies_to_the_reticle_not_where_the_body_faces() -> voi
 	main.player.aim_point_override = enemy.global_position
 	var start_hp: float = enemy.health.current_health
 	var saw_bolt: bool = false
-	var deadline: int = Time.get_ticks_msec() + 4000  # bounded on real time, see the auto-fire test below
-	while enemy.health.current_health >= start_hp and Time.get_ticks_msec() < deadline:
+	# qa, H2: the first hit is recorded from the damaged signal, so a second auto-fire bolt landing in the same frame (seen once
+	# under load, total 3.0) cannot change what is asserted. The wait is bounded in physics ticks (see the auto-fire test below).
+	var hits: Array[float] = []
+	enemy.health.damaged.connect(func(amount: float, _type: String, _knockback: Vector3) -> void: hits.append(amount))
+	var ticks: int = 0
+	while enemy.health.current_health >= start_hp and ticks < MAX_WAIT_TICKS:
 		await get_tree().physics_frame
+		ticks += 1
 		for child in main.get_children():
 			if child is Projectile:
 				saw_bolt = true
 	assert_bool(saw_bolt).override_failure_message("no bolt flew").is_true()
 	assert_float(enemy.health.current_health).is_less(start_hp)
-	# Neutral, 1.5 per bolt: hit armor-free (a plain chaser has none).
-	assert_float(start_hp - enemy.health.current_health).is_equal_approx(1.5, 0.01)
+	assert_array(hits).is_not_empty()
+	# Neutral, 1.5 per bolt: hit armor-free (a plain chaser has none). The first bolt is exactly 1.5; any later bolt in the
+	# same frame adds whole multiples of it.
+	assert_float(hits[0]).is_equal_approx(1.5, 0.01)
+	var lost: float = start_hp - enemy.health.current_health
+	assert_float(fmod(lost + 0.01, 1.5)).override_failure_message("HP lost %s is not a whole number of 1.5 bolts" % lost).is_less(0.02)
 
 
 func test_the_wizard_bolt_does_not_reach_past_its_12_m_range_and_autofire_needs_a_target_in_range() -> void:
@@ -477,13 +488,17 @@ func test_the_wizard_bolt_does_not_reach_past_its_12_m_range_and_autofire_needs_
 	main.player.aim_point_override = far.global_position
 	await _frames(1)
 	assert_bool(main.player._attack_has_target(&"light")).is_true()
-	# Bounded poll on real time, not a fixed 90 ticks (qa, W1b: one full-run failure "less than 20.0 but was 20.0"; a fixed tick
-	# count is 1.5 game-seconds only while Engine.time_scale is 1, and the bolt needs about 0.4 s to cross 9 m).
-	var deadline: int = Time.get_ticks_msec() + 4000
-	while far.health.current_health >= start_hp and Time.get_ticks_msec() < deadline:
+	# Bounded poll, not a fixed 90 ticks (qa, W1b: one full-run failure "less than 20.0 but was 20.0"; a fixed tick count is
+	# 1.5 game-seconds only while Engine.time_scale is 1, and the bolt needs about 0.4 s to cross 9 m). qa, H2: the bound is
+	# physics ticks, not wall-clock time. A wall-clock deadline failed again under full-suite load with a hit-stop time_scale of 0.25,
+	# because the game then advanced too little in 4 real seconds. 1800 ticks is 30 game-seconds at full speed and still 7.5 at 0.25;
+	# the loop ends at the first hit, so the normal case costs about 30 ticks.
+	var ticks: int = 0
+	while far.health.current_health >= start_hp and ticks < MAX_WAIT_TICKS:
 		await get_tree().physics_frame
+		ticks += 1
 	assert_float(far.health.current_health).override_failure_message(
-		"auto-fire never landed in 4 s: time_scale=%s can_act=%s busy=%s" % [Engine.time_scale, main.player.can_act(), main.player.attacks.is_busy()]
+		"auto-fire never landed in %d ticks: time_scale=%s can_act=%s busy=%s" % [ticks, Engine.time_scale, main.player.can_act(), main.player.attacks.is_busy()]
 	).is_less(start_hp)
 
 

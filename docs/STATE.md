@@ -15,7 +15,7 @@ Last updated: 2026-11-02 (H1 closed). **Run order (director, 2026-11-02, updated
 - The repo runs. Baselines: see the H1 line above.
 
 ## In progress
-- **H2: gameplay-dev building (started 2026-11-02 after the H1 close d88bf9e).** If cut off, check `git log` for H2 commits and resume gameplay-dev from the H2 brief.
+- **H2: gameplay-dev DONE (120bfef..dacc680); ux-designer next.** Switch `data/player.json` `dodge.enabled` = false; Movement Space, Utility F; Wizard 22 HP; game-over arm delay. Suite 1213/1213. New candidate hashes (qa to confirm): arena 30 s seed 1 **2591372848**, 90 s **4009010406**; bot sim 2281795515 unchanged. Bot clears with dodge off: Rogue std 3/16, Wizard kite 8/16, no-kite 7/16 (were 16/16, 16/16, 16/16). ux: hide the pips when `get_dodge_state()["enabled"]` is false; Movement chip "Space"; fix the "dodge key" comments in ClassPickScreen/RunPromptScreen; check the game-over "Enter" hint.
 - Known flaky: `tests/unit/w1a_test.gd:485` (auto-fire wait at time_scale 0.25) failed once under full-suite load, then passed alone and in the next full run. qa looks at it in H2.
 
 ## Exact next step

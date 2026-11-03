@@ -637,7 +637,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
   - **Owner sequence:** gameplay-dev -> ux-designer -> qa -> playtester (short) -> tech-writer (folded into the next docs pass if small) -> close.
 
 ### Run order after W1b (director, 2026-11-02)
-W1b finishes as planned (tech-writer docs pass, then close). Then, in this order: **K1 -> H1 -> BD0 -> PL3 -> BD1 -> 3d.** Reason (director): cards and decks don't yet change how a run plays, and that must be settled before more screens, art or staging. game-lead's reorder note is D21 in OPEN_ITEMS (default: this order). Every build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag; each role commits only its own paths.
+W1b finishes as planned (tech-writer docs pass, then close). Then, in this order: **K1 -> H1 -> BD0 -> PL3 -> BD1 -> 3d.** **Updated 2026-11-02 (director's OPEN_ITEMS pass):** H1 -> **PL3 housekeeping** (D21 = B) -> **H2** (dodge-off trial; game-lead placement, logged) -> BD0 -> PL3 (rest) -> BD1 -> 3d. The branching map's place is D28. Reason (director): cards and decks don't yet change how a run plays, and that must be settled before more screens, art or staging. game-lead's reorder note is D21 in OPEN_ITEMS (default: this order). Every build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag; each role commits only its own paths.
 
 - [x] **K1, key labels follow the bindings** — **DONE 2026-11-02.** gameplay-dev 04ac813 + 7f4b136 (`InputLabels`, validator, `bindings_changed`, Recovery on R); ux 6204f2a + 81abc85 (HUD/prompt/pause text from bindings; fixed slot keys leaking through an open reward prompt); qa PASS 8752a1c (1190/1190, soak OK, arena hashes unchanged; `docs/reviews/2026-11-02-k1-qa.md`); playtest 2c0d185 (smoke PASS; `docs/playtests/2026-11-02-k1-short.md`); docs 9e77aae. Tag `playtest-2026-11-02-K1`. Carry-overs: PL3 items 7-10. (Original header: director, 2026-11-02; small. Loop: gameplay-dev -> ux-designer -> qa -> playtester (short smoke) -> tech-writer -> close.)**
   - **Goal:** whatever is in `data/input_bindings.json` is what the UI shows. No UI text hardcodes a key. GDD §3 "Key labels follow the bindings" and "Card slots" [DIRECTOR DECISION].
@@ -679,6 +679,25 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
   - **Playtester (short):** a run per class with cards and one with no cards; does pressure feel fair and readable?
   - **Close:** OPEN_ITEMS asks the director to play the Wizard again with and without cards and say whether it bites, and to run with no cards and see whether he now loses before the boss.
 
+- [ ] **H2, dodge-off trial, Space/F keys, Wizard 22 HP (director, 2026-11-02; small). Runs right after H1 closes and the PL3 housekeeping (D21 = B). Loop: gameplay-dev -> ux-designer -> qa -> playtester (short) -> tech-writer -> close. Tag `playtest-YYYY-MM-DD-H2`.**
+  - **Goal:** see what a run plays like with **no dodge**. The director's no-card Wizard still looked winnable after H1 (his checklist item 34). GDD §3 "Dodge-off trial", "Card slots"; §5 "Wizard HP 22" (D20 = B). **This is a trial: report what happens and don't retune anything to compensate.** If standard runs get much harder, say so in the report.
+  - **gameplay-dev:**
+    1. **Data switch:** one value (for example `data/player.json` `dodge.enabled`, default **false** when shipped) turns the dodge off for both classes. Keep all the dodge code, its tests and the charge plumbing. When it's off, the dodge action does nothing, charges don't tick, and nothing else changes. Tests that cover the dodge still pass with the switch on.
+    2. **Bindings (`data/input_bindings.json`):** `slot_4` (Movement) = **Space**, `dead_card_swap_4` = Shift+Space; `slot_3` (Utility) = **F**, `dead_card_swap_3` = Shift+F. The dodge action keeps no key while it's off.
+       - **Turning it back on** takes two data edits: the switch, and a new dodge key that doesn't clash (the validator catches a clash). Say this in the hand-back so the README and OPEN_ITEMS can tell the director.
+       - **Validator:** an action with no binding is allowed, and a disabled dodge must not trip it. Log your exact rule.
+    3. **Space vs menus:** Space is now a card key. Check that Space never accepts a prompt, reward or "Try again" by accident: the reward and run prompts already swallow slot actions, so check game over and class pick too. **Pulled in from PL3 item 9:** GameOverScreen gets the same arm delay as RunPromptScreen.
+    4. **Wizard HP 26 -> 22** (D20 = B) as **its own commit**, so its effect can be seen apart from the dodge.
+    5. **Bots:** the wave sim and bot sim obey the switch (no dodge when it's off). Run the H1 policies (standard and `-LightHeavyOnly`, both classes, Wizard kite and `-WizardNoKite`, 10-room runs, 12+ seeds) for three columns: **H1 baseline** (dodge on, Wizard 26), **Wizard 22 with dodge on**, and **shipped** (dodge off, Wizard 22). Report clear rate, fight-room HP dip (the in-room lowest-HP metric, per qa at H1) and the Rogue boss median.
+  - **ux-designer:** hide the dodge pips and their key column while the dodge is off, and bring them back with the switch. Any hint or label that names the dodge follows the switch. The Movement chip reads "Space" and Utility "F", from `InputLabels`. Check that "Space" and "Shift+Space" fit the key box at the minimum HUD scale. Captures: card strip, pause screen, a reward screen.
+  - **qa:** review and tests:
+    - switch off: Space casts Movement with hold-to-preview and cast-on-release; Shift+Space swaps without casting; no dodge happens; pips are hidden; Space doesn't confirm game over or class pick by accident;
+    - switch on, with a test-only dodge key: the dodge works as before;
+    - the validator accepts the shipped file.
+    Also: full suite, the 20 s headless run, SceneSelfCheck, and the **reload soak** (input, HUD and Player change). Re-run the three-column table yourself. **The sim hashes change again:** re-baseline them, and game-lead records them in STATE.
+  - **Playtester (short):** smoke check; a run per class with cards and one no-card run. Without the dodge, does danger read as fair, and does Space feel right as the Movement key?
+  - **Close:** OPEN_ITEMS asks the director to play once with cards and once without, with no dodge: do you now lose a no-card run? Does Space feel right for Movement and F for Utility? Should the dodge stay off?
+
 - [ ] **BD0, build-depth design doc (director, 2026-11-02; game-lead alone, docs only, no code). No tag (no build).**
   - **Goal:** a concrete, data-driven plan for GDD §4a's goals, in a new `docs/BUILD_DEPTH.md` plus a GDD §4a summary marked [PROPOSED].
   - **Contents:**
@@ -692,6 +711,8 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
     8. **Content budget and slices:** BD1 (engine plus first 2 archetypes per class), BD2 (relics), BD3 (more cards and archetypes) and so on, each one sitting, with acceptance, owners and the loop. Loosely coupled to specific cards. Slices go into this ROADMAP.
     9. **Sources:** say which idea comes from which game, leaning on Erannorth Chronicles, Gwent, Slay the Spire and Monster Train. No web access: only mechanics game-lead is confident about, "unsure" otherwise. A research-digest request goes in OPEN_ITEMS if wanted.
     10. **Director questions:** at most 3, each with a default, as **D22, D24, D25** (D23 is taken by loadout availability). Don't wait for answers.
+    11. **Branching map hooks (director, 2026-11-02, GDD §9):** treat future map nodes (mini-bosses, curse/buff rooms, a merchant) as relic and reward sources in the relic design, so BD1's relic framework doesn't need rework when the map lands. Don't design the map itself (D28 covers when).
+    12. **Dodge-off:** if H2's trial keeps the dodge off, the Movement slot is the player's only escape. Say what that means for Movement cards in the archetypes.
   - **Done when:** `docs/BUILD_DEPTH.md` exists with all of the above, GDD §4a has the [PROPOSED] summary, BD1's brief below is rewritten from it, and OPEN_ITEMS has the questions.
 
 - [ ] **PL3, small polish after W1b (game-lead, 2026-10-30; runs after BD0 per the director's 2026-11-02 order)**
@@ -703,9 +724,8 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
     5. **Damage numbers drawing over the boss bar** (from the W1b ux backlog).
     6. **Fan of regrets telegraph** (W1b playtest problem 3, added at W1b close): cap the lane length to what's on screen and ramp lane brightness toward the end of the wind-up so the "now" moment reads. Telegraph look only, no timing or damage change. ux.
   - **From K1 (playtest docs/playtests/2026-11-02-k1-short.md, added at K1 close; all ux):**
-    7. **Reward screen digits mean two things.** Option badges 1-4 pick the option, and the same card shows a "Key 1" or "Key Q" chip for its slot key. Make the chip read clearly as "casts with" (for example a key-cap style, not the word "Key"), or restyle the option badges so the two can't be confused.
-    8. **Removal grid header vs hint.** Headers read "Utility (1)", while digit 1 jumps to the first column (Attack: Single). Pick one: drop the key from these headers, or number the columns separately from the slot keys.
-    9. **Game over and a mashed Space.** GameOverScreen has no arm delay or Space guard, unlike RunPromptScreen (0.4 s), so a dodge mash on death may hit "Try again". Add the same arm delay. Build the "Enter or Space" hint from the `ui_accept` binding if InputLabels can, otherwise keep it literal (scan allowlist).
+    7. **Reward and removal screens: drop the number keys (director, 2026-11-02, call 16; replaces the old items 7-8).** Remove the number-key shortcuts that pick an option or jump to a column, and their hints ("Keys 1-4 highlight", "Keys 1-%d jump to a column") and option-number badges. Mouse selection is enough; arrows and Enter stay (he named only number keys). After H2 no slot key is a digit, so the "Key 1" chip and the "Utility (1)" header clashes go away with it. If the chips still say "Key Q", restyle them as a key cap. D26's reward/remove bullet is then moot.
+    9. **~~Game over and a mashed Space.~~ Moved to H2** (Space becomes the Movement key there). Was: GameOverScreen has no arm delay or Space guard, unlike RunPromptScreen (0.4 s), so a dodge mash on death may hit "Try again". Add the same arm delay. Build the "Enter or Space" hint from the `ui_accept` binding if InputLabels can, otherwise keep it literal (scan allowlist).
     10. **Wizard card strip is cramped** ("Next: Footwork, Allegedly" fills the width). Also, the reward "X (Key) now: A / B / C" line runs to 4 lines on some cards. Neither clips yet.
   - **Tooling (gameplay-dev):** scenarios give the Wizard its own deck (today they show the Rogue's card row); a capture trigger on a boss attack starting.
   - **Housekeeping (director, 2026-11-02, from STATE):**
@@ -729,11 +749,11 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
   - **Goal:** from the second run on, you can build a starting deck, save it as a loadout and start runs with it. GDD §9 ("Starting decks and loadouts [DECIDED]", "Loadouts [DIRECTOR DECISION, 2026-11-02]"), §8 (passives linked to loadouts, free respec), §4 (deck rules).
   - **Changes from the director, 2026-11-02 (they override the items below where they conflict):**
     - **A. Slots:** at least **5 loadout slots per class** (data; replaces "3 save slots"). The player names each loadout (free text). Only Fire exists, so the element isn't enforced.
-    - **B. Availability (D23 default):** each card gets an `availability` field in data: `starter`, `reward` or `locked` (the unlock condition is [OPEN]; `locked` cards carry a condition text or "TBD"). Validated. The editor shows a badge on each card ("Starter", "Reward", "Locked: <condition or TBD>"). **Today every existing card is tagged `starter`** (see D23 for why); BD1+ content decides per card.
+    - **B. Availability (D23 = A, director 2026-11-02):** each card gets an `availability` field in data: `starter`, `reward` or `locked` (the unlock condition is [OPEN]; `locked` cards carry a condition text or "TBD"). Validated. The editor shows a badge on each card ("Starter", "Reward", "Locked: <condition or TBD>"). **Today every existing card is tagged `starter`** (see D23 for why); BD1+ content decides per card.
     - **C. Plan list:** a loadout may hold reward-only and locked cards as a **plan** next to its starting deck. Reward screens highlight offered cards on the current loadout's plan ("On your plan"). The starting deck holds only `starter` cards and obeys the deck rules.
     - **D. Passive hook:** each loadout reserves an empty, versioned `passive_allocation` field. Don't build the tree; nothing else to build for respec.
     - **E. Coupling:** loadout code stays on the deck APIs only, so BD1's tags and relics slot in without rework.
-    - **F. Gates:** "sim hashes unchanged" means H1's re-baselined hashes. Tag `playtest-YYYY-MM-DD-3d` (replaces the stale 2026-10-29 name).
+    - **F. Gates:** "sim hashes unchanged" means the latest re-baselined hashes in STATE (H2 changes them again after H1). Tag `playtest-YYYY-MM-DD-3d` (replaces the stale 2026-10-29 name).
   - **Acceptance:**
     1. **Profile:** a small persisted profile (`user://profile.json`, versioned, validated) counts finished runs (won or lost). Run 1 starts straight away with the preset (today's behaviour). The path is injectable so tests never touch the real user folder.
     2. **Start screen (from run 2):** before a run, a screen offers: Start with the preset; start with a saved loadout; edit or create a loadout. The last-used choice is preselected, so one Enter starts a run. Try again and New run go to this screen from run 2 on.
@@ -751,7 +771,8 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
     - ~~3 save slots~~ 5 per class (director, 2026-11-02).
     - A finished run counts whether it was won or lost.
   - **Owner sequence:** gameplay-dev (profile, storage, rules, placeholder screens) -> ux-designer (start screen and editor) -> qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-3d`. **This closes Milestone 3** except the out-of-scope items below.
-- Later in M3 or after: shops and drops (GDD §14 item 1, [OPEN], not started); branching routes.
+- Later in M3 or after: shops and drops (GDD §14 item 1, [OPEN], not started).
+- [ ] **Branching map (director, 2026-11-02, GDD §9; not scheduled until D28 is answered).** Routes with choices: merchant stop, curse/buff rooms, harder rooms and mini-bosses for better rewards, with the hardest path the most rewarding. It needs a map design pass first (node types, choices per step, layout), and it depends on reward currencies (gold, XP, between-run points) that don't exist yet. **Default placement (D28):** a map design doc (MAP0, game-lead, docs only) right after BD0, and the first map build slice after BD1 and before 3d.
 
 ## Milestone 4 — Second class/element, subclasses, passive tree prototype, balance sim
 Not started. Per GDD §13: Wizard + Water added, 2 subclasses each for Rogue/Wizard/Fire/Water, first passive tree prototype (30-40 nodes), headless balance simulation grown out.

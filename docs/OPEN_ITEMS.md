@@ -143,6 +143,12 @@ Your round-1 answers are under "Recently resolved". Best asked after BD1, when t
 
 None blocks work. Until you answer, I use my default. **D22, D24 and D25 are reserved** for BD0's questions (at most 3); D23 is taken by the loadout card flags below. Next new number: D28.
 
+> **2026-11-02: your OPEN_ITEMS pass is received and recorded** (`docs/playtests/2026-11-02-director-open-items-pass.md`). This file gets trimmed to active items only once `docs/RESOLVED.md` exists (end of H1).
+
+- **D28: When to build the branching map (new).** You want routes (merchant, curse/buff rooms, harder rooms and mini-bosses for better rewards) soon. Recorded in GDD §9. It needs a design pass, and its rewards need gold, XP and between-run points, which don't exist yet.
+  - **A (my default):** a map design doc (MAP0, docs only) right after BD0, then the first map build after BD1 and before loadouts (3d).
+  - **B:** build a simple map now, right after H2 and before BD0, with card rewards only until the currencies exist.
+  - **C:** after 3d, as planned before.
 - **D27: Enemy attack speed, and what to try if the Wizard still doesn't bite (new, from H1).** You said: raise enemy speed until the Wizard takes damage, then attack speed if that's not enough. H1 raised enemy speed 25% (the chaser is now 5.0 against your walk of 6.0, the most it can be without outrunning you). In the sim, the kiting Wizard still takes **zero** damage, even with enemies attacking twice as often. Faster attacks did hurt the Rogue: at +25% attack speed, his clear rate fell from 100% to about 56%. So I shipped speed +25% and left attack speed unchanged. The bot is weaker than you are, so your hands decide (checklist item 33).
   - **A (default):** keep speed +25% and attack speed unchanged.
   - **B:** add +25% attack speed anyway and accept a harder Rogue.

@@ -1260,3 +1260,16 @@ Commits 1604f6b..bcf13a5 plus a uid; 939/939. Only HEAD is runnable: the earlier
   - **Why the kiting Wizard isn't hit:** shooters do fire (574 shots, 8 seeds), but about 4% land. A shot holds the lane it had when its 0.45 s wind-up started and takes about 0.78 s to arrive, and a player walking at 6.0 leaves that lane in about 0.1 s. More attack rate only means more dodgeable shots.
   - **Metric note:** end-of-room HP loss is 0% for every standard deck (they heal in-room). Any future pressure target uses the in-room dip instead.
   - **Watch item:** the boss carries scaled `move_speed` and `attack_cooldown` fields it doesn't use. That's a trap if later code reads them. (qa)
+
+### 2026-11-02 - Director's OPEN_ITEMS pass: my readings (game-lead)
+His answers are recorded verbatim in `docs/playtests/2026-11-02-director-open-items-pass.md`. They live in the GDD and CLAUDE.md, not here. These are my own readings and placements:
+- **D27 read as A** (speed x1.25, attack rate 1.0). He didn't answer D27 directly, but he said "Wizard with cards is good" (item 33) and named his own next lever, the dodge-off trial (item 34). Stated in his report so he can object. [Keeping D27 open, which would keep a settled question in front of him.]
+- **H1 closes as "gates met, goal missed".** His no-card Wizard reached room 8 and looked likely to win, so H1 didn't make no-card runs unsafe in his hands. H2 is the follow-up. [Holding H1 open until H2: they're separate changes, and H1's knobs are worth keeping.]
+- **Call 16 covers both the reward and removal screens** (my call text said "on those screens"), and drops only the number keys; arrows and Enter stay. D26 stays open, narrowed to game over and class pick. [Also dropping keyboard navigation, which he didn't ask for.]
+- **H2 runs before BD0**, right after the PL3 housekeeping. It's his direct "I'd like to see what happens" request, it's small, and BD0 needs to know whether the dodge stays to design Movement cards. [After BD1, which would design archetypes without knowing whether the dodge stays.]
+- **D20 = B (Wizard 22 HP) ships in H2 as its own commit,** with a separate sim column, so its effect can be seen apart from the dodge removal. [A separate slice for one data value.]
+- **Turning the dodge back on takes two data edits** (the switch and a non-clashing key), because Movement takes Space. I say so rather than inventing a hidden spare key. [Auto-moving Movement back to 2 when the dodge returns, which is magic the director didn't ask for.]
+- **The H2 shipped default is dodge off.** "Removed entirely" means off by default, not a test-only setting. [Off only in a test scenario.]
+- **D28 raised (branching map placement), default: a MAP0 design doc right after BD0, and the first map build after BD1, before 3d.** He wants the roguelite feel "sooner", but build depth is still his top concern, and the map's rewards need currencies that don't exist yet. [Building the map now, before BD0.]
+- **RESOLVED.md migration:** tech-writer creates it from the OPEN_ITEMS text at commit 8c03e6f plus today's answers. I then trim OPEN_ITEMS to active items only. For one pass, both docs hold the resolved items; nothing is lost.
+- **PL3 items 7-8 replaced** by the number-key removal (call 16). Item 9 (the game-over Space guard) moved into H2, because Space becomes a card key there.

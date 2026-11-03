@@ -56,11 +56,14 @@ Fewer, more impactful enemies. Telegraphed attacks, readable danger, and dodge s
   - **Basic attacks are weaker than active card plays.** Cards are the heart of the game. A card should always feel better than the free attack it competes with.
   - **Heavy attacks trade sustained damage for burst and utility.** A heavy attack may have lower single-target DPS than the light attack, but offers burst, a larger area, and class and element flavor (for example stun, a boosted element status chance, or a ranged targeted area for casters). Heavy attacks are defined per class in data and support different shapes (wide melee arc, targeted ranged area). **[PROPOSED]** Rogue heavy: wide arc, burst, brief stun on hit. **[PROPOSED]** Wizard heavy: targeted ranged area at the mouse point.
   - **Heavy wind-up slows the player slightly. It never roots.**
-  - **[DIRECTOR DECISION, 2026-11-02]** A run won with no cards at all (light and heavy attacks, dodge and rest rooms only) should not be possible. The director did exactly that with the Wizard on 2026-10-31 (10 rooms, no cards, no healing, 5:25). The one future exception is a deliberate build that invests in light and heavy attacks through deep build mechanics (relics, passives); see §4a.
-- **Card slots:** five card keys, read from `data/input_bindings.json`. Defaults **[DIRECTOR DECISION, 2026-11-01/02]:** Q, E, 1, 2, R for slots 1-5 (Attack single, Attack AoE, Utility, Movement, Recovery). Movement may later move to F; that must be a one-line data change with no code change.
+  - **[DIRECTOR DECISION, 2026-11-02]** A run won with no cards at all (light and heavy attacks, dodge and rest rooms only) should not be possible. The director did exactly that with the Wizard on 2026-10-31 (10 rooms, no cards, no healing, 5:25). The one future exception is a deliberate build that invests in light and heavy attacks through deep build mechanics (relics, passives); see §4a. **[DIRECTOR DECISION, 2026-11-02]** No-card runs shouldn't be easy to complete, regardless of how long they take: a slow no-card win still counts as too easy.
+- **Card slots:** five card keys, read from `data/input_bindings.json`. Defaults **[DIRECTOR DECISION, 2026-11-01/02]:** Q, E, 1, 2, R for slots 1-5 (Attack single, Attack AoE, Utility, Movement, Recovery). **[DIRECTOR DECISION, 2026-11-02] While the dodge is off (dodge-off trial below):** Movement on **Space** and Utility on **F**, so the slots are Q, E, F, Space, R and no slot sits on a number key. Shift + the same key still swaps.
 - **Key labels follow the bindings [DIRECTOR DECISION, 2026-11-02]:** whatever is in `data/input_bindings.json` is what the UI shows, so the screen and the keys can never disagree. No UI text may hardcode a key. Two actions may not share the exact same key plus modifiers; a conflict fails loudly at startup.
 - **Hold-to-preview casting [DIRECTOR DECISION, 2026-10-28]:** by default, holding a card's key shows its exact hit area on the ground (drawn from the same data as the hitbox), and the card casts on release. A setting switches casting to trigger on press instead.
+- **Reward and removal screens pick by mouse [DIRECTOR DECISION, 2026-11-02]:** the number keys that picked an option or jumped to a column are dropped ("mouse selection is sufficient"), so a number can't be mistaken for a card key.
 - **Dodge roll:** Space bar. **[OPEN]** how this relates to the Movement slot (see section 4).
+  - **Dodge-off trial [DIRECTOR DECISION, 2026-11-02]:** a no-card Wizard run still looked winnable after the H1 pressure pass, so the dodge is **removed from play** to see what happens. The code stays, and a data switch brings it back. While it's off, Space casts the Movement slot (see Card slots). The rules below describe the dodge when it's on.
+  - **[DIRECTOR DECISION, 2026-11-02] (D19 = A):** if a Movement card's dash ends overlapping an enemy, the player stays ghosted until clear (at most 3 s), and a dodge in that short window also passes through enemies. It is the only time the dodge passes through.
   - **[DIRECTOR DECISION, 2026-10-28]** The dodge is a modest escape, about 5 m, and may be lowered later. Its distance must stay easy to tune (data). Critical survival manoeuvres should come from Movement cards, not the dodge.
   - **[DIRECTOR DECISION, 2026-10-29]** The dodge has **charges**: start with 3 (may drop to 2; data value). Each charge recharges on a slightly longer cooldown than the old single-dodge cooldown (0.8 s). The HUD must show the dodge charges and their cooldown.
   - **[DIRECTOR DECISION, 2026-10-30]** The starting charge count is per class: **Rogue 3, Wizard 2** (see §5).
@@ -163,6 +166,7 @@ Pick one **class** and one **element** (for example Fire Rogue).
 ### Wizard moved earlier **[DIRECTOR DECISION, 2026-10-29]**
 - The **Wizard** is added now, ahead of Milestone 4, as a ranged class: its **light and heavy attacks are ranged** and aimed at the reticle. Reason: an outside playtester expected left click to hit distant enemies under the reticle, and found the Rogue's melee swing confusing. Water and the subclasses stay in Milestone 4.
 - **Wizard risk [DIRECTOR DECISION, 2026-10-30] (D18 = A):** the Wizard must not be the "easy way out". Its rooms should cost some HP, but less than the Rogue's. It should be squishier than it is today (HP is a tuning lever), starts with **2 dodge charges** (the Rogue starts with 3), and has a slightly longer **Recovery** slot cooldown than the Rogue. All three are per-class data values.
+- **Wizard HP 22 [DIRECTOR DECISION, 2026-11-02] (D20 = B):** truly squishier. A full boss "Fan of regrets" volley (25) from full HP can kill the Wizard, and that's acceptable: "a player realistically shouldn't be hit by a full volley, only partial, and if they do that's their fault."
 
 ### Card pools
 A character may only draw cards from:
@@ -214,6 +218,7 @@ Rather than a full strength/weakness wheel, elements apply status effects (for e
 - **Bosses:** 35% across elements.
 - **Final boss:** 50% across all elements, equal, so no element or build is singled out as unplayable.
 - **Fallback:** if resistances become hard to balance, drop them and use armor points only.
+- **[DIRECTOR DECISION, 2026-11-02]** The elite and boss resistance floors are confirmed, and they should stay similar to armor's cut on physical and magical damage (the parity principle below).
 
 ### Armor **[DIRECTOR DECISION, 2026-10-29]**
 1. **Two mitigation channels.** Elemental damage is reduced by elemental resistance. **Non-elemental damage (`physical`, `neutral`, and any future non-elemental type) is reduced by armor.** Armor never reduces elemental damage, and resistance never reduces non-elemental damage. This covers basic light and heavy attacks and class-based attacks.
@@ -250,13 +255,20 @@ Rather than a full strength/weakness wheel, elements apply status effects (for e
 - **Pressure pass on the base game [DIRECTOR DECISION, 2026-11-02]:** the one deliberate exception to "don't retune the base game until the tiers exist". The Wizard never seems to take damage, and a no-card run was won (§3). Raise all enemy movement speed slightly, at least until Wizard runs take some damage; if speed alone isn't enough, follow up with attack speed. The pace could be a bit faster. The change sits behind shared data knobs (an enemy speed scale and an enemy attack-rate scale) that the future tiers reuse. Player stats, card numbers and boss mechanics are not changed by it. (Scheduled as slice H1.)
 - Target run length: 30 to 60 minutes. **[PROPOSED]** prototype shorter runs (15 to 25 minutes) for faster iteration.
 - Procedurally generated room sequence with elites, bosses, and a final boss.
+- **Rest-room heal [DIRECTOR DECISION, 2026-11-02]:** 30% of max HP is fine for now. It may be removed entirely later, because the player already has their own healing (the Recovery slot), which most roguelites don't allow outside between-stage rewards.
+- **Branching map [DIRECTOR DECISION, 2026-11-02]:** wanted soon, for the traditional roguelite feel. The run becomes a map of routes with choices such as:
+  - a merchant stop;
+  - curse/buff rooms (usually both at once; some rooms only buff);
+  - harder rooms and mini-bosses that give better loot, rewards and XP.
+
+  The most rewarding path (most gold, XP and points to spend between runs) tends to be the most difficult. **[OPEN]** node types, how many choices per step, and the map layout. Gold, XP and between-run points don't exist yet (§8). Today's run is a straight line of 10 rooms.
 ### Starting decks and loadouts **[DECIDED]**
 - The very first run uses preset defaults: the chosen class, element, and neutral starter cards.
 - From the second run on, the player can tune their starting deck and save it as a **loadout**.
 - **Loadouts [DIRECTOR DECISION, 2026-11-02]:**
   - A loadout screen before each run (from run 2) customises the starting deck.
   - Each class has **at least 5 loadout slots** (a data value). The player names them freely, so one class can hold, for example, "Water Rogue", "Fire Rogue", "Dark Rogue", "Dark Rogue alt". Only Fire exists today, so names are free text and the element is not enforced yet.
-  - Cards that are only available later are **flagged**, so the director can plan for them. **[PROPOSED] (D23 default):** each card has an `availability` in data: `starter` (can go in a loadout's starting deck), `reward` (found only as a run reward) or `locked` (until an unlock condition, **[OPEN]**). The editor shows a badge on each card. A loadout may list reward-only and locked cards as a **plan** next to its starting deck, and reward screens highlight plan cards ("On your plan"). The starting deck holds only `starter` cards and obeys the deck rules (§4).
+  - Cards that are only available later are **flagged**, so the director can plan for them. **[DIRECTOR DECISION, 2026-11-02] (D23 = A):** in the director's words, once advanced cards exist and are in your chosen loadout, you start the run with only the `starter` cards; when a stage reward (or later a merchant) offers a card from the loadout's full plan that you don't already have, an indicator says so. Every card that exists today is `starter`. Details: each card has an `availability` in data: `starter` (can go in a loadout's starting deck), `reward` (found only as a run reward) or `locked` (until an unlock condition, **[OPEN]**). The editor shows a badge on each card. A loadout may list reward-only and locked cards as a **plan** next to its starting deck, and reward screens highlight plan cards ("On your plan"). The starting deck holds only `starter` cards and obeys the deck rules (§4).
   - Each loadout reserves an empty, versioned `passive_allocation` field for the passive tree (§8).
 
 ### Card rewards during a run **[DECIDED, details open]**
@@ -320,8 +332,8 @@ The director provides top-level design direction only. Roles are defined as docu
 ---
 
 ## 14. Open Questions Summary
-1. Whether shops or drops exist alongside post-battle rewards. (Offer format resolved: pick 1 of 3 or reject all, see section 9.)
-2. Space dodge roll vs the Movement slot.
+1. Whether shops or drops exist alongside post-battle rewards. (Offer format resolved: pick 1 of 3 or reject all, see section 9. A merchant stop is wanted as a branching-map node, §9; its details are open.)
+2. Space dodge roll vs the Movement slot. (Dodge-off trial since 2026-11-02, §3: Space casts Movement while the dodge is off.)
 3. Attack split into Single and AoE for the prototype?
 4. Elementalist: all elements, or pick one extra?
 5. Do elemental reactions exist, and when?
@@ -332,6 +344,7 @@ The director provides top-level design direction only. Roles are defined as docu
 10. Final tone: how far to push the satire.
 11. Card unlock conditions for `locked` cards (§9 Loadouts).
 12. Relic sources and how many per run (BD0 proposes defaults, §4a).
+13. Branching map: node types, choices per step, layout, and the reward currencies (gold, XP, between-run points) (§9).
 
 Resolved: engine (Godot), perspective (3D isometric), slice classes and elements (Rogue, Wizard, Fire, Water), card offer format (pick 1 of 3 or reject all).
 

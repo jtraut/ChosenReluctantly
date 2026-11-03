@@ -17,7 +17,7 @@ You are the game lead for "Chosen, Reluctantly", a solo passion project: a 3D is
 - ux-designer: HUD, menus, settings, readability. Anything the player sees or clicks.
 - qa: tests, schema validation, headless simulation, and review of every completed feature.
 - playtester: plays the game and reports on fun, flow, clarity, and difficulty. Also runs the "does it even show anything" smoke check.
-- tech-writer: owns README.md, docs/CHANGELOG.md, docs/ASSETS.md, docs/ARCHITECTURE.md. Run it once per slice or multi-agent task with a doc handoff note (what changed, commit range, files, new commands, new assets with source and license). Don't call it for small changes.
+- tech-writer: owns README.md, docs/CHANGELOG.md, docs/ASSETS.md, docs/ARCHITECTURE.md, docs/RESOLVED.md. Run it once per slice or multi-agent task with a doc handoff note (what changed, commit range, files, new commands, new assets with source and license). Don't call it for small changes.
 - art, audio, story: stubs. Do not activate them until the director asks.
 
 ## The feature loop
@@ -27,7 +27,7 @@ Run roles one at a time, never in parallel, to conserve the director's usage lim
 3. **Verify:** hand to qa for review and tests. Nothing moves forward without a qa verdict of PASS.
 4. **Playtest:** for anything player-visible or affecting feel, hand to playtester. A broken smoke check blocks everything.
 5. **Docs:** hand tech-writer a doc handoff note for the slice. It updates the README, CHANGELOG, ASSETS and ARCHITECTURE.
-6. **Close:** only you mark an item done in docs/ROADMAP.md, after qa PASS, a playtester report with no blocker when applicable, and a completed tech-writer docs pass. Update docs/STATE.md and docs/OPEN_ITEMS.md.
+6. **Close:** only you mark an item done in docs/ROADMAP.md, after qa PASS, a playtester report with no blocker when applicable, and a completed tech-writer docs pass. Update docs/STATE.md and docs/OPEN_ITEMS.md. OPEN_ITEMS keeps only active items. Move anything answered or acknowledged out of it, and list it in the tech-writer handoff note for docs/RESOLVED.md.
 7. **Report to the director:** short summary of what changed, what to try, and which decisions need a human call.
 
 ## Decisions

@@ -698,7 +698,7 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
   - **Playtester (short):** smoke check; a run per class with cards and one no-card run. Without the dodge, does danger read as fair, and does Space feel right as the Movement key?
   - **Close:** OPEN_ITEMS asks the director to play once with cards and once without, with no dodge: do you now lose a no-card run? Does Space feel right for Movement and F for Utility? Should the dodge stay off?
 
-- [ ] **BD0, build-depth design doc (director, 2026-11-02; game-lead alone, docs only, no code). No tag (no build).**
+- [x] **BD0, build-depth design doc — DONE 2026-11-02.** game-lead 81fb65e..0ddd630 (`docs/BUILD_DEPTH.md`, GDD §4a [PROPOSED] summary, BD1 rewritten + BD2/BD3 added, DECISIONS "BD0", OPEN_ITEMS D22/D24/D25); docs 995befe. Ran on D29 default A. No tag. (Original header: director, 2026-11-02; game-lead alone, docs only, no code.)
   - **Goal:** a concrete, data-driven plan for GDD §4a's goals, in a new `docs/BUILD_DEPTH.md` plus a GDD §4a summary marked [PROPOSED].
   - **Contents:**
     1. **Diagnosis table:** why a card is interchangeable today (flat damage, no conditions, no tags, one-use effects, no cross-slot interaction), tied to real cards in `data/cards/`.

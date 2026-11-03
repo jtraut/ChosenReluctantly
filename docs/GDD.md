@@ -148,7 +148,17 @@ Ideas may come from: Slay the Spire, Across the Obelisk, Darkest Dungeon, Hearth
 - Wall of Mild Fire felt underwhelming before its 1.5x size boost. Keep the new size.
 
 ### Mechanics **[PROPOSED]**
-To be filled from BD0 (`docs/BUILD_DEPTH.md`): card tags and keywords, conditions and payoffs, cross-slot hooks, scaling stacks, the relic system (sources, count per run, data format, event hooks, reset, HUD), archetypes per class, and measurable checks (removal pain, run fingerprint spread, archetype parity, no-cards run not viable). All of it data-driven on the existing effect templates, with new effect types only when generic and reusable.
+Summary of BD0 (`docs/BUILD_DEPTH.md`, 2026-11-02). The full plan, numbers and card lists are there. All of it is data on the existing effect templates, with new code only for generic mechanics. Written assuming the dodge stays off (D29's default).
+- **Tags:** derived from a card's effects (Projectile, Melee, Area, Zone, Dash, Heal, Burn, Bleed, Buff) plus a few authored keywords (Primer, Payoff, Keystone) from `data/keywords.json`.
+- **Conditions and payoffs:** any card effect may carry a `condition` (target is Burning; you cast a Movement card in the last N s; one of your Zones is active; later: self stacks, deck tag count, low HP). Payoffs must still beat the free attack on their unconditional damage.
+- **Cross-slot hooks:** `cast_within` conditions, and primed buffs ("your next Attack: Single within 3 s has no cooldown").
+- **Scaling stacks:** statuses may stack (off by default), and a self-status like the Wizard's Charge can scale a payoff. Whether Burn and Bleed stack in the base game is D25 (default: no, only through relics and keystones).
+- **Relics:** run-scoped, reset between runs, one JSON file each, using the card effect format plus triggers on a new `CombatEvents` relay (there is no event bus today). Default sources (D22): an elite gives a relic choice, a rest room offers heal or a relic, and 1 in 4 reward screens shows one; about 3-4 per run. Relic data already names future map nodes (merchant, curse/buff rooms, mini-bosses). 15 sketches, including the director's burn explosion ("Pyre Insurance") and 5 that reward light and heavy attacks.
+- **Archetypes:** 4 per class on Fire, each with a keystone card and a full legal deck. Rogue: Kindling, Hit and Run, Bleed Out, Grudge Brawler (the light/heavy build, only viable with its relics). Wizard: Controlled Burn, Thesis, Departure Lounge, Ward Battlemage.
+- **Movement with the dodge off:** every archetype deck keeps a pure escape card; offensive Movement cards are a deliberate risk.
+- **Readability:** tag chips, a condition line in `CardSummary`, a slot glow when the condition is live, and a primed marker.
+- **Measurable checks** (need a plan-aware bot, built in BD1): removal pain, run fingerprint spread, archetype parity (70-130% of the standard deck's boss time), and no-card runs at most 25% clears.
+- **Slices:** BD1 synergy core with 2 archetypes per class; BD2 relics (D24: before 3d); BD3 stacking, the other archetypes and relics.
 
 ---
 
@@ -343,7 +353,7 @@ The director provides top-level design direction only. Roles are defined as docu
 9. Game name. Front-runner: **Chosen, Reluctantly** (also fits the "choose your cards carefully" mechanic).
 10. Final tone: how far to push the satire.
 11. Card unlock conditions for `locked` cards (§9 Loadouts).
-12. Relic sources and how many per run (BD0 proposes defaults, §4a).
+12. Relic sources and how many per run (BD0 proposes defaults, §4a; D22). Whether Burn and Bleed stack in the base game (D25).
 13. Branching map: node types, choices per step, layout, and the reward currencies (gold, XP, between-run points) (§9).
 
 Resolved: engine (Godot), perspective (3D isometric), slice classes and elements (Rogue, Wizard, Fire, Water), card offer format (pick 1 of 3 or reject all).

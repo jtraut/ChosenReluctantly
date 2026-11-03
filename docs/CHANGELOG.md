@@ -2,7 +2,23 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-11-02 (Slice H2: dodge-off trial; Slice H1: enemy pressure pass; Slice K1: key labels follow the bindings; director decisions: build depth, pressure pass, loadouts, run order, OPEN_ITEMS pass)
+## 2026-11-02 (Slice BD0: build-depth design doc; Slice H2: dodge-off trial; Slice H1: enemy pressure pass; Slice K1: key labels follow the bindings; director decisions: build depth, pressure pass, loadouts, run order, OPEN_ITEMS pass)
+
+### Slice BD0: build-depth design doc
+
+Docs only: no code, no tag. Commit range 81fb65e..0ddd630. Everything here is [PROPOSED]; the director has not approved it. The director's own directives for BD0 were recorded earlier (ab00c50).
+
+#### Added
+- `docs/BUILD_DEPTH.md` (game-lead doc, 6784049): why cards are interchangeable today; measurable checks (removal pain, run fingerprint spread, archetype parity, no-card runs at most 25%), which need a plan-aware bot; a synergy framework (derived tags, Primer/Payoff/Keystone keywords, effect conditions, primed buffs, stacking statuses); relics (sources, data format, a new `CombatEvents` relay because there is no event bus today, 15 sketches including the burn explosion "Pyre Insurance", map-node hooks); 4 Fire archetypes per class with a keystone and a full legal deck; readability; Movement with the dodge off; slices BD1, BD2, BD3; sources; 3 questions.
+- Open questions for the director in `docs/OPEN_ITEMS.md`, each with default A: D22 (relic sources and count), D24 (relics in their own BD2 slice before 3d), D25 (Burn/Bleed stacking in the base game). BD0 ran on D29's default A (the dodge stays off) because D29 was unanswered. An optional research digest is offered. (0ddd630)
+
+#### Changed
+- GDD §4a "Mechanics [PROPOSED]" now holds a summary of BUILD_DEPTH; §14 item 12 points at D22/D25. (3b10461)
+- ROADMAP: the BD1 brief was rewritten from BUILD_DEPTH; BD2 (relics) and BD3 were added. Run order after BD0: MAP0, PL3 (rest), BD1, BD2, first map build, 3d, BD3. (50cc867)
+
+#### Docs and process
+- `docs/DECISIONS.md` "2026-11-02 - BD0" logs game-lead's defaults. `CLAUDE.md` lists BUILD_DEPTH.md as a game-lead doc. (db20d6b)
+- README docs table lists `docs/BUILD_DEPTH.md`.
 
 ### Slice H2: dodge-off trial
 

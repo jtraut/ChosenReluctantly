@@ -16,7 +16,7 @@ Last updated: 2026-11-02 (H2 closed). **Run order:** H1 done -> H2 done -> **BD0
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- Nothing mid-build. Working tree clean.
+- **BD0 started 2026-11-02 (game-lead, docs only).** The director said "continue" without answering D29, so BD0 runs on D29's default A (the dodge stays off; Movement is the only escape). Output in progress: `docs/BUILD_DEPTH.md`. If cut off: check whether that file exists and which of the brief's 12 items it covers, then finish it, then GDD §4a [PROPOSED] summary, the BD1 brief rewrite, and OPEN_ITEMS D22/D24/D25.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes; fix like w1a in 4aa7141 if they fire).
 
 ## Exact next step

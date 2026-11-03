@@ -637,7 +637,7 @@ Director run order 2026-10-29: start right after C1 and Polish 1 close; one slic
   - **Owner sequence:** gameplay-dev -> ux-designer -> qa -> playtester (short) -> tech-writer (folded into the next docs pass if small) -> close.
 
 ### Run order after W1b (director, 2026-11-02)
-W1b finishes as planned (tech-writer docs pass, then close). Then, in this order: **K1 -> H1 -> BD0 -> PL3 -> BD1 -> 3d.** **Updated 2026-11-02 (director's OPEN_ITEMS pass):** H1 -> **PL3 housekeeping** (D21 = B) -> **H2** (dodge-off trial; game-lead placement, logged) -> BD0 -> PL3 (rest) -> BD1 -> 3d. The branching map's place is D28. Reason (director): cards and decks don't yet change how a run plays, and that must be settled before more screens, art or staging. game-lead's reorder note is D21 in OPEN_ITEMS (default: this order). Every build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag; each role commits only its own paths.
+W1b finishes as planned (tech-writer docs pass, then close). Then, in this order: **K1 -> H1 -> BD0 -> PL3 -> BD1 -> 3d.** **Updated 2026-11-02 (director's OPEN_ITEMS pass):** H1 -> **PL3 housekeeping** (D21 = B) -> **H2** (dodge-off trial; game-lead placement, logged) -> BD0 -> PL3 (rest) -> BD1 -> 3d. The branching map's place is D28. **Updated at BD0 (2026-11-02, game-lead defaults D24 = A and D28 = A):** BD0 -> MAP0 (map design doc, game-lead, docs only) -> PL3 (rest) -> BD1 -> BD2 (relics) -> first map build -> 3d -> BD3. Reason (director): cards and decks don't yet change how a run plays, and that must be settled before more screens, art or staging. game-lead's reorder note is D21 in OPEN_ITEMS (default: this order). Every build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag; each role commits only its own paths.
 
 - [x] **K1, key labels follow the bindings** — **DONE 2026-11-02.** gameplay-dev 04ac813 + 7f4b136 (`InputLabels`, validator, `bindings_changed`, Recovery on R); ux 6204f2a + 81abc85 (HUD/prompt/pause text from bindings; fixed slot keys leaking through an open reward prompt); qa PASS 8752a1c (1190/1190, soak OK, arena hashes unchanged; `docs/reviews/2026-11-02-k1-qa.md`); playtest 2c0d185 (smoke PASS; `docs/playtests/2026-11-02-k1-short.md`); docs 9e77aae. Tag `playtest-2026-11-02-K1`. Carry-overs: PL3 items 7-10. (Original header: director, 2026-11-02; small. Loop: gameplay-dev -> ux-designer -> qa -> playtester (short smoke) -> tech-writer -> close.)**
   - **Goal:** whatever is in `data/input_bindings.json` is what the UI shows. No UI text hardcodes a key. GDD §3 "Key labels follow the bindings" and "Card slots" [DIRECTOR DECISION].
@@ -734,18 +734,38 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
     - (note at K1 close: a `.gitattributes` already exists since 3432239; extend it as below, and the normalisation commit is still needed, since docs in HEAD still mix CRLF and LF) add a `.gitattributes` (text=auto, LF in the repo for `.md`, `.gd`, `.json`, `.tscn`, `.tres`, `.cfg`, `.godot`; binaries marked binary) and do the one-time line-ending normalisation in a **single commit of its own with no other changes**, so later diffs stay readable. Owner: gameplay-dev (repo config; it runs the suite afterwards to prove nothing broke). tech-writer checks its docs still render.
   - **Loop:** gameplay-dev -> ux -> qa -> playtester (short) -> tech-writer -> close. Tag `playtest-YYYY-MM-DD-PL3`.
 
-- [ ] **BD1, the first build-depth engine slice (director, 2026-11-02; after PL3). Full loop. Tag `playtest-YYYY-MM-DD-BD1`.**
-  - **Provisional brief. The final acceptance is written at the end of BD0, from `docs/BUILD_DEPTH.md`.**
-  - **Scope:** build the engine and the first slice of content exactly as BD0 plans:
-    - the tag/keyword/condition system;
-    - the relic framework: data format, loader, validation, HUD display, reset between runs;
-    - 2 archetypes per class on Fire with their keystone cards;
-    - a handful of relics, including the director's burn-explosion example.
-  - **Not in BD1:** new art, audio, the passive tree.
-  - **qa:** adds the three measurable checks (removal pain, run fingerprint spread, archetype parity) as sim reports, informational at first and gating once tuned.
-  - **Close:** "Needs your eyes": build the same class and element twice with different plans; do the two runs feel different, and does removing a keystone card hurt?
+- [ ] **BD1, synergy core (director, 2026-11-02; brief rewritten from `docs/BUILD_DEPTH.md` at BD0's close; after PL3). Full loop. Tag `playtest-YYYY-MM-DD-BD1`.**
+  - **Goal:** cards start to read the board and each other, so two Fire Rogue (or Fire Wizard) runs with different plans play differently. GDD §4a, BUILD_DEPTH §3, §5 (R-A, R-B, W-A, W-C), §6, §7, §2. Relics are **BD2** (D24 default A; BD0 split them out to keep BD1 to one sitting).
+  - **gameplay-dev:**
+    1. **Tags:** derive tags from effects at load (Projectile, Melee, Area, Zone, Dash, Heal, Burn, Bleed, Buff; rules in BUILD_DEPTH §3.1). New `data/keywords.json` (id, display name, rule text) with Primer, Payoff, Keystone; an optional validated `keywords` array on cards. A card's tags are exposed to the UI and conditions.
+    2. **`CombatEvents` autoload (relay only, no game state):** `card_cast(slot_type, card_id, tags)` emitted next to `CardSlotController.card_cast`, plus a cast history (time, slot, tags; last few seconds) that conditions read. The other relay events are BD2's. Logged in DECISIONS.
+    3. **Effect `condition`** on any card effect, with three types: `target_has_status` (per target hit, in the cone/aoe/projectile/zone hit paths), `cast_within` (`slot_type` or `tag`, `seconds`), `zone_active` (one of the caster's Zones is alive). False means that effect is skipped. Validator: known types, required params, numbers in range.
+    4. **Primed buff:** `buff` gains optional `consume_on_cast` (slot type or tag) and `charges`. New buff stat `slot_cooldown_skip.<slot>` (or an equivalent the dev picks and logs): the next matching cast has no cooldown.
+    5. **Stat `status_damage_mult.<status_id>`** read by damage-over-time ticks the caster applies.
+    6. **`aoe` param `anchor: "caster"`** so a delayed area can lock at the caster's position (`EffectTemplates.gd:328` locks at the aim point today).
+    7. **Content (8 NEW cards, numbers in BUILD_DEPTH §5):** `fire_fan_the_flames`, `fire_kindling`, `rogue_drive_by`, `rogue_momentum`, `fire_heat_sink`, `fire_slow_burn`, `wizard_parting_gift`, `wizard_well_actually`. Every Attack card passes `CardDamageRule` on unconditional damage (no `rule_exception`). The preset starting decks don't change.
+    8. **Debug decks:** `rogue-kindling`, `rogue-hit-and-run`, `wizard-controlled-burn`, `wizard-departure-lounge` (the legal decks in BUILD_DEPTH §5).
+    9. **Plan-aware bot policy** (`-Plan`) in the bot sim: casts a card when its condition is live or after a 1.5 s hold, uses the dead-card swap on a card that can't pay off soon, keeps one Movement card for escape (no offensive Movement below 50% HP unless the next Movement card is also ready). It reads the `condition` blocks; no per-card script.
+    10. Expose for ux: per slot, the current card's tags, its condition text, whether the condition is live (target conditions: any enemy inside the card's preview area meets it), and primed state with time left.
+  - **ux-designer:** tag chips (up to 3; keywords first), the condition line in `CardSummary` (strings from `run.json` `ui.effect`), the live-condition slot glow, the primed marker, and a "Keystone" chip on reward offers. Fits at the minimum HUD scale. Captures: a lit glow, a primed slot, a reward screen with a keystone.
+  - **qa:**
+    - unit tests for tag derivation, each condition type (true and false), primed buff consumption, `status_damage_mult`, `anchor`;
+    - content validation: keywords known, conditions valid, the 4 debug decks legal, all new Attack cards pass the damage rule;
+    - **sim reports (informational, not gating):** removal pain, run fingerprint spread and archetype parity for the 4 archetype decks vs the standard deck under `-Plan` (12+ seeds, 10 rooms; targets in BUILD_DEPTH §2); the no-card check still at or under 25%;
+    - full suite, the 20 s headless run, SceneSelfCheck, reload soak (new autoload). **Sim hashes:** the standard policy's hashes must not change unless a new card enters a preset deck (it shouldn't); new policies get new baselines.
+  - **Playtester:** one run per archetype deck (`--deck=...`). Does the glow read? Does the plan change how you press keys? Does Hit and Run's offensive dash feel like a risk?
+  - **Close:** OPEN_ITEMS item 35 waits until BD2 (relics) unless the director wants to look now; game-lead adds a "what to try" note for the 4 decks.
 
-- [ ] **3d, loadouts (runs last in the 2026-11-02 order, after BD1)**
+- [ ] **BD2, relics (after BD1, before 3d; D24 default A). Full loop. Tag `playtest-YYYY-MM-DD-BD2`.**
+  - **Goal:** run-scoped relics that change rules, found during a run and reset after it (GDD §4a goal 3). BUILD_DEPTH §4.
+  - **gameplay-dev:** rest of the `CombatEvents` relay (`hit_landed` with `origin`, `status_ended` with reason incl. `owner_died` fired before the node frees, `enemy_killed`, `attack_fired`, `dash_ended`, `player_damaged`, zone/room relays); `RelicManager`; `data/relics/*.json` loader + validator; `RunState.relics` + save round trip; relic offers from elite rooms, rest rooms (heal or relic) and 1 in 4 reward screens (D22 default A, numbers in a `run.json` `relics` block); recursion guard (relic-origin events ignored by default, chain depth 1); sources list includes the future map nodes. 7 relics: Pyre Insurance, Smoldering Grudge, Lingering Embers, Exit Strategy (may slip to BD3), Second Wind, Spite Knuckles, Heavy Sigh. Bot sim: relic picks (first offered that matches the deck's archetype, else first).
+  - **ux-designer:** HUD relic row with trigger flash; relic offer panel (relic frame, "Relic" label) on the elite/rest/reward screens; relic list in the pause screen.
+  - **qa:** event relay tests (incl. Burn ending on death), each relic's rule, the recursion guard, save round trip, a corrupt relic file fails validation loudly; sim checks rerun with relics; no-card runs without relics still at or under 25%; full gates and reload soak.
+  - **Close:** "Needs your eyes" item 35 (build twice with different plans; does removing a keystone hurt?) and the vision-check round 2.
+
+- [ ] **BD3, depth 2 (after 3d unless the director moves it).** Stacking statuses (`stacking`, `per_stack`, `status_max_stacks.<id>`), `scale`, `detonate_status`, triggers on card buffs, conditions `self_stacks_at_least`/`deck_count_at_least`/`hp_below`; archetypes R-C Bleed Out, R-D Grudge Brawler, W-B Thesis, W-D Ward Battlemage (about 9 NEW cards, incl. a 4th Rogue Utility card); the other 8 relics; stack counts on enemies. The sim checks become gating after tuning. Brief to be written at BD2's close.
+
+- [ ] **3d, loadouts (after BD1, BD2 and the first map build in the order above)**
   - **Goal:** from the second run on, you can build a starting deck, save it as a loadout and start runs with it. GDD §9 ("Starting decks and loadouts [DECIDED]", "Loadouts [DIRECTOR DECISION, 2026-11-02]"), §8 (passives linked to loadouts, free respec), §4 (deck rules).
   - **Changes from the director, 2026-11-02 (they override the items below where they conflict):**
     - **A. Slots:** at least **5 loadout slots per class** (data; replaces "3 save slots"). The player names each loadout (free text). Only Fire exists, so the element isn't enforced.

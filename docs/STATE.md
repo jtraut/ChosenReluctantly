@@ -52,13 +52,13 @@ Last updated: 2026-11-04 (BD1-A done; BD1-B with gameplay-dev). **Run order:** *
   - Suite 1352/1352 (63 new tests); the last full run was before 7c5a66b, which only re-ran the bd1 and touched suites. qa should do one full run.
   - The three hashes are unchanged (2333565009 / 1212800 / 2281795515).
   - Reload soak OK; it now asserts the cast history is empty after reload.
-  - Calls are logged in DECISIONS "BD1-A engine calls". New D39 (does the dodge count as a Movement cast; default A = no, built).
+  - Calls are logged in DECISIONS "BD1-A engine calls". D39 = A answered by the director the same day (the dodge isn't a Movement cast; GDD §4a).
 - **BD1-B (content and tooling) with gameplay-dev: next / in progress.** It covers items 7-10 plus the PL3 carry-overs. If cut off, check `git log` after 7c5a66b.
 - **For qa (BD1 review):**
   - `slice6_qa_test::test_f1_same_seed_crowd_is_bit_identical` failed in 2 of 3 full runs during BD1-A (documented as a ~1-in-3 physics flake; it passed 1 of 1 at baseline). Check whether BD1 made it worse.
   - Known gaps, by design until BD1-B and ux: CastPreview, CardSummary and the bot treat conditional effects as unconditional. A buff aura outlives its spent charge. A delayed aoe with no anchor and no `max_range` telegraphs at the cast spot but hits at the caster (pre-existing, pinned).
 - **Draft BD1 doc handoff, the backlog for tech-writer (collected from the "Pending for tech-writer" notes above):**
-  - RESOLVED: archive D34, D35, D36 (text in 81ff8e4); items 39, 40, 41, 42 (text in 648dbd4); D37, D38 (text in 863b15b).
+  - RESOLVED: archive D34, D35, D36 (text in 81ff8e4); items 39, 40, 41, 42 (text in 648dbd4); D37, D38 (text in 863b15b); D39 = A (text in 7503569).
   - CHANGELOG `[Director decision]` entries:
     - relic cap 10 -> 20 over three acts, at-cap fallback "card offer instead" -> "give a relic up", no duplicates;
     - rejects 3 per run kept; volley unchanged;
@@ -72,6 +72,7 @@ Last updated: 2026-11-04 (BD1-A done; BD1-B with gameplay-dev). **Run order:** *
     - starter relic chosen in the loadout (no RNG restarts);
     - D37 = A (rest dig relic);
     - D38 = A (curse cards).
+    - D39 = A (the dodge doesn't count as a Movement cast for combos).
     - corporate-setting idea noted in GDD §15 (director, 2026-11-04; an idea, not a decision; tag it as a director note, not a decision).
   - Plus BD1's own changes once built. README "Last verification" test count is stale (1289).
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
@@ -82,7 +83,7 @@ Last updated: 2026-11-04 (BD1-A done; BD1-B with gameplay-dev). **Run order:** *
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).
 
-**D-numbers:** D21-D33 answered (D31 = A, D32 = A + three acts, D33 = B on 2026-11-04). D34 = C, D35 = A, D36 = A answered 2026-11-04. D37 = A (dig relic at rest), D38 = A (curse cards) answered 2026-11-04. D39 open (dodge as a Movement cast; default A built). Next free: D40.
+**D-numbers:** D21-D33 answered (D31 = A, D32 = A + three acts, D33 = B on 2026-11-04). D34 = C, D35 = A, D36 = A answered 2026-11-04. D37 = A (dig relic at rest), D38 = A (curse cards) answered 2026-11-04. D39 = A (dodge isn't a Movement cast) answered 2026-11-04. None open. Next free: D40.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 

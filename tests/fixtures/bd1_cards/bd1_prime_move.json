@@ -1,0 +1,12 @@
+{
+    "id": "bd1_prime_move",
+    "name": "Test Primer",
+    "slot_type": "movement",
+    "pool": "neutral",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "Test fixture: primes the next attack_single cast.",
+    "keywords": ["Primer"],
+    "effects": [
+        {"template": "buff", "params": {"stat": "slot_cooldown_skip.attack_single", "modifier_type": "additive", "value": 1, "duration": 3.0, "consume_on_cast": "attack_single", "charges": 1}}
+    ]
+}

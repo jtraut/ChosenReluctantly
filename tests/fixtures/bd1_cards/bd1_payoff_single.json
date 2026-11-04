@@ -1,0 +1,12 @@
+{
+    "id": "bd1_payoff_single",
+    "name": "Test Payoff",
+    "slot_type": "attack_single",
+    "pool": "neutral",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "Test fixture: heals 5 only within 2 s of a Movement cast.",
+    "keywords": ["Payoff"],
+    "effects": [
+        {"template": "heal", "params": {"amount": 5}, "condition": {"type": "cast_within", "slot_type": "movement", "seconds": 2.0}}
+    ]
+}

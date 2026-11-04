@@ -1,0 +1,11 @@
+{
+    "id": "bd1_prime_self",
+    "name": "Test Prime Self",
+    "slot_type": "attack_aoe",
+    "pool": "neutral",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "Test fixture: primes its own slot; its own cast must not use up its own charge.",
+    "effects": [
+        {"template": "buff", "params": {"stat": "slot_cooldown_skip.attack_aoe", "modifier_type": "additive", "value": 1, "duration": 5.0, "consume_on_cast": "attack_aoe", "charges": 1}}
+    ]
+}

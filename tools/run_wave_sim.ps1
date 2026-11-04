@@ -5,9 +5,10 @@
 # -WizardNoKite: a ranged class (the Wizard) walks in like the Rogue bot instead of kiting at a stand-off (--wizard-no-kite).
 # -BossLog (needs -Run): per boss attack, how often it was thrown, how often it hit and the HP it cost (--boss-log); prints a line per run and a summary.
 # -DodgePellets (needs -Run): the bot also steps out of and rolls through enemy projectiles in flight (--dodge-pellets, default off: it changes run results).
+# -StartRoom N (needs -Run): start every run at room N (10 = the boss) with the starter deck and full HP (--start-room).
 # -Run plays whole seeded runs (Milestone 3a): -Seed is the first run seed, -Runs the number of runs, -RoomTimeout sim seconds before a room counts as a soft lock.
 # Fails on a failed check OR any ERROR / SCRIPT ERROR / WARNING line in the engine output.
-param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets)
+param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets, [int]$StartRoom = 0)
 
 $root = Split-Path -Parent $PSScriptRoot
 $godot = $env:GODOT_BIN
@@ -39,6 +40,7 @@ if ($Class) { $extra += "--sim-class=$Class" }
 if ($WizardNoKite) { $extra += "--wizard-no-kite" }
 if ($BossLog) { $extra += "--boss-log" }
 if ($DodgePellets) { $extra += "--dodge-pellets" }
+if ($StartRoom -gt 0) { $extra += "--start-room=$StartRoom" }
 if ($Run) { $extra += "--run"; $extra += "--room-timeout=$RoomTimeout" }
 Push-Location $root
 try {

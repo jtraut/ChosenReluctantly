@@ -49,6 +49,21 @@ static func load_def(scenario_id: String) -> Dictionary:
 	return def
 
 
+## The class a scenario launch asks for with `--class=<id>` (a character id), or "" for none. Only meaningful with
+## `--scenario=`; Main applies it before the Player's _ready, and `_build` gives that class its starter deck.
+static func class_arg(args: PackedStringArray) -> String:
+	var parsed: Dictionary = CaptureArgs.parse(args)
+	if String(parsed["scenario"]) == "":
+		return ""
+	for arg: String in args:
+		if arg.begins_with("--class="):
+			var id: String = arg.substr(8).strip_edges()
+			if CharacterDatabase.has(id):
+				return id
+			push_error("Scenario: unknown --class '%s' (valid: %s)" % [id, ", ".join(CharacterDatabase.ids())])
+	return ""
+
+
 ## Builds the scenario inside `main` (which must have a Player) and returns the
 ## Scenario node (already a child of main) so callers can inspect enemies.
 static func setup(main: Node3D, scenario_id: String) -> Scenario:
@@ -110,6 +125,13 @@ func _build() -> void:
 		player.character_id = String(_def["character"])
 		player.apply_body_color()
 		player.use_heavy_class(CharacterDatabase.heavy_class(player.character_id))
+	# Capture-only (PL3): `--class=<id>` plays the scenario as that class with its own starter deck, so the HUD card row is
+	# the class's, not the arena Rogue's. Main already set the character before the Player's _ready (HP, dodge charges,
+	# body, attacks); the deck is swapped here because the arena Player starts with every card of its pools.
+	var launch_class: String = class_arg(OS.get_cmdline_user_args())
+	if launch_class != "":
+		player.card_slots.set_deck(CharacterDatabase.starting_deck(launch_class))
+		player.use_heavy_class(CharacterDatabase.heavy_class(launch_class))
 	# Capture-only: the heavy's ground aim point, as an [x, z] offset from the player.
 	if _def.has("aim_point_offset"):
 		var aim_values: Array = _def["aim_point_offset"]

@@ -71,10 +71,16 @@ func _ready() -> void:
 
 ## Run mode: the run's class must be known before the Player's _ready (children are ready after this node enters the
 ## tree), because it decides the Player's pools, max HP, body colour and attacks. The endless arena always plays the default
-## character (the seeded baselines, tests and the soak assume it).
+## character (the seeded baselines, tests and the soak assume it). The one exception is a scenario launched with
+## `--class=<id>` (capture tooling), which plays as that class.
 func _choose_character() -> void:
 	var controller := get_node_or_null("RunController") as RunController
 	var hero := get_node_or_null("Player") as Player
+	if hero != null:
+		var scenario_class: String = Scenario.class_arg(OS.get_cmdline_user_args())
+		if scenario_class != "":
+			hero.character_id = scenario_class  # a scenario played as that class (tooling; the arena is the Rogue otherwise)
+			return
 	if controller == null or hero == null or not uses_run_mode(run_mode, OS.get_cmdline_user_args()) or not RunConfig.is_valid():
 		return
 	if controller.prepare(self):
@@ -235,4 +241,12 @@ func _setup_debug_capture() -> void:
 		capture.process_mode = Node.PROCESS_MODE_ALWAYS  # keeps timing shots while the settings screen pauses the tree
 		capture.times = times
 		capture.out = config["out"]
+		capture.anchor_boss_attack = config["boss_attack"]
 		add_child(capture)
+	var presses: Array[Dictionary] = config["presses"]
+	if not presses.is_empty():
+		var scripted := ScriptedInput.new()
+		scripted.name = "ScriptedInput"
+		scripted.process_mode = Node.PROCESS_MODE_ALWAYS
+		scripted.presses = presses
+		add_child(scripted)

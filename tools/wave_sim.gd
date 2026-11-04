@@ -104,6 +104,9 @@ var _boss_log: bool = false
 ## `--dodge-pellets` (wave sim -DodgePellets, run mode): the bot also reacts to enemy projectiles already in flight. Without it the bot only
 ## leaves a boss wind-up area and rolls just before the attack lands (the pellets arrive about half a second later), so it never dodges a pellet.
 var _dodge_pellets: bool = false
+## `--start-room=N` (wave sim -StartRoom, run mode): every run starts at room N (1-based) with the class's starter deck and full HP, so a
+## boss-room measurement needs no 9 rooms of luck first. 0 = from room 1.
+var _start_room: int = 0
 var _boss_runs: Array[Dictionary] = []
 var _boss_cur: Dictionary = {}
 var _run_results: Array[Dictionary] = []
@@ -142,6 +145,8 @@ func _ready() -> void:
 			_boss_log = true
 		elif arg == "--dodge-pellets":
 			_dodge_pellets = true
+		elif arg.begins_with("--start-room="):
+			_start_room = maxi(int(arg.substr(13)), 0)
 		elif arg.begins_with("--sim-deck="):
 			_deck_family = arg.substr(11)
 			if _deck_family == "standard":
@@ -718,7 +723,9 @@ func _run_whole(run_seed: int) -> void:
 	var run_sim_total: float = 0.0
 	get_tree().change_scene_to_packed(load(RUN_MAIN_PATH) as PackedScene)
 	var previous: Node = null
-	var room_index: int = 0
+	var room_index: int = clampi(_start_room - 1, 0, rooms.size() - 1) if _start_room > 0 else 0
+	if room_index > 0:
+		RunSession.current.room_index = room_index
 	while room_index < rooms.size():
 		var main_node: Node = await _await_new_main(previous)
 		if not (main_node is Main) or (main_node as Main).run_controller == null:
@@ -970,10 +977,14 @@ func _hook_boss_log(boss: Boss) -> void:
 	_boss_cur["dodges"] = 0
 	_boss_cur["phase_hp"] = [0.0, 0.0, 0.0]
 	_boss_cur["volleys_in_lane"] = 0
+	_boss_cur["volley_seq"] = 0
+	_boss_cur["volleys_hit"] = {}  # volley number -> pellets that hit (PL3: volleys hit / volleys seen)
 	_boss_cur["hp_at_spawn"] = _player.health.current_health
 	boss.attack_landed.connect(func(attack_id: String, _hit_player: bool) -> void:
 		var entry: Dictionary = _boss_entry(attack_id)
 		entry["thrown"] = int(entry["thrown"]) + 1
+		if attack_id == "volley":
+			_boss_cur["volley_seq"] = int(_boss_cur["volley_seq"]) + 1
 		if attack_id == "volley" and is_instance_valid(_player) and boss.in_threat(_player.global_position):
 			_boss_cur["volleys_in_lane"] = int(_boss_cur["volleys_in_lane"]) + 1)
 	_player.health.damaged.connect(func(amount: float, damage_type: String, _knockback: Vector3) -> void:
@@ -1002,6 +1013,10 @@ func _boss_hit(boss: Boss, amount: float, damage_type: String) -> void:
 		if is_equal_approx(float(attack["damage"]), health.last_raw_amount) and String(attack["damage_type"]) == damage_type:
 			ids.append(String(id))
 	var key: String = "|".join(ids) if not ids.is_empty() else "unknown"
+	if key == "volley":
+		# Pellets fly about 1.8 s and volleys are further apart than that, so a pellet hit belongs to the latest volley thrown.
+		var volleys_hit: Dictionary = _boss_cur["volleys_hit"]
+		volleys_hit[int(_boss_cur["volley_seq"])] = int(volleys_hit.get(int(_boss_cur["volley_seq"]), 0)) + 1
 	var entry: Dictionary = _boss_entry(key)
 	entry["hits"] = int(entry["hits"]) + 1
 	entry["hp"] = float(entry["hp"]) + amount
@@ -1041,6 +1056,7 @@ func _boss_summary() -> void:
 	var dodges: int = 0
 	var lane: int = 0
 	var phase_hp: Array[float] = [0.0, 0.0, 0.0]
+	var volleys_hit_total: int = 0
 	var deaths: int = 0
 	var wins: int = 0
 	for run: Dictionary in _boss_runs:
@@ -1048,6 +1064,7 @@ func _boss_summary() -> void:
 		adds_hits += int((run["adds"] as Dictionary)["hits"])
 		dodges += int(run["dodges"])
 		lane += int(run["volleys_in_lane"])
+		volleys_hit_total += (run["volleys_hit"] as Dictionary).size()
 		for i in range(3):
 			phase_hp[i] += float((run["phase_hp"] as Array)[i])
 		if String(run["outcome"]) == "lost":
@@ -1072,7 +1089,7 @@ func _boss_summary() -> void:
 		var rate_text: String = ""
 		if String(id) == "volley":
 			var pellets: int = int(t["thrown"]) * volley_count
-			rate_text = " | %d of %d pellets hit (%.0f%%); bot inside a lane at fire time in %d of %d volleys" % [int(t["hits"]), pellets, 100.0 * float(t["hits"]) / maxf(float(pellets), 1.0), lane, int(t["thrown"])]
+			rate_text = " | %d of %d pellets hit (%.0f%%); bot inside a lane at fire time in %d of %d volleys | volleys hit %d of %d seen (%.0f%%), %.2f pellets and %.1f HP per hit volley" % [int(t["hits"]), pellets, 100.0 * float(t["hits"]) / maxf(float(pellets), 1.0), lane, int(t["thrown"]), volleys_hit_total, int(t["thrown"]), 100.0 * float(volleys_hit_total) / maxf(float(t["thrown"]), 1.0), float(t["hits"]) / maxf(float(volleys_hit_total), 1.0), float(t["hp"]) / maxf(float(volleys_hit_total), 1.0)]
 		elif int(t["thrown"]) > 0:
 			rate_text = " | hit rate %.0f%%" % (100.0 * float(t["hits"]) / float(t["thrown"]))
 		print("  %-8s thrown %3d, hits %3d, HP %6.1f (%.0f%% of boss-room damage, %.1f HP per run)%s" % [id, int(t["thrown"]), int(t["hits"]), float(t["hp"]), 100.0 * float(t["hp"]) / maxf(all_hp, 0.001), float(t["hp"]) / n, rate_text])

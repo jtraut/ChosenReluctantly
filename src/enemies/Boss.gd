@@ -424,7 +424,7 @@ func _start_telegraph_visual() -> void:
 			var parts: Array[PooledEffect] = []
 			for angle: float in angles:
 				var dir: Vector3 = _lock_dir.rotated(Vector3.UP, deg_to_rad(angle))
-				var lane: PooledEffect = TemplateVfx.enemy_shot_lane(_tele_pool, global_position + dir * BossRules.MUZZLE, dir, float(_attack["shot_range"]), half_width_hit, color, _telegraph_total, true)
+				var lane: PooledEffect = TemplateVfx.enemy_shot_lane(_tele_pool, global_position + dir * BossRules.MUZZLE, dir, float(_attack["shot_range"]), half_width_hit, color, _telegraph_total, true, true)
 				if lane != null:
 					parts.append(lane)
 			_hold_parts(parts)

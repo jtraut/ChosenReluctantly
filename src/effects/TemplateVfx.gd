@@ -80,13 +80,22 @@ static func _lane_alpha(boss: bool) -> float:
 
 ## A ranged enemy's wind-up lane: the strip its shot will fly along (as wide as the area the shot hits the
 ## PLAYER over), shown for the whole wind-up so the shot can be sidestepped. Tinted for the enemy team.
-static func enemy_shot_lane(pool: EffectPool, origin: Vector3, direction: Vector3, max_range: float, hit_radius: float, color: Color, duration: float, boss: bool = false) -> PooledEffect:
+## `ramp` (the boss volley): the lane brightens from a dim start to a bright end across the wind-up (so the fire moment reads as "now")
+## and its length is capped to what fits on screen (`boss_volley_lane_max_length`). Look only: pellets still fly the full range.
+static func enemy_shot_lane(pool: EffectPool, origin: Vector3, direction: Vector3, max_range: float, hit_radius: float, color: Color, duration: float, boss: bool = false, ramp: bool = false) -> PooledEffect:
 	if pool == null or direction.length_squared() < 0.0001 or duration <= 0.0:
 		return null
 	var yaw: float = atan2(-direction.x, -direction.z)
+	var a_from: float = _lane_alpha(boss)
+	var a_to: float = 0.0
+	var length: float = VfxSizing.enemy_shot_lane_length(max_range, hit_radius)
+	if ramp:
+		a_from = VfxConfig.marker("boss_volley_lane_alpha_start")
+		a_to = VfxConfig.marker("boss_volley_lane_alpha_end")
+		length = minf(length, VfxConfig.marker("boss_volley_lane_max_length"))
 	var lane: PooledEffect = pool.play(EffectPool.Shape.STRIP, origin, VfxSizing.lateral_reach_vs_player(hit_radius), color,
-			duration, 1.0, 1.0, _lane_alpha(boss), 0.0, yaw)
-	return lane.lengthened(VfxSizing.enemy_shot_lane_length(max_range, hit_radius)) if lane != null else null
+			duration, 1.0, 1.0, a_from, a_to, yaw)
+	return lane.lengthened(length) if lane != null else null
 
 
 ## A charging enemy's wind-up lane: the strip it will run along, as wide as the sphere it sweeps reaches into the player

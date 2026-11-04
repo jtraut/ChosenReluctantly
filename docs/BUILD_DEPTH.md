@@ -297,6 +297,71 @@ The idea for each source is credited to his summary. Anything about those games 
 
   This comes on top of MAP.md §4.5's list.
 
+
+### 4.8 Candidates from the director's Gemini round 2 (2026-11-04)
+
+Generated from a game-specific prompt. **Unscheduled candidates**, like the round-1 list in §4.5; slices pick from them (BD3, the boss-relic pass before MAP3, MAP4 events, 3d starters). Names are kept; the tone fits. "Fix" means I changed the rule to fit our systems.
+
+**Tier 1-3**
+
+| Name | Verdict | Rule as we'd build it | Tier, fit |
+|---|---|---|---|
+| ASAP Notice | keep | Movement slot base cooldown -15%. | 1, neutral |
+| Standard Non-Disclosure | **keep (swap matters)** | A dead-card swap gives a 2 s armor buff. | 1, neutral |
+| cc: All Staff | keep | Projectile cards fire +1 projectile in a narrow cone. | 1-2, wizard |
+| Watercooler Chat | fix | Standing still inside your own Zone heals 1 HP/s (2 is a lot for 22 HP). | 1, wizard |
+| Mandatory Team Bonding | keep, new code | Melee hits pull light enemies slightly toward you (shares the pull effect with Vortex Lens). | 1, rogue |
+| Incidental Expense | fix | Ending Burn naturally leaves no damage to deal, so instead: **refreshing** a Burn deals the old Burn's remaining damage at once (refreshes waste damage today, D25). | 1, fire |
+| Per My Last Email | keep | Casting from Attack: Single while its **next** card is a Primer applies Bleed (uses the visible next card). | 2, rogue |
+| As Per the Attached Document | keep | A heavy hit takes 1.5 s off the Attack: AoE cooldown. | 2, neutral |
+| Out of Office Reply | merge | Below 30% HP: knockback shockwave + 1 dodge charge, 15 s internal cooldown. Pick one of this, Controlled Panic (#8) and Adrenaline Vial. | 2, neutral |
+| Circle Back | drop | The same as Exit Strategy (#4). | |
+| Action Item | fix | No crit exists: casting a Payoff card gives +20% card damage for 3 s. | 2, neutral |
+| Severance Package | **keep** | A Bleeding enemy that dies bursts (Bleed in an area). Pyre Insurance for the Bleed Out archetype. | 2, rogue |
+| Overtime (Unpaid) | rename | Using your last dodge charge halves the Utility slot's current cooldown. Rename it, because L4 already uses the name. | 2, neutral |
+| Synergy Workshop | merge | Burn and Bleed stack to 3. Kindling Jar (#5) covers Burn, so this becomes the Bleed version or a tier 3 "both". | 3, BD3 stacking |
+| Bureaucratic Red Tape | fix | Casting a Keystone card stuns enemies in its area for 1.5 s ("root" doesn't exist; stun does). | 3, neutral |
+| Performance Review | keep | A card cast within 0.5 s of its slot coming ready gets +30% effect. A skill relic. | 3, neutral |
+| Liquidate Assets | keep, shop-only | +1% damage for every 50 gold you spend at the merchant this run. | 3, merchant only |
+| Sinking Fund | keep | 10 light hits charge your next card cast to also fire a homing spark. A basic-attack bridge. | 3, neutral |
+| The Glass Ceiling | keep, new code | You take damage from the same projectile spread at most once per second (counters the Fan of regrets; D36 left the volley as is, and this is the opt-in answer). | 3, neutral |
+| Restructuring Plan | **move** | Not a relic: an altar choice (give up a tier 1 relic, remove 1 card through `can_remove`). Goes in the event list. | event |
+
+**Boss tier** (for the boss-relic design pass before MAP3)
+
+| Name | Verdict | Effect / drawback as we'd build it |
+|---|---|---|
+| The Micromanager | **keep** | See the next **two** cards in every slot, +25% card damage / no dead-card swap. |
+| Corporate Buyout | **keep** | Light attacks fire a 3-pellet spread at +100% damage / every slot's base cooldown +3 s. The basic-attack build; "scales with relics" dropped as vague. |
+| The Non-Compete Clause | keep | Each card cast takes 1 s off the other 4 slots' cooldowns / no light or heavy attacks. Corporate Buyout's mirror. |
+| Brainstorming Session | fix | A ready slot shows 2 cards; the key casts the first, Shift + key casts the second (it replaces the swap; double-tap clashes with hold-to-aim) / max HP -25%. |
+| Burnout Syndrome | fix | Burn ticks 2x faster and stacks to 10 (not infinite) / casting a Burn-tag card costs you 1 HP (2 is harsh at 22 HP). |
+| Quarterly Downsizing | keep | Utility and Recovery slots are disabled; the other 3 slots' cooldowns are halved / no healing from cards. Card offers skip the disabled slots. |
+
+**Starter relics** (3d; tier 1, `sources` `["starter"]`)
+
+| Name | Class | Rule as we'd build it |
+|---|---|---|
+| Clock-In Punch | rogue | Fix ("shuffles" is unclear): a heavy hit makes your next Attack: Single swap free. |
+| Hazard Pay | rogue | While you have bonus armor, Melee cards deal +15%. |
+| Chasing Paper | rogue | A Dash card that passes through an enemy gives +30% move speed for 2 s. |
+| Desk Lamp Catalyst | wizard | Light attacks travel 20% farther and nudge chasers back slightly. |
+| Hot Desk | wizard | While you stand in your own Area or Zone, Projectile slots recover 10% faster. |
+| Filing Cabinet | wizard | No dead-card swap penalty on the Utility and Movement slots. |
+
+Which 2 per class start unlocked is decided at 3d.
+
+**Events** (MAP4; they need these outcome types beyond §4.7's list: `chance` (a coin flip between outcome lists), `stat_mod` (a permanent run modifier, e.g. a slot cooldown or dodge charges), `rooms_buff` (a buff for the next N rooms), `next_room_add` (an extra elite in the next fight), `merchant_discount`, and `curse_card` if D38 = A):
+- **The Mandatory Exit Interview:** lose 15% HP for a tier 1 relic; or an elite fight for a tier 2 relic + gold; or leave.
+- **The Broken Vending Machine:** pay gold for a 50% chance at a tier 2 relic; or lose 10 max HP for the relic + the "Property Damage" curse; or give up a tier 1 relic for an altar-grade offer.
+- **The Performance Evaluation Altar:** destroy a tier 2-3 relic for -1 s base cooldown on both Attack slots; or -15 max HP for gold. Restructuring Plan (above) is a third choice here.
+- **The Misplaced Supply Closet:** a tier 3 relic, but an extra elite shooter joins the next fight; or full heal for gold.
+- **The Complacency Trap:** -1 dodge charge for -25% Recovery base cooldown (only offered if you have 2+ charges, so the Wizard keeps its one); or +10% move speed for 3 rooms.
+- **The Internal Audit:** give up your highest-tier **non-boss** relic for 50% off at the next merchant; or an ambush fight at mini-boss strength.
+- Gold amounts in the list (75, 100, 150) are big against our income (combat about 15); scale them at MAP4.
+
+**Not taken up:** Gemini's offers to design cards, curse-card mechanics and the boss behaviour tree. Cards come through BD1/BD3 and the boss exists; curse cards are D38.
+
 ---
 
 ## 5. Archetypes (Fire only, 4 per class)

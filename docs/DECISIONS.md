@@ -1451,3 +1451,9 @@ The director's direction is recorded in GDD §4a. The plan is BUILD_DEPTH §4.7,
 - **Adapted 12 ideas, 4 boss-tier ideas and the Forge into BUILD_DEPTH §4.5/§4.7 as unscheduled candidates.** Hand, energy and draw ideas were translated to our slots and cooldowns, or left out (we have no resource system). [Adding them to BD2/BD3 scope now: BD2's seven are set, and BD3's brief is written at BD2's close.]
 - **Ideas needing new effect code are marked** (`chain`, pull, projectile reflection, tether), so the content budget sees them. [Dropping them: chain and reflection are strong ARPG flavour.]
 - **Cursed Gauntlet (no dodge) is kept as a boss-tier candidate,** even though the dodge-off trial (D29) felt less fun as a baseline. As an opt-in trade-off it's a different question. [Dropping it because of D29.]
+
+## 2026-11-04 - Gemini round 2 candidates (game-lead)
+- **Sorted them into keep, fix, merge, drop and move, as unscheduled candidates in BUILD_DEPTH §4.8.** Each fix adapts the idea to systems we have, for example no crit (use +damage), no root (use stun), and no infinite stacks (use a cap of 10). Duplicates are merged with the existing sketches. [Taking them as written: several rules don't work here, e.g. Incidental Expense, where a Burn that ends on its own has no damage left.]
+- **Brainstorming Session uses Shift + key for the second card,** taking over the swap input, instead of a double-tap, which clashes with hold-to-aim. [Double-tap.]
+- **The Complacency Trap is only offered with 2+ dodge charges,** so the Wizard isn't left without a dodge (D29 = B). [Letting it reach 0.]
+- **Curse cards are asked as D38,** because they change my earlier default (curses as relics). They'd also give the dead-card swap a real job, which he asked for (GDD §4, 2026-11-02). They're needed by MAP4 only.

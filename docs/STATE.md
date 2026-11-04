@@ -3,10 +3,11 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-04 (PL3 gameplay-dev running; director answers D31 = A, D32 = A with three acts, D33 = B recorded). **Run order:** **PL3 (in progress)** -> BD1 -> BD2 (relics) -> MAP1 (map, gold) -> MAP2 (merchant) -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0.
+Last updated: 2026-11-04 (PL3 closed, tag `playtest-2026-11-04-PL3`). **Run order:** **BD1 (next)** -> BD2 (relics) -> MAP1 (map, gold) -> MAP2 (merchant) -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3.
 
 ## What's done
-- **Director answers recorded 2026-11-04 (game-lead, docs only):** D31 = A, D32 = A + three acts of 10 rooms (mini-bosses end acts 1-2, final boss act 3; 30-45 min; save and return later), D33 = B. GDD §9, MAP.md §1/§2/§4.5/§8/§9/§10, BUILD_DEPTH §4.1, ROADMAP (MAP3 = acts + save/resume, new MAP4 = curse/buff; run order), DECISIONS "2026-11-04". New D34 (relics over 30 rooms), D35 (rejects). **For the PL3 tech-writer handoff:** RESOLVED gets D31-D33 (question text in OPEN_ITEMS at commit 9532409); CHANGELOG `[Director decision]` 2026-11-04 entries for D31-D33 and the three-act run.
+- **PL3 closed 2026-11-04:** gameplay-dev 9a86757/fbfd86c, ux da418aa, qa PASS 16387bf/e38bdd2, playtest 7f21afb, docs e03c4b8 (also archived D31-D33 in RESOLVED). Tag `playtest-2026-11-04-PL3`. **Baselines now: suite 1289/1289 (111 suites); arena 30 s seed 1 = 2333565009, 90 s = 1212800; bot sim `-Rooms 20 -Seed 3` = 2281795515.** Carry-overs listed under the PL3 brief (do with BD1). New director items: D36 (volley up close), 41 (knockback feel + PL3 visuals).
+- **Director answers recorded 2026-11-04 (game-lead, docs only):** D31 = A, D32 = A + three acts of 10 rooms (mini-bosses end acts 1-2, final boss act 3; 30-45 min; save and return later), D33 = B. GDD §9, MAP.md §1/§2/§4.5/§8/§9/§10, BUILD_DEPTH §4.1, ROADMAP (MAP3 = acts + save/resume, new MAP4 = curse/buff; run order), DECISIONS "2026-11-04". New D34 (relics over 30 rooms), D35 (rejects). Archived in RESOLVED and CHANGELOG by tech-writer (e03c4b8).
 - **MAP0 closed 2026-11-03 (docs only, no tag):** game-lead ee38ac0, e77653d, adf6468; docs 2762144. `docs/MAP.md` (game-lead owns it); GDD §9 [PROPOSED]; ROADMAP MAP1/MAP2/MAP3; questions D31-D33 (defaults A). Director's H3 Rogue feedback in CHANGELOG; old item 38 merged into 40.
 - **H3 closed 2026-11-03:** gameplay-dev cee653d..3dc74fb, ux 6f89eea, qa PASS 44eff31/f1a3f88, playtest 305b13b (no blocker), docs 8700a4d (incl. D30 in CHANGELOG/RESOLVED). Tag `playtest-2026-11-03-H3`. **Baselines now: suite 1244/1244 (108 suites); arena 30 s seed 1 = 2333565009, 90 s = 819020947; bot sim `-Rooms 20 -Seed 3` = 2281795515.** Playtest findings -> PL3 items 11-13 (volley gaps, pip flash, is the volley fair to the Wizard). OPEN_ITEMS 40 asks the director to play it.
 - **D30 = A recorded 2026-11-03 (game-lead, docs only):** 98efccd (GDD §4a bullet, GDD §9 director note on maybe removing the rest heal, BUILD_DEPTH §4.1/§11, ROADMAP BD2 wording + MAP0 rest-node question). OPEN_ITEMS: D30 removed. Archived in RESOLVED and CHANGELOG by tech-writer (8700a4d).
@@ -22,15 +23,12 @@ Last updated: 2026-11-04 (PL3 gameplay-dev running; director answers D31 = A, D3
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **PL3: gameplay-dev done** (9a86757 tooling, fbfd86c knockback bug fix; suite 1252/1252, 110 suites; arena 90 s now 1212800, 30 s and bot-sim unchanged). Item 13 measured: mostly bot blind spot, but no safe gap at 6 m or closer -> D36. DECISIONS "2026-11-04 - PL3 gameplay-dev".
-- **PL3: ux done** (da418aa; suite 1263, two failures: `pl3_tooling_test` Wizard-scenario test fails on clean main (`main.player` is @onready, nil before add_child; test bug from 9a86757) and the known slice6 flake).
-- **PL3: qa PASS** (16387bf, e38bdd2; `docs/reviews/2026-11-04-pl3-qa.md`; suite 1289/1289, 111 suites, twice; hashes reproduce: 30 s 2333565009, 90 s 1212800, bot sim 2281795515). Non-blocking carry-overs added under the PL3 brief.
-- **Next role: playtester (short).** If cut off: check for `docs/playtests/2026-11-04-pl3-short.md`.
+- Nothing in progress. Working tree clean.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step
-1. **PL3** (ROADMAP brief; items 1-5, 7, 10-13 and tooling). Hand to gameplay-dev first (item 3 knockback clamp, item 13 volley fairness measurement, tooling), then ux-designer (1, 2, 4, 5, 7, 10, 11, 12), qa, playtester, tech-writer, close with a tag.
-2. Then **BD1**, **BD2**, **MAP1**, **MAP2**, **MAP3**, **MAP4**, **3d**, **BD3**.
+1. **BD1, synergy core** (ROADMAP brief; BUILD_DEPTH §3, §5 R-A/R-B/W-A/W-C, §6, §7, §2). Full loop: gameplay-dev (incl. the PL3 carry-overs) -> ux-designer -> qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-BD1`. BD1 is bigger than PL3: re-read its brief and split it into two sittings if needed (log the split).
+2. Then **BD2**, **MAP1**, **MAP2**, **MAP3**, **MAP4**, **3d**, **BD3**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).
 

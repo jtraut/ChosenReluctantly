@@ -1,13 +1,13 @@
 # Director open items
 
-Last updated: 2026-11-04 (your D31-D33 recorded; D34, D35 added; PL3 in progress)
-**Status: 3 waiting on a decision (D34, D35 not blocking until MAP3; D36 the volley up close), 3 things to look at (40, 39, and 41 from the PL3 tag; item 35 waits for BD2). H3 is done: the dodge is back on Space (Rogue 2, Wizard 1), Movement is on Ctrl, enemies and the boss volley are a bit faster. MAP0 is done too: the map plan is in `docs/MAP.md` (a relic route reaches 6-8 relics but gets fewer cards). PL3 is in progress. Then BD1 -> BD2 -> MAP1 (map) -> MAP2 (merchant) -> MAP3 (three acts, save and resume) -> MAP4 (curse/buff rooms) -> 3d.**
+Last updated: 2026-11-04 (PL3 closed, tag `playtest-2026-11-04-PL3`)
+**Status: 3 waiting on a decision (D34, D35 not blocking until MAP3; D36 the volley up close), 3 things to look at now (40, 39, 41; item 35 waits for BD2). H3 is done: the dodge is back on Space (Rogue 2, Wizard 1), Movement is on Ctrl, enemies and the boss volley are a bit faster. MAP0 is done too: the map plan is in `docs/MAP.md` (a relic route reaches 6-8 relics but gets fewer cards). PL3 is done. Next: BD1 (cards start to work together) -> BD2 -> MAP1 (map) -> MAP2 (merchant) -> MAP3 (three acts, save and resume) -> MAP4 (curse/buff rooms) -> 3d.**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
 ## How to playtest
 
-- **Latest known-good build:** `git checkout playtest-2026-11-03-H3`, play, then `git checkout main`. The one before it is `playtest-2026-11-02-H2` (dodge off). Older tags are in `docs/RESOLVED.md`.
+- **Latest known-good build:** `git checkout playtest-2026-11-04-PL3`, play, then `git checkout main`. The one before it is `playtest-2026-11-03-H3`. Older tags are in `docs/RESOLVED.md`.
 - **Normal run:** `godot --path .` (10 rooms). Extras: `-- --run-seed=5`, `-- --run-room=10` (boss), `-- --class=wizard`.
 - **Preset decks:** `godot --path . -- --list-decks`, then for example `-- --deck=fire-heavy-rogue --full-deck --run-room=10`.
 - **Keys (since H3):** WASD move · mouse aims · left click light (also auto-fires) · right click heavy · **Space dodges** · **Q, E, F, Ctrl, R** cast Attack, Area, Utility, Movement, Recovery (hold to aim, release to cast; Q/E/F/R still work while Ctrl is held) · Shift + the same key swaps · Esc pause · F3 debug. On Windows with several keyboard layouts, Ctrl+Shift may switch layout.
@@ -34,7 +34,7 @@ Your D31 = A, D32 = A (three acts, 30 rooms, save and return) and D33 = B are re
 
 Reply with the number and a word or two.
 
-41. **Knockback is shorter now (PL3 bug fix).** Every shove on you was being re-applied each frame, so the boss smash threw the Wizard about 20 m instead of the intended 2 m. Fixed for all hits on the player. It changes the feel a bit: tell me if hits now feel too soft. (Available from the PL3 tag.)
+41. **Knockback is shorter now (PL3 bug fix).** Every shove on you was being re-applied each frame, so the boss smash threw the Wizard about 20 m instead of the intended 2 m. Fixed for all hits on the player. It changes the feel a bit: tell me if hits now feel too soft. Also new in PL3: a ring and bubble while Ward is up, a big white Overqualified Bolt, green safe-gap strips in the boss volley (only where standing there is really safe, so none up close), a brighter dodge-pip flash, and no number keys on the reward screens. Say if any of it reads badly.
 40. **H3 and H1 pace, the Wizard side.** Rogue: recorded ("still felt good, never overwhelmed"). When you next play the Wizard: do rooms feel quicker with the faster enemies, or only more crowded? Does the 1-dodge Wizard get time to react to the boss's Fan of regrets (0.75 s wind-up, lanes brighten toward the fire moment)? Is Ctrl comfortable for Movement while you move with WASD? A no-card run should still lose. The bots say the volley does all of the Wizard's boss damage; I'm checking whether that's the bot or the volley (PL3 item 13). (This replaces old item 38, H1 pace.)
 39. **H1 boss length.** The Rogue's boss fight runs about 6 s longer (about 66 s). Fine?
 35. **Builds (after BD2).** Build the same class and element twice with different plans. Do the two runs feel different? Does removing a keystone card hurt?

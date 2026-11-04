@@ -235,7 +235,7 @@ func in_threat(point: Vector3) -> bool:
 			for angle: float in BossRules.volley_angles(int(_attack["count"]), float(_attack["spread_degrees"])):
 				var dir: Vector3 = _lock_dir.rotated(Vector3.UP, deg_to_rad(angle))
 				var along: float = rel.dot(dir)
-				if along >= 0.0 and along <= float(_attack["shot_range"]) + half_width and (rel - dir * along).length() <= half_width:
+				if along >= 0.0 and along <= BossRules.MUZZLE + float(_attack["shot_range"]) + half_width and (rel - dir * along).length() <= half_width:
 					return true
 			return false
 		"charge":

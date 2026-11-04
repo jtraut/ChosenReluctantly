@@ -232,3 +232,59 @@ func test_space_still_dodges_while_ctrl_is_held_for_a_preview() -> void:
 	assert_int(player.dodge_charges.current).override_failure_message("Space did not dodge with Ctrl held").is_equal(player.dodge_charges_max() - 1)
 	assert_bool(player.cast_input.is_previewing()).override_failure_message("the dodge dropped the Movement preview").is_true()
 	_key(KEY_CTRL, false)
+
+
+# ---- Fan of regrets: the drawn lanes are the pellets' path (H3 item 3) ----
+
+## Starts a real boss volley with the player parked far off to the side (immune), records the lanes the way Boss draws them
+## (origin = boss + MUZZLE along each lane direction, from the locked aim) and checks every pellet, every physics frame of its
+## flight, sits on one of those lines and never passes the lane's drawn end.
+func test_every_volley_pellet_stays_on_a_drawn_lane_for_its_whole_flight() -> void:
+	BossConfig.reset_cache()
+	BossStagger.disable()
+	var main: Main = (load(MAIN_SCENE_PATH) as PackedScene).instantiate()
+	(main.get_node("EnemySpawner") as Node).process_mode = Node.PROCESS_MODE_DISABLED
+	get_tree().root.add_child(main)
+	get_tree().current_scene = main
+	_main = main
+	main.player.camera = null
+	main.player.health.damage_immune = true
+	var boss: Boss = (load("res://scenes/enemies/BossGuardian.tscn") as PackedScene).instantiate()
+	boss.position = Vector3(0.0, 0.0, -9.0)
+	boss.target = main.player
+	main.add_child(boss)
+	boss.set_seed(3)
+	boss.debug_script_attacks(["volley"] as Array[String])
+	boss.begin_spawn_grace(0.0)
+	main.player.global_position = Vector3(0.0, 0.0, 0.0)
+	var attack: Dictionary = (BossConfig.boss("boss_guardian")["attacks"] as Dictionary)["volley"]
+	var angles: Array[float] = BossRules.volley_angles(int(attack["count"]), float(attack["spread_degrees"]))
+	var lock_dir: Vector3 = Vector3.ZERO
+	var origin: Vector3 = Vector3.ZERO
+	var half: float = BossRules.volley_half_width(attack)
+	var lane_end: float = BossRules.MUZZLE + float(attack["shot_range"])
+	var seen_pellets: int = 0
+	var worst_offset: float = 0.0
+	for frame in range(400):
+		await get_tree().physics_frame
+		if boss.state_name() == "WINDUP" and lock_dir == Vector3.ZERO:
+			lock_dir = boss._lock_dir
+			origin = boss.global_position
+		for child in main.get_children():
+			if not (child is Projectile) or String((child as Projectile)._exclude_team) != "enemy":
+				continue
+			seen_pellets += 1
+			var rel: Vector3 = (child as Projectile).global_position - origin
+			rel.y = 0.0
+			var best: float = INF
+			for angle: float in angles:
+				var dir: Vector3 = lock_dir.rotated(Vector3.UP, deg_to_rad(angle))
+				var along: float = rel.dot(dir)
+				if along >= -0.01 and along <= lane_end + 0.2:
+					best = minf(best, (rel - dir * along).length())
+			worst_offset = maxf(worst_offset, best)
+		if seen_pellets > 0 and boss.state_name() == "CHASE":
+			break
+	assert_int(seen_pellets).override_failure_message("no pellets were seen").is_greater(0)
+	assert_float(worst_offset).override_failure_message("a pellet left its drawn lane by %.3f m" % worst_offset).is_less(0.03)
+	assert_float(half).is_greater(float(attack["hit_radius"]))

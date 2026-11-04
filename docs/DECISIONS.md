@@ -1376,3 +1376,13 @@ Commits 9a86757, fbfd86c.
 - **Capture tooling:** generic `--press=<t>:<action>` taps (`-Actions`), `--at-boss-attack=<id>` makes `-After` relative to the attack's telegraph; wave sim `-StartRoom`. [Dodge-only flag; a separate delay argument.]
 - **Volley fairness measured with a standalone probe** (`tools/VolleyProbe.tscn`, teleports at wind-up start) plus 16-seed Wizard boss runs. Result: mostly a bot blind spot (pellet-aware bot 16/16, hit rate 53% -> 26%), but at 6 m or closer there's no gap wide enough to stand in, so only the 1 dodge helps; the boss can fire from 4 m. Not retuned: asked as D36. [Raising `min_range` myself.]
 - **Arena 90 s seed 1 hash 819020947 -> 1212800** (knockback fix); 30 s and bot-sim hashes unchanged. Suite 1252/1252, 110 suites.
+
+## 2026-11-04 - PL3 ux (ux-designer; logged by game-lead)
+Commit da418aa.
+- **Ward cue in the world, not the HUD:** a pulsing ring and bubble around the caster for the buff's duration, keyed by stat in `data/vfx.json` `buff_cues` (only `armor` today). [A HUD buff pip with a draining bar; possible later.]
+- **Card projectile `look` lives in card JSON** (`color`, `scale`, `ball_scale`; the ball is drawn bigger, but the hit radius doesn't change). Three Bolts lime, Overqualified Bolt big white. [A `look_id` indirection.]
+- **Damage numbers move below the boss bar** in screen space while it shows (`ui.json` `damage_numbers.boss_bar_gap`). [Hiding them; raising render priority, which can't beat a 2D bar.]
+- **Volley damage numbers:** the faded "4" wasn't reproduced; merging works (one total within 0.3 s). No fix, test added.
+- **Volley safe-gap tint** only where the real clear gap is at least 0.2 m half width (`boss_volley_gap_min_half_width`), computed by `VolleyGaps.gd` from the actual lane geometry, so nothing is drawn within about 7 m. No boss-bar dodge text while D36 is open. [A tapered wedge; tinting every gap.]
+- **Reward and removal screens:** digits, hints and badges removed; "Key Q" became a key cap "Q"; the reward line "Recovery (R) now: A" became "In slot: A". The removal grid headers and the "Next:" line still write keys out (D26 = A allows it). [Shrinking the font.]
+- **Card strip** slots 126 -> 134 px, preview row 38 -> 46 px; **dodge return pulse** 0.3 -> 0.6 s with a swell. The pip itself isn't bigger.

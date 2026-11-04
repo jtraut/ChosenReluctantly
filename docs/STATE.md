@@ -3,9 +3,14 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-04 (BD1 qa PASS, playtest no blocker; tech-writer next). **Run order:** **BD1 (in progress)** -> BD2 (relics) -> MAP1 (map, gold) -> MAP2 (merchant) -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3.
+Last updated: 2026-11-04 (BD1 closed, tag `playtest-2026-11-04-BD1`). **Run order:** BD1 (done) -> **BD2 (relics, next)** -> MAP1 (map, gold) -> MAP2 (merchant) -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1.
 
 ## What's done
+- **BD1 closed 2026-11-04:** gameplay-dev a141865..7c5a66b (BD1-A, engine) and 3e297d5..49b117b (BD1-B, content and tooling), ux b61c388..1d3cbda, qa PASS with carry-overs 2796aa4, playtest 433ca0b (no blocker), docs e254881. Tag `playtest-2026-11-04-BD1`.
+  - **Baselines now:** suite 1413/1413 (121 suites); arena 30 s seed 1 = 1897787086, 90 s = 4207041509; bot sim `-Rooms 20 -Seed 3` = 846850403. These were rebaselined because the new pool cards fill the sim slots (DECISIONS "BD1-B"). The plan baselines are in the same entry.
+  - **Carry-overs** are listed under the BD1 brief in ROADMAP. Do the gameplay-dev and ux items with BD2's steps, and the balance items with BD3.
+  - The tech-writer backlog (D34-D39, items 39-42, the corporate idea) is archived in RESOLVED and CHANGELOG in e254881.
+  - **Process lesson (tech-writer):** Bash heredocs turned `\r` in `tools\run_wave_sim.ps1` into a carriage return in README twice. Write edit scripts with the Write tool instead.
 - **D37 = A, D38 = A recorded 2026-11-04 (game-lead, docs only):**
   - **His answers:** D37 = A, a dig relic adds a rest Dig action that replaces both heal and removal. D38 = A, curses are cards you swap past; they don't count toward slot minimums and are removed like any card.
   - **Where recorded:** GDD §4a, BUILD_DEPTH §4.7, ROADMAP MAP4.
@@ -48,79 +53,12 @@ Last updated: 2026-11-04 (BD1 qa PASS, playtest no blocker; tech-writer next). *
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **BD1-A (engine) DONE 2026-11-04:** gameplay-dev a141865, 6ca48f0, 7a5f61c, 7c5a66b.
-  - Suite 1352/1352 (63 new tests); the last full run was before 7c5a66b, which only re-ran the bd1 and touched suites. qa should do one full run.
-  - The three hashes are unchanged (2333565009 / 1212800 / 2281795515).
-  - Reload soak OK; it now asserts the cast history is empty after reload.
-  - Calls are logged in DECISIONS "BD1-A engine calls". D39 = A answered by the director the same day (the dodge isn't a Movement cast; GDD §4a).
-- **BD1-B (content and tooling) DONE 2026-11-04:** gameplay-dev 3e297d5..49b117b.
-  - **Suite:** 1388/1388 at 17fbe44, plus one view test since (1389 expected); qa runs it in full.
-  - **Standard hashes REBASELINED** (new cards fill arena/bot slots from the pools; DECISIONS "BD1-B"): arena 30 s seed 1 = 1897787086, 90 s = 4207041509, bot sim `-Rooms 20 -Seed 3` = 846850403. The plan baselines are in the same entry.
-  - **ux API:** `src/cards/SlotSynergyView.gd` `infos(player)`. Its fields are `chips`, `keywords`, `keyword_rules`, `condition_text`, `condition_live`, `primed`, `primed_time_left`, `primed_duration` and `primed_charges`. The pure side is in `SlotSynergy.gd`, and `CardSummary.condition_text` handles the text.
-  - **Captures:** `tools\capture_screenshot.ps1 -Preset <name>` with `reward_screen`, `removal_screen`, `boss_smash`, `bd1_reward_keystone`, `bd1_reward_keystone_wizard`, `bd1_glow_target`, `bd1_primed` or `pl3_heavy_bolt`.
-  - **Sims, 12 seeds × 10 rooms:**
-    - Every archetype deck clears 11-12/12, as well as or better than the standard deck.
-    - No-card runs clear 0/12.
-    - The no-card Rogue soft-locks on seed 7 room 1. That predates BD1 (it shows at a4802ab); qa should note it.
-- **BD1 ux DONE 2026-11-04:** ux-designer b61c388..1d3cbda.
-  - **Suite:** 1403/1403 (120 suites). Hashes unchanged.
-  - **What's new:** chips, live glow, primed marker, condition lines, a Keystone chip on rewards, the strip-overflow fix and a 142 px slot. Calls are in DECISIONS "BD1 ux calls".
-  - **Captures:** `docs/playtests/img/bd1-ux-*.png`.
-  - ux edited three tests outside its suite: `bd1b_content_test`, `m3c_qa_test` and the `pl3_qa_test` pin 134 -> 142. qa should confirm those edits.
-  - **Not run by ux:** the reload soak and SceneSelfCheck (no autoload changes). qa runs them anyway.
-- **BD1 qa: PASS with carry-overs, 2026-11-04** (commit 2796aa4; review in `docs/reviews/2026-11-04-bd1-qa.md`).
-  - **Suite:** 1413/1413 (121 suites).
-  - **Hashes:** all reproduced, plan baselines included. The old-hash claim was confirmed.
-  - **Carry-overs:** listed under the BD1 brief in ROADMAP.
-- **Sim signals** (boss room only, 12 seeds):
-  - Parity: Controlled Burn reaches 59% of the standard Wizard's boss time, under the 70% floor. The other decks are 89-124%.
-  - Removal pain: only Controlled Burn meets +25%. Hit and Run is -23% without Drive-By.
-  - BUILD_DEPTH §2 tunes this in BD3.
-  - Fingerprint spread isn't measured yet (no tooling).
-- **BD1 playtest: NO BLOCKER, 2026-11-04** (commit 433ca0b, `docs/playtests/2026-11-04-bd1-short.md`).
-  - The smoke check passes.
-  - The LIVE glow reads even in a busy fight.
-  - Findings are readability items for ux, filed under the BD1 brief in ROADMAP.
-- **tech-writer docs pass: next**, then close and tag `playtest-2026-11-04-BD1`.
-- **For qa (BD1 review):**
-  - `slice6_qa_test::test_f1_same_seed_crowd_is_bit_identical` failed in 2 of 3 full runs during BD1-A (documented as a ~1-in-3 physics flake; it passed 1 of 1 at baseline). Check whether BD1 made it worse.
-  - Known gaps, by design until BD1-B and ux: CastPreview, CardSummary and the bot treat conditional effects as unconditional. A buff aura outlives its spent charge. A delayed aoe with no anchor and no `max_range` telegraphs at the cast spot but hits at the caster (pre-existing, pinned).
-- **Draft BD1 doc handoff, the backlog for tech-writer (collected from the "Pending for tech-writer" notes above):**
-  - RESOLVED: archive D34, D35, D36 (text in 81ff8e4); items 39, 40, 41, 42 (text in 648dbd4); D37, D38 (text in 863b15b); D39 = A (text in 7503569).
-  - CHANGELOG `[Director decision]` entries:
-    - relic cap 10 -> 20 over three acts, at-cap fallback "card offer instead" -> "give a relic up", no duplicates;
-    - rejects 3 per run kept; volley unchanged;
-    - relic tiers 1/2/3/boss with odds per act;
-    - elites relic-only;
-    - boss relics only from mini-bosses (2 per run);
-    - mini-boss rare/legendary card offers;
-    - card rarity by act;
-    - knockback fix confirmed;
-    - relic sources (Slay the Spire / The Last Flame model);
-    - starter relic chosen in the loadout (no RNG restarts);
-    - D37 = A (rest dig relic);
-    - D38 = A (curse cards).
-    - D39 = A (the dodge doesn't count as a Movement cast for combos).
-    - corporate-setting idea noted in GDD §15 (director, 2026-11-04; an idea, not a decision; tag it as a director note, not a decision).
-  - Plus BD1's own changes (gameplay-dev a141865..7c5a66b, 3e297d5..49b117b; ux and qa to come). README needs:
-    - `-Plan` for both sims, and `-Deck` for the bot sim;
-    - `-Preset`, `tools/capture_presets.json` and the new capture rows;
-    - `--run-offer` with the `+` separator;
-    - the scenario keys `deck` and `_note`;
-    - the `--class` + `--scenario` refusal, which fixes two contradictory README lines;
-    - `dodge.counts_as_movement_cast`;
-    - `--full-deck` counts now 30 (Rogue) and 28 (Wizard);
-    - the `mixed-*` description wording;
-    - the removal example on room 6;
-    - the "Last verification" hashes and test count.
-    - ux behaviour (chips, glow, primed marker, the 142 px strip);
-    - the corrupted `toolsun_wave_sim.ps1` lines (around 197-198) restored to `tools\run_wave_sim.ps1`.
-  - ARCHITECTURE: new files `src/cards/CardTags.gd`, `KeywordDatabase.gd`, `CastHistory.gd`, `SlotSynergy.gd`, `SlotSynergyView.gd`, `src/core/CombatEvents.gd`, `src/combat/EffectCondition.gd`, `src/debug/PlanPolicy.gd`, `tools/sim_caster.gd`, `tools/capture_presets.json`, `src/ui/ChipRow.gd`, `src/ui/SlotCues.gd`, and `data/keywords.json`.
+- Nothing in progress. Working tree clean.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step
-1. **BD1, synergy core** (ROADMAP brief; BUILD_DEPTH §3, §5 R-A/R-B/W-A/W-C, §6, §7, §2). Order: gameplay-dev **BD1-A** (done) -> gameplay-dev **BD1-B** (done) -> ux-designer (done) -> qa PASS -> playtest no blocker -> **tech-writer (next)** -> close, tag `playtest-YYYY-MM-DD-BD1`.
-2. Then **BD2**, **MAP1**, **MAP2**, **MAP3**, **MAP4**, **3d**, **BD3**.
+1. **BD2, relics** (ROADMAP brief; BUILD_DEPTH §4). Full loop: gameplay-dev (with BD1's gameplay-dev carry-overs) -> ux-designer (with BD1's ux readability carry-overs) -> qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-BD2`. Re-read the brief first and split it into sittings if it's as large as BD1 (log the split).
+2. Then **MAP1**, **MAP2**, **MAP3**, **MAP4**, **3d**, **BD3**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).
 
@@ -129,4 +67,4 @@ Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions open; eyes 47 (35 when he has time). Answered items are in `docs/RESOLVED.md` (D30 archived in 8700a4d).
+All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions open; eyes 48 (BD1 decks) and 47 (35 when he has time). Answered items are in `docs/RESOLVED.md` (D34-D39 archived in e254881).

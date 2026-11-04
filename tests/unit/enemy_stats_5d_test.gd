@@ -32,7 +32,7 @@ func test_spawned_enemies_carry_the_data_stats() -> void:
 		assert_float(enemy.attack_damage).is_equal(float(old["attack_damage"]))
 		assert_str(enemy.attack_damage_type).is_equal(String(old["attack_damage_type"]))
 		assert_float(enemy.attack_cooldown).is_equal_approx(float(old["attack_cooldown"]) / EnemyConfig.attack_rate_scale(), 0.0001)
-		assert_float(enemy.telegraph_duration).is_equal(float(old["telegraph_duration"]))
+		assert_float(enemy.telegraph_duration).is_equal_approx(float(old["telegraph_duration"]) * EnemyConfig.telegraph_scale(), 0.0001)
 		assert_float(enemy.projectile_speed).is_equal(float(old["projectile_speed"]))
 		assert_float(enemy.projectile_max_range).is_equal(float(old["projectile_max_range"]))
 

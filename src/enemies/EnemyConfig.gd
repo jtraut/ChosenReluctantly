@@ -12,7 +12,7 @@ const DEFAULT_RANK := "normal"
 const DEFAULTS: Dictionary = {
 	"projectile_hit_radius": 0.3,
 	"melee_half_angle_degrees": 60.0,
-	"pressure": {"speed_scale": 1.0, "attack_rate_scale": 1.0},
+	"pressure": {"speed_scale": 1.0, "attack_rate_scale": 1.0, "telegraph_scale": 1.0},
 	"separation": {"radius": 1.8, "strength": 0.8, "readable_spacing": 1.2, "near_player_radius": 4.0},
 }
 
@@ -62,7 +62,9 @@ static func validate(config: Dictionary) -> Array[String]:
 
 ## Pressure knobs (H1; the future difficulty tiers reuse them): `speed_scale` multiplies every normal and elite
 ## enemy's move_speed, `attack_rate_scale` divides every one's attack_cooldown (2.0 = attacks twice as often).
-## 1.0 is the unscaled base game. Neither touches the boss, whose speeds and gaps live in data/bosses.json phases.
+## `telegraph_scale` (H3, optional, default 1.0) multiplies every normal and elite enemy's telegraph_duration (0.85 = a 15% shorter
+## wind-up). 1.0 is the unscaled base game. None of them touches the boss, whose speeds, gaps and wind-ups live in data/bosses.json
+## (its adds are normal enemies and do get all three).
 const PRESSURE_RANGE: Array[float] = [0.25, 4.0]
 
 static func validate_pressure(block: Variant) -> Array[String]:
@@ -71,14 +73,16 @@ static func validate_pressure(block: Variant) -> Array[String]:
 		errors.append("'pressure' must be an object")
 		return errors
 	var dict: Dictionary = block
-	for key: String in ["speed_scale", "attack_rate_scale"]:
+	for key: String in ["speed_scale", "attack_rate_scale", "telegraph_scale"]:
+		if key == "telegraph_scale" and not dict.has(key):
+			continue  # optional: a missing value is 1.0
 		var value: Variant = dict.get(key)
 		if typeof(value) != TYPE_INT and typeof(value) != TYPE_FLOAT:
 			errors.append("pressure: '%s' must be a number" % key)
 		elif is_nan(float(value)) or float(value) < PRESSURE_RANGE[0] or float(value) > PRESSURE_RANGE[1]:
 			errors.append("pressure: '%s' must be between %s and %s" % [key, PRESSURE_RANGE[0], PRESSURE_RANGE[1]])
 	for key: String in dict.keys():
-		if key != "speed_scale" and key != "attack_rate_scale":
+		if key != "speed_scale" and key != "attack_rate_scale" and key != "telegraph_scale":
 			errors.append("pressure: unknown key '%s'" % key)
 	return errors
 
@@ -284,3 +288,9 @@ static func speed_scale() -> float:
 ## Shared enemy attack-rate multiplier ("pressure.attack_rate_scale"): attack cooldowns are divided by it.
 static func attack_rate_scale() -> float:
 	return float((get_config()["pressure"] as Dictionary)["attack_rate_scale"])
+
+
+## Shared enemy telegraph-length multiplier ("pressure.telegraph_scale", optional, default 1.0): every normal and elite
+## enemy's telegraph_duration is multiplied by it. Never touches the boss.
+static func telegraph_scale() -> float:
+	return float((get_config()["pressure"] as Dictionary).get("telegraph_scale", 1.0))

@@ -39,7 +39,7 @@ func test_elites_get_the_same_scaled_speed_and_cooldown_as_normals() -> void:
 		elite.apply_tier("elite", RunConfig.tier("elite"))
 		assert_float(elite.move_speed).is_equal_approx(float(base["move_speed"]) * EnemyConfig.speed_scale(), 0.0001)
 		assert_float(elite.attack_cooldown).is_equal_approx(float(base["attack_cooldown"]) / EnemyConfig.attack_rate_scale(), 0.0001)
-		assert_float(elite.telegraph_duration).override_failure_message("%s telegraph must stay as authored" % id).is_equal(float(base["telegraph_duration"]))
+		assert_float(elite.telegraph_duration).override_failure_message("%s telegraph is the authored one times telegraph_scale (H3)" % id).is_equal_approx(float(base["telegraph_duration"]) * EnemyConfig.telegraph_scale(), 0.0001)
 		assert_float(elite.move_speed).override_failure_message("%s elite outruns the walk" % id).is_less(6.0)
 
 
@@ -84,6 +84,7 @@ func test_pressure_validation_edges_fail_loudly() -> void:
 	assert_array(EnemyConfig.validate(parsed)).is_not_empty()
 
 
-func test_shipped_pressure_values_match_the_h1_decision() -> void:
+func test_shipped_pressure_values_match_the_h1_and_h3_decisions() -> void:
 	assert_float(EnemyConfig.speed_scale()).is_equal(1.25)
-	assert_float(EnemyConfig.attack_rate_scale()).is_equal(1.0)
+	assert_float(EnemyConfig.attack_rate_scale()).is_equal(1.1)  # H3: was 1.0
+	assert_float(EnemyConfig.telegraph_scale()).is_equal(0.85)  # H3: new

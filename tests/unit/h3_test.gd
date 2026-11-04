@@ -288,3 +288,54 @@ func test_every_volley_pellet_stays_on_a_drawn_lane_for_its_whole_flight() -> vo
 	assert_int(seen_pellets).override_failure_message("no pellets were seen").is_greater(0)
 	assert_float(worst_offset).override_failure_message("a pellet left its drawn lane by %.3f m" % worst_offset).is_less(0.03)
 	assert_float(half).is_greater(float(attack["hit_radius"]))
+
+
+# ---- The speed-up (H3 item 4) ----
+
+func test_the_shipped_pressure_block_and_the_telegraph_scale_knob() -> void:
+	var parsed: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/enemies.json"))
+	var pressure: Dictionary = parsed["pressure"]
+	assert_float(float(pressure["attack_rate_scale"])).is_equal(1.1)
+	assert_float(float(pressure["telegraph_scale"])).is_equal(0.85)
+	assert_float(EnemyConfig.telegraph_scale()).is_equal(0.85)
+	assert_array(EnemyConfig.validate_pressure(pressure)).is_empty()
+
+
+func test_telegraph_scale_is_optional_and_validated_like_the_other_knobs() -> void:
+	assert_array(EnemyConfig.validate_pressure({"speed_scale": 1.0, "attack_rate_scale": 1.0})).override_failure_message("missing = 1.0").is_empty()
+	for ok: Variant in [0.25, 1, 4.0, 0.85]:
+		assert_array(EnemyConfig.validate_pressure({"speed_scale": 1.0, "attack_rate_scale": 1.0, "telegraph_scale": ok})).override_failure_message("rejected %s" % str(ok)).is_empty()
+	for bad: Variant in [0.0, 0.24, 4.01, -1.0, NAN, "fast", null, true, []]:
+		assert_array(EnemyConfig.validate_pressure({"speed_scale": 1.0, "attack_rate_scale": 1.0, "telegraph_scale": bad})).override_failure_message("accepted %s" % str(bad)).is_not_empty()
+	assert_array(EnemyConfig.validate_pressure({"speed_scale": 1.0, "attack_rate_scale": 1.0, "telegraph_scale": 1.0, "tier": 2})).is_not_empty()
+
+
+func test_enemies_telegraph_for_the_authored_time_times_the_scale_and_the_cooldown_divides_by_the_rate() -> void:
+	var main: Main = (load(MAIN_SCENE_PATH) as PackedScene).instantiate()
+	(main.get_node("EnemySpawner") as Node).process_mode = Node.PROCESS_MODE_DISABLED
+	get_tree().root.add_child(main)
+	get_tree().current_scene = main
+	_main = main
+	for id: String in ["melee_chaser", "ranged_shooter"]:
+		var base: Dictionary = EnemyConfig.stats_for(id)
+		var enemy: Enemy = (load(EnemyConfig.scene_path_for(id)) as PackedScene).instantiate()
+		enemy.position = Vector3(0, 0, -8.0)
+		main.add_child(enemy)
+		assert_float(enemy.telegraph_duration).override_failure_message(id).is_equal_approx(float(base["telegraph_duration"]) * 0.85, 0.0001)
+		assert_float(enemy.attack_cooldown).override_failure_message(id).is_equal_approx(float(base["attack_cooldown"]) / 1.1, 0.0001)
+
+
+func test_the_volley_windup_is_0_75_and_phase_three_stays_above_the_telegraph_floor() -> void:
+	BossConfig.reset_cache()
+	var boss: Dictionary = BossConfig.boss("boss_guardian")
+	var volley: Dictionary = (boss["attacks"] as Dictionary)["volley"]
+	assert_float(float(volley["windup"])).is_equal(0.75)
+	var phases: Array = boss["phases"]
+	var floor_seconds: float = float(BossConfig.rules()["min_telegraph"])
+	var phase_three: float = BossRules.windup(volley, phases[2] as Dictionary)
+	assert_float(phase_three).is_equal_approx(0.6375, 0.0001)
+	assert_float(phase_three).is_greater_equal(floor_seconds)
+	# The other boss attacks keep their authored wind-ups.
+	var attacks: Dictionary = boss["attacks"]
+	for pair: Array in [["smash", 0.9], ["slam", 1.1], ["charge", 1.0]]:
+		assert_float(float((attacks[pair[0]] as Dictionary)["windup"])).override_failure_message("%s windup changed" % pair[0]).is_equal(float(pair[1]))

@@ -127,7 +127,7 @@ func _apply_stats(stats: Dictionary) -> void:
 	attack_damage = float(stats["attack_damage"])
 	attack_damage_type = String(stats["attack_damage_type"])
 	attack_cooldown = float(stats["attack_cooldown"]) / EnemyConfig.attack_rate_scale()
-	telegraph_duration = float(stats["telegraph_duration"])
+	telegraph_duration = float(stats["telegraph_duration"]) * EnemyConfig.telegraph_scale()
 	projectile_speed = float(stats["projectile_speed"])
 	projectile_max_range = float(stats["projectile_max_range"])
 

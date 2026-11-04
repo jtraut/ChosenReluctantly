@@ -5,7 +5,8 @@
     },
     "pressure": {
         "speed_scale": 1.25,
-        "attack_rate_scale": 1.0
+        "attack_rate_scale": 1.1,
+        "telegraph_scale": 0.85
     },
     "separation": {
         "radius": 2.5,

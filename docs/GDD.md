@@ -284,6 +284,7 @@ Rather than a full strength/weakness wheel, elements apply status effects (for e
 
   The most rewarding path (most gold, XP and points to spend between runs) tends to be the most difficult. **[OPEN]** node types, how many choices per step, and the map layout. Gold, XP and between-run points don't exist yet (§8). Today's run is a straight line of 10 rooms.
   - **[DIRECTOR DECISION, 2026-11-02] (D28 = A):** a map design doc (MAP0, docs only) comes first, and the first map build comes after BD1 and BD2 and before loadouts (3d). The map must include the merchant (relics bought with gold, several at once) and a dedicated relic stage (D22, §4a).
+  - **Map plan [PROPOSED] (MAP0, 2026-11-03; full plan in `docs/MAP.md`):** a grid of 10 rooms by 4 columns, read left to right, the whole map visible. Every path is exactly 10 rooms: rooms 1-2 combat, room 10 the boss, and at least 6 fights on any path. From each node you go to 1-3 nodes in the next room, mostly 2. Node types: combat, elite (a relic), relic stage, rest, merchant (several relics at once, cards, card removal), and later mini-boss, curse room (a strong relic with a curse) and buff room. Gold is earned per fight (combat 12-18, elite 30-40, mini-boss 45-55) and lasts for the run; relic prices come from rarity (60/90/130). A relic-hunting route reaches 6-8 relics but only about 3 card offers; a route that ignores relics ends with 2-3 relics and about 7 card offers. XP and between-run points are reserved only (§8 is open). The seeded generator checks these rules on every path. Built as MAP1 (map, gold), MAP2 (merchant), MAP3 (mini-bosses, curse/buff rooms). Questions D31 (what a rest stop offers), D32 (map shape), D33 (MAP3 timing).
 ### Starting decks and loadouts **[DECIDED]**
 - The very first run uses preset defaults: the chosen class, element, and neutral starter cards.
 - From the second run on, the player can tune their starting deck and save it as a **loadout**.
@@ -365,8 +366,8 @@ The director provides top-level design direction only. Roles are defined as docu
 9. Game name. Front-runner: **Chosen, Reluctantly** (also fits the "choose your cards carefully" mechanic).
 10. Final tone: how far to push the satire.
 11. Card unlock conditions for `locked` cards (§9 Loadouts).
-12. ~~Relic sources and how many per run; whether Burn and Bleed stack.~~ Resolved 2026-11-02 (D22 = C, D25 = A, §4a). Still open: relic prices at the merchant (MAP0).
-13. Branching map: node types, choices per step, layout, and the reward currencies (gold, XP, between-run points) (§9).
+12. ~~Relic sources and how many per run; whether Burn and Bleed stack.~~ Resolved 2026-11-02 (D22 = C, D25 = A, §4a). Merchant relic prices proposed in `docs/MAP.md` §4.4 (MAP0).
+13. Branching map: node types, choices per step, layout, and the reward currencies (gold, XP, between-run points) (§9). Proposed in `docs/MAP.md` (MAP0, 2026-11-03); open points are D31-D33. XP and between-run points stay open with §8.
 
 Resolved: engine (Godot), perspective (3D isometric), slice classes and elements (Rogue, Wizard, Fire, Water), card offer format (pick 1 of 3 or reject all).
 

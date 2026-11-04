@@ -1342,3 +1342,19 @@ Commit 6f89eea.
 - **Lane length capped at 14 m** (shot range 16 m) as `data/vfx.json` `boss_volley_lane_max_length`, with `boss_volley_lane_alpha_start` / `_end`. [Computing the cap from the camera each frame.]
 - **Lanes still vanish at the fire moment;** no fade through the ~1.8 s pellet flight. A fading lane would suggest danger behind pellets that already passed; the pellets are visible on their own. [Fading lane in flight.]
 - **Dodge pips and the Movement chip needed no change:** they already read InputLabels and `get_dodge_state()`. A recharging single pip differs from a ready one by shape and the word EMPTY, not colour alone. "Shift+Ctrl" isn't shown anywhere in the UI today.
+
+## 2026-11-03 - MAP0: branching map design doc (game-lead)
+Plan in `docs/MAP.md`; GDD §9 [PROPOSED] summary. Defaults for D31-D33 applied until answered.
+- **Every path is exactly 10 rooms** (grid 10 x 4, boss in room 10), so "Room N of 10", run length and today's tuning carry over. [Paths of different lengths, like Slay the Spire's acts, which would change run length per route.]
+- **Left to right, whole map visible** (D32 default A): ten columns fit 16:9, and a relic route needs planning. [Bottom to top like Slay the Spire; fog beyond 2 rooms.]
+- **Path rules checked on every path** (at least 6 fights, at most 3 elites + mini-bosses, 1 merchant, 2 rests; best path 6-8 relics, worst at most 3), with seeded redraws and a 1000-seed test. [Only weighting the type picks and hoping, which can't guarantee the director's 6-8.]
+- **Relic estimate counts the merchant as floor(gold / 60), at most 3.** The worked routes give 7-8 for a hunter, 2 for a route that ignores relics; the rules make 8 the practical maximum, so cap 10 is a backstop. [Validating with a simulated bot only, too slow for a generator check.]
+- **Gold** start 0, combat 12-18, elite 30-40, mini-boss 45-55; **prices** relic 60/90/130 by rarity, card 40, removal 50 +25 per removal; stock 3 relics + 3 cards. Chosen so the hunter route affords 2 relics at the merchant and a fight-skipping route affords fewer. [Gold from every node, which removes the fight-vs-reward tension.]
+- **Elites keep BD2's rule** (a relic instead of the card offer), so a hunter gets about 3 card offers vs about 7. That is the map's main trade-off, stated in MAP.md §4.3. [Elites giving both, which makes the relic route strictly better.]
+- **Mini-boss is a data tier on existing enemies** (HP x3.5, armor 22). [A new boss AI per mini-boss.]
+- **XP and between-run points reserved only** (fields at 0), because GDD §8 is open. [Designing the passive economy here.]
+- **`map.enabled` switch,** shipped on at MAP1; off keeps the straight run, tests and the old hashes. BD2's interim relic room lives only in the straight run. [Deleting the straight run.]
+- **Three slices:** MAP1 (map, gold), MAP2 (merchant), MAP3 (mini-bosses, curse/buff rooms; D33 default after 3d). MAP1 + MAP2 are D28's "first map build" before 3d, merchant included. MAP1 ships `relic_route` [5, 7] until the merchant exists. [One map slice, too big for one sitting.]
+- **Map gen in a new `data/map.json`;** economy (`gold`, `merchant`, `relics.prices`) in `run.json`, matching BUILD_DEPTH §4.6. [Everything in run.json.]
+- **`docs/MAP.md` is a game-lead doc,** added to CLAUDE.md's ownership list (as BUILD_DEPTH was at BD0).
+- **Director feedback on H3 folded:** his Rogue run ("never overwhelmed") half-answers old item 38 (H1 pace); 38 is merged into item 40 for the Wizard side rather than marked answered.

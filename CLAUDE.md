@@ -25,7 +25,7 @@ This file governs how work happens in this repo. It applies to the main session 
 - Never commit secrets or large binaries. Don't download assets or tools from untrusted sources.
 - **Doc ownership (director, 2026-10-28):**
   - **tech-writer** owns `README.md`, `docs/CHANGELOG.md`, `docs/ASSETS.md`, `docs/ARCHITECTURE.md`, `docs/RESOLVED.md` (director, 2026-11-02).
-  - **game-lead** owns `docs/GDD.md`, `docs/BUILD_DEPTH.md`, `docs/DECISIONS.md`, `docs/ROADMAP.md`, `docs/STATE.md`, `docs/OPEN_ITEMS.md`, `CLAUDE.md`.
+  - **game-lead** owns `docs/GDD.md`, `docs/BUILD_DEPTH.md`, `docs/MAP.md`, `docs/DECISIONS.md`, `docs/ROADMAP.md`, `docs/STATE.md`, `docs/OPEN_ITEMS.md`, `CLAUDE.md`.
   - Other roles don't edit docs they don't own. They report needed changes in their hand-back.
 - **Docs pass (director, 2026-10-28):** roles don't call tech-writer for small changes. game-lead runs tech-writer **once at the end of each slice or multi-agent task**, with a short doc handoff note: what changed, the commit range, files touched, new commands, and any new assets with source and license.
   - Exception: whoever adds a third-party asset gives tech-writer the source, author and license at that time.

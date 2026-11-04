@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-03 (H3 closed, tag `playtest-2026-11-03-H3`). **Run order:** H3 done -> **MAP0 (next; game-lead alone, docs only, no tag)** -> PL3 (rest, now incl. H3 items 11-13) -> BD1 -> BD2 (relics) -> first map build -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3.
+Last updated: 2026-11-03 (H3 closed, MAP0 written; tech-writer pass for MAP0 next). **Run order:** H3 done -> MAP0 (written; closes after the tech-writer pass) -> **PL3 (next; rest, incl. H3 items 11-13)** -> BD1 -> BD2 (relics) -> MAP1 (map, gold) -> MAP2 (merchant) -> 3d -> MAP3 (mini-bosses, curse/buff; D33) -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3.
 
 ## What's done
 - **H3 closed 2026-11-03:** gameplay-dev cee653d..3dc74fb, ux 6f89eea, qa PASS 44eff31/f1a3f88, playtest 305b13b (no blocker), docs 8700a4d (incl. D30 in CHANGELOG/RESOLVED). Tag `playtest-2026-11-03-H3`. **Baselines now: suite 1244/1244 (108 suites); arena 30 s seed 1 = 2333565009, 90 s = 819020947; bot sim `-Rooms 20 -Seed 3` = 2281795515.** Playtest findings -> PL3 items 11-13 (volley gaps, pip flash, is the volley fair to the Wizard). OPEN_ITEMS 40 asks the director to play it.
@@ -20,19 +20,20 @@ Last updated: 2026-11-03 (H3 closed, tag `playtest-2026-11-03-H3`). **Run order:
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **Director, 2026-11-03, on H3 (Rogue run):** "it still felt good, never overwhelmed, let's keep going." Recorded in OPEN_ITEMS 40 (Wizard side still open); goes to RESOLVED/CHANGELOG in the MAP0 tech-writer pass.
-- **MAP0 in progress (game-lead).** If cut off: check for `docs/MAP.md`; finish it, then GDD §9 summary, ROADMAP map-build brief, OPEN_ITEMS D31+.
+- **MAP0 written (game-lead):** ee38ac0 (skeleton, OPEN_ITEMS 38 -> 40), e77653d (`docs/MAP.md`), plus the commit after it (GDD §9 [PROPOSED] summary and §14 items 12-13, CLAUDE.md ownership of MAP.md, ROADMAP MAP1/MAP2/MAP3 briefs and run order, BD2 note, DECISIONS "2026-11-03 - MAP0", OPEN_ITEMS D31-D33, STATE). **Waiting on: tech-writer docs pass**, then game-lead marks MAP0 done in ROADMAP (no tag).
+- **Director, 2026-11-03, on H3 (Rogue run):** "it still felt good, never overwhelmed, let's keep going." Kept in OPEN_ITEMS 40 (merged with old 38, Wizard side still open); goes to CHANGELOG in the MAP0 tech-writer pass.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step
-1. **MAP0** (game-lead alone, docs only, no tag; brief in ROADMAP): `docs/MAP.md`, GDD §9 [PROPOSED] summary, first map build brief, up to 3 questions from D31 (one must be the rest node without the heal, D30 note), then a tech-writer CHANGELOG pass.
-2. Then **PL3** (rest, incl. H3 items 11-13; item 13 may produce numbers for the director), **BD1**, **BD2**, the first map build, **3d**, **BD3**.
+1. If MAP0's tech-writer pass isn't in `git log`, run it (handoff: CHANGELOG 2026-11-03 MAP0 entry + the director's H3 Rogue feedback; ARCHITECTURE/README only if they list docs). Then mark MAP0 done in ROADMAP.
+2. **PL3** (ROADMAP brief; items 1-5, 7, 10-13 and tooling). Hand to gameplay-dev first (item 3 knockback clamp, item 13 volley fairness measurement, tooling), then ux-designer (1, 2, 4, 5, 7, 10, 11, 12), qa, playtester, tech-writer, close with a tag.
+3. Then **BD1**, **BD2**, **MAP1**, **MAP2**, **3d**, **MAP3**, **BD3**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).
 
-**D-numbers:** D21-D29 answered (D22 = C, D24 = A, D25 = A, D26 = A, D28 = A, D29 = B on 2026-11-02). D30 = A (2026-11-03). Next free: D31.
+**D-numbers:** D21-D30 answered. D31-D33 open (MAP0: rest stop, map shape, MAP3 timing; defaults A applied). Next free: D34.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions open; eyes 40, 38, 39 (35 after BD2). Answered items are in `docs/RESOLVED.md` (D30 archived in 8700a4d).
+All director-facing items are in `docs/OPEN_ITEMS.md`: D31-D33 (non-blocking); eyes 40, 39 (35 after BD2). Answered items are in `docs/RESOLVED.md` (D30 archived in 8700a4d).

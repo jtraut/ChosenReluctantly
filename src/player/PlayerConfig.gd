@@ -6,7 +6,7 @@ extends RefCounted
 
 const PATH := "res://data/player.json"
 const DEFAULTS: Dictionary = {
-	"dodge": {"enabled": false, "speed": 20.0, "duration": 0.25, "cooldown": 1.2, "block_ticks_after_pause": 2, "charges": 3, "min_charges": 0, "max_charges": 4},
+	"dodge": {"enabled": true, "speed": 20.0, "duration": 0.25, "cooldown": 1.2, "block_ticks_after_pause": 2, "charges": 2, "min_charges": 0, "max_charges": 4},
 	"body": {"collide_with_enemies": true},
 }
 ## body keys (all booleans). collide_with_enemies: player and enemy bodies block each other (both ways).
@@ -23,7 +23,7 @@ const DODGE_RULES: Dictionary = {
 	"max_charges": [0.0, 10.0, true],
 }
 ## H2 dodge-off trial: dodge.enabled (boolean) is the one switch. false = the dodge never fires and its charges do not tick; all the
-## dodge code and tuning stays. It is optional in a file (a missing value reads as DEFAULTS["dodge"]["enabled"], false), and the shipped
+## dodge code and tuning stays. It is optional in a file (a missing value reads as DEFAULTS["dodge"]["enabled"], true), and the shipped
 ## file states it. Turning it on also needs a key for the "dodge" action in data/input_bindings.json (see InputBindings).
 ## The stat name a passive or piece of equipment modifies to change the dodge charge count.
 const CHARGES_STAT := "dodge_charges"

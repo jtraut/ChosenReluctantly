@@ -12,16 +12,20 @@ func _shipped_bindings() -> Dictionary:
 	return JSON.parse_string(FileAccess.get_file_as_string(InputBindings.BINDINGS_PATH)) as Dictionary
 
 
-func test_the_shipped_file_with_the_switch_forced_on_is_rejected_for_the_missing_key_and_names_both_files() -> void:
-	var problems: Array[String] = InputLabels.find_missing_required(_shipped_bindings(), true)
+func test_the_shipped_file_passes_with_the_switch_on_or_off_and_an_unbound_dodge_is_still_rejected_when_on() -> void:
+	assert_array(InputLabels.find_missing_required(_shipped_bindings(), true)).is_empty()
+	assert_array(InputLabels.find_missing_required(_shipped_bindings(), false)).is_empty()
+	var unbound: Dictionary = _shipped_bindings()
+	unbound["dodge"] = []
+	var problems: Array[String] = InputLabels.find_missing_required(unbound, true)
 	assert_array(problems).has_size(1)
 	assert_str(problems[0]).contains("player.json")
 	assert_str(problems[0]).contains("input_bindings.json")
-	assert_array(InputLabels.find_missing_required(_shipped_bindings(), false)).is_empty()
+	assert_array(InputLabels.find_missing_required(unbound, false)).is_empty()
 
 
 func test_a_dodge_key_that_duplicates_a_card_key_is_a_conflict_with_the_switch_on() -> void:
-	for clash: Array in [["Space", false, "slot_4"], ["F", false, "slot_3"], ["Space", true, "dead_card_swap_4"], ["Q", false, "slot_1"]]:
+	for clash: Array in [["Ctrl", false, "slot_4"], ["F", false, "slot_3"], ["Ctrl", true, "dead_card_swap_4"], ["Q", false, "slot_1"]]:
 		var bindings: Dictionary = _shipped_bindings()
 		bindings["dodge"] = [{"type": "key", "keycode": clash[0], "shift": clash[1]}]
 		var conflicts: Array[String] = InputLabels.find_conflicts(bindings)
@@ -48,13 +52,13 @@ func test_a_malformed_dodge_entry_does_not_count_as_a_key() -> void:
 
 
 func test_the_real_startup_check_stays_quiet_on_the_shipped_pair() -> void:
-	assert_bool(PlayerConfig.dodge_enabled()).is_false()
+	assert_bool(PlayerConfig.dodge_enabled()).is_true()
 	assert_array(InputLabels.find_missing_required(_shipped_bindings(), PlayerConfig.dodge_enabled())).is_empty()
 	assert_int(InputBindings.last_conflicts.size()).is_equal(0)
 
 
-func test_space_and_f_key_events_match_their_card_actions_and_never_the_dodge_action() -> void:
-	for pair: Array in [[KEY_SPACE, &"slot_4"], [KEY_F, &"slot_3"]]:
+func test_ctrl_and_f_key_events_match_their_card_actions_and_space_is_only_the_dodge() -> void:
+	for pair: Array in [[KEY_CTRL, &"slot_4"], [KEY_F, &"slot_3"]]:
 		var event := InputEventKey.new()
 		event.physical_keycode = pair[0]
 		event.keycode = pair[0]
@@ -64,3 +68,9 @@ func test_space_and_f_key_events_match_their_card_actions_and_never_the_dodge_ac
 		var shifted := event.duplicate() as InputEventKey
 		shifted.shift_pressed = true
 		assert_bool(shifted.is_action(&"dead_card_swap_%s" % str(pair[1]).trim_prefix("slot_"))).is_true()
+	var space := InputEventKey.new()
+	space.physical_keycode = KEY_SPACE
+	space.keycode = KEY_SPACE
+	space.pressed = true
+	assert_bool(space.is_action(&"dodge")).is_true()
+	assert_bool(space.is_action(&"slot_4")).is_false()

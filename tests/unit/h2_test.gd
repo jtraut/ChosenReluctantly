@@ -1,8 +1,9 @@
 class_name H2Test
 extends GdUnitTestSuite
-## H2 (gameplay-dev): the dodge-off trial. The shipped data has dodge.enabled = false and no key on the dodge action; Space casts
-## Movement (slot_4) and Shift+Space swaps it, F and Shift+F do the same for Utility (slot_3). Switch-on behaviour is covered by the
-## dodge suites (p_dodge_test and others) through DodgeSwitch. Game Over ignores Space and waits out the arm delay.
+## H2 (gameplay-dev), updated for H3: the dodge switch, the screens that swallow a mashed Space, and the Movement/Utility keys. H2 shipped
+## the dodge off with Space on Movement; H3 turned the dodge back on (Space) and moved Movement to Ctrl (Shift+Ctrl swaps), so the
+## switch-off cases force the switch off with PlayerConfig.set_dodge_enabled(false). Utility is still F and Shift+F.
+## Game Over and the class pick still ignore Space and wait out the arm delay.
 
 const MAIN_SCENE_PATH := "res://scenes/main/Main.tscn"
 const DEFAULTS := "res://data/settings.json"
@@ -65,13 +66,13 @@ func _key(code: Key, pressed: bool, shift: bool = false) -> void:
 
 # ---- The data ----
 
-func test_the_shipped_player_file_is_valid_and_has_the_dodge_off() -> void:
+func test_the_shipped_player_file_is_valid_and_has_the_dodge_on() -> void:
 	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(PlayerConfig.PATH))
 	assert_array(PlayerConfig.validate(parsed)).is_empty()
 	assert_bool(typeof((parsed as Dictionary)["dodge"]["enabled"]) == TYPE_BOOL).override_failure_message("the shipped file must state dodge.enabled").is_true()
-	assert_bool(bool((parsed as Dictionary)["dodge"]["enabled"])).is_false()
-	assert_bool(PlayerConfig.dodge_enabled()).is_false()
-	assert_bool(bool(PlayerConfig.DEFAULTS["dodge"]["enabled"])).override_failure_message("the code fallback matches the shipped value").is_false()
+	assert_bool(bool((parsed as Dictionary)["dodge"]["enabled"])).is_true()
+	assert_bool(PlayerConfig.dodge_enabled()).is_true()
+	assert_bool(bool(PlayerConfig.DEFAULTS["dodge"]["enabled"])).override_failure_message("the code fallback matches the shipped value").is_true()
 
 
 func test_enabled_must_be_a_boolean_and_may_be_missing() -> void:
@@ -88,19 +89,19 @@ func test_enabled_must_be_a_boolean_and_may_be_missing() -> void:
 
 
 func test_set_dodge_enabled_flips_the_cache_and_reload_restores_the_file() -> void:
-	PlayerConfig.set_dodge_enabled(true)
-	assert_bool(PlayerConfig.dodge_enabled()).is_true()
-	PlayerConfig.reload()
+	PlayerConfig.set_dodge_enabled(false)
 	assert_bool(PlayerConfig.dodge_enabled()).is_false()
+	PlayerConfig.reload()
+	assert_bool(PlayerConfig.dodge_enabled()).is_true()
 
 
-func test_the_shipped_bindings_pass_the_validator_with_the_dodge_unbound() -> void:
+func test_the_shipped_bindings_pass_the_validator_with_the_dodge_on_space() -> void:
 	var bindings: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(InputBindings.BINDINGS_PATH))
 	assert_array(InputLabels.find_conflicts(bindings)).is_empty()
 	assert_array(InputLabels.find_missing_required(bindings, PlayerConfig.dodge_enabled())).is_empty()
 	assert_bool(bindings.has("dodge")).is_true()
-	assert_array(bindings["dodge"] as Array).is_empty()
-	assert_array(InputMap.action_get_events(&"dodge")).is_empty()
+	assert_array(bindings["dodge"] as Array).has_size(1)
+	assert_array(InputMap.action_get_events(&"dodge")).has_size(1)
 	assert_int(InputBindings.last_conflicts.size()).is_equal(0)
 
 
@@ -118,16 +119,17 @@ func test_the_validator_rule_for_an_unbound_action() -> void:
 
 
 func test_the_slot_keys_and_labels() -> void:
-	assert_str(InputLabels.slot_key("movement")).is_equal("Space")
-	assert_str(InputLabels.slot_swap_key("movement")).is_equal("Shift+Space")
+	assert_str(InputLabels.slot_key("movement")).is_equal("Ctrl")
+	assert_str(InputLabels.slot_swap_key("movement")).is_equal("Shift+Ctrl")
 	assert_str(InputLabels.slot_key("utility")).is_equal("F")
 	assert_str(InputLabels.slot_swap_key("utility")).is_equal("Shift+F")
-	assert_str(InputLabels.for_action(&"dodge")).is_equal(InputLabels.UNBOUND)
+	assert_str(InputLabels.for_action(&"dodge")).is_equal("Space")
 
 
 # ---- Switch off, in the scene ----
 
 func test_with_the_switch_off_a_dodge_press_does_nothing_and_charges_do_not_tick() -> void:
+	PlayerConfig.set_dodge_enabled(false)
 	var player := await _spawn()
 	assert_bool(player.dodge_enabled()).is_false()
 	var state: Dictionary = player.get_dodge_state()
@@ -158,17 +160,17 @@ func test_switching_on_brings_the_dodge_back() -> void:
 	assert_bool(player._forced_move_time_remaining > 0.0 or player.dodge_charges.current < player.dodge_charges_max()).is_true()
 
 
-func test_space_casts_movement_with_hold_to_preview_and_cast_on_release() -> void:
+func test_ctrl_casts_movement_with_hold_to_preview_and_cast_on_release() -> void:
 	var player := await _spawn()
-	_key(KEY_SPACE, true)
+	_key(KEY_CTRL, true)
 	await _frames(3)
 	assert_bool(player.cast_input.is_previewing()).is_true()
 	assert_int(player.cast_input.preview_slot).is_equal(CardSlotController.SLOT_TYPE_ORDER.find("movement"))
 	assert_array(_casts).is_empty()
-	_key(KEY_SPACE, false)
+	_key(KEY_CTRL, false)
 	await _frames(3)
 	assert_array(_casts).contains_exactly(["movement"])
-	assert_int(player.dodge_charges.current).override_failure_message("Space must not also dodge").is_equal(player.dodge_charges_max())
+	assert_int(player.dodge_charges.current).override_failure_message("Ctrl must not also dodge").is_equal(player.dodge_charges_max())
 
 
 func test_f_casts_utility() -> void:
@@ -181,9 +183,9 @@ func test_f_casts_utility() -> void:
 	assert_array(_casts).contains_exactly(["utility"])
 
 
-func test_shift_space_and_shift_f_swap_without_casting_or_previewing() -> void:
+func test_shift_ctrl_and_shift_f_swap_without_casting_or_previewing() -> void:
 	var player := await _spawn()
-	for pair: Array in [[KEY_SPACE, "movement"], [KEY_F, "utility"]]:
+	for pair: Array in [[KEY_CTRL, "movement"], [KEY_F, "utility"]]:
 		var slot_type: String = pair[1]
 		assert_float(player.card_slots.get_slot(slot_type).cooldown_remaining).is_equal(0.0)
 		_key(pair[0], true, true)
@@ -207,19 +209,19 @@ func _run_main() -> Main:
 	return main
 
 
-## No Control may hold focus during play (it would take Space as ui_accept), and Space press then release casts Movement once.
-func _assert_space_casts_movement_once(main: Main, where: String) -> void:
+## No Control may hold focus during play (it would take Space as ui_accept), and Ctrl press then release casts Movement once.
+func _assert_ctrl_casts_movement_once(main: Main, where: String) -> void:
 	assert_object(main.get_viewport().gui_get_focus_owner()).override_failure_message("%s: a Control still has focus" % where).is_null()
 	_casts.clear()
 	main.player.card_slots.get_slot("movement").cooldown_remaining = 0.0
-	_key(KEY_SPACE, true)
+	_key(KEY_CTRL, true)
 	await _frames(2)
-	_key(KEY_SPACE, false)
+	_key(KEY_CTRL, false)
 	await _frames(3)
-	assert_array(_casts).override_failure_message("%s: Space did not cast Movement exactly once" % where).contains_exactly(["movement"])
+	assert_array(_casts).override_failure_message("%s: Ctrl did not cast Movement exactly once" % where).contains_exactly(["movement"])
 
 
-func test_space_casts_movement_after_the_class_pick_closes() -> void:
+func test_ctrl_casts_movement_after_the_class_pick_closes() -> void:
 	ClassPickScreen.enabled_override = true
 	var main: Main = await _run_main()
 	var screen := main.get_node("ClassPickScreen") as ClassPickScreen
@@ -232,10 +234,10 @@ func test_space_casts_movement_after_the_class_pick_closes() -> void:
 	screen.confirm()
 	await _frames(3)
 	assert_bool(screen.is_open()).is_false()
-	await _assert_space_casts_movement_once(main, "after the class pick")
+	await _assert_ctrl_casts_movement_once(main, "after the class pick")
 
 
-func test_space_casts_movement_after_a_run_prompt_closes() -> void:
+func test_ctrl_casts_movement_after_a_run_prompt_closes() -> void:
 	var main: Main = await _run_main()
 	var prompt := main.get_node("RoomClearedScreen") as RunPromptScreen
 	prompt.show_content({"title": "t", "rows": [], "button": "Continue"})
@@ -246,10 +248,10 @@ func test_space_casts_movement_after_a_run_prompt_closes() -> void:
 	assert_bool(prompt.visible).override_failure_message("Space confirmed the prompt").is_true()
 	prompt.button.pressed.emit()
 	await _frames(3)
-	await _assert_space_casts_movement_once(main, "after Continue")
+	await _assert_ctrl_casts_movement_once(main, "after Continue")
 
 
-func test_space_casts_movement_after_resuming_from_the_pause_screen() -> void:
+func test_ctrl_casts_movement_after_resuming_from_the_pause_screen() -> void:
 	var main: Main = await _run_main()
 	var settings := main.get_node("SettingsScreen") as SettingsScreen
 	settings.open()
@@ -263,7 +265,7 @@ func test_space_casts_movement_after_resuming_from_the_pause_screen() -> void:
 	assert_bool(settings.is_open()).is_false()
 	assert_array(_casts).override_failure_message("Space on Resume also cast").is_empty()
 	await _frames(8)  # past the post-resume dodge/cast block ticks
-	await _assert_space_casts_movement_once(main, "after Resume")
+	await _assert_ctrl_casts_movement_once(main, "after Resume")
 
 
 # ---- Game Over ----

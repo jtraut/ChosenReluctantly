@@ -880,13 +880,54 @@ func _unhandled_input(event: InputEvent) -> void:
 		_attack_latch[&"light"] = true
 	if event.is_action_pressed(&"attack_heavy", false):
 		_attack_latch[&"heavy"] = true
+	if _swap_by_late_modifier(event):
+		return
 	for i in range(CardSlotController.SLOT_TYPE_ORDER.size()):
 		if event.is_action_pressed(SWAP_ACTIONS[i], false, true):
 			card_slots.try_swap(CardSlotController.slot_type_at_index(i))
-		elif event.is_action_pressed(USE_ACTIONS[i], false, true):
+			_drop_preview_of(i)  # a swap never casts
+		elif _is_slot_press(event, USE_ACTIONS[i]):
 			_queue_cast(cast_input.press(i, Settings.casts_on_release()))
 		elif event.is_action_released(USE_ACTIONS[i]):
 			_queue_cast(cast_input.release(i))
+
+
+## Ends the held preview if it is slot `slot_index`'s (no cast); another slot's preview is untouched.
+func _drop_preview_of(slot_index: int) -> void:
+	if cast_input.preview_slot == slot_index:
+		cast_input.cancel()
+
+
+## A slot key press. Exact match would drop a slot key pressed while Ctrl is held (Ctrl is the Movement key now, so it
+## is held during previews), so modifiers other than Shift are ignored; Shift still means "swap", not "cast"
+## (Shift+Q must not also cast Q). Held Shift with a binding that itself has Shift is not a thing for slot keys.
+func _is_slot_press(event: InputEvent, action: StringName) -> bool:
+	if not event.is_action_pressed(action, false, false):
+		return false
+	var key_event := event as InputEventKey
+	return key_event == null or not key_event.shift_pressed
+
+
+## Ctrl (a modifier key) is the Movement slot key, and Shift+Ctrl swaps. When Ctrl goes down first the Shift press
+## arrives as a Shift key event that no action matches (the swap binding is "Ctrl, shift flag"), so: a Shift press
+## while a modifier-keyed slot key is held is that slot's swap. The preview Ctrl started is dropped, so releasing
+## Ctrl does not cast. Measured with real key events on Windows (Godot 4.7.2): a modifier key's own event never
+## carries its own flag, and the key pressed second carries the first one's flag.
+func _swap_by_late_modifier(event: InputEvent) -> bool:
+	var key_event := event as InputEventKey
+	if key_event == null or not key_event.pressed or key_event.echo or key_event.physical_keycode != KEY_SHIFT:
+		return false
+	for i in range(CardSlotController.SLOT_TYPE_ORDER.size()):
+		for bound: InputEvent in InputMap.action_get_events(SWAP_ACTIONS[i]):
+			var bound_key := bound as InputEventKey
+			if bound_key == null or not bound_key.shift_pressed:
+				continue
+			var code: Key = bound_key.physical_keycode
+			if (code == KEY_CTRL or code == KEY_ALT) and Input.is_physical_key_pressed(code):
+				_drop_preview_of(i)
+				card_slots.try_swap(CardSlotController.slot_type_at_index(i))
+				return true
+	return false
 
 
 ## What the held-key preview shows right now, for the HUD and tests:

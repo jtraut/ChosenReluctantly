@@ -64,28 +64,27 @@ func test_status_word_at_zero_charges_and_no_pips() -> void:
 	assert_str(String(cfg["dodge_empty_word"])).is_not_empty()
 
 
-func test_rogue_shows_three_pips_and_wizard_two() -> void:
+func test_rogue_shows_two_pips_and_wizard_one() -> void:
 	var rogue := _spawn_main("rogue")
 	await _idle(3)
-	assert_int(rogue.hud.dodge_pips.pip_count()).is_equal(3)
-	assert_int(rogue.hud.dodge_pips.ready_count()).is_equal(3)
+	assert_int(rogue.hud.dodge_pips.pip_count()).is_equal(2)
+	assert_int(rogue.hud.dodge_pips.ready_count()).is_equal(2)
 	assert_str(rogue.hud.dodge_pips.word()).is_empty()
 	var wizard := _spawn_main("wizard")
 	await _idle(3)
-	assert_int(wizard.hud.dodge_pips.pip_count()).is_equal(2)
-	assert_int(wizard.hud.dodge_pips.ready_count()).is_equal(2)
+	assert_int(wizard.hud.dodge_pips.pip_count()).is_equal(1)
+	assert_int(wizard.hud.dodge_pips.ready_count()).is_equal(1)
 
 
 func test_pips_follow_spending_and_the_zero_state() -> void:
 	var main := _spawn_main("rogue")
 	await _idle(3)
 	var player := main.player
-	assert_bool(player.dodge_charges.try_spend(3)).is_true()
+	assert_bool(player.dodge_charges.try_spend(2)).is_true()
 	await _idle(2)
-	assert_int(main.hud.dodge_pips.ready_count()).is_equal(2)
-	assert_int(main.hud.dodge_pips.pip_count()).is_equal(3)
-	player.dodge_charges.try_spend(3)
-	player.dodge_charges.try_spend(3)
+	assert_int(main.hud.dodge_pips.ready_count()).is_equal(1)
+	assert_int(main.hud.dodge_pips.pip_count()).is_equal(2)
+	player.dodge_charges.try_spend(2)
 	await _idle(2)
 	assert_int(main.hud.dodge_pips.ready_count()).is_equal(0)
 	assert_str(main.hud.dodge_pips.word()).is_equal("EMPTY")
@@ -154,15 +153,15 @@ func test_boss_bar_shows_staggered_then_hands_over_to_invulnerable() -> void:
 
 
 ## H2: the pip row (and its key column) is hidden while the dodge switch is off, and back when it is on. No "?" ever shows.
-func test_pips_hidden_with_the_switch_off_and_shown_with_it_on() -> void:
-	var off := _spawn_main("rogue")
+func test_pips_shown_with_the_switch_on_hidden_when_it_is_turned_off() -> void:
+	var main := _spawn_main("rogue")
 	await _idle(3)
-	assert_bool(PlayerConfig.dodge_enabled()).override_failure_message("shipped data has the dodge off").is_false()
-	assert_bool(off.hud.dodge_pips.visible).is_false()
-	DodgeSwitch.enable()
+	assert_bool(PlayerConfig.dodge_enabled()).override_failure_message("H3 ships the dodge on").is_true()
+	assert_bool(main.hud.dodge_pips.visible).is_true()
+	assert_str(InputLabels.for_action(&"dodge")).override_failure_message("the on state shows a real key, not '?'").is_equal("Space")
+	PlayerConfig.set_dodge_enabled(false)
 	await _idle(3)
-	assert_bool(off.hud.dodge_pips.visible).is_true()
-	assert_str(InputLabels.for_action(&"dodge")).override_failure_message("the on state shows a real key, not '?'").is_not_equal("?")
-	DodgeSwitch.reset()
+	assert_bool(main.hud.dodge_pips.visible).is_false()
+	PlayerConfig.reload()
 	await _idle(3)
-	assert_bool(off.hud.dodge_pips.visible).is_false()
+	assert_bool(main.hud.dodge_pips.visible).is_true()

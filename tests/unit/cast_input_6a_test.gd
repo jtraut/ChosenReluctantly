@@ -285,7 +285,9 @@ func test_shift_slot_key_is_a_swap_not_a_cast_and_a_shift_release_still_ends_the
 	assert_array(_casts).has_size(1)
 
 
-func test_ctrl_slot_key_does_nothing_and_plain_slot_key_still_previews() -> void:
+func test_ctrl_held_does_not_block_a_slot_key_and_plain_slot_key_previews() -> void:
+	# H3: Ctrl is the Movement key and is held during previews, so a slot key pressed with Ctrl down must still work
+	# (it used to be dropped by the exact-match rule). Shift is what turns a slot key into a swap.
 	var player := await _ready_player()
 	var ctrl := InputEventKey.new()
 	ctrl.physical_keycode = _slot_key(SLOT_1)
@@ -293,8 +295,7 @@ func test_ctrl_slot_key_does_nothing_and_plain_slot_key_still_previews() -> void
 	ctrl.pressed = true
 	player._unhandled_input(ctrl)
 	await _frames(3)
-	assert_array(_casts).is_empty()
-	assert_bool(player.cast_input.is_previewing()).is_false()
+	assert_int(player.cast_input.preview_slot).is_equal(0)
 	assert_float(player.card_slots.get_slot("attack_single").cooldown_remaining).override_failure_message("Ctrl+slot key must not swap").is_equal(0.0)
 	var up := InputEventKey.new()
 	up.physical_keycode = _slot_key(SLOT_1)
@@ -302,7 +303,7 @@ func test_ctrl_slot_key_does_nothing_and_plain_slot_key_still_previews() -> void
 	up.pressed = false
 	player._unhandled_input(up)
 	await _frames(3)
-	assert_array(_casts).override_failure_message("Ctrl+slot key must not cast").is_empty()
+	assert_int(_casts.size()).override_failure_message("Ctrl+slot key release must cast once").is_equal(1)
 	var plain := InputEventKey.new()
 	plain.physical_keycode = _slot_key(SLOT_1)
 	plain.pressed = true

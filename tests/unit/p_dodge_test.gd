@@ -40,6 +40,14 @@ func _spawn_main(character: String = "") -> Main:
 	return main
 
 
+## The pool tests below were written for a three-charge pool; H3 ships Rogue 2 / Wizard 1, so give the player +1 charge
+## (a stat modifier, the same way a passive would) and refill.
+func _three_charges(main: Main) -> void:
+	main.player.stat_modifiers.add_modifier("dodge_charges", "h3_test_base", StatModifiers.ADDITIVE, 1.0)
+	await _frames(2)
+	main.player.reset_dodge_charges()
+
+
 func _tap_dodge() -> void:
 	TestInput.press(&"dodge")
 	await get_tree().physics_frame
@@ -145,13 +153,13 @@ func test_zero_cooldown_refills_at_once_without_looping_forever() -> void:
 
 func test_shipped_charge_data() -> void:
 	var dodge: Dictionary = PlayerConfig.dodge()
-	assert_int(int(dodge["charges"])).is_equal(3)
+	assert_int(int(dodge["charges"])).is_equal(2)
 	assert_int(int(dodge["min_charges"])).is_equal(0)
 	assert_int(int(dodge["max_charges"])).is_equal(4)
 	assert_float(float(dodge["cooldown"])).is_equal(1.2)
 	assert_float(float(dodge["speed"]) * float(dodge["duration"])).is_equal_approx(5.0, 0.0001)
-	assert_int(CharacterDatabase.dodge_charges("rogue", 99)).is_equal(3)
-	assert_int(CharacterDatabase.dodge_charges("wizard", 99)).is_equal(2)
+	assert_int(CharacterDatabase.dodge_charges("rogue", 99)).is_equal(2)
+	assert_int(CharacterDatabase.dodge_charges("wizard", 99)).is_equal(1)
 	assert_int(CharacterDatabase.dodge_charges("nobody", 7)).override_failure_message("falls back to the player.json default").is_equal(7)
 	assert_array(CharacterDatabase.validate_shipped()).is_empty()
 
@@ -190,14 +198,14 @@ func test_character_tuning_validation() -> void:
 func test_the_player_reads_its_class_charge_count() -> void:
 	var rogue := _spawn_main("rogue")
 	await _frames(2)
-	assert_int(rogue.player.dodge_charges_max()).is_equal(3)
-	assert_int(rogue.player.get_dodge_state()["current"]).is_equal(3)
+	assert_int(rogue.player.dodge_charges_max()).is_equal(2)
+	assert_int(rogue.player.get_dodge_state()["current"]).is_equal(2)
 	var wizard := _spawn_main("wizard")
 	await _frames(2)
-	assert_int(wizard.player.dodge_charges_max()).is_equal(2)
+	assert_int(wizard.player.dodge_charges_max()).is_equal(1)
 	var state: Dictionary = wizard.player.get_dodge_state()
-	assert_int(int(state["current"])).is_equal(2)
-	assert_int(int(state["max"])).is_equal(2)
+	assert_int(int(state["current"])).is_equal(1)
+	assert_int(int(state["max"])).is_equal(1)
 	assert_bool(bool(state["recharging"])).is_false()
 	assert_float(float(state["recharge_progress"])).is_equal(1.0)
 
@@ -214,6 +222,7 @@ func test_a_class_count_still_clamps_after_modifiers() -> void:
 func test_dodging_spends_charges_and_cannot_restart_during_the_roll() -> void:
 	var main := _spawn_main("rogue")
 	await _frames(3)
+	await _three_charges(main)
 	var player := main.player
 	var seen: Array[int] = []
 	player.dodge_charges_changed.connect(func(current: int, _maximum: int) -> void: seen.append(current))
@@ -255,19 +264,20 @@ func test_the_charge_comes_back_after_the_cooldown_on_the_player() -> void:
 	var player := main.player
 	await _tap_dodge()
 	await _frames(2)
-	assert_int(player.dodge_charges.current).is_equal(1)
+	assert_int(player.dodge_charges.current).is_equal(0)
 	await _frames(40)
 	var mid: Dictionary = player.get_dodge_state()
 	assert_float(float(mid["recharge_progress"])).is_between(0.2, 0.9)
 	await _frames(20)
-	assert_int(player.dodge_charges.current).override_failure_message("still 1 at about 1.1 s").is_equal(1)
+	assert_int(player.dodge_charges.current).override_failure_message("still 0 at about 1.0 s").is_equal(0)
 	await _frames(40)
-	assert_int(player.dodge_charges.current).is_equal(2)
+	assert_int(player.dodge_charges.current).is_equal(1)
 
 
 func test_lowering_the_maximum_mid_run_clamps_the_player() -> void:
 	var main := _spawn_main("rogue")
 	await _frames(3)
+	await _three_charges(main)
 	main.player.stat_modifiers.add_modifier("dodge_charges", "curse", StatModifiers.ADDITIVE, -2.0)
 	await _frames(2)
 	assert_int(main.player.dodge_charges.current).is_equal(1)
@@ -280,6 +290,7 @@ func test_lowering_the_maximum_mid_run_clamps_the_player() -> void:
 func test_the_signal_fires_when_only_the_maximum_changes() -> void:
 	var main := _spawn_main("rogue")
 	await _frames(3)
+	await _three_charges(main)
 	var seen: Array[Vector2i] = []
 	main.player.dodge_charges_changed.connect(func(current: int, maximum: int) -> void: seen.append(Vector2i(current, maximum)))
 	main.player.stat_modifiers.add_modifier("dodge_charges", "boots", StatModifiers.ADDITIVE, 1.0)
@@ -293,6 +304,7 @@ func test_the_signal_fires_when_only_the_maximum_changes() -> void:
 func test_reset_dodge_charges_and_a_fresh_room_start_full() -> void:
 	var main := _spawn_main("rogue")
 	await _frames(3)
+	await _three_charges(main)
 	await _tap_dodge()
 	await _frames(2)
 	assert_int(main.player.dodge_charges.current).is_equal(2)
@@ -300,7 +312,7 @@ func test_reset_dodge_charges_and_a_fresh_room_start_full() -> void:
 	assert_int(main.player.dodge_charges.current).is_equal(3)
 	var fresh := _spawn_main("rogue")
 	await _frames(2)
-	assert_int(fresh.player.dodge_charges.current).is_equal(3)
+	assert_int(fresh.player.dodge_charges.current).is_equal(2)
 
 
 func test_a_dead_player_cannot_dodge() -> void:
@@ -310,7 +322,7 @@ func test_a_dead_player_cannot_dodge() -> void:
 	await _frames(2)
 	await _tap_dodge()
 	await _frames(2)
-	assert_int(main.player.dodge_charges.current).is_equal(3)
+	assert_int(main.player.dodge_charges.current).is_equal(2)
 
 
 # ---- D13 and 4e: Recovery cooldowns ----

@@ -429,6 +429,7 @@ The director's words: "just an idea to note, not a hard plan yet." It's a possib
   - elites: management-level enemies;
   - mini-bosses (end of acts 1-2): chief and VP level;
   - final boss: the CEO or chairman.
+- **The run is a skyscraper (director, 2026-11-04):** you work your way up the company's office tower. The run starts on floor 1 and ends with the final boss on floor 30. You enter and leave an elevator between rooms. This matches the run's three acts of 10 rooms (§9): the mini-bosses would sit on floors 10 and 20. Open: how the branching map (MAP.md) reads in the tower, for example a choice of departments on a floor or elevator buttons for the next stop.
 - **Encounters:**
   - **Friends:** like-minded skeptics, still cheerful, who give you the tools to win and shut the company down. They're merchants (§9, MAP2) and helpful random events (MAP4).
   - **Corporate loyalists:** random encounters with people who sided with the company. They give a curse (D38) or make you pay a chunk of gold.

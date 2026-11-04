@@ -1498,3 +1498,38 @@ gameplay-dev made these in a141865..7c5a66b. All are cheap to change.
 - **`status_damage_mult`** is read by status ticks only. Zone ticks don't read it, but Burn that a zone applies is a status, so it does.
 - **`anchor: "caster"` together with `max_range`** is a validation error, not an override.
 - **Dodge vs Movement casts:** the dodge does **not** count as a Movement cast for `cast_within` or primes. That is current behaviour and the D39 default (A), because the dodge stays a pure escape (BUILD_DEPTH §8). Rejected for now: counting it, which would make Hit and Run's payoffs free on every dodge. Asked as D39.
+
+## 2026-11-04 - BD1-B: new standard baselines, and gameplay-dev's calls (game-lead)
+- **Hashes rebaselined.** The brief expected the standard-policy hashes to hold, and they didn't.
+  - **Cause:** the arena Player and the bot sim fill slots from *every* card in the owned pools (`CardSlotController._owned_card_ids_for_slot`), so any new card moves them. gameplay-dev proved the 8 new cards are the only cause: taking them out at HEAD restores 2333565009 / 1212800 / 2281795515 exactly.
+  - **New baselines:** arena 30 s seed 1 = **1897787086**; 90 s = **4207041509**; bot sim `-Rooms 20 -Seed 3` = **846850403**.
+  - **Rejected:** adding an availability field now to keep the new cards out of pool-fill. That is 3d item B (D23), and pulling it forward would widen BD1.
+  - **Side effect:** new runs can now roll the new cards into their random starting slots, as any pool card can. The preset decks are unchanged. The playtester should say if that muddies the archetypes. 3d's `starter`/`reward` availability is where this gets controlled.
+- **Plan baselines** (`-Rooms 20 -Seed 3 -Plan`):
+  - standard 2387448677
+  - rogue-kindling 3642396276
+  - rogue-hit-and-run 212612574
+  - wizard-controlled-burn 1247966865
+  - wizard-departure-lounge 1255552678
+  - Wave sim arena `-Plan` 30 s seed 1: state_hash 1160207333.
+- **gameplay-dev's calls (3e297d5..49b117b):**
+  - **Bot sims:** the plan bot spans both sims through a shared `PlanPolicy`.
+    - `bot_sim` uses a stand-in caster and a hand-stepped CombatEvents clock (`CombatEventsRelay.step`). It fakes one enemy's Burn and Zone state for 4 s after a matching cast.
+    - The plan bot treats the dodge as "ready" while it has a charge, rather than by the sim's throttle. Otherwise it would act like D39 = B.
+  - **D39 switch:** `data/player.json` `dodge.counts_as_movement_cast` (false = A), in one place (`CombatEventsRelay.notify_dodge`).
+  - **Launch and capture tooling:**
+    - A scenario with its own `character` plus a different `--class` is refused with exit 2, following the `--deck` precedent.
+    - `-StartRoom` past the end prints a plain "note:", because the wrappers fail on any WARNING line.
+    - Capture states that need a run go in `tools/capture_presets.json` (`-Preset`), not `scenarios.json`.
+    - The forced reward offer `--run-offer=a+b+c` is capture-only.
+  - **Slot glow:** a slot glows when any of its conditional effects is live.
+  - **Numbers §5 left open:**
+    - Drive-By: cone 1.8 / 45°, knockback 3.
+    - Momentum: speed 16.
+    - Slow Burn: range 8, status 3 s.
+    - Parting Gift: blink 5 m, +0.5 s cooldown.
+    - Heat Sink: range 8 on both discs.
+    - Well, Actually: knockback 6 on the conditional hit.
+    - These are all data.
+  - **Dodge-pressed leak between suites:** not isolated. Every dodge suite now releases the action in `DodgeSwitch.reset()`.
+- **Commit trailers:** 22ee886 and 49b117b carry gameplay-dev's own model trailer. They were left as they are; history isn't rewritten for a trailer.

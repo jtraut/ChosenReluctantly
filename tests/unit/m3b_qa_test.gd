@@ -359,10 +359,11 @@ func test_after_arming_space_never_picks_but_enter_on_the_focused_option_does() 
 		await get_tree().process_frame
 	assert_bool(state.has_pending()).is_true()
 	assert_int(state.deck.size()).is_equal(deck_size)
-	# Digits only move the highlight.
+	# Digits do nothing (PL3); arrows move the highlight, so move it by focus here.
 	_key(KEY_2)
 	await _frames(2)
 	assert_bool(state.has_pending()).is_true()
+	(screen.options_box.get_child(1) as Button).grab_focus()
 	assert_bool((screen.options_box.get_child(1) as Button).has_focus()).is_true()
 	var expected := state.offer[1]
 	var old_id := main.get_instance_id()

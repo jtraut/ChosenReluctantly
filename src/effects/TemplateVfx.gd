@@ -31,7 +31,7 @@ static func projectile_muzzle(pool: EffectPool, origin: Vector3, look: Dictionar
 static func projectile_ball(pool: EffectPool, projectile: Node3D, hit_radius: float, look: Dictionary) -> PooledEffect:
 	if pool == null or projectile == null:
 		return null
-	var effect: PooledEffect = pool.play(EffectPool.Shape.SPHERE, projectile.global_position, VfxSizing.projectile_radius(hit_radius), look["color"], 1.0, 1.0, 1.0, 1.0, 1.0)
+	var effect: PooledEffect = pool.play(EffectPool.Shape.SPHERE, projectile.global_position, VfxSizing.projectile_radius(hit_radius) * float(look.get("ball_scale", 1.0)), look["color"], 1.0, 1.0, 1.0, 1.0, 1.0)
 	if effect == null:
 		return null
 	return effect.held().following(projectile, Vector3.ZERO)
@@ -96,6 +96,25 @@ static func enemy_shot_lane(pool: EffectPool, origin: Vector3, direction: Vector
 	var lane: PooledEffect = pool.play(EffectPool.Shape.STRIP, origin, VfxSizing.lateral_reach_vs_player(hit_radius), color,
 			duration, 1.0, 1.0, a_from, a_to, yaw)
 	return lane.lengthened(length) if lane != null else null
+
+
+## The safe-gap tint of a fan (see VolleyGaps): green strips between the lanes where standing is clear, brightening with
+## the lanes. `lane_half_width` is the drawn lane's half width. Returns the effects to hold with the lanes.
+static func boss_volley_gaps(pool: EffectPool, origin: Vector3, aim: Vector3, angles: Array[float], lane_half_width: float, duration: float) -> Array[PooledEffect]:
+	var parts: Array[PooledEffect] = []
+	if pool == null or aim.length_squared() < 0.0001 or duration <= 0.0:
+		return parts
+	var color: Color = VfxConfig.color_of("boss_volley_gap_color")
+	var segments: Array[Dictionary] = VolleyGaps.segments(angles, lane_half_width, VfxConfig.marker("boss_volley_gap_min_half_width"),
+			VfxConfig.marker("boss_volley_gap_segment_length"), VfxConfig.marker("boss_volley_lane_max_length"))
+	for seg: Dictionary in segments:
+		var dir: Vector3 = aim.normalized().rotated(Vector3.UP, deg_to_rad(float(seg["angle"])))
+		var yaw: float = atan2(-dir.x, -dir.z)
+		var strip: PooledEffect = pool.play(EffectPool.Shape.STRIP, origin + dir * float(seg["start"]), float(seg["half_width"]), color, duration, 1.0, 1.0,
+				VfxConfig.marker("boss_volley_gap_alpha_start"), VfxConfig.marker("boss_volley_gap_alpha_end"), yaw)
+		if strip != null:
+			parts.append(strip.lengthened(float(seg["length"])))
+	return parts
 
 
 ## A charging enemy's wind-up lane: the strip it will run along, as wide as the sphere it sweeps reaches into the player
@@ -254,6 +273,25 @@ static func buff(pool: EffectPool, position: Vector3) -> void:
 	var color: Color = VfxConfig.buff_color()
 	pool.play(EffectPool.Shape.RING, position + Vector3(0.0, 0.02, 0.0), 0.6, color, 0.5, 0.7, 1.6, 0.9, 0.0)
 	pool.play(EffectPool.Shape.RING, position + Vector3(0.0, 0.04, 0.0), 0.6, lighter(color, 0.4), 0.5, 0.7, 1.6, 0.9, 0.0).delayed(0.2)
+
+
+## Persistent buff cue (data/vfx.json "buff_cues", keyed by the buffed stat): a pulsing ground ring and a faint bubble
+## that follow `target` for `duration`. Shape and brightness, not just colour: a ring plus a bubble round the body.
+## Returns the effects (empty with no pool, no target or no cue for the stat).
+static func buff_aura(pool: EffectPool, target: Node3D, cue: Dictionary, duration: float) -> Array[PooledEffect]:
+	var effects: Array[PooledEffect] = []
+	if pool == null or target == null or cue.is_empty() or duration <= 0.0:
+		return effects
+	var color: Color = Color.html(String(cue["color"]))
+	var pulse: float = float(cue["pulse"])
+	var hz: float = float(cue["pulse_hz"])
+	var ring: PooledEffect = pool.play(EffectPool.Shape.RING, target.global_position, float(cue["ring_radius"]), color, duration, 1.0, 1.0, float(cue["ring_alpha"]), float(cue["ring_alpha"]) * 0.6)
+	if ring != null:
+		effects.append(ring.following(target, Vector3(0.0, 0.03, 0.0)).pulsing(pulse, hz))
+	var bubble: PooledEffect = pool.play(EffectPool.Shape.SPHERE, target.global_position, float(cue["bubble_radius"]), lighter(color, 0.3), duration, 1.0, 1.0, float(cue["bubble_alpha"]), float(cue["bubble_alpha"]) * 0.6)
+	if bubble != null:
+		effects.append(bubble.following(target, Vector3(0.0, float(cue["bubble_height"]), 0.0)).pulsing(pulse, hz))
+	return effects
 
 
 # --- status ------------------------------------------------------------------

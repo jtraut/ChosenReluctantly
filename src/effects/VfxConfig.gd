@@ -71,11 +71,17 @@ const DEFAULTS: Dictionary = {
 	"reticle_marker_alpha": 0.9,
 	"dash_arrow_length": 1.0,
 	"dash_arrow_half_width": 0.55,
+	"boss_volley_gap_color": "#7dff9a",
+	"boss_volley_gap_min_half_width": 0.2,
+	"boss_volley_gap_segment_length": 1.0,
+	"boss_volley_gap_alpha_start": 0.12,
+	"boss_volley_gap_alpha_end": 0.55,
+	"buff_cues": {},
 	"team_tints": {"enemy": {"color": "#ff3d8b", "neutral_mix": 1.0, "element_mix": 0.4}},
 }
 
 ## Ground marker tuning (4c): alpha 0..1, durations in seconds, half width in meters.
-const MARKER_KEYS: Array[String] = ["enemy_shot_lane_alpha", "boss_lane_alpha", "boss_volley_lane_alpha_start", "boss_volley_lane_alpha_end", "boss_volley_lane_max_length", "projectile_lane_alpha", "projectile_lane_duration",
+const MARKER_KEYS: Array[String] = ["enemy_shot_lane_alpha", "boss_lane_alpha", "boss_volley_lane_alpha_start", "boss_volley_lane_alpha_end", "boss_volley_lane_max_length", "boss_volley_gap_min_half_width", "boss_volley_gap_segment_length", "boss_volley_gap_alpha_start", "boss_volley_gap_alpha_end", "projectile_lane_alpha", "projectile_lane_duration",
 		"dash_path_alpha", "dash_path_duration", "dash_path_half_width",
 		"cone_duration", "cone_alpha", "cone_blade_duration", "cone_blade_alpha", "cone_enemy_duration_scale",
 		"heal_sparkle_size", "heal_sparkle_duration", "heal_sparkle_rise", "heal_ring_radius", "heal_ring_alpha", "heal_ring_duration",
@@ -87,7 +93,7 @@ const MARKER_KEYS: Array[String] = ["enemy_shot_lane_alpha", "boss_lane_alpha", 
 		"bleed_drop_duration", "bleed_drop_fall", "bleed_drop_alpha", "heal_mote_duration", "heal_mote_rise", "heal_mote_size",
 		"reticle_range_alpha", "reticle_range_thickness", "reticle_marker_size", "reticle_marker_alpha", "dash_arrow_length", "dash_arrow_half_width"]
 ## Colours of the cues that no element owns (hex strings).
-const COLOR_KEYS: Array[String] = ["heal_color", "buff_color", "ghost_color", "drain_color"]
+const COLOR_KEYS: Array[String] = ["heal_color", "buff_color", "ghost_color", "drain_color", "boss_volley_gap_color"]
 
 static var _cache: Dictionary = {}
 static var _loaded: bool = false
@@ -121,6 +127,7 @@ static func validate(config: Dictionary) -> Array[String]:
 		if config.has(key) and not (typeof(config[key]) == TYPE_STRING and String(config[key]).is_valid_html_color()):
 			errors.append("'%s' must be a hex color like #7dff9a" % key)
 	errors.append_array(validate_team_tints(config.get("team_tints", {})))
+	errors.append_array(validate_buff_cues(config.get("buff_cues", {})))
 	for key: String in MARKER_KEYS:
 		if not config.has(key):
 			continue  # optional: DEFAULTS fill it in
@@ -132,6 +139,39 @@ static func validate(config: Dictionary) -> Array[String]:
 		elif (key.ends_with("_alpha") or key == "dash_trail_lighten" or key == "cone_enemy_duration_scale") and float(value) > 1.0:
 			errors.append("'%s' must be <= 1" % key)
 	return errors
+
+
+const BUFF_CUE_NUMBERS: Array[String] = ["ring_radius", "ring_alpha", "bubble_radius", "bubble_alpha", "bubble_height", "pulse", "pulse_hz"]
+
+
+## Persistent cues for buffs that last: stat name (the buff's `stat`) -> {color, ring_radius, ring_alpha, bubble_radius, bubble_alpha, bubble_height, pulse, pulse_hz}.
+## A stat with no entry gets only the cast ring.
+static func validate_buff_cues(cues: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(cues) != TYPE_DICTIONARY:
+		errors.append("'buff_cues' must be an object (stat -> cue)")
+		return errors
+	for stat: Variant in (cues as Dictionary).keys():
+		var entry: Variant = (cues as Dictionary)[stat]
+		if typeof(entry) != TYPE_DICTIONARY:
+			errors.append("buff_cues.%s must be an object" % str(stat))
+			continue
+		var dict: Dictionary = entry
+		if typeof(dict.get("color")) != TYPE_STRING or not String(dict["color"]).is_valid_html_color():
+			errors.append("buff_cues.%s.color must be a hex color" % str(stat))
+		for key: String in BUFF_CUE_NUMBERS:
+			var value: Variant = dict.get(key)
+			if (typeof(value) != TYPE_INT and typeof(value) != TYPE_FLOAT) or is_nan(float(value)) or float(value) < 0.0 or float(value) > 5.0:
+				errors.append("buff_cues.%s.%s must be a number from 0 to 5" % [str(stat), key])
+	return errors
+
+
+## The persistent cue for a buffed stat, or an empty dictionary.
+static func buff_cue(stat: String) -> Dictionary:
+	var cues: Variant = get_config().get("buff_cues", {})
+	if typeof(cues) != TYPE_DICTIONARY:
+		return {}
+	return (cues as Dictionary).get(stat, {})
 
 
 ## Team tints: team name -> {color: hex, neutral_mix: 0..1, element_mix: 0..1}. The mix is how far a

@@ -59,6 +59,9 @@ static func slot_now_text(slot_type: String, names: Array, format: String) -> St
 	var joined: PackedStringArray = PackedStringArray()
 	for entry: Variant in names:
 		joined.append(String(entry))
+	# One %s: the chip above the line already names the slot and its key, so the line only lists the cards.
+	if format.count("%s") < 2:
+		return format % SLOT_NOW_SEPARATOR.join(joined)
 	return format % [InputLabels.slot_label(slot_type), SLOT_NOW_SEPARATOR.join(joined)]
 
 
@@ -105,7 +108,7 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 	var glyph_room: float = 0.0
 	if look == Look.ACTION or look == Look.REJECT:
 		glyph_room = float(cfg["option_title_font_size"]) * 1.4 * s
-	if index >= 0 and look != Look.BACK:
+	if index >= 0 and look != Look.BACK:  # callers pass -1 now; kept for a screen that wants a numbered list again
 		number_badge = _badge(str(index + 1), small_size, enabled)
 		head.add_child(number_badge)
 	title_label = _label(String(opt.get("label", "")), title_size if look != Look.BACK else body_size, title_color, true)
@@ -247,14 +250,17 @@ func _slot_chip(opt: Dictionary, texts: Dictionary, font_size: int, enabled: boo
 		var style := StyleBoxFlat.new()
 		style.bg_color = Color.html(String(_cfg["option_chip_color"]))
 		style.border_color = Color.html(String(_cfg["option_chip_border_color"])) if enabled else Color.html(String(_cfg["option_disabled_text_color"]))
+		# A key cap, not a pill: square corners, a thick bottom edge like a raised key.
 		style.set_border_width_all(maxi(roundi(2.0 * _scale), 1))
-		style.set_corner_radius_all(roundi(10.0 * _scale))
+		style.border_width_bottom = maxi(roundi(4.0 * _scale), 2)
+		style.set_corner_radius_all(roundi(4.0 * _scale))
 		style.content_margin_left = 8.0 * _scale
 		style.content_margin_right = 8.0 * _scale
 		style.content_margin_top = 1.0 * _scale
-		style.content_margin_bottom = 1.0 * _scale
+		style.content_margin_bottom = 0.0
+		pill.custom_minimum_size.x = font_size * 1.6
 		pill.add_theme_stylebox_override("panel", style)
-		pill.add_child(_label(String(texts.get("slot_key", "Key %s")) % InputLabels.slot_key(String(opt.get("slot_type", ""))), font_size, _text_color(enabled, Color.html(String(_cfg["prompt_value_color"]))), false))
+		pill.add_child(_label(String(texts.get("slot_key", "%s")) % InputLabels.slot_key(String(opt.get("slot_type", ""))), font_size, _text_color(enabled, Color.html(String(_cfg["prompt_value_color"]))), false))
 		row.add_child(pill)
 	var name_label := _label(slot_name, font_size, body_color, false)
 	name_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER

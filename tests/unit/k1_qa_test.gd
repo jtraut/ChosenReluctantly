@@ -113,7 +113,7 @@ func test_recovery_label_follows_f_a_shift_combo_and_a_mouse_button_everywhere()
 		var key_text: String = pair[1]
 		assert_str(hud.slot_widgets[4].key_label.text).is_equal(key_text)
 		assert_str(InputLabels.slot_label("recovery")).is_equal("Recovery (%s)" % key_text)
-		assert_str(RunOptionCard.slot_now_text("recovery", ["A"], String(texts["slot_now"]))).is_equal("Recovery (%s) now: A" % key_text)
+		assert_str(RunOptionCard.slot_now_text("recovery", ["A"], String(texts["slot_now"]))).is_equal("In slot: A")
 		assert_str(String(texts["slot_label"]) % [InputLabels.slot_name("recovery"), InputLabels.slot_key("recovery")]).is_equal("Recovery (%s)" % key_text)
 
 

@@ -15,7 +15,8 @@
                 "max_range": 13.0,
                 "hit_radius": 0.25,
                 "hits": 3,
-                "hit_interval": 0.15
+                "hit_interval": 0.15,
+                "look": {"color": "#b6ff4a", "scale": 0.9, "ball_scale": 0.85}
             }
         }
     ]

@@ -136,7 +136,7 @@ const DEFAULT_HUD: Dictionary = {
 	"boss_bar_size": [560, 104],
 	"debug_overlay_gap": 16,
 	"fit_padding": 12,
-	"slot_size": [150, 126],
+	"slot_size": [150, 134],
 	"slot_gap": 12,
 	"slot_row_separation": 2,
 	"key_font_size": 13,
@@ -149,7 +149,7 @@ const DEFAULT_HUD: Dictionary = {
 	"preview_font_size": 11,
 	"preview_min_font_size": 10,
 	"preview_max_lines": 2,
-	"preview_height": 38,
+	"preview_height": 46,
 	"flavor_min_font_size": 11,
 	"flavor_max_lines": 3,
 	"flavor_box_width": 260,
@@ -198,7 +198,8 @@ const DEFAULT_HUD: Dictionary = {
 	"dodge_empty_word": "EMPTY",
 	"dodge_none_word": "NO DODGE",
 	"dodge_empty_color": "#ff7a7a",
-	"dodge_pulse_duration": 0.3,
+	"dodge_pulse_duration": 0.6,
+	"dodge_pulse_grow": 7,
 }
 
 ## Small floating words (not damage numbers). The "IMMUNE" popup when a stun bounces.
@@ -222,6 +223,7 @@ const DEFAULT_DAMAGE_NUMBERS: Dictionary = {
 	"color_lighten": 0.3,
 	"spawn_height": 1.9,
 	"rise_distance": 1.2,
+	"boss_bar_gap": 6,
 	"duration": 0.8,
 	"big_scale": 1.35,
 	"merge_radius": 0.8,

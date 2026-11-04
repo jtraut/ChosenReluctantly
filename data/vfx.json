@@ -7,6 +7,11 @@
     "boss_volley_lane_alpha_start": 0.22,
     "boss_volley_lane_alpha_end": 0.9,
     "boss_volley_lane_max_length": 14.0,
+    "boss_volley_gap_color": "#7dff9a",
+    "boss_volley_gap_min_half_width": 0.2,
+    "boss_volley_gap_segment_length": 1.0,
+    "boss_volley_gap_alpha_start": 0.12,
+    "boss_volley_gap_alpha_end": 0.55,
     "player_hurtbox_reach_radius": 0.4,
     "player_hurtbox_low_center_height": 0.4,
     "heal_color": "#7dff9a",
@@ -65,6 +70,9 @@
     "reticle_marker_alpha": 0.9,
     "dash_arrow_length": 1.0,
     "dash_arrow_half_width": 0.55,
+    "buff_cues": {
+        "armor": { "color": "#8fd0ff", "ring_radius": 0.95, "ring_alpha": 0.7, "bubble_radius": 0.75, "bubble_alpha": 0.28, "bubble_height": 0.9, "pulse": 0.07, "pulse_hz": 1.2 }
+    },
     "team_tints": {
         "enemy": { "color": "#ff3d8b", "neutral_mix": 1.0, "element_mix": 0.4 }
     }

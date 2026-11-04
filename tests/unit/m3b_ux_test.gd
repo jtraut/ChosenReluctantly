@@ -33,18 +33,13 @@ func test_buff_effect_line_is_readable_and_data_driven() -> void:
 		assert_str(String(RunChoices.card_option("card:x", "card", String(card["id"]), ctx)["detail"])).not_contains("slot_cooldown.")
 
 
-func test_layout_and_digit_targets() -> void:
+func test_layout_for() -> void:
 	var rest: Array = [_opt("heal", "", true, ""), _opt("remove", "", true, "")]
 	assert_str(RunPromptScreen.layout_for(rest)).is_equal("actions")
 	var reward: Array = [_opt("card", "utility"), _opt("card", "movement"), _opt("skip", "", true, "")]
 	assert_str(RunPromptScreen.layout_for(reward)).is_equal("row")
-	assert_int(RunPromptScreen.digit_target(reward, "row", 1)).is_equal(1)
-	assert_int(RunPromptScreen.digit_target(reward, "row", 3)).is_equal(-1)
 	var removal: Array = [_opt("remove", "attack_single"), _opt("remove", "utility", false), _opt("remove", "utility"), _opt("back")]
 	assert_str(RunPromptScreen.layout_for(removal)).is_equal("grid")
-	assert_int(RunPromptScreen.digit_target(removal, "grid", 2)).is_equal(2)  # key 3: the first enabled Utility card
-	assert_int(RunPromptScreen.digit_target(removal, "grid", 3)).is_equal(-1)  # no Movement column
-	assert_int(RunPromptScreen.digit_target(removal, "row", 3)).is_equal(-1)  # Back never takes a digit
 
 
 func test_slot_key_matches_the_hud_order() -> void:
@@ -120,10 +115,7 @@ func test_space_never_confirms_and_focus_returns_after_pause() -> void:
 	space.pressed = true
 	screen._input(space)
 	assert_array(picked).is_empty()
-	var two := InputEventKey.new()
-	two.keycode = KEY_2
-	two.pressed = true
-	screen._input(two)
+	(screen.options_box.get_child(1) as Button).grab_focus()
 	assert_bool((screen.options_box.get_child(1) as Button).has_focus()).is_true()
 	GamePause.pause()
 	GamePause.resume()

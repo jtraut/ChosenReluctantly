@@ -108,6 +108,8 @@ static func validate_params(template_id: String, params: Dictionary) -> Array[St
 			errors.append("'target' must be one of %s" % str(STATUS_TARGETS))
 		if typeof(params.get("status_id")) == TYPE_STRING and not StatusDatabase.has_status(String(params["status_id"])):
 			errors.append("unknown status_id '%s'" % String(params["status_id"]))
+	if params.has("look") and template_id == "projectile" and params["look"] is Dictionary and not (params["look"] as Dictionary).is_empty():
+		errors.append_array(validate_look(params["look"]))
 	match template_id:
 		"zone":
 			_validate_zone(params, errors)
@@ -419,6 +421,35 @@ static func _execute_projectile(params: Dictionary, context: EffectContext) -> v
 	_run_hits(params, context, func(index: int) -> void: _projectile_shot(params, context, index))
 
 
+## A projectile `look` with its colour as a Color: card data writes it as a hex string ("#b6ff4a"), the Wizard's auto bolt
+## passes a Color. Optional `ball_scale` resizes the drawn ball only (never the hit radius); `scale` sizes trail and impact.
+static func resolved_look(look: Dictionary) -> Dictionary:
+	var out: Dictionary = look.duplicate()
+	if typeof(out.get("color")) == TYPE_STRING:
+		out["color"] = Color.html(String(out["color"]))
+	if not out.has("scale"):
+		out["scale"] = 1.0
+	return out
+
+
+## Problems with a projectile `look` written in card data: {color: hex, scale?: 0.1..5, ball_scale?: 0.1..5}.
+static func validate_look(look: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(look) != TYPE_DICTIONARY:
+		errors.append("'look' must be an object ({color, scale, ball_scale})")
+		return errors
+	var dict: Dictionary = look
+	if typeof(dict.get("color")) != TYPE_STRING or not String(dict["color"]).is_valid_html_color():
+		errors.append("'look.color' must be a hex color like #b6ff4a")
+	for key: String in ["scale", "ball_scale"]:
+		if dict.has(key) and not _number_in(dict[key], 0.1, 5.0, true):
+			errors.append("'look.%s' must be a number from 0.1 to 5" % key)
+	for key: Variant in dict.keys():
+		if not ["color", "scale", "ball_scale"].has(String(key)):
+			errors.append("'look.%s' is not a known key" % String(key))
+	return errors
+
+
 static func _projectile_shot(params: Dictionary, context: EffectContext, index: int) -> void:
 	var scene: PackedScene = load(PROJECTILE_SCENE_PATH)
 	var instance: Projectile = scene.instantiate()
@@ -431,7 +462,7 @@ static func _projectile_shot(params: Dictionary, context: EffectContext, index: 
 	var origin: Vector3 = context.caster.global_position + forward * PROJECTILE_MUZZLE_OFFSET
 	instance.set_hit_radius(params["hit_radius"])
 	if params.has("look") and not (params["look"] as Dictionary).is_empty():
-		instance.set_look(params["look"] as Dictionary)
+		instance.set_look(resolved_look(params["look"] as Dictionary))
 	else:
 		instance.set_look(ElementVisuals.visual_for_team(String(params["damage_type"]), context.caster_team))
 	instance.knockback_strength = params.get("knockback_strength", 0.0)
@@ -527,6 +558,9 @@ static func _execute_buff(params: Dictionary, context: EffectContext) -> void:
 	var value: float = params["value"]
 	var duration: float = params["duration"]
 	TemplateVfx.buff(_vfx_pool(context), _caster_pos(context))
+	var cue: Dictionary = VfxConfig.buff_cue(stat)
+	if not cue.is_empty() and context.caster is Node3D:
+		TemplateVfx.buff_aura(_vfx_pool(context), context.caster as Node3D, cue, duration)
 	_buff_serial += 1
 	var modifier_id := "buff_%d" % _buff_serial
 	stat_modifiers.add_modifier(stat, modifier_id, modifier_type, value)

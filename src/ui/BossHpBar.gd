@@ -104,8 +104,19 @@ static func crossed_count(phase_index: int, thresholds: Array[float]) -> int:
 
 # ---- Lifecycle ----
 
+const GROUP := &"boss_hp_bar"
+
+
+## Bottom edge (screen pixels) of the bar block while it shows, else 0. Damage numbers keep below it (DamageNumber).
+func occupied_bottom() -> float:
+	if not is_showing():
+		return 0.0
+	return _root.position.y + _root.size.y
+
+
 func _ready() -> void:
 	layer = 3
+	add_to_group(GROUP)
 	_cfg = UiConfig.boss_bar()
 	_bars = UiConfig.hp_bars()
 	_build()

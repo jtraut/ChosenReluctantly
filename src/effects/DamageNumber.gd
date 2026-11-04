@@ -101,6 +101,14 @@ static func evict_count(live: int, cap: int) -> int:
 	return maxi(live - maxi(cap, 1) + 1, 0)
 
 
+## Pure: the screen y a number is drawn at once the boss bar block (down to `limit`) is kept clear: a number that would sit
+## inside the block (y < limit) is pushed just below it, so it never hides behind the bar or its text. limit <= 0 = no bar.
+static func clamp_below_bar(screen_y: float, limit: float, gap: float) -> float:
+	if limit <= 0.0:
+		return screen_y
+	return maxf(screen_y, limit + gap)
+
+
 ## The colour of a number: the damage type's element colour, lightened toward white so the
 ## flat outline does the contrast work on any floor.
 static func color_for(type: String, lighten: float) -> Color:
@@ -179,4 +187,26 @@ func _process(delta: float) -> void:
 		queue_free()
 		return
 	global_position = _start_pos + Vector3(0.0, _rise * t, 0.0)
+	_keep_clear_of_boss_bar()
 	modulate.a = 1.0 - t * t  # holds, then drops away: easier to read than a linear fade
+
+
+## Keeps this number out of the boss bar block: same depth, screen position pushed to just under the bar. Numbers are 3D
+## text, so a boss near the top of the screen would otherwise have its hits drawn behind the bar and its info text.
+func _keep_clear_of_boss_bar() -> void:
+	var tree := get_tree()
+	var camera := get_viewport().get_camera_3d() if is_inside_tree() else null
+	if tree == null or camera == null:
+		return
+	var bar: BossHpBar = tree.get_first_node_in_group(BossHpBar.GROUP) as BossHpBar
+	if bar == null:
+		return
+	var limit: float = bar.occupied_bottom()
+	if limit <= 0.0 or camera.is_position_behind(global_position):
+		return
+	var screen: Vector2 = camera.unproject_position(global_position)
+	var wanted: float = clamp_below_bar(screen.y, limit, float(UiConfig.damage_numbers().get("boss_bar_gap", 6.0)))
+	if wanted <= screen.y:
+		return
+	var depth: float = -(camera.global_transform.affine_inverse() * global_position).z
+	global_position = camera.project_position(Vector2(screen.x, wanted), depth)

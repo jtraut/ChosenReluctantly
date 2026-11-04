@@ -28,8 +28,8 @@ const SKIP_FILES: Array[String] = [
 ]
 
 const POSITIONAL_MENU: Array[String] = [
-	"Keys 1-%d highlight, Enter or click confirms",
-	"Keys 1-%d jump to a column, Enter confirms",
+	"Arrow keys move, Enter or click confirms",
+	"Arrow keys move, Enter or click confirms",
 ]
 
 

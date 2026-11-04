@@ -129,7 +129,10 @@ func _draw() -> void:
 	if _pulse > 0.0 and current > 0:
 		var idx := clampi(current - 1, 0, maxi(maximum - 1, 0))
 		var pr := Rect2(Vector2(label_w + idx * (pip_w + gap), 0.0), Vector2(pip_w, size.y))
-		draw_rect(pr.grow(2.0 * s * _pulse), Color(1.0, 1.0, 1.0, 0.7 * _pulse), false, thick)
+		# A charge came back: the pip floods white and a thick frame swells out of it, both fading over dodge_pulse_duration.
+		var grow: float = float(_cfg.get("dodge_pulse_grow", 6.0)) * s
+		draw_rect(pr, Color(1.0, 1.0, 1.0, 0.85 * _pulse))
+		draw_rect(pr.grow(grow * (1.0 - _pulse) + 2.0 * s), Color(1.0, 1.0, 1.0, _pulse), false, thick * 1.5)
 	var w := status_word(current, maximum, _cfg)
 	if w != "":
 		var x := label_w + pips_width(maximum, pip_w, gap) + 6.0 * s

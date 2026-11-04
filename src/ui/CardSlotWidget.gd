@@ -144,6 +144,7 @@ func apply_layout(cfg: Dictionary, s: float) -> void:
 	_size_row(cooldown_bar, w, float(cfg["bar_height"]) * s)
 	_size_row(preview_label, w, float(cfg["preview_height"]) * s)
 	preview_label.max_lines_visible = int(cfg["preview_max_lines"])
+	preview_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER  # a two-line "Next:" sits centred with air above and below, not hard on the frame
 	# The fit width is the label width minus fit_padding, so the label itself keeps that margin too: without it a
 	# name that fits on one line in the full width would run right up to the slot border.
 	var margin := StyleBoxEmpty.new()

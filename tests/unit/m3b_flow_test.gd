@@ -192,7 +192,7 @@ func test_rest_room_shows_heal_and_remove_and_remove_is_greyed_with_the_reason()
 	assert_int(state.history.size()).is_equal(1)
 
 
-func test_number_keys_move_the_highlight_and_do_not_pick() -> void:
+func test_number_keys_do_nothing_and_do_not_pick() -> void:
 	var state := RunSession.begin_new_run(42)
 	var main := _spawn()
 	await _frames(1)
@@ -203,10 +203,11 @@ func test_number_keys_move_the_highlight_and_do_not_pick() -> void:
 	key.keycode = KEY_2
 	key.pressed = true
 	screen._input(key)
-	assert_bool((screen.options_box.get_child(1) as Button).has_focus()).is_true()
+	assert_bool((screen.options_box.get_child(1) as Button).has_focus()).is_false()  # PL3: number keys no longer move the highlight
 	assert_bool(state.has_pending()).is_true()  # nothing was picked
 	assert_int(state.deck.size()).is_equal(15)
 	# Enter / click activates the focused option.
+	(screen.options_box.get_child(1) as Button).grab_focus()
 	var picked: Array[String] = []
 	screen.option_chosen.connect(func(id: String) -> void: picked.append(id))
 	var old_id := main.get_instance_id()

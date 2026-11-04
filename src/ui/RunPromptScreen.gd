@@ -303,30 +303,6 @@ static func layout_for(options: Array) -> String:
 	return "row" if has_card else "actions"
 
 
-## Which option a digit key (0-based: key 1 = 0) highlights, or -1. Row and actions: the nth option, never Back.
-## Grid: the first enabled card in that HUD slot's column (key 3 = the Utility column), else its first card.
-static func digit_target(options: Array, layout: String, digit_index: int) -> int:
-	if digit_index < 0:
-		return -1
-	if layout == "grid":
-		if digit_index >= CardSlotController.SLOT_TYPE_ORDER.size():
-			return -1
-		var slot_type: String = CardSlotController.SLOT_TYPE_ORDER[digit_index]
-		var first_any: int = -1
-		for i in range(options.size()):
-			var option: Dictionary = options[i]
-			if String(option.get("slot_type", "")) != slot_type or String(option.get("kind", "")) == "back":
-				continue
-			if first_any < 0:
-				first_any = i
-			if bool(option.get("enabled", true)):
-				return i
-		return first_any
-	if digit_index >= options.size() or String((options[digit_index] as Dictionary).get("kind", "")) == "back":
-		return -1
-	return digit_index
-
-
 static func look_for(kind: String) -> RunOptionCard.Look:
 	match kind:
 		"card":
@@ -389,9 +365,8 @@ func _fill_options(options: Array, content: Dictionary = {}) -> void:
 				width = float(cfg["option_cell_width"])
 			RunOptionCard.Look.BACK:
 				width = 200.0
-		var index: int = -1
+		var index: int = -1  # no number badge on an option any more
 		if _layout != "grid" and kind != "back":
-			index = numbered
 			numbered += 1
 		var card := RunOptionCard.new()
 		card.setup(option, look, width, cfg, s, {
@@ -419,8 +394,7 @@ func _fill_options(options: Array, content: Dictionary = {}) -> void:
 				options_box.add_child(_option_buttons[i])
 	var hint_key: String = "remove_list_hint" if _layout == "grid" else "list_hint"
 	var hint_count: int = CardSlotController.SLOT_TYPE_ORDER.size() if _layout == "grid" else numbered
-	var hint_format: String = String(texts.get(hint_key, ""))
-	keys_label.text = (hint_format % hint_count) if hint_format.contains("%d") else hint_format
+	keys_label.text = String(texts.get(hint_key, ""))
 	keys_label.visible = keys_label.text != "" and hint_count > 1
 
 
@@ -517,16 +491,9 @@ func _input(event: InputEvent) -> void:
 		if slot_action:
 			get_viewport().set_input_as_handled()
 		return
-	# Digits stay menu navigation (positional) even when a digit is also a slot key (1 and 2 are Utility and Movement).
-	var number: int = key.keycode - KEY_1
-	var is_digit: bool = (key.keycode >= KEY_0 and key.keycode <= KEY_9) or (key.keycode >= KEY_KP_0 and key.keycode <= KEY_KP_9)
-	if number < 0 or number > 8:
-		number = key.keycode - KEY_KP_1
-	if number >= 0 and number <= 8 and not key.echo:
-		var target: int = digit_target(_options, _layout, number)
-		if target >= 0:
-			_focus_option(target)
-	if is_digit or slot_action:
+	# Number keys do nothing here (director 2026-11-02: mouse, arrows and Enter pick). Slot actions are still held back
+	# so a card key pressed mid-menu never casts.
+	if slot_action:
 		get_viewport().set_input_as_handled()
 
 

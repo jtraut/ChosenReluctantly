@@ -78,11 +78,11 @@ func test_meter_and_dodge_label_columns_grow_for_a_long_key() -> void:
 func test_option_text_shows_slot_name_and_live_key_and_follows_a_rebind() -> void:
 	var texts: Dictionary = RunConfig.ui()["option"]
 	var slot: String = CardSlotController.SLOT_TYPE_ORDER[4]
-	assert_str(RunOptionCard.slot_now_text(slot, ["A"], String(texts["slot_now"]))).is_equal("Recovery (R) now: A")
+	assert_str(RunOptionCard.slot_now_text(slot, ["A"], String(texts["slot_now"]))).is_equal("In slot: A")
 	_rebind(&"slot_5", _key(KEY_F))
-	assert_str(RunOptionCard.slot_now_text(slot, ["A"], String(texts["slot_now"]))).is_equal("Recovery (F) now: A")
+	assert_str(RunOptionCard.slot_now_text(slot, ["A"], String(texts["slot_now"]))).is_equal("In slot: A")
 	_rebind(&"slot_5", _key(KEY_F, true))
-	assert_str(RunOptionCard.slot_now_text(slot, ["A"], String(texts["slot_now"]))).is_equal("Recovery (Shift+F) now: A")
+	assert_str(RunOptionCard.slot_now_text(slot, ["A"], String(texts["slot_now"]))).is_equal("In slot: A")
 
 
 func test_no_option_template_hardcodes_a_slot_number_or_the_digit_as_the_slot_key() -> void:
@@ -168,7 +168,7 @@ func test_an_open_prompt_keeps_slot_keys_away_from_the_player() -> void:
 	assert_int(main.player.cast_input.preview_slot).is_equal(CastInput.NONE)
 
 
-func test_digit_navigation_still_works_when_a_digit_is_also_a_slot_key() -> void:
+func test_number_keys_no_longer_move_the_highlight_and_a_digit_slot_key_still_does_not_cast() -> void:
 	var main := await _open_main()
 	var prompt := main.get_node("RoomClearedScreen") as RunPromptScreen
 	var ctx := RunChoices.shipped_context(["rogue", "fire", "neutral"])
@@ -178,13 +178,10 @@ func test_digit_navigation_still_works_when_a_digit_is_also_a_slot_key() -> void
 	var options: Array[Dictionary] = RunChoices.options(state, ctx)
 	prompt.show_content({"title": "t", "rows": [], "options": options, "owned": {}})
 	prompt.disarm()
-	var target: int = RunPromptScreen.digit_target(options, "row", 1)
-	assert_int(target).is_greater(0)
-	# H2 moved the slot keys off the digits (Utility = F, Movement = Space), so rebind slot_4 to the digit 2 here:
-	# a digit that is also a slot key must still move the highlight, and must not cast.
+	assert_bool(prompt.has_method("digit_target")).is_false()
 	_rebind(&"slot_4", _key(KEY_2))
 	var digit_two := _action_event(&"slot_4", true)
-	assert_int(digit_two.physical_keycode).is_equal(KEY_2)
 	digit_two.keycode = KEY_2
+	var focused_before: int = prompt._option_buttons.find(prompt.get_viewport().gui_get_focus_owner())
 	assert_int(_queued_after(main, digit_two)).is_equal(0)
-	assert_bool(prompt._option_buttons[target].has_focus()).is_true()
+	assert_int(prompt._option_buttons.find(prompt.get_viewport().gui_get_focus_owner())).is_equal(focused_before)

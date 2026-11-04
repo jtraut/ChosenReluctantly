@@ -427,6 +427,7 @@ func _start_telegraph_visual() -> void:
 				var lane: PooledEffect = TemplateVfx.enemy_shot_lane(_tele_pool, global_position + dir * BossRules.MUZZLE, dir, float(_attack["shot_range"]), half_width_hit, color, _telegraph_total, true, true)
 				if lane != null:
 					parts.append(lane)
+			parts.append_array(TemplateVfx.boss_volley_gaps(_tele_pool, global_position, _lock_dir, angles, BossRules.volley_half_width(_attack), _telegraph_total))
 			_hold_parts(parts)
 		"charge":
 			var lane2: PooledEffect = TemplateVfx.enemy_charge_lane(_tele_pool, global_position, _lock_dir, float(_attack["distance"]), float(_attack["hit_radius"]), color, _telegraph_total, true)

@@ -221,6 +221,34 @@ There's no event bus today (§1). BD1 adds a **`CombatEvents` autoload** (its ca
 
 **BD2 builds seven:** 1 Pyre Insurance, 2 Smoldering Grudge, 3 Lingering Embers, 4 Exit Strategy, 6 Second Wind, L1 Spite Knuckles, L2 Heavy Sigh. If the slice runs long, Exit Strategy moves to BD3.
 
+**Candidates from a list the director shared (Gemini, 2026-11-04).** These are adapted to our game, which has no mana, energy, hand or draw: cards are typed slots with cooldowns, a visible next card and the dead-card swap (GDD §4). They are not scheduled. They feed BD3 and the boss-relic design pass before MAP3. Names are kept for now (placeholder; the tone pass comes later).
+
+| Source idea | Adapted rule (proposal) | Tier | New code? |
+|---|---|---|---|
+| Volatile Catalyst | Casting a Movement card leaves a fire mine where you started. The first enemy to touch it within 2 s sets it off: fire damage and knockback around it. | 1-2 [fire] | Small: a contact-triggered zone. |
+| Searing Trail | While **all your card slots are on cooldown** (our "empty hand"), you leave a burning trail. | 2 [fire] | Small: a trail zone. |
+| Kinetic Battery | Moving for 3 s without stopping stores a charge, and your next card's damage, heal or duration is x1.5. Watch the kiting Wizard (H1). | 2 [neutral] | Small: a movement timer and a primed buff. |
+| Phasing Prism | A dodge **through** an enemy attack (it would have hit) makes your next card cast within 3 s skip its cooldown. | 2 [neutral] | Small: detecting a dodged hit. The primed buff exists (§3.3). |
+| Thorned Boundary | While you have bonus armor (Ward), melee attackers are stunned 0.5 s and take 10% back. A sibling of Thermal Ward (#10). | 2 [neutral] | No. |
+| Adrenaline Vial | Once per room, below 40% HP: card cooldowns run 2x as fast and dodges recharge at once, for 6 s. A sibling of Controlled Panic (#8); pick one. | 2 [neutral] | No. |
+| Chronokeeper's Hourglass (second half only) | On entering an elite or mini-boss room, enemies are 15% slower for 10 s. | 1 [neutral] | No (the enemy speed scale exists). |
+| Rhythmic Pendulum | A card cast within 0.3 s after a heavy hit lands gets -30% cooldown. Rewards timing casts to attacks. | 2 [rogue] | Small: a timing window. |
+| Overcharged Capacitor | Every 5th card cast charges your next light or heavy attack to arc to up to 5 nearby enemies. A bridge to the basic-attack build (§4a goal 4). Fire or neutral; there's no lightning element. | 2-3 [neutral] | Yes: a `chain` effect. |
+| Vortex Lens | Area and Zone cards placed on the ground pull light enemies toward their centre over 2 s. | 3 [neutral] | Yes: a pull effect. |
+| Echoing Aegis | Casting a Utility armor buff sends out a shockwave that reflects enemy projectiles for 1.5 s. A counter to the boss volley (D36). | 3 [wizard] | Yes: projectile reflection. |
+| Chained Anchor | An Attack: Single cast tethers the target for 3 s: 30% slow, and Bleed while it moves away. | 2 [rogue] | Yes: a tether. |
+| **Boss-tier:** Cursed Gauntlet | +20% card damage, and **no dodge**. This is the D29 trial as a choice you opt into. | boss | No (`dodge.enabled`). |
+| **Boss-tier:** Glass Hourglass | Every slot's cooldown becomes a flat 3 s, so slow, big cards shine and fast ones lose their edge. Taking damage locks a random slot for 2 s. | boss | Small. |
+| **Boss-tier:** The Unstable Core | Your Utility slot casts itself whenever it's ready, with a 30% shorter cooldown. You can't cast it by hand. | boss | Small (the auto-fire exists for the light attack). |
+| **Boss-tier:** Soul-Stained Crucible | After an elite or mini-boss, you may remove a card (through `can_remove`) for +5% move speed and +10% max HP. Deck-thinning as a build. | boss or 3 | No (the removal list exists). |
+
+**Left out:**
+- Hand size, energy and resource costs, and draw speed: we have no resource system (GDD §4).
+- Chronokeeper's +1 hand size.
+- Lightning as an element: not in the slice.
+
+**Forge** (from the same list): a Forge event kind. You give up 2 non-boss relics and pick 1 of 3 tier N+1 relics that share a tag with them (for example Fire + Dash relics). It's a targeted version of the altar (§4.7, row 5b), built in MAP4.
+
 ### 4.6 Branching map hooks (GDD §9; the map itself isn't designed here)
 
 - **`sources`** already names the future map nodes (`merchant`, `curse_room`, `buff_room`, `mini_boss`), so a node only has to call the same "offer relics from source X" function the elite and relic rooms use.
@@ -251,7 +279,7 @@ The idea for each source is credited to his summary. Anything about those games 
 | 3 | **Events ("?" node)** | A new data-driven node type `event`, in rooms 3-9. One event per visit, drawn from `data/events/*.json`, seeded and not repeated within a run. Each event is a short text with 2-3 choices. Every choice shows its costs plainly and is a list of outcomes from a closed set: `lose_hp`, `lose_max_hp`, `gain_max_hp`, `heal`, `gain_gold`, `lose_gold`, `gain_relic` (source and tier), `gain_curse`, `remove_curse`, `remove_card`, `sacrifice_relic`, `start_fight` (elite tier), `leave`. **The curse room and buff room become two event kinds** instead of separate room types. Text stays placeholder (the story role is dormant). | Yes: event-only relics (`sources` `["event"]`), usually with a trade-off. | MAP4 |
 | 4 | **Treasure chests** | The relic stage (`relic_room`) gets a **chest size: small, medium or large** (weights 50/35/15). Size is shown on the map, so you can plan for it. Small uses the act's tier odds, medium the next act's row, and large is at least tier 2 using the act 3 row. Pick 1 of 3 or skip, as decided in D22. | No. | MAP1 |
 | 5a | **Rest dig** (pending **D37**) | A relic (placeholder name "Gravedigger's Spade") adds a third rest action, **Dig**: pick 1 of 3 relics at the act's odds, instead of healing or removing a card. | The dig relic itself is event-only or shop-only. | MAP4 |
-| 5b | **Sacrifice** | An **altar** event lets you give up a non-boss tier N relic, then pick 1 of 3 from tier N+1 (tier 3 stays tier 3). Some high-tier relics have a **`sacrifice_cost`** (1 or 2): to take one, you give up that many owned non-boss relics. Both reuse the BD2 give-one-up step and the "given-up relics never come back" rule. This lets you take weak relics early as fodder, which is his Last Flame point. | Some `sacrifice_cost` relics. | MAP4 |
+| 5b | **Sacrifice** | An **altar** event lets you give up a non-boss tier N relic, then pick 1 of 3 from tier N+1 (tier 3 stays tier 3). Some high-tier relics have a **`sacrifice_cost`** (1 or 2): to take one, you give up that many owned non-boss relics. Both reuse the BD2 give-one-up step and the "given-up relics never come back" rule. This lets you take weak relics early as fodder, which is his Last Flame point. A **Forge** variant (give up 2, get a tag-matched tier N+1 relic) comes from the Gemini list in §4.5. | Some `sacrifice_cost` relics. | MAP4 |
 | 6 | **Starter relic (loadout)** | Tier 1 relics with `sources` `["starter"]`, found nowhere else. The loadout (3d) gets one **starter relic slot**, filled from the starter relics the profile has unlocked. Run 1 and the preset start have none. Unlock rules wait for meta-progression (GDD §8, §14 item 11), so 3d ships 2 per class unlocked by default, and the rest `locked` with "TBD". | Yes: starter relics. | 3d |
 
 **Shared rules:**

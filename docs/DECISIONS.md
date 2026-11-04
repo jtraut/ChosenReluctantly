@@ -1446,3 +1446,8 @@ The director's direction is recorded in GDD §4a. The plan is BUILD_DEPTH §4.7,
   This reverses my BD0 default "no starting relic for now".
 - **BD2 only reserves the new `sources` values and `sacrifice_cost`.** [Building a starter relic in BD2: he put it in the loadout.]
 - **The rest dig is asked (D37),** because it contradicts D30's reason, "heal or relic is too obvious". Until he answers, MAP4 plans it as optional.
+
+## 2026-11-04 - Relic candidates from the director's Gemini list (game-lead)
+- **Adapted 12 ideas, 4 boss-tier ideas and the Forge into BUILD_DEPTH §4.5/§4.7 as unscheduled candidates.** Hand, energy and draw ideas were translated to our slots and cooldowns, or left out (we have no resource system). [Adding them to BD2/BD3 scope now: BD2's seven are set, and BD3's brief is written at BD2's close.]
+- **Ideas needing new effect code are marked** (`chain`, pull, projectile reflection, tether), so the content budget sees them. [Dropping them: chain and reflection are strong ARPG flavour.]
+- **Cursed Gauntlet (no dodge) is kept as a boss-tier candidate,** even though the dodge-off trial (D29) felt less fun as a baseline. As an opt-in trade-off it's a different question. [Dropping it because of D29.]

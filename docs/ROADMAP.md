@@ -735,7 +735,7 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
   - **Playtester (short):** smoke check; one run per class with cards and one no-card run. Does the game feel fluid again? Is Ctrl comfortable for Movement while moving with WASD? Do the faster telegraphs and the volley read in time to react?
   - **Close:** OPEN_ITEMS asks the director to play one run per class: fluid again? Volley speed right? Ctrl OK? And a no-card run: still winnable?
 
-- [ ] **MAP0, branching map design doc (director, 2026-11-02, D28 = A; game-lead alone, docs only, no tag). After H3.**
+- [x] **MAP0, branching map design doc — DONE 2026-11-03.** game-lead ee38ac0, e77653d, adf6468 (`docs/MAP.md`, GDD §9 [PROPOSED] summary, MAP1/MAP2/MAP3 briefs, DECISIONS "2026-11-03 - MAP0", OPEN_ITEMS D31-D33); docs 2762144. No tag. (Original header: director, 2026-11-02, D28 = A; game-lead alone, docs only. After H3.)
   - **Goal:** a concrete, data-driven plan for the branching map (GDD §9), in a new `docs/MAP.md` plus a GDD §9 summary marked [PROPOSED].
   - **Contents:** node types (combat, elite, rest, merchant, relic stage, curse/buff room, mini-boss, boss), choices per step, a layout for a 10-room run (rooms counted along any path), and how difficulty and reward rise together ("the hardest path is the most rewarding").
     - **Relics (D22 = C):** a relic-hunting route can reach **6-8 relics**, a route that ignores relics about 2-3; hard cap 10. The merchant sells **several relics at once** if you have the gold; prices come from rarity (`run.json`). Nodes call BD2's relic offer function (BUILD_DEPTH §4.6).

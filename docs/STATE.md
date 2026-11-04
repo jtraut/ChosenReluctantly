@@ -3,9 +3,10 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-03 (H3 closed, MAP0 written; tech-writer pass for MAP0 next). **Run order:** H3 done -> MAP0 (written; closes after the tech-writer pass) -> **PL3 (next; rest, incl. H3 items 11-13)** -> BD1 -> BD2 (relics) -> MAP1 (map, gold) -> MAP2 (merchant) -> 3d -> MAP3 (mini-bosses, curse/buff; D33) -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3.
+Last updated: 2026-11-03 (H3 and MAP0 closed). **Run order:** **PL3 (next; rest, incl. H3 items 11-13)** -> BD1 -> BD2 (relics) -> MAP1 (map, gold) -> MAP2 (merchant) -> 3d -> MAP3 (mini-bosses, curse/buff; D33) -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0.
 
 ## What's done
+- **MAP0 closed 2026-11-03 (docs only, no tag):** game-lead ee38ac0, e77653d, adf6468; docs 2762144. `docs/MAP.md` (game-lead owns it); GDD §9 [PROPOSED]; ROADMAP MAP1/MAP2/MAP3; questions D31-D33 (defaults A). Director's H3 Rogue feedback in CHANGELOG; old item 38 merged into 40.
 - **H3 closed 2026-11-03:** gameplay-dev cee653d..3dc74fb, ux 6f89eea, qa PASS 44eff31/f1a3f88, playtest 305b13b (no blocker), docs 8700a4d (incl. D30 in CHANGELOG/RESOLVED). Tag `playtest-2026-11-03-H3`. **Baselines now: suite 1244/1244 (108 suites); arena 30 s seed 1 = 2333565009, 90 s = 819020947; bot sim `-Rooms 20 -Seed 3` = 2281795515.** Playtest findings -> PL3 items 11-13 (volley gaps, pip flash, is the volley fair to the Wizard). OPEN_ITEMS 40 asks the director to play it.
 - **D30 = A recorded 2026-11-03 (game-lead, docs only):** 98efccd (GDD §4a bullet, GDD §9 director note on maybe removing the rest heal, BUILD_DEPTH §4.1/§11, ROADMAP BD2 wording + MAP0 rest-node question). OPEN_ITEMS: D30 removed. Archived in RESOLVED and CHANGELOG by tech-writer (8700a4d).
 - **Director answers recorded 2026-11-02 (game-lead, docs only):** a6c33e6 (GDD §3/§4a/§5/§9/§14), 803c42b (BUILD_DEPTH §3.4, §4.1, §8, §9, §11), 6bd0f70 (ROADMAP: H3 + MAP0 briefs, BD1/BD2 edits, PL3 item 6 -> H3), c065762 (DECISIONS "Applying the director's answers"), plus OPEN_ITEMS/STATE. D22 = C (merchant, relic stage, elites; 6-8 for a relic hunter, cap 10), D24 = A, D25 = A (+ passive nodes), D26 = A, D28 = A, D29 = B (dodge on Space, Rogue 2 / Wizard 1, Movement on Ctrl, enemies and boss volley a bit faster). New D30 (rest/reward relics; default A = no).
@@ -20,14 +21,12 @@ Last updated: 2026-11-03 (H3 closed, MAP0 written; tech-writer pass for MAP0 nex
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **MAP0 written (game-lead):** ee38ac0 (skeleton, OPEN_ITEMS 38 -> 40), e77653d (`docs/MAP.md`), plus the commit after it (GDD §9 [PROPOSED] summary and §14 items 12-13, CLAUDE.md ownership of MAP.md, ROADMAP MAP1/MAP2/MAP3 briefs and run order, BD2 note, DECISIONS "2026-11-03 - MAP0", OPEN_ITEMS D31-D33, STATE). **Waiting on: tech-writer docs pass**, then game-lead marks MAP0 done in ROADMAP (no tag).
-- **Director, 2026-11-03, on H3 (Rogue run):** "it still felt good, never overwhelmed, let's keep going." Kept in OPEN_ITEMS 40 (merged with old 38, Wizard side still open); goes to CHANGELOG in the MAP0 tech-writer pass.
+- Nothing in progress. Working tree clean.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step
-1. If MAP0's tech-writer pass isn't in `git log`, run it (handoff: CHANGELOG 2026-11-03 MAP0 entry + the director's H3 Rogue feedback; ARCHITECTURE/README only if they list docs). Then mark MAP0 done in ROADMAP.
-2. **PL3** (ROADMAP brief; items 1-5, 7, 10-13 and tooling). Hand to gameplay-dev first (item 3 knockback clamp, item 13 volley fairness measurement, tooling), then ux-designer (1, 2, 4, 5, 7, 10, 11, 12), qa, playtester, tech-writer, close with a tag.
-3. Then **BD1**, **BD2**, **MAP1**, **MAP2**, **3d**, **MAP3**, **BD3**.
+1. **PL3** (ROADMAP brief; items 1-5, 7, 10-13 and tooling). Hand to gameplay-dev first (item 3 knockback clamp, item 13 volley fairness measurement, tooling), then ux-designer (1, 2, 4, 5, 7, 10, 11, 12), qa, playtester, tech-writer, close with a tag.
+2. Then **BD1**, **BD2**, **MAP1**, **MAP2**, **3d**, **MAP3**, **BD3**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).
 

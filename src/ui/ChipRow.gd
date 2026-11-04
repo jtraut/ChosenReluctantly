@@ -12,6 +12,7 @@ var _gap: float = 3.0
 var _max_count: int = 3
 var _keywords_only: bool = false
 var _side_margin: float = 0.0
+var _centered: bool = true
 var _chips: Array[Dictionary] = []
 var _source: Array[String] = []
 var _source_keywords: Array[String] = []
@@ -47,7 +48,7 @@ static func texts_for(chips: Array, keywords_only: bool = false) -> Dictionary:
 
 
 ## `px` values are already scaled. `cfg` is the data/ui.json hud block (colours and counts).
-func configure(cfg: Dictionary, font_px: int, height_px: float, pad_px: float, gap_px: float, width_px: float, max_count: int, keywords_only: bool = false, side_margin_px: float = 0.0) -> void:
+func configure(cfg: Dictionary, font_px: int, height_px: float, pad_px: float, gap_px: float, width_px: float, max_count: int, keywords_only: bool = false, side_margin_px: float = 0.0, centered: bool = true) -> void:
 	_cfg = cfg
 	_font_size = font_px
 	_pad = pad_px
@@ -55,6 +56,7 @@ func configure(cfg: Dictionary, font_px: int, height_px: float, pad_px: float, g
 	_max_count = max_count
 	_keywords_only = keywords_only
 	_side_margin = side_margin_px
+	_centered = centered
 	custom_minimum_size = Vector2(width_px, height_px)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_refit()
@@ -92,7 +94,7 @@ func _draw() -> void:
 	var total: float = _gap * float(_chips.size() - 1)
 	for chip: Dictionary in _chips:
 		total += float(chip["width"])
-	var x: float = maxf((custom_minimum_size.x - total) * 0.5, 0.0)  # centred under the slot, like its name
+	var x: float = maxf((custom_minimum_size.x - total) * 0.5, 0.0) if _centered else 0.0  # centred under a slot name; left-aligned on a card
 	var line: float = maxf(1.0, roundf(h / 12.0))
 	var baseline: float = (h + font.get_ascent(_font_size) - font.get_descent(_font_size)) * 0.5
 	for chip: Dictionary in _chips:

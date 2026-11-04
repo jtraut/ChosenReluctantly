@@ -233,16 +233,16 @@ func apply_layout(cfg: Dictionary, s: float) -> void:
 	var separation: int = roundi(float(cfg["slot_row_separation"]) * s)
 	add_theme_constant_override("separation", separation)
 	var row_scale: float = row_fit_scale(cfg, s, separation)
-	_size_row(key_label, w, float(cfg["key_height"]) * s * row_scale)
+	_size_row(key_label, w, floorf(float(cfg["key_height"]) * s * row_scale))
 	key_label.add_theme_font_size_override("font_size", roundi(float(cfg["key_font_size"]) * s))
-	_size_row(name_label, w, float(cfg["name_height"]) * s * row_scale)
+	_size_row(name_label, w, floorf(float(cfg["name_height"]) * s * row_scale))
 	name_label.max_lines_visible = int(cfg["name_max_lines"])
-	_size_row(cooldown_bar, w, float(cfg["bar_height"]) * s * row_scale)
+	_size_row(cooldown_bar, w, floorf(float(cfg["bar_height"]) * s * row_scale))
 	if chip_row != null:
-		chip_row.configure(cfg, roundi(float(cfg["chip_font_size"]) * s), roundf(float(cfg["chip_height"]) * s * row_scale), float(cfg["chip_pad_x"]) * s, float(cfg["chip_gap"]) * s, w, int(cfg["chip_max"]), false, float(cfg["fit_padding"]) * s * 0.5)
+		chip_row.configure(cfg, roundi(float(cfg["chip_font_size"]) * s), floorf(float(cfg["chip_height"]) * s * row_scale), float(cfg["chip_pad_x"]) * s, float(cfg["chip_gap"]) * s, w, int(cfg["chip_max"]), false, float(cfg["fit_padding"]) * s * 0.5)
 		chip_row.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 		chip_row.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	_size_row(preview_label, w, float(cfg["preview_height"]) * s * row_scale)
+	_size_row(preview_label, w, floorf(float(cfg["preview_height"]) * s * row_scale))
 	preview_label.max_lines_visible = int(cfg["preview_max_lines"])
 	preview_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER  # a two-line "Next:" sits centred with air above and below, not hard on the frame
 	# The fit width is the label width minus fit_padding, so the label itself keeps that margin too: without it a
@@ -266,7 +266,8 @@ func apply_layout(cfg: Dictionary, s: float) -> void:
 
 
 ## Factor (at most 1) that shrinks the five rows so rows plus the whole-pixel separations fit the slot's height. Below 720 px the
-## separation (at least 2 px) is bigger than its share of the scaled slot, which pushed the last row out of the frame by about 3 px.
+## separation (at least 2 px) is bigger than its share of the scaled slot. A VBoxContainer also rounds every child's minimum
+## height up to a whole pixel, so the row heights are floored (see apply_layout): together these were the old ~3 px overflow.
 static func row_fit_scale(cfg: Dictionary, s: float, separation: int) -> float:
 	var rows_ref: float = float(cfg["key_height"]) + float(cfg["name_height"]) + float(cfg["bar_height"]) + float(cfg["chip_height"]) + float(cfg["preview_height"])
 	var available: float = float((cfg["slot_size"] as Array)[1]) * s - float(separation * 4)

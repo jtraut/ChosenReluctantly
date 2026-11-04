@@ -1,7 +1,8 @@
 class_name CardSummary
 extends RefCounted
 ## Generic one-line description of a card, built from its effect templates and params (never from a card id),
-## for the reward and rest screens: "12 fire damage (area), Burn 2 damage/s for 5 s. Cooldown 3.3 s". Pure.
+## for the reward and rest screens: "12 fire damage (area), Burn 2 damage/s for 5 s. Cooldown 3.3 s". Conditional effects follow
+## on their own lines, one per condition. Pure.
 
 
 ## `slot_base_cooldown` < 0 skips the cooldown part. `text` (data/run.json ui.effect plus a `slot_names` map) words the
@@ -28,12 +29,15 @@ static func effect_line(card: Dictionary, slot_base_cooldown: float = -1.0, text
 		else:
 			parts.append(part)
 	var line: String = ", ".join(parts)
-	for key: String in conditional_keys:
-		var sentence: String = String(_word(text, "condition_line")) % [key, ", ".join(conditional_parts[key] as Array[String])]
-		line += ("" if line == "" else ". ") + sentence
 	if slot_base_cooldown >= 0.0:
 		var cooldown: float = maxf(slot_base_cooldown + float(card.get("cooldown_modifier", 0.0)), 0.0)
 		line += ("" if line == "" else ". ") + String(_word(text, "cooldown")) % _num(cooldown)
+	# BD1 ux: each condition gets a line of its own under the plain effects and the cooldown ("If the target has Burn: ..."),
+	# so the part that depends on the board is easy to find.
+	for key: String in conditional_keys:
+		var sentence: String = String(_word(text, "condition_line")) % [key, ", ".join(conditional_parts[key] as Array[String])]
+		line += ("" if line == "" else "
+") + sentence
 	return line
 
 

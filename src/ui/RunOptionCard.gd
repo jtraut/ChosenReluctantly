@@ -24,6 +24,11 @@ var flavor_label: Label = null
 var owned_label: Label = null
 var slot_chip: PanelContainer = null
 var slot_now_label: Label = null
+## BD1: tag chips (keywords first). CARD shows all of them; CELL (removal grid) shows keyword chips only, so a Keystone is
+## recognised before it is thrown away. The keyword rules are in the tooltip (`keyword_rules_text`).
+var chip_row: ChipRow = null
+## The condition lines of the effect text ("If the target has Burn: ..."), apart from the plain effects.
+var condition_label: Label = null
 var number_badge: PanelContainer = null
 
 var _inner: VBoxContainer = null
@@ -134,16 +139,29 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 		slot_chip = _slot_chip(opt, texts, small_size, enabled, body_color)
 		if slot_chip != null:
 			_inner.add_child(slot_chip)
+	if look == Look.CARD or look == Look.CELL:
+		chip_row = _chip_row(String(opt.get("card_id", "")), inner_width, enabled, small_size)
+		if chip_row != null:
+			_inner.add_child(chip_row)
 	var detail: String = String(opt.get("detail", ""))
 	var cell_blocked: bool = look == Look.CELL and not enabled and String(opt.get("reason", "")) != ""
 	tooltip_text = String(opt.get("reason", ""))
 	if look == Look.CELL:
 		tooltip_text = detail if enabled else "%s
 %s" % [detail, String(opt.get("reason", ""))]
+	var rules: String = keyword_rules_text(String(opt.get("card_id", "")))
 	if detail != "" and look != Look.BACK and not cell_blocked:  # a greyed list cell gives the room to its reason
-		detail_label = _label(detail, small_size if look == Look.CELL else body_size, body_color, true)
+		# BD1: CardSummary puts each condition on its own line after the plain effects; those lines wear the accent colour.
+		var detail_lines: PackedStringArray = detail.split("
+") if look in [Look.CARD, Look.CELL] else PackedStringArray([detail])
+		detail_label = _label(detail_lines[0], small_size if look == Look.CELL else body_size, body_color, true)
 		detail_label.custom_minimum_size.x = inner_width
 		_inner.add_child(detail_label)
+		if detail_lines.size() > 1:
+			condition_label = _label("
+".join(detail_lines.slice(1)), small_size if look == Look.CELL else body_size, _text_color(enabled, Color.html(String(cfg["option_accent_color"]))), true)
+			condition_label.custom_minimum_size.x = inner_width
+			_inner.add_child(condition_label)
 	if look == Look.REJECT:
 		_pips = Control.new()
 		_pips.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -156,6 +174,9 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 			slot_now_label = _label(now_text, small_size, body_color, true)
 			slot_now_label.custom_minimum_size.x = inner_width
 			_inner.add_child(slot_now_label)
+	if rules != "":  # The rule of each keyword is in the tooltip: a line per keyword made the reward cards too tall to fit at 1024x600.
+		tooltip_text += ("
+" if tooltip_text != "" else "") + rules
 	var flavor: String = String(opt.get("flavor", ""))
 	if flavor != "" and look == Look.CARD:
 		flavor_label = _label(flavor, small_size, _text_color(enabled, Color.html(String(cfg["option_flavor_color"]))), true)
@@ -179,6 +200,34 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 	focus_exited.connect(_on_focus_changed.bind(false))
 	mouse_entered.connect(_on_hover)
 	_sync_min_size()
+
+
+## "Keystone: The card a plan is built around." for each keyword the card carries (data/keywords.json), one per line; "" for none.
+static func keyword_rules_text(card_id: String) -> String:
+	if card_id == "":
+		return ""
+	var lines: PackedStringArray = PackedStringArray()
+	for keyword: String in CardTags.keywords_of(CardDatabase.get_card(card_id)):
+		lines.append("%s: %s" % [KeywordDatabase.display_name(keyword), KeywordDatabase.rule_text(keyword)])
+	return "
+".join(lines)
+
+
+## The chip row of a card: all chips for a reward offer, keywords only for a removal cell. Null when there is nothing to show.
+func _chip_row(card_id: String, width: float, enabled: bool, font_px: int) -> ChipRow:
+	if card_id == "":
+		return null
+	var hud_cfg: Dictionary = UiConfig.hud()
+	var keywords_only: bool = look == Look.CELL
+	var parts: Dictionary = ChipRow.texts_for(SlotSynergy.chips(card_id), keywords_only)
+	if (parts["texts"] as Array).is_empty():
+		return null
+	var row := ChipRow.new()
+	row.configure(hud_cfg, font_px, roundf(float(font_px) * 1.45), 6.0 * _scale, 5.0 * _scale, width, int(hud_cfg["chip_max"]), keywords_only, 0.0, false)
+	row.show_chips(SlotSynergy.chips(card_id))
+	if not enabled:
+		row.modulate = Color(1.0, 1.0, 1.0, 0.55)
+	return row
 
 
 ## A Button ignores its children when it sizes itself, so the height of the content becomes its custom minimum.

@@ -110,7 +110,9 @@ func test_effect_line_groups_conditional_effects_under_their_condition() -> void
 	var fan: String = CardSummary.effect_line(CardDatabase.get_card("fire_fan_the_flames"), 2.5, text)
 	assert_str(fan).contains("If the target has Burn: ")
 	assert_str(fan).contains("10 fire damage (area)")
-	assert_str(fan).ends_with("Cooldown 3 s")
+	assert_str(fan).contains("Cooldown 3 s")  # ux (BD1): the cooldown stays on the first line, the condition follows on its own line
+	assert_str(fan.split("
+")[1]).starts_with("If the target has Burn: ")
 	# A card without a condition reads exactly as before.
 	assert_str(CardSummary.effect_line(CardDatabase.get_card("rogue_quick_slash"), 1.0, text)).not_contains("If ")
 

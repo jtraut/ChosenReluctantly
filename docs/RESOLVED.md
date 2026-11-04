@@ -4,6 +4,44 @@ The archive of the director's answered, received and acknowledged items, moved h
 
 ## 2026-11-04
 
+### Answer recorded in a4802ab (D39)
+
+Removed from OPEN_ITEMS after commit 7503569; the full question text is in `git show 7503569:docs/OPEN_ITEMS.md`.
+
+| ID | Question | Your answer | Where it went |
+|---|---|---|---|
+| D39 | Does the dodge roll (Space) count as a Movement cast for card combos ("if you used Movement in the last 2 s")? **A** (default, what was built): no, only Movement cards (Ctrl) count; the dodge stays a pure escape. **B**: yes, every dodge also sets up the combo. | **A**. | GDD §4a (a4802ab); DECISIONS "BD1-A engine calls". Code: `data/player.json` `dodge.counts_as_movement_cast` is false; flipping it to true gives B, in one place (`CombatEventsRelay.notify_dodge`). |
+
+### Answers recorded in c1754cd (D37, D38)
+
+Removed from OPEN_ITEMS after commit 863b15b; the full question text is in `git show 863b15b:docs/OPEN_ITEMS.md`. Neither is needed before MAP4.
+
+| ID | Question | Your answer | Where it went |
+|---|---|---|---|
+| D37 | Can a rest site give a relic through a "dig" relic (the Shovel idea)? You said in D30 that rest sites shouldn't offer "heal or a relic". **A** (default): allow it, only through the dig relic; digging replaces both the heal and the card removal at that rest. **B**: keep rest sites relic-free and drop the dig idea. | **A**. A dig relic adds a rest Dig action that replaces both heal and removal. | GDD §4a; BUILD_DEPTH §4.7/§4.8; ROADMAP MAP4; DECISIONS "Applying D37 = A, D38 = A". |
+| D38 | What is a curse? **A** (default): curse **cards**, a useless or harmful card shuffled into one slot's mini-deck that you dead-card swap past; removed like any card; they don't count toward slot minimums. **B**: curse relics, a downside-only relic outside the cap of 20. | **A**. Curses are cards you swap past; they don't count toward slot minimums and are removed like any card. | GDD §4a; BUILD_DEPTH §4.2/§4.6/§4.7/§4.8; ROADMAP MAP4; DECISIONS "Applying D37 = A, D38 = A" (curse cards carry a `curse` flag, are never offered, and `can_remove` always allows removing them). |
+
+### Replies recorded in dc53d29 (items 39, 40, 41 and 42)
+
+Removed from OPEN_ITEMS after commit 648dbd4; the full text is in `git show 648dbd4:docs/OPEN_ITEMS.md`. He numbered them 43-46 in his reply (his 43 = item 41, 44 = 40, 45 = 39, 46 = 35). His reply on item 35 was "not played yet, he may circle back", so item 35 stays active.
+
+| Item | What it asked | Your reply | Where it went |
+|---|---|---|---|
+| 42 | My reading of D34 = C: do "later tiers" mean acts 2-3 (not difficulty tiers), and is the relic count target right? | Confirmed "tiers" means acts 2-3, then revised D34. **Relic tiers are 1/2/3/boss, with odds rising per act.** Elites always give a relic and never cards. Act-end mini-bosses are the only source of boss-tier relics (2 per run); act 1's mini-boss also offers 3 rare cards, act 2's 3 legendary cards. Rare cards come from act 2, legendary from act 3. | GDD §4a/§9; MAP.md §2/§4.4/§4.5/§10; BUILD_DEPTH §4.1/§4.2/§4.6/§11; ROADMAP (BD2 gets the relic tier values; MAP3 gets rarity and boss relics, with a possible MAP3b split); DECISIONS "Applying the director's revised relic and card tiers". My numbers for it became item 47, still active. |
+| 41 | Knockback is shorter now (PL3 bug fix); say if hits feel too soft or any PL3 visual reads badly. | "Knockback fix good": he "always found it strange to be flung across the room". | Recorded as acknowledged; no change. |
+| 40 | H3 and H1 pace, the Wizard side: does the 1-dodge Wizard get time to react to the boss's Fan of regrets? | The 1-dodge Wizard "still seemed fine". | Recorded as acknowledged; no change. |
+| 39 | H1 boss length: the Rogue's boss fight runs about 6 s longer (about 66 s). Fine? | Boss length is fine. | Recorded as acknowledged; no change. |
+
+### Answers recorded in 96802ba (D34, D35, D36)
+
+Removed from OPEN_ITEMS after commit 81ff8e4; the full question text is in `git show 81ff8e4:docs/OPEN_ITEMS.md`.
+
+| ID | Question | Your answer | Where it went |
+|---|---|---|---|
+| D34 | How many relics over a 30-room run? **A** (default): keep 6-8 per run, cap 10; relics get scarcer per act and mini-bosses give no relic. **B**: let it grow with the run, about 15-20 for a hunter, cap about 25, and mini-bosses give a relic. | **C**, his own option: relics grow with the run, a hard cap of 20 that is hard to reach, a swap at the cap, no duplicates. Mini-bosses always give gold and a rare card offer; elites in later acts a smaller chance of a rare card offer too (this last part was replaced when he answered item 42: elites give relics only). | GDD §4a/§5/§9/§14; MAP.md §2/§4.4/§4.5/§10; BUILD_DEPTH §4.1/§11; ROADMAP BD2/MAP2/MAP3 (BD2 builds the at-cap swap, cap 20); DECISIONS "Applying D34 = C, D35 = A, D36 = A". |
+| D35 | How many card rejects over a 30-room run? **A** (default): still 3 per run. **B**: 3 per act (9 per run). | **A**: 3 rejects per run. | Same places as D34 (GDD §4a/§5/§9/§14, MAP.md, ROADMAP, DECISIONS "Applying D34 = C, D35 = A, D36 = A"). |
+| D36 | The boss volley up close, for the Wizard. **A** (default): leave it; up close is the risky place and the dodge is the answer. **B**: the boss only uses the volley from at least 8 m. **C**: widen the spread so a gap exists up close. | **A**: the volley stays. | DECISIONS (same entry): PL3 item 13 closed as "the volley stays; the bot's pellet blind spot is a bot issue". No code change. |
+
 ### Answers recorded in 6c020cf (D31, D32, D33)
 
 Removed from OPEN_ITEMS after commit 9532409; the full question text is in `git show 9532409:docs/OPEN_ITEMS.md`.

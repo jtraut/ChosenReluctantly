@@ -2,18 +2,83 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-11-04 (Slice PL3: playtest fixes; director decisions D31-D33)
+## 2026-11-04 (Slice BD1: synergy core; director decisions D34-D39; Slice PL3 below)
+
+### Slice BD1: cards start to work together
+
+Commit range c1754cd..33765f0. gameplay-dev BD1-A a141865..7c5a66b (engine), BD1-B 3e297d5..49b117b (content and tooling); ux b61c388..1d3cbda; qa PASS with carry-overs (`docs/reviews/2026-11-04-bd1-qa.md`, 2796aa4); playtest no blocker (`docs/playtests/2026-11-04-bd1-short.md`, 433ca0b). Planned tag: `playtest-2026-11-04-BD1`. Plan: `docs/BUILD_DEPTH.md` sections 3 and 5 to 7.
+
+#### Added
+- **Tags and keywords** (a141865). A card's tags are derived from its effects (Projectile, Melee, Area, Zone, Dash, Heal, Burn, Bleed, Buff) by `src/cards/CardTags.gd`, so nobody writes them by hand. Authored `keywords` (Primer, Payoff, Keystone) are validated against the new `data/keywords.json` (`src/cards/KeywordDatabase.gd`). `CardDatabase.tags_for(card_id)` is the API.
+- **The CombatEvents relay** (6ca48f0). A new autoload, `src/core/CombatEvents.gd` (class `CombatEventsRelay`). It holds a game-time clock and a short cast history (`src/cards/CastHistory.gd`) and announces each card cast. BD2's relics will listen here. Code that must also compile in an `-s` script reaches it through `CombatLink.events()`.
+- **Effect conditions** (6ca48f0). Any card effect can carry an optional `condition` next to `template` and `params`; the effect is skipped when it is false. Types built: `target_has_status`, `cast_within` and `zone_active` (`src/combat/EffectCondition.gd`). The later BUILD_DEPTH condition types are rejected by the validator until they exist.
+- **Primed buffs** (6ca48f0, 7c5a66b). A `buff` with `consume_on_cast` and optional `charges` is used up by the next matching casts, or when its duration ends. A primed cooldown skip is the stat `slot_cooldown_skip.<slot>`. A card never uses up its own prime.
+- **`status_damage_mult`** (6ca48f0): a stat (`status_damage_mult.<status>`) that scales the damage a caster's damage-over-time statuses deal. Only status ticks read it.
+- **aoe `anchor: "caster"`** (6ca48f0): a delayed blast stays where the caster stood when the card was cast (Parting Gift uses it). It can't be combined with `max_range`.
+- **8 new cards** (3e297d5): Fan the Flames, Heat Sink, Kindling and Slow Burn (Fire pool), Drive-By and Momentum, Unfortunately (Rogue pool), Parting Gift and Well, Actually (Wizard pool). They carry the new keywords and conditions. Numbers are in `data/cards/`.
+- **4 archetype debug decks** (3e297d5): `rogue-kindling`, `rogue-hit-and-run`, `wizard-controlled-burn`, `wizard-departure-lounge` in `data/debug_decks/`. `--list-decks` shows them. The five older presets were updated for the new cards (the `mixed-*` decks' `full` lists now include them).
+- **Plan-aware bot** (3e297d5, 5be84e9, 22ee886). `src/debug/PlanPolicy.gd` plays the card slots from the `condition` data: it casts a payoff when its condition is live, swaps a card that can't pay off soon, and spends Movement to set up a combo. Both sims take it: `tools\run_wave_sim.ps1 -Plan` and `tools\run_bot_sim.ps1 -Plan`; the bot sim also takes `-Deck <preset>` with `-Plan`. Without `-Plan` the standard policy runs unchanged. The bot sim uses a stand-in caster (`tools/sim_caster.gd`).
+- **HUD cues for the new rules** (ux b61c388, ba8c9ad):
+  - tag chips on every slot (up to 3; keywords filled, derived tags outlined; `src/ui/ChipRow.gd`);
+  - a **LIVE glow** (yellow rings, corner brackets and a LIVE pill) on a slot whose condition is true now, eased so it doesn't flicker (`src/ui/SlotCues.gd`);
+  - a **primed marker** (a cyan bolt, "xN" for several charges, and a drain bar) on a slot with a primed buff.
+  - The data for all three comes from `src/cards/SlotSynergyView.gd` and `SlotSynergy.gd`; look values are in `data/ui.json` `hud`.
+- **Keystone chips on rewards and removal** (ba8c9ad): the card offers and the removal grid show the same chips; a keyword's rule text is a tooltip only.
+- **Capture and launch tooling** (17fbe44): `tools\capture_screenshot.ps1 -Preset <name>` runs a named capture from `tools/capture_presets.json` (`reward_screen`, `removal_screen`, `boss_smash`, `bd1_reward_keystone`, `bd1_reward_keystone_wizard`, `bd1_glow_target`, `bd1_primed`, `pl3_heavy_bolt`). `--run-offer=a+b+c` forces the first reward offer (capture only). Scenarios take two new keys, `deck` (a fixed card list) and `_note`. New capture scenarios `bd1_glow_target` and `bd1_primed`; the `pl3_*` ones now use fixed decks.
+- Tests: 1289 -> 1413 test cases, 111 -> 121 suites (gameplay-dev's BD1 suites, ux's, and qa's `bd1_qa_test`).
+
+#### Changed
+- **HUD card slot height 134 -> 142 px** (ux 4c8ffb6) to make room for the chip row (`data/ui.json` `hud`). The `pl3_qa_test` pin moved with it.
+- `CardSummary.effect_line` puts condition lines after the cooldown, each on its own line (ux ba8c9ad).
+- Card buff wording now covers the primed cooldown skip and `status_damage_mult` (3e297d5).
+- **Seeded baselines rebaselined.** The new cards fill the sim slots, because the arena player and the bot sim fill slots from every card in the owned pools; qa proved the 8 new cards are the only cause (taking them out restores the old hashes).
+  - arena wave sim, seed 1, 30 s `state_hash`: 2333565009 -> 1897787086;
+  - arena, 90 s: 1212800 -> 4207041509;
+  - bot sim `-Rooms 20 -Seed 3`: 2281795515 -> 846850403.
+  - New plan baselines (`-Plan`, bot sim `-Rooms 20 -Seed 3`): standard 2387448677, `rogue-kindling` 3642396276, `rogue-hit-and-run` 212612574, `wizard-controlled-burn` 1247966865, `wizard-departure-lounge` 1255552678. Wave sim arena `-Plan`, 30 s, seed 1: 1160207333 (DECISIONS "BD1-B").
+  - Side effect: a new run can now roll the new cards into its random starting slots, as any pool card can. The preset decks are unchanged. Availability control is 3d item B (D23).
+- **New `data/player.json` key `dodge.counts_as_movement_cast`** (false): the one switch for D39 (below).
+- **[Director decision, D34 = C]** Relics over a 30-room run: relics grow with the run, with a hard cap of **20** that is hard to reach, no duplicates, and a swap at the cap. Old: 6-8 relics for a hunter, cap 10 (D22). The at-cap fallback changed from "a card offer instead" to "give a relic up" (the swap). BD2 builds it.
+- **[Director decision, D35 = A]** Card rejects stay at 3 per run.
+- **[Director decision, D36 = A]** The boss volley is unchanged up close for the Wizard.
+- **[Director decision]** Relic tiers are 1/2/3/boss, with odds that rise per act (numbers in `docs/MAP.md` section 4.5, all data).
+- **[Director decision]** Elites always give a relic and never cards.
+- **[Director decision]** Boss-tier relics come only from the act-end mini-bosses (2 per run).
+- **[Director decision]** Mini-bosses also offer rare cards (act 1) and legendary cards (act 2).
+- **[Director decision]** Card rarity by act: rare cards from act 2, legendary cards from act 3.
+- **[Director decision]** The knockback fix is good ("always found it strange to be flung across the room").
+- **[Director decision]** Relic sources follow the Slay the Spire / The Last Flame model (plan in `docs/BUILD_DEPTH.md` section 4.7).
+- **[Director decision]** The starter relic is chosen in the loadout from the unlocked tier 1 starter relics, with no random restarts. This reverses the BD0 default "no starting relic for now".
+- **[Director decision, D37 = A]** A dig relic adds a rest Dig action that replaces both the heal and the card removal at a rest site (MAP4).
+- **[Director decision, D38 = A]** Curses are cards: a useless or harmful card in a slot's mini-deck that you swap past, removed like any card. They don't count toward slot minimums (MAP4).
+- **[Director decision, D39 = A]** The dodge roll doesn't count as a Movement cast for card combos; only Movement cards do. It is built that way. Switch: `data/player.json` `dodge.counts_as_movement_cast` (false = A).
+- Director feedback, not decisions: boss length is fine, and the 1-dodge Wizard still seemed fine.
+- Director note, not a decision: an idea for a corporate-office setting. The run would be a 30-floor skyscraper with elevators between rooms, matching three acts of 10 rooms. It is an idea in GDD section 15, not scheduled.
+
+#### Fixed
+- The 1024x600 card-strip row overflow (3.3 px -> 0.3 px) and the Next line sitting under the slot frame (ux b61c388, 4c8ffb6).
+- **PL3 carry-overs** (17fbe44, 22ee886): a scenario with its own `character` plus a different `--class` is now refused with exit 2 (as `--deck` is); `-StartRoom` past the last room prints a plain "note:", because the PowerShell wrappers fail on any WARNING line; capture scenarios use fixed decks so a capture shows the same cards every time; new capture presets (above); the dodge input is released in `DodgeSwitch.reset()` so a press can't leak between test suites.
+
+#### Docs and process
+- README (tech-writer): the corrupted `toolsun_wave_sim.ps1` command lines are `tools\run_wave_sim.ps1` again (a lone carriage return in the file had also made git treat README as binary); the contradictory `--class` lines are one rule; `--full-deck` counts are 30 Rogue / 28 Wizard (were 24 / 22); the removal example uses room 6; new sections for `-Plan`, `-Deck`, `-Preset`, `--run-offer`, the `deck` and `_note` scenario keys and the HUD cues; the Last verification block is rewritten with this pass's runs.
+- BD1 was split into two gameplay-dev sittings (BD1-A engine, BD1-B content and tooling), with one ux, qa, playtest and docs pass after both (b66bc0a).
+- The relic candidate lists from the director's two Gemini rounds are adapted, unscheduled, in `docs/BUILD_DEPTH.md` sections 4.5 and 4.8.
+- Still open in `docs/OPEN_ITEMS.md`: item 47 (my numbers for the relic and card tiers) and item 35 (builds, after BD2). D34 to D39 and items 39 to 42 are archived in `docs/RESOLVED.md`.
+- Known issues from qa, not fixed in BD1 (full list: `docs/reviews/2026-11-04-bd1-qa.md`, "Carry-overs"): the `slice6_qa_test` same-seed crowd test is flaky (1 failure in 6 isolated runs at the PL3 close, 2 in 6 at BD1; it predates BD1); `JsonDataTable.get_entry` crashes loudly on a non-object entry; the Rogue with no cards soft-locks on seed 7 room 1 in the wave sim (`-Run -LightHeavyOnly -Class rogue -Seed 7`, predates BD1); balance signals left for BD3 (Controlled Burn reaches 59% of the standard Wizard's boss time against a 70% floor; removing Drive-By helps Hit and Run by 23%).
+
+### Slice PL3: playtest fixes; director decisions D31-D33 (earlier the same day)
+
 
 Commit range 9532409..7f21afb. Planned tag: `playtest-2026-11-04-PL3`. qa: PASS (`docs/reviews/2026-11-04-pl3-qa.md`, 16387bf, e38bdd2). Playtest: no blocker (`docs/playtests/2026-11-04-pl3-short.md`, 7f21afb).
 
-### Added
+#### Added
 - Ward aura: while an armor buff is up the player shows a pulsing ground ring and a faint bubble. Look is data: `data/vfx.json` `buff_cues`, keyed by the buffed stat (`TemplateVfx.buff_aura`, `VfxConfig.buff_cue`).
 - Card projectile `look` ({color, scale, ball_scale}, validated by `EffectTemplates.validate_look`): Three Bolts is lime, Overqualified Bolt is white, ball 1.9x and trail 2.4x. The hit radius is unchanged.
 - Volley safe-gap tint is now drawn only where a gap is really clear (`src/effects/VolleyGaps.gd`, new `boss_volley_gap_*` keys in `data/vfx.json`; minimum half width `boss_volley_gap_min_half_width`).
 - New tooling (see README): capture `--press=<t>:<action>` (`-Actions`) via `src/debug/ScriptedInput.gd`; `--at-boss-attack=<id>` (`-AtBossAttack`); `--class` now applies to scenarios (`-Class`); wave sim `-StartRoom N` (with `-Run`); `tools/VolleyProbe.tscn`. New capture-only scenarios `pl3_ward`, `pl3_bolts`, `pl3_heavy_bolt`.
 - Tests: 1244 -> 1289 test cases, 108 -> 111 suites.
 
-### Changed
+#### Changed
 - **[Director decision, D31 = A]** The rest stop stays "heal 30% or remove a card". The heal is one number in data.
 - **[Director decision, D32 = A, plus his additions]** Map shape as proposed (4 lanes, whole map visible, left to right). Also, a run becomes **three acts of 10 rooms (30 rooms)**. Acts 1 and 2 end in a mini-boss, act 3 in the final boss. Target run length is 30-45 min (old: 30-60 min, with a 15-25 min prototype note). A player can save progress and return later (autosave between rooms, built in MAP3). Until MAP3 a run stays one 10-room act.
 - **[Director decision, D33 = B]** Mini-bosses and curse/buff rooms come before loadouts. Slices are now MAP3 (three acts, mini-bosses, act scaling, save/resume) and MAP4 (curse/buff rooms). Run order: PL3 -> BD1 -> BD2 -> MAP1 -> MAP2 -> MAP3 -> MAP4 -> 3d -> BD3 (old: ... MAP2 -> 3d -> MAP3 -> BD3).
@@ -23,10 +88,10 @@ Commit range 9532409..7f21afb. Planned tag: `playtest-2026-11-04-PL3`. qa: PASS 
 - HUD card slots 126 -> 134 px, preview row 38 -> 46 px.
 - Seeded baselines (wave sim, qa's figures): arena 90 s `state_hash` 819020947 -> 1212800. The 30 s hash (2333565009) and bot sim checksum (2281795515) are unchanged.
 
-### Fixed
+#### Fixed
 - Knockback on the player: a 9 m/s hit carried the Wizard 19.6 m, now 2.25 m. The cause was the walking velocity being read back with last tick's knockback still in it (`Player._applied_knockback`). It applied to every hit on the player.
 
-### Docs and process
+#### Docs and process
 - **New director questions** (waiting in `docs/OPEN_ITEMS.md`): D34 (relics over 30 rooms), D35 (rejects over 30 rooms), D36 (the boss volley up close for the Wizard).
 - Volley fairness measurement (`tools/VolleyProbe.tscn`): mostly a bot blind spot. There is no safe gap at 6 m or closer. Nothing was retuned.
 - Director decisions recorded in GDD §9, `docs/MAP.md`, BUILD_DEPTH §4.1 and the ROADMAP (6c020cf). Answers archived in `docs/RESOLVED.md`.

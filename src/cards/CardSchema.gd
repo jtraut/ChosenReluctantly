@@ -15,6 +15,7 @@ static func validate(card_data: Dictionary) -> Array[String]:
 	_validate_pool(card_data, errors)
 	_validate_cooldown_modifier(card_data, errors)
 	_validate_effects(card_data, errors)
+	errors.append_array(CardTags.validate_keywords(card_data))
 	if card_data.has("requires"):
 		errors.append_array(RewardOffer.validate_requires(card_data["requires"], SlotTypeDatabase.known_ids(), PoolDatabase.known_ids()))
 

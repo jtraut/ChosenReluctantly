@@ -1,0 +1,14 @@
+{
+    "Primer": {
+        "display_name": "Primer",
+        "rule_text": "Sets up a condition that another card pays off."
+    },
+    "Payoff": {
+        "display_name": "Payoff",
+        "rule_text": "Has a condition. Hits harder when it is live."
+    },
+    "Keystone": {
+        "display_name": "Keystone",
+        "rule_text": "The card a plan is built around."
+    }
+}

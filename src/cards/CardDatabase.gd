@@ -10,10 +10,13 @@ const DEFAULT_CARDS_DIR := "res://data/cards"
 
 static var _cards: Dictionary = {}
 static var _loaded_dir: String = ""
+## card id -> derived tags + keywords (CardTags.all_tags), computed once at load. Kept apart from the card dictionaries.
+static var _tags: Dictionary = {}
 
 
 static func load_all(dir_path: String = DEFAULT_CARDS_DIR) -> void:
 	_cards.clear()
+	_tags.clear()
 	_loaded_dir = dir_path
 	var dir := DirAccess.open(dir_path)
 	if dir == null:
@@ -34,6 +37,21 @@ static func load_all(dir_path: String = DEFAULT_CARDS_DIR) -> void:
 static func get_card(card_id: String) -> Dictionary:
 	_ensure_loaded()
 	return _cards.get(card_id, {})
+
+
+## A card's tags: derived from its effects, then its authored keywords (CardTags). Empty for an unknown id.
+## The returned array is shared; do not modify it.
+static func tags_for(card_id: String) -> Array[String]:
+	_ensure_loaded()
+	var tags: Variant = _tags.get(card_id)
+	if tags == null:
+		var empty: Array[String] = []
+		return empty
+	return tags
+
+
+static func has_tag(card_id: String, tag: String) -> bool:
+	return tags_for(card_id).has(tag)
 
 
 static func has_card(card_id: String) -> bool:
@@ -82,3 +100,4 @@ static func _load_card_file(file_path: String) -> void:
 		push_error("CardDatabase: duplicate card id '%s' (in '%s')" % [card_id, file_path])
 		return
 	_cards[card_id] = card_data
+	_tags[card_id] = CardTags.all_tags(card_data)

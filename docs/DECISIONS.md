@@ -1368,3 +1368,11 @@ The answers are recorded in GDD §9 and `docs/MAP.md` (director decisions). My c
 - **Act scaling** (data multipliers per act) is in MAP3's scope with values from the sim, so acts 2-3 don't get easier as the deck grows. [No scaling.] [Hand-picked values now.]
 - **Relic and reject numbers over 30 rooms are asked (D34, D35)** because they change his earlier numbers (D22's 6-8 per run; GDD §9's 3 rejects per run). Defaults keep his numbers. MAP.md §4.5 shows A's cost: about 1 elite and 1 relic stage per route per act, mini-bosses give no relic, merchant relics at 150/200/260. MAP1/MAP2 keep MAP0's single-act numbers until MAP3.
 - **Target run length now 30-45 min** replaces 30-60 and the [PROPOSED] 15-25 prototype note.
+
+## 2026-11-04 - PL3 gameplay-dev (logged by game-lead)
+Commits 9a86757, fbfd86c.
+- **Knockback bug fixed at the cause, kept as a bug fix, not a balance call.** `Player._apply_movement` re-added last tick's knockback every tick, so a 9 m/s smash carried 19.6 m instead of the 2.25 m the data implies. Fixed for every hit on the player. It changes feel (all shoves are shorter), so the director gets an eyes item; revert fbfd86c to compare. [Clamping to the arena bounds; lowering boss `knockback` data; treating the fix as a director decision before shipping.]
+- **Wizard scenarios via `--class`** (Main sets `character_id` before Player `_ready`; Scenario swaps the deck). [A per-scenario `character` key; changing the arena default, which the baselines assume is the Rogue.]
+- **Capture tooling:** generic `--press=<t>:<action>` taps (`-Actions`), `--at-boss-attack=<id>` makes `-After` relative to the attack's telegraph; wave sim `-StartRoom`. [Dodge-only flag; a separate delay argument.]
+- **Volley fairness measured with a standalone probe** (`tools/VolleyProbe.tscn`, teleports at wind-up start) plus 16-seed Wizard boss runs. Result: mostly a bot blind spot (pellet-aware bot 16/16, hit rate 53% -> 26%), but at 6 m or closer there's no gap wide enough to stand in, so only the 1 dodge helps; the boss can fire from 4 m. Not retuned: asked as D36. [Raising `min_range` myself.]
+- **Arena 90 s seed 1 hash 819020947 -> 1212800** (knockback fix); 30 s and bot-sim hashes unchanged. Suite 1252/1252, 110 suites.

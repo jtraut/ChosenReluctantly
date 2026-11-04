@@ -22,7 +22,8 @@ Last updated: 2026-11-04 (PL3 gameplay-dev running; director answers D31 = A, D3
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **PL3 step 1: gameplay-dev** (items 3, 13, 12's capture tooling, scenario tooling). If cut off: check for gameplay-dev commits after the STATE commit that started PL3; re-hand the brief with "continue from the last commit".
+- **PL3: gameplay-dev done** (9a86757 tooling, fbfd86c knockback bug fix; suite 1252/1252, 110 suites; arena 90 s now 1212800, 30 s and bot-sim unchanged). Item 13 measured: mostly bot blind spot, but no safe gap at 6 m or closer -> D36. DECISIONS "2026-11-04 - PL3 gameplay-dev".
+- **Next role: ux-designer** (PL3 items 1, 2, 4, 5, 7, 10, 11, 12). If cut off: check for ux commits after the STATE commit that logged gameplay-dev.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step
@@ -31,9 +32,9 @@ Last updated: 2026-11-04 (PL3 gameplay-dev running; director answers D31 = A, D3
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).
 
-**D-numbers:** D21-D33 answered (D31 = A, D32 = A + three acts, D33 = B on 2026-11-04). D34-D35 open (relics and rejects over 30 rooms; defaults A). Next free: D36.
+**D-numbers:** D21-D33 answered (D31 = A, D32 = A + three acts, D33 = B on 2026-11-04). D34-D35 open (relics and rejects over 30 rooms; defaults A); D36 open (volley up close; default A leave it). Next free: D37.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: D34, D35 (non-blocking until MAP3); eyes 40, 39 (35 after BD2). Answered items are in `docs/RESOLVED.md` (D30 archived in 8700a4d).
+All director-facing items are in `docs/OPEN_ITEMS.md`: D34, D35 (non-blocking until MAP3), D36; eyes 40, 39, 41 (35 after BD2). Answered items are in `docs/RESOLVED.md` (D30 archived in 8700a4d).

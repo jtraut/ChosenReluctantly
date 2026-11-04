@@ -113,6 +113,10 @@ var _telegraph_generations: Dictionary = {}
 var _dodge_blocked_until_frame: int = -1
 var _base_body_color: Color = Color.WHITE
 var _knockback_velocity: Vector3 = Vector3.ZERO
+## The knockback that `_apply_movement` added to `velocity` last tick. The walking velocity is read back from `velocity`, so this is
+## taken out first; otherwise every tick re-adds the whole knockback to the walking velocity and a 9 m/s smash threw the Wizard
+## about 20 m (to the arena wall) instead of the 2 to 3 m the decay gives (PL3).
+var _applied_knockback: Vector3 = Vector3.ZERO
 ## Pass-through buff: how many grants are running, and the collision mask the body had before the first.
 var _pass_through_count: int = 0
 ## Pass-through ended while the body still overlaps an enemy: the masks stay off until it is clear (or the cap
@@ -246,6 +250,7 @@ func _physics_process(delta: float) -> void:
 	if forced_this_tick and _forced_move_time_remaining <= 0.0:
 		# The forced move is over: stop dead and hand back to normal movement, so it never
 		# coasts past its data distance (friction would carry it about twice as far).
+		_applied_knockback = Vector3.ZERO
 		velocity.x = 0.0
 		velocity.z = 0.0
 		_path_hit = {}
@@ -503,6 +508,7 @@ func _apply_forced_move(delta: float) -> void:
 	# The last tick only drives for the time that is left, so the move covers exactly
 	# speed * duration at any physics rate (no overshoot of up to one tick of travel).
 	var drive_scale := clampf(_forced_move_time_remaining / delta, 0.0, 1.0) if delta > 0.0 else 0.0
+	_applied_knockback = Vector3.ZERO
 	velocity.x = _forced_move_direction.x * _forced_move_speed * drive_scale
 	velocity.z = _forced_move_direction.z * _forced_move_speed * drive_scale
 	velocity.y = 0.0
@@ -993,12 +999,13 @@ func _movement_input_direction() -> Vector3:
 func _apply_movement(delta: float) -> void:
 	var move_dir := _movement_input_direction()
 	var target_velocity := move_dir * get_move_speed()
-	var horizontal_velocity := Vector3(velocity.x, 0.0, velocity.z)
+	var horizontal_velocity := Vector3(velocity.x, 0.0, velocity.z) - _applied_knockback
 	var rate := acceleration if move_dir.length_squared() > 0.0 else friction
 	horizontal_velocity = horizontal_velocity.move_toward(target_velocity, rate * delta)
 
 	velocity.x = horizontal_velocity.x + _knockback_velocity.x
 	velocity.z = horizontal_velocity.z + _knockback_velocity.z
+	_applied_knockback = Vector3(_knockback_velocity.x, 0.0, _knockback_velocity.z)
 
 	if is_on_floor():
 		velocity.y = 0.0

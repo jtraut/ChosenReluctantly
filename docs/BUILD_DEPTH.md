@@ -126,11 +126,11 @@ Two of the three sources are map nodes, and gold doesn't exist yet. So relics ar
 | **Elite room cleared** | A relic choice: pick 1 of 3 or skip. Replaces that room's card offer. | Same, on every elite node. |
 | **Relic room** (the dedicated relic stage) | New room type in the straight run, like the rest room: 1 per run, rooms 2-8, never next to the rest room or the elite. No fight; pick 1 of 3 relics or skip. | A map node type. A relic-hunting route passes several. |
 | **Merchant** | Not yet (needs gold). | A map node. Relics have a price from `rarity` (in `run.json`); the player can buy several if they have the gold. |
-| Mini-boss, curse/buff rooms | Reserved `sources` values. | MAP0 decides. |
+| Mini-boss, curse/buff rooms | Reserved `sources` values. | MAP0 decides. **All sources, including events, chests, rest dig, sacrifice and starter relics: §4.7 (director, 2026-11-04).** |
 | Boss (multi-act later) | Reserved: `boss` source. | Not used while the boss ends the run. **Three acts from MAP3 (director, 2026-11-04):** act-end mini-bosses give gold, a **boss-tier relic** (pick 1 of 3, no skip; the only source) and 3 rare (act 1) or 3 legendary (act 2) cards; see `docs/MAP.md` §4.5. |
 | ~~Rest room (heal or relic)~~, ~~1 in 4 reward screens~~ | **Dropped** (D30 = A, director 2026-11-03: heal-or-relic is too obvious a choice, since a relic is worth more and Recovery already heals). | Same. |
 
-**Count per run:** BD2's straight run gives about **2** (1 elite, 1 relic room). The map is what makes 6-8 reachable for a relic hunter; MAP0 lays out routes so a relic route reaches 6-8 and a route that ignores relics ends with about 2-3. ~~Hard cap 10; at the cap, relic offers are skipped~~ **Hard cap 20** (`run.json` `relics.max_owned`, D34 = C). **At the cap, offers still appear; taking a relic first asks which owned relic to give up** (cancel keeps what you have). Built in BD2 with the offer panel (tested with a low cap), reused by the MAP2 merchant. A relic you gave up isn't offered again that run. No starting relic for now. All numbers are data in `run.json` (`relics` block). **Over a 30-room run (three acts, director 2026-11-04):** `docs/MAP.md` §4.5 (D34 = C).
+**Count per run:** BD2's straight run gives about **2** (1 elite, 1 relic room). The map is what makes 6-8 reachable for a relic hunter; MAP0 lays out routes so a relic route reaches 6-8 and a route that ignores relics ends with about 2-3. ~~Hard cap 10; at the cap, relic offers are skipped~~ **Hard cap 20** (`run.json` `relics.max_owned`, D34 = C). **At the cap, offers still appear; taking a relic first asks which owned relic to give up** (cancel keeps what you have). Built in BD2 with the offer panel (tested with a low cap), reused by the MAP2 merchant. A relic you gave up isn't offered again that run. ~~No starting relic for now.~~ Starter relics come with loadouts (3d, director 2026-11-04, §4.7). All numbers are data in `run.json` (`relics` block). **Over a 30-room run (three acts, director 2026-11-04):** `docs/MAP.md` §4.5 (D34 = C).
 
 ### 4.2 Data format (`data/relics/*.json`, one file per relic, like cards)
 
@@ -228,6 +228,46 @@ There's no event bus today (§1). BD1 adds a **`CombatEvents` autoload** (its ca
 - **`curse`** is reserved for curse/buff rooms ("usually both at once"): a curse room offers a strong relic with a curse block attached (a downside modifier or trigger). It uses the same format, so there's no rework.
 - **Merchant (director: several relics can be bought at once):** relics carry no price yet. When gold exists, a price comes from `rarity` in `run.json`, not per relic. MAP0 designs the merchant screen and gold income.
 - The offer function takes (source, count, rng), filters by pool, source, owned relics and relics given up this run (no duplicates, D34 = C), and weights by rarity. Elite and relic rooms use it in BD2, and the map uses it later. At the cap (`relics.max_owned`) it still offers; the pick goes through the swap step.
+
+
+### 4.7 All relic sources (director, 2026-11-04) [PROPOSED details]
+
+**Director's direction (2026-11-04):** he likes the relic sources in Slay the Spire and The Last Flame, from his own summary:
+- elites and bosses;
+- the merchant, with shop-only relics;
+- map events that trade something for a relic;
+- treasure chests whose size changes the odds;
+- rest-site and sacrifice options;
+- a starting relic.
+
+The idea for each source is credited to his summary. Anything about those games beyond it is "unsure". **All numbers and mechanics below are game-lead proposals**, logged in DECISIONS 2026-11-04.
+
+**Starting relics, in his words:** he doesn't want players restarting runs until the RNG gives them what they hoped for. Once a player has **unlocked "starter" tier 1 relics**, they **choose one of the unlocked ones as part of their pre-run loadout**. There is no random opening offer.
+
+| # | Source | How it works (proposal) | Exclusive relics? | Slice |
+|---|---|---|---|---|
+| 1 | **Elites, act-end mini-bosses** | Unchanged: elites give a tier 1-3 offer at the act's odds; act-end mini-bosses give the boss tier (MAP.md §4.5). | Boss tier: mini-bosses only. | BD2, MAP3 |
+| 2 | **Merchant** | Stock is 3 relics. **The third slot only holds shop-only relics** (their `sources` is exactly `["merchant"]`); if none is eligible, it falls back to normal stock. A shop-expanding relic (+1 relic slot, or 1 free reroll per visit) is content, as a `merchant.*` modifier. The Last Flame's "spend trophies to research the shop" waits for between-run currency (GDD §8, open). | Yes: shop-only relics. | MAP2 |
+| 3 | **Events ("?" node)** | A new data-driven node type `event`, in rooms 3-9. One event per visit, drawn from `data/events/*.json`, seeded and not repeated within a run. Each event is a short text with 2-3 choices. Every choice shows its costs plainly and is a list of outcomes from a closed set: `lose_hp`, `lose_max_hp`, `gain_max_hp`, `heal`, `gain_gold`, `lose_gold`, `gain_relic` (source and tier), `gain_curse`, `remove_curse`, `remove_card`, `sacrifice_relic`, `start_fight` (elite tier), `leave`. **The curse room and buff room become two event kinds** instead of separate room types. Text stays placeholder (the story role is dormant). | Yes: event-only relics (`sources` `["event"]`), usually with a trade-off. | MAP4 |
+| 4 | **Treasure chests** | The relic stage (`relic_room`) gets a **chest size: small, medium or large** (weights 50/35/15). Size is shown on the map, so you can plan for it. Small uses the act's tier odds, medium the next act's row, and large is at least tier 2 using the act 3 row. Pick 1 of 3 or skip, as decided in D22. | No. | MAP1 |
+| 5a | **Rest dig** (pending **D37**) | A relic (placeholder name "Gravedigger's Spade") adds a third rest action, **Dig**: pick 1 of 3 relics at the act's odds, instead of healing or removing a card. | The dig relic itself is event-only or shop-only. | MAP4 |
+| 5b | **Sacrifice** | An **altar** event lets you give up a non-boss tier N relic, then pick 1 of 3 from tier N+1 (tier 3 stays tier 3). Some high-tier relics have a **`sacrifice_cost`** (1 or 2): to take one, you give up that many owned non-boss relics. Both reuse the BD2 give-one-up step and the "given-up relics never come back" rule. This lets you take weak relics early as fodder, which is his Last Flame point. | Some `sacrifice_cost` relics. | MAP4 |
+| 6 | **Starter relic (loadout)** | Tier 1 relics with `sources` `["starter"]`, found nowhere else. The loadout (3d) gets one **starter relic slot**, filled from the starter relics the profile has unlocked. Run 1 and the preset start have none. Unlock rules wait for meta-progression (GDD §8, §14 item 11), so 3d ships 2 per class unlocked by default, and the rest `locked` with "TBD". | Yes: starter relics. | 3d |
+
+**Shared rules:**
+- **No duplicates and no return:** every source skips relics you own or gave up. Sacrifices count as giving a relic up.
+- **Cap 20:** every source goes through the swap step at the cap. Boss-tier relics can't be given up.
+- **Curses** are relics with only a downside (`curse` block). They **don't count toward the cap**, and the swap step can't discard them. They're removed by a `remove_curse` event outcome or at the merchant (a curse-removal price, like card removal).
+- **Counts:** more sources mean more relics, so MAP.md §4.5's targets stay (hunter 14-17, ignore route 6-8, cap 20 hard to reach) and the sim lowers weights or raises prices to hold them. Starter relics count toward the cap.
+- **Content to add over MAP2-3d:**
+  - about 3 shop-only relics;
+  - about 6 event-only relics;
+  - 2-3 curses;
+  - about 3 `sacrifice_cost` relics;
+  - the dig relic;
+  - about 4 starter relics per class.
+
+  This comes on top of MAP.md §4.5's list.
 
 ---
 

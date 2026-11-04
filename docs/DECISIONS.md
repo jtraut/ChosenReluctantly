@@ -1424,3 +1424,25 @@ He confirmed that "later tiers" means acts 2-3 and then revised D34 = C. His rul
 
   MAP3 may be split into MAP3 (acts, save/resume) and MAP3b (rarity content) at MAP2's close. [Building all the content now: BD1 and BD2 come first.]
 - **His other item 42-46 replies** (his 43 = my 41, his 44 = my 40, his 45 = my 39, his 46 = my 35) are recorded as acknowledged in OPEN_ITEMS and STATE. They aren't decisions.
+
+## 2026-11-04 - All relic sources and starter relics in the loadout (game-lead)
+The director's direction is recorded in GDD §4a. The plan is BUILD_DEPTH §4.7, with pointers in MAP.md §2/§9 and the ROADMAP (BD2, MAP1, MAP2, MAP4, 3d). These are my calls on the details.
+- **One place for the plan,** BUILD_DEPTH §4.7, with pointers everywhere else. [Copying it into every doc.] Game details come only from his summary; anything else is "unsure".
+- **Curse and buff rooms become event kinds** in a data-driven event system, and so does the altar. [Separate room types per kind.] MAP4 is renamed "events" and probably splits in two at MAP3's close. That pushes 3d later; I didn't re-sequence it.
+- **Event outcomes come from a closed list,** and every choice shows its costs plainly (readability). [Free-form scripted events: that would mean a script per event, against "content is data".] The text stays placeholder because the story role is dormant.
+- **Merchant third slot is shop-only,** meaning relics whose `sources` is exactly `["merchant"]`, falling back to normal stock. The Last Flame's trophy research waits for GDD §8. [A separate shop-only flag: `sources` already says it.]
+- **Chest sizes:**
+  - small, medium and large, with weights 50/35/15, shown on the map;
+  - medium uses the next act's odds, and large is at least tier 2 using the act 3 row;
+  - still pick 1 of 3 (D22). [One guaranteed relic with no choice: that changes D22's "pick a relic".]
+- **Sacrifice:** an altar event (give up tier N, pick from tier N+1) and a `sacrifice_cost` field. Both reuse the give-one-up step and the no-return rule. [Altar only: he named "high-tier relics that require a sacrifice" specifically.]
+- **Curses are downside-only relics.** They're outside the cap of 20, can't be discarded through the swap step, and are removed by events or the merchant. [Counting them toward the cap, which would punish you twice.]
+- **Starter relics follow his follow-up message:**
+  - they're chosen in the loadout (3d) from the unlocked tier 1 relics with `sources` `["starter"]`, and found nowhere else;
+  - there's no random opening offer, so the boss-relic opening swap I had drafted as D38 is moot and was never asked;
+  - run 1 and the preset start have none;
+  - until unlock rules exist, 2 per class are unlocked by default and the rest are `locked` (TBD), like D23 for cards. [All unlocked: there would be nothing to unlock later.]
+
+  This reverses my BD0 default "no starting relic for now".
+- **BD2 only reserves the new `sources` values and `sacrifice_cost`.** [Building a starter relic in BD2: he put it in the loadout.]
+- **The rest dig is asked (D37),** because it contradicts D30's reason, "heal or relic is too obvious". Until he answers, MAP4 plans it as optional.

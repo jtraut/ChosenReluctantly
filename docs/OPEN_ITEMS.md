@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-11-04 (D34-D36 answered, D34 revised; latest tag `playtest-2026-11-04-PL3`)
-**Status: nothing waiting on a decision. 1 thing to look at now (47, about my numbers for your relic and card tiers); item 35 waits until you have time for a repeat run. Your item 42 revision is recorded, and so are your replies on knockback (good), the 1-dodge Wizard (fine) and boss length (fine). Next: BD1 (cards start to work together) -> BD2 (relics, now with tiers) -> MAP1 (map) -> MAP2 (merchant) -> MAP3 (three acts, save and resume, rare/legendary cards, boss relics) -> MAP4 (curse/buff rooms) -> 3d.**
+**Status: 1 waiting on a decision (D37, the rest-site dig; not needed until MAP4) and 1 thing to look at (47). Item 35 waits until you have time for a repeat run. Your relic-sources direction and starter relics in the loadout are recorded: the plan is BUILD_DEPTH §4.7. Next: BD1 -> BD2 (relics) -> MAP1 (map, treasure chests) -> MAP2 (merchant, shop-only relics) -> MAP3 (three acts, save and resume, rare/legendary cards, boss relics) -> MAP4 (events, curses, sacrifices; probably two sittings) -> 3d (loadouts, starter relic).**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -16,7 +16,12 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## Needs your decision
 
-Nothing right now. Your D34 = C, D35 = A and D36 = A are recorded in GDD §4a/§5/§9, `docs/MAP.md` §4.5 and the ROADMAP. Next new number: D37.
+Next new number: D38.
+
+- **D37: Can a rest site give a relic, through a "dig" relic (the Shovel idea)?** In November (D30) you said rest sites shouldn't offer "heal or a relic", because a relic always wins that choice. The dig is that choice again, but only if you found the dig relic first.
+  - **A (my default):** allow it, only through the dig relic. Digging replaces both the heal and the card removal at that rest.
+  - **B:** keep rest sites relic-free as D30 said, and drop the dig idea.
+  - Not needed until MAP4.
 
 ## Needs your eyes
 

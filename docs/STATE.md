@@ -6,6 +6,11 @@
 Last updated: 2026-11-04 (D34-D36 answered and recorded; PL3 closed, tag `playtest-2026-11-04-PL3`). **Run order:** **BD1 (next)** -> BD2 (relics) -> MAP1 (map, gold) -> MAP2 (merchant) -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3.
 
 ## What's done
+- **Relic sources recorded 2026-11-04, third pass (game-lead, docs only):**
+  - **His direction:** the relic sources from Slay the Spire and The Last Flame. The follow-up: a starter relic is chosen in the loadout from the unlocked tier 1 starter relics, with no random opening.
+  - **Where recorded:** GDD §4a; the plan in BUILD_DEPTH §4.7; MAP.md §2/§9; ROADMAP (BD2 reserves values, MAP1 chests, MAP2 shop-only slot, MAP4 = events, 3d starter relic slot); DECISIONS "All relic sources and starter relics in the loadout".
+  - **New:** D37 (rest dig vs D30). Item 47 is still open.
+  - **Pending for tech-writer (BD1 docs pass):** CHANGELOG `[Director decision]` entries for the relic sources direction and for starter relics in the loadout (no RNG restarts).
 - **Director replies recorded 2026-11-04, second pass (game-lead, docs only):**
   - **Item 42:** "tiers" confirmed as acts 2-3, then D34 revised. Relic tiers are 1/2/3/boss, with odds rising per act. Elites always give a relic and never cards. Act-end mini-bosses are the only source of boss-tier relics (2 per run); act 1's also offers 3 rare cards, act 2's 3 legendary. Rare cards come from act 2, legendary from act 3.
   - **Where recorded:** GDD §4a/§9, MAP.md §2/§4.4/§4.5/§10, BUILD_DEPTH §4.1/§4.2/§4.6/§11, ROADMAP (BD2 gets the relic tier values; MAP3 gets rarity and boss relics, with a possible MAP3b split) and DECISIONS "Applying the director's revised relic and card tiers".
@@ -47,9 +52,9 @@ Last updated: 2026-11-04 (D34-D36 answered and recorded; PL3 closed, tag `playte
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).
 
-**D-numbers:** D21-D33 answered (D31 = A, D32 = A + three acts, D33 = B on 2026-11-04). D34 = C, D35 = A, D36 = A answered 2026-11-04. None open. Next free: D37.
+**D-numbers:** D21-D33 answered (D31 = A, D32 = A + three acts, D33 = B on 2026-11-04). D34 = C, D35 = A, D36 = A answered 2026-11-04. D37 open (rest dig; needed by MAP4). Next free: D38.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions open; eyes 42, 41, 40, 39 (35 after BD2). Answered items are in `docs/RESOLVED.md` (D30 archived in 8700a4d).
+All director-facing items are in `docs/OPEN_ITEMS.md`: D37; eyes 47 (35 when he has time). Answered items are in `docs/RESOLVED.md` (D30 archived in 8700a4d).

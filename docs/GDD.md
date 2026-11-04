@@ -164,6 +164,17 @@ Added 2026-11-02 from the director's notes. The goals are director decisions. Th
   - **Mini-boss card offers:** the act 1 mini-boss also offers **3 rare cards**. The act 2 mini-boss offers a choice between **3 legendary ("gold") cards**.
   - **Card rarity by act:** rare cards start appearing in act 2. Legendary cards start having a chance to appear in act 3.
   - The numbers are proposals in `docs/MAP.md` §4.5, set by the MAP3 sim.
+- **More relic sources [DIRECTOR DECISION, 2026-11-04]:** the director likes these relic sources from Slay the Spire and The Last Flame:
+  - elites and bosses;
+  - a merchant with shop-only relics;
+  - map events that trade HP, gold or a curse for a relic;
+  - treasure chests whose size changes the odds;
+  - rest-site digging and relic sacrifices;
+  - a starting relic.
+
+  This widens D30's "only three sources". Whether a rest site may give a relic is still asked as D37.
+  - **Starting relic, in his words:** players shouldn't depend on restarting runs until the RNG gives them what they hoped for. Once they've unlocked "starter" tier 1 relics, they choose one of them as part of their pre-run loadout.
+  - The details are [PROPOSED] in BUILD_DEPTH §4.7.
 - **(D25 = A)** Burn and Bleed do **not** stack in the base game; a second application refreshes the first. Stacking the same status comes only from special conditions: **relics, keystone cards, and potential passive-tree nodes** (§8). The director likes this.
 - **(D24 = A)** Relics are built in their own slice (BD2) straight after the synergy core (BD1), before loadouts (3d).
 

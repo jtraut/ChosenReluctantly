@@ -31,13 +31,13 @@ C combat · E elite · R* relic stage · M merchant · Rs rest · (mini-boss and
 |---|---|---|---|---|
 | `combat` | yes | Card offer (pick 1 of 3 or reject), gold 12-18 | 1-9 | MAP1 |
 | `elite` | yes, elite tier | **Relic** offer (pick 1 of 3 or skip; replaces the card offer, BD2 rule), gold 30-40. Never cards. Relic tier odds rise per act (director 2026-11-04, §4.5) | 3-9 | MAP1 |
-| `relic_room` (the "dedicated relic reward stage", D22) | no | Relic offer (pick 1 of 3 or skip) | 3-9 | MAP1 |
+| `relic_room` (the "dedicated relic reward stage", D22) | no | Treasure chest, small, medium or large and shown on the map; the size shifts the tier odds. Relic offer (pick 1 of 3 or skip) (BUILD_DEPTH §4.7) | 3-9 | MAP1 |
 | `rest` | no | Today's rest: heal 30% or remove a card (**D31 = A**, director 2026-11-04) | 5-9 | MAP1 |
 | `merchant` | no | Spend gold: **several relics at once** if you can afford them, card removal, cards (§4.3) | 4-9 | MAP2 |
 | **act-end mini-boss** (`mini_boss`, fixed) | yes, new `mini_boss` tier | Gold 60, a **boss-tier relic** offer (the only source), then a card offer: **3 rare** (act 1) or **3 legendary** (act 2) (director 2026-11-04, §4.5) | 10 of acts 1-2 | MAP3 |
 | `mini_boss` (optional node inside an act) | yes, `mini_boss` tier | Gold and a relic offer using the next act's tier odds; **no boss-tier relic** (those come only from act-end mini-bosses) | 5-8 | MAP4, low weight |
-| `curse_room` | no | A strong relic **with a curse attached** (BUILD_DEPTH §4.2 `curse` block), or leave | 3-8 | MAP3 |
-| `buff_room` | no | A minor relic with no downside, or leave ("some rooms only buff") | 3-8 | MAP3 |
+| `event` ("?") | no (some choices start a fight) | A text event with 2-3 choices and trade-offs; event-only relics; the curse room, buff room and altar are event kinds (BUILD_DEPTH §4.7, director 2026-11-04) | 3-9 | MAP4 |
+| ~~`curse_room`, `buff_room`~~ | | Folded into `event` (2026-11-04) | | |
 | `boss` | yes | Ends the run, as today (act 3's final boss from MAP3) | 10 | MAP1 |
 
 - **Relic source ids** are the ones BUILD_DEPTH §4.6 reserved: `elite`, `relic_room`, `merchant`, `mini_boss`, `curse_room`, `buff_room`. Each node calls BD2's offer function `(source, count, rng)`, which respects the cap.
@@ -291,7 +291,7 @@ Each slice is one sitting, gets the full loop and a `playtest-YYYY-MM-DD-<slice>
 | **MAP1: the map** | after BD2 | Generator, validator and `map.json`; RunState map, path and gold, plus save; the map screen (ux); the node types combat, elite, relic_room, rest and boss; gold income and the HUD gold; the bot `-Route` flag and the 1000-seed generation test; straight-run switch. |
 | **MAP2: the merchant** | right after MAP1 | Merchant node, panel and stock (several relics at once, cards, removal through `can_remove`); `relics.prices`; merchant weight on, `relic_route` back to [6, 8]; bot buys (relic route: relics first). |
 | **MAP3: three acts** | right after MAP2 (D33 = B) | Acts 2 and 3 (30 rooms), the 2 act-end mini-bosses (`mini_boss` tier on existing enemies, 2 encounters), act scaling (data multipliers per act, values from the sim), new wave lists for acts 2-3, act transition screen, **save and resume**, per-act numbers from §4.5. Acceptance: median bot run 30-45 min. |
-| **MAP4: curse and buff rooms** | after MAP3, before 3d (D33 = B) | `curse` block on relics (validator, panel shows the curse); curse and buff room panels; 2-3 cursed and 2 minor Fire relics; optional `mini_boss` nodes at low weight. |
+| **MAP4: events** | after MAP3, before 3d (D33 = B) | The `event` node and data-driven events (BUILD_DEPTH §4.7), with curse, buff and altar as event kinds; the `curse` block; `sacrifice_cost`; the rest dig (if D37 = A); event-only relics and curses; optional `mini_boss` nodes at low weight. May split in two at MAP3's close. |
 
 MAP1 and MAP2 together are the "first map build" that D28 places before 3d, with the merchant and the relic stage. D33 = B puts MAP3 and MAP4 before 3d too.
 

@@ -1470,3 +1470,31 @@ His answers are in GDD §4a, BUILD_DEPTH §4.2/§4.6/§4.7/§4.8, the MAP.md §9
 - **Why:** the brief is larger than one sitting, and the director can be cut off at any time. The cards and the ux exposure need every engine piece, so the dependency seam sits between items 6 and 7. Each sitting leaves the repo running and committed.
 - **Rejected:** two full loops (BD1a/BD1b, each with qa, playtest and a tag). Engine-only work has nothing for the playtester to feel and would double the review cost. Also rejected: one sitting, which risks a half-built engine at a cutoff.
 - **Checked first:** item 6 (`anchor`) isn't built yet. PL3's "anchor" was the screenshot-capture boss-attack anchor. `EffectTemplates.gd:328` still locks placed discs at the aim point.
+
+## 2026-11-04 - BD1-A engine calls (gameplay-dev, logged by game-lead)
+gameplay-dev made these in a141865..7c5a66b. All are cheap to change.
+- **CombatEvents** (`src/core/CombatEvents.gd`, class `CombatEventsRelay`, the last autoload) holds only a clock and a cast history.
+  - The clock is game time: it pauses, scales with hit-stop and repeats in seeded sims.
+  - The history window is 6 s with at most 32 entries, so `cast_within.seconds` must be above 0 and at most 6.
+  - A cast is recorded after its effects run, so a card never sees its own cast.
+  - Code that `bot_sim.gd` also compiles reaches it through `CombatLink.events()`, because the bare autoload name doesn't compile in `-s` scripts.
+  - Rejected: storing the history on `CardSlotController`. The relay is where BD2's relic events go.
+- **Tags and keywords share one capitalised namespace** (Burn, Dash, Primer). The fixed order is Projectile, Melee, Area, Zone, Dash, Heal, Burn, Bleed, Buff, then keywords.
+  - A damaging dash is Melee and Dash.
+  - A zone's status counts toward Burn and Bleed.
+  - A heal_over_time or lifesteal status counts as Heal.
+  - Conditional effects count like unconditional ones.
+- **Primed stat:** `slot_cooldown_skip.<slot>`, additive 1.0.
+  - A skipped cooldown is `MIN_COOLDOWN` (0.05 s) rather than 0, because 0 would mean a divide-by-zero in the UI.
+  - Charges are consumed after the cast, from a snapshot taken before it, so a card never eats its own prime.
+  - A skip buff is only consumed by a cast in its own slot.
+- **Conditions:**
+  - `target_has_status` is allowed only on cone, aoe, projectile, zone and apply_status.
+  - `min_stacks` and the three later BUILD_DEPTH condition types are rejected until stacking exists.
+  - A projectile that fails its condition is spent and deals nothing.
+  - Dash path hits ignore target conditions.
+  - `CardDamageRule` skips conditional effects, because the rule applies to unconditional damage.
+  - Authoring rule: a conditional effect must come before the effect that applies the status it tests.
+- **`status_damage_mult`** is read by status ticks only. Zone ticks don't read it, but Burn that a zone applies is a status, so it does.
+- **`anchor: "caster"` together with `max_range`** is a validation error, not an override.
+- **Dodge vs Movement casts:** the dodge does **not** count as a Movement cast for `cast_within` or primes. That is current behaviour and the D39 default (A), because the dodge stays a pure escape (BUILD_DEPTH §8). Rejected for now: counting it, which would make Hit and Run's payoffs free on every dodge. Asked as D39.

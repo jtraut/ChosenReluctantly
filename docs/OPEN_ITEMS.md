@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-04 (D34-D36 answered, D34 revised; latest tag `playtest-2026-11-04-PL3`)
-**Status: nothing waiting on a decision; 1 thing to look at (47). Item 35 waits until you have time for a repeat run. D37 = A and D38 = A are recorded. Next: BD1 -> BD2 (relics) -> MAP1 (map, treasure chests) -> MAP2 (merchant, shop-only relics) -> MAP3 (three acts, save and resume, rare/legendary cards, boss relics) -> MAP4 (events, curse cards, sacrifices, rest dig; probably two sittings) -> 3d (loadouts, starter relic).**
+Last updated: 2026-11-04 (BD1-A built, new D39; latest tag `playtest-2026-11-04-PL3`)
+**Status: 1 decision (D39, default A is built); 1 thing to look at (47). Item 35 waits until you have time for a repeat run. D37 = A and D38 = A are recorded. Next: BD1 -> BD2 (relics) -> MAP1 (map, treasure chests) -> MAP2 (merchant, shop-only relics) -> MAP3 (three acts, save and resume, rare/legendary cards, boss relics) -> MAP4 (events, curse cards, sacrifices, rest dig; probably two sittings) -> 3d (loadouts, starter relic).**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -16,7 +16,12 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## Needs your decision
 
-Nothing right now. Your D37 = A (dig relic at rest) and D38 = A (curse cards) are recorded in GDD §4a and BUILD_DEPTH §4.7. Next new number: D39.
+D39. **Does the dodge roll (Space) count as a Movement cast for card combos?** New cards can say "if you used Movement in the last 2 s, do more". Hit and Run is built on this.
+   - **A (default, what's built):** no. Only Movement *cards* (Ctrl) count. The dodge stays a pure escape, and the combo is a choice you make with the Movement slot.
+   - **B:** yes. Every dodge also sets up the combo. That's easier and more fluid, but the Movement card matters less, and the Rogue (2 dodges) gets it far more often than the Wizard (1).
+   - Easy to change later. BD1 builds on A unless you say otherwise.
+
+Next new number: D40.
 
 ## Needs your eyes
 

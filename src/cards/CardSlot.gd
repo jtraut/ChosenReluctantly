@@ -153,6 +153,9 @@ func _shuffle(array: Array[String]) -> void:
 
 
 func _compute_cooldown(card_cooldown_modifier: float, stat_modifiers: StatModifiers) -> float:
+	# A primed "next cast has no cooldown" (slot_cooldown_skip.<slot> above 0): the shortest cooldown there is.
+	if stat_modifiers != null and stat_modifiers.has_modifier(StatModifiers.COOLDOWN_SKIP_PREFIX + slot_type) 			and stat_modifiers.apply(StatModifiers.COOLDOWN_SKIP_PREFIX + slot_type, 0.0) > 0.0:
+		return MIN_COOLDOWN
 	var raw := base_cooldown + card_cooldown_modifier
 	if stat_modifiers != null:
 		raw = stat_modifiers.apply("slot_cooldown.%s" % slot_type, raw)

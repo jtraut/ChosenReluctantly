@@ -34,6 +34,8 @@ class Zone extends RefCounted:
 	var status_id: String = ""
 	var status_duration: float = 0.0
 	var status_chance: float = 1.0
+	## A target condition (EffectCondition) from the card effect, or {}: only targets that meet it are hit each tick.
+	var condition: Dictionary = {}
 	var team: String = "neutral"
 	var source_id: int = 0
 	var rng: RandomNumberGenerator = null
@@ -98,6 +100,7 @@ func spawn(params: Dictionary, center: Vector3, cast_dir: Vector3, context: Effe
 	zone.status_id = String(params.get("status_id", ""))
 	zone.status_duration = float(params.get("status_duration", 0.0))
 	zone.status_chance = float(params.get("status_chance", 1.0))
+	zone.condition = params.get(EffectCondition.PARAM_KEY, {})
 	zone.team = context.caster_team
 	zone.source_id = context.caster.get_instance_id() if context.caster != null else 0
 	zone.rng = context.rng
@@ -116,6 +119,22 @@ func spawn(params: Dictionary, center: Vector3, cast_dir: Vector3, context: Effe
 
 func live_count() -> int:
 	return _live.size()
+
+
+## How many live zones were placed by the node with this instance id.
+func live_count_for(source_id: int) -> int:
+	var count: int = 0
+	for zone: Zone in _live:
+		if zone.source_id == source_id:
+			count += 1
+	return count
+
+
+## The manager under `world`, or null; never creates one (conditions only look).
+static func find_in_world(world: Node) -> ZoneManager:
+	if world == null or not is_instance_valid(world) or not world.is_inside_tree():
+		return null
+	return world.get_node_or_null(NODE_NAME) as ZoneManager
 
 
 ## Visual node pairs ever created; never exceeds max_live.
@@ -204,6 +223,8 @@ func _tick(zone: Zone) -> void:
 		push_error("ZoneManager: zone status '%s' has chance %s but the context has no RNG; not applied" % [zone.status_id, str(zone.status_chance)])
 	for hurtbox: Hurtbox in hits:
 		if not is_instance_valid(hurtbox):
+			continue
+		if not zone.condition.is_empty() and not EffectCondition.target_ok(zone.condition, hurtbox):
 			continue
 		if zone.damage > 0.0:
 			hurtbox.receive_damage(zone.damage, zone.damage_type, EffectTemplates.knockback_from(zone.center, hurtbox.global_position, zone.knockback), source, Health.KIND_DOT)

@@ -62,6 +62,14 @@ const MAX_ZONE_TICKS := 200
 const MAX_PLACE_RANGE := 30.0
 const MAX_PASS_THROUGH := 30.0
 const MAX_AOE_DELAY := 3.0
+## aoe (optional, BD1): anchor "caster" locks the disc at the caster's position at cast time (a delayed blast left at
+## the start of a blink). Not combinable with max_range (which places the disc at the aim point).
+const AOE_ANCHORS: Array[String] = ["caster"]
+const ANCHOR_CASTER := "caster"
+## buff (optional, BD1): consume_on_cast (a slot type id or a tag) and charges (whole number 1..MAX_BUFF_CHARGES,
+## default 1) make it a primed buff: used up by that many matching casts after the one that applied it, or when
+## `duration` runs out. See StatModifiers.add_primed_modifier.
+const MAX_BUFF_CHARGES := 20
 
 const PROJECTILE_SCENE_PATH := "res://scenes/effects/Projectile.tscn"
 ## A shot leaves this far in front of the caster (the cast preview lane starts here too).
@@ -122,10 +130,21 @@ static func validate_params(template_id: String, params: Dictionary) -> Array[St
 				errors.append("'max_range' must be a number above 0 and at most %s" % str(MAX_PLACE_RANGE))
 			if params.has("delay") and not _number_in(params["delay"], 0.0, MAX_AOE_DELAY, false):
 				errors.append("'delay' must be a number above 0 and at most %s" % str(MAX_AOE_DELAY))
+			if params.has("anchor"):
+				if not (typeof(params["anchor"]) == TYPE_STRING and AOE_ANCHORS.has(String(params["anchor"]))):
+					errors.append("'anchor' must be one of %s" % str(AOE_ANCHORS))
+				elif params.has("max_range"):
+					errors.append("'anchor' and 'max_range' cannot be combined (max_range places the disc at the aim point)")
+		"buff":
+			_validate_buff(params, errors)
 	return errors
 
 
 ## True when `value` is a finite number in (min, max] (or [min, max] when `inclusive_min`).
+static func number_in(value: Variant, minimum: float, maximum: float, inclusive_min: bool) -> bool:
+	return _number_in(value, minimum, maximum, inclusive_min)
+
+
 static func _number_in(value: Variant, minimum: float, maximum: float, inclusive_min: bool) -> bool:
 	if not _is_number(value):
 		return false
@@ -133,6 +152,26 @@ static func _number_in(value: Variant, minimum: float, maximum: float, inclusive
 	if is_nan(number) or is_inf(number) or number > maximum:
 		return false
 	return number >= minimum if inclusive_min else number > minimum
+
+
+static func _validate_buff(params: Dictionary, errors: Array[String]) -> void:
+	if params.has("charges") and not params.has("consume_on_cast"):
+		errors.append("'charges' needs 'consume_on_cast'")
+	if params.has("consume_on_cast"):
+		var consume: Variant = params["consume_on_cast"]
+		if typeof(consume) != TYPE_STRING or not (SlotTypeDatabase.has(String(consume)) or CardTags.is_known_tag(String(consume))):
+			errors.append("'consume_on_cast' must be a slot type id (%s) or a tag (a derived tag or keyword)" % str(SlotTypeDatabase.known_ids()))
+	if params.has("charges"):
+		var charges: Variant = params["charges"]
+		if not _is_number(charges) or float(charges) != floorf(float(charges)) or float(charges) < 1.0 or float(charges) > float(MAX_BUFF_CHARGES):
+			errors.append("'charges' must be a whole number from 1 to %d" % MAX_BUFF_CHARGES)
+	var stat: Variant = params.get("stat")
+	if typeof(stat) == TYPE_STRING and String(stat).begins_with(StatModifiers.COOLDOWN_SKIP_PREFIX):
+		var slot: String = String(stat).substr(StatModifiers.COOLDOWN_SKIP_PREFIX.length())
+		if not SlotTypeDatabase.has(slot):
+			errors.append("'%s' names an unknown slot type" % String(stat))
+		if String(params.get("modifier_type", "")) != StatModifiers.ADDITIVE or not _is_number(params.get("value")) or float(params["value"]) <= 0.0:
+			errors.append("a %s buff must be additive with a value above 0" % String(stat))
 
 
 static func _validate_zone(params: Dictionary, errors: Array[String]) -> void:
@@ -259,7 +298,16 @@ static func _kind_for(index: int) -> StringName:
 	return Health.KIND_HIT if index == 0 else Health.KIND_ECHO
 
 
-static func execute(template_id: String, params: Dictionary, context: EffectContext) -> void:
+## `condition` is the effect's optional condition block (see EffectCondition). A caster condition (cast_within,
+## zone_active) is checked once here and a false one skips the effect. A target condition travels to the hit
+## path in a copy of the params (only made when there is one, so unconditioned effects run exactly as before).
+static func execute(template_id: String, params: Dictionary, context: EffectContext, condition: Dictionary = {}) -> void:
+	if not condition.is_empty():
+		if not EffectCondition.caster_ok(condition, context):
+			return
+		if EffectCondition.is_target_condition(condition):
+			params = params.duplicate()
+			params[EffectCondition.PARAM_KEY] = condition
 	match template_id:
 		"cone":
 			_execute_cone(params, context)
@@ -299,6 +347,7 @@ static func _cone_hit(params: Dictionary, context: EffectContext, index: int) ->
 		context.caster_team,
 		CollisionLayers.HURTBOX
 	)
+	hits = EffectCondition.filter_hits(params, hits)
 	context.last_hits = hits
 	if bool(params.get("vfx", true)):
 		_play_cone_vfx(params, context, forward)
@@ -324,7 +373,11 @@ static func _play_cone_vfx(params: Dictionary, context: EffectContext, forward: 
 ## targeted heavies; cards leave it out and the disc is centred on the caster.
 static func _execute_aoe(params: Dictionary, context: EffectContext) -> void:
 	var locked: Dictionary = params
-	if params.has("max_range") and not params.has("center") and context.caster.is_inside_tree():
+	if params.get("anchor", "") == ANCHOR_CASTER and not params.has("center") and context.caster.is_inside_tree():
+		# Anchored: the disc stays where the caster stands NOW, even if it blinks away before a delayed hit lands.
+		locked = params.duplicate()
+		locked["center"] = context.caster.global_position
+	elif params.has("max_range") and not params.has("center") and context.caster.is_inside_tree():
 		# Placed: the disc lands at the aim point clamped to max_range, locked at cast.
 		locked = params.duplicate()
 		locked["center"] = context.placement(float(params["max_range"]))["point"]
@@ -384,6 +437,7 @@ static func _aoe_hit(params: Dictionary, context: EffectContext, index: int) -> 
 		context.caster_team,
 		CollisionLayers.HURTBOX
 	)
+	hits = EffectCondition.filter_hits(params, hits)
 	context.last_hits = hits
 	if bool(params.get("vfx", true)):
 		_play_aoe_vfx(params, context, center)
@@ -466,6 +520,8 @@ static func _projectile_shot(params: Dictionary, context: EffectContext, index: 
 	else:
 		instance.set_look(ElementVisuals.visual_for_team(String(params["damage_type"]), context.caster_team))
 	instance.knockback_strength = params.get("knockback_strength", 0.0)
+	if params.has(EffectCondition.PARAM_KEY):
+		instance.condition = params[EffectCondition.PARAM_KEY]
 	instance.set_source(context.caster, _kind_for(index))
 	# Player shots only: an enemy shot's lane would look like a telegraph it is not.
 	if context.caster_team == "player" and bool(params.get("lane", true)):
@@ -531,6 +587,7 @@ static func _apply_status_once(params: Dictionary, context: EffectContext) -> vo
 	var targets: Array[Hurtbox] = context.last_hits
 	if params.get("target", "last_hits") == "self" and context.caster.has_node("Hurtbox"):
 		targets = [context.caster.get_node("Hurtbox") as Hurtbox]
+	targets = EffectCondition.filter_hits(params, targets)
 	var chance: float = float(params.get("chance", 1.0))
 	if chance > 0.0 and chance < 1.0 and context.rng == null:
 		push_error("EffectTemplates: apply_status '%s' has chance %s but the context has no RNG; not applied" % [status_id, str(chance)])
@@ -563,6 +620,10 @@ static func _execute_buff(params: Dictionary, context: EffectContext) -> void:
 		TemplateVfx.buff_aura(_vfx_pool(context), context.caster as Node3D, cue, duration)
 	_buff_serial += 1
 	var modifier_id := "buff_%d" % _buff_serial
+	if params.has("consume_on_cast"):
+		# Primed: StatModifiers ages it (the card controller advances it) and uses it up by matching casts.
+		stat_modifiers.add_primed_modifier(stat, modifier_id, modifier_type, value, String(params["consume_on_cast"]), int(params.get("charges", 1)), duration)
+		return
 	stat_modifiers.add_modifier(stat, modifier_id, modifier_type, value)
 	if context.caster.is_inside_tree():
 		var tree := context.caster.get_tree()

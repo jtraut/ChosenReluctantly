@@ -28,6 +28,8 @@ var _ball: PooledEffect = null
 var _ball_generation: int = 0
 ## Set on the first hit: queue_free is deferred, so two hurtboxes entered in the same physics step must not both be hit.
 var _spent: bool = false
+## A target condition (EffectCondition) from the card effect, or {}. A shot whose target fails it is spent and deals nothing.
+var condition: Dictionary = {}
 
 ## Seconds between trail puffs (not every frame, so a few shots cannot flood the pool).
 const TRAIL_INTERVAL := 0.04
@@ -136,6 +138,10 @@ func _on_area_entered(area: Area3D) -> void:
 		return
 	var knockback := _direction * knockback_strength if knockback_strength > 0.0 else Vector3.ZERO
 	_spent = true
+	if not condition.is_empty() and not EffectCondition.target_ok(condition, hurtbox):
+		_burst()
+		queue_free()
+		return
 	hurtbox.receive_damage(_damage, _damage_type, knockback, instance_from_id(_source_id) as Node if _source_id != 0 else null, _hit_kind)
 	_burst()
 	queue_free()

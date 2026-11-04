@@ -16,6 +16,10 @@ var rng: RandomNumberGenerator = null
 ## (empty = unbounded). Placed effects (zone, aoe with max_range) read these through placement().
 var aim_point: Variant = null
 var arena: Rect2 = Rect2()
+## The caster's recent casts and the game time now, for `cast_within` conditions (CardSlotController sets both from
+## CombatEvents). Null history = no cast ever counts.
+var cast_history: CastHistory = null
+var now: float = 0.0
 
 
 func _init(p_caster: Node3D, p_spawn_parent: Node, p_caster_team: String = "neutral") -> void:

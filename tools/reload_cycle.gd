@@ -99,6 +99,7 @@ func _check_fresh(label: String) -> void:
 		_check((player.collision_mask & CollisionLayers.ENEMY_BODY) != 0, "%s: player mask lost the enemy-body bit" % label)
 	var zones: Node = main.get_node_or_null(ZoneManager.NODE_NAME)
 	_check(zones == null or (zones as ZoneManager).live_count() == 0, "%s: live zones in a fresh arena" % label)
+	_check(CombatEvents.history.size() == 0, "%s: cast history leaked into a fresh arena (%d entries)" % [label, CombatEvents.history.size()])
 
 
 ## C1-f: puts the real zone and pass-through paths into the arena that is about to be killed and
@@ -117,6 +118,9 @@ func _arm_zone_and_pass_through(main: Main, label: String) -> void:
 		EffectTemplates.execute(effect["template"], effect["params"], context)
 	var zones := ZoneManager.for_world(main)
 	_check(zones != null and zones.live_count() >= 1, "%s: Fire Wall did not place a zone" % label)
+	# BD1: a recorded cast must not survive into the next scene (CombatEvents.reset on load).
+	CombatEvents.notify_card_cast("utility", "fire_wall")
+	_check(CombatEvents.history.size() == 1, "%s: the cast history did not record the Fire Wall cast" % label)
 	main.player.grant_pass_through(30.0)
 	_check(main.player.is_pass_through(), "%s: pass-through grant did not start" % label)
 	_check(Enemy.is_player_body_suppressed(), "%s: static pass-through flag not set" % label)
@@ -264,6 +268,7 @@ func _check_run_fresh(label: String, expected_room: int) -> void:
 	_check(is_equal_approx(Engine.time_scale, 1.0) and not get_tree().paused, "%s: time scale or pause leaked" % label)
 	_check(not Enemy.is_player_body_suppressed(), "%s: pass-through flag leaked" % label)
 	_check(_enemy_count(main) == 0, "%s: %d enemies in a fresh room" % [label, _enemy_count(main)])
+	_check(CombatEvents.history.size() == 0, "%s: cast history leaked into a fresh room (%d entries)" % [label, CombatEvents.history.size()])
 	for slot_type: String in CardSlotController.SLOT_TYPE_ORDER:
 		_check(main.player.card_slots.get_slot(slot_type).cooldown_remaining == 0.0, "%s: slot %s cooldown carried over" % [label, slot_type])
 	var deck: Array[String] = main.player.card_slots.owned_card_ids()

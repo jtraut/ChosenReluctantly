@@ -29,6 +29,8 @@ static func is_damage_card(card: Dictionary) -> bool:
 static func cast_damage(card: Dictionary, statuses: Dictionary, cycle_time: float) -> float:
 	var total := 0.0
 	for effect: Dictionary in card.get("effects", []):
+		if effect.has("condition"):
+			continue  # conditional damage never counts: a payoff must pass the rule on its unconditional damage alone
 		var template := String(effect.get("template", ""))
 		var params: Dictionary = effect.get("params", {})
 		if DIRECT_TEMPLATES.has(template):

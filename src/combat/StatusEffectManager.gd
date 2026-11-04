@@ -7,6 +7,9 @@ class_name StatusEffectManager
 ## change, not a code change. A genuinely new effect_type is a new branch in
 ## `_tick()`.
 
+## Stat prefix: "status_damage_mult.burn" scales the damage-over-time ticks the caster's burns deal (base 1.0).
+const STATUS_DAMAGE_MULT_PREFIX := "status_damage_mult."
+
 signal status_applied(status_id: String)
 signal status_expired(status_id: String)
 ## An already-active status was applied again (duration kept or extended, tick phase kept).
@@ -181,7 +184,8 @@ func _tick(active: ActiveStatus) -> void:
 	if health == null:
 		return
 	if active.effect_type == "damage_over_time":
-		health.take_damage(active.damage_per_tick, active.damage_type, Vector3.ZERO, active.source_node(), Health.KIND_DOT)
+		var source: Node = active.source_node()
+		health.take_damage(active.damage_per_tick * _status_damage_mult(active, source), active.damage_type, Vector3.ZERO, source, Health.KIND_DOT)
 		if String(active.cue.get("kind", "")) == "drips":
 			_tick_cue_drop(active.cue)
 	elif active.effect_type == "heal_over_time":
@@ -192,6 +196,17 @@ func _tick(active: ActiveStatus) -> void:
 				var owner_node := get_parent() as Node3D
 				if owner_node != null and owner_node.is_inside_tree():
 					TemplateVfx.heal_mote(_vfx_pool(), owner_node.global_position)
+
+
+## The applier's `status_damage_mult.<status_id>` stat (base 1.0) read at tick time, so a buff cast after the status
+## landed still counts. 1.0 when the applier is gone or has no stat stack.
+func _status_damage_mult(active: ActiveStatus, source: Node) -> float:
+	if source == null or not is_instance_valid(source):
+		return 1.0
+	var mods: Variant = source.get(&"stat_modifiers")
+	if not (mods is StatModifiers):
+		return 1.0
+	return (mods as StatModifiers).apply(STATUS_DAMAGE_MULT_PREFIX + active.status_id, 1.0)
 
 
 ## Bleed's tick look: a drop falls off the body, on the same beat as the damage number.

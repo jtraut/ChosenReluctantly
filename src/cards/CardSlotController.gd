@@ -7,6 +7,7 @@ extends RefCounted
 
 ## Emitted after a slot's card was cast (cooldown started, effects run).
 signal card_cast(slot_type: String, card_id: String)
+## (CombatEvents.card_cast carries the tags too and is the one conditions and relics listen to.)
 
 const SLOT_TYPE_ORDER: Array[String] = ["attack_single", "attack_aoe", "utility", "movement", "recovery"]
 const DEFAULT_SWAP_PENALTY := 1.0
@@ -103,6 +104,8 @@ func advance(delta: float) -> void:
 	# Iterating the dictionary directly allocates nothing (values() builds an Array every frame).
 	for slot_type: String in slots:
 		(slots[slot_type] as CardSlot).advance(delta)
+	if stat_modifiers != null:
+		stat_modifiers.advance(delta)
 
 
 func try_use(slot_type: String) -> bool:
@@ -117,7 +120,14 @@ func try_use(slot_type: String) -> bool:
 	var used_id := slot.use_card(cooldown_modifier, stat_modifiers)
 	if used_id == "":
 		return false
+	# Primed buffs from EARLIER casts are used up by this cast first, so a card's own buff never eats its own charge.
+	if stat_modifiers != null:
+		stat_modifiers.consume_for_cast(slot_type, CardDatabase.tags_for(used_id))
 	_cast_card(card_data)
+	# History after the effects: a card's own conditions never see its own cast.
+	var relay := CombatLink.events()
+	if relay != null:
+		relay.notify_card_cast(slot_type, used_id)
 	card_cast.emit(slot_type, used_id)
 	return true
 
@@ -132,13 +142,17 @@ func try_swap(slot_type: String) -> bool:
 func _cast_card(card_data: Dictionary) -> void:
 	var context := EffectContext.new(caster, spawn_parent, caster_team)
 	context.rng = status_rng
+	var relay := CombatLink.events()
+	if relay != null:
+		context.cast_history = relay.history
+		context.now = relay.now()
 	if caster != null and is_instance_valid(caster) and caster.has_method("get_aim_point"):
 		# Placed effects (zone, aoe with max_range) land where the caster aims, clamped by their range.
 		context.aim_point = caster.get_aim_point()
 		context.arena = caster.get_arena_rect()
 	var effects: Array = card_data.get("effects", [])
 	for effect: Dictionary in effects:
-		EffectTemplates.execute(effect.get("template", ""), effect.get("params", {}), context)
+		EffectTemplates.execute(effect.get("template", ""), effect.get("params", {}), context, effect.get("condition", {}))
 
 
 func _owned_card_ids_for_slot(slot_type: String, owned_pools: Array[String]) -> Array[String]:

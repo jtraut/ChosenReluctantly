@@ -50,6 +50,7 @@ func _exit_tree() -> void:
 
 func _ready() -> void:
 	set_process(false)
+	CombatEvents.reset()  # the cast history is run state: a new scene (run, room, arena, restart) starts it empty
 	camera_rig.target = player
 	camera_rig.global_position = player.global_position
 	player.camera = camera_rig.camera
@@ -215,6 +216,7 @@ func _replace_self() -> void:
 ## Engine.time_scale and Juice state are global and survive a reload.
 func _prepare_for_restart() -> void:
 	Juice.reset()
+	CombatEvents.reset()
 	GamePause.reset()
 	get_tree().paused = false
 

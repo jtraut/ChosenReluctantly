@@ -77,7 +77,7 @@ func _decide_payoff(slot_type: String, slot: CardSlot, card: Dictionary, slots: 
 		_holding.erase(slot_type)  # nothing to hit: the hold clock only runs in a fight
 		return WAIT
 	var held: Dictionary = _holding.get(slot_type, {})
-	if held.is_empty() or String(held["card"]) != slot.current_card_id:
+	if held.is_empty() or String(held["card"]) != slot.current_card_id or now < float(held["since"]):  # a new room resets the clock
 		held = {"card": slot.current_card_id, "since": now}
 		_holding[slot_type] = held
 	if not can_pay_off_soon(card, slot_type, slots, view) and _has_other_card(slot):

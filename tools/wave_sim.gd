@@ -110,6 +110,9 @@ var _dodge_pellets: bool = false
 var _plan: bool = false
 var _plan_policy: PlanPolicy = PlanPolicy.new()
 ## Plan mode counters, printed in the summary: casts, swaps, and casts made while a condition was live.
+## slot type -> sim time before which the plan bot does not press that slot again; the gap is the press-to-release delivery.
+var _plan_busy_until: Dictionary = {}
+const PLAN_PRESS_GAP := 0.1
 var _plan_stats: Dictionary = {"casts": 0, "swaps": 0, "live_casts": 0, "held_casts": 0}
 
 ## `--start-room=N` (wave sim -StartRoom, run mode): every run starts at room N (1-based) with the class's starter deck and full HP, so a
@@ -153,6 +156,8 @@ func _ready() -> void:
 			_boss_log = true
 		elif arg == "--dodge-pellets":
 			_dodge_pellets = true
+		elif arg == "--plan":
+			_plan = true
 		elif arg.begins_with("--start-room="):
 			_start_room = maxi(int(arg.substr(13)), 0)
 		elif arg.begins_with("--sim-deck="):
@@ -251,6 +256,9 @@ func _reset_run_state(run_seed: int) -> void:
 	_pair_min_all = INF
 	_dodge_cooldown_until = 0.0
 	_heavy_until = 0.0
+	_plan_policy = PlanPolicy.new()
+	_plan_busy_until.clear()
+	_plan_stats = {"casts": 0, "swaps": 0, "live_casts": 0, "held_casts": 0}
 	_pellet_sidestep = Vector3.ZERO
 	_pellet_imminent = false
 	_profiled_alive = 0
@@ -457,7 +465,7 @@ func _press(action: StringName, strength: float = 1.0) -> void:
 ## Input.action_press emits none, so those go through parse_input_event. Movement and dodge poll.
 func _is_latched_action(action: StringName) -> bool:
 	var text := String(action)
-	return text.begins_with("slot_") or text.begins_with("attack_")
+	return text.begins_with("slot_") or text.begins_with("attack_") or text.begins_with("dead_card_swap_")
 
 
 func _send_action(action: StringName, pressed: bool) -> void:
@@ -567,7 +575,11 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 	if crowd >= 2 and _sim_time >= _heavy_until:
 		_press(&"attack_heavy")
 		_heavy_until = _sim_time + 1.9
-	if _rng.randf() < 0.3:
+	if _plan:
+		if not _light_heavy_only:
+			var dodge_left: bool = _sim_time >= _dodge_cooldown_until and bool(_player.get_dodge_state()["available"])
+			_plan_cards(danger != null or boss_threat, dodge_left)
+	elif _rng.randf() < 0.3:
 		var slot_number: int = _rng.randi_range(1, 5)
 		if not _light_heavy_only:
 			_press(StringName("slot_%d" % slot_number))
@@ -575,13 +587,15 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 		_press(&"attack_light")
 
 
-## --plan: one PlanPolicy decision per slot, sent through the real input path (slot key to cast, Shift+slot key to swap).
+## --plan: one PlanPolicy decision per slot, sent through the real input path (slot key to cast, the swap action to swap).
 func _plan_cards(in_danger: bool, dodge_ready: bool) -> void:
 	var view: Dictionary = SlotSynergyView.view_for(_player)
 	var hp_fraction: float = _player.health.get_current_health() / maxf(_player.health.get_max_health(), 1.0)
 	var decisions: Dictionary = _plan_policy.decide_all(_player.card_slots.slots, view, hp_fraction, in_danger, dodge_ready)
 	for index in range(CardSlotController.SLOT_TYPE_ORDER.size()):
 		var slot_type: String = CardSlotController.SLOT_TYPE_ORDER[index]
+		if _sim_time < float(_plan_busy_until.get(slot_type, 0.0)):
+			continue  # a key press on this slot is still being delivered (a cast happens on release)
 		match String(decisions.get(slot_type, PlanPolicy.WAIT)):
 			PlanPolicy.CAST:
 				var card: Dictionary = CardDatabase.get_card(_player.card_slots.get_slot(slot_type).current_card_id)
@@ -591,9 +605,11 @@ func _plan_cards(in_danger: bool, dodge_ready: bool) -> void:
 				elif not SlotSynergy.conditional_effects(card).is_empty():
 					_plan_stats["held_casts"] = int(_plan_stats["held_casts"]) + 1
 				_press(StringName("slot_%d" % (index + 1)))
+				_plan_busy_until[slot_type] = _sim_time + PLAN_PRESS_GAP
 			PlanPolicy.SWAP:
 				_plan_stats["swaps"] = int(_plan_stats["swaps"]) + 1
 				_press(StringName("dead_card_swap_%d" % (index + 1)))
+				_plan_busy_until[slot_type] = _sim_time + PLAN_PRESS_GAP
 
 
 ## The Wizard stand-off (metres): its bolt reaches 12 m and its heavy disc 7 m, melee enemies close in on it.
@@ -816,6 +832,9 @@ func _run_whole(run_seed: int) -> void:
 		run_seed, String(result["outcome"]).to_upper(), int(result["rooms_reached"]), rooms.size(), float(result["sim_s"]), float(result["wall_ms"]) / 1000.0, ",".join(type_letters), str(result["room_s"]), str(result["room_min_hp"]), str(result["hp_end"])])
 	print("    HP at each room end %s (max %s) | deck %d cards %s | picks %d, rejects used %d, removals %d, rest heals %d" % [
 		str(result["room_hp_end"]), str(result["max_hp"]), int(result["deck_size"]), str(result["deck_slots"]), int(result["picks"]), int(result["rejects_used"]), int(result["removals"]), int(result["heals"])])
+	print("    run stat: seed %d outcome %s rooms_reached %d damage_taken %.1f" % [run_seed, String(result["outcome"]), int(result["rooms_reached"]), _damage_taken])
+	if _plan:
+		print("    plan policy: %d card casts (%d with the condition live, %d held payoff casts), %d dead-card swaps" % [int(_plan_stats["casts"]), int(_plan_stats["live_casts"]), int(_plan_stats["held_casts"]), int(_plan_stats["swaps"])])
 	# Leave nothing of this run behind for the next one.
 	var last: Node = get_tree().current_scene
 	if last != null and last is Main:
@@ -949,9 +968,13 @@ func _play_room(run_seed: int, controller: RunController, room: Dictionary) -> S
 	var cap: int = _main.enemy_spawner.plan.max_alive()
 	var prev_enemies: Dictionary = {}
 	await get_tree().process_frame
+	var hp_before: float = _player.health.current_health
 	while true:
 		Engine.time_scale = _scale
 		await get_tree().process_frame
+		# HP lost over the run (info for the sim reports): every drop between two frames, healing not netted off.
+		_damage_taken += maxf(hp_before - _player.health.current_health, 0.0)
+		hp_before = _player.health.current_health
 		var dt: float = _clock - _sim_time
 		_sim_time = _clock
 		for action in _release_next:

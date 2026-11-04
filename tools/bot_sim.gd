@@ -15,6 +15,7 @@ const TICKS_PER_ROOM := 300
 const DT := 1.0 / 60.0
 const ACT_CHANCE := 0.1
 const SWAP_CHANCE := 0.2
+const SimCasterScript := preload("res://tools/sim_caster.gd")
 
 var _rng := RandomNumberGenerator.new()
 ## Card shuffles, seeded per room so the whole sim repeats from --seed.
@@ -22,21 +23,36 @@ var _card_rng := RandomNumberGenerator.new()
 var _issues: Array[String] = []
 ## Rolling hash of every card used, so two runs of one seed can be compared at a glance.
 var _checksum: int = 0
+## `--plan`: the card room is driven by PlanPolicy (the plan-aware bot, BD1) instead of random presses. `--deck=<preset>`
+## (plan mode only) loads a debug deck from data/debug_decks. Both are off by default and the standard path is untouched.
+var _plan: bool = false
+var _deck_name: String = ""
+var _plan_stats: Dictionary = {"casts": 0, "swaps": 0, "live_casts": 0, "payoff_casts": 0, "dashes": 0, "primed_seen": 0}
+var _plan_checksum: int = 0
 
 
 func _initialize() -> void:
 	var rooms := _rooms_arg()
 	var seed_value := _seed_arg()
+	if not _read_plan_args():
+		quit(2)
+		return
 	print("Headless bot-sim: %d rooms x %d ticks, seed %d (rerun with --seed=%d to reproduce)" % [rooms, TICKS_PER_ROOM, seed_value, seed_value])
 	for room_index in range(rooms):
 		_rng.seed = seed_value + room_index
 		_card_rng.seed = seed_value + 200000 + room_index
-		await _run_room(room_index)
+		if _plan:
+			await _run_plan_room(room_index)
+		else:
+			await _run_room(room_index)
 		_rng.seed = seed_value + 100000 + room_index
 		_run_attack_room(room_index)
 	if _issues.is_empty():
 		print("Bot-sim OK: no NaN detected across %d rooms (%d ticks each)." % [rooms, TICKS_PER_ROOM])
 		print("Bot-sim checksum: %d (same seed and rooms give the same checksum)" % _checksum)
+		if _plan:
+			print("Bot-sim plan: deck %s | %d casts (%d payoff casts, %d with the condition live), %d dead-card swaps, %d dashes, primed state seen on %d ticks | plan checksum %d" % [
+				_deck_name if _deck_name != "" else "(all pool cards)", int(_plan_stats["casts"]), int(_plan_stats["payoff_casts"]), int(_plan_stats["live_casts"]), int(_plan_stats["swaps"]), int(_plan_stats["dashes"]), int(_plan_stats["primed_seen"]), _plan_checksum])
 		quit(0)
 	else:
 		print("Bot-sim FAILED - %d issue(s):" % _issues.size())
@@ -50,6 +66,24 @@ func _seed_arg() -> int:
 		if arg.begins_with("--seed="):
 			return int(arg.substr("--seed=".length()))
 	return 1
+
+
+## Reads --plan and --deck=<preset>. False (with a message) on a bad value.
+func _read_plan_args() -> bool:
+	for arg: String in OS.get_cmdline_user_args():
+		if arg == "--plan":
+			_plan = true
+		elif arg.begins_with("--deck="):
+			_deck_name = arg.substr("--deck=".length())
+	if _deck_name != "" and not _plan:
+		push_error("bot-sim: --deck needs --plan")
+		return false
+	if _deck_name != "":
+		var presets: Dictionary = DebugDecks.read_dir()["presets"]
+		if not presets.has(_deck_name):
+			push_error("bot-sim: --deck must be one of %s, got '%s'" % [str(presets.keys()), _deck_name])
+			return false
+	return true
 
 
 func _rooms_arg() -> int:
@@ -84,6 +118,73 @@ func _run_room(room_index: int) -> void:
 			_act_randomly(controller)
 		_check_for_nan(controller, room_index, tick)
 
+	caster.queue_free()
+
+
+## --plan: PlanPolicy plays the card slots for one room. The room has a stand-in caster that carries stat modifiers and
+## counts dashes, one synthetic enemy two metres ahead that the caster aims at (it counts as Burning for 4 s after any Burn-tag cast, and a Zone counts as up for
+## 4 s after any Zone-tag cast, so target and zone conditions get exercised), a rotating "in danger" flag, and the real CombatEvents clock stepped by hand each tick (the
+## loop runs no frames, so the autoload's own _process never advances it). Checks: no NaN, the cast history stays bounded,
+## primed charges never go negative.
+func _run_plan_room(room_index: int) -> void:
+	var caster: Node3D = SimCasterScript.new()
+	root.add_child(caster)
+	await process_frame
+	var health := Health.new()
+	health.name = "Health"
+	health.max_health = 30.0
+	caster.add_child(health)
+	var relay: CombatEventsRelay = CombatLink.events()
+	if relay == null:
+		_issues.append("room %d: the CombatEvents autoload is not present at run time in this script (no cast history)" % room_index)
+		caster.queue_free()
+		return
+	relay.reset()
+	var pools: Array[String] = ["rogue", "fire", "neutral"]
+	var deck: Array[String] = []
+	if _deck_name != "":
+		var preset: Dictionary = (DebugDecks.read_dir()["presets"] as Dictionary)[_deck_name]
+		pools = [RunSession.preset_character(preset), "fire", "neutral"]
+		deck = DebugDecks.deck_of(preset, false)
+	var controller := CardSlotController.new(caster, caster, "player", caster.stat_modifiers, pools, _card_rng)
+	controller.status_rng = RandomNumberGenerator.new()
+	controller.status_rng.seed = 7
+	if not deck.is_empty():
+		controller.set_deck(deck)
+	var policy := PlanPolicy.new()
+	for tick in range(TICKS_PER_ROOM):
+		relay.step(DT)
+		controller.advance(DT)
+		var now: float = relay.now()
+		var burning: bool = relay.history.cast_within(now, 4.0, "", "Burn")
+		var view: Dictionary = {"now": now, "history": relay.history, "zone_count": 1 if relay.history.cast_within(now, 4.0, "", "Zone") else 0, "origin": Vector3.ZERO, "forward": Vector3(0, 0, -1),
+				"aim_point": Vector3(0, 0, -2), "arena": Rect2(), "enemies": [{"pos": Vector3(0, 0, -2), "statuses": ["burn"] if burning else []}]}
+		var decisions: Dictionary = policy.decide_all(controller.slots, view, 1.0, (tick / 90) % 3 == 0, false)
+		for slot_type: String in CardSlotController.SLOT_TYPE_ORDER:
+			var card_id: String = controller.get_slot(slot_type).current_card_id
+			var card: Dictionary = CardDatabase.get_card(card_id)
+			match String(decisions.get(slot_type, PlanPolicy.WAIT)):
+				PlanPolicy.CAST:
+					var payoff: bool = not SlotSynergy.conditional_effects(card).is_empty()
+					var live: bool = payoff and SlotSynergy.is_live(card, view)
+					if controller.try_use(slot_type):
+						_plan_stats["casts"] = int(_plan_stats["casts"]) + 1
+						_plan_stats["payoff_casts"] = int(_plan_stats["payoff_casts"]) + (1 if payoff else 0)
+						_plan_stats["live_casts"] = int(_plan_stats["live_casts"]) + (1 if live else 0)
+						_plan_checksum = hash([_plan_checksum, slot_type, card_id, tick])
+				PlanPolicy.SWAP:
+					if controller.try_swap(slot_type):
+						_plan_stats["swaps"] = int(_plan_stats["swaps"]) + 1
+						_plan_checksum = hash([_plan_checksum, "swap", slot_type, card_id, tick])
+		if not caster.stat_modifiers.primed_state().is_empty():
+			_plan_stats["primed_seen"] = int(_plan_stats["primed_seen"]) + 1
+		for entry: Dictionary in caster.stat_modifiers.primed_state():
+			if int(entry["charges"]) < 0:
+				_issues.append("room %d tick %d: negative primed charges" % [room_index, tick])
+		if relay.history.size() > CastHistory.MAX_ENTRIES:
+			_issues.append("room %d tick %d: the cast history grew past its cap (%d)" % [room_index, tick, relay.history.size()])
+		_check_for_nan(controller, room_index, tick)
+	_plan_stats["dashes"] = int(_plan_stats["dashes"]) + int(caster.get("dashes"))
 	caster.queue_free()
 
 

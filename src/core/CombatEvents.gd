@@ -17,6 +17,12 @@ var _now: float = 0.0
 
 
 func _process(delta: float) -> void:
+	step(delta)
+
+
+## Advances the game clock by `delta`. _process calls it every frame; a headless sim that runs ticks without frames (the
+## bot-sim) calls it itself, so its casts get real timestamps.
+func step(delta: float) -> void:
 	_now += delta
 
 

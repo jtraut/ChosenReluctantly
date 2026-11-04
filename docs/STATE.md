@@ -20,7 +20,8 @@ Last updated: 2026-11-03 (H3 closed, tag `playtest-2026-11-03-H3`). **Run order:
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- Nothing in progress. Working tree clean after the close commit.
+- **Director, 2026-11-03, on H3 (Rogue run):** "it still felt good, never overwhelmed, let's keep going." Recorded in OPEN_ITEMS 40 (Wizard side still open); goes to RESOLVED/CHANGELOG in the MAP0 tech-writer pass.
+- **MAP0 in progress (game-lead).** If cut off: check for `docs/MAP.md`; finish it, then GDD §9 summary, ROADMAP map-build brief, OPEN_ITEMS D31+.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step

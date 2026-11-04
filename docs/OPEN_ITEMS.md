@@ -1,6 +1,6 @@
 # Director open items
 
-Last updated: 2026-11-03 (H3 closed, tag `playtest-2026-11-03-H3`)
+Last updated: 2026-11-03 (H3 closed; your Rogue run recorded; MAP0 in progress)
 **Status: nothing waiting on a decision, 3 things to look at now (40, 38, 39; item 35 waits for BD2). H3 is done: the dodge is back on Space (Rogue 2, Wizard 1), Movement is on Ctrl, enemies and the boss volley are a bit faster. Next: MAP0 (map design doc, with your merchant and relic stage; it will also ask what a rest stop offers), then PL3 -> BD1 -> BD2.**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D30 = A".
@@ -24,7 +24,7 @@ Nothing right now. D30 = A is recorded in GDD §4a (relics only from the merchan
 
 Reply with the number and a word or two.
 
-40. **H3, the dodge is back (play one run per class, plus one with no cards).** Does it feel fluid again? Is Ctrl comfortable for Movement while you move with WASD? (Only tested with simulated keys so far.) Do the faster attacks and the boss's Fan of regrets (lanes now brighten toward the fire moment, 0.75 s wind-up) give you time to react, especially as the 1-dodge Wizard? The bots say the volley does all of the Wizard's boss damage; I'm checking whether that's the bot or the volley (PL3 item 13). A no-card run should still lose.
+40. **H3, the Wizard side (your Rogue run is recorded: "still felt good, never overwhelmed").** When you next play: does the 1-dodge Wizard get time to react to the boss's Fan of regrets (0.75 s wind-up, lanes brighten toward the fire moment)? Is Ctrl comfortable for Movement while you move with WASD? A no-card run should still lose. The bots say the volley does all of the Wizard's boss damage; I'm checking whether that's the bot or the volley (PL3 item 13).
 38. **H1 pace.** Do rooms feel quicker with the faster enemies, or only more crowded? (Playtester's question; the bot can't tell.) You can answer this together with 40.
 39. **H1 boss length.** The Rogue's boss fight runs about 6 s longer (about 66 s). Fine?
 35. **Builds (after BD2).** Build the same class and element twice with different plans. Do the two runs feel different? Does removing a keystone card hurt?

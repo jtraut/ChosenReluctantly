@@ -2,6 +2,39 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
+## 2026-11-03 (Slice H3: dodge return and enemy speed-up; director decision D30)
+
+Commit range 0cf2a09..305b13b (D30 records from 98efccd). Planned tag: `playtest-2026-11-03-H3`. qa: PASS (`docs/reviews/2026-11-03-h3-qa.md`). Playtest: no blocker (`docs/playtests/2026-11-03-h3-short.md`).
+
+### Added
+- Dodge is back on **Space**. This is the build of the D29 = B decision from 2026-11-02 (the values below are game-lead's) (cee653d).
+- New scenario `boss_volley`: a boss with 9999 HP that only throws Fan of regrets, for wind-up and mid-flight captures (d22b08d).
+- New `pressure.telegraph_scale` in `data/enemies.json` (optional, default 1.0), shipped at 0.85 (783d552).
+- New `data/vfx.json` keys `boss_volley_lane_alpha_start`, `boss_volley_lane_alpha_end` and `boss_volley_lane_max_length`, and a `ramp` parameter on `TemplateVfx.enemy_shot_lane` (6f89eea).
+- Tests: Ctrl-held E/F/R casts, swap binding flags, the phase-3 lane ramp, boss add telegraph scale, volley threat tip (3dc74fb, 44eff31, f1a3f88). Suite now 1244 test cases in 108 suites.
+
+### Changed
+- **[Director decision, D30 = A]** Relics come only from the merchant, the relic stage and elites. Rest rooms and card reward screens do not offer relics. Old plan: rest room "heal 30% or a relic", and 1 in 4 reward screens showing a relic. His reason: heal-or-relic is too obvious a choice, and Recovery already heals. His note: the rest-room heal may be removed altogether; MAP0 will propose. Recorded in GDD §4a and §9, BUILD_DEPTH §4.1 and §11, ROADMAP BD2 and MAP0 (98efccd).
+- Dodge (cee653d), values from D29 = B:
+  - `dodge.enabled` in `data/player.json`: false -> **true**.
+  - Default charges: 3 -> **2**. Rogue 3 -> **2**, Wizard 2 -> **1** (`dodge_charges` in `data/characters.json`).
+  - Movement slot key: Space -> **Ctrl**. Movement swap: Shift+Space -> **Shift+Ctrl**. The dodge action is bound to Space.
+  - Slot keys Q/E/F/R now still cast while Ctrl is held. Old: Ctrl+key did nothing. Shift pressed after Ctrl still swaps (`Player._swap_by_late_modifier`).
+  - Windows caveats, not fixed: Ctrl+Shift is the layout-switch hotkey on multi-layout machines, and Ctrl+Space toggles the IME on some CJK setups.
+- Enemy speed-up (783d552):
+  - `pressure.attack_rate_scale`: 1.0 -> **1.1**.
+  - New `pressure.telegraph_scale`: 1.0 -> **0.85**, applied to non-boss telegraphs, boss adds included. Telegraph durations: 0.45 -> 0.38, 0.7 -> 0.6, 0.9 -> 0.77.
+  - Fan of regrets wind-up: 0.9 -> **0.75** (phase 3: **0.64**).
+- Fan of regrets lanes now ramp in alpha from 0.22 to 0.9 across the wind-up, capped at 14 m. Old: the lanes started at 0.5 and faded to 0 (6f89eea).
+- Bot clear rates, 20 seeds, H3 as shipped: Rogue 17/20, Wizard kite 15/20, Wizard no-kite 18/20. Every `-LightHeavyOnly` config 0/20 (no-card gate passes).
+- Arena sim hashes moved: seed 1, 30 s: 2816045921 -> 2333565009 (as recorded in the README before H3); 90 s: 3667433295 -> 819020947. Bot sim `-Rooms 20 -Seed 3` is unchanged at 2281795515.
+
+### Fixed
+- `Boss.in_threat` measured the volley lane from the boss centre, 0.6 m short of the drawn lane and the pellets' reach. It now measures from the muzzle (`BossRules.MUZZLE`), which fixes the bot's and the threat check's view of the volley (d22b08d). A new test traces every pellet of a real volley against the drawn lanes (within 0.03 m).
+
+### Docs and process
+- docs/RESOLVED.md gains D30. README controls, scenario list and last-verification block updated. ARCHITECTURE updated for the dodge, `telegraph_scale` and the lane ramp.
+
 ## 2026-11-02 (Slice BD0: build-depth design doc; Slice H2: dodge-off trial; Slice H1: enemy pressure pass; Slice K1: key labels follow the bindings; director decisions: build depth, pressure pass, loadouts, run order, OPEN_ITEMS pass)
 
 ### Director answers: dodge return (D29), relics (D22, D24), stacking (D25), menu keys (D26), map (D28)

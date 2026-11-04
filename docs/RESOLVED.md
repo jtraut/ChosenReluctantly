@@ -2,6 +2,18 @@
 
 The archive of the director's answered, received and acknowledged items, moved here from `docs/OPEN_ITEMS.md`. Owned by tech-writer (director, 2026-11-02). Newest dated section first; IDs (D19, call 16, checklist item 33) are kept so they can be searched. Old entries change only to fix a factual error.
 
+## 2026-11-03
+
+### Answer recorded in 98efccd (D30)
+
+Removed from OPEN_ITEMS in 0cf2a09. The full question text is in `git show b332971:docs/OPEN_ITEMS.md`.
+
+#### Decisions
+
+| ID | Question | Your answer | Where it went |
+|---|---|---|---|
+| D30 | Do rest rooms and card reward screens still offer relics? Options: **A** (my default): no, only the merchant, the relic stage and elites; **B**: keep the rest-room heal-or-relic as a fourth source; **C**: keep both the rest-room choice and an occasional relic on a card reward screen. | **A**. Reason: heal-or-relic is too obvious a choice, and Recovery already heals. The rest-room heal may be removed altogether; MAP0 will propose. | GDD §4a and §9 (note); BUILD_DEPTH §4.1 and §11; ROADMAP BD2 and MAP0 (98efccd). |
+
 ## 2026-11-02
 
 ### Answers recorded in c475c58 (D22, D24, D25, D26, D28, D29; checklist items 40-42; what's-new notes)

@@ -24,7 +24,8 @@ Last updated: 2026-11-04 (PL3 gameplay-dev running; director answers D31 = A, D3
 ## In progress
 - **PL3: gameplay-dev done** (9a86757 tooling, fbfd86c knockback bug fix; suite 1252/1252, 110 suites; arena 90 s now 1212800, 30 s and bot-sim unchanged). Item 13 measured: mostly bot blind spot, but no safe gap at 6 m or closer -> D36. DECISIONS "2026-11-04 - PL3 gameplay-dev".
 - **PL3: ux done** (da418aa; suite 1263, two failures: `pl3_tooling_test` Wizard-scenario test fails on clean main (`main.player` is @onready, nil before add_child; test bug from 9a86757) and the known slice6 flake).
-- **Next role: qa** (PL3 review; fix the pl3_tooling test or FAIL to gameplay-dev). If cut off: check for `docs/reviews/2026-11-04-pl3-qa.md`.
+- **PL3: qa PASS** (16387bf, e38bdd2; `docs/reviews/2026-11-04-pl3-qa.md`; suite 1289/1289, 111 suites, twice; hashes reproduce: 30 s 2333565009, 90 s 1212800, bot sim 2281795515). Non-blocking carry-overs added under the PL3 brief.
+- **Next role: playtester (short).** If cut off: check for `docs/playtests/2026-11-04-pl3-short.md`.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step

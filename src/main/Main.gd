@@ -77,6 +77,11 @@ func _ready() -> void:
 func _choose_character() -> void:
 	var controller := get_node_or_null("RunController") as RunController
 	var hero := get_node_or_null("Player") as Player
+	var class_problem: String = Scenario.class_problem(OS.get_cmdline_user_args())
+	if class_problem != "":
+		printerr("Launch refused: " + class_problem)  # once, on stderr, like a bad run launch; no stack trace
+		get_tree().quit(2)
+		return
 	if hero != null:
 		var scenario_class: String = Scenario.class_arg(OS.get_cmdline_user_args())
 		if scenario_class != "":

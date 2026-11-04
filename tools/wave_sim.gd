@@ -771,6 +771,9 @@ func _run_whole(run_seed: int) -> void:
 	get_tree().change_scene_to_packed(load(RUN_MAIN_PATH) as PackedScene)
 	var previous: Node = null
 	var room_index: int = clampi(_start_room - 1, 0, rooms.size() - 1) if _start_room > 0 else 0
+	if _start_room > rooms.size():
+		# Said out loud, not silently clamped. (A plain note, not an engine warning: the wrapper fails a sim on any WARNING line.)
+		print("note: -StartRoom %d is past the last room; every run starts at room %d (the boss) instead" % [_start_room, rooms.size()])
 	if room_index > 0:
 		RunSession.current.room_index = room_index
 	while room_index < rooms.size():

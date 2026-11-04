@@ -39,6 +39,15 @@ func notify_card_cast(slot_type: String, card_id: String) -> void:
 	card_cast.emit(slot_type, card_id, tags)
 
 
+## The player dodged. D39: by default (data/player.json dodge.counts_as_movement_cast false) nothing happens, because the dodge
+## is a pure escape and is not a Movement cast. With the flag on it enters the history as a Movement cast (card id "dodge"),
+## so cast_within conditions see it. This is the only place the rule lives; Player just reports the dodge.
+func notify_dodge() -> void:
+	if PlayerConfig.dodge_counts_as_movement_cast():
+		history.record(_now, "movement", "dodge", ["Dash"] as Array[String])
+		card_cast.emit("movement", "dodge", ["Dash"] as Array[String])
+
+
 func reset() -> void:
 	history.clear()
 	_now = 0.0

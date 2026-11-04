@@ -1,8 +1,9 @@
 # Windowed screenshot capture of the real game (needs a renderer; headless cannot capture).
-# Usage: powershell -File tools\capture_screenshot.ps1 [-After "3.0,5.0"] [-Out screenshots\shot.png] [-Scenario hp_bars] [-Resolution 1920x1080] [-TrueSize 2560x1440] [-Extra "--run-seed=7"] [-Class wizard] [-Actions "0.5:dodge"] [-AtBossAttack volley]
+# Usage: powershell -File tools\capture_screenshot.ps1 [-Preset reward_screen] [-After "3.0,5.0"] [-Out screenshots\shot.png] [-Scenario hp_bars] [-Resolution 1920x1080] [-TrueSize 2560x1440] [-Extra "--run-seed=7"] [-Class wizard] [-Actions "0.5:dodge"] [-AtBossAttack volley]
 # A normal launch is a run (RunMain): use -Scenario "" to capture it. With a scenario you get the endless arena.
 # Resolves Godot like tools\run_tests.ps1 (GODOT_BIN, else godot_console/godot on PATH, preferring *_console.exe).
 param(
+    [string]$Preset = "",    # a named capture from tools\capture_presets.json (reward_screen, removal_screen, boss_smash, bd1_*, ...); explicit parameters below override it
     [string]$After = "3.0",
     [string]$Out = "screenshots\shot.png",
     [string]$Scenario = "hp_bars",
@@ -32,6 +33,23 @@ if ($godot -notmatch "_console\.exe$") {
     else { Write-Warning "Using the windowed Godot binary; exit code may be unreliable. Point GODOT_BIN at the '_console.exe' build." }
 }
 
+if ($Preset) {
+    $presetFile = Join-Path $PSScriptRoot "capture_presets.json"
+    $presets = Get-Content -Raw $presetFile | ConvertFrom-Json
+    $entry = $presets.PSObject.Properties[$Preset]
+    if (-not $entry) {
+        Write-Error ("Unknown -Preset '{0}'. Known presets: {1}" -f $Preset, (($presets.PSObject.Properties.Name) -join ", "))
+        exit 2
+    }
+    $entry = $entry.Value
+    if (-not $PSBoundParameters.ContainsKey("After") -and $entry.after) { $After = [string]$entry.after }
+    if (-not $PSBoundParameters.ContainsKey("Scenario")) { $Scenario = [string]$entry.scenario }
+    if (-not $PSBoundParameters.ContainsKey("Class") -and $entry.class) { $Class = [string]$entry.class }
+    if (-not $PSBoundParameters.ContainsKey("AtBossAttack") -and $entry.at_boss_attack) { $AtBossAttack = [string]$entry.at_boss_attack }
+    if (-not $PSBoundParameters.ContainsKey("Actions") -and $entry.actions) { $Actions = [string]$entry.actions }
+    if (-not $PSBoundParameters.ContainsKey("Extra") -and $entry.extra) { $Extra = @($entry.extra) }
+    if (-not $PSBoundParameters.ContainsKey("Out")) { $Out = "screenshots\$Preset.png" }
+}
 if (-not [System.IO.Path]::IsPathRooted($Out)) { $Out = Join-Path $root $Out }
 $userArgs = @("--screenshot-after=$After", "--screenshot-out=$Out")
 if ($Scenario) { $userArgs += "--scenario=$Scenario" }

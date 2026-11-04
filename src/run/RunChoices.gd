@@ -63,6 +63,23 @@ static func shipped_context(pools: Array) -> Dictionary:
 	}
 
 
+## Problems with a `--run-offer` card list (empty = fine): at least one card, no more than the offer size, all known, none twice.
+static func forced_offer_problems(ids: Array[String], offer_size: int) -> Array[String]:
+	var problems: Array[String] = []
+	if ids.is_empty():
+		problems.append("--run-offer needs card ids, as --run-offer=<card>,<card>")
+	if ids.size() > offer_size:
+		problems.append("--run-offer lists %d cards but an offer holds %d" % [ids.size(), offer_size])
+	var seen: Dictionary = {}
+	for id: String in ids:
+		if not CardDatabase.has_card(id):
+			problems.append("--run-offer: unknown card '%s'" % id)
+		elif seen.has(id):
+			problems.append("--run-offer: '%s' is listed twice" % id)
+		seen[id] = true
+	return problems
+
+
 ## Opens the choice that follows a room: a card reward after a won fighting room that gives one (never the last
 ## room), the rest menu in a rest room. Sets `state.pending` / `state.offer`; returns the pending value.
 static func open_for_room(state: RunState, room_type: String, is_last_room: bool, ctx: Dictionary) -> String:
@@ -72,6 +89,9 @@ static func open_for_room(state: RunState, room_type: String, is_last_room: bool
 		state.pending = RunState.PENDING_REST
 	elif not is_last_room and (RunConfig.ROOM_TYPES.has(room_type) and ((ctx["rewards"] as Dictionary).get("reward_room_types", []) as Array).has(room_type)):
 		var offered: Array[String] = RewardOffer.generate(state.seed_value, state.room_index, state.deck, ctx["cards"], ctx["pools"], ctx["pool_defs"], ctx["rewards"])
+		if not RunSession.forced_offer.is_empty():
+			offered = RunSession.forced_offer.duplicate()  # --run-offer (capture tooling): used by this one offer only
+			RunSession.forced_offer = []
 		if not offered.is_empty():
 			state.offer = offered
 			state.pending = RunState.PENDING_REWARD

@@ -1,0 +1,39 @@
+{
+    "reward_screen": {
+        "description": "The card reward screen after room 1 (3 seeded offers). Run mode.",
+        "class": "rogue", "scenario": "", "after": "3.0",
+        "extra": ["--run-seed=3", "--run-room=1", "--run-clear-after=1"]
+    },
+    "removal_screen": {
+        "description": "The rest-room removal grid (the full deck, so removal is allowed). Run mode; seed 1's rest room is room 5.",
+        "class": "rogue", "scenario": "", "after": "4.0",
+        "extra": ["--run-seed=1", "--run-room=5", "--full-deck", "--run-auto-choose=remove_menu"]
+    },
+    "boss_smash": {
+        "description": "The boss winding up its smash (cone) and landing it: shots 0.3 s and 0.6 s after the wind-up starts. Run mode, boss room.",
+        "class": "rogue", "scenario": "", "after": "0.3,0.6", "at_boss_attack": "smash",
+        "extra": ["--run-seed=1", "--run-room=10"]
+    },
+    "bd1_reward_keystone": {
+        "description": "BD1: a Rogue reward screen offering Fan the Flames and Drive-By (Keystones) and Kindling (Primer).",
+        "class": "rogue", "scenario": "", "after": "3.0",
+        "extra": ["--run-seed=3", "--run-room=1", "--run-clear-after=1", "--run-offer=fire_fan_the_flames+rogue_drive_by+fire_kindling"]
+    },
+    "bd1_reward_keystone_wizard": {
+        "description": "BD1: a Wizard reward screen offering Heat Sink and Parting Gift (Keystones) and Well, Actually (Payoff).",
+        "class": "wizard", "scenario": "", "after": "3.0",
+        "extra": ["--run-seed=3", "--run-room=1", "--run-clear-after=1", "--run-offer=fire_heat_sink+wizard_parting_gift+wizard_well_actually"]
+    },
+    "bd1_glow_target": {
+        "description": "BD1: a lit condition. Fan the Flames in the Attack: AoE slot with Burning enemies in its area (arena scenario, fixed deck).",
+        "class": "rogue", "scenario": "bd1_glow_target", "after": "1.0"
+    },
+    "bd1_primed": {
+        "description": "BD1: a primed slot and a lit one. Momentum cast at 0.3 s primes Attack: Single and lights Drive-By (arena scenario, fixed deck).",
+        "class": "rogue", "scenario": "bd1_primed", "after": "0.8,1.5"
+    },
+    "pl3_heavy_bolt": {
+        "description": "Overqualified Bolt cast by the Wizard (fixed deck, so the slot really holds it).",
+        "class": "wizard", "scenario": "pl3_heavy_bolt", "after": "0.7,0.9,1.1"
+    }
+}

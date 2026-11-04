@@ -163,6 +163,18 @@ func _apply_launch_args(tree: SceneTree) -> bool:
 	if exit_code != DebugDecks.EXIT_CONTINUE:
 		tree.quit(exit_code)
 		return false
+	for arg: String in args:
+		if arg.begins_with("--run-offer="):
+			var offer_ids: Array[String] = []
+			for part: String in arg.substr(12).replace("+", ",").split(",", false):  # "+" too: capture_screenshot.ps1 splits its -Extra values on commas
+				offer_ids.append(part.strip_edges())
+			var offer_problems: Array[String] = RunChoices.forced_offer_problems(offer_ids, RunConfig.offer_size())
+			if not offer_problems.is_empty():
+				for problem: String in offer_problems:
+					printerr("Launch refused: " + problem)
+				tree.quit(2)
+				return false
+			RunSession.forced_offer = offer_ids
 	if String(launch["deck"]) != "":
 		RunSession.debug_deck = (directory["presets"] as Dictionary)[String(launch["deck"])]
 	if String(launch["character"]) != "":

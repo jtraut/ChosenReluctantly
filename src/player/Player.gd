@@ -470,6 +470,9 @@ func _handle_dodge_input() -> void:
 		return
 	_emit_dodge_charges()
 	start_forced_move(dodge_direction, dodge_speed, dodge_duration, true)
+	var relay := CombatLink.events()
+	if relay != null:
+		relay.notify_dodge()  # D39: whether this counts as a Movement cast is decided there, in one place
 
 
 ## Overrides normal movement input for `duration` seconds, driving velocity

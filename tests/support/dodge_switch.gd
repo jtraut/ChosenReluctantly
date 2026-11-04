@@ -23,6 +23,10 @@ static func enable() -> void:
 
 static func reset() -> void:
 	PlayerConfig.reload()
+	# PL3 carry-over: a suite that pressed the dodge (a test-only key, a TestInput event or an Input.action_press) and ended before its
+	# release left the action held for the rest of the run, so a later Input.is_action_just_pressed("dodge") was never true. Every dodge
+	# suite resets here in after_test, so releasing the action here is the one teardown that covers them all.
+	Input.action_release(&"dodge")
 	if _saved:
 		InputMap.action_erase_events(&"dodge")
 		for event: InputEvent in _saved_events:

@@ -911,6 +911,7 @@
     },
     "pl3_ward": {
         "disable_spawner": true,
+        "deck": ["wizard_overqualified_bolt", "fire_fine_burn_then", "wizard_ward", "wizard_sideways_blink", "neutral_healing_potion"],
         "player_max_health": 9999,
         "freeze_aim": true,
         "aim_preview_distance": 8.0,
@@ -929,6 +930,7 @@
     },
     "pl3_bolts": {
         "disable_spawner": true,
+        "deck": ["wizard_bolt_volley", "fire_fine_burn_then", "wizard_ward", "wizard_sideways_blink", "neutral_healing_potion"],
         "player_max_health": 9999,
         "freeze_aim": true,
         "aim_preview_distance": 8.0,
@@ -946,6 +948,7 @@
     },
     "pl3_heavy_bolt": {
         "disable_spawner": true,
+        "deck": ["wizard_overqualified_bolt", "fire_fine_burn_then", "wizard_ward", "wizard_sideways_blink", "neutral_healing_potion"],
         "player_max_health": 9999,
         "freeze_aim": true,
         "aim_preview_distance": 8.0,
@@ -977,6 +980,45 @@
         ],
         "casts": [
             {"at": 0.3, "slot": "attack_aoe", "card": "fire_wall"}
+        ]
+    },
+    "bd1_glow_target": {
+        "_note": "BD1 capture: Fan the Flames is the Attack: AoE card and two of the four enemies in its area are Burning, so its target condition is live.",
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "freeze_aim": true,
+        "aim_preview_distance": 5.0,
+        "enemy_max_health": 2000,
+        "enemies_idle": true,
+        "disable_auto_attack": true,
+        "deck": ["rogue_quick_slash", "fire_fan_the_flames", "fire_kindling", "rogue_momentum", "neutral_healing_potion"],
+        "origin_offset": [-0.7, 0.0, -1.5],
+        "spacing": [1.4, -1.2],
+        "columns": 2,
+        "groups": [
+            {"scene": "res://scenes/enemies/MeleeChaser.tscn", "count": 4}
+        ],
+        "burn_indices": [0, 3],
+        "burn_duration": 60.0
+    },
+    "bd1_primed": {
+        "_note": "BD1 capture: Momentum is cast at 0.3 s. At 0.8 s Drive-By (Attack: Single) is lit (a Movement cast in the last 2 s) and primed (Momentum made its next cast free).",
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "freeze_aim": true,
+        "aim_preview_distance": 5.0,
+        "enemy_max_health": 2000,
+        "enemies_idle": true,
+        "disable_auto_attack": true,
+        "deck": ["rogue_drive_by", "fire_fine_burn_then", "fire_kindling", "rogue_momentum", "neutral_healing_potion"],
+        "origin_offset": [-0.7, 0.0, -4.5],
+        "spacing": [1.4, -1.2],
+        "columns": 2,
+        "groups": [
+            {"scene": "res://scenes/enemies/MeleeChaser.tscn", "count": 2}
+        ],
+        "casts": [
+            {"at": 0.3, "slot": "movement", "card": "rogue_momentum"}
         ]
     }
 }

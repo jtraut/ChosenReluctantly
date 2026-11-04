@@ -14,7 +14,7 @@ const NUMBERS: Dictionary = {
 }
 ## key -> minimum (inclusive) for a whole number.
 const INTS: Dictionary = {"columns": 1, "status_seed": -2147483647, "wave_seed": 0, "boss_phase": 0}
-const STRINGS: Array[String] = ["heavy_class", "character"]
+const STRINGS: Array[String] = ["heavy_class", "character", "_note"]
 ## key -> array of non-empty strings (3c: "boss_attacks" scripts the boss's attack order for captures).
 const STRING_ARRAYS: Array[String] = ["boss_attacks"]
 ## key -> exact number of finite numbers in the array.
@@ -44,6 +44,8 @@ static func validate(scenario_id: String, def: Variant) -> Array[String]:
 		elif STRINGS.has(name):
 			if typeof(value) != TYPE_STRING or String(value).strip_edges().is_empty():
 				problems.append("%s must be a non-empty string" % where)
+		elif name == "deck":
+			problems.append_array(_deck(where, value))
 		elif STRING_ARRAYS.has(name):
 			problems.append_array(_string_array(where, value))
 		elif NUMBER_ARRAYS.has(name):
@@ -175,6 +177,18 @@ static func _previews(where: String, value: Variant) -> Array[String]:
 		for key: String in ["slot", "card"]:
 			if typeof(entry.get(key)) != TYPE_STRING or String(entry[key]).is_empty():
 				problems.append("%s entry needs a non-empty string '%s'" % [where, key])
+	return problems
+
+
+## deck: card ids (copies allowed) the player holds instead of the arena's whole-pool deck, so a capture shows the same
+## cards every time (BD1-B). Each id must be a known card.
+static func _deck(where: String, value: Variant) -> Array[String]:
+	var problems: Array[String] = _string_array(where, value)
+	if not problems.is_empty():
+		return problems
+	for card_id: Variant in value as Array:
+		if not CardDatabase.has_card(String(card_id)):
+			problems.append("%s names unknown card '%s'" % [where, String(card_id)])
 	return problems
 
 

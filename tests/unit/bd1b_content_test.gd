@@ -273,3 +273,21 @@ func test_parting_gift_leaves_its_blast_at_the_start_point() -> void:
 	assert_float(enemy.health.get_max_health() - enemy.health.current_health).is_equal_approx(10.0, 0.001)
 	BodyFlag.reset()
 	Juice.reset()
+
+
+# --- D39: the dodge and Movement casts ----------------------------------------------------------------------
+
+func test_the_dodge_is_not_a_movement_cast_unless_the_one_switch_says_so() -> void:
+	var relay: CombatEventsRelay = CombatLink.events()
+	relay.reset()
+	assert_bool(PlayerConfig.dodge_counts_as_movement_cast()).is_false()  # the shipped default (D39 = A)
+	relay.notify_dodge()
+	assert_bool(relay.history.cast_within(relay.now(), 2.0, "movement")).is_false()
+	PlayerConfig.dodge()["counts_as_movement_cast"] = true  # option B
+	relay.notify_dodge()
+	assert_bool(relay.history.cast_within(relay.now(), 2.0, "movement")).is_true()
+	assert_bool(SlotSynergy.is_live(CardDatabase.get_card("rogue_drive_by"), {"now": relay.now(), "history": relay.history})).is_true()
+	PlayerConfig.reload()
+	relay.reset()
+	assert_bool(PlayerConfig.dodge_counts_as_movement_cast()).is_false()
+	assert_array(PlayerConfig.validate({"dodge": {"enabled": true, "counts_as_movement_cast": "yes", "speed": 20.0, "duration": 0.25, "cooldown": 1.2, "block_ticks_after_pause": 2, "charges": 2, "min_charges": 0, "max_charges": 4}})).is_not_empty()

@@ -20,6 +20,9 @@ static var selected_character: String = ""
 ## True when a launch argument (`--class`, or a `--deck` preset, which names a class) fixed the character: a pick screen
 ## skips itself then, so a tool or a scripted launch never stalls on it.
 static var character_forced: bool = false
+## `--run-offer=<card>,<card>,...` (capture tooling, BD1-B): the card offer of the FIRST reward screen, instead of the seeded draw
+## (for example to show a Keystone on the reward screen without hunting for a seed). Consumed by that one offer.
+static var forced_offer: Array[String] = []
 
 
 static func has_run() -> bool:

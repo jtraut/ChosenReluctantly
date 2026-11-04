@@ -60,8 +60,47 @@ static func class_arg(args: PackedStringArray) -> String:
 			var id: String = arg.substr(8).strip_edges()
 			if CharacterDatabase.has(id):
 				return id
-			push_error("Scenario: unknown --class '%s' (valid: %s)" % [id, ", ".join(CharacterDatabase.ids())])
 	return ""
+
+
+## What is wrong with the `--class` of a scenario launch, or "" when it is fine (or there is no scenario). Main refuses the
+## launch with exit 2 and this text, as the run path does (RunController: "Launch refused: ..."). The rule for a scenario that
+## sets its own `character`: a `--class` that names a different class is refused too (never a mixed player; drop one of them).
+static func class_problem(args: PackedStringArray) -> String:
+	var parsed: Dictionary = CaptureArgs.parse(args)
+	var scenario_id: String = String(parsed["scenario"])
+	if scenario_id == "":
+		return ""
+	var classes: Array[String] = []
+	for arg: String in args:
+		if arg == "--class":
+			classes.append("")
+		elif arg.begins_with("--class="):
+			classes.append(arg.substr(8).strip_edges())
+	if classes.is_empty():
+		return ""
+	var valid: String = ", ".join(CharacterDatabase.ids())
+	if classes.size() > 1:
+		return "--class was given %d times; give it once (valid classes: %s)" % [classes.size(), valid]
+	if classes[0] == "":
+		return "--class needs a name, as --class=<id> (valid classes: %s)" % valid
+	if not CharacterDatabase.has(classes[0]):
+		return "unknown class '%s' (valid classes: %s)" % [classes[0], valid]
+	var own: String = String(raw_def(scenario_id).get("character", ""))
+	if own != "" and own != classes[0]:
+		return "scenario '%s' plays as the %s but --class=%s was given; they must agree (drop one of them)" % [scenario_id, own, classes[0]]
+	return ""
+
+
+## The scenario's definition without validation or logging ({} when unknown).
+static func raw_def(scenario_id: String) -> Dictionary:
+	var file := FileAccess.open(DATA_PATH, FileAccess.READ)
+	if file == null:
+		return {}
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if typeof(parsed) == TYPE_DICTIONARY and (parsed as Dictionary).has(scenario_id) and typeof((parsed as Dictionary)[scenario_id]) == TYPE_DICTIONARY:
+		return (parsed as Dictionary)[scenario_id]
+	return {}
 
 
 ## Builds the scenario inside `main` (which must have a Player) and returns the
@@ -132,6 +171,12 @@ func _build() -> void:
 	if launch_class != "":
 		player.card_slots.set_deck(CharacterDatabase.starting_deck(launch_class))
 		player.use_heavy_class(CharacterDatabase.heavy_class(launch_class))
+	# Capture-only (BD1-B): a fixed deck, so a capture holds the same cards every time (the arena player holds its whole pool).
+	if _def.has("deck"):
+		var fixed: Array[String] = []
+		for card_id: Variant in (_def["deck"] as Array):
+			fixed.append(String(card_id))
+		player.card_slots.set_deck(fixed)
 	# Capture-only: the heavy's ground aim point, as an [x, z] offset from the player.
 	if _def.has("aim_point_offset"):
 		var aim_values: Array = _def["aim_point_offset"]

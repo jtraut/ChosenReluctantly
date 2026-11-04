@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-04 (D34-D36 answered and recorded; PL3 closed, tag `playtest-2026-11-04-PL3`). **Run order:** **BD1 (next)** -> BD2 (relics) -> MAP1 (map, gold) -> MAP2 (merchant) -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3.
+Last updated: 2026-11-04 (BD1 started: BD1-A with gameplay-dev). **Run order:** **BD1 (in progress)** -> BD2 (relics) -> MAP1 (map, gold) -> MAP2 (merchant) -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3.
 
 ## What's done
 - **D37 = A, D38 = A recorded 2026-11-04 (game-lead, docs only):**
@@ -48,11 +48,27 @@ Last updated: 2026-11-04 (D34-D36 answered and recorded; PL3 closed, tag `playte
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- Nothing in progress. Working tree clean.
+- **BD1-A (engine) with gameplay-dev, started 2026-11-04.** BD1 is split (DECISIONS "BD1 split"): BD1-A = brief items 1-6, BD1-B = items 7-10 plus the PL3 carry-overs. If this sitting is cut off, check `git log` for gameplay-dev commits after the split commit and resume BD1-A from where they stop.
+- **Draft BD1 doc handoff, the backlog for tech-writer (collected from the "Pending for tech-writer" notes above):**
+  - RESOLVED: archive D34, D35, D36 (text in 81ff8e4); items 39, 40, 41, 42 (text in 648dbd4); D37, D38 (text in 863b15b).
+  - CHANGELOG `[Director decision]` entries:
+    - relic cap 10 -> 20 over three acts, at-cap fallback "card offer instead" -> "give a relic up", no duplicates;
+    - rejects 3 per run kept; volley unchanged;
+    - relic tiers 1/2/3/boss with odds per act;
+    - elites relic-only;
+    - boss relics only from mini-bosses (2 per run);
+    - mini-boss rare/legendary card offers;
+    - card rarity by act;
+    - knockback fix confirmed;
+    - relic sources (Slay the Spire / The Last Flame model);
+    - starter relic chosen in the loadout (no RNG restarts);
+    - D37 = A (rest dig relic);
+    - D38 = A (curse cards).
+  - Plus BD1's own changes once built.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step
-1. **BD1, synergy core** (ROADMAP brief; BUILD_DEPTH §3, §5 R-A/R-B/W-A/W-C, §6, §7, §2). Full loop: gameplay-dev (incl. the PL3 carry-overs) -> ux-designer -> qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-BD1`. BD1 is bigger than PL3: re-read its brief and split it into two sittings if needed (log the split).
+1. **BD1, synergy core** (ROADMAP brief; BUILD_DEPTH §3, §5 R-A/R-B/W-A/W-C, §6, §7, §2). Order: gameplay-dev **BD1-A** (in progress) -> gameplay-dev **BD1-B** -> ux-designer -> qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-BD1`.
 2. Then **BD2**, **MAP1**, **MAP2**, **MAP3**, **MAP4**, **3d**, **BD3**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).

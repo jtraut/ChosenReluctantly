@@ -1462,3 +1462,11 @@ The director's direction is recorded in GDD §4a. The plan is BUILD_DEPTH §4.7,
 His answers are in GDD §4a, BUILD_DEPTH §4.2/§4.6/§4.7/§4.8, the MAP.md §9 row and the ROADMAP MAP4 brief.
 - **Curse cards carry a `curse` flag and are never offered,** and `can_remove` always allows removing them. [A separate curse pool file: the flag is simpler.]
 - **The relic `curse` field is now unused.** BD2 should leave it out of the schema. [Keeping it reserved, which would be dead schema.]
+
+## 2026-11-04 - BD1 split into two gameplay-dev sittings (game-lead)
+- **Choice:** BD1's gameplay-dev step runs in two sittings. The rest of the loop (ux -> qa -> playtester -> tech-writer -> close, one tag) runs once, after both.
+  - **BD1-A (engine):** brief items 1-6: tags and `data/keywords.json`, the `CombatEvents` autoload, effect `condition`, primed buff, `status_damage_mult`, aoe `anchor: "caster"`. Unit tests for each. Standard-policy sim hashes and arena hashes must not move; reload soak required (new autoload).
+  - **BD1-B (content and tooling):** brief items 7-10 (8 cards, 4 debug decks, `-Plan` bot policy, ux data exposure) plus the PL3 carry-overs (ROADMAP, under PL3).
+- **Why:** the brief is larger than one sitting, and the director can be cut off at any time. The cards and the ux exposure need every engine piece, so the dependency seam sits between items 6 and 7. Each sitting leaves the repo running and committed.
+- **Rejected:** two full loops (BD1a/BD1b, each with qa, playtest and a tag). Engine-only work has nothing for the playtester to feel and would double the review cost. Also rejected: one sitting, which risks a half-built engine at a cutoff.
+- **Checked first:** item 6 (`anchor`) isn't built yet. PL3's "anchor" was the screenshot-capture boss-attack anchor. `EffectTemplates.gd:328` still locks placed discs at the aim point.

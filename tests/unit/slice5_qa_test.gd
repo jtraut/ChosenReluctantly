@@ -911,5 +911,6 @@ func test_golem_wedge_shows_for_the_whole_0_7_s_wind_up_and_the_hit_lands_at_0_7
 		if not golem._wedge.visible:
 			wedge_hidden_early += 1
 	assert_float(hit_at).override_failure_message("golem hit never landed").is_greater(0.0)
-	assert_float(hit_at).override_failure_message("hit landed at %.3f s, expected 0.7 s" % hit_at).is_between(0.7 - dt, 0.7 + 2.0 * dt)
+	var expected: float = 0.7 * EnemyConfig.telegraph_scale()  # H3: authored 0.7 s times telegraph_scale
+	assert_float(hit_at).override_failure_message("hit landed at %.3f s, expected %.3f s" % [hit_at, expected]).is_between(expected - dt, expected + 2.0 * dt)
 	assert_int(wedge_hidden_early).override_failure_message("wedge was hidden on %d frames before the hit" % wedge_hidden_early).is_equal(0)

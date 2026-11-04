@@ -207,10 +207,12 @@ func test_shot_lane_ends_when_the_wind_up_is_cancelled_or_the_enemy_dies() -> vo
 func test_golem_wind_up_is_0_7_s_and_its_wedge_fills_over_the_whole_wind_up() -> void:
 	var golem := _enemy("res://scenes/enemies/FireResistantGolem.tscn")
 	var chaser := _enemy("res://scenes/enemies/MeleeChaser.tscn")
-	assert_float(golem.telegraph_duration).is_equal_approx(0.7, 0.0001)
-	assert_float(chaser.telegraph_duration).is_equal_approx(0.45, 0.0001)  # only the golem changed
+	# H3: authored 0.7 s and 0.45 s, times pressure.telegraph_scale (0.85 shipped).
+	var scale: float = EnemyConfig.telegraph_scale()
+	assert_float(golem.telegraph_duration).is_equal_approx(0.7 * scale, 0.0001)
+	assert_float(chaser.telegraph_duration).is_equal_approx(0.45 * scale, 0.0001)  # only the golem changed
 	golem._start_telegraph()
-	assert_float(golem._telegraph_remaining).is_equal_approx(0.7, 0.0001)
+	assert_float(golem._telegraph_remaining).is_equal_approx(0.7 * scale, 0.0001)
 	assert_bool(golem._wedge.visible).is_true()
 	# The wedge is driven by telegraph_duration, so it is still showing just before the hit lands.
 	golem._telegraph_remaining = 0.02

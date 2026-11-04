@@ -5,9 +5,9 @@
         "extra": ["--run-seed=3", "--run-room=1", "--run-clear-after=1"]
     },
     "removal_screen": {
-        "description": "The rest-room removal grid (the full deck, so removal is allowed). Run mode; seed 1's rest room is room 5.",
+        "description": "The rest-room removal grid (the full deck, so removal is allowed). Run mode; seed 1 has its rest room at room 6.",
         "class": "rogue", "scenario": "", "after": "4.0",
-        "extra": ["--run-seed=1", "--run-room=5", "--full-deck", "--run-auto-choose=remove_menu"]
+        "extra": ["--run-seed=1", "--run-room=6", "--full-deck", "--run-auto-choose=remove_menu"]
     },
     "boss_smash": {
         "description": "The boss winding up its smash (cone) and landing it: shots 0.3 s and 0.6 s after the wind-up starts. Run mode, boss room.",

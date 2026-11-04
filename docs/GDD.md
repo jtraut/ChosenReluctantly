@@ -147,6 +147,7 @@ Added 2026-11-02 from the director's notes. The goals are director decisions. Th
   - a **merchant** stage, where the player can buy **several relics at once** if they have enough gold;
   - a **dedicated relic reward stage** (pick a relic);
   - **elites** (a relic after an elite).
+- **[DIRECTOR DECISION, 2026-11-03] (D30 = A)** Those three are the only relic sources. Rest rooms do **not** offer "heal or a relic", and card reward screens do **not** show a relic. Director's reason: heal-or-relic is too obvious a choice, because a relic is worth much more over a run while healing is already easy to get through the Recovery slot.
 - **(D25 = A)** Burn and Bleed do **not** stack in the base game; a second application refreshes the first. Stacking the same status comes only from special conditions: **relics, keystone cards, and potential passive-tree nodes** (§8). The director likes this.
 - **(D24 = A)** Relics are built in their own slice (BD2) straight after the synergy core (BD1), before loadouts (3d).
 
@@ -275,7 +276,7 @@ Rather than a full strength/weakness wheel, elements apply status effects (for e
 - **Pressure pass on the base game [DIRECTOR DECISION, 2026-11-02]:** the one deliberate exception to "don't retune the base game until the tiers exist". The Wizard never seems to take damage, and a no-card run was won (§3). Raise all enemy movement speed slightly, at least until Wizard runs take some damage; if speed alone isn't enough, follow up with attack speed. The pace could be a bit faster. The change sits behind shared data knobs (an enemy speed scale and an enemy attack-rate scale) that the future tiers reuse. Player stats, card numbers and boss mechanics are not changed by it. (Scheduled as slice H1.)
 - Target run length: 30 to 60 minutes. **[PROPOSED]** prototype shorter runs (15 to 25 minutes) for faster iteration.
 - Procedurally generated room sequence with elites, bosses, and a final boss.
-- **Rest-room heal [DIRECTOR DECISION, 2026-11-02]:** 30% of max HP is fine for now. It may be removed entirely later, because the player already has their own healing (the Recovery slot), which most roguelites don't allow outside between-stage rewards.
+- **Rest-room heal [DIRECTOR DECISION, 2026-11-02]:** 30% of max HP is fine for now. It may be removed entirely later, because the player already has their own healing (the Recovery slot), which most roguelites don't allow outside between-stage rewards. **Director note, 2026-11-03 (with D30 = A):** the director repeated that the rest-room heal may be removed altogether, for the same reason (a rest choice of heal vs a relic would always go to the relic). Not decided yet; kept at 30% until MAP0 proposes what a rest node offers.
 - **Branching map [DIRECTOR DECISION, 2026-11-02]:** wanted soon, for the traditional roguelite feel. The run becomes a map of routes with choices such as:
   - a merchant stop;
   - curse/buff rooms (usually both at once; some rooms only buff);

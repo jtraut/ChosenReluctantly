@@ -160,7 +160,7 @@ Two of the three sources are map nodes, and gold doesn't exist yet. So relics ar
 - `pool` uses the card pools (class, element, neutral), so a Fire Rogue only sees `rogue`, `fire` and `neutral` relics.
 - `modifiers`: permanent `StatModifiers` entries for the run (same shape as `buff` params, without a duration).
 - `triggers`: `event` + `filter` + `effects`. **`effects` uses the card effect format and templates**, so a relic is data on the existing templates. `at` picks the origin (`player`, `event_position`, `event_target`).
-- `curse`: reserved for curse rooms (a downside modifier block). `null` for now.
+- ~~`curse`: reserved for curse rooms (a downside modifier block).~~ Not used: curses are cards (D38 = A, director 2026-11-04). The field can be dropped from the schema.
 - `rarity`: `tier1`, `tier2`, `tier3`, `boss` (shown as Tier 1/2/3 and Boss; director 2026-11-04, was `common`/`uncommon`/`rare`/`boss`). Odds per act live in `run.json` `relics.tier_weights`. `boss` relics are only valid with source `mini_boss` and are the build-changing ones (design pass before MAP3). The field keeps the name `rarity` because `tiers` already means enemy tiers in `run.json`.
 - The validator works like the card validator: known events and filters, valid effects, a known pool, known sources, and an id that matches the filename.
 
@@ -253,7 +253,7 @@ There's no event bus today (§1). BD1 adds a **`CombatEvents` autoload** (its ca
 
 - **`sources`** already names the future map nodes (`merchant`, `curse_room`, `buff_room`, `mini_boss`), so a node only has to call the same "offer relics from source X" function the elite and relic rooms use.
 - **`rarity`** (tier) lets later acts roll better relics, and act-end mini-bosses give the boss tier: "the hardest path is the most rewarding".
-- **`curse`** is reserved for curse/buff rooms ("usually both at once"): a curse room offers a strong relic with a curse block attached (a downside modifier or trigger). It uses the same format, so there's no rework.
+- **Curse rooms** ("usually both at once") offer a strong relic **plus a curse card** (D38 = A, 2026-11-04), not a relic with a curse block.
 - **Merchant (director: several relics can be bought at once):** relics carry no price yet. When gold exists, a price comes from `rarity` in `run.json`, not per relic. MAP0 designs the merchant screen and gold income.
 - The offer function takes (source, count, rng), filters by pool, source, owned relics and relics given up this run (no duplicates, D34 = C), and weights by rarity. Elite and relic rooms use it in BD2, and the map uses it later. At the cap (`relics.max_owned`) it still offers; the pick goes through the swap step.
 
@@ -278,14 +278,19 @@ The idea for each source is credited to his summary. Anything about those games 
 | 2 | **Merchant** | Stock is 3 relics. **The third slot only holds shop-only relics** (their `sources` is exactly `["merchant"]`); if none is eligible, it falls back to normal stock. A shop-expanding relic (+1 relic slot, or 1 free reroll per visit) is content, as a `merchant.*` modifier. The Last Flame's "spend trophies to research the shop" waits for between-run currency (GDD §8, open). | Yes: shop-only relics. | MAP2 |
 | 3 | **Events ("?" node)** | A new data-driven node type `event`, in rooms 3-9. One event per visit, drawn from `data/events/*.json`, seeded and not repeated within a run. Each event is a short text with 2-3 choices. Every choice shows its costs plainly and is a list of outcomes from a closed set: `lose_hp`, `lose_max_hp`, `gain_max_hp`, `heal`, `gain_gold`, `lose_gold`, `gain_relic` (source and tier), `gain_curse`, `remove_curse`, `remove_card`, `sacrifice_relic`, `start_fight` (elite tier), `leave`. **The curse room and buff room become two event kinds** instead of separate room types. Text stays placeholder (the story role is dormant). | Yes: event-only relics (`sources` `["event"]`), usually with a trade-off. | MAP4 |
 | 4 | **Treasure chests** | The relic stage (`relic_room`) gets a **chest size: small, medium or large** (weights 50/35/15). Size is shown on the map, so you can plan for it. Small uses the act's tier odds, medium the next act's row, and large is at least tier 2 using the act 3 row. Pick 1 of 3 or skip, as decided in D22. | No. | MAP1 |
-| 5a | **Rest dig** (pending **D37**) | A relic (placeholder name "Gravedigger's Spade") adds a third rest action, **Dig**: pick 1 of 3 relics at the act's odds, instead of healing or removing a card. | The dig relic itself is event-only or shop-only. | MAP4 |
+| 5a | **Rest dig** (**D37 = A**, director 2026-11-04) | A relic (placeholder name "Gravedigger's Spade") adds a third rest action, **Dig**: pick 1 of 3 relics at the act's odds, instead of healing or removing a card. | The dig relic itself is event-only or shop-only. | MAP4 |
 | 5b | **Sacrifice** | An **altar** event lets you give up a non-boss tier N relic, then pick 1 of 3 from tier N+1 (tier 3 stays tier 3). Some high-tier relics have a **`sacrifice_cost`** (1 or 2): to take one, you give up that many owned non-boss relics. Both reuse the BD2 give-one-up step and the "given-up relics never come back" rule. This lets you take weak relics early as fodder, which is his Last Flame point. A **Forge** variant (give up 2, get a tag-matched tier N+1 relic) comes from the Gemini list in §4.5. | Some `sacrifice_cost` relics. | MAP4 |
 | 6 | **Starter relic (loadout)** | Tier 1 relics with `sources` `["starter"]`, found nowhere else. The loadout (3d) gets one **starter relic slot**, filled from the starter relics the profile has unlocked. Run 1 and the preset start have none. Unlock rules wait for meta-progression (GDD §8, §14 item 11), so 3d ships 2 per class unlocked by default, and the rest `locked` with "TBD". | Yes: starter relics. | 3d |
 
 **Shared rules:**
 - **No duplicates and no return:** every source skips relics you own or gave up. Sacrifices count as giving a relic up.
 - **Cap 20:** every source goes through the swap step at the cap. Boss-tier relics can't be given up.
-- **Curses** are relics with only a downside (`curse` block). They **don't count toward the cap**, and the swap step can't discard them. They're removed by a `remove_curse` event outcome or at the merchant (a curse-removal price, like card removal).
+- **Curses are cards (D38 = A, director 2026-11-04):**
+  - A curse card (`"curse": true`, slot set in data) is shuffled into one slot's mini-deck and does nothing, or something harmful, when it comes up. You dead-card swap past it.
+  - Curse cards don't count toward the slot minimums.
+  - They're removed like any card: at rest, at the merchant through card removal, or by a `remove_curse` event outcome. `can_remove` always allows removing a curse.
+  - They never appear in card offers.
+  - Not relics, so they don't touch the cap.
 - **Counts:** more sources mean more relics, so MAP.md §4.5's targets stay (hunter 14-17, ignore route 6-8, cap 20 hard to reach) and the sim lowers weights or raises prices to hold them. Starter relics count toward the cap.
 - **Content to add over MAP2-3d:**
   - about 3 shop-only relics;
@@ -351,7 +356,7 @@ Generated from a game-specific prompt. **Unscheduled candidates**, like the roun
 
 Which 2 per class start unlocked is decided at 3d.
 
-**Events** (MAP4; they need these outcome types beyond §4.7's list: `chance` (a coin flip between outcome lists), `stat_mod` (a permanent run modifier, e.g. a slot cooldown or dodge charges), `rooms_buff` (a buff for the next N rooms), `next_room_add` (an extra elite in the next fight), `merchant_discount`, and `curse_card` if D38 = A):
+**Events** (MAP4; they need these outcome types beyond §4.7's list: `chance` (a coin flip between outcome lists), `stat_mod` (a permanent run modifier, e.g. a slot cooldown or dodge charges), `rooms_buff` (a buff for the next N rooms), `next_room_add` (an extra elite in the next fight), `merchant_discount`, and `curse_card` (D38 = A)):
 - **The Mandatory Exit Interview:** lose 15% HP for a tier 1 relic; or an elite fight for a tier 2 relic + gold; or leave.
 - **The Broken Vending Machine:** pay gold for a 50% chance at a tier 2 relic; or lose 10 max HP for the relic + the "Property Damage" curse; or give up a tier 1 relic for an altar-grade offer.
 - **The Performance Evaluation Altar:** destroy a tier 2-3 relic for -1 s base cooldown on both Attack slots; or -15 max HP for gold. Restructuring Plan (above) is a third choice here.
@@ -360,7 +365,7 @@ Which 2 per class start unlocked is decided at 3d.
 - **The Internal Audit:** give up your highest-tier **non-boss** relic for 50% off at the next merchant; or an ambush fight at mini-boss strength.
 - Gold amounts in the list (75, 100, 150) are big against our income (combat about 15); scale them at MAP4.
 
-**Not taken up:** Gemini's offers to design cards, curse-card mechanics and the boss behaviour tree. Cards come through BD1/BD3 and the boss exists; curse cards are D38.
+**Not taken up:** Gemini's offers to design cards, curse-card mechanics and the boss behaviour tree. Cards come through BD1/BD3 and the boss exists; curse cards are decided (D38 = A) and designed at MAP4.
 
 ---
 

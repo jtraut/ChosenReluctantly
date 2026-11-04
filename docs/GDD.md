@@ -172,7 +172,13 @@ Added 2026-11-02 from the director's notes. The goals are director decisions. Th
   - rest-site digging and relic sacrifices;
   - a starting relic.
 
-  This widens D30's "only three sources". Whether a rest site may give a relic is still asked as D37.
+  This widens D30's "only three sources".
+  - **Rest dig [DIRECTOR DECISION, 2026-11-04] (D37 = A):** a rest site can give a relic **only through a dig relic** (the Shovel idea). With it, the rest stop gets a third action, **Dig**, which **replaces both** the heal and the card removal at that rest. Without the dig relic, rests stay as D31 = A: heal 30% or remove a card.
+  - **Curses are cards [DIRECTOR DECISION, 2026-11-04] (D38 = A):**
+    - A curse is a useless or harmful card shuffled into one slot's mini-deck, so you have to dead-card swap past it. This gives the swap a real job (§4).
+    - You remove a curse like any card: at a rest stop, at the merchant, or through an event.
+    - Curse cards don't count toward the slot minimums (§4).
+    - Curses are not relics.
   - **Starting relic, in his words:** players shouldn't depend on restarting runs until the RNG gives them what they hoped for. Once they've unlocked "starter" tier 1 relics, they choose one of them as part of their pre-run loadout.
   - The details are [PROPOSED] in BUILD_DEPTH §4.7.
 - **(D25 = A)** Burn and Bleed do **not** stack in the base game; a second application refreshes the first. Stacking the same status comes only from special conditions: **relics, keystone cards, and potential passive-tree nodes** (§8). The director likes this.

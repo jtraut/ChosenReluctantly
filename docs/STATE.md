@@ -6,6 +6,10 @@
 Last updated: 2026-11-04 (D34-D36 answered and recorded; PL3 closed, tag `playtest-2026-11-04-PL3`). **Run order:** **BD1 (next)** -> BD2 (relics) -> MAP1 (map, gold) -> MAP2 (merchant) -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3.
 
 ## What's done
+- **D37 = A, D38 = A recorded 2026-11-04 (game-lead, docs only):**
+  - **His answers:** D37 = A, a dig relic adds a rest Dig action that replaces both heal and removal. D38 = A, curses are cards you swap past; they don't count toward slot minimums and are removed like any card.
+  - **Where recorded:** GDD §4a, BUILD_DEPTH §4.7, ROADMAP MAP4.
+  - **Pending for tech-writer (BD1 docs pass):** archive D37 and D38 in RESOLVED (the text is in commit 863b15b), plus CHANGELOG `[Director decision]` entries for both.
 - **Relic candidates 2026-11-04 (game-lead, docs only):** the director's two Gemini lists are adapted in BUILD_DEPTH §4.5 (round 1) and §4.8 (round 2: 20 relics, 6 boss, 6 starters, 6 events). They're unscheduled; slices pick from them. New D38 (curse cards).
 - **Relic sources recorded 2026-11-04, third pass (game-lead, docs only):**
   - **His direction:** the relic sources from Slay the Spire and The Last Flame. The follow-up: a starter relic is chosen in the loadout from the unlocked tier 1 starter relics, with no random opening.
@@ -53,9 +57,9 @@ Last updated: 2026-11-04 (D34-D36 answered and recorded; PL3 closed, tag `playte
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).
 
-**D-numbers:** D21-D33 answered (D31 = A, D32 = A + three acts, D33 = B on 2026-11-04). D34 = C, D35 = A, D36 = A answered 2026-11-04. D37 (rest dig) and D38 (curse cards vs curse relics) open; both needed by MAP4. Next free: D39.
+**D-numbers:** D21-D33 answered (D31 = A, D32 = A + three acts, D33 = B on 2026-11-04). D34 = C, D35 = A, D36 = A answered 2026-11-04. D37 = A (dig relic at rest), D38 = A (curse cards) answered 2026-11-04. None open. Next free: D39.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: D37, D38; eyes 47 (35 when he has time). Answered items are in `docs/RESOLVED.md` (D30 archived in 8700a4d).
+All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions open; eyes 47 (35 when he has time). Answered items are in `docs/RESOLVED.md` (D30 archived in 8700a4d).

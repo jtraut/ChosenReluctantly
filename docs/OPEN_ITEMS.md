@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-11-04 (D34-D36 answered, D34 revised; latest tag `playtest-2026-11-04-PL3`)
-**Status: 2 waiting on a decision (D37 rest-site dig, D38 curse cards; both not needed until MAP4) and 1 thing to look at (47). Item 35 waits until you have time for a repeat run. Your relic-sources direction and starter relics in the loadout are recorded: the plan is BUILD_DEPTH §4.7. Next: BD1 -> BD2 (relics) -> MAP1 (map, treasure chests) -> MAP2 (merchant, shop-only relics) -> MAP3 (three acts, save and resume, rare/legendary cards, boss relics) -> MAP4 (events, curses, sacrifices; probably two sittings) -> 3d (loadouts, starter relic).**
+**Status: nothing waiting on a decision; 1 thing to look at (47). Item 35 waits until you have time for a repeat run. D37 = A and D38 = A are recorded. Next: BD1 -> BD2 (relics) -> MAP1 (map, treasure chests) -> MAP2 (merchant, shop-only relics) -> MAP3 (three acts, save and resume, rare/legendary cards, boss relics) -> MAP4 (events, curse cards, sacrifices, rest dig; probably two sittings) -> 3d (loadouts, starter relic).**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -16,16 +16,7 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## Needs your decision
 
-Next new number: D39.
-
-- **D37: Can a rest site give a relic, through a "dig" relic (the Shovel idea)?** On 2026-11-03 (D30) you said rest sites shouldn't offer "heal or a relic", because a relic always wins that choice. The dig is that choice again, but only if you found the dig relic first.
-  - **A (my default):** allow it, only through the dig relic. Digging replaces both the heal and the card removal at that rest.
-  - **B:** keep rest sites relic-free as D30 said, and drop the dig idea.
-  - Not needed until MAP4.
-- **D38: What is a curse?** Gemini's events use a curse **card** ("Property Damage") that goes into one of your slots. My plan so far made curses **relics** with only a downside.
-  - **A (my default now):** curse cards. A curse is a useless (or harmful) card shuffled into one slot's mini-deck, so you have to dead-card swap past it. That gives the swap a real job, as you wanted. Remove it at a rest stop, at the merchant or with an event, like any card. Curse cards don't count toward the slot minimums.
-  - **B:** curse relics. A downside-only relic that sits outside the 20 cap (the current plan, BUILD_DEPTH §4.7).
-  - Not needed until MAP4.
+Nothing right now. Your D37 = A (dig relic at rest) and D38 = A (curse cards) are recorded in GDD §4a and BUILD_DEPTH §4.7. Next new number: D39.
 
 ## Needs your eyes
 

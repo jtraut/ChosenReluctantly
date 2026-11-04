@@ -849,7 +849,7 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
   - **ux-designer:** merchant panel: prices, gold left, disabled items with the reason (too expensive, removal would break a slot minimum); at the relic cap a relic is buyable through the give-one-up step, buy several then leave; the removal list reuses the rest-room list. Captures.
   - **qa:** buying (gold never negative, several relics in one visit, the swap at the cap, no duplicates in stock), removal guard, prices from data, determinism, save mid-merchant; bot checks: median relics on `relic` routes 6-8 and on `safe` routes 2-3; no-card gate. Full gates.
   - **Playtester:** is a relic route a real alternative to a card route? Does the merchant feel worth the detour?
-  - **Also (director 2026-11-04, BUILD_DEPTH §4.7):** the third relic slot holds shop-only relics (`sources` exactly `["merchant"]`, falling back to normal stock), plus about 3 shop-only relics, one of which expands the shop; a curse-removal price is reserved for MAP4.
+  - **Also (director 2026-11-04, BUILD_DEPTH §4.7):** the third relic slot holds shop-only relics (`sources` exactly `["merchant"]`, falling back to normal stock), plus about 3 shop-only relics, one of which expands the shop; curse cards (D38 = A) are removed through the normal card removal.
   - **Close:** item 35 (builds) gets the map; OPEN_ITEMS asks whether the relic route feels different.
 - [ ] **MAP3, three acts (right after MAP2; D33 = B, director 2026-11-04). Full loop. Tag `playtest-YYYY-MM-DD-MAP3`.** Plan: `docs/MAP.md` §1, §4.5, §8. Detailed brief at MAP2's close.
   - **Goal:** a run is three acts of 10 rooms (30 rooms). Acts 1 and 2 end in a mini-boss, act 3 in the final boss. 30-45 minutes per run, and you can save and come back later (GDD §9).
@@ -857,8 +857,9 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
   - **Acceptance (headline):** median bot run time 30-45 min (both classes); `relic` route median relics 14-17 and `safe` 6-8, exactly 2 boss relics per finished run (MAP.md §4.5); no-card gate holds; save, quit, resume gives the same run (tested).
 - [ ] **MAP4, events (after MAP3, before 3d; D33 = B; widened by the director 2026-11-04). Full loop.** Plan: BUILD_DEPTH §4.7, `docs/MAP.md` §2.
   - **Events:** an `event` ("?") node with data-driven events (`data/events/*.json`; closed outcome list; costs shown plainly; placeholder text). The curse room, buff room and altar (sacrifice) are event kinds.
-  - **Relic rules:** the relic `curse` block (curses don't count toward the cap; removed by events or the merchant); `sacrifice_cost` relics; the rest dig relic and Dig action (only if D37 = A).
-  - **Content:** about 6 event-only relics, 2-3 curses, about 3 sacrifice relics; optional `mini_boss` nodes inside acts at low weight.
+  - **Curse cards (D38 = A, director 2026-11-04):** card `curse` flag; event outcome `curse_card` shuffles one into a slot; curse cards don't count toward slot minimums, never appear in offers, and are removable at rest, the merchant or by events. Tests: deck rules ignore curses, the swap skips past them.
+  - **Relic rules:** `sacrifice_cost` relics; the dig relic and the rest **Dig** action, which replaces both heal and removal at that rest (D37 = A, director 2026-11-04).
+  - **Content:** about 6 event-only relics, 2-3 curse cards, about 3 sacrifice relics; optional `mini_boss` nodes inside acts at low weight.
   - **Size:** probably two sittings. Split at MAP3's close; this pushes 3d later.
   - Brief detailed at MAP3's close.
 

@@ -1457,3 +1457,8 @@ The director's direction is recorded in GDD §4a. The plan is BUILD_DEPTH §4.7,
 - **Brainstorming Session uses Shift + key for the second card,** taking over the swap input, instead of a double-tap, which clashes with hold-to-aim. [Double-tap.]
 - **The Complacency Trap is only offered with 2+ dodge charges,** so the Wizard isn't left without a dodge (D29 = B). [Letting it reach 0.]
 - **Curse cards are asked as D38,** because they change my earlier default (curses as relics). They'd also give the dead-card swap a real job, which he asked for (GDD §4, 2026-11-02). They're needed by MAP4 only.
+
+## 2026-11-04 - Applying D37 = A, D38 = A (game-lead)
+His answers are in GDD §4a, BUILD_DEPTH §4.2/§4.6/§4.7/§4.8, the MAP.md §9 row and the ROADMAP MAP4 brief.
+- **Curse cards carry a `curse` flag and are never offered,** and `can_remove` always allows removing them. [A separate curse pool file: the flag is simpler.]
+- **The relic `curse` field is now unused.** BD2 should leave it out of the schema. [Keeping it reserved, which would be dead schema.]

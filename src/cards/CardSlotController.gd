@@ -120,10 +120,12 @@ func try_use(slot_type: String) -> bool:
 	var used_id := slot.use_card(cooldown_modifier, stat_modifiers)
 	if used_id == "":
 		return false
-	# Primed buffs from EARLIER casts are used up by this cast first, so a card's own buff never eats its own charge.
-	if stat_modifiers != null:
-		stat_modifiers.consume_for_cast(slot_type, CardDatabase.tags_for(used_id))
+	# Primed buffs that exist BEFORE this cast are used up by it, after its effects ran (so the buff is still active while
+	# this cast resolves); a buff this very card applies is not in the snapshot, so it never eats its own charge.
+	var primed_before: Array[String] = stat_modifiers.primed_ids() if stat_modifiers != null else ([] as Array[String])
 	_cast_card(card_data)
+	if stat_modifiers != null:
+		stat_modifiers.consume_for_cast(slot_type, CardDatabase.tags_for(used_id), primed_before)
 	# History after the effects: a card's own conditions never see its own cast.
 	var relay := CombatLink.events()
 	if relay != null:

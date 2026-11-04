@@ -34,6 +34,16 @@ func test_a_primed_modifier_applies_until_its_charges_run_out() -> void:
 	assert_int(mods.consume_for_cast("attack_single", _no_tags())).is_equal(0)
 
 
+func test_consume_can_be_limited_to_a_snapshot_so_a_new_buff_survives() -> void:
+	var mods := StatModifiers.new()
+	mods.add_primed_modifier("move_speed", "old", StatModifiers.ADDITIVE, 1.0, "utility", 1, 3.0)
+	var snapshot := mods.primed_ids()
+	mods.add_primed_modifier("move_speed", "new", StatModifiers.ADDITIVE, 1.0, "utility", 1, 3.0)  # applied by the cast itself
+	assert_int(mods.consume_for_cast("utility", _no_tags(), snapshot)).is_equal(1)
+	assert_int(mods.primed_state().size()).is_equal(1)
+	assert_float(mods.apply("move_speed", 0.0)).is_equal(1.0)  # "new" is still there
+
+
 func test_a_non_matching_cast_does_not_use_a_charge() -> void:
 	var mods := StatModifiers.new()
 	mods.add_primed_modifier("move_speed", "p", StatModifiers.MULTIPLICATIVE, 0.5, "attack_single", 1, 3.0)

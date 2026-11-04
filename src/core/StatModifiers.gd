@@ -77,14 +77,26 @@ func add_primed_modifier(stat_name: String, modifier_id: String, modifier_type: 
 	_primed.append(added)
 
 
-## Called once per cast, BEFORE the cast's own effects run (so a card's own buff is not used up by its own cast).
-## Every primed modifier whose consume_on matches loses one charge and is removed at zero. Returns how many were hit.
-func consume_for_cast(slot_type: String, tags: Array[String]) -> int:
+## Ids of the primed modifiers alive now (a snapshot to hand to consume_for_cast).
+func primed_ids() -> Array[String]:
+	var ids: Array[String] = []
+	for modifier: Modifier in _primed:
+		ids.append(modifier.id)
+	return ids
+
+
+## Called once per cast. Every primed modifier whose consume_on matches loses one charge and is removed at zero.
+## `only_ids` (from primed_ids(), taken BEFORE the cast's effects ran) limits it to buffs that already existed, so
+## a card's own new buff is not used up by its own cast, and a buff stays active while the cast that uses it
+## resolves. Null = every primed modifier. Returns how many were hit.
+func consume_for_cast(slot_type: String, tags: Array[String], only_ids: Variant = null) -> int:
 	if _primed.is_empty():
 		return 0
 	var used: int = 0
 	var spent: Array[Modifier] = []
 	for modifier: Modifier in _primed:
+		if only_ids != null and not (only_ids as Array).has(modifier.id):
+			continue
 		if modifier.consume_on != slot_type and not tags.has(modifier.consume_on):
 			continue
 		if modifier.stat.begins_with(COOLDOWN_SKIP_PREFIX) and modifier.stat.substr(COOLDOWN_SKIP_PREFIX.length()) != slot_type:

@@ -30,6 +30,8 @@ static func load_all(dir_path: String = DEFAULT_CARDS_DIR) -> void:
 		file_name = dir.get_next()
 	dir.list_dir_end()
 	if dir_path == DEFAULT_CARDS_DIR:
+		for problem: String in KeywordDatabase.validate_table():
+			push_error("CardDatabase: data/keywords.json: " + problem)
 		for problem: String in CardDamageRule.check_shipped():
 			push_error("CardDatabase: damage-card rule broken: " + problem)
 

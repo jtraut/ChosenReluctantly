@@ -18,7 +18,7 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 Next new number: D38.
 
-- **D37: Can a rest site give a relic, through a "dig" relic (the Shovel idea)?** In November (D30) you said rest sites shouldn't offer "heal or a relic", because a relic always wins that choice. The dig is that choice again, but only if you found the dig relic first.
+- **D37: Can a rest site give a relic, through a "dig" relic (the Shovel idea)?** On 2026-11-03 (D30) you said rest sites shouldn't offer "heal or a relic", because a relic always wins that choice. The dig is that choice again, but only if you found the dig relic first.
   - **A (my default):** allow it, only through the dig relic. Digging replaces both the heal and the card removal at that rest.
   - **B:** keep rest sites relic-free as D30 said, and drop the dig idea.
   - Not needed until MAP4.

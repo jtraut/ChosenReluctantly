@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-04 (PL3 closed, tag `playtest-2026-11-04-PL3`)
-**Status: 3 waiting on a decision (D34, D35 not blocking until MAP3; D36 the volley up close), 3 things to look at now (40, 39, 41; item 35 waits for BD2). H3 is done: the dodge is back on Space (Rogue 2, Wizard 1), Movement is on Ctrl, enemies and the boss volley are a bit faster. MAP0 is done too: the map plan is in `docs/MAP.md` (a relic route reaches 6-8 relics but gets fewer cards). PL3 is done. Next: BD1 (cards start to work together) -> BD2 -> MAP1 (map) -> MAP2 (merchant) -> MAP3 (three acts, save and resume) -> MAP4 (curse/buff rooms) -> 3d.**
+Last updated: 2026-11-04 (D34-D36 answered; latest tag `playtest-2026-11-04-PL3`)
+**Status: nothing waiting on a decision. Your D34 = C, D35 = A and D36 = A are recorded (2026-11-04). 4 things to look at now (42, 41, 40, 39; item 35 waits for BD2). Next: BD1 (cards start to work together) -> BD2 (relics) -> MAP1 (map) -> MAP2 (merchant) -> MAP3 (three acts, save and resume) -> MAP4 (curse/buff rooms) -> 3d.**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -16,24 +16,13 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## Needs your decision
 
-Your D31 = A, D32 = A (three acts, 30 rooms, save and return) and D33 = B are recorded in GDD §9, `docs/MAP.md` and the ROADMAP (MAP3 is now three acts with save/resume, MAP4 curse/buff rooms, both before loadouts). Your three acts raise two numbers you set for a 10-room run. Until you answer, I use my default; neither blocks work (both matter at MAP3). Next new number: D37.
-
-- **D34: How many relics over a 30-room run?** You said 6-8 for a relic hunter, cap 10, when a run was 10 rooms.
-  - **A (my default):** keep 6-8 per run, cap 10. Relics get scarcer per act: about 1 elite and 1 relic stage per route in each act, mini-bosses give gold and a rare card offer but no relic, and merchant relics cost more (150-260 gold) because gold adds up over three acts.
-  - **B:** let it grow with the run: about 15-20 for a hunter, cap about 25, and mini-bosses give a relic.
-- **D35: How many card rejects over a 30-room run?** Today: 3 per run, with about 8 card offers. Thirty rooms give about 20.
-  - **A (my default):** still 3 per run, so deck noise builds up more.
-  - **B:** 3 per act (9 per run).
-
-- **D36: The boss volley up close, for the Wizard.** Measured in PL3: the Fan of regrets fires 5 pellets of 5 damage in lanes 12° apart. From 8 m away there's a safe gap you can step into in time; at 6 m or closer the gaps are narrower than your body, so only the dodge saves you (the Wizard has 1). The boss can fire from 4 m. Most of the bot Wizard's losses were the bot not dodging pellets in flight; a smarter bot cleared 16 of 16, but still lost about half its HP to volleys per fight.
-  - **A (my default):** leave it. Up close is the risky place for a Wizard to be, and the dodge is the answer.
-  - **B:** the boss only uses the volley from at least 8 m (one number in data).
-  - **C:** widen the spread so a gap exists up close (one number in data).
+Nothing right now. Your D34 = C, D35 = A and D36 = A are recorded in GDD §4a/§5/§9, `docs/MAP.md` §4.5 and the ROADMAP. Next new number: D37.
 
 ## Needs your eyes
 
 Reply with the number and a word or two.
 
+42. **My reading of your D34 = C.** Please check two readings. (1) "Later tiers like 2-3 elites" I read as **elites in acts 2 and 3** get a 25% chance of a rare card offer on top of their relic (act 1 elites: relic only). If you meant the difficulty tiers (Normal, Hard), say so; it's one data value. (2) "Difficult to reach 20" I set as a relic hunter ending about 14-17 relics and a no-relic route about 4-6, with the best possible path about 18-19 (MAP.md §4.5; the MAP3 sim tunes it). Also: the swap at the cap is built with relics in BD2, and a relic you give up won't be offered again that run.
 41. **Knockback is shorter now (PL3 bug fix).** Every shove on you was being re-applied each frame, so the boss smash threw the Wizard about 20 m instead of the intended 2 m. Fixed for all hits on the player. It changes the feel a bit: tell me if hits now feel too soft. Also new in PL3: a ring and bubble while Ward is up, a big white Overqualified Bolt, green safe-gap strips in the boss volley (only where standing there is really safe, so none up close), a brighter dodge-pip flash, and no number keys on the reward screens. Say if any of it reads badly.
 40. **H3 and H1 pace, the Wizard side.** Rogue: recorded ("still felt good, never overwhelmed"). When you next play the Wizard: do rooms feel quicker with the faster enemies, or only more crowded? Does the 1-dodge Wizard get time to react to the boss's Fan of regrets (0.75 s wind-up, lanes brighten toward the fire moment)? Is Ctrl comfortable for Movement while you move with WASD? A no-card run should still lose. The bots say the volley does all of the Wizard's boss damage; I'm checking whether that's the bot or the volley (PL3 item 13). (This replaces old item 38, H1 pace.)
 39. **H1 boss length.** The Rogue's boss fight runs about 6 s longer (about 66 s). Fine?

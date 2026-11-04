@@ -143,11 +143,18 @@ Added 2026-11-02 from the director's notes. The goals are director decisions. Th
 5. This comes before refining graphics and staging.
 
 ### Relic sources and stacking **[DIRECTOR DECISION, 2026-11-02]**
-- **(D22 = C, director's wording)** A player focused on relic hunting, trying to collect as many as possible, should be able to reach **about 6-8 relics per run**, with a **hard cap of about 10**. Relics come from:
+- **(D22 = C, director's wording)** A player focused on relic hunting, trying to collect as many as possible, should be able to reach **about 6-8 relics per run**, with a **hard cap of about 10**. *(Superseded for the three-act run by D34 = C below; still the target for one 10-room act.)* Relics come from:
   - a **merchant** stage, where the player can buy **several relics at once** if they have enough gold;
   - a **dedicated relic reward stage** (pick a relic);
   - **elites** (a relic after an elite).
 - **[DIRECTOR DECISION, 2026-11-03] (D30 = A)** Those three are the only relic sources. Rest rooms do **not** offer "heal or a relic", and card reward screens do **not** show a relic. Director's reason: heal-or-relic is too obvious a choice, because a relic is worth much more over a run while healing is already easy to get through the Recovery slot.
+- **Relics over the three-act run [DIRECTOR DECISION, 2026-11-04] (D34 = C, the director's own option):**
+  - The relic count **grows with the run**. **Hard cap 20**, and reaching 20 should be **difficult**.
+  - **At the cap,** taking a new relic means **removing an existing one** first.
+  - **No duplicate relics.**
+  - **Mini-bosses always give gold and a rare card offer** (no relic).
+  - **Elites in the later acts** ("later tiers like 2-3", read as acts 2 and 3; logged in DECISIONS) have a **smaller chance to also offer rare cards**, on top of their relic.
+  - Target counts and chances are proposals in `docs/MAP.md` §4.5, set by the MAP3 sim.
 - **(D25 = A)** Burn and Bleed do **not** stack in the base game; a second application refreshes the first. Stacking the same status comes only from special conditions: **relics, keystone cards, and potential passive-tree nodes** (§8). The director likes this.
 - **(D24 = A)** Relics are built in their own slice (BD2) straight after the synergy core (BD1), before loadouts (3d).
 
@@ -164,7 +171,7 @@ Summary of BD0 (`docs/BUILD_DEPTH.md`, 2026-11-02). The full plan, numbers and c
 - **Conditions and payoffs:** any card effect may carry a `condition` (target is Burning; you cast a Movement card in the last N s; one of your Zones is active; later: self stacks, deck tag count, low HP). Payoffs must still beat the free attack on their unconditional damage.
 - **Cross-slot hooks:** `cast_within` conditions, and primed buffs ("your next Attack: Single within 3 s has no cooldown").
 - **Scaling stacks:** statuses may stack (off by default), and a self-status like the Wizard's Charge can scale a payoff. Burn and Bleed don't stack in the base game; relics, keystones and later passive nodes can make them stack (D25 = A, above).
-- **Relics:** run-scoped, reset between runs, one JSON file each, using the card effect format plus triggers on a new `CombatEvents` relay (there is no event bus today). Sources and count: see "Relic sources and stacking" above (elites, a relic stage, a merchant; 6-8 for a relic hunter, cap about 10). Relic data already names future map nodes (merchant, curse/buff rooms, mini-bosses). 15 sketches, including the director's burn explosion ("Pyre Insurance") and 5 that reward light and heavy attacks.
+- **Relics:** run-scoped, reset between runs, one JSON file each, using the card effect format plus triggers on a new `CombatEvents` relay (there is no event bus today). Sources and count: see "Relic sources and stacking" above (elites, a relic stage, a merchant; 6-8 for a relic hunter in one act; over three acts it grows, hard cap 20, swap at the cap, no duplicates, D34 = C). Relic data already names future map nodes (merchant, curse/buff rooms, mini-bosses). 15 sketches, including the director's burn explosion ("Pyre Insurance") and 5 that reward light and heavy attacks.
 - **Archetypes:** 4 per class on Fire, each with a keystone card and a full legal deck. Rogue: Kindling, Hit and Run, Bleed Out, Grudge Brawler (the light/heavy build, only viable with its relics). Wizard: Controlled Burn, Thesis, Departure Lounge, Ward Battlemage.
 - **Movement cards:** with the dodge back (D29 = B), offensive Movement cards can lean harder into damage; keeping a pure escape card in a deck is a recommendation, not a deck rule.
 - **Readability:** tag chips, a condition line in `CardSummary`, a slot glow when the condition is live, and a primed marker.
@@ -188,6 +195,7 @@ Pick one **class** and one **element** (for example Fire Rogue).
 - The **Wizard** is added now, ahead of Milestone 4, as a ranged class: its **light and heavy attacks are ranged** and aimed at the reticle. Reason: an outside playtester expected left click to hit distant enemies under the reticle, and found the Rogue's melee swing confusing. Water and the subclasses stay in Milestone 4.
 - **Wizard risk [DIRECTOR DECISION, 2026-10-30] (D18 = A):** the Wizard must not be the "easy way out". Its rooms should cost some HP, but less than the Rogue's. It should be squishier than it is today (HP is a tuning lever), starts with ~~2~~ **1 dodge charge** (the Rogue starts with ~~3~~ **2**; D29 = B, 2026-11-02), and has a slightly longer **Recovery** slot cooldown than the Rogue. All three are per-class data values.
 - **Wizard HP 22 [DIRECTOR DECISION, 2026-11-02] (D20 = B):** truly squishier. A full boss "Fan of regrets" volley (25) from full HP can kill the Wizard, and that's acceptable: "a player realistically shouldn't be hit by a full volley, only partial, and if they do that's their fault."
+- **The volley up close [DIRECTOR DECISION, 2026-11-04] (D36 = A):** leave the Fan of regrets as it is. At 6 m or closer its gaps are narrower than the player's body, so only the dodge saves you; up close is the risky place for a Wizard to be, and the dodge is the answer. No minimum range and no wider spread.
 
 ### Card pools
 A character may only draw cards from:
@@ -285,7 +293,7 @@ Rather than a full strength/weakness wheel, elements apply status effects (for e
 
   The most rewarding path (most gold, XP and points to spend between runs) tends to be the most difficult. **[OPEN]** node types, how many choices per step, and the map layout. Gold, XP and between-run points don't exist yet (§8). Today's run is a straight line of 10 rooms.
   - **[DIRECTOR DECISION, 2026-11-02] (D28 = A):** a map design doc (MAP0, docs only) comes first, and the first map build comes after BD1 and BD2 and before loadouts (3d). The map must include the merchant (relics bought with gold, several at once) and a dedicated relic stage (D22, §4a).
-  - **Map plan [PROPOSED] (MAP0, 2026-11-03; full plan in `docs/MAP.md`):** a grid of 10 rooms by 4 columns, read left to right, the whole map visible. Every path is exactly 10 rooms: rooms 1-2 combat, room 10 the boss, and at least 6 fights on any path. From each node you go to 1-3 nodes in the next room, mostly 2. Node types: combat, elite (a relic), relic stage, rest, merchant (several relics at once, cards, card removal), and later mini-boss, curse room (a strong relic with a curse) and buff room. Gold is earned per fight (combat 12-18, elite 30-40, mini-boss 45-55) and lasts for the run; relic prices come from rarity (60/90/130). A relic-hunting route reaches 6-8 relics but only about 3 card offers; a route that ignores relics ends with 2-3 relics and about 7 card offers. XP and between-run points are reserved only (§8 is open). The seeded generator checks these rules on every path. Built as MAP1 (map, gold), MAP2 (merchant), MAP3 (mini-bosses, curse/buff rooms). **Director answers 2026-11-04:** D31 = A (rest: heal 30% or remove a card); D32 = A (4 lanes, whole map visible), with three acts of 10 rooms as above; **D33 = B: mini-bosses and curse/buff rooms come before loadouts (3d)**, as MAP3 (acts, mini-bosses, save/resume) and MAP4 (curse/buff rooms). Open: D34 (relic count over 30 rooms; default keeps 6-8 per run, cap 10), D35 (rejects over 30 rooms; default 3 per run).
+  - **Map plan [PROPOSED] (MAP0, 2026-11-03; full plan in `docs/MAP.md`):** a grid of 10 rooms by 4 columns, read left to right, the whole map visible. Every path is exactly 10 rooms: rooms 1-2 combat, room 10 the boss, and at least 6 fights on any path. From each node you go to 1-3 nodes in the next room, mostly 2. Node types: combat, elite (a relic), relic stage, rest, merchant (several relics at once, cards, card removal), and later mini-boss, curse room (a strong relic with a curse) and buff room. Gold is earned per fight (combat 12-18, elite 30-40, mini-boss 45-55) and lasts for the run; relic prices come from rarity (60/90/130). A relic-hunting route reaches 6-8 relics but only about 3 card offers; a route that ignores relics ends with 2-3 relics and about 7 card offers. XP and between-run points are reserved only (§8 is open). The seeded generator checks these rules on every path. Built as MAP1 (map, gold), MAP2 (merchant), MAP3 (mini-bosses, curse/buff rooms). **Director answers 2026-11-04:** D31 = A (rest: heal 30% or remove a card); D32 = A (4 lanes, whole map visible), with three acts of 10 rooms as above; **D33 = B: mini-bosses and curse/buff rooms come before loadouts (3d)**, as MAP3 (acts, mini-bosses, save/resume) and MAP4 (curse/buff rooms). **Director answers 2026-11-04:** D34 = C (relics grow with the run, hard cap 20, swap at the cap, no duplicates, mini-bosses give gold and a rare card offer; §4a), D35 = A (3 rejects per run, below).
 ### Starting decks and loadouts **[DECIDED]**
 - The very first run uses preset defaults: the chosen class, element, and neutral starter cards.
 - From the second run on, the player can tune their starting deck and save it as a **loadout**.
@@ -297,7 +305,7 @@ Rather than a full strength/weakness wheel, elements apply status effects (for e
 
 ### Card rewards during a run **[DECIDED, details open]**
 - After each won room, the player is offered **3 cards** and either **picks one** or **rejects the whole offer**. **[DIRECTOR DECISION]**
-- A reject token is spent only when the whole offer is declined. Each run allows only **3 rejects total**, so deck noise builds up over a run.
+- A reject token is spent only when the whole offer is declined. Each run allows only **3 rejects total**, so deck noise builds up over a run. **[DIRECTOR DECISION, 2026-11-04] (D35 = A):** still 3 per run over the three-act, 30-room run (about 20 card offers), not 3 per act.
 - **Offer size is a data value** (default 3) so boons, passives, and gear can later raise it or add rerolls.
 - Rewards and path choices can offer ways to **clean the deck** (remove or swap cards), which creates meaningful routing decisions.
 - **[OPEN]** Whether shops and enemy drops also exist alongside post-battle rewards.
@@ -368,7 +376,7 @@ The director provides top-level design direction only. Roles are defined as docu
 10. Final tone: how far to push the satire.
 11. Card unlock conditions for `locked` cards (§9 Loadouts).
 12. ~~Relic sources and how many per run; whether Burn and Bleed stack.~~ Resolved 2026-11-02 (D22 = C, D25 = A, §4a). Merchant relic prices proposed in `docs/MAP.md` §4.4 (MAP0).
-13. Branching map: node types, choices per step, layout, and the reward currencies (gold, XP, between-run points) (§9). Proposed in `docs/MAP.md` (MAP0, 2026-11-03); D31-D33 answered 2026-11-04; open: D34, D35. XP and between-run points stay open with §8.
+13. Branching map: node types, choices per step, layout, and the reward currencies (gold, XP, between-run points) (§9). Proposed in `docs/MAP.md` (MAP0, 2026-11-03); D31-D35 answered 2026-11-04. XP and between-run points stay open with §8.
 
 Resolved: engine (Godot), perspective (3D isometric), slice classes and elements (Rogue, Wizard, Fire, Water), card offer format (pick 1 of 3 or reject all).
 

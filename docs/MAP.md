@@ -1,6 +1,6 @@
 # Branching map design (MAP0)
 
-Owner: game-lead. Status: **[PROPOSED]**, written 2026-11-03 for GDD §9 "Branching map". It has to meet the director's decisions in GDD §4a (relic sources, D22 = C, D30 = A) and §9 (D28 = A, rest-room note). The numbers are starting values, and all of them are data. Director answers 2026-11-04 (§10): D31 = A, D32 = A **with three acts (30 rooms)**, D33 = B. Open: D34 (relics over 30 rooms), D35 (rejects over 30 rooms); the plan uses their defaults.
+Owner: game-lead. Status: **[PROPOSED]**, written 2026-11-03 for GDD §9 "Branching map". It has to meet the director's decisions in GDD §4a (relic sources, D22 = C, D30 = A) and §9 (D28 = A, rest-room note). The numbers are starting values, and all of them are data. Director answers 2026-11-04 (§10): D31 = A, D32 = A **with three acts (30 rooms)**, D33 = B. D34 = C and D35 = A (answered 2026-11-04, §4.5, §10).
 
 ## 1. Shape of the map
 
@@ -30,11 +30,11 @@ C combat · E elite · R* relic stage · M merchant · Rs rest · (mini-boss and
 | Node (`type`) | Fight? | What you get | Rooms | Slice |
 |---|---|---|---|---|
 | `combat` | yes | Card offer (pick 1 of 3 or reject), gold 12-18 | 1-9 | MAP1 |
-| `elite` | yes, elite tier | **Relic** offer (pick 1 of 3 or skip; replaces the card offer, BD2 rule), gold 30-40 | 3-9 | MAP1 |
+| `elite` | yes, elite tier | **Relic** offer (pick 1 of 3 or skip; replaces the card offer, BD2 rule), gold 30-40. In acts 2-3, a chance of a rare card offer as well (D34 = C, §4.5) | 3-9 | MAP1 |
 | `relic_room` (the "dedicated relic reward stage", D22) | no | Relic offer (pick 1 of 3 or skip) | 3-9 | MAP1 |
 | `rest` | no | Today's rest: heal 30% or remove a card (**D31 = A**, director 2026-11-04) | 5-9 | MAP1 |
 | `merchant` | no | Spend gold: **several relics at once** if you can afford them, card removal, cards (§4.3) | 4-9 | MAP2 |
-| **act-end mini-boss** (`mini_boss`, fixed) | yes, new `mini_boss` tier | Card offer weighted to rarer cards, gold 60; a relic only if D34 = B | 10 of acts 1-2 | MAP3 |
+| **act-end mini-boss** (`mini_boss`, fixed) | yes, new `mini_boss` tier | **Always** gold 60 and a card offer weighted to rare cards; **no relic** (D34 = C) | 10 of acts 1-2 | MAP3 |
 | `mini_boss` (optional node inside an act) | yes, `mini_boss` tier | Same as the act-end one | 5-8 | MAP4, low weight |
 | `curse_room` | no | A strong relic **with a curse attached** (BUILD_DEPTH §4.2 `curse` block), or leave | 3-8 | MAP3 |
 | `buff_room` | no | A minor relic with no downside, or leave ("some rooms only buff") | 3-8 | MAP3 |
@@ -106,7 +106,7 @@ Expected gold uses the mean income: combat 15, elite 35, mini-boss 50. The start
 - A path has at most 3 elite-like relics plus at most 4 non-fight rooms.
 - The best mix is 3 relic stages and the merchant. With only 6 fights, gold on arrival is at most 15 + 15 + 3 x 35 = 135, or 150 with a mini-boss, so the merchant buys 2.
 - That totals 3 + 3 + 2 = **8**. A curse or buff room (MAP3) only replaces one of the non-fight slots, so the total is still 8 at most.
-- Cap 10 is a backstop for later sources, such as relics that grant relics, passives and tiers. The validator also enforces the 8.
+- Cap 10 is a backstop for later sources, such as relics that grant relics, passives and tiers. The validator also enforces the 8. (One act only. From MAP3 the cap is 20 over the three-act run, D34 = C, §4.5.)
 
 ### 4.3 The main tension (said out loud)
 
@@ -126,19 +126,24 @@ Expected gold uses the mean income: combat 15, elite 35, mini-boss 50. The start
   - **3 relics**, rarity-weighted from source `merchant`. Prices come from rarity (run.json `relics.prices`): common 60, uncommon 90, rare 130.
   - **3 cards** at 40 each, picked with the reward weights, including the "On your plan" highlight from 3d.
   - **Card removal** at 50, then +25 for each further removal in the run. It goes through the existing `can_remove` guard, so cards that would break a slot minimum are shown disabled with the reason, as at rest.
-  - **Buy as many as you can afford, in any order** (the director: "several relics at once"). The panel stays open until you leave. Relics at the cap of 10 are shown disabled.
+  - **Buy as many as you can afford, in any order** (the director: "several relics at once"). The panel stays open until you leave. At the relic cap (20 from MAP3, D34 = C), buying a relic first asks which owned relic to give up; the player can cancel.
 - **A route that skips fights can't buy much:** with 4 non-fight rooms, gold on arrival at a room-9 merchant is at most about 135, while the hunter route above arrives with 150.
 
-### 4.5 Over three acts (MAP3; D34 default A)
+### 4.5 Over three acts (MAP3; D34 = C, director 2026-11-04)
 
-The director's relic target is **per run** (D22: 6-8 for a hunter, cap 10). Over 30 rooms that means relics get scarcer per act. Two traps: act-end mini-bosses would add 2 relics to every route if they gave relics, and gold carries across acts, so merchant purchases add up. Under **D34 = A** (default):
-- **Per-act path rules:** at most **1 elite** and **1 relic stage** on any path in an act; at most 1 merchant. Act-end mini-bosses give a rare-weighted card offer and gold, **not** a relic.
-- **Merchant:** still sells several relics at once (the director's rule), but priced for a whole run's gold: starting values common 150, uncommon 200, rare 260 (data).
-- **Feasibility, hunter:** 3 elites + 3 relic stages = 6. Gold over the run is roughly 20 fights x 15 + 3 x 35 + 2 x 60 = about 525, so the merchants add about 2-3 relics if the hunter spends gold on nothing else: **about 8-9**, and the sim sets prices so the median is 6-8.
-- **Feasibility, ignore route:** 1-2 elites over the run plus maybe 1 merchant relic: **2-3**.
-- **Run total is checked by the bot sim** (median `relic` route 6-8, `safe` route 2-3), because per-act generator checks can't see carried gold. The per-act generator rules only keep each act sane.
-- **These values are data, "set by the MAP3 sim".** BD1, BD2, MAP1 and MAP2 all run 10-room games and will move them; the routes above only show it's reachable.
-- Under **D34 = B** (counts scale with the run): MAP0's single-act rules per act (up to 3 elites, relic stages, merchant at 60/90/130) and mini-bosses give a relic: about 15-20 for a hunter, cap raised to about 25.
+**The director's rule (D34 = C):** relics grow with the run; **hard cap 20**, and 20 should be **hard to reach**. At the cap, taking a new relic means **removing one you own**. **No duplicate relics.** **Act-end mini-bosses always give gold and a rare card offer, no relic.** **Elites in acts 2-3** have a **smaller chance to also offer rare cards** (on top of the relic). GDD §4a.
+
+Starting values below are game-lead proposals (DECISIONS 2026-11-04), all data, **set by the MAP3 sim**:
+- **Targets per run:** a relic hunter's median about **14-17**; the best possible path about 18-19, so 20 is a backstop that later sources (curse/buff rooms, passives) can push into. A route that ignores relics: about **4-6**.
+- **Per-act path rules:** MAP0's single-act rules (§3) in each act, except the best path's relic estimate per act is [4, 6] (was [6, 8] for one act) and at most 2 relic stages per path per act. Gold carries across acts, so per-act checks can't see the run total; the bot sim checks it.
+- **Merchant prices:** common 80, uncommon 120, rare 170 (MAP2 ships 60/90/130 for one act; MAP3 raises them because gold adds up over three acts).
+- **Feasibility, hunter:** per act about 2 elites + 2 relic stages = 4, so 12 over the run. Gold over the run is roughly 18 fights x 15 + 6 elites x 35 + 2 mini-bosses x 60 = about 600, so merchants add about 3-5: **about 15-17**.
+- **Feasibility, ignore route:** about 1 elite per act plus 1-3 merchant relics: **4-6**.
+- **At the cap:** every relic offer still appears. Picking a relic opens a "give one up" list of owned relics; cancelling keeps what you have. At the merchant, buying at the cap does the same.
+- **No duplicates:** offers and merchant stock never include a relic you own. A relic you gave up doesn't come back later in the same run.
+- **Mini-boss card offer:** pick 1 of 3 from rare cards (falls back to the normal weights if a pool has fewer than 3 rare cards). Cards have no rarity yet: MAP3 adds an optional card `rarity` field (default `common`) and enough rare cards per pool.
+- **Elite rare card chance:** act 1 0%, acts 2-3 **25%** (data per act). When it rolls, the rare card offer comes after the relic offer.
+- **Run totals are checked by the bot sim** (median `relic` route 14-17, `safe` route 4-6, nobody hits the cap in the median run).
 
 ## 5. Currencies
 
@@ -247,9 +252,6 @@ MAP1 and MAP2 together are the "first map build" that D28 places before 3d, with
 
 **Answered 2026-11-04:** D31 = A (keep heal 30% or remove a card). D32 = A, plus **three acts of 10 rooms (30 total), mini-bosses ending acts 1 and 2, the final boss ending act 3, a 30-45 minute run, and save-and-return**. D33 = B (mini-bosses and curse/buff rooms before loadouts).
 
-- **D34: Relics over a 30-room run.**
-  - **A (default):** keep your 6-8 for a relic hunter, cap 10, now across three acts: about 1 elite and 1 relic stage per route per act, mini-bosses don't give relics, and merchant relics cost more (§4.5).
-  - **B:** let it grow with the run: about 15-20 for a hunter, cap about 25, and mini-bosses give a relic.
-- **D35: Card rejects over a 30-room run.** Today you get 3 rejects per run, with about 8 card offers. Thirty rooms give about 20 offers.
-  - **A (default):** still 3 per run, so deck noise builds up more.
-  - **B:** 3 per act (9 per run).
+**Also answered 2026-11-04:** **D34 = C** (his own option): relics grow with the run, hard cap 20 and hard to reach; at the cap you remove a relic to take a new one; no duplicate relics; mini-bosses always give gold and a rare card offer; elites in the later acts have a smaller chance to also offer rare cards (§2, §4.5). **D35 = A:** still 3 rejects per run over 30 rooms.
+
+No open questions in this doc.

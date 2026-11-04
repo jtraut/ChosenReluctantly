@@ -3,9 +3,10 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-04 (PL3 closed, tag `playtest-2026-11-04-PL3`). **Run order:** **BD1 (next)** -> BD2 (relics) -> MAP1 (map, gold) -> MAP2 (merchant) -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3.
+Last updated: 2026-11-04 (D34-D36 answered and recorded; PL3 closed, tag `playtest-2026-11-04-PL3`). **Run order:** **BD1 (next)** -> BD2 (relics) -> MAP1 (map, gold) -> MAP2 (merchant) -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3.
 
 ## What's done
+- **Director answers recorded 2026-11-04 (game-lead, docs only):** D34 = C (his own option: relics grow with the run, hard cap 20 and hard to reach, swap at the cap, no duplicates, mini-bosses always give gold + a rare card offer, elites in later acts a smaller chance of a rare card offer too), D35 = A (3 rejects per run), D36 = A (volley stays). Recorded in GDD §4a/§5/§9/§14, MAP.md §2/§4.4/§4.5/§10, BUILD_DEPTH §4.1/§11, ROADMAP BD2/MAP2/MAP3 (BD2 now builds the at-cap swap, cap 20), DECISIONS "2026-11-04 - Applying D34 = C, D35 = A, D36 = A". New eyes item 42 (check my reading of D34). **Pending for tech-writer (BD1 docs pass):** archive D34, D35, D36 in RESOLVED (old OPEN_ITEMS text is in commit 81ff8e4) and add CHANGELOG `[Director decision]` entries: relic cap 10 -> 20 over three acts, at-cap fallback "card offer instead" -> "give a relic up", rejects 3 per run kept, volley unchanged.
 - **PL3 closed 2026-11-04:** gameplay-dev 9a86757/fbfd86c, ux da418aa, qa PASS 16387bf/e38bdd2, playtest 7f21afb, docs e03c4b8 (also archived D31-D33 in RESOLVED). Tag `playtest-2026-11-04-PL3`. **Baselines now: suite 1289/1289 (111 suites); arena 30 s seed 1 = 2333565009, 90 s = 1212800; bot sim `-Rooms 20 -Seed 3` = 2281795515.** Carry-overs listed under the PL3 brief (do with BD1). New director items: D36 (volley up close), 41 (knockback feel + PL3 visuals).
 - **Director answers recorded 2026-11-04 (game-lead, docs only):** D31 = A, D32 = A + three acts of 10 rooms (mini-bosses end acts 1-2, final boss act 3; 30-45 min; save and return later), D33 = B. GDD §9, MAP.md §1/§2/§4.5/§8/§9/§10, BUILD_DEPTH §4.1, ROADMAP (MAP3 = acts + save/resume, new MAP4 = curse/buff; run order), DECISIONS "2026-11-04". New D34 (relics over 30 rooms), D35 (rejects). Archived in RESOLVED and CHANGELOG by tech-writer (e03c4b8).
 - **MAP0 closed 2026-11-03 (docs only, no tag):** game-lead ee38ac0, e77653d, adf6468; docs 2762144. `docs/MAP.md` (game-lead owns it); GDD §9 [PROPOSED]; ROADMAP MAP1/MAP2/MAP3; questions D31-D33 (defaults A). Director's H3 Rogue feedback in CHANGELOG; old item 38 merged into 40.
@@ -32,9 +33,9 @@ Last updated: 2026-11-04 (PL3 closed, tag `playtest-2026-11-04-PL3`). **Run orde
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).
 
-**D-numbers:** D21-D33 answered (D31 = A, D32 = A + three acts, D33 = B on 2026-11-04). D34-D35 open (relics and rejects over 30 rooms; defaults A); D36 open (volley up close; default A leave it). Next free: D37.
+**D-numbers:** D21-D33 answered (D31 = A, D32 = A + three acts, D33 = B on 2026-11-04). D34 = C, D35 = A, D36 = A answered 2026-11-04. None open. Next free: D37.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: D34, D35 (non-blocking until MAP3), D36; eyes 40, 39, 41 (35 after BD2). Answered items are in `docs/RESOLVED.md` (D30 archived in 8700a4d).
+All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions open; eyes 42, 41, 40, 39 (35 after BD2). Answered items are in `docs/RESOLVED.md` (D30 archived in 8700a4d).

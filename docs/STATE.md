@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-03 (H3 and MAP0 closed). **Run order:** **PL3 (next; rest, incl. H3 items 11-13)** -> BD1 -> BD2 (relics) -> MAP1 (map, gold) -> MAP2 (merchant) -> 3d -> MAP3 (mini-bosses, curse/buff; D33) -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0.
+Last updated: 2026-11-04 (PL3 started: gameplay-dev). **Run order:** **PL3 (next; rest, incl. H3 items 11-13)** -> BD1 -> BD2 (relics) -> MAP1 (map, gold) -> MAP2 (merchant) -> 3d -> MAP3 (mini-bosses, curse/buff; D33) -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0.
 
 ## What's done
 - **MAP0 closed 2026-11-03 (docs only, no tag):** game-lead ee38ac0, e77653d, adf6468; docs 2762144. `docs/MAP.md` (game-lead owns it); GDD §9 [PROPOSED]; ROADMAP MAP1/MAP2/MAP3; questions D31-D33 (defaults A). Director's H3 Rogue feedback in CHANGELOG; old item 38 merged into 40.
@@ -21,7 +21,7 @@ Last updated: 2026-11-03 (H3 and MAP0 closed). **Run order:** **PL3 (next; rest,
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- Nothing in progress. Working tree clean.
+- **PL3 step 1: gameplay-dev** (items 3, 13, 12's capture tooling, scenario tooling). If cut off: check for gameplay-dev commits after the STATE commit that started PL3; re-hand the brief with "continue from the last commit".
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step

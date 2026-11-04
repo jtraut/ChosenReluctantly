@@ -1323,3 +1323,15 @@ The answers themselves are recorded in GDD §3, §4a, §5 and §9 (director deci
 - **PL3 item 6 (Fan of regrets lanes) moves into H3.** Speeding up a volley whose lanes may not match its pellets would be unfair; the correctness check comes first. [Leaving it in PL3 after the speed-up.]
 - **Ctrl reliability is an H3 acceptance test, not a key change I make.** If Ctrl can't hold-to-preview while WASD and clicks work, gameplay-dev stops and I take it to the director. [Silently picking another key.]
 - **BUILD_DEPTH §8 rewritten for the dodge-on case:** one pure escape per deck becomes a recommendation; the plan-aware bot dodges and drops the "no offensive Movement below 50% HP" rule. The dodge-off version is in git at 0ddd630.
+
+## 2026-11-03 - H3 build: dodge returns (gameplay-dev; logged by game-lead)
+Commits cee653d, d22b08d, 783d552, 3dc74fb.
+- **Slot keys ignore every modifier except Shift.** Q, E, F and R pressed while Ctrl is held still cast; only Shift turns a slot key into a swap. The old "Ctrl plus the key does nothing" rule is gone. [Exact modifier match, which would drop Q or E pressed during a Ctrl hold-to-preview.]
+- **Ctrl then Shift swaps in code** (`Player._swap_by_late_modifier`, generic for any modifier-keyed swap binding): a Shift press while the swap binding's modifier key is held swaps that slot and drops its preview, so releasing Ctrl doesn't cast. In "press" cast mode Ctrl-then-Shift still casts on the Ctrl press. [A second binding; Godot can't express it.]
+- **Swap binding stays `{Ctrl, shift: true}` with no ctrl flag,** because a modifier's own key event never carries its own flag. [`ctrl: true`.]
+- **Left/right Ctrl** both arrive as physical `KEY_CTRL` and both work; tested with synthetic key events on Windows, not a physical keyboard.
+- **`pressure.telegraph_scale` is optional** (missing reads as 1.0; range 0.25-4; unknown keys still rejected). Boss adds are normal enemies and get it. [Required key.]
+- **Fan of regrets:** lanes match the pellet path (worst offset under 0.03 m). Lanes clear at the fire moment while pellets fly about 1.8 s; the H2 "hit outside a lane" was the default bot not dodging in-flight pellets, not a game bug. Only fix: `Boss.in_threat` now measures from the muzzle (was 0.6 m short). [Making `in_threat` cover in-flight pellets, which would change the default bot; `-DodgePellets` exists as an opt-in.] Whether the lane should fade through the flight is a ux call in H3.
+- **Pool tests needing 3 charges** use a +1 charge stat modifier. [Editing shipped data.]
+- **Commit trailer:** gameplay-dev's commits carry `Co-Authored-By: Claude Sonnet 5.5` (its own harness attribution) instead of the Opus 5.5 line in the brief. Not rewritten: history rewrite for a trailer isn't worth it. [Amending the four commits.]
+- **Known OS caveats, not fixed:** Ctrl+Shift is the Windows layout-switch hotkey on multi-layout machines; Ctrl+Space toggles the IME on some CJK setups; Ctrl then Shift while a reward panel is open swaps a card (rare, harmless).

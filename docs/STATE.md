@@ -19,8 +19,9 @@ Last updated: 2026-11-03 (D30 = A recorded; H3 build starting with gameplay-dev)
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **H3 build, step 1: gameplay-dev** (brief in ROADMAP). If cut off: check `git log` for gameplay-dev commits after 98efccd; if none, re-hand the brief to gameplay-dev. If some exist, re-hand with "continue H3 from the last commit".
-- Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes; fix them the way w1a was fixed in 4aa7141 if they fire).
+- **H3: gameplay-dev done** (cee653d, d22b08d, 783d552, 3dc74fb; suite 1237/1237; arena 30 s seed 1 = 2333565009, 90 s = 819020947; bot sim `-Rooms 20 -Seed 3` = 2281795515 unchanged). Ctrl reliable (synthetic events). Volley lanes were already correct; `in_threat` muzzle fix. Bots, 20 seeds, H3 shipped: Rogue 17/20, Wizard kite 15/20, no-kite 18/20; every `-LightHeavyOnly` config 0/20 (no-card gate PASS). DECISIONS "2026-11-03 - H3 build".
+- **Next role: ux-designer** (H3 ux part: dodge pips 2/1, Ctrl and Shift+Ctrl labels at min scale, volley telegraph look incl. whether lanes fade during the ~1.8 s pellet flight; base frames via `capture_screenshot.ps1 -Scenario boss_volley`). If cut off: check for ux commits after 3dc74fb.
+- Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step
 1. **H3, the dodge returns** (ROADMAP brief). Hand to **gameplay-dev** first: dodge on (Rogue 2, Wizard 1), Space dodge / Ctrl Movement / Shift+Ctrl swap (Ctrl reliability is an acceptance test; stop and report if it fails), the Fan of regrets lane check, then the speed-up in its own commit (`attack_rate_scale` 1.1, new `telegraph_scale` 0.85, volley windup 0.75), bots in three columns with the no-card gate, new hashes. Then ux-designer -> qa -> playtester (short) -> tech-writer -> close, tag `playtest-YYYY-MM-DD-H3`.

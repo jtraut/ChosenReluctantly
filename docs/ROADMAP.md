@@ -793,6 +793,22 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
   - **Playtester:** one run per archetype deck (`--deck=...`). Does the glow read? Does the plan change how you press keys? Does Hit and Run's offensive dash feel like a risk?
   - **Close:** OPEN_ITEMS item 35 waits until BD2 (relics) unless the director wants to look now; game-lead adds a "what to try" note for the 4 decks.
 
+  - **Carry-overs from the BD1 qa review** (`docs/reviews/2026-11-04-bd1-qa.md`; non-blocking):
+    - **gameplay-dev:**
+      - `JsonDataTable.get_entry` returns non-dictionaries despite its type; the keywords "must be an object" check is unreachable. Don't fix it by returning `{}`.
+      - Root-cause the slice6 crowd flake (about 1 in 3).
+      - Sim tooling: damage-by-source tally (for fingerprint spread), a card swap in a preset (for removal pain), and timed-out boss runs reported separately.
+      - The no-card Rogue soft lock on seed 7 room 1 (pre-existing).
+      - A validator floor on `status_damage_mult` before BD2 relics can grant it.
+    - **ux:** the orphan "s" when "Cooldown 3 s" wraps on reward tiles.
+    - **qa:** tighten the bd1b Fan the Flames line check and the tag-based w1b skip.
+    - **Balance (BD3, BUILD_DEPTH §2):**
+      - Only Controlled Burn meets the +25% removal pain.
+      - Controlled Burn's boss time is 59% of standard, under the 70% floor.
+      - Drive-By's unconditional 6 damage looks weak.
+    - **Latent:** CastPreview ignores conditions. A buff aura outlives its spent charge. A delayed aoe without an anchor has a mismatch.
+    - Suggested home: the gameplay-dev items with BD2's gameplay-dev step, the balance items with BD3.
+
 - [ ] **BD2, relics (after BD1, before 3d; D24 = A). Full loop. Tag `playtest-YYYY-MM-DD-BD2`.**
   - **Goal:** run-scoped relics that change rules, found during a run and reset after it (GDD §4a goal 3). BUILD_DEPTH §4.
   - **gameplay-dev:** rest of the `CombatEvents` relay (`hit_landed` with `origin`, `status_ended` with reason incl. `owner_died` fired before the node frees, `enemy_killed`, `attack_fired`, `dash_ended`, `player_damaged`, zone/room relays); `RelicManager`; `data/relics/*.json` loader + validator; `RunState.relics` + save round trip; relic offers from **elite rooms** (pick 1 of 3 or skip, replacing the card offer) and a new **relic room** in the straight run (1 per run, rooms 2-8, not next to the rest room or elite; pick 1 of 3 or skip) (D22 = C in the director's wording; BUILD_DEPTH §4.1). Rest rooms and card reward screens don't offer relics (D30 = A, director 2026-11-03). **Hard cap 20** (`run.json` `relics.max_owned`; D34 = C, director 2026-11-04; was 10). **At the cap, offers still appear: taking a relic first asks which owned relic to give up** (cancel keeps what you have); test with a low cap, since 20 can't be reached in 10 rooms. **No duplicates:** offers skip owned relics and relics given up this run (`RunState.relics_given_up`, in the save round trip). With fewer than 3 eligible relics the offer shows what's left; with none, the source gives its card offer. **Relic tiers (director 2026-11-04):** `rarity` values are `tier1`/`tier2`/`tier3`/`boss` (BUILD_DEPTH §4.2); give the 7 BD2 relics tiers 1-2; `run.json` `relics.tier_weights` per act (one-act runs use act 1: 80/20/0); `boss` only valid with source `mini_boss`; boss-tier relics can't be given up in a swap. **Reserved for later sources (BUILD_DEPTH §4.7):** the validator accepts the `sources` values `starter`, `event`, `altar` and an optional `sacrifice_cost` (unused in BD2). There is no starter relic in BD2, so the no-card gate is measured as before. Numbers in a `run.json` `relics` block. The merchant and more relic stages come with the map (MAP1/MAP2; on the map the relic room is a node, and BD2's interim relic room stays only in the straight run, `map.enabled` false); recursion guard (relic-origin events ignored by default, chain depth 1); sources list includes the future map nodes. 7 relics: Pyre Insurance, Smoldering Grudge, Lingering Embers, Exit Strategy (may slip to BD3), Second Wind, Spite Knuckles, Heavy Sigh. Bot sim: relic picks (first offered that matches the deck's archetype, else first).

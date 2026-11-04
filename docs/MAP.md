@@ -143,6 +143,7 @@ Starting values below are game-lead proposals (DECISIONS 2026-11-04), all data, 
 - **No duplicates:** offers and merchant stock never include a relic you own. A relic you gave up doesn't come back later in the same run.
 - **Mini-boss card offer:** pick 1 of 3 from rare cards (falls back to the normal weights if a pool has fewer than 3 rare cards). Cards have no rarity yet: MAP3 adds an optional card `rarity` field (default `common`) and enough rare cards per pool.
 - **Elite rare card chance:** act 1 0%, acts 2-3 **25%** (data per act). When it rolls, the rare card offer comes after the relic offer.
+- **Relic content needed:** no duplicates plus no given-up relics means a 14-17 hunter needs about **22 eligible relics per class** (class pool + neutral) to still get 3 choices late in the run and a full merchant stock. BD2 + BD3 sketch 15 in total (BUILD_DEPTH §4), so MAP3/MAP4 add the rest. If the pool runs short, an offer shows what's left, and with none left the source gives its card offer.
 - **Run totals are checked by the bot sim** (median `relic` route 14-17, `safe` route 4-6, nobody hits the cap in the median run).
 
 ## 5. Currencies

@@ -41,7 +41,7 @@ var _pending: Dictionary = {}
 var _options: Array[Dictionary] = []
 var _option_buttons: Array[Button] = []
 ## How the open options are laid out: "row" (cards side by side), "grid" (a removal list, one column per slot),
-## "actions" (a short row of wide choices). Digit keys mean different things in each (see `digit_target`).
+## "actions" (a short row of wide choices). Number keys pick nothing in any of them (PL3): arrows and Tab move the highlight.
 var _layout: String = "row"
 var _last_focus: int = -1
 var _arm_generation: int = 0
@@ -464,7 +464,7 @@ func _focus_option(index: int) -> void:
 		_option_buttons[index].grab_focus()
 
 
-## Number keys move the highlight (`digit_target`; Enter or a click confirms it) and are swallowed while options are
+## Number keys do nothing here (PL3 removed the digit shortcuts; Enter or a click confirms the highlighted option) and are swallowed while options are
 ## open. The panel does not pause the tree, so Player._unhandled_input would still see the slot keys (Q, E, 1, 2, R
 ## today) and their Shift swaps: any event matching a `slot_N` or `dead_card_swap_N` action is swallowed here too, by
 ## action and not by key, so it follows rebinding. Space is swallowed as well: it is the

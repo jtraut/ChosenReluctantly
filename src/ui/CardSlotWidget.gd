@@ -28,6 +28,15 @@ var _next_id: String = UNSET
 ## Draws the frame above every child (a container paints its own _draw behind them, and the full-width bar would hide
 ## the frame's side lines). Top level, so the VBox does not lay it out; it follows this widget's rect.
 var _overlay: Control = null
+## BD1 synergy cues. The chip row is a fifth row between the cooldown bar and the Next line; the glow and the primed
+## marker are drawn on the overlay, so they never change the layout.
+var chip_row: ChipRow = null
+var _glow: Dictionary = {"level": 0.0, "hold_left": 0.0}
+var _live_target: bool = false
+var _primed: bool = false
+var _primed_fraction: float = 0.0
+var _primed_charges: int = 0
+var _condition_text: String = ""
 
 
 func _ready() -> void:
@@ -40,6 +49,10 @@ func _ready() -> void:
 	_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_overlay.draw.connect(_draw_frame)
 	add_child(_overlay)
+	chip_row = ChipRow.new()
+	chip_row.name = "ChipRow"
+	add_child(chip_row)
+	move_child(chip_row, preview_label.get_index())
 	if _cfg.is_empty():
 		apply_layout(UiConfig.hud(), 1.0)
 	_apply_state(false)
@@ -119,10 +132,91 @@ func _draw_frame() -> void:
 	_overlay.draw_rect(r.grow(-kw * 0.5), Color.html(String(_cfg["slot_frame_keyline_color"])), false, kw)
 	_overlay.draw_rect(r.grow(-kw - fw * 0.5), _frame_color, false, fw)
 	var inset := kw + fw
+	_draw_live_glow(r)
+	_draw_cues(r, inset)
 	if _has_next:
 		var sw := _px(float(_cfg["slot_next_swatch_width"]))
 		var row := Rect2(preview_label.position, preview_label.size)
 		_overlay.draw_rect(Rect2(Vector2(inset, row.position.y + sw), Vector2(sw, maxf(row.size.y - 2.0 * sw, 1.0))), _next_color)
+
+
+## The live-condition glow: rings just outside the frame, thick corner brackets over it, and the word LIVE (shape,
+## outline and text, not colour alone). Softer while the slot is cooling, so "lit" is never read as "cast it now".
+func _draw_live_glow(r: Rect2) -> void:
+	var level: float = float(_glow["level"])
+	if level <= 0.01:
+		return
+	var strength: float = level * (1.0 if _ready_state else float(_cfg["live_cooling_strength"]))
+	var color := Color.html(String(_cfg["live_color"]))
+	var ring_w: float = _px(float(_cfg["live_ring_width"]))
+	var rings: int = int(_cfg["live_ring_count"])
+	for i in range(rings):
+		var alpha: float = strength * (0.95 - 0.3 * float(i))
+		_overlay.draw_rect(r.grow(ring_w * (float(i) + 0.5)), Color(color, clampf(alpha, 0.0, 1.0)), false, ring_w)
+	var arm: float = _px(float(_cfg["live_bracket_length"]))
+	var bw: float = _px(float(_cfg["live_ring_width"]))
+	var bracket := Color(color, clampf(strength, 0.0, 1.0))
+	for corner: Vector2 in [r.position, Vector2(r.end.x, r.position.y), Vector2(r.position.x, r.end.y), r.end]:
+		var sx: float = 1.0 if corner.x <= r.position.x + 0.5 else -1.0
+		var sy: float = 1.0 if corner.y <= r.position.y + 0.5 else -1.0
+		_overlay.draw_line(corner + Vector2(0.0, bw * 0.5 * sy), corner + Vector2(arm * sx, bw * 0.5 * sy), bracket, bw)
+		_overlay.draw_line(corner + Vector2(bw * 0.5 * sx, 0.0), corner + Vector2(bw * 0.5 * sx, arm * sy), bracket, bw)
+	if level >= 0.5:
+		var font_px: int = roundi(float(_cfg["cue_font_size"]) * _scale)
+		_draw_pill(Vector2(r.end.x - _px(7.0), _px(7.0)), true, String(_cfg["live_word"]), font_px, color, Color.html(String(_cfg["live_text_color"])))
+
+
+## A small filled pill with text. `anchor` is its top-right corner when `right_aligned`, else its top-left.
+func _draw_pill(anchor: Vector2, right_aligned: bool, text: String, font_px: int, fill: Color, text_color: Color) -> void:
+	var font: Font = key_label.get_theme_font("font")
+	var text_size: Vector2 = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_px)
+	var pad: float = _px(4.0)
+	var pill := Rect2(Vector2.ZERO, Vector2(text_size.x + 2.0 * pad, text_size.y + _px(1.0)))
+	pill.position = Vector2(anchor.x - pill.size.x if right_aligned else anchor.x, anchor.y)
+	var box := StyleBoxFlat.new()
+	box.bg_color = fill
+	box.set_corner_radius_all(maxi(2, roundi(pill.size.y * 0.25)))
+	_overlay.draw_style_box(box, pill)
+	_overlay.draw_string(font, Vector2(pill.position.x + pad, pill.position.y + (pill.size.y + font.get_ascent(font_px) - font.get_descent(font_px)) * 0.5), text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_px, text_color)
+
+
+## The primed marker: a bolt (and "x2" when charges stack) at the left of the key row, and a drain bar along its foot.
+func _draw_cues(r: Rect2, inset: float) -> void:
+	if not _primed:
+		return
+	var color := Color.html(String(_cfg["primed_color"]))
+	var back := Color.html(String(_cfg["primed_back_color"]))
+	var font_px: int = roundi(float(_cfg["cue_font_size"]) * _scale)
+	var font: Font = key_label.get_theme_font("font")
+	var charges: String = SlotCues.charges_text(_primed_charges)
+	var h: float = float(font_px) + _px(2.0)
+	var left: float = inset + _px(3.0)
+	var top: float = inset + _px(1.0)
+	var width: float = h * 0.9 + _px(5.0)
+	if charges != "":
+		width += font.get_string_size(charges, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_px).x + _px(2.0)
+	var box := StyleBoxFlat.new()
+	box.bg_color = back
+	box.border_color = color
+	box.set_border_width_all(maxi(1, roundi(_scale)))
+	box.set_corner_radius_all(maxi(2, roundi(h * 0.25)))
+	_overlay.draw_style_box(box, Rect2(left, top, width, h))
+	var bolt := PackedVector2Array([Vector2(0.62, 0.0), Vector2(0.12, 0.58), Vector2(0.48, 0.58), Vector2(0.30, 1.0), Vector2(0.9, 0.38), Vector2(0.53, 0.38)])
+	var bolt_h: float = h * 0.8
+	var origin := Vector2(left + _px(2.0), top + (h - bolt_h) * 0.5)
+	var moved := PackedVector2Array()
+	for p: Vector2 in bolt:
+		moved.append(origin + p * bolt_h)
+	_overlay.draw_colored_polygon(moved, color)
+	if charges != "":
+		var baseline: float = top + (h + font.get_ascent(font_px) - font.get_descent(font_px)) * 0.5
+		_overlay.draw_string(font, Vector2(origin.x + bolt_h * 0.9 + _px(2.0), baseline), charges, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_px, color)
+	# Drain bar: the primed window left. Full and steady when the buff has no time limit.
+	var bar_h: float = _px(float(_cfg["primed_bar_height"]))
+	var kr := Rect2(key_label.position, key_label.size)
+	var bar := Rect2(inset, kr.end.y - bar_h, maxf(r.size.x - 2.0 * inset, 1.0), bar_h)
+	_overlay.draw_rect(bar, back)
+	_overlay.draw_rect(Rect2(bar.position, Vector2(bar.size.x * _primed_fraction, bar.size.y)), color)
 
 
 func _px(value: float) -> float:
@@ -136,13 +230,19 @@ func apply_layout(cfg: Dictionary, s: float) -> void:
 	var size_arr: Array = cfg["slot_size"]
 	var w := float(size_arr[0]) * s
 	custom_minimum_size = Vector2(w, float(size_arr[1]) * s)
-	add_theme_constant_override("separation", roundi(float(cfg["slot_row_separation"]) * s))
-	_size_row(key_label, w, float(cfg["key_height"]) * s)
+	var separation: int = roundi(float(cfg["slot_row_separation"]) * s)
+	add_theme_constant_override("separation", separation)
+	var row_scale: float = row_fit_scale(cfg, s, separation)
+	_size_row(key_label, w, float(cfg["key_height"]) * s * row_scale)
 	key_label.add_theme_font_size_override("font_size", roundi(float(cfg["key_font_size"]) * s))
-	_size_row(name_label, w, float(cfg["name_height"]) * s)
+	_size_row(name_label, w, float(cfg["name_height"]) * s * row_scale)
 	name_label.max_lines_visible = int(cfg["name_max_lines"])
-	_size_row(cooldown_bar, w, float(cfg["bar_height"]) * s)
-	_size_row(preview_label, w, float(cfg["preview_height"]) * s)
+	_size_row(cooldown_bar, w, float(cfg["bar_height"]) * s * row_scale)
+	if chip_row != null:
+		chip_row.configure(cfg, roundi(float(cfg["chip_font_size"]) * s), roundf(float(cfg["chip_height"]) * s * row_scale), float(cfg["chip_pad_x"]) * s, float(cfg["chip_gap"]) * s, w, int(cfg["chip_max"]), false, float(cfg["fit_padding"]) * s * 0.5)
+		chip_row.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+		chip_row.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	_size_row(preview_label, w, float(cfg["preview_height"]) * s * row_scale)
 	preview_label.max_lines_visible = int(cfg["preview_max_lines"])
 	preview_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER  # a two-line "Next:" sits centred with air above and below, not hard on the frame
 	# The fit width is the label width minus fit_padding, so the label itself keeps that margin too: without it a
@@ -163,6 +263,14 @@ func apply_layout(cfg: Dictionary, s: float) -> void:
 	_preview_text = UNSET
 	_set_name(n if n != UNSET else "—")
 	_set_preview(p if p != UNSET else "")
+
+
+## Factor (at most 1) that shrinks the five rows so rows plus the whole-pixel separations fit the slot's height. Below 720 px the
+## separation (at least 2 px) is bigger than its share of the scaled slot, which pushed the last row out of the frame by about 3 px.
+static func row_fit_scale(cfg: Dictionary, s: float, separation: int) -> float:
+	var rows_ref: float = float(cfg["key_height"]) + float(cfg["name_height"]) + float(cfg["bar_height"]) + float(cfg["chip_height"]) + float(cfg["preview_height"])
+	var available: float = float((cfg["slot_size"] as Array)[1]) * s - float(separation * 4)
+	return clampf(available / (rows_ref * s), 0.5, 1.0)
 
 
 func _size_row(c: Control, w: float, h: float) -> void:
@@ -204,6 +312,45 @@ func update_from_slot(slot: CardSlot) -> void:
 	var now_ready := slot.is_ready()
 	if now_ready != _ready_state:
 		_apply_state(now_ready)
+
+
+## BD1: feeds one slot's SlotSynergyView info ({} when there is none) and the frame time. Chips follow the card; the
+## live glow eases (rise fast, hold, fade) so a condition flipping at an area's edge does not flicker; the primed marker
+## is a bolt plus a drain bar. Redraws only when something it draws has changed.
+func update_synergy(info: Dictionary, delta: float) -> void:
+	if chip_row != null:
+		chip_row.show_chips(info.get("chips", []))
+	_condition_text = String(info.get("condition_text", ""))
+	_live_target = bool(info.get("condition_live", false))
+	var before_level: float = float(_glow["level"])
+	_glow = SlotCues.glow_step(_glow, _live_target, delta, float(_cfg.get("live_attack", 0.08)), float(_cfg.get("live_hold", 0.3)), float(_cfg.get("live_release", 0.25)))
+	var primed: bool = bool(info.get("primed", false))
+	var fraction: float = SlotCues.primed_fraction(float(info.get("primed_time_left", -1.0)), float(info.get("primed_duration", -1.0))) if primed else 0.0
+	var charges: int = int(info.get("primed_charges", 0)) if primed else 0
+	var changed: bool = primed != _primed or charges != _primed_charges or not is_equal_approx(fraction, _primed_fraction) or not is_equal_approx(before_level, float(_glow["level"]))
+	_primed = primed
+	_primed_fraction = fraction
+	_primed_charges = charges
+	if changed:
+		_sync_overlay()
+		_overlay.queue_redraw()
+
+
+## Glow level 0..1 after easing (tests).
+func glow_level() -> float:
+	return float(_glow["level"])
+
+
+func is_primed() -> bool:
+	return _primed
+
+
+func primed_fraction() -> float:
+	return _primed_fraction
+
+
+func primed_charges() -> int:
+	return _primed_charges
 
 
 func _set_frames(card_id: String, next_id: String) -> void:

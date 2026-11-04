@@ -90,7 +90,7 @@ func set_player(p: Player) -> void:
 	dodge_pips.set_player(p)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if player == null:
 		return
 	var health := player.health
@@ -100,9 +100,11 @@ func _process(_delta: float) -> void:
 
 	if player.card_slots == null:
 		return
+	var synergy: Dictionary = SlotSynergyView.infos(player)  # BD1: chips, live condition, primed state (cached per physics frame)
 	for i in range(CardSlotController.SLOT_TYPE_ORDER.size()):
 		var slot_type := CardSlotController.slot_type_at_index(i)
 		slot_widgets[i].update_from_slot(player.card_slots.get_slot(slot_type))
+		slot_widgets[i].update_synergy(synergy.get(slot_type, {}), delta)
 
 
 ## HUD is display only: nothing here may swallow left/right clicks meant for the

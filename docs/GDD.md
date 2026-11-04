@@ -363,6 +363,7 @@ If the slice is fun, scale outward. Scaling should be mostly data entry.
 - **Art style:** whatever is easiest to produce and keep consistent. Low-poly 3D is the working direction. Pixel-art-inspired looks are acceptable if cheaper.
 - **Tone (leaning, not final):** satire and humor. The world is bright, vibrant, and friendly, while the heroes are weary pessimists who find saving the world a total drag (think Shikamaru from Naruto). The contrast between cheerful world and reluctant heroes is the joke engine. **[OPEN]** how far to push it.
 - Story and lore: minimal flavor text only, in that voice (card names, flavor lines, boss quips).
+- **Setting idea (director, 2026-11-04, not decided):** a modern corporate office instead of a fantasy world. See §15 "Corporate setting".
 
 ---
 
@@ -418,6 +419,21 @@ Nothing in this section is scheduled. **DO NOT IMPLEMENT** anything here without
 ### Slot cooldown reset effects **[IDEA, not scheduled]**
 - Utility cards that force-reset another slot's cooldown, for synergy with Recovery (the slot with the longest base cooldown).
 - The effect system should make a `reset_slot_cooldown` effect easy to add later. Don't build it yet.
+
+### Corporate setting **[IDEA, not scheduled]** (director, 2026-11-04)
+The director's words: "just an idea to note, not a hard plan yet." It's a possible art and story direction, and it would replace the fantasy world in §11's tone.
+- **Premise:** you play a reluctant worker who is good at his job. The company is corrupt and is plotting something that could end the world or the economy, for example an AI takeover. Leadership won't stop pushing the product because it makes them a lot of money. Stopping it falls to you, reluctantly.
+- **Tone:** everyone else is still very jolly about their jobs and roles and keeps sucking up to leadership. This keeps the existing joke engine of a cheerful world and a weary hero (§11).
+- **Enemy ladder mapped to the run (§9):**
+  - regular enemies: hordes of suck-ups and brain-dead "zombies", and so on;
+  - elites: management-level enemies;
+  - mini-bosses (end of acts 1-2): chief and VP level;
+  - final boss: the CEO or chairman.
+- **Encounters:**
+  - **Friends:** like-minded skeptics, still cheerful, who give you the tools to win and shut the company down. They're merchants (§9, MAP2) and helpful random events (MAP4).
+  - **Corporate loyalists:** random encounters with people who sided with the company. They give a curse (D38) or make you pay a chunk of gold.
+- **Not decided:** how classes (Rogue, Wizard), elements and card names map onto office life, for example job roles. This also stays open: whether it replaces the fantasy setting or becomes one flavour of it.
+- **No work starts on this** until the director decides. The art, audio and story roles stay dormant. Mechanics are unaffected: friend and loyalist encounters fit the planned merchant, event and curse systems as they are.
 
 ### Survivor-style level-up layer **[IDEA, not scheduled]**
 - Inside each room the player earns XP and levels up, choosing 1 of 3 power-up options (damage, cooldown reduction, movement speed, gold or XP gain, and so on).

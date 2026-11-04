@@ -64,6 +64,7 @@ Last updated: 2026-11-04 (BD1 started: BD1-A with gameplay-dev). **Run order:** 
     - starter relic chosen in the loadout (no RNG restarts);
     - D37 = A (rest dig relic);
     - D38 = A (curse cards).
+    - corporate-setting idea noted in GDD §15 (director, 2026-11-04; an idea, not a decision; tag it as a director note, not a decision).
   - Plus BD1's own changes once built.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 

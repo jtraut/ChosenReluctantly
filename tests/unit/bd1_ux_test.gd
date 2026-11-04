@@ -186,7 +186,7 @@ func test_card_strip_rows_fit_the_slot_with_the_chip_row_at_every_size() -> void
 			var wanted: float = widget.custom_minimum_size.y
 			assert_float(widget.get_combined_minimum_size().y).override_failure_message("slot rows are taller than the slot at height %.0f: %.1f vs %.1f" % [height, widget.get_combined_minimum_size().y, wanted]).is_less_equal(wanted + (1.0 if height >= 600.0 else 4.0))
 		(made["sub"] as SubViewport).queue_free()
-	assert_float(float(cfg["slot_size"][1])).is_equal(134.0)
+	assert_float(float(cfg["slot_size"][1])).is_equal(142.0)
 
 
 func test_row_fit_scale_is_one_at_the_reference_size_and_shrinks_below_it() -> void:

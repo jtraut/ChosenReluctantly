@@ -311,7 +311,9 @@ func test_qa_no_effect_line_carries_a_card_id_a_stat_id_or_a_format_leftover() -
 		for word: String in banned:
 			assert_bool(lowered.contains(word)).override_failure_message("%s: '%s' in '%s'" % [card["id"], word, line]).is_false()
 		assert_bool(line.contains("_")).override_failure_message("%s: underscore in '%s'" % [card["id"], line]).is_false()
-		assert_bool(line.ends_with(" s")).override_failure_message("%s: should end with a cooldown in s: '%s'" % [card["id"], line]).is_true()
+		# BD1 ux: the first line ends with the cooldown; a card's condition lines (if any) follow on lines of their own.
+		assert_bool(line.split("
+")[0].ends_with(" s")).override_failure_message("%s: the first line should end with a cooldown in s: '%s'" % [card["id"], line]).is_true()
 		# Every number is followed by something that says what it is.
 		var regex := RegEx.new()
 		regex.compile("\\d+(\\.\\d+)?")

@@ -636,7 +636,7 @@ func test_card_strip_rows_fit_their_slot_at_small_and_large_windows() -> void:
 			assert_float(widget.size.y).is_greater_equal(widget.get_combined_minimum_size().y - 0.51)
 		hud.queue_free()
 		sub.queue_free()
-	assert_float(float(cfg["slot_size"][1])).is_equal(134.0)
+	assert_float(float(cfg["slot_size"][1])).is_equal(142.0)  # BD1 ux: +8 for the chip row
 
 
 func test_the_dodge_pulse_settings_are_sane_numbers() -> void:

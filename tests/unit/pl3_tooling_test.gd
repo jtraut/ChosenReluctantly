@@ -34,7 +34,9 @@ func test_class_arg_applies_only_to_a_scenario_with_a_known_class() -> void:
 func test_a_scenario_as_the_wizard_has_the_wizards_deck_hp_and_dodge() -> void:
 	var main: Main = (load("res://scenes/main/Main.tscn") as PackedScene).instantiate()
 	main.get_node("EnemySpawner").process_mode = Node.PROCESS_MODE_DISABLED
-	main.player.character_id = "wizard"  # what Main._choose_character does for `--scenario=... --class=wizard`
+	# What Main._choose_character does for `--scenario=... --class=wizard`. `main.player` is @onready (nil until the node is in the
+	# tree), so the Player is fetched by path; the class must be set before add_child so it is in place for the Player's _ready.
+	(main.get_node("Player") as Player).character_id = "wizard"
 	add_child(main)
 	auto_free(main)
 	main.player.card_slots.set_deck(CharacterDatabase.starting_deck("wizard"))

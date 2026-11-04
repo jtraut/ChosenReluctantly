@@ -808,6 +808,11 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
       - Drive-By's unconditional 6 damage looks weak.
     - **Latent:** CastPreview ignores conditions. A buff aura outlives its spent charge. A delayed aoe without an anchor has a mismatch.
     - Suggested home: the gameplay-dev items with BD2's gameplay-dev step, the balance items with BD3.
+  - **Carry-overs from the BD1 playtest** (`docs/playtests/2026-11-04-bd1-short.md`; no blocker; readability, not design). For ux, with BD2's ux step:
+    - The primed marker is too small at 1024x600, and nothing marks the moment a prime is spent.
+    - A conditional card that isn't live gives no reason. Consider a dim condition line on the slot, and a short "the dodge doesn't count" hint on Movement-conditional cards (D39 = A).
+    - The Keystone chip carries no more weight than "Area". Consider a stronger look, and merging Keystone with Payoff on a card that has both.
+    - **Director's eyes:** whether Departure Lounge ends up in melee, and whether random BD1 cards in starting slots confuse a plain run.
 
 - [ ] **BD2, relics (after BD1, before 3d; D24 = A). Full loop. Tag `playtest-YYYY-MM-DD-BD2`.**
   - **Goal:** run-scoped relics that change rules, found during a run and reset after it (GDD §4a goal 3). BUILD_DEPTH §4.

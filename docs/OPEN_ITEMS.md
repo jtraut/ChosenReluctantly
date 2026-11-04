@@ -1,16 +1,17 @@
 # Director open items
 
-Last updated: 2026-11-03 (your answer D30 = A recorded; H3 starting)
-**Status: nothing waiting on a decision, 2 things to look at now (38, 39; item 35 waits for BD2). Your answers are in the GDD and the plans. Next: H3 (the dodge comes back: Rogue 2, Wizard 1 charges, dodge on Space, Movement on Ctrl, enemies and the boss volley a bit faster), then MAP0 (map design doc, with your merchant and relic stage), then PL3 -> BD1 -> BD2.**
+Last updated: 2026-11-03 (H3 closed, tag `playtest-2026-11-03-H3`)
+**Status: nothing waiting on a decision, 3 things to look at now (40, 38, 39; item 35 waits for BD2). H3 is done: the dodge is back on Space (Rogue 2, Wizard 1), Movement is on Ctrl, enemies and the boss volley are a bit faster. Next: MAP0 (map design doc, with your merchant and relic stage; it will also ask what a rest stop offers), then PL3 -> BD1 -> BD2.**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D30 = A".
 
 ## How to playtest
 
-- **Latest known-good build:** `git checkout playtest-2026-11-02-H2`, play, then `git checkout main`. The one before it is `playtest-2026-11-02-H1` (dodge on). Older tags are in `docs/RESOLVED.md`.
+- **Latest known-good build:** `git checkout playtest-2026-11-03-H3`, play, then `git checkout main`. The one before it is `playtest-2026-11-02-H2` (dodge off). Older tags are in `docs/RESOLVED.md`.
 - **Normal run:** `godot --path .` (10 rooms). Extras: `-- --run-seed=5`, `-- --run-room=10` (boss), `-- --class=wizard`.
 - **Preset decks:** `godot --path . -- --list-decks`, then for example `-- --deck=fire-heavy-rogue --full-deck --run-room=10`.
-- **Keys (since H2):** WASD move · mouse aims · left click light (also auto-fires) · right click heavy · **Q, E, F, Space, R** cast Attack, Area, Utility, Movement, Recovery · Shift + the same key swaps · Esc pause · F3 debug. No dodge in this build. **From H3 (next build):** Space dodges, Movement moves to Ctrl, so the strip reads Q E F Ctrl R.
+- **Keys (since H3):** WASD move · mouse aims · left click light (also auto-fires) · right click heavy · **Space dodges** · **Q, E, F, Ctrl, R** cast Attack, Area, Utility, Movement, Recovery (hold to aim, release to cast; Q/E/F/R still work while Ctrl is held) · Shift + the same key swaps · Esc pause · F3 debug. On Windows with several keyboard layouts, Ctrl+Shift may switch layout.
+- **The boss volley on its own:** `godot --path . -- --scenario=boss_volley`.
 - **Test scenarios** (9999 HP): `godot --path . -- --scenario=<name>`; the list is in `data/scenarios.json`.
 
 ## Needs your decision
@@ -23,7 +24,8 @@ Nothing right now. D30 = A is recorded in GDD §4a (relics only from the merchan
 
 Reply with the number and a word or two.
 
-38. **H1 pace.** Do rooms feel quicker with the faster enemies, or only more crowded? (Playtester's question; the bot can't tell.) You can answer this after H3, which speeds attacks up a little more.
+40. **H3, the dodge is back (play one run per class, plus one with no cards).** Does it feel fluid again? Is Ctrl comfortable for Movement while you move with WASD? (Only tested with simulated keys so far.) Do the faster attacks and the boss's Fan of regrets (lanes now brighten toward the fire moment, 0.75 s wind-up) give you time to react, especially as the 1-dodge Wizard? The bots say the volley does all of the Wizard's boss damage; I'm checking whether that's the bot or the volley (PL3 item 13). A no-card run should still lose.
+38. **H1 pace.** Do rooms feel quicker with the faster enemies, or only more crowded? (Playtester's question; the bot can't tell.) You can answer this together with 40.
 39. **H1 boss length.** The Rogue's boss fight runs about 6 s longer (about 66 s). Fine?
 35. **Builds (after BD2).** Build the same class and element twice with different plans. Do the two runs feel different? Does removing a keystone card hurt?
 

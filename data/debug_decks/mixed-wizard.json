@@ -1,7 +1,7 @@
 {
     "name": "mixed-wizard",
     "class": "wizard",
-    "description": "Wizard: the normal 15-card starter; full is every Wizard, Fire and neutral card (the whole pool, 22).",
+    "description": "Wizard: the normal 15-card starter; full is every Wizard, Fire and neutral card (the whole pool, 28).",
     "starter": [
         "wizard_bolt_volley", "wizard_overqualified_bolt", "fire_flaming_nonsense",
         "wizard_arcane_nova", "fire_fireball", "fire_fine_burn_then",

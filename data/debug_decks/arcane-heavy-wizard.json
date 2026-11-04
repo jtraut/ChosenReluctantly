@@ -1,7 +1,7 @@
 {
     "name": "arcane-heavy-wizard",
     "class": "wizard",
-    "description": "Wizard and neutral cards with the fewest Fire cards the deck rules allow (1: Fine, Burn Then, the third Attack: AoE card); all 8 Wizard cards, so damage is neutral (armor applies).",
+    "description": "Wizard and neutral cards with the fewest Fire cards the deck rules allow (1: Fine, Burn Then, the third Attack: AoE card); the 8 Wizard cards that existed before BD1, so damage is neutral (armor applies).",
     "starter": [
         "wizard_bolt_volley", "wizard_overqualified_bolt", "neutral_pointy_stick",
         "wizard_arcane_nova", "neutral_shrug_bomb", "fire_fine_burn_then",

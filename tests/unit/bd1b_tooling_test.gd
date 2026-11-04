@@ -98,3 +98,63 @@ func test_a_keystone_reward_option_carries_the_condition_text_and_the_keyword() 
 	var option: Dictionary = RunChoices.card_option("o", "card", "rogue_drive_by", ctx)
 	assert_str(String(option["detail"])).contains("If you used your Movement slot in the last 2 s")
 	assert_bool(CardDatabase.has_tag("rogue_drive_by", "Keystone")).is_true()  # ux shows the chip from this
+
+
+# --- the ux entry point on a live Player (SlotSynergyView) ------------------------------------------------------
+
+const MAIN_SCENE_PATH := "res://scenes/main/Main.tscn"
+const CHASER_PATH := "res://scenes/enemies/MeleeChaser.tscn"
+
+
+func _arena_with_deck(deck: Array[String]) -> Main:
+	var main: Main = (load(MAIN_SCENE_PATH) as PackedScene).instantiate()
+	(main.get_node("EnemySpawner") as Node).process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(main)
+	auto_free(main)
+	main.player.card_slots.set_deck(deck)
+	main.player.health.set_max_health(9999.0)
+	main.player.health.heal(9999.0)
+	CombatEvents.reset()
+	SlotSynergyView.reset_cache()
+	return main
+
+
+func test_slot_infos_on_a_live_player_light_the_target_condition_and_show_the_prime() -> void:
+	BodyFlag.set_collide(false)
+	var main := _arena_with_deck(["rogue_drive_by", "fire_fan_the_flames", "fire_kindling", "rogue_momentum", "neutral_healing_potion"] as Array[String])
+	var player: Player = main.player
+	player.aim_point_override = player.global_position + Vector3(0.0, 0.0, -5.0)
+	var enemy: Enemy = (load(CHASER_PATH) as PackedScene).instantiate()
+	main.add_child(enemy)
+	enemy.global_position = player.global_position + Vector3(0.5, 0.0, -1.5)
+	enemy.health.set_max_health(5000.0)
+	enemy.health.heal(5000.0)
+	enemy.status_manager.apply_status("burn", StatusDatabase.get_status("burn"), 0.1)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	SlotSynergyView.reset_cache()
+	var infos: Dictionary = SlotSynergyView.infos(player)
+	assert_int(infos.size()).is_equal(5)
+	var aoe: Dictionary = infos["attack_aoe"]
+	assert_str(String(aoe["card_id"])).is_equal("fire_fan_the_flames")
+	assert_bool(bool(aoe["has_condition"])).is_true()
+	assert_bool(bool(aoe["condition_live"])).override_failure_message("a Burning enemy 1.5 m away must light Fan the Flames").is_true()
+	assert_str(String(aoe["condition_text"])).is_equal("If the target has Burn")
+	assert_array(aoe["chips"]).is_equal(["Keystone", "Area", "Burn"] as Array[String])
+	assert_bool(bool(infos["attack_single"]["condition_live"])).is_false()  # Drive-By: no Movement cast yet
+	assert_bool(bool(infos["attack_single"]["primed"])).is_false()
+	# The burn runs out: the glow goes out.
+	enemy.status_manager._process(0.5)
+	assert_bool(enemy.status_manager.has_status("burn")).is_false()
+	SlotSynergyView.reset_cache()
+	assert_bool(bool(SlotSynergyView.infos(player)["attack_aoe"]["condition_live"])).is_false()
+	# Cast Momentum: Attack: Single is primed (at most 3 s left) and Drive-By is live.
+	assert_bool(player.card_slots.try_use("movement")).is_true()
+	SlotSynergyView.reset_cache()
+	var single: Dictionary = SlotSynergyView.infos(player)["attack_single"]
+	assert_bool(bool(single["primed"])).is_true()
+	assert_float(float(single["primed_time_left"])).is_less_equal(3.0)
+	assert_float(float(single["primed_time_left"])).is_greater(2.5)
+	assert_bool(bool(single["condition_live"])).is_true()
+	BodyFlag.reset()
+	Juice.reset()

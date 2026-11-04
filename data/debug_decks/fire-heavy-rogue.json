@@ -1,6 +1,6 @@
 {
     "name": "fire-heavy-rogue",
-    "description": "Rogue with every Fire card (7 of 7) plus the fewest others the deck rules need; full adds extra Fire copies.",
+    "description": "Rogue with the 7 Fire cards that existed before BD1 (the 4 BD1 Fire cards are in the archetype decks) plus the fewest others the deck rules need; full adds extra Fire copies.",
     "starter": [
         "fire_ember_whatever", "fire_flaming_nonsense", "rogue_quick_slash",
         "fire_fine_burn_then", "fire_fireball", "fire_wall",

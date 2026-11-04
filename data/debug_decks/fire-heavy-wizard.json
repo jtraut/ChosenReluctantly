@@ -1,7 +1,7 @@
 {
     "name": "fire-heavy-wizard",
     "class": "wizard",
-    "description": "Wizard with every Fire card (7 of 7) plus the fewest others the deck rules need; full adds extra Fire copies and the arcane attack cards.",
+    "description": "Wizard with the 7 Fire cards that existed before BD1 (the 4 BD1 Fire cards are in the archetype decks) plus the fewest others the deck rules need; full adds extra Fire copies and the arcane attack cards.",
     "starter": [
         "fire_ember_whatever", "fire_flaming_nonsense", "wizard_bolt_volley",
         "fire_fine_burn_then", "fire_fireball", "fire_wall",

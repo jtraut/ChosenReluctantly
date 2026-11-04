@@ -119,7 +119,7 @@ func test_unconditional_cards_follow_simple_rules_and_a_busy_slot_waits() -> voi
 
 # --- the whole loop on each archetype deck ----------------------------------------------------------
 
-func _play(deck_name: String, seed_value: int, ticks: int) -> Dictionary:
+func _play(deck_name: String, seed_value: int, ticks: int, with_danger: bool = true) -> Dictionary:
 	var preset: Dictionary = (DebugDecks.read_dir()["presets"] as Dictionary)[deck_name]
 	var caster: Node3D = auto_free(SimCasterScript.new())
 	add_child(caster)
@@ -146,7 +146,7 @@ func _play(deck_name: String, seed_value: int, ticks: int) -> Dictionary:
 		controller.advance(DT)
 		var now: float = relay.now()
 		var view: Dictionary = _view([{"pos": Vector3(0, 0, -2), "statuses": ["burn"] if relay.history.cast_within(now, 4.0, "", "Burn") else []}], now, relay.history, 1 if relay.history.cast_within(now, 4.0, "", "Zone") else 0)
-		var decisions: Dictionary = policy.decide_all(controller.slots, view, 1.0, (tick / 90) % 3 == 0, false)
+		var decisions: Dictionary = policy.decide_all(controller.slots, view, 1.0, with_danger and (tick / 90) % 3 == 0, false)
 		for slot_type: String in CardSlotController.SLOT_TYPE_ORDER:
 			var card: Dictionary = CardDatabase.get_card(controller.get_slot(slot_type).current_card_id)
 			var live: bool = SlotSynergy.is_live(card, view)
@@ -176,5 +176,5 @@ func test_the_plan_bot_plays_each_archetype_deck_and_cashes_in_its_payoffs() -> 
 
 
 func test_hit_and_run_dashes_in_before_it_stabs() -> void:
-	var result: Dictionary = _play("rogue-hit-and-run", 3, 1200)
-	assert_int(int(result["dashes"])).is_greater(0)  # Movement spent offensively, with no danger flag from the fight itself
+	var result: Dictionary = _play("rogue-hit-and-run", 3, 1200, false)
+	assert_int(int(result["dashes"])).is_greater(0)  # Movement spent offensively: the run never signals danger, so no dash is an escape

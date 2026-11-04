@@ -577,8 +577,10 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 		_heavy_until = _sim_time + 1.9
 	if _plan:
 		if not _light_heavy_only:
-			var dodge_left: bool = _sim_time >= _dodge_cooldown_until and bool(_player.get_dodge_state()["available"])
-			_plan_cards(danger != null or boss_threat, dodge_left)
+			# Charges are what limits an escape, not the sim's 0.25 s dodge throttle: with a charge left the dodge answers danger and
+			# the Movement card stays in hand (reading the throttle, or the state after this frame's press, would burn Movement on every dodge).
+			var charge_left: bool = bool(_player.get_dodge_state()["enabled"]) and int(_player.get_dodge_state()["current"]) > 0
+			_plan_cards(danger != null or boss_threat, charge_left)
 	elif _rng.randf() < 0.3:
 		var slot_number: int = _rng.randi_range(1, 5)
 		if not _light_heavy_only:
@@ -952,6 +954,8 @@ func _begin_run_room(run_seed: int, room: Dictionary) -> void:
 	set_meta("kills_mark", -1)
 	_dodge_cooldown_until = 0.0
 	_heavy_until = 0.0
+	_plan_busy_until.clear()  # _sim_time restarts every room, so a busy time from the last room would lock slots in this one
+	_plan_policy = PlanPolicy.new()
 	_rng.seed = run_seed * 131 + int(room["index"])
 	_player.card_slots.card_cast.connect(func(_slot_type: String, card_id: String) -> void: _card_casts[card_id] = int(_card_casts.get(card_id, 0)) + 1)
 	_slot_stuck_since.clear()

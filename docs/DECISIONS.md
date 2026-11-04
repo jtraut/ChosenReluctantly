@@ -1335,3 +1335,10 @@ Commits cee653d, d22b08d, 783d552, 3dc74fb.
 - **Pool tests needing 3 charges** use a +1 charge stat modifier. [Editing shipped data.]
 - **Commit trailer:** gameplay-dev's commits carry `Co-Authored-By: Claude Sonnet 5.5` (its own harness attribution) instead of the Opus 5.5 line in the brief. Not rewritten: history rewrite for a trailer isn't worth it. [Amending the four commits.]
 - **Known OS caveats, not fixed:** Ctrl+Shift is the Windows layout-switch hotkey on multi-layout machines; Ctrl+Space toggles the IME on some CJK setups; Ctrl then Shift while a reward panel is open swaps a card (rare, harmless).
+
+## 2026-11-03 - H3 ux: volley lanes, dodge pips (ux-designer; logged by game-lead)
+Commit 6f89eea.
+- **Fan of regrets lanes ramp dim to bright** (alpha 0.22 -> 0.9, linear) across the wind-up, so the fire moment is the brightest frame (they used to fade out toward it). Volley only, via an optional `ramp` flag on `TemplateVfx.enemy_shot_lane`; one-argument change at the Boss.gd call site. [Changing every enemy shot lane.] [Eased ramp.]
+- **Lane length capped at 14 m** (shot range 16 m) as `data/vfx.json` `boss_volley_lane_max_length`, with `boss_volley_lane_alpha_start` / `_end`. [Computing the cap from the camera each frame.]
+- **Lanes still vanish at the fire moment;** no fade through the ~1.8 s pellet flight. A fading lane would suggest danger behind pellets that already passed; the pellets are visible on their own. [Fading lane in flight.]
+- **Dodge pips and the Movement chip needed no change:** they already read InputLabels and `get_dodge_state()`. A recharging single pip differs from a ready one by shape and the word EMPTY, not colour alone. "Shift+Ctrl" isn't shown anywhere in the UI today.

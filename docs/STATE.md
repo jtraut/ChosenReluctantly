@@ -20,7 +20,8 @@ Last updated: 2026-11-03 (D30 = A recorded; H3 build starting with gameplay-dev)
 
 ## In progress
 - **H3: gameplay-dev done** (cee653d, d22b08d, 783d552, 3dc74fb; suite 1237/1237; arena 30 s seed 1 = 2333565009, 90 s = 819020947; bot sim `-Rooms 20 -Seed 3` = 2281795515 unchanged). Ctrl reliable (synthetic events). Volley lanes were already correct; `in_threat` muzzle fix. Bots, 20 seeds, H3 shipped: Rogue 17/20, Wizard kite 15/20, no-kite 18/20; every `-LightHeavyOnly` config 0/20 (no-card gate PASS). DECISIONS "2026-11-03 - H3 build".
-- **Next role: ux-designer** (H3 ux part: dodge pips 2/1, Ctrl and Shift+Ctrl labels at min scale, volley telegraph look incl. whether lanes fade during the ~1.8 s pellet flight; base frames via `capture_screenshot.ps1 -Scenario boss_volley`). If cut off: check for ux commits after 3dc74fb.
+- **H3: ux done** (6f89eea: volley lanes ramp 0.22 -> 0.9, cap 14 m; pips/chip unchanged; `tests/unit/h3_ux_test.gd`). Full suite 1239 unconfirmed: one run had the known order-dependent flake `slice6_qa_test.gd:674`.
+- **Next role: qa** (H3 review, brief in ROADMAP). If cut off: check for qa commits / `docs/reviews/2026-11-03-h3-qa.md` after 6f89eea.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step

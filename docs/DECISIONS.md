@@ -1398,3 +1398,29 @@ The director's answers are recorded in GDD §4a/§5/§9/§14, `docs/MAP.md` §2/
 - **A short relic pool degrades gently:** an offer with fewer than 3 eligible relics shows what's left; with none, an elite or relic room gives its card offer and the merchant shows fewer relics. The given-up list is `RunState.relics_given_up` and is saved. [Allowing duplicates once the pool runs out: that breaks his no-duplicates rule.]
 - **Relic content target about 22 eligible per class** for the 14-17 hunter (15 sketched today across BD2/BD3); added to MAP3's scope, count confirmed at MAP2's close. [Lowering the hunter target to fit 15: that misreads "let it grow".]
 - **D36 = A needs no work.** PL3 item 13 is closed as "the volley stays; the bot's pellet blind spot is a bot issue". The pellet-aware bot stays a tooling option.
+
+## 2026-11-04 - Applying the director's revised relic and card tiers (item 42) (game-lead)
+He confirmed that "later tiers" means acts 2-3 and then revised D34 = C. His rules are recorded in GDD §4a/§9, `docs/MAP.md` §2/§4.4/§4.5/§10, BUILD_DEPTH §4.1/§4.2/§4.6/§11 and the ROADMAP (BD2, MAP2, MAP3). **Superseded from the entry above:** the 25% elite rare-card chance (elites never offer cards now), and the ignore-route target of 4-6 (now 6-8, because everyone gets 2 boss relics). These are my readings and defaults on top of his rules.
+- **Tier odds per act:**
+  - act 1: tier 1 80, tier 2 20, tier 3 0;
+  - act 2: 15 / 70 / 15;
+  - act 3: 5 / 25 / 70.
+
+  They apply to every tier 1-3 relic source (elite, relic room, merchant, buff room), not only elites. One-act runs use act 1's row. [Applying the odds to elites only: his tier table read as a rule for the whole act.] Set by the MAP3 sim.
+- **The boss-tier relic offer can't be skipped, and boss-tier relics can't be given up in a swap**, so "you always have 2 boss-tier relics per run at the end" holds. They count toward the cap of 20. [A skippable offer, which would break his "always 2"; boss relics outside the cap, which would be a second cap rule to explain.]
+- **Mini-boss card offers follow the normal reward rule** (pick 1 or reject with a token). Mini-bosses keep the gold 60 from his first D34 answer. [A free skip.]
+- **Card rarity odds per offer slot:**
+  - act 1: common 100;
+  - act 2: common 80, rare 20;
+  - act 3: common 62, rare 30, legendary 8.
+
+  A short pool falls back to the next rarity down. [Odds per offer instead of per slot, which is harder to reason about.]
+- **The relic data field keeps the name `rarity`, with values `tier1`/`tier2`/`tier3`/`boss`,** because `run.json` `tiers` already means enemy tiers. The player sees "Tier 1/2/3" and "Boss". BD2 uses these values from the start. [A field named `tier`, which would clash with the enemy tiers.]
+- **Optional in-act mini-boss nodes (MAP4) give gold and a relic with the next act's tier odds, but never a boss-tier relic,** because he made act-end mini-bosses the only source. [Dropping the optional nodes.]
+- **Content cost, flagged:**
+  - about 6 boss-tier relics per class, which need a game-lead design pass first and may need new effect code;
+  - about 5+ rare and 4+ legendary cards per class pool;
+  - about 22 tier 1-3 relics per class.
+
+  MAP3 may be split into MAP3 (acts, save/resume) and MAP3b (rarity content) at MAP2's close. [Building all the content now: BD1 and BD2 come first.]
+- **His other item 42-46 replies** (his 43 = my 41, his 44 = my 40, his 45 = my 39, his 46 = my 35) are recorded as acknowledged in OPEN_ITEMS and STATE. They aren't decisions.

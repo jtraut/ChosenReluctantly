@@ -6,6 +6,20 @@
 Last updated: 2026-11-04 (D34-D36 answered and recorded; PL3 closed, tag `playtest-2026-11-04-PL3`). **Run order:** **BD1 (next)** -> BD2 (relics) -> MAP1 (map, gold) -> MAP2 (merchant) -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3.
 
 ## What's done
+- **Director replies recorded 2026-11-04, second pass (game-lead, docs only):**
+  - **Item 42:** "tiers" confirmed as acts 2-3, then D34 revised. Relic tiers are 1/2/3/boss, with odds rising per act. Elites always give a relic and never cards. Act-end mini-bosses are the only source of boss-tier relics (2 per run); act 1's also offers 3 rare cards, act 2's 3 legendary. Rare cards come from act 2, legendary from act 3.
+  - **Where recorded:** GDD §4a/§9, MAP.md §2/§4.4/§4.5/§10, BUILD_DEPTH §4.1/§4.2/§4.6/§11, ROADMAP (BD2 gets the relic tier values; MAP3 gets rarity and boss relics, with a possible MAP3b split) and DECISIONS "Applying the director's revised relic and card tiers".
+  - **His other replies** (he renumbered them 43-46): 41 knockback fix good ("always found it strange to be flung across the room"); 40 the 1-dodge Wizard still seemed fine; 39 boss length fine; 35 not played yet, he may circle back.
+  - **OPEN_ITEMS:** 39, 40, 41 and 42 removed; new 47 (my numbers).
+  - **Pending for tech-writer (BD1 docs pass):**
+    - Archive items 39, 40, 41 and 42 with his answers in RESOLVED. The old text is in commit 648dbd4.
+    - Add CHANGELOG `[Director decision]` entries for:
+      - relic tiers 1/2/3/boss with odds per act;
+      - elites relic-only;
+      - boss relics only from mini-bosses (2 per run);
+      - mini-boss rare/legendary card offers;
+      - card rarity by act;
+      - knockback fix confirmed.
 - **Director answers recorded 2026-11-04 (game-lead, docs only):** D34 = C (his own option: relics grow with the run, hard cap 20 and hard to reach, swap at the cap, no duplicates, mini-bosses always give gold + a rare card offer, elites in later acts a smaller chance of a rare card offer too), D35 = A (3 rejects per run), D36 = A (volley stays). Recorded in GDD §4a/§5/§9/§14, MAP.md §2/§4.4/§4.5/§10, BUILD_DEPTH §4.1/§11, ROADMAP BD2/MAP2/MAP3 (BD2 now builds the at-cap swap, cap 20), DECISIONS "2026-11-04 - Applying D34 = C, D35 = A, D36 = A". New eyes item 42 (check my reading of D34). **Pending for tech-writer (BD1 docs pass):** archive D34, D35, D36 in RESOLVED (old OPEN_ITEMS text is in commit 81ff8e4) and add CHANGELOG `[Director decision]` entries: relic cap 10 -> 20 over three acts, at-cap fallback "card offer instead" -> "give a relic up", rejects 3 per run kept, volley unchanged.
 - **PL3 closed 2026-11-04:** gameplay-dev 9a86757/fbfd86c, ux da418aa, qa PASS 16387bf/e38bdd2, playtest 7f21afb, docs e03c4b8 (also archived D31-D33 in RESOLVED). Tag `playtest-2026-11-04-PL3`. **Baselines now: suite 1289/1289 (111 suites); arena 30 s seed 1 = 2333565009, 90 s = 1212800; bot sim `-Rooms 20 -Seed 3` = 2281795515.** Carry-overs listed under the PL3 brief (do with BD1). New director items: D36 (volley up close), 41 (knockback feel + PL3 visuals).
 - **Director answers recorded 2026-11-04 (game-lead, docs only):** D31 = A, D32 = A + three acts of 10 rooms (mini-bosses end acts 1-2, final boss act 3; 30-45 min; save and return later), D33 = B. GDD §9, MAP.md §1/§2/§4.5/§8/§9/§10, BUILD_DEPTH §4.1, ROADMAP (MAP3 = acts + save/resume, new MAP4 = curse/buff; run order), DECISIONS "2026-11-04". New D34 (relics over 30 rooms), D35 (rejects). Archived in RESOLVED and CHANGELOG by tech-writer (e03c4b8).

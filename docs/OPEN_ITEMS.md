@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-04 (D34-D36 answered; latest tag `playtest-2026-11-04-PL3`)
-**Status: nothing waiting on a decision. Your D34 = C, D35 = A and D36 = A are recorded (2026-11-04). 4 things to look at now (42, 41, 40, 39; item 35 waits for BD2). Next: BD1 (cards start to work together) -> BD2 (relics) -> MAP1 (map) -> MAP2 (merchant) -> MAP3 (three acts, save and resume) -> MAP4 (curse/buff rooms) -> 3d.**
+Last updated: 2026-11-04 (D34-D36 answered, D34 revised; latest tag `playtest-2026-11-04-PL3`)
+**Status: nothing waiting on a decision. 1 thing to look at now (47, about my numbers for your relic and card tiers); item 35 waits until you have time for a repeat run. Your item 42 revision is recorded, and so are your replies on knockback (good), the 1-dodge Wizard (fine) and boss length (fine). Next: BD1 (cards start to work together) -> BD2 (relics, now with tiers) -> MAP1 (map) -> MAP2 (merchant) -> MAP3 (three acts, save and resume, rare/legendary cards, boss relics) -> MAP4 (curse/buff rooms) -> 3d.**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -22,11 +22,14 @@ Nothing right now. Your D34 = C, D35 = A and D36 = A are recorded in GDD §4a/§
 
 Reply with the number and a word or two.
 
-42. **My reading of your D34 = C.** Please check two readings. (1) "Later tiers like 2-3 elites" I read as **elites in acts 2 and 3** get a 25% chance of a rare card offer on top of their relic (act 1 elites: relic only). If you meant the difficulty tiers (Normal, Hard), say so; it's one data value. (2) "Difficult to reach 20" I set as a relic hunter ending about 14-17 relics and a no-relic route about 4-6, with the best possible path about 18-19 (MAP.md §4.5; the MAP3 sim tunes it). Also: the swap at the cap is built with relics in BD2, and a relic you give up won't be offered again that run. A run that long needs about 22 different relics per class (15 are planned so far), so MAP3/MAP4 will add more relics.
-41. **Knockback is shorter now (PL3 bug fix).** Every shove on you was being re-applied each frame, so the boss smash threw the Wizard about 20 m instead of the intended 2 m. Fixed for all hits on the player. It changes the feel a bit: tell me if hits now feel too soft. Also new in PL3: a ring and bubble while Ward is up, a big white Overqualified Bolt, green safe-gap strips in the boss volley (only where standing there is really safe, so none up close), a brighter dodge-pip flash, and no number keys on the reward screens. Say if any of it reads badly.
-40. **H3 and H1 pace, the Wizard side.** Rogue: recorded ("still felt good, never overwhelmed"). When you next play the Wizard: do rooms feel quicker with the faster enemies, or only more crowded? Does the 1-dodge Wizard get time to react to the boss's Fan of regrets (0.75 s wind-up, lanes brighten toward the fire moment)? Is Ctrl comfortable for Movement while you move with WASD? A no-card run should still lose. The bots say the volley does all of the Wizard's boss damage; (This replaces old item 38, H1 pace.)
-39. **H1 boss length.** The Rogue's boss fight runs about 6 s longer (about 66 s). Fine?
-35. **Builds (after BD2).** Build the same class and element twice with different plans. Do the two runs feel different? Does removing a keystone card hurt?
+47. **My numbers for your relic and card tiers** (`docs/MAP.md` §4.5). Say if any feel off; they're all data.
+    - Relic tier odds: act 1 80/20/0, act 2 15/70/15, act 3 5/25/70 (tier 1/2/3). They apply to every relic source (elite, relic stage, merchant), not just elites.
+    - Card odds per offer slot: act 2 20% rare; act 3 30% rare and 8% legendary.
+    - The boss-relic pick can't be skipped, and you can't give up a boss relic at the cap, so you always end with 2.
+    - Mini-bosses still give gold, and their rare/legendary card offer can be rejected with a reject token.
+    - Ballpark: a relic hunter ends with about 14-17 relics, a route that ignores relics with about 6-8 (both include the 2 boss relics).
+    - Cost to know about: this needs about 6 boss relics, 5 rare and 4 legendary cards per class, so MAP3 may split in two.
+35. **Builds (after BD2; you said you'd circle back when you have time).** Build the same class and element twice with different plans. Do the two runs feel different? Does removing a keystone card hurt?
 
 ## Later, optional
 

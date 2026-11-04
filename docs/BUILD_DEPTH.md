@@ -117,7 +117,7 @@ A relic is a passive, run-scoped item that changes a rule. It's found during a r
 
 ### 4.1 Sources and count (director, 2026-11-02: D22 = C, his wording)
 
-**The director's rule:** a player focused on relic hunting should be able to reach **about 6-8 relics per run**, with a **hard cap of 10**. Relics come from a **merchant** (buy several at once if you have the gold), a **dedicated relic stage** (pick a relic), and **elites**. GDD §4a. **Over the three-act run (D34 = C, director 2026-11-04):** the count grows with the run, **hard cap 20** (hard to reach), **swap at the cap** (remove a relic to take a new one), **no duplicates**; mini-bosses give gold and a rare card offer, not a relic; elites in acts 2-3 have a smaller chance to also offer rare cards. Numbers: `docs/MAP.md` §4.5.
+**The director's rule:** a player focused on relic hunting should be able to reach **about 6-8 relics per run**, with a **hard cap of 10**. Relics come from a **merchant** (buy several at once if you have the gold), a **dedicated relic stage** (pick a relic), and **elites**. GDD §4a. **Over the three-act run (D34 = C, director 2026-11-04):** the count grows with the run, **hard cap 20** (hard to reach), **swap at the cap** (remove a relic to take a new one), **no duplicates**; relic **tiers 1/2/3/boss** with odds rising per act; elites always give a relic and never cards; **act-end mini-bosses are the only source of boss-tier relics** (2 per run) and also offer 3 rare (act 1) or 3 legendary (act 2) cards (director, revised 2026-11-04). Numbers: `docs/MAP.md` §4.5.
 
 Two of the three sources are map nodes, and gold doesn't exist yet. So relics arrive in two steps:
 
@@ -127,7 +127,7 @@ Two of the three sources are map nodes, and gold doesn't exist yet. So relics ar
 | **Relic room** (the dedicated relic stage) | New room type in the straight run, like the rest room: 1 per run, rooms 2-8, never next to the rest room or the elite. No fight; pick 1 of 3 relics or skip. | A map node type. A relic-hunting route passes several. |
 | **Merchant** | Not yet (needs gold). | A map node. Relics have a price from `rarity` (in `run.json`); the player can buy several if they have the gold. |
 | Mini-boss, curse/buff rooms | Reserved `sources` values. | MAP0 decides. |
-| Boss (multi-act later) | Reserved: `boss` source. | Not used while the boss ends the run. **Three acts from MAP3 (director, 2026-11-04):** act-end mini-bosses give gold and a rare card offer, **not** a relic (D34 = C); see `docs/MAP.md` §4.5. |
+| Boss (multi-act later) | Reserved: `boss` source. | Not used while the boss ends the run. **Three acts from MAP3 (director, 2026-11-04):** act-end mini-bosses give gold, a **boss-tier relic** (pick 1 of 3, no skip; the only source) and 3 rare (act 1) or 3 legendary (act 2) cards; see `docs/MAP.md` §4.5. |
 | ~~Rest room (heal or relic)~~, ~~1 in 4 reward screens~~ | **Dropped** (D30 = A, director 2026-11-03: heal-or-relic is too obvious a choice, since a relic is worth more and Recovery already heals). | Same. |
 
 **Count per run:** BD2's straight run gives about **2** (1 elite, 1 relic room). The map is what makes 6-8 reachable for a relic hunter; MAP0 lays out routes so a relic route reaches 6-8 and a route that ignores relics ends with about 2-3. ~~Hard cap 10; at the cap, relic offers are skipped~~ **Hard cap 20** (`run.json` `relics.max_owned`, D34 = C). **At the cap, offers still appear; taking a relic first asks which owned relic to give up** (cancel keeps what you have). Built in BD2 with the offer panel (tested with a low cap), reused by the MAP2 merchant. A relic you gave up isn't offered again that run. No starting relic for now. All numbers are data in `run.json` (`relics` block). **Over a 30-room run (three acts, director 2026-11-04):** `docs/MAP.md` §4.5 (D34 = C).
@@ -139,7 +139,7 @@ Two of the three sources are map nodes, and gold doesn't exist yet. So relics ar
   "id": "pyre_insurance",
   "name": "Pyre Insurance",
   "pool": "fire",
-  "rarity": "common",
+  "rarity": "tier1",
   "sources": ["elite", "relic_room", "merchant", "mini_boss"],
   "keywords": ["Burn"],
   "modifiers": [],
@@ -161,7 +161,7 @@ Two of the three sources are map nodes, and gold doesn't exist yet. So relics ar
 - `modifiers`: permanent `StatModifiers` entries for the run (same shape as `buff` params, without a duration).
 - `triggers`: `event` + `filter` + `effects`. **`effects` uses the card effect format and templates**, so a relic is data on the existing templates. `at` picks the origin (`player`, `event_position`, `event_target`).
 - `curse`: reserved for curse rooms (a downside modifier block). `null` for now.
-- `rarity`: `common`, `uncommon`, `rare`, `boss`. The weights live in `run.json`.
+- `rarity`: `tier1`, `tier2`, `tier3`, `boss` (shown as Tier 1/2/3 and Boss; director 2026-11-04, was `common`/`uncommon`/`rare`/`boss`). Odds per act live in `run.json` `relics.tier_weights`. `boss` relics are only valid with source `mini_boss` and are the build-changing ones (design pass before MAP3). The field keeps the name `rarity` because `tiers` already means enemy tiers in `run.json`.
 - The validator works like the card validator: known events and filters, valid effects, a known pool, known sources, and an id that matches the filename.
 
 ### 4.3 Event hooks: the CombatEvents relay (new)
@@ -224,7 +224,7 @@ There's no event bus today (§1). BD1 adds a **`CombatEvents` autoload** (its ca
 ### 4.6 Branching map hooks (GDD §9; the map itself isn't designed here)
 
 - **`sources`** already names the future map nodes (`merchant`, `curse_room`, `buff_room`, `mini_boss`), so a node only has to call the same "offer relics from source X" function the elite and relic rooms use.
-- **`rarity`** lets harder nodes (mini-bosses) roll better relics: "the hardest path is the most rewarding".
+- **`rarity`** (tier) lets later acts roll better relics, and act-end mini-bosses give the boss tier: "the hardest path is the most rewarding".
 - **`curse`** is reserved for curse/buff rooms ("usually both at once"): a curse room offers a strong relic with a curse block attached (a downside modifier or trigger). It uses the same format, so there's no rework.
 - **Merchant (director: several relics can be bought at once):** relics carry no price yet. When gold exists, a price comes from `rarity` in `run.json`, not per relic. MAP0 designs the merchant screen and gold income.
 - The offer function takes (source, count, rng), filters by pool, source, owned relics and relics given up this run (no duplicates, D34 = C), and weights by rarity. Elite and relic rooms use it in BD2, and the map uses it later. At the cap (`relics.max_owned`) it still offers; the pick goes through the swap step.
@@ -380,7 +380,7 @@ No web access was used. "Confident" means I know the mechanic well; "unsure" mea
 ## 11. Questions for the director (answered 2026-11-02)
 
 - **D22 = C, in his wording:** 6-8 relics for a relic hunter, hard cap 10; sources are a merchant (several at once with gold), a dedicated relic stage, and elites. §4.1.
-- **D34 = C (2026-11-04), over three acts:** grows with the run, hard cap 20, swap at the cap, no duplicates; mini-bosses give gold and a rare card offer; acts 2-3 elites may also offer rare cards. §4.1, `docs/MAP.md` §4.5.
+- **D34 = C (2026-11-04), over three acts:** grows with the run, hard cap 20, swap at the cap, no duplicates. **Revised the same day:** relic tiers 1/2/3/boss with odds rising per act; elites always a relic, never cards; boss-tier relics only from the act-end mini-bosses (2 per run), which also offer 3 rare / 3 legendary cards; rare cards from act 2, legendary from act 3. §4.1, `docs/MAP.md` §4.5.
 - **D24 = A:** BD1 synergy core, then BD2 relics, before 3d. §9.
 - **D25 = A:** no base stacking for Burn and Bleed; relics, keystones and potential passive nodes can allow it. §3.4.
 - Follow-up **D30 = A** (director, 2026-11-03): rest rooms and card reward screens don't offer relics. He may also remove the rest-room heal altogether (GDD §9); MAP0 proposes what a rest node offers.

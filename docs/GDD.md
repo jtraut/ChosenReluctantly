@@ -152,9 +152,18 @@ Added 2026-11-02 from the director's notes. The goals are director decisions. Th
   - The relic count **grows with the run**. **Hard cap 20**, and reaching 20 should be **difficult**.
   - **At the cap,** taking a new relic means **removing an existing one** first.
   - **No duplicate relics.**
-  - **Mini-bosses always give gold and a rare card offer** (no relic).
-  - **Elites in the later acts** ("later tiers like 2-3", read as acts 2 and 3; logged in DECISIONS) have a **smaller chance to also offer rare cards**, on top of their relic.
-  - Target counts and chances are proposals in `docs/MAP.md` §4.5, set by the MAP3 sim.
+  - ~~Mini-bosses always give gold and a rare card offer (no relic). Elites in acts 2-3 have a smaller chance to also offer rare cards.~~ Replaced the same day by the revision below.
+- **Relic tiers and rewards by act [DIRECTOR DECISION, 2026-11-04] (revises D34 = C):**
+  - **Relic tiers:** tier 1, tier 2, tier 3 and **boss tier**.
+  - **Tier odds rise per act:**
+    - Act 1: a high chance of tier 1 and a low chance of tier 2.
+    - Act 2: a high chance of tier 2 and a low chance of tier 1 and tier 3.
+    - Act 3: a high chance of tier 3, a lower chance of tier 2 and a much lower chance of tier 1.
+  - **Elites always offer a relic, and never cards.** Their chance of higher-tier relics rises per act, as above.
+  - **Boss-tier relics** are among the most powerful, offering build-changing synergies and mechanics. **The act-end mini-bosses always offer them and are the only source**, so every run ends with **2 boss-tier relics**.
+  - **Mini-boss card offers:** the act 1 mini-boss also offers **3 rare cards**. The act 2 mini-boss offers a choice between **3 legendary ("gold") cards**.
+  - **Card rarity by act:** rare cards start appearing in act 2. Legendary cards start having a chance to appear in act 3.
+  - The numbers are proposals in `docs/MAP.md` §4.5, set by the MAP3 sim.
 - **(D25 = A)** Burn and Bleed do **not** stack in the base game; a second application refreshes the first. Stacking the same status comes only from special conditions: **relics, keystone cards, and potential passive-tree nodes** (§8). The director likes this.
 - **(D24 = A)** Relics are built in their own slice (BD2) straight after the synergy core (BD1), before loadouts (3d).
 
@@ -305,7 +314,7 @@ Rather than a full strength/weakness wheel, elements apply status effects (for e
 
 ### Card rewards during a run **[DECIDED, details open]**
 - After each won room, the player is offered **3 cards** and either **picks one** or **rejects the whole offer**. **[DIRECTOR DECISION]**
-- A reject token is spent only when the whole offer is declined. Each run allows only **3 rejects total**, so deck noise builds up over a run. **[DIRECTOR DECISION, 2026-11-04] (D35 = A):** still 3 per run over the three-act, 30-room run (about 20 card offers), not 3 per act.
+- A reject token is spent only when the whole offer is declined. Each run allows only **3 rejects total**, so deck noise builds up over a run. **Card rarity [DIRECTOR DECISION, 2026-11-04]:** common, rare and legendary. Act 1 offers are common only, rare cards start appearing in act 2, and legendary cards have a chance from act 3. The act-end mini-bosses offer 3 rare (act 1) or 3 legendary (act 2) cards (§4a). **[DIRECTOR DECISION, 2026-11-04] (D35 = A):** still 3 per run over the three-act, 30-room run (about 20 card offers), not 3 per act.
 - **Offer size is a data value** (default 3) so boons, passives, and gear can later raise it or add rerolls.
 - Rewards and path choices can offer ways to **clean the deck** (remove or swap cards), which creates meaningful routing decisions.
 - **[OPEN]** Whether shops and enemy drops also exist alongside post-battle rewards.

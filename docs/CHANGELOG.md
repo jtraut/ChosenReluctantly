@@ -2,11 +2,20 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-11-03 (Slice H3: dodge return and enemy speed-up; director decision D30)
+## 2026-11-03 (Slice H3: dodge return and enemy speed-up; MAP0: map design doc; director decision D30)
 
 Commit range 0cf2a09..305b13b (D30 records from 98efccd). Planned tag: `playtest-2026-11-03-H3`. qa: PASS (`docs/reviews/2026-11-03-h3-qa.md`). Playtest: no blocker (`docs/playtests/2026-11-03-h3-short.md`).
 
 ### Added
+- **MAP0 (design only, docs, no code, no tag; commits 1db347a, ee38ac0, e77653d, adf6468):** new `docs/MAP.md` (owner game-lead), the [PROPOSED] branching map plan:
+  - Grid of 10 rooms x 4 columns, read left to right, whole map visible. Every path is 10 rooms with at least 6 fights.
+  - Node types: combat, elite (relic), relic stage, rest, merchant. Later: mini-boss, curse room, buff room.
+  - Gold (run-only): combat 12-18, elite 30-40, mini-boss 45-55. Prices: relics 60/90/130 by rarity, cards 40, card removal 50 (+25 each time).
+  - Route arithmetic: a relic-hunter route gets 6-8 relics but about 3 card offers. An ignore-relics route gets 2-3 relics.
+  - A `map.enabled` switch. XP and between-run points are reserved only.
+  - Build plan: MAP1 (map, gold), MAP2 (merchant), MAP3 (mini-bosses, curse and buff rooms).
+  - GDD §9 summary and §14 items 12-13 updated. New director questions D31 (rest stop), D32 (map shape), D33 (MAP3 timing), each with default A, waiting in `docs/OPEN_ITEMS.md`.
+  - Run order is now H3 -> MAP0 -> PL3 -> BD1 -> BD2 -> MAP1 -> MAP2 -> 3d -> MAP3 -> BD3.
 - Dodge is back on **Space**. This is the build of the D29 = B decision from 2026-11-02 (the values below are game-lead's) (cee653d).
 - New scenario `boss_volley`: a boss with 9999 HP that only throws Fan of regrets, for wind-up and mid-flight captures (d22b08d).
 - New `pressure.telegraph_scale` in `data/enemies.json` (optional, default 1.0), shipped at 0.85 (783d552).
@@ -33,6 +42,8 @@ Commit range 0cf2a09..305b13b (D30 records from 98efccd). Planned tag: `playtest
 - `Boss.in_threat` measured the volley lane from the boss centre, 0.6 m short of the drawn lane and the pellets' reach. It now measures from the muzzle (`BossRules.MUZZLE`), which fixes the bot's and the threat check's view of the volley (d22b08d). A new test traces every pellet of a real volley against the drawn lanes (within 0.03 m).
 
 ### Docs and process
+- CLAUDE.md now lists `docs/MAP.md` under game-lead's docs.
+- Director feedback on H3 (2026-11-03): one Rogue run "still felt good, never overwhelmed, let's keep going." OPEN_ITEMS item 38 (H1 pace) was merged into item 40 (Wizard side still open). It was not resolved, so nothing was added to RESOLVED.md.
 - docs/RESOLVED.md gains D30. README controls, scenario list and last-verification block updated. ARCHITECTURE updated for the dodge, `telegraph_scale` and the lane ramp.
 
 ## 2026-11-02 (Slice BD0: build-depth design doc; Slice H2: dodge-off trial; Slice H1: enemy pressure pass; Slice K1: key labels follow the bindings; director decisions: build depth, pressure pass, loadouts, run order, OPEN_ITEMS pass)

@@ -10,6 +10,7 @@ A 3D isometric action RPG where your skills are cards: real-time combat driven b
 | `docs/ASSETS.md` | Third-party assets and libraries, with licenses. |
 | `docs/GDD.md` | Game design (source of truth). |
 | `docs/BUILD_DEPTH.md` | [PROPOSED] plan for build depth (GDD §4a): synergies, relics, archetypes, slices BD1 to BD3. |
+| `docs/MAP.md` | [PROPOSED] plan for the branching run map, gold and merchant (owner: game-lead). Slices MAP1 to MAP3. |
 | `docs/DECISIONS.md` | Agents' own judgment calls and defaults. |
 | `docs/ROADMAP.md`, `docs/STATE.md`, `docs/OPEN_ITEMS.md` | Plan, handoff state, and what is waiting on the director. |
 | `docs/RESOLVED.md` | Archive of the director's answered and acknowledged items, newest first. |

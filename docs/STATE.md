@@ -119,7 +119,7 @@ Last updated: 2026-11-04 (BD1 qa PASS, playtest no blocker; tech-writer next). *
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step
-1. **BD1, synergy core** (ROADMAP brief; BUILD_DEPTH §3, §5 R-A/R-B/W-A/W-C, §6, §7, §2). Order: gameplay-dev **BD1-A** (done) -> gameplay-dev **BD1-B** (done) -> ux-designer (done) -> qa PASS -> playtest no blocker -> **tech-writer (next)** -> ux-designer -> qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-BD1`.
+1. **BD1, synergy core** (ROADMAP brief; BUILD_DEPTH §3, §5 R-A/R-B/W-A/W-C, §6, §7, §2). Order: gameplay-dev **BD1-A** (done) -> gameplay-dev **BD1-B** (done) -> ux-designer (done) -> qa PASS -> playtest no blocker -> **tech-writer (next)** -> close, tag `playtest-YYYY-MM-DD-BD1`.
 2. Then **BD2**, **MAP1**, **MAP2**, **MAP3**, **MAP4**, **3d**, **BD3**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).

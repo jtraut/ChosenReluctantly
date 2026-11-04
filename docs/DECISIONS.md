@@ -1533,3 +1533,16 @@ gameplay-dev made these in a141865..7c5a66b. All are cheap to change.
     - These are all data.
   - **Dodge-pressed leak between suites:** not isolated. Every dodge suite now releases the action in `DodgeSwitch.reset()`.
 - **Commit trailers:** 22ee886 and 49b117b carry gameplay-dev's own model trailer. They were left as they are; history isn't rewritten for a trailer.
+
+## 2026-11-04 - BD1 ux calls (ux-designer, logged by game-lead)
+ux-designer made these calls in b61c388..1d3cbda. All values live in `data/ui.json` `hud`.
+- **HUD slot height:** 134 -> 142 px. This adds room for a chip row (name 44, chip 16, preview 40). Rejected: squeezing the existing rows, which pushed the Next line under the frame.
+- **Chips:** up to 3. Keywords are filled; derived tags are outlined.
+  - When chips don't fit, they drop from the end, so keywords stay. At 1024x600 a slot shows about 2 chips.
+- **Keyword rule text is tooltip-only** on the reward and removal screens. A visible rule line dropped the reward fit below the 0.7 floor.
+- **Live glow:** yellow `#ffe94a` rings, corner brackets and a "LIVE" pill. The easing is 0.08 s rise, 0.3 s hold and 0.25 s fade.
+  - The glow shows at 55% while the slot cools, so the player can plan around it.
+- **Primed marker:** a cyan `#5ad8ff` bolt, "xN" when there is more than one charge, and a drain bar. Rejected: the word "PRIMED", which doesn't fit next to "Ctrl".
+- **Card text order:** in `CardSummary.effect_line`, condition lines now come after the cooldown, each on its own line.
+- **No condition sentence on the HUD in combat.** The HUD ignores the mouse, and the sentence doesn't fit. A pause-screen list of slot cards is the fallback idea, not scheduled.
+- **1024x600 card-strip overflow:** fixed (3.3 px -> 0.3 px).

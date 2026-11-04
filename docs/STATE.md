@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-04 (BD1-A and BD1-B done; ux-designer next). **Run order:** **BD1 (in progress)** -> BD2 (relics) -> MAP1 (map, gold) -> MAP2 (merchant) -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3.
+Last updated: 2026-11-04 (BD1 build and ux done; qa next). **Run order:** **BD1 (in progress)** -> BD2 (relics) -> MAP1 (map, gold) -> MAP2 (merchant) -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3.
 
 ## What's done
 - **D37 = A, D38 = A recorded 2026-11-04 (game-lead, docs only):**
@@ -62,7 +62,13 @@ Last updated: 2026-11-04 (BD1-A and BD1-B done; ux-designer next). **Run order:*
     - Every archetype deck clears 11-12/12, as well as or better than the standard deck.
     - No-card runs clear 0/12.
     - The no-card Rogue soft-locks on seed 7 room 1. That predates BD1 (it shows at a4802ab); qa should note it.
-- **ux-designer: next.**
+- **BD1 ux DONE 2026-11-04:** ux-designer b61c388..1d3cbda.
+  - **Suite:** 1403/1403 (120 suites). Hashes unchanged.
+  - **What's new:** chips, live glow, primed marker, condition lines, a Keystone chip on rewards, the strip-overflow fix and a 142 px slot. Calls are in DECISIONS "BD1 ux calls".
+  - **Captures:** `docs/playtests/img/bd1-ux-*.png`.
+  - ux edited three tests outside its suite: `bd1b_content_test`, `m3c_qa_test` and the `pl3_qa_test` pin 134 -> 142. qa should confirm those edits.
+  - **Not run by ux:** the reload soak and SceneSelfCheck (no autoload changes). qa runs them anyway.
+- **qa: next** (BD1 review).
 - **For qa (BD1 review):**
   - `slice6_qa_test::test_f1_same_seed_crowd_is_bit_identical` failed in 2 of 3 full runs during BD1-A (documented as a ~1-in-3 physics flake; it passed 1 of 1 at baseline). Check whether BD1 made it worse.
   - Known gaps, by design until BD1-B and ux: CastPreview, CardSummary and the bot treat conditional effects as unconditional. A buff aura outlives its spent charge. A delayed aoe with no anchor and no `max_range` telegraphs at the cast spot but hits at the caster (pre-existing, pinned).
@@ -94,10 +100,13 @@ Last updated: 2026-11-04 (BD1-A and BD1-B done; ux-designer next). **Run order:*
     - the `mixed-*` description wording;
     - the removal example on room 6;
     - the "Last verification" hashes and test count.
+    - ux behaviour (chips, glow, primed marker, the 142 px strip);
+    - the corrupted `toolsun_wave_sim.ps1` lines (around 197-198) restored to `tools\run_wave_sim.ps1`.
+  - ARCHITECTURE: new files `src/cards/CardTags.gd`, `KeywordDatabase.gd`, `CastHistory.gd`, `SlotSynergy.gd`, `SlotSynergyView.gd`, `src/core/CombatEvents.gd`, `src/combat/EffectCondition.gd`, `src/debug/PlanPolicy.gd`, `tools/sim_caster.gd`, `tools/capture_presets.json`, `src/ui/ChipRow.gd`, `src/ui/SlotCues.gd`, and `data/keywords.json`.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step
-1. **BD1, synergy core** (ROADMAP brief; BUILD_DEPTH §3, §5 R-A/R-B/W-A/W-C, §6, §7, §2). Order: gameplay-dev **BD1-A** (done) -> gameplay-dev **BD1-B** (done) -> **ux-designer (next)** -> ux-designer -> qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-BD1`.
+1. **BD1, synergy core** (ROADMAP brief; BUILD_DEPTH §3, §5 R-A/R-B/W-A/W-C, §6, §7, §2). Order: gameplay-dev **BD1-A** (done) -> gameplay-dev **BD1-B** (done) -> ux-designer (done) -> **qa (next)** -> ux-designer -> qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-BD1`.
 2. Then **BD2**, **MAP1**, **MAP2**, **MAP3**, **MAP4**, **3d**, **BD3**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).

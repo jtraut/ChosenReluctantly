@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-02 (your answers D22, D24, D25, D26, D28, D29 recorded)
-**Status: 1 waiting on a decision (D30, not blocking), 2 things to look at now (38, 39; item 35 waits for BD2). Your answers are in the GDD and the plans. Next: H3 (the dodge comes back: Rogue 2, Wizard 1 charges, dodge on Space, Movement on Ctrl, enemies and the boss volley a bit faster), then MAP0 (map design doc, with your merchant and relic stage), then PL3 -> BD1 -> BD2.**
+Last updated: 2026-11-03 (your answer D30 = A recorded; H3 starting)
+**Status: nothing waiting on a decision, 2 things to look at now (38, 39; item 35 waits for BD2). Your answers are in the GDD and the plans. Next: H3 (the dodge comes back: Rogue 2, Wizard 1 charges, dodge on Space, Movement on Ctrl, enemies and the boss volley a bit faster), then MAP0 (map design doc, with your merchant and relic stage), then PL3 -> BD1 -> BD2.**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D30 = A".
 
@@ -15,12 +15,9 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## Needs your decision
 
-Until you answer, I use my default, and it doesn't block work. Next new number: D31.
+Next new number: D31.
 
-- **D30: Do rest rooms and card reward screens still offer relics? (from your D22 answer)** You listed three relic sources: the merchant, a dedicated relic stage, and elites. My earlier plan also had a rest room offering "heal 30% or a relic" and 1 in 4 card reward screens showing a relic.
-  - **A (my default):** no, only your three sources. Until the map exists, BD2 adds one relic room to today's straight run, so a run gives about 2 relics; the map then lets a relic hunter reach 6-8 (cap 10).
-  - **B:** keep the rest-room choice (heal or a relic) as a fourth source.
-  - **C:** keep both the rest-room choice and the occasional relic on a card reward screen.
+Nothing right now. D30 = A is recorded in GDD §4a (relics only from the merchant, the relic stage and elites). Your note that the rest-room heal may go altogether is in GDD §9; MAP0 will propose what a rest stop offers and ask you as a D31+ question.
 
 ## Needs your eyes
 

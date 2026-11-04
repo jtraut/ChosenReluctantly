@@ -2,6 +2,20 @@
 
 The archive of the director's answered, received and acknowledged items, moved here from `docs/OPEN_ITEMS.md`. Owned by tech-writer (director, 2026-11-02). Newest dated section first; IDs (D19, call 16, checklist item 33) are kept so they can be searched. Old entries change only to fix a factual error.
 
+## 2026-11-04
+
+### Answers recorded in 6c020cf (D31, D32, D33)
+
+Removed from OPEN_ITEMS after commit 9532409; the full question text is in `git show 9532409:docs/OPEN_ITEMS.md`.
+
+#### Decisions
+
+| ID | Question | Your answer | Where it went |
+|---|---|---|---|
+| D31 | What does a rest stop offer, now that relics aren't there (D30) and you may drop the heal? **A** (default): keep heal 30% or remove a card; **B**: no heal, a rest stop is "remove a card" and rest stops get rarer; **C**: no rest stops, card removal only at the merchant. | **A**. | GDD §9; MAP.md; BUILD_DEPTH §4.1; ROADMAP (6c020cf). |
+| D32 | Map shape. **A** (default): 4 lanes, mostly 2 choices per step, whole map visible, left to right, every route 10 rooms; **B**: 3 lanes; **C**: only the next 2 rooms visible. | **A**, plus: a run becomes three acts of 10 rooms (30 rooms). Acts 1 and 2 end in a mini-boss, act 3 in the final boss. Target run length 30-45 min (was 30-60 min). Save progress and return later (autosave between rooms, built in MAP3). Until MAP3 a run is one 10-room act. | GDD §9; MAP.md; BUILD_DEPTH §4.1; ROADMAP (6c020cf). New questions D34 (relics over 30 rooms), D35 (rejects over 30 rooms), D36 (boss volley up close for the Wizard) are active in OPEN_ITEMS. |
+| D33 | When do mini-bosses and curse/buff rooms come? **A** (default): after loadouts (3d), before BD3; **B**: before loadouts, straight after the merchant; **C**: after BD3. | **B**. Slices are now MAP3 (three acts, mini-bosses, act scaling, save/resume) and MAP4 (curse/buff rooms). Run order: PL3 -> BD1 -> BD2 -> MAP1 -> MAP2 -> MAP3 -> MAP4 -> 3d -> BD3. | GDD §9; MAP.md; ROADMAP (6c020cf). |
+
 ## 2026-11-03
 
 ### Answer recorded in 98efccd (D30)

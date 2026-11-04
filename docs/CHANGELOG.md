@@ -2,6 +2,35 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
+## 2026-11-04 (Slice PL3: playtest fixes; director decisions D31-D33)
+
+Commit range 9532409..7f21afb. Planned tag: `playtest-2026-11-04-PL3`. qa: PASS (`docs/reviews/2026-11-04-pl3-qa.md`, 16387bf, e38bdd2). Playtest: no blocker (`docs/playtests/2026-11-04-pl3-short.md`, 7f21afb).
+
+### Added
+- Ward aura: while an armor buff is up the player shows a pulsing ground ring and a faint bubble. Look is data: `data/vfx.json` `buff_cues`, keyed by the buffed stat (`TemplateVfx.buff_aura`, `VfxConfig.buff_cue`).
+- Card projectile `look` ({color, scale, ball_scale}, validated by `EffectTemplates.validate_look`): Three Bolts is lime, Overqualified Bolt is white, ball 1.9x and trail 2.4x. The hit radius is unchanged.
+- Volley safe-gap tint is now drawn only where a gap is really clear (`src/effects/VolleyGaps.gd`, new `boss_volley_gap_*` keys in `data/vfx.json`; minimum half width `boss_volley_gap_min_half_width`).
+- New tooling (see README): capture `--press=<t>:<action>` (`-Actions`) via `src/debug/ScriptedInput.gd`; `--at-boss-attack=<id>` (`-AtBossAttack`); `--class` now applies to scenarios (`-Class`); wave sim `-StartRoom N` (with `-Run`); `tools/VolleyProbe.tscn`. New capture-only scenarios `pl3_ward`, `pl3_bolts`, `pl3_heavy_bolt`.
+- Tests: 1244 -> 1289 test cases, 108 -> 111 suites.
+
+### Changed
+- **[Director decision, D31 = A]** The rest stop stays "heal 30% or remove a card". The heal is one number in data.
+- **[Director decision, D32 = A, plus his additions]** Map shape as proposed (4 lanes, whole map visible, left to right). Also, a run becomes **three acts of 10 rooms (30 rooms)**. Acts 1 and 2 end in a mini-boss, act 3 in the final boss. Target run length is 30-45 min (old: 30-60 min, with a 15-25 min prototype note). A player can save progress and return later (autosave between rooms, built in MAP3). Until MAP3 a run stays one 10-room act.
+- **[Director decision, D33 = B]** Mini-bosses and curse/buff rooms come before loadouts. Slices are now MAP3 (three acts, mini-bosses, act scaling, save/resume) and MAP4 (curse/buff rooms). Run order: PL3 -> BD1 -> BD2 -> MAP1 -> MAP2 -> MAP3 -> MAP4 -> 3d -> BD3 (old: ... MAP2 -> 3d -> MAP3 -> BD3).
+- Damage numbers move below the boss bar while it shows (`data/ui.json` `damage_numbers.boss_bar_gap`; `BossHpBar.occupied_bottom()`).
+- Dodge return pulse: 0.3 s -> 0.6 s, with a swell.
+- Reward and removal screens: **[Director decision, 2026-11-02]** the number keys, number hints and badges are gone. The hint now reads "Arrow keys move, Enter or click confirms". "Key Q" chips are key caps. The reward line "Recovery (R) now: A" became "In slot: A" (`data/run.json` `ui.option`).
+- HUD card slots 126 -> 134 px, preview row 38 -> 46 px.
+- Seeded baselines (wave sim, qa's figures): arena 90 s `state_hash` 819020947 -> 1212800. The 30 s hash (2333565009) and bot sim checksum (2281795515) are unchanged.
+
+### Fixed
+- Knockback on the player: a 9 m/s hit carried the Wizard 19.6 m, now 2.25 m. The cause was the walking velocity being read back with last tick's knockback still in it (`Player._applied_knockback`). It applied to every hit on the player.
+
+### Docs and process
+- **New director questions** (waiting in `docs/OPEN_ITEMS.md`): D34 (relics over 30 rooms), D35 (rejects over 30 rooms), D36 (the boss volley up close for the Wizard).
+- Volley fairness measurement (`tools/VolleyProbe.tscn`): mostly a bot blind spot. There is no safe gap at 6 m or closer. Nothing was retuned.
+- Director decisions recorded in GDD §9, `docs/MAP.md`, BUILD_DEPTH §4.1 and the ROADMAP (6c020cf). Answers archived in `docs/RESOLVED.md`.
+
 ## 2026-11-03 (Slice H3: dodge return and enemy speed-up; MAP0: map design doc; director decision D30)
 
 Commit range 0cf2a09..305b13b (D30 records from 98efccd). Planned tag: `playtest-2026-11-03-H3`. qa: PASS (`docs/reviews/2026-11-03-h3-qa.md`). Playtest: no blocker (`docs/playtests/2026-11-03-h3-short.md`).

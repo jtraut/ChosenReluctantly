@@ -3,9 +3,10 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-04 (PL3 started: gameplay-dev). **Run order:** **PL3 (next; rest, incl. H3 items 11-13)** -> BD1 -> BD2 (relics) -> MAP1 (map, gold) -> MAP2 (merchant) -> 3d -> MAP3 (mini-bosses, curse/buff; D33) -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0.
+Last updated: 2026-11-04 (PL3 gameplay-dev running; director answers D31 = A, D32 = A with three acts, D33 = B recorded). **Run order:** **PL3 (in progress)** -> BD1 -> BD2 (relics) -> MAP1 (map, gold) -> MAP2 (merchant) -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0.
 
 ## What's done
+- **Director answers recorded 2026-11-04 (game-lead, docs only):** D31 = A, D32 = A + three acts of 10 rooms (mini-bosses end acts 1-2, final boss act 3; 30-45 min; save and return later), D33 = B. GDD §9, MAP.md §1/§2/§4.5/§8/§9/§10, BUILD_DEPTH §4.1, ROADMAP (MAP3 = acts + save/resume, new MAP4 = curse/buff; run order), DECISIONS "2026-11-04". New D34 (relics over 30 rooms), D35 (rejects). **For the PL3 tech-writer handoff:** RESOLVED gets D31-D33 (question text in OPEN_ITEMS at commit 9532409); CHANGELOG `[Director decision]` 2026-11-04 entries for D31-D33 and the three-act run.
 - **MAP0 closed 2026-11-03 (docs only, no tag):** game-lead ee38ac0, e77653d, adf6468; docs 2762144. `docs/MAP.md` (game-lead owns it); GDD §9 [PROPOSED]; ROADMAP MAP1/MAP2/MAP3; questions D31-D33 (defaults A). Director's H3 Rogue feedback in CHANGELOG; old item 38 merged into 40.
 - **H3 closed 2026-11-03:** gameplay-dev cee653d..3dc74fb, ux 6f89eea, qa PASS 44eff31/f1a3f88, playtest 305b13b (no blocker), docs 8700a4d (incl. D30 in CHANGELOG/RESOLVED). Tag `playtest-2026-11-03-H3`. **Baselines now: suite 1244/1244 (108 suites); arena 30 s seed 1 = 2333565009, 90 s = 819020947; bot sim `-Rooms 20 -Seed 3` = 2281795515.** Playtest findings -> PL3 items 11-13 (volley gaps, pip flash, is the volley fair to the Wizard). OPEN_ITEMS 40 asks the director to play it.
 - **D30 = A recorded 2026-11-03 (game-lead, docs only):** 98efccd (GDD §4a bullet, GDD §9 director note on maybe removing the rest heal, BUILD_DEPTH §4.1/§11, ROADMAP BD2 wording + MAP0 rest-node question). OPEN_ITEMS: D30 removed. Archived in RESOLVED and CHANGELOG by tech-writer (8700a4d).
@@ -26,13 +27,13 @@ Last updated: 2026-11-04 (PL3 started: gameplay-dev). **Run order:** **PL3 (next
 
 ## Exact next step
 1. **PL3** (ROADMAP brief; items 1-5, 7, 10-13 and tooling). Hand to gameplay-dev first (item 3 knockback clamp, item 13 volley fairness measurement, tooling), then ux-designer (1, 2, 4, 5, 7, 10, 11, 12), qa, playtester, tech-writer, close with a tag.
-2. Then **BD1**, **BD2**, **MAP1**, **MAP2**, **3d**, **MAP3**, **BD3**.
+2. Then **BD1**, **BD2**, **MAP1**, **MAP2**, **MAP3**, **MAP4**, **3d**, **BD3**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).
 
-**D-numbers:** D21-D30 answered. D31-D33 open (MAP0: rest stop, map shape, MAP3 timing; defaults A applied). Next free: D34.
+**D-numbers:** D21-D33 answered (D31 = A, D32 = A + three acts, D33 = B on 2026-11-04). D34-D35 open (relics and rejects over 30 rooms; defaults A). Next free: D36.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: D31-D33 (non-blocking); eyes 40, 39 (35 after BD2). Answered items are in `docs/RESOLVED.md` (D30 archived in 8700a4d).
+All director-facing items are in `docs/OPEN_ITEMS.md`: D34, D35 (non-blocking until MAP3); eyes 40, 39 (35 after BD2). Answered items are in `docs/RESOLVED.md` (D30 archived in 8700a4d).

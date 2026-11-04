@@ -1358,3 +1358,13 @@ Plan in `docs/MAP.md`; GDD §9 [PROPOSED] summary. Defaults for D31-D33 applied 
 - **Map gen in a new `data/map.json`;** economy (`gold`, `merchant`, `relics.prices`) in `run.json`, matching BUILD_DEPTH §4.6. [Everything in run.json.]
 - **`docs/MAP.md` is a game-lead doc,** added to CLAUDE.md's ownership list (as BUILD_DEPTH was at BD0).
 - **Director feedback on H3 folded:** his Rogue run ("never overwhelmed") half-answers old item 38 (H1 pace); 38 is merged into item 40 for the Wizard side rather than marked answered.
+
+## 2026-11-04 - Applying D31 = A, D32 = A (three acts), D33 = B (game-lead)
+The answers are recorded in GDD §9 and `docs/MAP.md` (director decisions). My calls in applying them:
+- **"3 tier, 2 mini-bosses and final boss on the 3rd tier, 30 rooms" read as three acts of 10 rooms,** acts 1-2 ending in a fixed mini-boss room, act 3 in the final boss; each act is its own map with the D32 = A shape. [Reading "tier" as the difficulty tiers of GDD §9.]
+- **Optional mini-boss nodes inside acts stay, at a low weight, in MAP4.** His GDD §9 list ("harder rooms and mini-bosses") wasn't withdrawn; it's a data weight, cheap to drop. [Removing them because act ends now have mini-bosses.]
+- **Split the old MAP3:** MAP3 = acts, mini-bosses, act scaling, save/resume; MAP4 = curse/buff rooms. Both before 3d (D33 = B). [One slice, too big for one sitting.]
+- **Save/resume ships in MAP3,** the slice that makes runs 30 rooms long: autosave at room boundaries, one slot, mid-fight quit restarts the room. [Mid-fight saves, which need every enemy and projectile serialised.] [A later save slice, which would leave 30-45 minute runs unsavable.]
+- **Act scaling** (data multipliers per act) is in MAP3's scope with values from the sim, so acts 2-3 don't get easier as the deck grows. [No scaling.] [Hand-picked values now.]
+- **Relic and reject numbers over 30 rooms are asked (D34, D35)** because they change his earlier numbers (D22's 6-8 per run; GDD §9's 3 rejects per run). Defaults keep his numbers. MAP.md §4.5 shows A's cost: about 1 elite and 1 relic stage per route per act, mini-bosses give no relic, merchant relics at 150/200/260. MAP1/MAP2 keep MAP0's single-act numbers until MAP3.
+- **Target run length now 30-45 min** replaces 30-60 and the [PROPOSED] 15-25 prototype note.

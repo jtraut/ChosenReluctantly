@@ -1,8 +1,12 @@
 # Branching map design (MAP0)
 
-Owner: game-lead. Status: **[PROPOSED]**, written 2026-11-03 for GDD §9 "Branching map". It has to meet the director's decisions in GDD §4a (relic sources, D22 = C, D30 = A) and §9 (D28 = A, rest-room note). The numbers are starting values, and all of them are data. Questions for the director are in §10 (D31-D33). Each has a default, and the plan below uses the defaults.
+Owner: game-lead. Status: **[PROPOSED]**, written 2026-11-03 for GDD §9 "Branching map". It has to meet the director's decisions in GDD §4a (relic sources, D22 = C, D30 = A) and §9 (D28 = A, rest-room note). The numbers are starting values, and all of them are data. Director answers 2026-11-04 (§10): D31 = A, D32 = A **with three acts (30 rooms)**, D33 = B. Open: D34 (relics over 30 rooms), D35 (rejects over 30 rooms); the plan uses their defaults.
 
 ## 1. Shape of the map
+
+- **Three acts of 10 rooms: 30 rooms per run [DIRECTOR DECISION, 2026-11-04, with D32 = A].** Each act is its own map with the shape below. **Act 1 and act 2 end in a mini-boss; act 3 ends in the final boss.** Target: **30-45 minutes** per run, and the player can **save and come back later** (§8). Rooms are counted 1-30 overall ("Room 14 of 30", "Act 2").
+- **MAP1 and MAP2 build one act** (10 rooms, ending in today's boss) with the numbers below. **MAP3 adds acts 2 and 3**, the mini-bosses, act scaling and save/resume; at that point the per-act numbers in §4.5 replace the single-act ones.
+- Everything below describes **one act**.
 
 - **A run is still 10 rooms along any path.** The map is a grid of **10 rooms (rows) by 4 columns**. Every path from start to boss is exactly 10 rooms long, so "Room N of 10", run length and today's tuning all carry over.
 - **Room 1:** 2-4 combat nodes. The player picks one to start from, and that pick already chooses a side of the map.
@@ -28,12 +32,13 @@ C combat · E elite · R* relic stage · M merchant · Rs rest · (mini-boss and
 | `combat` | yes | Card offer (pick 1 of 3 or reject), gold 12-18 | 1-9 | MAP1 |
 | `elite` | yes, elite tier | **Relic** offer (pick 1 of 3 or skip; replaces the card offer, BD2 rule), gold 30-40 | 3-9 | MAP1 |
 | `relic_room` (the "dedicated relic reward stage", D22) | no | Relic offer (pick 1 of 3 or skip) | 3-9 | MAP1 |
-| `rest` | no | Today's rest: heal 30% or remove a card (D31 default A) | 5-9 | MAP1 |
+| `rest` | no | Today's rest: heal 30% or remove a card (**D31 = A**, director 2026-11-04) | 5-9 | MAP1 |
 | `merchant` | no | Spend gold: **several relics at once** if you can afford them, card removal, cards (§4.3) | 4-9 | MAP2 |
-| `mini_boss` | yes, new `mini_boss` tier | Relic offer biased to uncommon and rare, **plus** a card offer, gold 45-55 | 5-8 | MAP3 |
+| **act-end mini-boss** (`mini_boss`, fixed) | yes, new `mini_boss` tier | Card offer weighted to rarer cards, gold 60; a relic only if D34 = B | 10 of acts 1-2 | MAP3 |
+| `mini_boss` (optional node inside an act) | yes, `mini_boss` tier | Same as the act-end one | 5-8 | MAP4, low weight |
 | `curse_room` | no | A strong relic **with a curse attached** (BUILD_DEPTH §4.2 `curse` block), or leave | 3-8 | MAP3 |
 | `buff_room` | no | A minor relic with no downside, or leave ("some rooms only buff") | 3-8 | MAP3 |
-| `boss` | yes | Ends the run, as today | 10 | MAP1 |
+| `boss` | yes | Ends the run, as today (act 3's final boss from MAP3) | 10 | MAP1 |
 
 - **Relic source ids** are the ones BUILD_DEPTH §4.6 reserved: `elite`, `relic_room`, `merchant`, `mini_boss`, `curse_room`, `buff_room`. Each node calls BD2's offer function `(source, count, rng)`, which respects the cap.
 - **Hardest path, best reward** (GDD §9): elites and mini-bosses give the most gold and relics, and they're also the dangerous fights. A relic route needs several elites (§4).
@@ -124,6 +129,17 @@ Expected gold uses the mean income: combat 15, elite 35, mini-boss 50. The start
   - **Buy as many as you can afford, in any order** (the director: "several relics at once"). The panel stays open until you leave. Relics at the cap of 10 are shown disabled.
 - **A route that skips fights can't buy much:** with 4 non-fight rooms, gold on arrival at a room-9 merchant is at most about 135, while the hunter route above arrives with 150.
 
+### 4.5 Over three acts (MAP3; D34 default A)
+
+The director's relic target is **per run** (D22: 6-8 for a hunter, cap 10). Over 30 rooms that means relics get scarcer per act. Two traps: act-end mini-bosses would add 2 relics to every route if they gave relics, and gold carries across acts, so merchant purchases add up. Under **D34 = A** (default):
+- **Per-act path rules:** at most **1 elite** and **1 relic stage** on any path in an act; at most 1 merchant. Act-end mini-bosses give a rare-weighted card offer and gold, **not** a relic.
+- **Merchant:** still sells several relics at once (the director's rule), but priced for a whole run's gold: starting values common 150, uncommon 200, rare 260 (data).
+- **Feasibility, hunter:** 3 elites + 3 relic stages = 6. Gold over the run is roughly 20 fights x 15 + 3 x 35 + 2 x 60 = about 525, so the merchants add about 2-3 relics if the hunter spends gold on nothing else: **about 8-9**, and the sim sets prices so the median is 6-8.
+- **Feasibility, ignore route:** 1-2 elites over the run plus maybe 1 merchant relic: **2-3**.
+- **Run total is checked by the bot sim** (median `relic` route 6-8, `safe` route 2-3), because per-act generator checks can't see carried gold. The per-act generator rules only keep each act sane.
+- **These values are data, "set by the MAP3 sim".** BD1, BD2, MAP1 and MAP2 all run 10-room games and will move them; the routes above only show it's reachable.
+- Under **D34 = B** (counts scale with the run): MAP0's single-act rules per act (up to 3 elites, relic stages, merchant at 60/90/130) and mini-bosses give a relic: about 15-20 for a hunter, cap raised to about 25.
+
 ## 5. Currencies
 
 - **Gold** is built in MAP1 (earned and shown) and spent in MAP2 (merchant). It lasts for the run only.
@@ -193,6 +209,8 @@ Expected gold uses the mean income: combat 15, elite 35, mini-boss 50. The start
 
 ## 8. Saving, determinism, bots, the straight-run switch
 
+- **Save and come back later [DIRECTOR DECISION, 2026-11-04] (MAP3):** an **autosave at every room boundary** (when the map screen shows), one save slot. Quitting mid-fight and resuming restarts that room from its start. The start screen shows **Continue** when a save exists; finishing or losing the run deletes it. The file lives in `user://` (versioned, validated, with an injectable path so tests never touch the real user folder, the same pattern as 3d's profile) and reuses RunState's `to_json` / `equals` round trip. Must ship no later than the slice that makes runs 30 rooms long. (game-lead defaults: room-boundary saves, one slot. [Saving mid-fight, which means serialising every enemy and projectile.])
+
 - **RunState gains:**
   - `map`: the full node and edge list. It's small, and it survives data edits mid-run.
   - `path`: the node ids taken.
@@ -220,21 +238,18 @@ Each slice is one sitting, gets the full loop and a `playtest-YYYY-MM-DD-<slice>
 |---|---|---|
 | **MAP1: the map** | after BD2 | Generator, validator and `map.json`; RunState map, path and gold, plus save; the map screen (ux); the node types combat, elite, relic_room, rest and boss; gold income and the HUD gold; the bot `-Route` flag and the 1000-seed generation test; straight-run switch. |
 | **MAP2: the merchant** | right after MAP1 | Merchant node, panel and stock (several relics at once, cards, removal through `can_remove`); `relics.prices`; merchant weight on, `relic_route` back to [6, 8]; bot buys (relic route: relics first). |
-| **MAP3: mini-bosses, curse and buff rooms** | D33 (default: after 3d, before BD3) | `mini_boss` tier and waves; `curse` block on relics (validator, and the panel shows the curse); curse and buff room panels; 2-3 cursed relics and 2 minor relics for Fire. |
+| **MAP3: three acts** | right after MAP2 (D33 = B) | Acts 2 and 3 (30 rooms), the 2 act-end mini-bosses (`mini_boss` tier on existing enemies, 2 encounters), act scaling (data multipliers per act, values from the sim), new wave lists for acts 2-3, act transition screen, **save and resume**, per-act numbers from §4.5. Acceptance: median bot run 30-45 min. |
+| **MAP4: curse and buff rooms** | after MAP3, before 3d (D33 = B) | `curse` block on relics (validator, panel shows the curse); curse and buff room panels; 2-3 cursed and 2 minor Fire relics; optional `mini_boss` nodes at low weight. |
 
-MAP1 and MAP2 together are the "first map build" that D28 places before 3d. It includes the merchant and the relic stage, as he asked.
+MAP1 and MAP2 together are the "first map build" that D28 places before 3d, with the merchant and the relic stage. D33 = B puts MAP3 and MAP4 before 3d too.
 
 ## 10. Questions for the director
 
-- **D31: What does a rest stop offer, now that relics aren't there (D30 = A) and you may drop the heal?**
-  - **A (default):** keep today's rest, heal 30% or remove a card. The heal is one data value, so dropping it later costs nothing.
-  - **B:** no heal. Rest becomes "remove a card", and rest stops get rarer.
-  - **C:** no rest stops at all. Card removal is only at the merchant.
-- **D32: Map shape.**
-  - **A (default):** 4 columns, mostly 2 choices per step, the whole map visible from the start, reading left to right.
-  - **B:** 3 columns, so there are fewer and clearer choices.
-  - **C:** only the next 2 rooms are visible. More surprise, less route planning.
-- **D33: When do mini-bosses and curse/buff rooms (MAP3) come?**
-  - **A (default):** after loadouts (3d), before BD3.
-  - **B:** before 3d, straight after the merchant.
-  - **C:** after BD3.
+**Answered 2026-11-04:** D31 = A (keep heal 30% or remove a card). D32 = A, plus **three acts of 10 rooms (30 total), mini-bosses ending acts 1 and 2, the final boss ending act 3, a 30-45 minute run, and save-and-return**. D33 = B (mini-bosses and curse/buff rooms before loadouts).
+
+- **D34: Relics over a 30-room run.**
+  - **A (default):** keep your 6-8 for a relic hunter, cap 10, now across three acts: about 1 elite and 1 relic stage per route per act, mini-bosses don't give relics, and merchant relics cost more (§4.5).
+  - **B:** let it grow with the run: about 15-20 for a hunter, cap about 25, and mini-bosses give a relic.
+- **D35: Card rejects over a 30-room run.** Today you get 3 rejects per run, with about 8 card offers. Thirty rooms give about 20 offers.
+  - **A (default):** still 3 per run, so deck noise builds up more.
+  - **B:** 3 per act (9 per run).

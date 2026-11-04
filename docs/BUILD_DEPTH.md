@@ -127,10 +127,10 @@ Two of the three sources are map nodes, and gold doesn't exist yet. So relics ar
 | **Relic room** (the dedicated relic stage) | New room type in the straight run, like the rest room: 1 per run, rooms 2-8, never next to the rest room or the elite. No fight; pick 1 of 3 relics or skip. | A map node type. A relic-hunting route passes several. |
 | **Merchant** | Not yet (needs gold). | A map node. Relics have a price from `rarity` (in `run.json`); the player can buy several if they have the gold. |
 | Mini-boss, curse/buff rooms | Reserved `sources` values. | MAP0 decides. |
-| Boss (multi-act later) | Reserved: `boss` source. | Not used while the boss ends the run. |
+| Boss (multi-act later) | Reserved: `boss` source. | Not used while the boss ends the run. **Three acts from MAP3 (director, 2026-11-04):** act-end mini-bosses give a relic only if D34 = B; see `docs/MAP.md` §4.5. |
 | ~~Rest room (heal or relic)~~, ~~1 in 4 reward screens~~ | **Dropped** (D30 = A, director 2026-11-03: heal-or-relic is too obvious a choice, since a relic is worth more and Recovery already heals). | Same. |
 
-**Count per run:** BD2's straight run gives about **2** (1 elite, 1 relic room). The map is what makes 6-8 reachable for a relic hunter; MAP0 lays out routes so a relic route reaches 6-8 and a route that ignores relics ends with about 2-3. **Hard cap 10** (`run.json` `relics.max_owned`). At the cap, relic offers are skipped: an elite gives its normal card offer, and a relic room shows a card offer instead. No starting relic for now. All numbers are data in `run.json` (`relics` block).
+**Count per run:** BD2's straight run gives about **2** (1 elite, 1 relic room). The map is what makes 6-8 reachable for a relic hunter; MAP0 lays out routes so a relic route reaches 6-8 and a route that ignores relics ends with about 2-3. **Hard cap 10** (`run.json` `relics.max_owned`). At the cap, relic offers are skipped: an elite gives its normal card offer, and a relic room shows a card offer instead. No starting relic for now. All numbers are data in `run.json` (`relics` block). **Over a 30-room run (three acts, director 2026-11-04):** `docs/MAP.md` §4.5; D34 asks whether 6-8 stays per run.
 
 ### 4.2 Data format (`data/relics/*.json`, one file per relic, like cards)
 

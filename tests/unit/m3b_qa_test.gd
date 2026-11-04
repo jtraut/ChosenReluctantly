@@ -213,9 +213,9 @@ func test_shipped_offers_are_distinct_in_pool_deterministic_and_prefer_unowned()
 			total += 1
 			if not starter.has(a[0]):
 				first_unowned += 1
-	# 9 unowned x4 vs 15 owned x1 -> about 70% of first slots are unowned.
+	# 15 unowned (BD1-B: 9 + 6 new Rogue/Fire cards) x4 vs 15 owned x1 -> about 80% of first slots are unowned.
 	var share := float(first_unowned) / float(total)
-	assert_float(share).is_between(0.6, 0.8)
+	assert_float(share).is_between(0.7, 0.9)
 
 
 func test_offer_ignores_the_global_rng_and_the_deck_changes_it() -> void:

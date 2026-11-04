@@ -14,6 +14,7 @@
         "rogue_everyone_calm_down", "neutral_shrug_bomb", "fire_fine_burn_then", "fire_fireball", "fire_wall",
         "rogue_not_my_problem", "neutral_deep_sigh", "fire_hot_head",
         "rogue_lunge_strike", "rogue_shadow_step", "rogue_ugh_fine_moving", "neutral_backward_leap", "fire_blaze_and_bail",
-        "rogue_nap_time", "neutral_healing_potion", "neutral_leech", "neutral_regeneration"
+        "rogue_nap_time", "neutral_healing_potion", "neutral_leech", "neutral_regeneration",
+        "fire_fan_the_flames", "fire_kindling", "fire_heat_sink", "fire_slow_burn", "rogue_drive_by", "rogue_momentum"
     ]
 }

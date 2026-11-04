@@ -8,17 +8,55 @@ extends RefCounted
 ## buff part; without it the built-in defaults below apply.
 static func effect_line(card: Dictionary, slot_base_cooldown: float = -1.0, text: Dictionary = {}) -> String:
 	var parts: Array[String] = []
+	# Conditional effects are grouped by their condition, in card order: "If the target has Burn: 10 fire damage (area)".
+	var conditional_keys: Array[String] = []
+	var conditional_parts: Dictionary = {}
 	for effect: Variant in (card.get("effects", []) as Array):
 		if typeof(effect) != TYPE_DICTIONARY:
 			continue
-		var part: String = _effect_part(String((effect as Dictionary).get("template", "")), (effect as Dictionary).get("params", {}), text)
-		if part != "":
+		var effect_dict: Dictionary = effect
+		var part: String = _effect_part(String(effect_dict.get("template", "")), effect_dict.get("params", {}), text)
+		if part == "":
+			continue
+		var condition: Variant = effect_dict.get("condition")
+		if typeof(condition) == TYPE_DICTIONARY and not (condition as Dictionary).is_empty():
+			var key: String = condition_text(condition, text)
+			if not conditional_parts.has(key):
+				conditional_parts[key] = [] as Array[String]
+				conditional_keys.append(key)
+			(conditional_parts[key] as Array[String]).append(part)
+		else:
 			parts.append(part)
 	var line: String = ", ".join(parts)
+	for key: String in conditional_keys:
+		var sentence: String = String(_word(text, "condition_line")) % [key, ", ".join(conditional_parts[key] as Array[String])]
+		line += ("" if line == "" else ". ") + sentence
 	if slot_base_cooldown >= 0.0:
 		var cooldown: float = maxf(slot_base_cooldown + float(card.get("cooldown_modifier", 0.0)), 0.0)
 		line += ("" if line == "" else ". ") + String(_word(text, "cooldown")) % _num(cooldown)
 	return line
+
+
+## The display text of one effect `condition` block ("If the target has Burn"), from data/run.json ui.effect.condition.
+## Status and slot names come from `text.statuses` and `text.slot_names`. "" for an empty or unknown condition.
+static func condition_text(condition: Variant, text: Dictionary = {}) -> String:
+	if typeof(condition) != TYPE_DICTIONARY:
+		return ""
+	var c: Dictionary = condition
+	var words: Dictionary = _word(text, "condition")
+	var seconds: String = _num(float(c.get("seconds", 0.0)))
+	match String(c.get("type", "")):
+		"target_has_status":
+			return String(words["target_has_status"]) % _status_name(String(c.get("status_id", "")), text)
+		"cast_within":
+			if c.has("slot_type"):
+				var slot_type: String = String(c["slot_type"])
+				var slot_name: String = String((text.get("slot_names", {}) as Dictionary).get(slot_type, slot_type.replace("_", " ").capitalize()))
+				return String(words["cast_within_slot"]) % [slot_name, seconds]
+			return String(words["cast_within_tag"]) % [String(c.get("tag", "")), seconds]
+		"zone_active":
+			return String(words["zone_active"])
+	return ""
 
 
 ## Words and units for the effect line. The shipped wording is data/run.json `ui.effect`; these defaults only back a
@@ -44,6 +82,15 @@ const DEFAULT_TEXT: Dictionary = {
 	"slot_cooldown": "%s cooldown %s s",
 	"armor": "%s armor",
 	"for": "for %s s",
+	"within": "%s, within %s s",
+	"buff_stats": {"slot_cooldown_skip": "Next %s cast has no cooldown", "status_damage_mult": "%s you apply deals %s damage"},
+	"condition": {
+		"target_has_status": "If the target has %s",
+		"cast_within_slot": "If you used your %s slot in the last %s s",
+		"cast_within_tag": "If you cast a %s card in the last %s s",
+		"zone_active": "While you have a Zone active",
+	},
+	"condition_line": "%s: %s",
 }
 
 
@@ -118,17 +165,35 @@ static func buff_text(params: Dictionary, text: Dictionary = {}) -> String:
 	var value: float = float(params.get("value", 0.0))
 	var multiplicative: bool = String(params.get("modifier_type", "additive")) == "multiplicative"
 	var amount: String = ("x" + _num(value)) if multiplicative else _signed(value)
-	var duration: String = String(_word(text, "for")) % _num(float(params.get("duration", 0.0)))
+	var primed: bool = params.has("consume_on_cast")
+	var seconds: String = _num(float(params.get("duration", 0.0)))
+	var duration: String = String(_word(text, "for")) % seconds
+	var buff_stats: Dictionary = _word(text, "buff_stats")
 	var head: String
-	if stat.begins_with("slot_cooldown.") and not multiplicative:
-		var slot_type: String = stat.get_slice(".", 1)
-		var slot_name: String = String((text.get("slot_names", {}) as Dictionary).get(slot_type, slot_type.replace("_", " ").capitalize()))
-		head = String(_word(text, "slot_cooldown")) % [slot_name, amount]
+	if stat.begins_with("slot_cooldown_skip."):
+		head = String(buff_stats["slot_cooldown_skip"]) % _slot_name(stat.get_slice(".", 1), text)
+	elif stat.begins_with("status_damage_mult.") and multiplicative:
+		head = String(buff_stats["status_damage_mult"]) % [_status_name(stat.get_slice(".", 1), text), _percent(value)]
+	elif stat.begins_with("slot_cooldown.") and not multiplicative:
+		head = String(_word(text, "slot_cooldown")) % [_slot_name(stat.get_slice(".", 1), text), amount]
 	elif stat == "armor" and not multiplicative:
 		head = String(_word(text, "armor")) % amount  # "+25 armor": the number says what it is
 	else:
 		head = "%s %s" % [stat.replace(".", " ").replace("_", " ").capitalize(), amount]
+	if primed:
+		# A primed buff waits for a cast: its time limit reads "within 3 s", not "for 3 s".
+		return String(_word(text, "within")) % [head, seconds]
 	return "%s %s" % [head, duration]
+
+
+static func _slot_name(slot_type: String, text: Dictionary) -> String:
+	return String((text.get("slot_names", {}) as Dictionary).get(slot_type, slot_type.replace("_", " ").capitalize()))
+
+
+## A fractional change as a signed percentage: 0.5 reads "+50%", -0.2 reads "-20%".
+static func _percent(fraction: float) -> String:
+	var pct: float = snappedf(fraction * 100.0, 0.1)
+	return ("+" if pct > 0.0 else "") + _num(pct) + "%"
 
 
 static func _signed(value: float) -> String:

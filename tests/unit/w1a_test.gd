@@ -119,8 +119,8 @@ func test_wizard_pool_has_three_utility_and_two_movement_cards_and_no_new_templa
 		for effect: Variant in ((card as Dictionary)["effects"] as Array):
 			assert_bool(EffectTemplates.is_known_template(String((effect as Dictionary)["template"]))).is_true()
 	assert_int(int(by_slot.get("utility", 0))).is_equal(3)  # W1b: Ward joined Borrowed Focus and Footwork
-	assert_int(int(by_slot.get("movement", 0))).is_equal(2)
-	assert_int(CardDatabase.cards_for_pool("wizard").size()).is_equal(8)  # W1b: + volley, bolt, nova, ward
+	assert_int(int(by_slot.get("movement", 0))).is_equal(3)  # BD1-B: + Parting Gift
+	assert_int(CardDatabase.cards_for_pool("wizard").size()).is_equal(10)  # W1b: + volley, bolt, nova, ward; BD1-B: + Parting Gift, Well, Actually
 
 
 func test_character_validation_rejects_bad_entries() -> void:

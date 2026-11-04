@@ -1,0 +1,7 @@
+{
+    "name": "rogue-kindling",
+    "class": "rogue",
+    "description": "BD1 archetype R-A, Kindling (Fire Rogue): spread Burn with area cards, then cash it in. Legal 15-card deck; starter and full are the same list.",
+    "starter": ["fire_ember_whatever", "rogue_quick_slash", "rogue_overhand_whatever", "fire_fan_the_flames", "fire_fine_burn_then", "fire_wall", "fire_kindling", "fire_hot_head", "neutral_deep_sigh", "fire_blaze_and_bail", "rogue_ugh_fine_moving", "neutral_backward_leap", "neutral_healing_potion", "rogue_nap_time", "neutral_regeneration"],
+    "full": ["fire_ember_whatever", "rogue_quick_slash", "rogue_overhand_whatever", "fire_fan_the_flames", "fire_fine_burn_then", "fire_wall", "fire_kindling", "fire_hot_head", "neutral_deep_sigh", "fire_blaze_and_bail", "rogue_ugh_fine_moving", "neutral_backward_leap", "neutral_healing_potion", "rogue_nap_time", "neutral_regeneration"]
+}

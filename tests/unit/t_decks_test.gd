@@ -55,7 +55,7 @@ func test_mixed_rogue_is_the_current_starter_and_the_whole_pool() -> void:
 func test_preset_family_shapes() -> void:
 	var presets: Dictionary = DebugDecks.read_dir()["presets"]
 	var fire: Dictionary = presets["fire-heavy-rogue"]
-	assert_int(int(DebugDecks.pool_counts(fire["starter"]).get("fire", 0))).is_equal(7)  # every Fire card there is
+	assert_int(int(DebugDecks.pool_counts(fire["starter"]).get("fire", 0))).is_equal(7)  # every Fire card there was at T-decks (BD1-B added 4 more, in the archetype decks)
 	var physical: Dictionary = presets["physical-rogue"]
 	# The deck rules need exactly Hot Head (utility) and one Fire AoE: the fewest possible Fire cards.
 	assert_int(int(DebugDecks.pool_counts(physical["starter"]).get("fire", 0))).is_equal(2)

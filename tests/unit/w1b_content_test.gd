@@ -47,6 +47,8 @@ func test_wizard_presets_exist_and_are_valid() -> void:
 	assert_array(mixed["full"]).contains_exactly_in_any_order(CharacterDatabase.full_deck("wizard"))
 	var fire_heavy: Array = ((directory["presets"] as Dictionary)["fire-heavy-wizard"] as Dictionary)["starter"]
 	for id: String in RunConfig.cards_in_pools(["fire"]):
+		if CardDatabase.has_tag(id, "Keystone") or CardDatabase.has_tag(id, "Primer") or id == "fire_slow_burn":
+			continue  # BD1-B's new Fire cards are in the archetype decks, not in the unchanged preset starters
 		assert_bool(fire_heavy.has(id)).override_failure_message("fire-heavy-wizard lacks " + id).is_true()
 
 

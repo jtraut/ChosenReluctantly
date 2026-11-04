@@ -57,7 +57,19 @@
             "pass_through": "Walk through enemies for %s s",
             "status_plain": "%s for %s s", "status_lifesteal": "%s %d%% for %s s",
             "status_damage_over_time": "%s %s damage/s for %s s", "status_heal_over_time": "%s %s HP/s for %s s",
-            "cooldown": "Cooldown %s s", "slot_cooldown": "%s cooldown %s s", "armor": "%s armor", "for": "for %s s"
+            "cooldown": "Cooldown %s s", "slot_cooldown": "%s cooldown %s s", "armor": "%s armor", "for": "for %s s",
+            "within": "%s, within %s s",
+            "buff_stats": {
+                "slot_cooldown_skip": "Next %s cast has no cooldown",
+                "status_damage_mult": "%s you apply deals %s damage"
+            },
+            "condition": {
+                "target_has_status": "If the target has %s",
+                "cast_within_slot": "If you used your %s slot in the last %s s",
+                "cast_within_tag": "If you cast a %s card in the last %s s",
+                "zone_active": "While you have a Zone active"
+            },
+            "condition_line": "%s: %s"
         },
         "option": { "unavailable": "Unavailable: %s", "owned": "You own %d", "slot_now": "In slot: %s", "copies": "x%d", "slot_key": "%s", "slot_label": "%s (%s)", "pick_hint": "Enter to pick", "act_hint": "Enter to choose", "remove_hint": "Enter to remove", "list_hint": "Arrow keys move, Enter or click confirms", "remove_list_hint": "Arrow keys move, Enter or click confirms" },
         "room_label": "Room %d of %d",

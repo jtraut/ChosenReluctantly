@@ -151,6 +151,13 @@ func stun_time_remaining() -> float:
 	return longest
 
 
+## Seconds left on an active status (0 when it is not active).
+func status_time_left(status_id: String) -> float:
+	if not _active.has(status_id):
+		return 0.0
+	return (_active[status_id] as ActiveStatus).time_remaining
+
+
 func active_status_ids() -> Array:
 	return _active.keys()
 

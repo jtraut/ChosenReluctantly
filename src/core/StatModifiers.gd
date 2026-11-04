@@ -17,6 +17,8 @@ class Modifier:
 	var consume_on: String = ""
 	var charges: int = 0
 	var time_left: float = -1.0
+	## Seconds the prime lasted when it was applied (-1 = no time limit), for a "time left" bar.
+	var duration: float = -1.0
 
 	func _init(p_id: String, p_modifier_type: String, p_value: float) -> void:
 		id = p_id
@@ -74,6 +76,7 @@ func add_primed_modifier(stat_name: String, modifier_id: String, modifier_type: 
 	added.consume_on = consume_on
 	added.charges = maxi(charges, 1)
 	added.time_left = duration
+	added.duration = duration
 	_primed.append(added)
 
 
@@ -97,9 +100,7 @@ func consume_for_cast(slot_type: String, tags: Array[String], only_ids: Variant 
 	for modifier: Modifier in _primed:
 		if only_ids != null and not (only_ids as Array).has(modifier.id):
 			continue
-		if modifier.consume_on != slot_type and not tags.has(modifier.consume_on):
-			continue
-		if modifier.stat.begins_with(COOLDOWN_SKIP_PREFIX) and modifier.stat.substr(COOLDOWN_SKIP_PREFIX.length()) != slot_type:
+		if not matches_cast(modifier.stat, modifier.consume_on, slot_type, tags):
 			continue
 		used += 1
 		modifier.charges -= 1
@@ -108,6 +109,17 @@ func consume_for_cast(slot_type: String, tags: Array[String], only_ids: Variant 
 	for modifier: Modifier in spent:
 		remove_modifier(modifier.stat, modifier.id)
 	return used
+
+
+## True when a cast of `slot_type` carrying `tags` would use up a primed modifier on `stat` that is consumed by
+## `consume_on` (a slot type id or a tag). A "slot_cooldown_skip.<slot>" stat also needs that slot. The one rule
+## consume_for_cast and the HUD's primed marker (SlotSynergy) share, so they cannot drift apart.
+static func matches_cast(stat: String, consume_on: String, slot_type: String, tags: Array[String]) -> bool:
+	if consume_on != slot_type and not tags.has(consume_on):
+		return false
+	if stat.begins_with(COOLDOWN_SKIP_PREFIX) and stat.substr(COOLDOWN_SKIP_PREFIX.length()) != slot_type:
+		return false
+	return true
 
 
 ## Ages primed modifiers (the card controller calls it every frame) and removes those that ran out of time.
@@ -125,11 +137,11 @@ func advance(delta: float) -> void:
 		remove_modifier(modifier.stat, modifier.id)
 
 
-## What ux needs to show primed state: [{stat, consume_on, charges, time_left}] (time_left -1 = no time limit).
+## What ux needs to show primed state: [{stat, consume_on, charges, time_left, duration}] (-1 = no time limit).
 func primed_state() -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for modifier: Modifier in _primed:
-		result.append({"stat": modifier.stat, "consume_on": modifier.consume_on, "charges": modifier.charges, "time_left": modifier.time_left})
+		result.append({"stat": modifier.stat, "consume_on": modifier.consume_on, "charges": modifier.charges, "time_left": modifier.time_left, "duration": modifier.duration})
 	return result
 
 

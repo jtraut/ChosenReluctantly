@@ -235,8 +235,35 @@ static func _validate_ui(ui_value: Variant) -> Array[String]:
 	for key: String in ["room_cleared", "win", "reward", "rest"]:
 		if typeof(u.get(key)) != TYPE_DICTIONARY:
 			errors.append("ui.%s must be an object" % key)
+	errors.append_array(_validate_effect_text(u.get("effect")))
 	if typeof(u.get("next_line")) != TYPE_STRING or String(u["next_line"]).count("%d") != 2 or String(u["next_line"]).count("%s") != 1:
 		errors.append("ui.next_line must be a format string with two %d and one %s")
+	return errors
+
+
+## ui.effect strings the synergy text needs (BD1): condition wording, the primed-buff wording and the buff stat sentences.
+const EFFECT_TEXT_GROUPS: Dictionary = {
+	"condition": ["target_has_status", "cast_within_slot", "cast_within_tag", "zone_active"],
+	"buff_stats": ["slot_cooldown_skip", "status_damage_mult"],
+}
+
+
+static func _validate_effect_text(effect: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(effect) != TYPE_DICTIONARY:
+		errors.append("ui.effect must be an object")
+		return errors
+	var e: Dictionary = effect
+	for key: String in ["condition_line", "within"]:
+		if typeof(e.get(key)) != TYPE_STRING:
+			errors.append("ui.effect.%s must be a string" % key)
+	for group: String in EFFECT_TEXT_GROUPS:
+		if typeof(e.get(group)) != TYPE_DICTIONARY:
+			errors.append("ui.effect.%s must be an object" % group)
+			continue
+		for key: String in (EFFECT_TEXT_GROUPS[group] as Array):
+			if typeof((e[group] as Dictionary).get(key)) != TYPE_STRING:
+				errors.append("ui.effect.%s.%s must be a string" % [group, key])
 	return errors
 
 

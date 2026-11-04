@@ -14,6 +14,7 @@
         "wizard_arcane_nova", "fire_fireball", "fire_fine_burn_then", "fire_wall", "neutral_shrug_bomb",
         "fire_hot_head", "neutral_deep_sigh", "wizard_borrowed_focus", "wizard_footwork_allegedly", "wizard_ward",
         "wizard_sideways_blink", "wizard_tactical_hover", "neutral_backward_leap", "fire_blaze_and_bail",
-        "neutral_healing_potion", "neutral_leech", "neutral_regeneration"
+        "neutral_healing_potion", "neutral_leech", "neutral_regeneration",
+        "fire_fan_the_flames", "fire_kindling", "fire_heat_sink", "fire_slow_burn", "wizard_parting_gift", "wizard_well_actually"
     ]
 }

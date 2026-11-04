@@ -1,0 +1,13 @@
+{
+    "id": "wizard_well_actually",
+    "name": "Well, Actually",
+    "slot_type": "attack_aoe",
+    "pool": "wizard",
+    "cooldown_modifier": 0.0,
+    "keywords": ["Payoff"],
+    "flavor_text": "Allow me to interrupt. At length.",
+    "effects": [
+        { "template": "aoe", "params": { "damage": 8, "damage_type": "neutral", "radius": 3.0, "knockback_strength": 6.0, "vfx": false }, "condition": { "type": "cast_within", "slot_type": "movement", "seconds": 1.5 } },
+        { "template": "aoe", "params": { "damage": 13, "damage_type": "neutral", "radius": 3.0 } }
+    ]
+}

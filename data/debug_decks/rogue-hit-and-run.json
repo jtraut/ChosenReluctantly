@@ -1,0 +1,7 @@
+{
+    "name": "rogue-hit-and-run",
+    "class": "rogue",
+    "description": "BD1 archetype R-B, Hit and Run (Fire Rogue): dash in, hit hard in the 2 s after, dash out. Legal 16-card deck; starter and full are the same list.",
+    "starter": ["rogue_drive_by", "rogue_quick_slash", "rogue_flurry", "rogue_everyone_calm_down", "neutral_shrug_bomb", "fire_fine_burn_then", "rogue_not_my_problem", "fire_hot_head", "neutral_deep_sigh", "rogue_momentum", "rogue_lunge_strike", "rogue_ugh_fine_moving", "neutral_backward_leap", "neutral_healing_potion", "rogue_nap_time", "neutral_leech"],
+    "full": ["rogue_drive_by", "rogue_quick_slash", "rogue_flurry", "rogue_everyone_calm_down", "neutral_shrug_bomb", "fire_fine_burn_then", "rogue_not_my_problem", "fire_hot_head", "neutral_deep_sigh", "rogue_momentum", "rogue_lunge_strike", "rogue_ugh_fine_moving", "neutral_backward_leap", "neutral_healing_potion", "rogue_nap_time", "neutral_leech"]
+}

@@ -1,0 +1,7 @@
+{
+    "name": "wizard-departure-lounge",
+    "class": "wizard",
+    "description": "BD1 archetype W-C, Departure Lounge (Fire Wizard): every escape leaves a present behind. Legal 16-card deck; starter and full are the same list.",
+    "starter": ["wizard_overqualified_bolt", "wizard_bolt_volley", "fire_flaming_nonsense", "wizard_well_actually", "wizard_arcane_nova", "fire_fireball", "wizard_footwork_allegedly", "wizard_borrowed_focus", "neutral_deep_sigh", "wizard_parting_gift", "wizard_sideways_blink", "wizard_tactical_hover", "neutral_backward_leap", "neutral_healing_potion", "neutral_regeneration", "neutral_leech"],
+    "full": ["wizard_overqualified_bolt", "wizard_bolt_volley", "fire_flaming_nonsense", "wizard_well_actually", "wizard_arcane_nova", "fire_fireball", "wizard_footwork_allegedly", "wizard_borrowed_focus", "neutral_deep_sigh", "wizard_parting_gift", "wizard_sideways_blink", "wizard_tactical_hover", "neutral_backward_leap", "neutral_healing_potion", "neutral_regeneration", "neutral_leech"]
+}

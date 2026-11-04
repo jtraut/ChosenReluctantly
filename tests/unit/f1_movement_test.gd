@@ -89,7 +89,7 @@ func test_every_movement_card_that_dashes_sets_the_pass_through_flag() -> void:
 			if String(effect["template"]) == "dash":
 				seen += 1
 				assert_bool(bool((effect["params"] as Dictionary).get("pass_through", false))).override_failure_message("%s dashes without pass_through" % String(card["id"])).is_true()
-	assert_int(seen).override_failure_message("expected the 6 dashing movement cards").is_equal(6)
+	assert_int(seen).override_failure_message("expected the 8 dashing movement cards").is_equal(8)  # BD1-B: + Momentum, Parting Gift
 
 
 func test_the_pass_through_param_must_be_a_bool() -> void:

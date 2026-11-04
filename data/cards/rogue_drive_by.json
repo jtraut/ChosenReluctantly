@@ -1,0 +1,13 @@
+{
+    "id": "rogue_drive_by",
+    "name": "Drive-By",
+    "slot_type": "attack_single",
+    "pool": "rogue",
+    "cooldown_modifier": 0.1,
+    "keywords": ["Keystone", "Payoff"],
+    "flavor_text": "Technically a stab. Mostly momentum.",
+    "effects": [
+        { "template": "cone", "params": { "damage": 12, "damage_type": "physical", "range": 1.8, "half_angle_degrees": 45, "knockback_strength": 3.0, "vfx": false }, "condition": { "type": "cast_within", "slot_type": "movement", "seconds": 2.0 } },
+        { "template": "cone", "params": { "damage": 6, "damage_type": "physical", "range": 1.8, "half_angle_degrees": 45 } }
+    ]
+}

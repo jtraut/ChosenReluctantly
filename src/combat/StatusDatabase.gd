@@ -62,6 +62,15 @@ static func get_status(status_id: String) -> Dictionary:
 	return _table.get_entry(status_id)
 
 
+static func known_ids() -> Array:
+	_ensure_validated()
+	var ids: Array = []
+	for id: Variant in _table.ids():
+		if not _bad_ids.has(id):
+			ids.append(id)
+	return ids
+
+
 static func has_status(status_id: String) -> bool:
 	_ensure_validated()
 	return _table.has(status_id) and not _bad_ids.has(status_id)

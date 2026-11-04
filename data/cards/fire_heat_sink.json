@@ -1,0 +1,14 @@
+{
+    "id": "fire_heat_sink",
+    "name": "Heat Sink",
+    "slot_type": "attack_aoe",
+    "pool": "fire",
+    "cooldown_modifier": 0.5,
+    "keywords": ["Keystone", "Payoff"],
+    "flavor_text": "Somewhere to put all that.",
+    "effects": [
+        { "template": "aoe", "params": { "damage": 10, "damage_type": "fire", "radius": 2.5, "max_range": 8.0, "vfx": false }, "condition": { "type": "zone_active" } },
+        { "template": "aoe", "params": { "damage": 10, "damage_type": "fire", "radius": 2.5, "max_range": 8.0 } },
+        { "template": "apply_status", "params": { "status_id": "burn", "duration": 4.0 } }
+    ]
+}

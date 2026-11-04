@@ -1,0 +1,15 @@
+{
+    "id": "fire_fan_the_flames",
+    "name": "Fan the Flames",
+    "slot_type": "attack_aoe",
+    "pool": "fire",
+    "cooldown_modifier": 0.5,
+    "keywords": ["Keystone"],
+    "flavor_text": "It was almost out. You can't have that.",
+    "effects": [
+        { "template": "aoe", "params": { "damage": 10, "damage_type": "fire", "radius": 3.0, "vfx": false }, "condition": { "type": "target_has_status", "status_id": "burn" } },
+        { "template": "apply_status", "params": { "status_id": "burn", "duration": 5.0 }, "condition": { "type": "target_has_status", "status_id": "burn" } },
+        { "template": "aoe", "params": { "damage": 10, "damage_type": "fire", "radius": 3.0 } },
+        { "template": "apply_status", "params": { "status_id": "burn", "duration": 4.0 } }
+    ]
+}

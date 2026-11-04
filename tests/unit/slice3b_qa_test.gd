@@ -177,6 +177,12 @@ func test_decisions_balance_table_matches_the_data_files() -> void:
 		"wizard_bolt_volley": [6.6, 1.2, 5.50],
 		"wizard_overqualified_bolt": [10.5, 1.8, 5.83],
 		"wizard_arcane_nova": [10.5, 2.0, 5.25],
+		# BD1-B (BUILD_DEPTH 5): unconditional damage only; conditional extras do not count
+		"fire_fan_the_flames": [16.0, 3.0, 5.33],
+		"fire_heat_sink": [16.0, 3.0, 5.33],
+		"fire_slow_burn": [20.0, 3.3, 6.06],
+		"rogue_drive_by": [6.0, 1.1, 5.45],
+		"wizard_well_actually": [13.0, 2.5, 5.20],
 	}
 	var statuses: Dictionary = {}
 	for status_id: String in ["burn", "bleed"]:
@@ -269,6 +275,8 @@ func test_real_sustained_dps_of_every_burn_card_is_at_least_what_the_rule_credit
 		var burn_duration := 0.0
 		var direct := 0.0
 		for effect: Dictionary in card["effects"]:
+			if effect.has("condition"):
+				continue  # BD1: conditional effects do not count toward the rule (or toward this check)
 			var params: Dictionary = effect["params"]
 			if effect["template"] == "apply_status" and params["status_id"] == "burn":
 				burn_duration = float(params["duration"])
@@ -283,7 +291,7 @@ func test_real_sustained_dps_of_every_burn_card_is_at_least_what_the_rule_credit
 		assert_float(real).override_failure_message("%s real %.3f DPS < credited %.3f" % [card["id"], real, credited]).is_greater_equal(credited - 0.1)
 		# And it beats the light in real cycling play, not just on paper.
 		assert_float(real).override_failure_message("%s real DPS does not beat the light" % card["id"]).is_greater(5.0)
-	assert_int(seen).is_equal(3)  # Ember, Fine Burn Then, Fireball
+	assert_int(seen).is_equal(5)  # Ember, Fine Burn Then, Fireball, Fan the Flames, Heat Sink (Slow Burn is a zone)
 
 
 func test_rogue_heavy_total_dps_with_burn_measured_by_a_seeded_sim() -> void:

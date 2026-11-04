@@ -1,0 +1,12 @@
+{
+    "id": "fire_kindling",
+    "name": "Kindling",
+    "slot_type": "utility",
+    "pool": "fire",
+    "cooldown_modifier": 0.0,
+    "keywords": ["Primer"],
+    "flavor_text": "Dry twigs and a bad attitude.",
+    "effects": [
+        { "template": "buff", "params": { "stat": "status_damage_mult.burn", "modifier_type": "multiplicative", "value": 0.5, "duration": 8.0 } }
+    ]
+}

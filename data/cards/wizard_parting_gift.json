@@ -1,0 +1,13 @@
+{
+    "id": "wizard_parting_gift",
+    "name": "Parting Gift",
+    "slot_type": "movement",
+    "pool": "wizard",
+    "cooldown_modifier": 0.5,
+    "keywords": ["Keystone"],
+    "flavor_text": "Leaves something behind. It isn't a note.",
+    "effects": [
+        { "template": "aoe", "params": { "damage": 10, "damage_type": "fire", "radius": 2.2, "anchor": "caster", "delay": 0.6 } },
+        { "template": "dash", "params": { "distance": 5.0, "speed": 40.0, "pass_through": true, "invulnerable": true } }
+    ]
+}

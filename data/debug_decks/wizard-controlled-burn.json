@@ -1,0 +1,7 @@
+{
+    "name": "wizard-controlled-burn",
+    "class": "wizard",
+    "description": "BD1 archetype W-A, Controlled Burn (Fire Wizard): lay fire on the ground and fight inside it. Legal 16-card deck; starter and full are the same list.",
+    "starter": ["fire_flaming_nonsense", "wizard_bolt_volley", "wizard_overqualified_bolt", "fire_heat_sink", "fire_slow_burn", "fire_wall", "fire_fireball", "wizard_borrowed_focus", "fire_hot_head", "wizard_ward", "wizard_sideways_blink", "wizard_tactical_hover", "neutral_backward_leap", "neutral_healing_potion", "neutral_leech", "neutral_regeneration"],
+    "full": ["fire_flaming_nonsense", "wizard_bolt_volley", "wizard_overqualified_bolt", "fire_heat_sink", "fire_slow_burn", "fire_wall", "fire_fireball", "wizard_borrowed_focus", "fire_hot_head", "wizard_ward", "wizard_sideways_blink", "wizard_tactical_hover", "neutral_backward_leap", "neutral_healing_potion", "neutral_leech", "neutral_regeneration"]
+}

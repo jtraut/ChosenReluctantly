@@ -29,6 +29,9 @@ var _plan: bool = false
 var _deck_name: String = ""
 var _plan_stats: Dictionary = {"casts": 0, "swaps": 0, "live_casts": 0, "payoff_casts": 0, "dashes": 0, "primed_seen": 0}
 var _plan_checksum: int = 0
+## `--swap=<old>=<new>` (plan mode with --deck): one copy of card <old> in the preset deck is replaced by <new>, checked against the deck rules.
+var _swap_out: String = ""
+var _swap_in: String = ""
 
 
 func _initialize() -> void:
@@ -75,15 +78,40 @@ func _read_plan_args() -> bool:
 			_plan = true
 		elif arg.begins_with("--deck="):
 			_deck_name = arg.substr("--deck=".length())
+		elif arg.begins_with("--swap="):
+			_swap_out = arg.substr("--swap=".length()).get_slice("=", 0)
+			_swap_in = arg.substr("--swap=".length()).get_slice("=", 1)
 	if _deck_name != "" and not _plan:
 		push_error("bot-sim: --deck needs --plan")
+		return false
+	if (_swap_out != "" or _swap_in != "") and _deck_name == "":
+		push_error("bot-sim: --swap needs --plan and --deck")
 		return false
 	if _deck_name != "":
 		var presets: Dictionary = DebugDecks.read_dir()["presets"]
 		if not presets.has(_deck_name):
 			push_error("bot-sim: --deck must be one of %s, got '%s'" % [str(presets.keys()), _deck_name])
 			return false
+		if _swap_out != "" or _swap_in != "":
+			var swapped: Array[String] = _swapped_deck(DebugDecks.deck_of(presets[_deck_name], false))
+			if swapped.is_empty():
+				return false
 	return true
+
+
+## The preset deck with one copy of --swap's old card replaced by its new card; [] (and an error) when the swap is not possible or breaks the deck rules.
+func _swapped_deck(deck: Array[String]) -> Array[String]:
+	var none: Array[String] = []
+	if not deck.has(_swap_out) or not CardDatabase.has_card(_swap_in):
+		push_error("bot-sim: --swap needs a card in the deck to take out and a known card to put in (got '%s' and '%s')" % [_swap_out, _swap_in])
+		return none
+	var problems: Array[String] = DeckRules.can_swap(deck, _swap_out, _swap_in, DeckRules.shipped_config(), DeckRules.slot_map_from_database(), SlotTypeDatabase.known_ids(), DeckRules.slot_names_from_database())
+	if not problems.is_empty():
+		push_error("bot-sim: --swap %s=%s breaks the deck rules: %s" % [_swap_out, _swap_in, "; ".join(problems)])
+		return none
+	var result: Array[String] = deck.duplicate()
+	result[result.find(_swap_out)] = _swap_in
+	return result
 
 
 func _rooms_arg() -> int:
@@ -146,6 +174,8 @@ func _run_plan_room(room_index: int) -> void:
 		var preset: Dictionary = (DebugDecks.read_dir()["presets"] as Dictionary)[_deck_name]
 		pools = [RunSession.preset_character(preset), "fire", "neutral"]
 		deck = DebugDecks.deck_of(preset, false)
+		if _swap_out != "":
+			deck = _swapped_deck(deck)
 	var controller := CardSlotController.new(caster, caster, "player", caster.stat_modifiers, pools, _card_rng)
 	controller.status_rng = RandomNumberGenerator.new()
 	controller.status_rng.seed = 7

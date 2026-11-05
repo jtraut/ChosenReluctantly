@@ -1,4 +1,5 @@
 # Headless bot-sim stub. Usage: powershell -File tools\run_bot_sim.ps1 [-Rooms 20] [-Seed 1] [-Plan] [-Deck <debug deck>]
+# -Swap "old=new" (needs -Plan and -Deck): replaces one copy of card old by new in the preset deck before the run (checked against the deck rules), for removal-pain checks.
 # -Plan: the plan-aware policy (PlanPolicy) plays the card slots; -Deck (needs -Plan) loads a debug deck, for example rogue-kindling.
 # Resolves the Godot 4 binary the same way tools/run_tests.ps1 does, and
 # prefers the console-subsystem binary for a reliable exit code (see
@@ -8,7 +9,8 @@ param(
     [int]$Rooms = 20,
     [int]$Seed = 1,
     [switch]$Plan,
-    [string]$Deck = ""
+    [string]$Deck = "",
+    [string]$Swap = ""
 )
 
 $root = Split-Path -Parent $PSScriptRoot
@@ -36,6 +38,7 @@ try {
     $extra = @("--rooms=$Rooms", "--seed=$Seed")
     if ($Plan) { $extra += "--plan" }
     if ($Deck) { $extra += "--deck=$Deck" }
+    if ($Swap) { $extra += "--swap=$Swap" }
     $out = & $godot --headless --path . -s res://tools/bot_sim.gd -- @extra 2>&1 | Out-String
     $code = $LASTEXITCODE
     Write-Host $out

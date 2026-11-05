@@ -10,6 +10,12 @@ extends Node
 ##
 ## Inert without relics: it connects to nothing, has no _process, and costs nothing per frame.
 ##
+## Effects never run inside the event that caused them. A hit often arrives in a physics callback (a projectile's
+## area_entered), where the engine refuses to add an Area3D or change a collision flag ("Function blocked during in/out
+## signal"). So a matching trigger is queued and its effects run at the end of the frame (call_deferred), in order.
+## `flush()` runs the queue at once (tests, or a caller that is already outside a callback). The chain depth travels with the
+## queued job, so the guard below does not depend on the effects running synchronously.
+##
 ## Recursion guard (BUILD_DEPTH 4.3): an event whose origin is a relic ("relic:<id>") is ignored by a trigger unless its
 ## filter says "allow_relic_origin": true, and relic triggers never nest deeper than MAX_CHAIN_DEPTH (1) levels. So a
 ## relic that applies Burn plus a relic that explodes when Burn ends cannot loop: the status remembers it came from a relic.
@@ -35,8 +41,12 @@ var _relic_ids: Array[String] = []
 var _triggers: Array[Dictionary] = []
 ## event id -> the Callable connected to the relay's signal.
 var _connected: Dictionary = {}
+## The chain level of the job whose effects are running now (0 = none). A trigger matched meanwhile is level _depth + 1.
 var _depth: int = 0
 var _fired_total: int = 0
+## Matched triggers waiting to run: {trigger, event, level}.
+var _pending: Array[Dictionary] = []
+var _flush_scheduled: bool = false
 
 
 ## Wires the manager to the room: the player (its StatModifiers and position), the node effects are spawned under, the
@@ -115,12 +125,22 @@ func listening_count() -> int:
 	return _connected.size()
 
 
-## How many trigger firings so far (all relics).
+## How many trigger firings have run so far (all relics). Queued ones count once they have run.
 func fired_total() -> int:
 	return _fired_total
 
 
+## Runs every queued trigger now, oldest first (including any that running them queues). Normally it runs by itself at the
+## end of the frame; call it to run them at once.
+func flush() -> void:
+	_flush_scheduled = false
+	while not _pending.is_empty():
+		var job: Dictionary = _pending.pop_front()
+		_execute(job)
+
+
 func _exit_tree() -> void:
+	_pending.clear()
 	_disconnect_all()
 
 
@@ -128,6 +148,7 @@ func _clear() -> void:
 	for relic_id: String in _relic_ids.duplicate():
 		remove_relic(relic_id)
 	_triggers.clear()
+	_pending.clear()
 	_disconnect_all()
 
 
@@ -257,18 +278,25 @@ func handle_event(event: Dictionary) -> void:
 		if now < float(trigger["next_ready"]):
 			continue
 		trigger["next_ready"] = now + float(trigger["cooldown"])
-		_fire(trigger, event)
+		_pending.append({"trigger": trigger, "event": event, "level": _depth + 1})
+		if not _flush_scheduled:
+			_flush_scheduled = true
+			flush.call_deferred()
 
 
 func _now() -> float:
 	return _relay.now() if _relay != null and is_instance_valid(_relay) else 0.0
 
 
-func _fire(trigger: Dictionary, event: Dictionary) -> void:
-	_depth += 1
+func _execute(job: Dictionary) -> void:
+	var trigger: Dictionary = job["trigger"]
+	if not _relic_ids.has(String(trigger["relic_id"])):
+		return  # given up while it waited
+	var outer: int = _depth
+	_depth = int(job["level"])
 	_fired_total += 1
-	effect_runner.call(trigger, event)
-	_depth -= 1
+	effect_runner.call(trigger, job["event"])
+	_depth = outer
 	relic_triggered.emit(String(trigger["relic_id"]), int(trigger["index"]), String(trigger["event"]))
 
 

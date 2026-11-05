@@ -660,14 +660,6 @@ const PHYSICS_NOISE := 0.01
 
 
 func test_f1_same_seed_crowd_is_bit_identical_across_runs_and_shifted_instance_ids() -> void:
-	# Root cause of the old ~1-in-3 flake (BD2-A, measured with a per-tick trace of the failing run): the crowd's first contact
-	# (tick 73) resolves 0.1 mm differently in the FIRST crowd run after other suites have used the physics space; the next
-	# runs match each other to the bit (the failure always read first vs second, never second vs third). That is the physics
-	# server's own state left by earlier suites (the pair order it hands the solver), which is engine-level and not game code:
-	# a crowd run matches the next one but not a cold one. One discarded warm-up run puts the space in the state every later
-	# run sees. PHYSICS_NOISE is unchanged, and the instance-id check still spans the junk allocation below. (Evidence, not proof
-	# of the engine mechanism: of 14 traced runs of this suite, 13 matched bit for bit and the one that diverged did so only between the first and second crowd run, from tick 73; the full-suite failure had the same first-vs-second shape.)
-	await _aligned_crowd(11)
 	var first := await _aligned_crowd(11)
 	var junk: Array[Node] = []
 	for i in range(53):  # shifts every later instance id

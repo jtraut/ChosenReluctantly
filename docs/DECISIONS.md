@@ -1574,3 +1574,39 @@ ux-designer made these calls in b61c388..1d3cbda. All values live in `data/ui.js
 - **Exit Strategy:** BUILD_DEPTH §4.5 already lets it slip to BD3. gameplay-dev makes that call in BD2-B and reports it. `dash_ended` is built in BD2-A either way.
 - **Why:** BD2 is as large as BD1. The relics need every engine piece, so the seam sits between the engine and the content. Each sitting leaves the repo running and committed.
 - **Rejected:** two full loops (engine-only work has nothing to playtest), and one sitting (it risks a half-built engine at a cutoff).
+
+## 2026-11-04 - BD2-A engine calls (gameplay-dev, logged by game-lead)
+gameplay-dev made these calls in 3b1ac07..fe051cc. All of them are cheap to change. Gates held: suite 1499/1499 (125 suites); arena 1897787086 / 4207041509; bot sim 846850403 (game-lead re-ran it).
+- **Relic effects run deferred** (end of frame), not inside the event that caused them. Godot blocks spawning a projectile or a dash inside `area_entered`. `relic_triggered` fires when the effect runs. Rejected: synchronous effects, which error in the engine.
+- **A missing or empty `data/relics/` means no relics,** not an error.
+- **Offers:**
+  - eligible ids are sorted before the weighted draw;
+  - a tier with weight 0 is ineligible;
+  - boss relics are drawn only when the caller asks for `rarities=["boss"]`, uniformly;
+  - a boss relic needs `sources` to be exactly `["mini_boss"]`.
+- **`run.json` `relics` tier weights:**
+  - act 1: 80/20/0;
+  - act 2: 15/70/15;
+  - act 3: 5/25/70.
+
+  These are from MAP.md §4.5. Acts past the last row use the last row.
+- **Relic format:**
+  - `flavor_text` is required;
+  - modifiers have no duration or charges;
+  - a relic needs at least one modifier or trigger.
+  - Extra filter keys: `every_nth`, `min_amount`, `kind`, `damage_type`, `target_has_status`, `tag`, and `origin` with `card:*` wildcards. `allow_relic_origin` is only valid on events that carry an origin.
+- **`at`:**
+  - an aoe lands at the event point;
+  - a zone lands at the event point, clamped by its `max_range` from the player;
+  - projectile and dash ignore `at`.
+- **Relay order on a kill:** `hit_landed` -> `enemy_killed` -> `status_ended(owner_died)` -> the enemy's own died handler. `dash_ended` fires for card dashes only, not the dodge. `room_cleared` also fires for rest rooms.
+- **Statuses carry their origin.** A status tick has origin `status:<id>`, not the relic that applied it. A `hit_landed` relic with no origin filter can fire on ticks of a relic-applied Burn. That is bounded by the chain depth of 1, not a loop. Accepted.
+- **Relics roll chances on `player.status_rng`**, so holding relics shifts card status rolls. That is expected hash movement in BD2-B.
+- **`JsonDataTable`:** `get_entry` stays `-> Dictionary` and errors loudly on a non-object entry. Validators use the new `get_raw`.
+- **`status_damage_mult` floor:** a buff or relic modifier at or below -1 is rejected.
+- **`RunState` `FORMAT_VERSION` stays 2.** The relic keys are always written; old dicts load as empty lists.
+
+## 2026-11-04 - BD2-A follow-ups decided by game-lead
+- **Relic counters and internal cooldowns reset every room,** as built. Spite Knuckles' "every 4th light hit" restarts each room. That is the simplest rule, and it matches cooldowns resetting between rooms. Rejected: keeping counters in `RunState`, which adds save state for little gain. If the playtest finds it feels wrong, game-lead writes a proposal.
+- **Relics get a required `rule_text` field in BD2-B,** a plain one-line rule for the HUD chip and the pause list. Rejected: deriving the text from triggers, which reads badly for rule-changing relics.
+- **slice6 crowd flake:** localized (the first crowd run in a suite differs from tick 73), not fixed. The test is qa's file. qa tries the warm-up patch in BD2's qa step: one discarded `await _aligned_crowd(11)` before `var first := await _aligned_crowd(11)` in `slice6_qa_test.gd`. qa validates it over several full runs.

@@ -1666,3 +1666,11 @@ ux-designer made these in 4040259..92e4a31. Suite 1581/1581 (129 suites). All ha
 ## 2026-11-04 - Two small ux calls ux-designer raised (game-lead)
 - **The relic room plate keeps "Relics".** "Relic room" would push the boss bar to about 502 px at 1024x600, against a 500 px stack threshold. It would also need a test edit. The map (MAP1) turns this room into a node anyway. Rejected: widening the plate.
 - **No dodge note on the HUD slot.** It's on reward cards only. The slot's key row is about 55 px wide, and a taller slot would reopen PL3's pinned 142 px. Rejected: a wider key row or a taller slot. Revisit if the playtester finds the HUD's "After Move" confusing.
+
+## 2026-11-04 - BD2 qa carry-overs routed (game-lead)
+- **qa verdict:** PASS with carry-overs (`docs/reviews/2026-11-04-bd2-qa.md`).
+- **qa kept the slice6 warm-up patch.** Unpatched it failed 1 in 10 isolated runs; patched, 0 in 15.
+- **3d item 6a (save robustness) moves into MAP3, before the save file.** `RunState.from_dict` crashes on a null, array or object `offer` entry, and the save file ships in MAP3 (D32). That fix must land before any file on disk can feed `from_dict`. MAP3 also adds relic checks: owned and given-up lists don't overlap, the cap holds, the ids exist. Rejected: leaving it in 3d, which comes after the save file.
+- **The `rooms.relic_room: []` stopgap goes with MAP1's gameplay-dev step.** It's a one-line data change. The stopgap note in "BD2-B content and run-flow calls" is now out of date.
+- **The c1e ghost-look flake** (pre-BD2, about 1 in 5) goes to qa with MAP1.
+- **Correction to "BD2-B content and run-flow calls":** relic damage is about 1% of the total, not under 1%. qa measured 0.45% for the Rogue and 1.15% for the Wizard.

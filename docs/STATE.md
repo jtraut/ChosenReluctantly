@@ -57,8 +57,8 @@ Last updated: 2026-11-04 (BD1 closed, tag `playtest-2026-11-04-BD1`). **Run orde
 - **BD2 started 2026-11-04.** It's split into BD2-A (engine) and BD2-B (content and run flow), logged in DECISIONS "BD2 split" and under the ROADMAP brief. **BD2-A is done:** 3b1ac07..fe051cc. Suite 1499/1499 (125 suites); arena 1897787086 / 4207041509; bot sim 846850403, which game-lead re-ran. Its calls are in DECISIONS "BD2-A engine calls" and "BD2-A follow-ups".
   - **BD2-B is done:** 673db13..1af42c5. Suite 1546/1546 (128 suites). The hashes are unchanged; the bot sim can't see relics, so the relic baselines are the `wave_sim -Run` numbers. 6 relics shipped; Exit Strategy moved to BD3. Calls are in DECISIONS "BD2-B" and "Relic room position".
   - **ux is done:** 4040259..92e4a31. Suite 1581/1581 (129 suites). Captures are in `docs/playtests/img/bd2-ux-*`. Calls are in DECISIONS "BD2 ux calls" and "Two small ux calls".
-  - **qa is running now.** If cut off, check `git log` for BD2 qa commits and the review in `docs/reviews/`.
-  - Then playtester -> tech-writer -> close.
+  - **qa: PASS with carry-overs** (9f9a241..1d9d3b9, review `docs/reviews/2026-11-04-bd2-qa.md`). Suite 1589/1589 (130 suites). Carry-overs are under the BD2 brief in ROADMAP. 3d item 6a moved to MAP3. **The playtester is running now.** If cut off, check `docs/playtests/` for a BD2 report.
+  - Then tech-writer -> close.
   - The untracked `tests/unit/bd2b_tools_test.gd.uid` is Godot's generated uid for gameplay-dev's test. qa commits it.
   - The docs handoff also needs the README pause-capture command from ux's hand-back.
   - qa's step also covers:
@@ -70,7 +70,7 @@ Last updated: 2026-11-04 (BD1 closed, tag `playtest-2026-11-04-BD1`). **Run orde
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step
-1. **BD2, relics** (ROADMAP brief; BUILD_DEPTH §4). Split logged. Order: gameplay-dev **BD2-A** (done) -> gameplay-dev **BD2-B** (done) -> ux-designer (done) -> qa (in progress) -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-BD2`.
+1. **BD2, relics** (ROADMAP brief; BUILD_DEPTH §4). Split logged. Order: gameplay-dev **BD2-A** (done) -> gameplay-dev **BD2-B** (done) -> ux-designer (done) -> qa (PASS) -> playtester (in progress) -> tech-writer -> close, tag `playtest-YYYY-MM-DD-BD2`.
 2. Then **MAP1**, **MAP2**, **MAP3**, **MAP4**, **3d**, **BD3**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).

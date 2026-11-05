@@ -13,6 +13,7 @@ class_name Hud
 @onready var heavy_meter: AttackMeter = $Root/HeavyMeter
 
 var dodge_pips: DodgePips = null
+var relic_row: RelicRow = null
 var player: Player = null
 
 
@@ -21,6 +22,12 @@ func _ready() -> void:
 	dodge_pips.name = "DodgePips"
 	dodge_pips.visible = PlayerConfig.dodge_enabled()  # H2: hidden while the dodge is off (DodgePips keeps it in step)
 	$Root.add_child(dodge_pips)
+	relic_row = RelicRow.new()
+	relic_row.name = "RelicRow"
+	$Root.add_child(relic_row)
+	var host: Node = get_parent()
+	relic_row.bind(host.get_node_or_null("RunController") as RunController if host != null else null, host)
+	relic_row.relics_set.connect(_apply_layout)
 	_ignore_mouse_recursive($Root)
 	_apply_layout()
 	get_viewport().size_changed.connect(_apply_layout)
@@ -57,6 +64,11 @@ func _apply_layout() -> void:
 	dodge_pips.configure(cfg, s)
 	dodge_pips.position = dr.position
 	dodge_pips.size = dr.size
+
+	var rr := HudLayout.relic_row_rect(vp, cfg, relic_row.entries().size())
+	relic_row.configure(cfg, s)
+	relic_row.position = rr.position
+	relic_row.size = rr.size
 
 	var hp := HudLayout.health_rect(vp, cfg)
 	var panel: VBoxContainer = $Root/HealthPanel

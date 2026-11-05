@@ -155,7 +155,20 @@
         "live_cooling_strength": 0.55,
         "primed_color": "#5ad8ff",
         "primed_back_color": "#0d1a22",
-        "primed_bar_height": 3
+        "primed_bar_height": 3,
+        "relic_chip_size": 26,
+        "relic_chip_gap": 4,
+        "relic_row_gap": 8,
+        "relic_font_size": 12,
+        "relic_min_font_size": 10,
+        "relic_frame_width": 3,
+        "relic_chip_color": "#1a1218",
+        "relic_text_color": "#ffffff",
+        "relic_flash_color": "#fff3c4",
+        "relic_flash_hold": 0.5,
+        "relic_flash_release": 0.4,
+        "relic_count_window": 1.5,
+        "relic_name_hold": 1.6
     },
     "damage_numbers": {
         "font_size": 48,

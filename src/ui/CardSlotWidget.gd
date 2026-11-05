@@ -37,6 +37,10 @@ var _primed: bool = false
 var _primed_fraction: float = 0.0
 var _primed_charges: int = 0
 var _condition_text: String = ""
+## BD2 ux: the short dim reason on a conditional slot that is not lit ("Needs Burn"), and the "prime ended" mark.
+var _condition_short: String = ""
+var _condition_short_card: String = UNSET
+var _spent: Dictionary = {"level": 0.0, "used": true}
 
 
 func _ready() -> void:
@@ -134,6 +138,7 @@ func _draw_frame() -> void:
 	var inset := kw + fw
 	_draw_live_glow(r)
 	_draw_cues(r, inset)
+	_draw_condition_line(inset)
 	if _has_next:
 		var sw := _px(float(_cfg["slot_next_swatch_width"]))
 		var row := Rect2(preview_label.position, preview_label.size)
@@ -182,13 +187,18 @@ func _draw_pill(anchor: Vector2, right_aligned: bool, text: String, font_px: int
 
 ## The primed marker: a bolt (and "x2" when charges stack) at the left of the key row, and a drain bar along its foot.
 func _draw_cues(r: Rect2, inset: float) -> void:
-	if not _primed:
+	var spent_level: float = float(_spent["level"])
+	if not _primed and spent_level <= 0.01:
 		return
+	var alpha: float = 1.0 if _primed else spent_level
 	var color := Color.html(String(_cfg["primed_color"]))
+	color.a = alpha
 	var back := Color.html(String(_cfg["primed_back_color"]))
-	var font_px: int = roundi(float(_cfg["cue_font_size"]) * _scale)
+	back.a = alpha
+	# At 1024x600 the cue font scales down to 10 px, too small to read at a glance: it never goes below `cue_min_font_px`.
+	var font_px: int = maxi(roundi(float(_cfg["cue_font_size"]) * _scale), int(_cfg.get("cue_min_font_px", 12)))
 	var font: Font = key_label.get_theme_font("font")
-	var charges: String = SlotCues.charges_text(_primed_charges)
+	var charges: String = SlotCues.charges_text(_primed_charges) if _primed else SlotCues.spent_word(bool(_spent["used"]), String(_cfg.get("primed_spent_word", "USED")), String(_cfg.get("primed_expired_word", "GONE")))
 	var h: float = float(font_px) + _px(2.0)
 	var left: float = inset + _px(3.0)
 	var top: float = inset + _px(1.0)
@@ -201,6 +211,9 @@ func _draw_cues(r: Rect2, inset: float) -> void:
 	box.set_border_width_all(maxi(1, roundi(_scale)))
 	box.set_corner_radius_all(maxi(2, roundi(h * 0.25)))
 	_overlay.draw_style_box(box, Rect2(left, top, width, h))
+	if not _primed:
+		# The moment a prime ends: the frame flashes in the prime colour and fades with the word.
+		_overlay.draw_rect(r.grow(-inset * 0.5), Color(color, spent_level * 0.9), false, _px(2.0))
 	var bolt := PackedVector2Array([Vector2(0.62, 0.0), Vector2(0.12, 0.58), Vector2(0.48, 0.58), Vector2(0.30, 1.0), Vector2(0.9, 0.38), Vector2(0.53, 0.38)])
 	var bolt_h: float = h * 0.8
 	var origin := Vector2(left + _px(2.0), top + (h - bolt_h) * 0.5)
@@ -211,12 +224,35 @@ func _draw_cues(r: Rect2, inset: float) -> void:
 	if charges != "":
 		var baseline: float = top + (h + font.get_ascent(font_px) - font.get_descent(font_px)) * 0.5
 		_overlay.draw_string(font, Vector2(origin.x + bolt_h * 0.9 + _px(2.0), baseline), charges, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_px, color)
+	if not _primed:
+		return
 	# Drain bar: the primed window left. Full and steady when the buff has no time limit.
 	var bar_h: float = _px(float(_cfg["primed_bar_height"]))
 	var kr := Rect2(key_label.position, key_label.size)
 	var bar := Rect2(inset, kr.end.y - bar_h, maxf(r.size.x - 2.0 * inset, 1.0), bar_h)
 	_overlay.draw_rect(bar, back)
 	_overlay.draw_rect(Rect2(bar.position, Vector2(bar.size.x * _primed_fraction, bar.size.y)), color)
+
+
+## The dim "why isn't it lit" line, on the left of the key row: short ("Needs Burn", "After Move"). Only while the slot holds a
+## conditional card that is not lit and not primed, so it never fights the LIVE pill or the primed marker. It sits on the overlay,
+## so it adds no row and the five-row fit is untouched.
+func _draw_condition_line(inset: float) -> void:
+	if _condition_short == "" or _primed or float(_glow["level"]) >= 0.5 or float(_spent["level"]) > 0.01:
+		return
+	var font: Font = key_label.get_theme_font("font")
+	var base_px: int = maxi(roundi(float(_cfg.get("condition_font_size", 11)) * _scale), int(_cfg.get("condition_min_font_px", 10)))
+	var key_w: float = font.get_string_size(key_label.text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, key_label.get_theme_font_size("font_size")).x
+	var left: float = inset + _px(3.0)
+	var room: float = _overlay.size.x * 0.5 - key_w * 0.5 - _px(4.0) - left
+	if room < 8.0:
+		return
+	var fit: Dictionary = TextFit.fit(_condition_short, font, room, 1, base_px, maxi(base_px - 2, 8))
+	var color := Color.html(String(_cfg.get("condition_color", "#b9aeb5")))
+	var shown_px: int = int(fit["font_size"])
+	var kr := Rect2(key_label.position, key_label.size)
+	var baseline: float = kr.position.y + (kr.size.y + font.get_ascent(shown_px) - font.get_descent(shown_px)) * 0.5 + _px(1.0)
+	_overlay.draw_string(font, Vector2(left, baseline), String(fit["text"]), HORIZONTAL_ALIGNMENT_LEFT, room, shown_px, color)
 
 
 func _px(value: float) -> float:
@@ -288,6 +324,7 @@ func update_from_slot(slot: CardSlot) -> void:
 	_sync_overlay()
 	if slot == null or not slot.has_cards():
 		_set_frames("", "")
+		_refresh_condition_short("")
 		_set_name("—")
 		_set_preview("")
 		cooldown_bar.max_value = 1.0
@@ -301,6 +338,7 @@ func update_from_slot(slot: CardSlot) -> void:
 
 	var preview_id := slot.preview_card_id()
 	_set_frames(slot.current_card_id, preview_id)
+	_refresh_condition_short(slot.current_card_id)
 	if preview_id == "":
 		_set_preview("Next: —")
 	else:
@@ -328,7 +366,9 @@ func update_synergy(info: Dictionary, delta: float) -> void:
 	var primed: bool = bool(info.get("primed", false))
 	var fraction: float = SlotCues.primed_fraction(float(info.get("primed_time_left", -1.0)), float(info.get("primed_duration", -1.0))) if primed else 0.0
 	var charges: int = int(info.get("primed_charges", 0)) if primed else 0
-	var changed: bool = primed != _primed or charges != _primed_charges or not is_equal_approx(fraction, _primed_fraction) or not is_equal_approx(before_level, float(_glow["level"]))
+	var before_spent: float = float(_spent["level"])
+	_spent = SlotCues.spent_step(_spent, _primed, primed, _primed_fraction, delta, float(_cfg.get("primed_spent_duration", 0.6)), float(_cfg.get("primed_expired_below", 0.08)))
+	var changed: bool = primed != _primed or charges != _primed_charges or not is_equal_approx(fraction, _primed_fraction) or not is_equal_approx(before_level, float(_glow["level"])) or not is_equal_approx(before_spent, float(_spent["level"]))
 	_primed = primed
 	_primed_fraction = fraction
 	_primed_charges = charges
@@ -344,6 +384,30 @@ func glow_level() -> float:
 
 func is_primed() -> bool:
 	return _primed
+
+
+## The "prime ended" mark's level 0..1 (tests) and whether it reads "used" (else "expired").
+func spent_level() -> float:
+	return float(_spent["level"])
+
+
+func spent_used() -> bool:
+	return bool(_spent["used"])
+
+
+## The dim reason line of the card in the slot ("" for a card with no condition).
+func condition_short() -> String:
+	return _condition_short
+
+
+func _refresh_condition_short(card_id: String) -> void:
+	if card_id == _condition_short_card:
+		return
+	_condition_short_card = card_id
+	_condition_short = ""
+	if card_id != "":
+		_condition_short = ConditionCue.short_text(CardDatabase.get_card(card_id), RunConfig.ui().get("slot_condition", {}))
+	_redraw_frame()
 
 
 func primed_fraction() -> float:

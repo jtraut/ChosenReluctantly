@@ -212,5 +212,5 @@ func test_a_reward_offer_shows_keystone_primer_and_payoff_chips_and_their_rules(
 		var keywords: Array[String] = CardTags.keywords_of(card)
 		assert_bool(keywords.is_empty()).is_false()
 		var shown: Array = button.chip_row.shown().map(func(c: Dictionary) -> String: return String(c["text"]))
-		assert_str(String(shown[0])).is_equal(KeywordDatabase.display_name(keywords[0]))
+		assert_str(String(shown[0])).starts_with(KeywordDatabase.display_name(keywords[0]))  # BD2 ux: Keystone + Payoff share one chip
 		assert_str(button.tooltip_text).contains(KeywordDatabase.rule_text(keywords[0]))

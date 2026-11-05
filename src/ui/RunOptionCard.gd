@@ -37,6 +37,8 @@ var number_badge: PanelContainer = null
 ## BD2 relic looks: the filled "Relic" band, the cap warning line, and the free-tag pill of the skip tile.
 var relic_band: PanelContainer = null
 var cap_note_label: Label = null
+## BD1 carry-over: the note on a Movement-conditional card that the dodge does not count (D39 = A).
+var dodge_note_label: Label = null
 var free_tag: PanelContainer = null
 
 var _inner: VBoxContainer = null
@@ -163,7 +165,7 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 			if keyword_chips != null:
 				chip_row = keyword_chips
 				_inner.add_child(chip_row)
-	var detail: String = String(opt.get("detail", ""))
+	var detail: String = keep_units(String(opt.get("detail", "")))
 	var cell_blocked: bool = look == Look.CELL and not enabled and String(opt.get("reason", "")) != ""
 	tooltip_text = String(opt.get("reason", ""))
 	if look == Look.CELL:
@@ -211,6 +213,10 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 		cap_note_label = _label(String(relic_texts["cap_note"]), small_size, Color.html(String(cfg["option_warn_color"])), true)
 		cap_note_label.custom_minimum_size.x = inner_width
 		_inner.add_child(cap_note_label)
+	if look == Look.CARD and ConditionCue.needs_dodge_note(CardDatabase.get_card(String(opt.get("card_id", ""))), texts.get("dodge_slots", []), PlayerConfig.dodge_counts_as_movement_cast()) and String(texts.get("dodge_hint", "")) != "":
+		dodge_note_label = _label(String(texts["dodge_hint"]), small_size, _text_color(enabled, Color.html(String(cfg["option_flavor_color"]))), true)
+		dodge_note_label.custom_minimum_size.x = inner_width
+		_inner.add_child(dodge_note_label)
 	if look == Look.CARD and int(extra.get("owned", 0)) > 0:
 		owned_label = _label(owned_text(int(extra["owned"]), String(texts.get("owned", "You own %d"))), small_size, _text_color(enabled, Color.html(String(cfg["option_accent_color"]))), false)
 		_inner.add_child(owned_label)
@@ -236,6 +242,14 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 	focus_exited.connect(_on_focus_changed.bind(false))
 	mouse_entered.connect(_on_hover)
 	_sync_min_size()
+
+
+## Glues a number to its unit ("3 s" -> "3<no-break space>s") so a wrapped effect line never leaves a lone "s" at the start of the
+## next line. Display only: the data text, the tooltip rules and the tests keep the plain space.
+static func keep_units(text: String) -> String:
+	var unit := RegEx.new()
+	unit.compile("(\\d) (s|m)\\b")
+	return unit.sub(text, "$1\u00a0$2", true)
 
 
 ## Relic accent (data run_ui.relic_accent_color): the "Relic" band, the inner line and the hexagon. Not the keyword chip colour.

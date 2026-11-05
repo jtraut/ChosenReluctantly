@@ -83,13 +83,14 @@
             },
             "condition_line": "%s: %s"
         },
-        "option": { "unavailable": "Unavailable: %s", "owned": "You own %d", "slot_now": "In slot: %s", "copies": "x%d", "slot_key": "%s", "slot_label": "%s (%s)", "pick_hint": "Enter to pick", "act_hint": "Enter to choose", "remove_hint": "Enter to remove", "list_hint": "Arrow keys move, Enter or click confirms", "remove_list_hint": "Arrow keys move, Enter or click confirms" },
+        "option": { "unavailable": "Unavailable: %s", "owned": "You own %d", "slot_now": "In slot: %s", "copies": "x%d", "slot_key": "%s", "slot_label": "%s (%s)", "pick_hint": "Enter to pick", "dodge_hint": "The dodge does not count.", "dodge_slots": ["movement"], "act_hint": "Enter to choose", "remove_hint": "Enter to remove", "list_hint": "Arrow keys move, Enter or click confirms", "remove_list_hint": "Arrow keys move, Enter or click confirms" },
         "room_label": "Room %d of %d",
         "type_names": { "combat": "Combat", "elite": "Elite", "rest": "Rest", "boss": "Boss", "relic_room": "Relics" },
         "room_cleared": { "title": "Room cleared", "button": "Continue", "hint": "Enter to continue", "rest_line": "You rest. It helps a little (healed %d).", "rest_full_line": "You rest. Nothing needed healing.", "stat_hp": "HP", "stat_time": "Time", "stat_healed": "Healed" },
         "next_line": "Next: Room %d of %d - %s",
         "reward": { "title": "Room cleared", "line": "Pick a card, or reject the offer.", "skip_label": "Reject the offer", "skip_detail": "Spends one reject. Rejects left: %d of %d", "skip_disabled": "No rejects left. Pick a card.", "rejects_label": "Rejects left" },
         "rest": { "title": "Rest", "line": "Heal a little, or get rid of a card.", "heal_label": "Rest and heal", "heal_detail": "Heal %d HP (%d%% of max)", "heal_full_detail": "HP is already full", "remove_label": "Remove a card", "remove_detail": "Take one card out of your deck", "remove_none": "Every card is needed to meet the deck minimums", "remove_locked": "Get another card for the %s slot first (minimum %d different)", "remove_locked_group": "Get another card for %s first", "remove_title": "Remove which card?", "remove_line": "Pick a card to remove. Greyed cards would break a deck minimum.", "remove_option": "Remove %s", "copies": "x%d", "back_label": "Back" },
+        "slot_condition": { "target_has_status": "Needs %s", "cast_within_slot": "After %s", "cast_within_tag": "After %s", "zone_active": "Needs zone", "slot_short": { "movement": "Move" } },
         "relic": {
             "title": "Relic found", "line": "Pick a relic to keep for this run, or skip.",
             "room_title": "Relic room", "room_line": "Nobody is guarding this one. Pick a relic to keep for this run, or skip.",

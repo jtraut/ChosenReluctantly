@@ -467,3 +467,129 @@ func test_a_long_relic_list_is_height_capped_and_resume_stays_above_the_slots() 
 		assert_float(resume.position.y).is_greater_equal(0.0)
 		screen.close()
 	RunSession.clear()
+
+
+# --- BD1 carry-overs ---
+
+func test_a_unit_is_glued_to_its_number_so_a_lone_s_cannot_start_a_line() -> void:
+	var glued: String = RunOptionCard.keep_units("Cooldown 3 s")
+	assert_str(glued).is_equal("Cooldown 3 s")
+	assert_str(RunOptionCard.keep_units("4 fire damage in a 2 m radius for 5 s")).is_equal("4 fire damage in a 2 m radius for 5 s")
+	assert_str(RunOptionCard.keep_units("Enemies take 25% more damage")).is_equal("Enemies take 25% more damage")  # nothing to glue
+	assert_str(RunOptionCard.keep_units("Burn 2 damage/s for 5 s")).is_equal("Burn 2 damage/s for 5 s")
+
+
+func test_a_reward_card_keeps_its_cooldown_unit_on_the_line_of_its_number() -> void:
+	var cfg: Dictionary = UiConfig.run_ui()
+	var card: Dictionary = CardDatabase.get_card("fire_fan_the_flames")
+	var summary: String = String(card.get("name", ""))
+	var opt: Dictionary = {"kind": "card", "card_id": "fire_fan_the_flames", "label": "x", "detail": "12 fire damage. Cooldown 3 s", "slot_type": String(card.get("slot_type", "")), "enabled": true}
+	var button := RunOptionCard.new()
+	add_child(button)
+	auto_free(button)
+	button.setup(opt, RunOptionCard.Look.CARD, 268.0, cfg, 1.0, {"index": -1, "owned": 0, "texts": RunConfig.ui()["option"]})
+	assert_str(button.detail_label.text).contains("3 s")
+	assert_str(summary).is_not_empty()
+
+
+func test_keystone_and_payoff_share_one_chip_and_keystone_is_the_strong_one() -> void:
+	var both: Dictionary = ChipRow.texts_for(["Keystone", "Payoff", "Melee"])
+	assert_array(both["texts"]).is_equal(["Keystone + Payoff", "Melee"] as Array[String])
+	assert_array(both["strong"]).is_equal([true, false] as Array[bool])
+	var alone: Dictionary = ChipRow.texts_for(["Keystone", "Area", "Burn"])
+	assert_array(alone["texts"]).is_equal(["Keystone", "Area", "Burn"] as Array[String])
+	assert_array(alone["strong"]).is_equal([true, false, false] as Array[bool])
+	var plain: Dictionary = ChipRow.texts_for(["Payoff", "Melee"])  # a Payoff alone is an ordinary keyword chip
+	assert_array(plain["texts"]).is_equal(["Payoff", "Melee"] as Array[String])
+	assert_array(plain["strong"]).is_equal([false, false] as Array[bool])
+	var cells: Dictionary = ChipRow.texts_for(["Keystone", "Payoff", "Melee"], true)  # the removal grid: keywords only
+	assert_array(cells["texts"]).is_equal(["Keystone + Payoff"] as Array[String])
+
+
+func test_the_strong_chip_is_wider_than_its_word_by_the_star_and_is_never_dropped_first() -> void:
+	var texts: Array[String] = ["Keystone", "Area"]
+	var flags: Array[bool] = [true, false]
+	var plain: Array[Dictionary] = ChipRow.fit(texts, flags, ThemeDB.fallback_font, 12, 1000.0, 3, 4.0, 3.0)
+	var starred: Array[Dictionary] = ChipRow.fit(texts, flags, ThemeDB.fallback_font, 12, 1000.0, 3, 4.0, 3.0, [12.0, 0.0] as Array[float])
+	assert_float(float(starred[0]["width"])).is_equal_approx(float(plain[0]["width"]) + 12.0, 0.01)
+	assert_float(float(starred[1]["width"])).is_equal_approx(float(plain[1]["width"]), 0.01)
+	var cfg: Dictionary = UiConfig.hud()
+	assert_str(String(cfg["chip_keystone_color"])).is_not_equal(String(cfg["chip_keyword_color"]))  # Keystone is not the Primer/Payoff look
+	assert_str(String(UiConfig.run_ui()["relic_accent_color"]).to_lower()).is_not_equal(String(cfg["chip_keyword_color"]).to_lower())  # nor the relic colour
+
+
+func test_the_prime_ended_mark_fires_on_the_edge_fades_and_clears_on_a_new_prime() -> void:
+	var state: Dictionary = {"level": 0.0, "used": true}
+	state = SlotCues.spent_step(state, false, false, 0.0, 0.016, 0.6, 0.08)
+	assert_float(float(state["level"])).is_equal(0.0)  # never primed: nothing
+	state = SlotCues.spent_step(state, true, false, 0.7, 0.016, 0.6, 0.08)  # the frame the prime was spent
+	assert_float(float(state["level"])).is_equal(1.0)
+	assert_bool(bool(state["used"])).is_true()
+	state = SlotCues.spent_step(state, false, false, 0.0, 0.3, 0.6, 0.08)
+	assert_float(float(state["level"])).is_equal_approx(0.5, 0.001)
+	state = SlotCues.spent_step(state, false, false, 0.0, 1.0, 0.6, 0.08)
+	assert_float(float(state["level"])).is_equal(0.0)
+	state = SlotCues.spent_step(state, true, false, 0.03, 0.016, 0.6, 0.08)  # the window ran out
+	assert_bool(bool(state["used"])).is_false()
+	state = SlotCues.spent_step(state, false, true, 1.0, 0.016, 0.6, 0.08)  # primed again
+	assert_float(float(state["level"])).is_equal(0.0)
+	assert_str(SlotCues.spent_word(true, "USED", "GONE")).is_equal("USED")
+	assert_str(SlotCues.spent_word(false, "USED", "GONE")).is_equal("GONE")
+
+
+func test_a_slot_shows_the_ended_mark_after_its_prime_goes_and_the_marker_font_has_a_floor() -> void:
+	var hud: Hud = _hud(Vector2i(1024, 600))
+	var widget: CardSlotWidget = hud.slot_widgets[0]
+	var primed_info: Dictionary = {"chips": [], "primed": true, "primed_time_left": 2.0, "primed_duration": 3.0, "primed_charges": 1}
+	widget.update_synergy(primed_info, 0.016)
+	assert_bool(widget.is_primed()).is_true()
+	assert_float(widget.spent_level()).is_equal(0.0)
+	widget.update_synergy({"chips": []}, 0.016)  # spent by a cast
+	assert_bool(widget.is_primed()).is_false()
+	assert_float(widget.spent_level()).is_equal(1.0)
+	assert_bool(widget.spent_used()).is_true()
+	for i in range(60):
+		widget.update_synergy({"chips": []}, 0.016)
+	assert_float(widget.spent_level()).is_equal(0.0)
+	var cfg: Dictionary = UiConfig.hud()
+	assert_int(int(cfg["cue_min_font_px"])).is_greater_equal(12)  # the marker never shrinks below this at 1024x600
+
+
+func test_short_conditions_read_from_the_card_and_the_dodge_note_follows_the_rule() -> void:
+	var texts: Dictionary = RunConfig.ui()["slot_condition"]
+	assert_str(ConditionCue.short_text(CardDatabase.get_card("fire_fan_the_flames"), texts)).is_equal("Needs Burn")
+	assert_str(ConditionCue.short_text(CardDatabase.get_card("rogue_drive_by"), texts)).is_equal("After Move")
+	assert_str(ConditionCue.short_text(CardDatabase.get_card("fire_kindling"), texts)).is_equal("")  # no condition, no line
+	var slots: Array = RunConfig.ui()["option"]["dodge_slots"]
+	assert_bool(ConditionCue.needs_dodge_note(CardDatabase.get_card("rogue_drive_by"), slots, false)).is_true()
+	assert_bool(ConditionCue.needs_dodge_note(CardDatabase.get_card("wizard_well_actually"), slots, false)).is_true()
+	assert_bool(ConditionCue.needs_dodge_note(CardDatabase.get_card("fire_fan_the_flames"), slots, false)).is_false()
+	assert_bool(ConditionCue.needs_dodge_note(CardDatabase.get_card("rogue_drive_by"), slots, true)).is_false()  # D39 = B: the dodge counts, no note
+
+
+func test_a_slot_holding_a_conditional_card_keeps_a_dim_reason_and_the_row_fit_is_untouched() -> void:
+	var hud: Hud = _hud(Vector2i(1024, 600))
+	var cfg: Dictionary = UiConfig.hud()
+	var s: float = HudLayout.ui_scale(Vector2(1024, 600), cfg)
+	var widget: CardSlotWidget = hud.slot_widgets[0]
+	var slot := CardSlot.new("movement", 1.0, ["rogue_drive_by"] as Array[String])
+	widget.update_from_slot(slot)
+	assert_str(widget.condition_short()).is_equal("After Move")
+	widget.update_from_slot(null)
+	assert_str(widget.condition_short()).is_equal("")
+	# No row was added: the five rows still fit the slot at the smallest size.
+	assert_float(CardSlotWidget.row_fit_scale(cfg, s, 2)).is_greater(0.5)
+	assert_float(float((cfg["slot_size"] as Array)[1])).is_equal(142.0)
+
+
+func test_a_movement_conditional_reward_card_carries_the_dodge_note_and_others_do_not() -> void:
+	var cfg: Dictionary = UiConfig.run_ui()
+	var texts: Dictionary = RunConfig.ui()["option"]
+	for pair: Array in [["rogue_drive_by", true], ["fire_fan_the_flames", false], ["fire_kindling", false]]:
+		var card: Dictionary = CardDatabase.get_card(String(pair[0]))
+		var opt: Dictionary = {"kind": "card", "card_id": String(pair[0]), "label": "x", "detail": "d", "slot_type": String(card.get("slot_type", "")), "enabled": true}
+		var button := RunOptionCard.new()
+		add_child(button)
+		auto_free(button)
+		button.setup(opt, RunOptionCard.Look.CARD, 268.0, cfg, 1.0, {"index": -1, "owned": 0, "texts": texts})
+		assert_bool(button.dodge_note_label != null).override_failure_message(String(pair[0])).is_equal(bool(pair[1]))

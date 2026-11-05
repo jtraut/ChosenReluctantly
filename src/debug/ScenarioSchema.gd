@@ -48,6 +48,10 @@ static func validate(scenario_id: String, def: Variant) -> Array[String]:
 			problems.append_array(_deck(where, value))
 		elif STRING_ARRAYS.has(name):
 			problems.append_array(_string_array(where, value))
+			if name == "relics" and typeof(value) == TYPE_ARRAY:
+				for relic_id: Variant in value as Array:  # BD2-B: the player holds these relics for the capture (a RelicManager on the arena)
+					if typeof(relic_id) == TYPE_STRING and not RelicDatabase.has_relic(String(relic_id)):
+						problems.append("%s names an unknown relic '%s'" % [where, String(relic_id)])
 		elif NUMBER_ARRAYS.has(name):
 			problems.append_array(_number_array(where, value, int(NUMBER_ARRAYS[name])))
 		elif INDEX_ARRAYS.has(name):

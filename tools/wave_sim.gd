@@ -20,6 +20,8 @@ extends Node
 
 const MAIN_PATH := "res://scenes/main/Main.tscn"
 const STALL_SECONDS := 45.0
+## Run mode: the bot ends a duel it cannot win by dodging (see _deadlocked_on_last_enemy) after this long with no kill.
+const DEADLOCK_SECONDS := 45.0
 
 var _seed: int = 1
 var _seconds: float = 90.0
@@ -46,6 +48,8 @@ var _alive_time_sum: float = 0.0
 var _cap_violations: int = 0
 var _last_stage_count: int = 0
 var _last_progress_time: float = 0.0
+## Sim time of the last kill in this room (reset per room; the deadlock breaker reads it).
+var _last_kill_time: float = 0.0
 var _max_stall: float = 0.0
 var _frame_times_ms: Array[float] = []
 var _physics_ms_sum: float = 0.0
@@ -128,6 +132,8 @@ var _room_min_hp: float = INF
 ## relic cap so the give-one-up step is reached in a short run. Both are checked at launch (an unknown id exits 2).
 ## `--sim-swap=<old>=<new>` (-Swap, run mode): after the run starts, one copy of card <old> in the deck is replaced by <new> (checked against the
 ## deck rules), so a removal-pain measurement needs no temporary preset file.
+## `--sim-no-relics` (-NoRelics, run mode): plays with `relics.enabled` false, i.e. today's run exactly (no relic room, cards after an elite).
+var _no_relics: bool = false
 var _swap_out: String = ""
 var _swap_in: String = ""
 ## Damage the player's side dealt to enemies, by origin, for the current run and for all runs (BD2-B; run mode). Fed by CombatEvents.hit_landed.
@@ -202,6 +208,8 @@ func _ready() -> void:
 				get_tree().quit(2)
 				return
 			RunSession.relic_cap = arg.substr(16).to_int()
+		elif arg == "--sim-no-relics":
+			_no_relics = true
 		elif arg.begins_with("--sim-swap="):
 			_swap_out = arg.substr(11).get_slice("=", 0)
 			_swap_in = arg.substr(11).get_slice("=", 1)
@@ -215,6 +223,8 @@ func _ready() -> void:
 			get_tree().quit(2)
 			return
 		RunSession.selected_character = preset_class
+	if _no_relics:
+		(RunConfig.get_config()["relics"] as Dictionary)["enabled"] = false  # the cached config, for this process only
 	if (_swap_out != "" or _swap_in != "") and not _run_mode:
 		push_error("wave sim: -Swap needs -Run")
 		get_tree().quit(2)
@@ -271,6 +281,7 @@ func _reset_run_state(run_seed: int) -> void:
 	_cap_violations = 0
 	_last_stage_count = 0
 	_last_progress_time = 0.0
+	_last_kill_time = 0.0
 	_max_stall = 0.0
 	_frame_times_ms.clear()
 	_physics_ms_sum = 0.0
@@ -468,6 +479,7 @@ func _count_kills(enemies: Array[Enemy], prev: Dictionary) -> void:
 	for id: Variant in prev.keys():
 		if not now.has(id) and not _player.is_dead():
 			_kills += 1
+			_last_kill_time = _sim_time
 	prev.clear()
 	prev.merge(now)
 
@@ -587,11 +599,15 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 				break
 	if _dodge_pellets and _run_mode and _scan_pellets(me):
 		want = _pellet_sidestep
+	var deadlocked: bool = _deadlocked_on_last_enemy(enemies)
+	if deadlocked:
+		# Close in and stand still beside it: no arena-edge push into the enemy, and no dodge (below), so the light attack can land.
+		want = Vector3.ZERO if nearest_d <= 2.0 else -away
 	_pin_want = want
 	_drive(want)
 	# Dodge whenever the player could: the Player's own availability (a charge and no roll under way) is the gate,
 	# and the throttle is only the roll length, so charges (not a timer) limit the bot.
-	var can_dodge: bool = _sim_time >= _dodge_cooldown_until and bool(_player.get_dodge_state()["available"])
+	var can_dodge: bool = _sim_time >= _dodge_cooldown_until and bool(_player.get_dodge_state()["available"]) and not deadlocked
 	if boss_threat and danger != null and can_dodge:
 		_press(&"dodge")
 		if _boss_log and not _boss_cur.is_empty():
@@ -622,6 +638,16 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 			_press(StringName("slot_%d" % slot_number))
 	if _rng.randf() < 0.5:
 		_press(&"attack_light")
+
+
+## The no-card Rogue soft lock (BD1 qa carry-over, seed 7 room 1): the last enemy stood between the bot and the arena centre while the
+## bot was pushed toward that centre, and the bot rolled through every wind-up. A roll cancels the bot's own light wind-up and gives
+## i-frames, so neither side ever landed a hit. After DEADLOCK_SECONDS with no kill, one enemy left and no boss, the bot stops dodging
+## and stands beside it. Rooms that finish normally never get this far, so every other seeded run is untouched.
+func _deadlocked_on_last_enemy(enemies: Array[Enemy]) -> bool:
+	if not _run_mode or enemies.size() != 1 or _sim_time - _last_kill_time <= DEADLOCK_SECONDS:
+		return false
+	return not (enemies[0] is Boss)
 
 
 ## --plan: one PlanPolicy decision per slot, sent through the real input path (slot key to cast, the swap action to swap).
@@ -1035,6 +1061,14 @@ func _begin_run_room(run_seed: int, room: Dictionary) -> void:
 	Engine.time_scale = _scale
 
 
+## "Name@(x, z) hp velocity" of every enemy still alive, for the soft-lock detail line.
+func _alive_enemies_text() -> String:
+	var parts: Array[String] = []
+	for enemy: Enemy in _enemies():
+		parts.append("%s@(%.1f, %.1f) hp %.1f vel %s stunned %s attack cooldown %.2f telegraph %.2f statuses %s" % [enemy.name, enemy.global_position.x, enemy.global_position.z, enemy.health.current_health, str(enemy.velocity), str(enemy.is_stunned()), float(enemy.get("_attack_cooldown_remaining")), float(enemy.get("_telegraph_remaining")), str(enemy.status_manager.active_status_ids())])
+	return "; ".join(parts) if not parts.is_empty() else "none"
+
+
 ## Plays one room to "cleared", "lost" or "soft_lock".
 func _play_room(run_seed: int, controller: RunController, room: Dictionary) -> String:
 	var cap: int = _main.enemy_spawner.plan.max_alive()
@@ -1060,6 +1094,7 @@ func _play_room(run_seed: int, controller: RunController, room: Dictionary) -> S
 		if _sim_time > _room_timeout:
 			_fail("SOFT LOCK: run %d room %d (%s, %s) not finished after %.0f sim seconds (alive %d, plan finished %s)" % [
 				run_seed, int(room["index"]) + 1, room["type"], room["wave_id"], _room_timeout, _main.enemy_spawner.alive_count(), str(_main.enemy_spawner.plan.is_finished())])
+			print("    soft lock detail: %s | player at %s hp %.1f immune %s light ready %s wind-up %s heavy ready %s" % [_alive_enemies_text(), str(_player.global_position), _player.health.current_health, str(_player.health.damage_immune), str(_player.attacks.is_ready(&"light")), str(_player.attacks.is_winding_up(&"light")), str(_player.attacks.is_ready(&"heavy"))])
 			return "soft_lock"
 		_room_min_hp = minf(_room_min_hp, _player.health.current_health)
 		var enemies := _enemies()

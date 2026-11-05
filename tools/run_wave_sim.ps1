@@ -7,12 +7,13 @@
 # -DodgePellets (needs -Run): the bot also steps out of and rolls through enemy projectiles in flight (--dodge-pellets, default off: it changes run results).
 # -Plan: the plan-aware card policy (PlanPolicy, BD1): casts a payoff when its condition is live or after a 1.5 s hold, swaps a card that cannot pay off soon, spends Movement offensively; off = the standard random card presses (hashes unchanged). Works in the arena and with -Run.
 # -Relics "a+b" (needs -Run; --sim-relics=): every run starts holding those relics. -RelicCap N (--sim-relic-cap=): a lower relic cap, to reach the give-one-up step in a short run.
+# -NoRelics (--sim-no-relics): relics.enabled false for this process: today's run exactly (no relic room, a card offer after the elite).
 # -Swap "old=new" (needs -Run; --sim-swap=): replace one copy of card old by new in the starting deck (checked against the deck rules), e.g. -Deck rogue-kindling -Swap fire_kindling=fire_ember_whatever, for removal-pain runs.
 # -Run also prints the damage the player's side dealt by source (light, heavy, each slot type, each status, each relic) per run and over all runs with the fingerprint spread, relic pick/skip/swap counts, and BOSS TIMES with timed-out boss fights listed apart.
 # -StartRoom N (needs -Run): start every run at room N (10 = the boss) with the starter deck and full HP (--start-room).
 # -Run plays whole seeded runs (Milestone 3a): -Seed is the first run seed, -Runs the number of runs, -RoomTimeout sim seconds before a room counts as a soft lock.
 # Fails on a failed check OR any ERROR / SCRIPT ERROR / WARNING line in the engine output.
-param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets, [int]$StartRoom = 0, [switch]$Plan, [string]$Relics = "", [int]$RelicCap = 0, [string]$Swap = "")
+param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets, [int]$StartRoom = 0, [switch]$Plan, [string]$Relics = "", [int]$RelicCap = 0, [string]$Swap = "", [switch]$NoRelics)
 
 $root = Split-Path -Parent $PSScriptRoot
 $godot = $env:GODOT_BIN
@@ -47,6 +48,7 @@ if ($DodgePellets) { $extra += "--dodge-pellets" }
 if ($Plan) { $extra += "--plan" }
 if ($Relics) { $extra += "--sim-relics=$Relics" }
 if ($RelicCap -gt 0) { $extra += "--sim-relic-cap=$RelicCap" }
+if ($NoRelics) { $extra += "--sim-no-relics" }
 if ($Swap) { $extra += "--sim-swap=$Swap" }
 if ($StartRoom -gt 0) { $extra += "--start-room=$StartRoom" }
 if ($Run) { $extra += "--run"; $extra += "--room-timeout=$RoomTimeout" }

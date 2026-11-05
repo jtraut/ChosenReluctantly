@@ -96,12 +96,19 @@ func spawn(params: Dictionary, center: Vector3, cast_dir: Vector3, context: Effe
 		zone.size_b = float(params["width"])
 	zone.duration = float(params["duration"])
 	zone.interval = float(params["tick_interval"])
+	var mods := _caster_modifiers(context)
 	zone.damage = float(params["damage"])
 	zone.damage_type = String(params["damage_type"])
 	zone.knockback = float(params.get("knockback_strength", 0.0))
 	zone.status_id = String(params.get("status_id", ""))
 	zone.status_duration = float(params.get("status_duration", 0.0))
 	zone.status_chance = float(params.get("status_chance", 1.0))
+	if mods != null:
+		# BD2-B generic stats (a relic's modifiers): longer zones, and a surer status. Absent = the numbers on the card.
+		if mods.has_modifier(EffectTemplates.ZONE_DURATION_MULT_STAT):
+			zone.duration = minf(mods.apply(EffectTemplates.ZONE_DURATION_MULT_STAT, zone.duration), EffectTemplates.MAX_ZONE_DURATION)
+		if zone.status_id != "" and mods.has_modifier(EffectTemplates.ZONE_STATUS_CHANCE_STAT):
+			zone.status_chance = clampf(mods.apply(EffectTemplates.ZONE_STATUS_CHANCE_STAT, zone.status_chance), 0.0, 1.0)
 	zone.condition = params.get(EffectCondition.PARAM_KEY, {})
 	zone.team = context.caster_team
 	zone.source_id = context.caster.get_instance_id() if context.caster != null else 0
@@ -109,7 +116,7 @@ func spawn(params: Dictionary, center: Vector3, cast_dir: Vector3, context: Effe
 	zone.rng = context.rng
 	zone.elapsed = 0.0
 	zone.ticks_done = 0
-	zone.total_ticks = ZoneShape.tick_count(zone.duration, zone.interval)
+	zone.total_ticks = mini(ZoneShape.tick_count(zone.duration, zone.interval), EffectTemplates.MAX_ZONE_TICKS)
 	zone.flash = 0.0
 	zone.color = ElementVisuals.visual_for_team(zone.damage_type, zone.team)["color"]
 	zone.live = true
@@ -121,6 +128,13 @@ func spawn(params: Dictionary, center: Vector3, cast_dir: Vector3, context: Effe
 		relay.notify_zone_started(zone.id, zone.shape, zone.center)
 	_tick(zone)
 	return zone.id
+
+
+func _caster_modifiers(context: EffectContext) -> StatModifiers:
+	if context.caster == null or not is_instance_valid(context.caster):
+		return null
+	var stack: Variant = context.caster.get(&"stat_modifiers")
+	return stack as StatModifiers if stack is StatModifiers else null
 
 
 func live_count() -> int:

@@ -1,0 +1,20 @@
+{
+    "id": "spite_knuckles",
+    "name": "Spite Knuckles",
+    "pool": "rogue",
+    "rarity": "tier1",
+    "sources": ["elite", "relic_room", "merchant"],
+    "keywords": ["Burn"],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "hit_landed",
+            "filter": { "origin": "light", "target_team": "enemy", "every_nth": 4 },
+            "at": "event_target",
+            "internal_cooldown": 0.0,
+            "effects": [ { "template": "apply_status", "params": { "status_id": "burn", "duration": 4.0 } } ]
+        }
+    ],
+    "rule_text": "Every 4th light attack that hits sets the target Burning.",
+    "flavor_text": "Nothing personal. Entirely personal."
+}

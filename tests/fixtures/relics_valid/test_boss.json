@@ -8,5 +8,6 @@
   "triggers": [
     { "event": "room_started", "effects": [ { "template": "heal", "params": { "amount": 1.0 } } ] }
   ],
+  "rule_text": "Fixture rule.",
   "flavor_text": "Fixture. Boss tier."
 }

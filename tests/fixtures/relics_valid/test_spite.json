@@ -12,5 +12,6 @@
       "effects": [ { "template": "apply_status", "params": { "status_id": "burn", "duration": 3.0 } } ]
     }
   ],
+  "rule_text": "Fixture rule.",
   "flavor_text": "Fixture. Every fourth light hit burns."
 }

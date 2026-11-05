@@ -9,7 +9,7 @@ extends RefCounted
 const RARITIES: Array[String] = ["tier1", "tier2", "tier3", "boss"]
 const SOURCES: Array[String] = ["elite", "relic_room", "merchant", "mini_boss", "curse_room", "buff_room", "boss", "starter", "event", "altar"]
 const BOSS_SOURCE := "mini_boss"
-const TOP_KEYS: Array[String] = ["id", "name", "pool", "rarity", "sources", "keywords", "modifiers", "triggers", "flavor_text", "sacrifice_cost"]
+const TOP_KEYS: Array[String] = ["id", "name", "pool", "rarity", "sources", "keywords", "modifiers", "triggers", "rule_text", "flavor_text", "sacrifice_cost"]
 const TRIGGER_KEYS: Array[String] = ["event", "filter", "at", "internal_cooldown", "effects"]
 const MODIFIER_KEYS: Array[String] = ["stat", "modifier_type", "value"]
 const AT_PLAYER := "player"
@@ -18,6 +18,7 @@ const AT_EVENT_TARGET := "event_target"
 const AT_VALUES: Array[String] = [AT_PLAYER, AT_EVENT_POSITION, AT_EVENT_TARGET]
 const MAX_INTERNAL_COOLDOWN := 600.0
 const MAX_EVERY_NTH := 100
+const MAX_RULE_TEXT_LENGTH := 120
 const MIN_SACRIFICE_COST := 1
 const MAX_SACRIFICE_COST := 2
 const KINDS: Array[String] = ["hit", "echo", "dot"]
@@ -110,6 +111,13 @@ static func _validate_identity(relic: Dictionary, expected_id: String, errors: A
 			errors.append("'%s' must be a non-empty string" % field)
 	if typeof(relic.get("flavor_text")) != TYPE_STRING:
 		errors.append("'flavor_text' must be a string")
+	# The plain rule in one line, for the HUD chip and the pause list (BD2-B). Required: a relic with no stated rule is unreadable.
+	var rule: Variant = relic.get("rule_text")
+	if typeof(rule) != TYPE_STRING or String(rule).strip_edges().is_empty():
+		errors.append("'rule_text' must be a non-empty string (the rule in one plain line)")
+	elif String(rule).contains("
+") or String(rule).length() > MAX_RULE_TEXT_LENGTH:
+		errors.append("'rule_text' must be one line of at most %d characters" % MAX_RULE_TEXT_LENGTH)
 
 
 static func _validate_pool(relic: Dictionary, errors: Array[String]) -> void:

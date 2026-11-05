@@ -64,6 +64,7 @@ func _ready() -> void:
 func take_damage(amount: float, damage_type: String = "physical", knockback: Vector3 = Vector3.ZERO, source: Node = null, kind: StringName = KIND_HIT, origin: String = "") -> void:
 	if _is_dead or damage_immune or amount <= 0.0:
 		return
+	amount = _card_bonus_vs_statuses(amount, source, origin)
 	var channel: StringName = CHANNEL_NONE
 	var final_amount: float = amount
 	if ArmorConfig.is_non_elemental(damage_type):
@@ -103,6 +104,22 @@ func take_damage(amount: float, damage_type: String = "physical", knockback: Vec
 			relay.notify_enemy_killed(get_parent(), origin, _held_status_ids())
 		_is_dead = true
 		died.emit()
+
+
+## BD2-B: a card's damage (origin "card:<id>": hits, zone ticks) is multiplied by the source's
+## `card_damage_mult_vs_status.<status_id>` stat for each status this target holds (a modifier of +0.25 = +25%). Nothing happens
+## without the stat, so a run without relics takes the early exit. Light and heavy attacks, status ticks and relic damage are not cards.
+func _card_bonus_vs_statuses(amount: float, source: Node, origin: String) -> float:
+	if not origin.begins_with("card:") or source == null or not is_instance_valid(source):
+		return amount
+	var mods: Variant = source.get(&"stat_modifiers")
+	if not (mods is StatModifiers):
+		return amount
+	for status_id: String in _held_status_ids():
+		var stat: String = EffectTemplates.CARD_DAMAGE_VS_STATUS_PREFIX + status_id
+		if (mods as StatModifiers).has_modifier(stat):
+			amount = (mods as StatModifiers).apply(stat, amount)
+	return amount
 
 
 ## The ids of the statuses the owner holds right now (read from a sibling StatusEffectManager), for the enemy_killed event.

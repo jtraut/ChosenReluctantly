@@ -5,5 +5,6 @@
   "rarity": "tier1",
   "sources": ["elite"],
   "modifiers": [ { "stat": "move_speed", "modifier_type": "additive", "value": 0.5 } ],
+  "rule_text": "Fixture rule.",
   "flavor_text": "x"
 }

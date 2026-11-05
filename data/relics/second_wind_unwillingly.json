@@ -1,0 +1,20 @@
+{
+    "id": "second_wind_unwillingly",
+    "name": "Second Wind (Unwillingly)",
+    "pool": "neutral",
+    "rarity": "tier1",
+    "sources": ["elite", "relic_room", "merchant"],
+    "keywords": ["Burn", "Bleed"],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "enemy_killed",
+            "filter": { "target_has_status": ["burn", "bleed"] },
+            "at": "player",
+            "internal_cooldown": 0.0,
+            "effects": [ { "template": "reduce_cooldown", "params": { "slot_type": "movement", "seconds": 1.0 } } ]
+        }
+    ],
+    "rule_text": "Killing a Burning or Bleeding enemy takes 1 s off your Movement cooldown.",
+    "flavor_text": "You weren't tired. You were just being polite."
+}

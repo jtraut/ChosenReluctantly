@@ -12,5 +12,6 @@
       "effects": [ { "template": "aoe", "params": { "damage": 1, "damage_type": "fire", "radius": 1.0 } } ]
     }
   ],
+  "rule_text": "Fixture rule.",
   "flavor_text": "Fixture. Allows relic origin."
 }

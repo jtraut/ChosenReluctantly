@@ -15,5 +15,6 @@
       "effects": [ { "template": "aoe", "params": { "damage": 4, "damage_type": "fire", "radius": 2.0 } } ]
     }
   ],
+  "rule_text": "Fixture rule.",
   "flavor_text": "Fixture. Explodes burns."
 }

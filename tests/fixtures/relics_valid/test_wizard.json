@@ -5,5 +5,6 @@
   "rarity": "tier3",
   "sources": ["elite", "relic_room"],
   "modifiers": [ { "stat": "move_speed", "modifier_type": "additive", "value": 0.5 } ],
+  "rule_text": "Fixture rule.",
   "flavor_text": "Fixture. Wizard pool, tier 3."
 }

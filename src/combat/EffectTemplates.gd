@@ -18,6 +18,7 @@ const REQUIRED_PARAMS: Dictionary = {
 	"buff": ["stat", "modifier_type", "value", "duration"],
 	"zone": ["shape", "duration", "tick_interval", "damage", "damage_type", "max_range"],
 	"pass_through": ["duration"],
+	"reduce_cooldown": ["slot_type", "seconds"],
 }
 
 ## Optional params, validated by validate_params (CardSchema calls it). Absent = old behaviour.
@@ -72,6 +73,16 @@ const ANCHOR_CASTER := "caster"
 const MAX_BUFF_CHARGES := 20
 ## A status_damage_mult buff (or relic modifier) must keep the factor above zero: value > this floor (base 1.0).
 const STATUS_DAMAGE_MULT_FLOOR := -1.0
+## BD2-B generic factor stats (base 1.0, read by one code path each; relics and buffs may grant them). Like status_damage_mult,
+## a change of -1 or less would make the factor zero or negative, so the validator refuses it.
+##   card_damage_mult_vs_status.<status_id>: card hits (origin card:*) deal this factor more to a target holding the status (Health.take_damage).
+##   zone_duration_mult: zones the caster places last this factor as long (ZoneManager.spawn).
+## And one additive stat: zone_status_chance adds to the chance of a zone's status each tick (ZoneManager.spawn), capped at 1.
+const CARD_DAMAGE_VS_STATUS_PREFIX := "card_damage_mult_vs_status."
+const ZONE_DURATION_MULT_STAT := "zone_duration_mult"
+const ZONE_STATUS_CHANCE_STAT := "zone_status_chance"
+## reduce_cooldown (BD2-B, a new effect type): takes `seconds` off the running cooldown of the caster's `slot_type` slot (never below ready).
+const MAX_REDUCE_COOLDOWN := 60.0
 
 const PROJECTILE_SCENE_PATH := "res://scenes/effects/Projectile.tscn"
 ## A shot leaves this far in front of the caster (the cast preview lane starts here too).
@@ -139,6 +150,8 @@ static func validate_params(template_id: String, params: Dictionary) -> Array[St
 					errors.append("'anchor' and 'max_range' cannot be combined (max_range places the disc at the aim point)")
 		"buff":
 			_validate_buff(params, errors)
+		"reduce_cooldown":
+			_validate_reduce_cooldown(params, errors)
 	return errors
 
 
@@ -154,6 +167,11 @@ static func _number_in(value: Variant, minimum: float, maximum: float, inclusive
 	if is_nan(number) or is_inf(number) or number > maximum:
 		return false
 	return number >= minimum if inclusive_min else number > minimum
+
+
+## True for a stat whose base is 1.0 and which must stay above zero (a "factor" stat).
+static func is_factor_stat(stat: String) -> bool:
+	return stat.begins_with(StatusEffectManager.STATUS_DAMAGE_MULT_PREFIX) or stat.begins_with(CARD_DAMAGE_VS_STATUS_PREFIX) or stat == ZONE_DURATION_MULT_STAT
 
 
 static func _validate_buff(params: Dictionary, errors: Array[String]) -> void:
@@ -174,9 +192,13 @@ static func _validate_buff(params: Dictionary, errors: Array[String]) -> void:
 			errors.append("'%s' names an unknown slot type" % String(stat))
 		if String(params.get("modifier_type", "")) != StatModifiers.ADDITIVE or not _is_number(params.get("value")) or float(params["value"]) <= 0.0:
 			errors.append("a %s buff must be additive with a value above 0" % String(stat))
-	if typeof(stat) == TYPE_STRING and String(stat).begins_with(StatusEffectManager.STATUS_DAMAGE_MULT_PREFIX) and _is_number(params.get("value")) and float(params["value"]) <= STATUS_DAMAGE_MULT_FLOOR:
-		# The stat's base is 1.0, so a change of -1 or less would make the damage factor zero or negative.
-		errors.append("a %s buff 'value' must be above %s (the damage factor would be zero or negative)" % [String(stat), str(STATUS_DAMAGE_MULT_FLOOR)])
+	if typeof(stat) == TYPE_STRING and is_factor_stat(String(stat)) and _is_number(params.get("value")) and float(params["value"]) <= STATUS_DAMAGE_MULT_FLOOR:
+		# The stat's base is 1.0, so a change of -1 or less would make the factor zero or negative.
+		errors.append("a %s buff 'value' must be above %s (the factor would be zero or negative)" % [String(stat), str(STATUS_DAMAGE_MULT_FLOOR)])
+	if typeof(stat) == TYPE_STRING and String(stat) == ZONE_STATUS_CHANCE_STAT and String(params.get("modifier_type", "")) != StatModifiers.ADDITIVE:
+		errors.append("a %s buff must be additive (it adds to the zone's status chance)" % ZONE_STATUS_CHANCE_STAT)
+	if typeof(stat) == TYPE_STRING and String(stat).begins_with(CARD_DAMAGE_VS_STATUS_PREFIX) and not StatusDatabase.has_status(String(stat).substr(CARD_DAMAGE_VS_STATUS_PREFIX.length())):
+		errors.append("'%s' names an unknown status" % String(stat))
 
 
 static func _validate_zone(params: Dictionary, errors: Array[String]) -> void:
@@ -233,6 +255,16 @@ static func _validate_zone(params: Dictionary, errors: Array[String]) -> void:
 		errors.append("'status_chance' must be a number from 0 to 1")
 	if _is_number(params.get("damage")) and float(params["damage"]) == 0.0 and not has_status:
 		errors.append("a zone with damage 0 needs a status")
+
+
+static func _validate_reduce_cooldown(params: Dictionary, errors: Array[String]) -> void:
+	for key: Variant in params.keys():
+		if not ["slot_type", "seconds"].has(String(key)):
+			errors.append("'%s' is not a known reduce_cooldown param" % str(key))
+	if typeof(params.get("slot_type")) != TYPE_STRING or not SlotTypeDatabase.has(String(params["slot_type"])):
+		errors.append("'slot_type' must be one of %s" % str(SlotTypeDatabase.known_ids()))
+	if params.has("seconds") and not _number_in(params["seconds"], 0.0, MAX_REDUCE_COOLDOWN, false):
+		errors.append("'seconds' must be a number above 0 and at most %s" % str(MAX_REDUCE_COOLDOWN))
 
 
 static func _validate_pass_through(params: Dictionary, errors: Array[String]) -> void:
@@ -332,6 +364,8 @@ static func execute(template_id: String, params: Dictionary, context: EffectCont
 			_execute_zone(params, context)
 		"pass_through":
 			_execute_pass_through(params, context)
+		"reduce_cooldown":
+			_execute_reduce_cooldown(params, context)
 		_:
 			push_error("EffectTemplates: unknown template '%s'" % template_id)
 
@@ -659,3 +693,13 @@ static func _execute_pass_through(params: Dictionary, context: EffectContext) ->
 	if not context.caster.has_method("grant_pass_through"):
 		return
 	context.caster.grant_pass_through(float(params["duration"]))
+
+
+## Takes `seconds` off the running cooldown of the caster's `slot_type` slot. A slot that is ready, or a caster with no card slots, is left alone.
+static func _execute_reduce_cooldown(params: Dictionary, context: EffectContext) -> void:
+	var controller: Variant = context.caster.get(&"card_slots")
+	if not (controller is CardSlotController):
+		return
+	var slot: CardSlot = (controller as CardSlotController).get_slot(String(params["slot_type"]))
+	if slot != null:
+		slot.cooldown_remaining = maxf(slot.cooldown_remaining - float(params["seconds"]), 0.0)

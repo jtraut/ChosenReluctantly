@@ -21,7 +21,7 @@ func _good() -> Dictionary:
 			"event": "status_ended", "filter": {"status_id": "burn", "reason": ["expired", "owner_died"], "target_team": "enemy"}, "at": "event_position",
 			"internal_cooldown": 0.5, "effects": [{"template": "aoe", "params": {"damage": 4, "damage_type": "fire", "radius": 2.0}}],
 		}],
-		"flavor_text": "ok",
+		"rule_text": "A rule.", "flavor_text": "ok",
 	}
 
 
@@ -59,6 +59,18 @@ func test_the_id_must_match_the_file_name() -> void:
 	assert_array(_problems(_with("id", ""))).is_not_empty()
 	assert_array(_problems(_with("name", ""))).is_not_empty()
 	assert_array(_problems(_with("flavor_text", 5))).is_not_empty()
+
+
+func test_rule_text_is_required_and_one_line() -> void:
+	var missing := _good()
+	missing.erase("rule_text")
+	assert_bool(_has_problem(_problems(missing), "rule_text")).is_true()
+	assert_array(_problems(_with("rule_text", ""))).is_not_empty()
+	assert_array(_problems(_with("rule_text", 5))).is_not_empty()
+	assert_array(_problems(_with("rule_text", "two
+lines"))).is_not_empty()
+	assert_array(_problems(_with("rule_text", "x".repeat(121)))).is_not_empty()
+	assert_array(_problems(_with("rule_text", "x".repeat(120)))).is_empty()
 
 
 func test_unknown_keys_are_rejected_including_curse() -> void:

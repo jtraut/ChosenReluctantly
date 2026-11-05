@@ -8,5 +8,6 @@
     { "stat": "move_speed", "modifier_type": "multiplicative", "value": 0.1 },
     { "stat": "status_damage_mult.burn", "modifier_type": "multiplicative", "value": 0.25 }
   ],
+  "rule_text": "Fixture rule.",
   "flavor_text": "Fixture. Modifiers only."
 }

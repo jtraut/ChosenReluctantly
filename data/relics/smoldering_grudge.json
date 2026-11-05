@@ -1,0 +1,12 @@
+{
+    "id": "smoldering_grudge",
+    "name": "Smoldering Grudge",
+    "pool": "fire",
+    "rarity": "tier1",
+    "sources": ["elite", "relic_room", "merchant"],
+    "keywords": ["Burn"],
+    "modifiers": [ { "stat": "card_damage_mult_vs_status.burn", "modifier_type": "multiplicative", "value": 0.25 } ],
+    "triggers": [],
+    "rule_text": "Your cards deal 25% more damage to Burning enemies.",
+    "flavor_text": "It was already on fire. You just wanted to make a point."
+}

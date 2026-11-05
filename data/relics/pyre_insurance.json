@@ -1,0 +1,20 @@
+{
+    "id": "pyre_insurance",
+    "name": "Pyre Insurance",
+    "pool": "fire",
+    "rarity": "tier1",
+    "sources": ["elite", "relic_room", "merchant", "mini_boss"],
+    "keywords": ["Burn"],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "status_ended",
+            "filter": { "status_id": "burn", "reason": ["expired", "owner_died"], "target_team": "enemy", "allow_relic_origin": true },
+            "at": "event_position",
+            "internal_cooldown": 0.0,
+            "effects": [ { "template": "aoe", "params": { "damage": 4, "damage_type": "fire", "radius": 2.0 } } ]
+        }
+    ],
+    "rule_text": "When Burn on an enemy ends, it explodes: 4 fire damage in a 2 m radius.",
+    "flavor_text": "Covers fire damage caused by fire. Read the small print."
+}

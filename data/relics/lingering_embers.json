@@ -1,0 +1,15 @@
+{
+    "id": "lingering_embers",
+    "name": "Lingering Embers",
+    "pool": "fire",
+    "rarity": "tier2",
+    "sources": ["elite", "relic_room", "merchant"],
+    "keywords": ["Zone", "Burn"],
+    "modifiers": [
+        { "stat": "zone_duration_mult", "modifier_type": "multiplicative", "value": 0.5 },
+        { "stat": "zone_status_chance", "modifier_type": "additive", "value": 1.0 }
+    ],
+    "triggers": [],
+    "rule_text": "Your Zones last 50% longer, and the status they carry always lands.",
+    "flavor_text": "The fire went out. Nobody told the embers."
+}

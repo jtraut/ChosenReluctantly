@@ -68,6 +68,22 @@ func test_the_relic_room_lands_in_its_window_never_next_to_the_rest_room_or_the_
 	assert_bool(seen_indices.size() >= 4).override_failure_message("the relic room should land in several places, got %s" % str(seen_indices.keys())).is_true()
 
 
+func test_the_relic_room_never_leaves_the_same_wave_list_twice_in_a_row_around_it() -> void:
+	# The generator's rule: a fight room avoids the previous fight room's wave list (rest and relic rooms are skipped) when another fits.
+	var config: Dictionary = _config_with_relics(true)
+	for seed_value in range(1, 600):
+		var rooms: Array[Dictionary] = RunGenerator.generate(seed_value, config)
+		var last_wave: String = ""
+		for room: Dictionary in rooms:
+			if String(room["type"]) == "rest" or String(room["type"]) == "relic_room":
+				continue
+			var options: Array = RunConfig.variants_for(int(room["index"]), (config["rooms"] as Dictionary)[room["type"]])
+			var others: Array = options.filter(func(v: Dictionary) -> bool: return String(v["id"]) != last_wave)
+			if not others.is_empty():
+				assert_str(String(room["wave_id"])).override_failure_message("seed %d room %d repeats '%s' although %d other list(s) fit" % [seed_value, int(room["index"]) + 1, last_wave, others.size()]).is_not_equal(last_wave)
+			last_wave = String(room["wave_id"])
+
+
 func test_with_relics_off_the_run_is_exactly_what_it_was_and_with_them_on_only_one_combat_room_changes() -> void:
 	var off: Dictionary = _config_with_relics(false)
 	var plain: Dictionary = RunConfig.get_config().duplicate(true)
@@ -77,13 +93,18 @@ func test_with_relics_off_the_run_is_exactly_what_it_was_and_with_them_on_only_o
 		var rooms_off: Array[Dictionary] = RunGenerator.generate(seed_value, off)
 		assert_array(rooms_off).is_equal(RunGenerator.generate(seed_value, plain))
 		var rooms_on: Array[Dictionary] = RunGenerator.generate(seed_value, on)
-		var changed: int = 0
+		var converted: int = 0
 		for i in range(rooms_off.size()):
 			if rooms_on[i] != rooms_off[i]:
-				changed += 1
-				assert_str(String(rooms_off[i]["type"])).is_equal("combat")
-				assert_str(String(rooms_on[i]["type"])).is_equal("relic_room")
-		assert_int(changed).is_equal(1)
+				if String(rooms_on[i]["type"]) == "relic_room":
+					converted += 1
+					assert_str(String(rooms_off[i]["type"])).is_equal("combat")
+				else:
+					# the only other change allowed: the fight room right after the relic room drew a different wave list
+					assert_str(String(rooms_on[i - 1]["type"])).is_equal("relic_room")
+					assert_str(String(rooms_on[i]["type"])).is_equal(String(rooms_off[i]["type"]))
+					assert_str(String(rooms_on[i]["wave_id"])).is_not_equal(String(rooms_off[i]["wave_id"]))
+		assert_int(converted).is_equal(1)
 		assert_array(rooms_on).is_equal(RunGenerator.generate(seed_value, on))  # seeded
 
 

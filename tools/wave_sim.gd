@@ -1305,7 +1305,7 @@ func _run_summary() -> void:
 	print("  generator, %d seeds: rooms per run by type %s" % [seeds, str(per_run)])
 	for room_type: String in ["elite", "rest", "relic_room"]:
 		var parts: Array[String] = []
-		for index in range(1, 9):
+		for index in range(1, 11):
 			var n: int = int(index_counts.get("%s@%d" % [room_type, index], 0))
 			if n > 0:
 				parts.append("room %d: %.0f%%" % [index, 100.0 * float(n) / float(seeds)])

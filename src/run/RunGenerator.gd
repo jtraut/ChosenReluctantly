@@ -76,12 +76,38 @@ static func _place_relic_rooms(rooms: Array[Dictionary], seed_value: int, config
 			return
 		var index: int = candidates[rng.randi_range(0, candidates.size() - 1)]
 		rooms[index] = {"index": index, "type": RunConfig.RELIC_ROOM, "wave_id": ""}
+		_keep_wave_variety(rooms, index, config, rng)
+
+
+## The generator never gives two fight rooms in a row the same wave list when another fits (rest rooms are skipped). Taking room `index`
+## out can leave the fight room before it and the one after it with the same list; then the later one draws again from the lists
+## that fit its position, avoiding both neighbours' lists. Only that one room can change, and only in a run with a relic room.
+static func _keep_wave_variety(rooms: Array[Dictionary], index: int, config: Dictionary, rng: RandomNumberGenerator) -> void:
+	var after: int = index + 1
+	if index < 1 or after >= rooms.size() - 1:
+		return  # the boss follows (its list is its own), or there is nothing around
+	var before_wave: String = String(rooms[index - 1]["wave_id"])
+	if String(rooms[after]["wave_id"]) != before_wave or before_wave.is_empty():
+		return
+	var following_wave: String = ""
+	for later in range(after + 1, rooms.size()):
+		if RunConfig.FIGHT_TYPES.has(String(rooms[later]["type"])):
+			following_wave = String(rooms[later]["wave_id"])
+			break
+	var type_id: String = String(rooms[after]["type"])
+	var options: Array = RunConfig.variants_for(after, (config["rooms"] as Dictionary).get(type_id, [])).filter(
+			func(v: Dictionary) -> bool: return String(v["id"]) != before_wave and String(v["id"]) != following_wave)
+	if not options.is_empty():
+		rooms[after]["wave_id"] = String((options[rng.randi_range(0, options.size() - 1)] as Dictionary)["id"])
 
 
 ## The room indices a relic room may take: combat rooms in [first, last] (never the first or the last room) that are not next to
-## a rest, elite or relic room. (Next to the boss is allowed.)
+## a rest, elite or relic room. (Next to the boss is allowed.) The two fight rooms around it must also hold different wave lists, so
+## taking the room out never leaves the same wave list twice in a row (the generator's own rule, which skips non-fight rooms); when no
+## room satisfies that the unfiltered list is returned.
 static func relic_room_candidates(rooms: Array[Dictionary], first: int, last: int) -> Array[int]:
 	var found: Array[int] = []
+	var varied: Array[int] = []
 	for index in range(maxi(first, 1), mini(last, rooms.size() - 2) + 1):
 		if String(rooms[index]["type"]) != "combat":
 			continue
@@ -89,9 +115,12 @@ static func relic_room_candidates(rooms: Array[Dictionary], first: int, last: in
 		for neighbour in [index - 1, index + 1]:
 			if neighbour >= 0 and neighbour < rooms.size() and ["rest", "elite", RunConfig.RELIC_ROOM].has(String(rooms[neighbour]["type"])):
 				next_to_special = true
-		if not next_to_special:
-			found.append(index)
-	return found
+		if next_to_special:
+			continue
+		found.append(index)
+		if String(rooms[index - 1]["wave_id"]) != String(rooms[index + 1]["wave_id"]):
+			varied.append(index)
+	return varied if not varied.is_empty() else found
 
 
 static func _window_size(ranges: Dictionary, room_type: String) -> int:

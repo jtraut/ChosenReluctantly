@@ -260,9 +260,9 @@ func _check_run_fresh(label: String, expected_room: int) -> void:
 	# A rest room is cleared at once and its heal-or-remove choice is open, so the player is immune there by design
 	# (RunController._finish_room). That is not a leak. The new room's seed is random after a Try again, so a rest room
 	# landed here about 1 run in 7 (index 2 is in the rest window) and made this check flake (P-dodge 4a).
-	var is_rest: bool = main.run_controller.room_type() == "rest"
+	var is_rest: bool = ["rest", "relic_room"].has(main.run_controller.room_type())  # BD2-B: the relic room has no fight either
 	if is_rest:
-		_check(main.player.health.damage_immune and main.run_controller.has_choice(), "%s: rest room: expected the choice open and the player immune" % label)
+		_check(main.player.health.damage_immune and main.run_controller.has_choice(), "%s: %s room: expected the choice open and the player immune" % [label, main.run_controller.room_type()])
 	else:
 		_check(not main.player.health.damage_immune, "%s: damage immunity leaked into a new %s room (seed %d)" % [label, main.run_controller.room_type(), RunSession.current.seed_value])
 	_check(is_equal_approx(Engine.time_scale, 1.0) and not get_tree().paused, "%s: time scale or pause leaked" % label)

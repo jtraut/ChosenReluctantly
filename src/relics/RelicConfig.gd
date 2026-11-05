@@ -35,7 +35,8 @@ static func validate_block(block: Variant) -> Array[String]:
 
 
 ## The straight run's relic room (BD2-B): how many (0 = none), and the first and last room index it may take (0-based, like
-## `placement.ranges`). The boss is the last room, so `last` is checked against the run length by RunGenerator.
+## `placement.ranges`: index 2 is "Room 3 of 10"; the shipped 2 to 8 is the brief's "rooms 2-8" read like the rest room's [2, 8],
+## see DECISIONS "BD2-B"). The boss is the last room, so `last` is checked against the run length by RunGenerator.
 static func _validate_relic_room(value: Variant) -> Array[String]:
 	var errors: Array[String] = []
 	if typeof(value) != TYPE_DICTIONARY:

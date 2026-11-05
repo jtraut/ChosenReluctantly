@@ -374,3 +374,96 @@ func test_a_full_house_of_twenty_giveable_relics_scrolls_and_stays_inside_the_wi
 		last.grab_focus()  # the 20th relic is reachable: focusing it scrolls it into view
 		await _frames(3)
 		assert_bool(last.has_focus()).is_true()
+
+
+# --- a real run: the HUD row and the pause list read the run ---
+
+const RUN_MAIN_PATH := "res://scenes/main/RunMain.tscn"
+const MAIN_PATH := "res://scenes/main/Main.tscn"
+
+
+func _spawn_run(held: Array[String], given_up: Array[String]) -> Main:
+	RelicDatabase.load_all()
+	var state := RunSession.begin_new_run(3)
+	state.relics = held.duplicate()
+	state.relics_given_up = given_up.duplicate()
+	var main: Main = (load(RUN_MAIN_PATH) as PackedScene).instantiate()
+	add_child(main)
+	auto_free(main)
+	await _frames(3)
+	return main
+
+
+func test_the_hud_row_follows_the_run_and_flashes_on_the_controllers_trigger_signal() -> void:
+	var main: Main = await _spawn_run(["pyre_insurance", "heavy_sigh"] as Array[String], [] as Array[String])
+	var row: RelicRow = main.hud.relic_row
+	assert_int(row.entries().size()).is_equal(2)
+	assert_str(String(row.entries()[0]["id"])).is_equal("pyre_insurance")
+	main.run_controller.relic_triggered.emit("heavy_sigh", 0, "hit_landed")
+	assert_float(float(row.flash_state("heavy_sigh")["level"])).is_equal(1.0)
+	assert_float(float(row.flash_state("pyre_insurance")["level"])).is_equal(0.0)
+	main.run_controller.relics_changed.emit(["heavy_sigh"] as Array[String])  # a swap at the cap
+	assert_int(row.entries().size()).is_equal(1)
+	RunSession.clear()
+
+
+func test_the_pause_screen_lists_owned_relics_and_notes_the_given_up_ones() -> void:
+	var main: Main = await _spawn_run(["pyre_insurance", "heavy_sigh"] as Array[String], ["spite_knuckles"] as Array[String])
+	var screen: SettingsScreen = main.get_node("SettingsScreen")
+	assert_bool(screen.open()).is_true()
+	await _frames(3)
+	assert_bool(screen.relic_section.visible).is_true()
+	assert_int(screen.relic_list.get_child_count()).is_equal(2)
+	var texts: Array[String] = []
+	for label: Node in screen.relic_list.find_children("*", "Label", true, false):
+		texts.append((label as Label).text)
+	var joined: String = "\n".join(texts)
+	assert_str(joined).contains("Pyre Insurance")
+	assert_str(joined).contains("When Burn on an enemy ends")  # the rule text
+	assert_str(joined).contains("Read the small print")  # the flavour
+	assert_bool(screen.relic_given_up_label.visible).is_true()
+	assert_str(screen.relic_given_up_label.text).contains("Spite Knuckles")
+	assert_str(screen.relic_header.text).contains("2 of 20")
+	assert_bool(screen.resume_button.has_focus()).is_true()  # the list does not steal the first focus
+	var panel: Rect2 = Rect2(Vector2.ZERO, screen.get_viewport().get_visible_rect().size)
+	assert_bool(panel.encloses(screen.relic_section.get_global_rect())).is_true()
+	screen.close()
+	RunSession.clear()
+
+
+func test_the_pause_list_says_so_when_there_are_no_relics_and_is_hidden_outside_a_run() -> void:
+	var main: Main = await _spawn_run([] as Array[String], [] as Array[String])
+	var screen: SettingsScreen = main.get_node("SettingsScreen")
+	screen.open()
+	assert_bool(screen.relic_section.visible).is_true()
+	assert_int(screen.relic_list.get_child_count()).is_equal(1)
+	assert_bool(screen.relic_given_up_label.visible).is_false()
+	screen.close()
+	RunSession.clear()
+	var arena: Main = (load(MAIN_PATH) as PackedScene).instantiate()
+	add_child(arena)
+	auto_free(arena)
+	await _frames(2)
+	var arena_screen: SettingsScreen = arena.get_node("SettingsScreen")
+	arena_screen.open()
+	assert_bool(arena_screen.relic_section.visible).is_false()
+	arena_screen.close()
+
+
+func test_a_long_relic_list_is_height_capped_and_resume_stays_above_the_slots() -> void:
+	var main: Main = await _spawn_run(["pyre_insurance", "heavy_sigh", "smoldering_grudge", "lingering_embers", "second_wind_unwillingly", "spite_knuckles"] as Array[String], [] as Array[String])
+	var screen: SettingsScreen = main.get_node("SettingsScreen")
+	for size: Vector2i in [Vector2i(1024, 600), Vector2i(1920, 1080)]:
+		get_window().size = size
+		await _frames(3)
+		screen.open()
+		await _frames(3)
+		var vp: Vector2 = screen.get_viewport().get_visible_rect().size
+		var scale_px: float = vp.y / 720.0
+		assert_float(screen.relic_scroll.custom_minimum_size.y).is_less_equal(float(UiConfig.settings_screen()["relic_list_max_height"]) * scale_px + 1.0)
+		var resume: Rect2 = screen.resume_button.get_global_rect()
+		var slots: Rect2 = HudLayout.slot_bar_rect(vp, UiConfig.hud(), 5)
+		assert_bool(resume.end.y <= slots.position.y + 0.5).override_failure_message("Resume overlaps the slot bar at %s" % size).is_true()
+		assert_float(resume.position.y).is_greater_equal(0.0)
+		screen.close()
+	RunSession.clear()

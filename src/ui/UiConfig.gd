@@ -117,6 +117,12 @@ const DEFAULT_SETTINGS_SCREEN: Dictionary = {
 	"unselected_marker": "( ) ",
 	"save_failed": "Could not save this setting. It will be forgotten when you quit.",
 	"save_failed_color": "#ff9a8a",
+	"relic_list_width": 560,
+	"relic_list_max_height": 150,
+	"relic_header_font_size": 24,
+	"relic_name_font_size": 20,
+	"relic_rule_font_size": 16,
+	"relic_flavor_color": "#c9bcc4",
 }
 
 ## The see-through-enemies cue on the player (Slice 6b): drawn only where something hides them.

@@ -195,7 +195,7 @@ static func _ensure_validated() -> void:
 	_validated = true
 	var table: Dictionary = {}
 	for status_id: String in _table.ids():
-		table[status_id] = _table.get_entry(status_id)
+		table[status_id] = _table.get_raw(status_id)
 	for problem: String in validate_table(table):
 		push_error("StatusDatabase: " + problem)
 	for status_id: String in table.keys():

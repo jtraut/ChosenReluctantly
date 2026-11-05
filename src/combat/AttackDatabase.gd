@@ -251,7 +251,7 @@ static func validate_table(table: Dictionary) -> Array[String]:
 static func load_valid(class_id: String, light_variant: String = DEFAULT_LIGHT) -> Dictionary:
 	var table: Dictionary = {}
 	for attack_id: String in _table.ids():
-		table[attack_id] = _table.get_entry(attack_id)
+		table[attack_id] = _table.get_raw(attack_id)
 	for problem: String in validate_table(table):
 		push_error("AttackDatabase: " + problem)
 	var valid: Dictionary = {}

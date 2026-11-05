@@ -27,7 +27,7 @@ static func rule_text(keyword_id: String) -> String:
 static func validate_table() -> Array[String]:
 	var errors: Array[String] = []
 	for keyword_id: String in known_ids():
-		var entry: Variant = _table.get_entry(keyword_id)
+		var entry: Variant = _table.get_raw(keyword_id)
 		if typeof(entry) != TYPE_DICTIONARY:
 			errors.append("keyword '%s' must be an object" % keyword_id)
 			continue

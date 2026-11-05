@@ -70,6 +70,8 @@ const ANCHOR_CASTER := "caster"
 ## default 1) make it a primed buff: used up by that many matching casts after the one that applied it, or when
 ## `duration` runs out. See StatModifiers.add_primed_modifier.
 const MAX_BUFF_CHARGES := 20
+## A status_damage_mult buff (or relic modifier) must keep the factor above zero: value > this floor (base 1.0).
+const STATUS_DAMAGE_MULT_FLOOR := -1.0
 
 const PROJECTILE_SCENE_PATH := "res://scenes/effects/Projectile.tscn"
 ## A shot leaves this far in front of the caster (the cast preview lane starts here too).
@@ -172,6 +174,9 @@ static func _validate_buff(params: Dictionary, errors: Array[String]) -> void:
 			errors.append("'%s' names an unknown slot type" % String(stat))
 		if String(params.get("modifier_type", "")) != StatModifiers.ADDITIVE or not _is_number(params.get("value")) or float(params["value"]) <= 0.0:
 			errors.append("a %s buff must be additive with a value above 0" % String(stat))
+	if typeof(stat) == TYPE_STRING and String(stat).begins_with(StatusEffectManager.STATUS_DAMAGE_MULT_PREFIX) and _is_number(params.get("value")) and float(params["value"]) <= STATUS_DAMAGE_MULT_FLOOR:
+		# The stat's base is 1.0, so a change of -1 or less would make the damage factor zero or negative.
+		errors.append("a %s buff 'value' must be above %s (the damage factor would be zero or negative)" % [String(stat), str(STATUS_DAMAGE_MULT_FLOOR)])
 
 
 static func _validate_zone(params: Dictionary, errors: Array[String]) -> void:

@@ -118,9 +118,9 @@ static func check_shipped() -> Array[String]:
 	var slot_table := JsonDataTable.new("res://data/slot_types.json")
 	var slot_types: Dictionary = {}
 	for slot_id: String in slot_table.ids():
-		slot_types[slot_id] = slot_table.get_entry(slot_id)
+		slot_types[slot_id] = slot_table.get_raw(slot_id)
 	var status_table := JsonDataTable.new("res://data/statuses.json")
 	var statuses: Dictionary = {}
 	for status_id: String in status_table.ids():
-		statuses[status_id] = status_table.get_entry(status_id)
+		statuses[status_id] = status_table.get_raw(status_id)
 	return check_all(CardDatabase.all_cards(), slot_types, AttackDatabase.get_attack("light"), statuses)

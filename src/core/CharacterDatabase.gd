@@ -150,7 +150,7 @@ static func _check_once() -> void:
 static func validate_shipped() -> Array[String]:
 	var table: Dictionary = {}
 	for id: Variant in _table.ids():
-		table[id] = _table.get_entry(String(id))
+		table[id] = _table.get_raw(String(id))
 	return validate_table(table)
 
 

@@ -13,9 +13,22 @@ func _init(path: String) -> void:
 	_path = path
 
 
+## The entry as an object. An unknown id gives {}. An entry that exists but is not a JSON object is a data error: it is
+## reported loudly (naming the file and the id) and gives {}; a validator that wants to report it as a problem
+## reads `get_raw` instead and checks the type itself.
 func get_entry(id: String) -> Dictionary:
 	_ensure_loaded()
-	return _cache.get(id, {})
+	var raw: Variant = _cache.get(id, {})
+	if typeof(raw) != TYPE_DICTIONARY:
+		push_error("JsonDataTable: entry '%s' in '%s' must be an object, found %s" % [id, _path, type_string(typeof(raw))])
+		return {}
+	return raw
+
+
+## The entry exactly as the file holds it (any JSON value), or null for an unknown id. For validators.
+func get_raw(id: String) -> Variant:
+	_ensure_loaded()
+	return _cache.get(id)
 
 
 func has(id: String) -> bool:

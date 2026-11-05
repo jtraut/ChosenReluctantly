@@ -34,6 +34,8 @@ signal option_chosen(option_id: String)
 @onready var keys_label: Label = $Root/Center/Panel/Column/Keys
 @onready var next_icon: RunTypeIcon = $Root/Center/Panel/Column/NextRow/NextIcon
 @onready var hint_label: Label = $Root/Center/Panel/Column/NextRow/Hint
+## BD2: the relic being taken, shown above the give-one-up list (built in code, hidden otherwise).
+var incoming_plate: PanelContainer = null
 
 var _controller: RunController = null
 var _pending: Dictionary = {}
@@ -41,8 +43,9 @@ var _pending: Dictionary = {}
 var _options: Array[Dictionary] = []
 var _option_buttons: Array[Button] = []
 ## How the open options are laid out: "row" (cards side by side), "grid" (a removal list, one column per slot),
-## "actions" (a short row of wide choices). Number keys pick nothing in any of them (PL3): arrows and Tab move the highlight.
+## "cells" (BD2: the give-one-up relic list, wrapping rows that scroll), "actions" (a short row of wide choices). Number keys pick nothing in any of them (PL3): arrows and Tab move the highlight.
 var _layout: String = "row"
+var _scroll_on: bool = false
 var _last_focus: int = -1
 var _arm_generation: int = 0
 var _shown: Dictionary = {}
@@ -56,6 +59,7 @@ var _fit_scale: float = 1.0
 func _ready() -> void:
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS  # keeps the focus restore alive across a pause; nothing here ticks
+	_build_incoming_plate()
 	_apply_style()
 	get_viewport().size_changed.connect(_apply_style)
 	panel.minimum_size_changed.connect(_fit_panel)
@@ -137,15 +141,39 @@ func show_choice(model: Dictionary) -> void:
 		"title": String(model.get("title", "")),
 		"subtitle": "%s  -  %s" % [String(model.get("room_label", "")), String(model.get("room_type_name", ""))],
 		"line": String(model.get("line", "")),
-		"rows": [],
 		"options": model.get("options", []),
 		"rejects_remaining": int(model.get("rejects_remaining", 0)),
 		"rejects_max": int(model.get("rejects_max", 0)),
 		"owned": _owned_counts(),
+		"relic": _relic_content(model),
+		"rows": _locked_relic_rows(model),
 		"hint": String(model.get("next_line", "")),
 		"icon_shape": RunIcons.shape_for(room_type),
 		"icon_color": RunIcons.color_for(room_type, UiConfig.run_ui(), tiers),
 	})
+
+
+## The relic parts of a choice model (BD2): {} for anything that is not a relic choice, else the give-up step's incoming relic.
+func _relic_content(model: Dictionary) -> Dictionary:
+	if not model.has("relic_choice"):
+		return {}
+	return {"choice": String(model["relic_choice"]), "incoming": model.get("incoming", {})}
+
+
+## Owned relics that cannot be given up (boss tier), as label/value rows above the give-up list, so they are visible but are not options.
+func _locked_relic_rows(model: Dictionary) -> Array:
+	var rows: Array = []
+	if String(model.get("relic_choice", "")) != "giveup":
+		return rows
+	var names: PackedStringArray = PackedStringArray()
+	for shown: Variant in (model.get("relics_owned", []) as Array):
+		var relic: Dictionary = shown
+		if not bool(relic.get("giveable", true)):
+			names.append("%s (%s)" % [String(relic.get("name", "")), String(relic.get("tier_name", ""))])
+	if not names.is_empty():
+		var texts: Dictionary = RunConfig.ui().get("relic", {})
+		rows.append({"label": String(texts.get("locked_label", "")), "value": ", ".join(names)})
+	return rows
 
 
 func _show_win() -> void:
@@ -267,6 +295,7 @@ func _fill(content: Dictionary) -> void:
 	line_label.visible = line != ""
 	button.text = String(content.get("button", ""))
 	_fill_options(content.get("options", []), content)
+	_fill_incoming_plate(content.get("relic", {}))
 	button.visible = _options.is_empty()
 	if not _options.is_empty():
 		subtitle_label.visible = false  # the room indicator at the top already says it; the cards need the height
@@ -274,7 +303,9 @@ func _fill(content: Dictionary) -> void:
 	hint_label.text = hint
 	hint_label.visible = hint != ""
 	var next_type: String = _next_room_type()
-	next_icon.visible = next_type != "" and _controller != null and hint.contains(_controller.next_room_line())
+	if _layout == "cells" and _scrolls():
+		hint_label.visible = false  # a long give-up list needs the height; the Next line is not needed to pick a relic
+	next_icon.visible = hint_label.visible and next_type != "" and _controller != null and hint.contains(_controller.next_room_line())
 	if next_icon.visible:
 		next_icon.shape = RunIcons.shape_for(next_type)
 		next_icon.color = RunIcons.color_for(next_type, UiConfig.run_ui(), RunConfig.get_config().get("tiers", {}))
@@ -299,7 +330,9 @@ static func layout_for(options: Array) -> String:
 		var d: Dictionary = option
 		if String(d.get("kind", "")) == "remove" and String(d.get("card_id", "")) != "":
 			return "grid"  # a list of cards to pick from; the rest menu's "Remove a card" has no card_id
-		has_card = has_card or String(d.get("kind", "")) == "card"
+		if String(d.get("kind", "")) == "giveup":
+			return "cells"  # BD2: the relics that can be given up, a wrapping list
+		has_card = has_card or String(d.get("kind", "")) == "card" or String(d.get("kind", "")) == "relic"
 	return "row" if has_card else "actions"
 
 
@@ -313,6 +346,12 @@ static func look_for(kind: String) -> RunOptionCard.Look:
 			return RunOptionCard.Look.CELL
 		"back":
 			return RunOptionCard.Look.BACK
+		"relic":
+			return RunOptionCard.Look.RELIC
+		"relic_skip":
+			return RunOptionCard.Look.SKIP_FREE
+		"giveup":
+			return RunOptionCard.Look.RELIC_CELL
 	return RunOptionCard.Look.ACTION
 
 
@@ -330,8 +369,9 @@ func _fill_options(options: Array, content: Dictionary = {}) -> void:
 	if options.is_empty():
 		return
 	_layout = layout_for(options)
-	# Only the removal grid may scroll; an offer (cards, reject, rest choices) always shows whole and the panel scales.
-	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO if _layout == "grid" else ScrollContainer.SCROLL_MODE_DISABLED
+	_scroll_on = _layout == "grid" or (_layout == "cells" and options.size() > int(UiConfig.run_ui().get("relic_cells_scroll_above", 6)))
+	# Only the removal grid (and a long give-one-up list) may scroll; an offer (cards, reject, rest choices) always shows whole and the panel scales.
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO if _scrolls() else ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	var cfg := UiConfig.run_ui()
 	var s := _scale(cfg)
@@ -365,12 +405,18 @@ func _fill_options(options: Array, content: Dictionary = {}) -> void:
 				width = float(cfg["option_cell_width"])
 			RunOptionCard.Look.BACK:
 				width = 200.0
+			RunOptionCard.Look.RELIC:
+				width = float(cfg["option_card_width"])
+			RunOptionCard.Look.SKIP_FREE:
+				width = float(cfg["option_reject_width"])
+			RunOptionCard.Look.RELIC_CELL:
+				width = float(cfg.get("relic_cell_width", cfg["option_cell_width"]))
 		var index: int = -1  # no number badge on an option any more
 		if _layout != "grid" and kind != "back":
 			numbered += 1
 		var card := RunOptionCard.new()
 		card.setup(option, look, width, cfg, s, {
-			"index": index, "texts": texts,
+			"index": index, "texts": texts, "relic_texts": RunConfig.ui().get("relic", {}),
 			"owned": int(owned.get(String(option.get("card_id", "")), 0)) if kind == "card" else 0,
 			"rejects_remaining": int(content.get("rejects_remaining", 0)),
 			"rejects_max": int(content.get("rejects_max", 0)),
@@ -387,6 +433,11 @@ func _fill_options(options: Array, content: Dictionary = {}) -> void:
 	footer_box.visible = not in_footer.is_empty()
 	if _layout == "grid":
 		_place_grid(cfg, s, texts)
+	elif _layout == "cells":
+		options_box.columns = clampi(_option_buttons.size() - in_footer.size(), 1, int(cfg.get("relic_cell_columns", 4)))
+		for i in range(_option_buttons.size()):
+			if not in_footer.has(i):
+				options_box.add_child(_option_buttons[i])
 	else:
 		options_box.columns = maxi(numbered, 1)
 		for i in range(_option_buttons.size()):
@@ -400,6 +451,75 @@ func _fill_options(options: Array, content: Dictionary = {}) -> void:
 
 ## The removal list: one column per HUD slot (same order and keys as the bottom bar), a header per column, cards
 ## stacked under it. Empty cells are spacers so the grid stays aligned.
+## True when the open list scrolls inside the panel: the removal grid, and a long give-one-up list (a short one just shrinks the panel).
+func _scrolls() -> bool:
+	return _scroll_on
+
+
+## The relic being taken, above the give-one-up list: a compact plate (hexagon, "Taking: Name", tier and pool, rule text), so the
+## list below keeps the height. Built once; `_fill_incoming_plate` fills it.
+func _build_incoming_plate() -> void:
+	incoming_plate = PanelContainer.new()
+	incoming_plate.name = "IncomingPlate"
+	incoming_plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	incoming_plate.visible = false
+	column.add_child(incoming_plate)
+	column.move_child(incoming_plate, scroll.get_index())
+	var body := VBoxContainer.new()
+	body.name = "Body"
+	body.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	incoming_plate.add_child(body)
+	var head := HBoxContainer.new()
+	head.name = "Head"
+	head.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	body.add_child(head)
+	var hex := RunTypeIcon.new()
+	hex.name = "Hex"
+	hex.shape = RunIcons.SHAPE_HEX
+	head.add_child(hex)
+	var title := Label.new()
+	title.name = "Title"
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	head.add_child(title)
+	var rule := Label.new()
+	rule.name = "Rule"
+	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rule.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	body.add_child(rule)
+
+
+func _fill_incoming_plate(relic: Dictionary) -> void:
+	var incoming: Dictionary = relic.get("incoming", {}) if String(relic.get("choice", "")) == "giveup" else {}
+	incoming_plate.visible = not incoming.is_empty()
+	if incoming.is_empty():
+		return
+	var cfg := UiConfig.run_ui()
+	var s := _scale(cfg)
+	var texts: Dictionary = RunConfig.ui().get("relic", {})
+	var accent := Color.html(String(cfg.get("relic_accent_color", "#c9a2ff")))
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color.html(String(cfg["option_card_color"]))
+	style.border_color = accent
+	style.set_border_width_all(maxi(roundi(2.0 * s), 2))
+	style.set_content_margin_all(8.0 * s)
+	incoming_plate.add_theme_stylebox_override("panel", style)
+	var small: int = roundi(float(cfg["option_small_font_size"]) * s)
+	var body_size: int = roundi(float(cfg["option_body_font_size"]) * s)
+	var hex: RunTypeIcon = incoming_plate.get_node("Body/Head/Hex")
+	hex.color = accent
+	hex.custom_minimum_size = Vector2.ONE * float(body_size) * 1.2
+	(incoming_plate.get_node("Body/Head") as HBoxContainer).add_theme_constant_override("separation", roundi(8.0 * s))
+	var title: Label = incoming_plate.get_node("Body/Head/Title")
+	title.text = String(texts.get("taking_format", "%s")) % [String(incoming.get("name", "")), String(incoming.get("tier_name", "")), String(incoming.get("pool_name", ""))]
+	title.add_theme_font_size_override("font_size", body_size)
+	title.add_theme_color_override("font_color", Color.html("#ffffff"))
+	var rule: Label = incoming_plate.get_node("Body/Rule")
+	rule.text = String(incoming.get("rule_text", ""))
+	rule.custom_minimum_size.x = float(cfg["prompt_panel_min_width"]) * s - 2.0 * float(cfg["prompt_panel_padding"]) * s - 16.0 * s
+	rule.add_theme_font_size_override("font_size", small)
+	rule.add_theme_color_override("font_color", Color.html(String(cfg["prompt_text_color"])))
+
+
 func _place_grid(cfg: Dictionary, s: float, texts: Dictionary) -> void:
 	var slot_types: Array[String] = []
 	var by_slot: Dictionary = {}
@@ -599,7 +719,7 @@ func _fit_panel() -> void:
 	var cfg := UiConfig.run_ui()
 	panel.scale = Vector2.ONE  # measure at natural size
 	var floor_scale: float = float(cfg["option_min_fit_scale"])
-	if scroll.visible and _layout == "grid":
+	if scroll.visible and _scrolls():
 		# The removal grid scrolls when it would not fit: give the scroll area what the rest of the panel leaves.
 		var rest_h: float = panel.get_combined_minimum_size().y - scroll.get_combined_minimum_size().y
 		var room: float = _avail_height(cfg) - rest_h

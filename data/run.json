@@ -97,6 +97,9 @@
             "swap_title": "Too many relics", "swap_line": "You hold %d relics, the most you can carry. Give one up to take %s.",
             "cancel_label": "Cancel", "none_giveable": "Nothing you hold can be given up.",
             "label": "Relic", "owned_title": "Relics", "none_owned": "No relics yet.",
+            "taking_format": "Taking: %s (%s, %s)", "free_tag": "Free", "pick_hint": "Enter to take", "giveup_hint": "Enter to give this one up", "skip_hint": "Enter to skip",
+            "cap_note": "You are at the limit. Taking this asks you to give one up first.", "cell_format": "%s, %s", "locked_label": "Cannot be given up",
+            "pause_given_up": "Given up this run", "pause_empty": "No relics yet. Elite rooms and the relic room offer them.", "pause_count": "%d of %d held",
             "tier_names": { "tier1": "Tier 1", "tier2": "Tier 2", "tier3": "Tier 3", "boss": "Boss" }
         },
         "win": { "title": "Run complete", "line": "Somehow, you finished. Nobody is more surprised than you.", "button": "New run", "hint": "Enter to start over", "stat_rooms": "Rooms cleared", "stat_time": "Total time", "stat_hp": "HP left" },

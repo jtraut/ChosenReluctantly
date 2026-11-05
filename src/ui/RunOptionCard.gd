@@ -8,11 +8,15 @@ extends Button
 ##   ACTION  a rest-room choice (heal / remove a card) or any text option: title, detail, glyph
 ##   CELL    a compact removal-list cell: name and copy count, effect line, the deck-rule reason when greyed
 ##   BACK    a small footer button
+##   RELIC   (BD2) a relic offer: square corners, a filled "Relic" band with a hexagon, the pool colour as the frame and an inner
+##           line, so it cannot be mistaken for a card (rounded, one thick frame, a slot key chip)
+##   RELIC_CELL  a compact relic for the give-one-up list: name, pool and tier, rule text
+##   SKIP_FREE   the relic offer's Skip: no reject pips, a "Free" tag and an arrow, so it never reads as a cost
 ## The button's own text stays empty: children draw the content (mouse ignored) and `_get_minimum_size` takes
 ## the height from them. The highlight is one state: keyboard focus, and hover moves focus here too.
 ## Not colour alone: the focus is a thick outline plus an "Enter to ..." line, disabled cards say why in words.
 
-enum Look { CARD, REJECT, ACTION, CELL, BACK }
+enum Look { CARD, REJECT, ACTION, CELL, BACK, RELIC, RELIC_CELL, SKIP_FREE }
 
 var option: Dictionary = {}
 var look: Look = Look.CARD
@@ -30,6 +34,10 @@ var chip_row: ChipRow = null
 ## The condition lines of the effect text ("If the target has Burn: ..."), apart from the plain effects.
 var condition_label: Label = null
 var number_badge: PanelContainer = null
+## BD2 relic looks: the filled "Relic" band, the cap warning line, and the free-tag pill of the skip tile.
+var relic_band: PanelContainer = null
+var cap_note_label: Label = null
+var free_tag: PanelContainer = null
 
 var _inner: VBoxContainer = null
 var _width: float = 0.0
@@ -81,6 +89,7 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 	_rejects_remaining = int(extra.get("rejects_remaining", 0))
 	_rejects_max = int(extra.get("rejects_max", 0))
 	var texts: Dictionary = extra.get("texts", {})
+	var relic_texts: Dictionary = extra.get("relic_texts", {})
 	var enabled: bool = bool(opt.get("enabled", true))
 	disabled = not enabled
 	focus_mode = Control.FOCUS_ALL
@@ -105,13 +114,17 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 	var body_size: int = roundi(float(cfg["option_body_font_size"]) * s)
 	var small_size: int = roundi(float(cfg["option_small_font_size"]) * s)
 
+	if look == Look.RELIC:
+		relic_band = _relic_band(opt, relic_texts, small_size)
+		_inner.add_child(relic_band)
+
 	# Head row: number key (when numbered), name, copy count.
 	var head := HBoxContainer.new()
 	head.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	head.add_theme_constant_override("separation", roundi(8.0 * s))
 	_inner.add_child(head)
 	var glyph_room: float = 0.0
-	if look == Look.ACTION or look == Look.REJECT:
+	if look == Look.ACTION or look == Look.REJECT or look == Look.SKIP_FREE or look == Look.RELIC_CELL:
 		glyph_room = float(cfg["option_title_font_size"]) * 1.4 * s
 	if index >= 0 and look != Look.BACK:  # callers pass -1 now; kept for a screen that wants a numbered list again
 		number_badge = _badge(str(index + 1), small_size, enabled)
@@ -119,7 +132,7 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 	title_label = _label(String(opt.get("label", "")), title_size if look != Look.BACK else body_size, title_color, true)
 	title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_label.custom_minimum_size.x = inner_width - glyph_room - (float(small_size) * 2.2 if number_badge != null else 0.0) - (float(body_size) * 2.5 if look == Look.CELL else 0.0)
-	if look == Look.CELL:
+	if look == Look.CELL or look == Look.RELIC_CELL:
 		title_label.add_theme_font_size_override("font_size", body_size)
 	if look == Look.BACK:
 		title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -143,6 +156,13 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 		chip_row = _chip_row(String(opt.get("card_id", "")), inner_width, enabled, small_size)
 		if chip_row != null:
 			_inner.add_child(chip_row)
+	if look == Look.RELIC or look == Look.RELIC_CELL:
+		_inner.add_child(_relic_pool_row(opt, relic_texts, small_size, body_color))
+		if look == Look.RELIC:
+			var keyword_chips: ChipRow = _relic_chips(opt, inner_width, small_size)
+			if keyword_chips != null:
+				chip_row = keyword_chips
+				_inner.add_child(chip_row)
 	var detail: String = String(opt.get("detail", ""))
 	var cell_blocked: bool = look == Look.CELL and not enabled and String(opt.get("reason", "")) != ""
 	tooltip_text = String(opt.get("reason", ""))
@@ -150,18 +170,23 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 		tooltip_text = detail if enabled else "%s
 %s" % [detail, String(opt.get("reason", ""))]
 	var rules: String = keyword_rules_text(String(opt.get("card_id", "")))
+	if look == Look.RELIC_CELL:
+		tooltip_text = detail + "\n" + String(opt.get("flavor", ""))
 	if detail != "" and look != Look.BACK and not cell_blocked:  # a greyed list cell gives the room to its reason
 		# BD1: CardSummary puts each condition on its own line after the plain effects; those lines wear the accent colour.
 		var detail_lines: PackedStringArray = detail.split("
 ") if look in [Look.CARD, Look.CELL] else PackedStringArray([detail])
-		detail_label = _label(detail_lines[0], small_size if look == Look.CELL else body_size, body_color, true)
+		detail_label = _label(detail_lines[0], small_size if (look == Look.CELL or look == Look.RELIC_CELL) else body_size, body_color, true)
 		detail_label.custom_minimum_size.x = inner_width
 		_inner.add_child(detail_label)
 		if detail_lines.size() > 1:
 			condition_label = _label("
-".join(detail_lines.slice(1)), small_size if look == Look.CELL else body_size, _text_color(enabled, Color.html(String(cfg["option_accent_color"]))), true)
+".join(detail_lines.slice(1)), small_size if (look == Look.CELL or look == Look.RELIC_CELL) else body_size, _text_color(enabled, Color.html(String(cfg["option_accent_color"]))), true)
 			condition_label.custom_minimum_size.x = inner_width
 			_inner.add_child(condition_label)
+	if look == Look.SKIP_FREE:
+		free_tag = _free_tag(String(relic_texts.get("free_tag", "")), small_size)
+		_inner.add_child(free_tag)
 	if look == Look.REJECT:
 		_pips = Control.new()
 		_pips.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -178,10 +203,14 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 		tooltip_text += ("
 " if tooltip_text != "" else "") + rules
 	var flavor: String = String(opt.get("flavor", ""))
-	if flavor != "" and look == Look.CARD:
+	if flavor != "" and (look == Look.CARD or look == Look.RELIC):
 		flavor_label = _label(flavor, small_size, _text_color(enabled, Color.html(String(cfg["option_flavor_color"]))), true)
 		flavor_label.custom_minimum_size.x = inner_width
 		_inner.add_child(flavor_label)
+	if look == Look.RELIC and bool(opt.get("needs_swap", false)) and String(relic_texts.get("cap_note", "")) != "":
+		cap_note_label = _label(String(relic_texts["cap_note"]), small_size, Color.html(String(cfg["option_warn_color"])), true)
+		cap_note_label.custom_minimum_size.x = inner_width
+		_inner.add_child(cap_note_label)
 	if look == Look.CARD and int(extra.get("owned", 0)) > 0:
 		owned_label = _label(owned_text(int(extra["owned"]), String(texts.get("owned", "You own %d"))), small_size, _text_color(enabled, Color.html(String(cfg["option_accent_color"]))), false)
 		_inner.add_child(owned_label)
@@ -190,9 +219,16 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 		reason_label = _label(String(texts.get("unavailable", "Unavailable: %s")) % reason, small_size, Color.html(String(cfg["option_warn_color"])), true)
 		reason_label.custom_minimum_size.x = inner_width
 		_inner.add_child(reason_label)
-	if enabled and look in [Look.CARD, Look.ACTION, Look.REJECT]:
+	if enabled and look in [Look.CARD, Look.ACTION, Look.REJECT, Look.RELIC, Look.RELIC_CELL, Look.SKIP_FREE]:
 		var key: String = "pick_hint" if (look == Look.CARD) else ("remove_hint" if String(opt.get("kind", "")) == "remove" else "act_hint")
-		hint_label = _label(String(texts.get(key, "Enter")), small_size, Color.html(String(cfg["option_focus_color"])), false)
+		var hint_text: String = String(texts.get(key, "Enter"))
+		if look == Look.RELIC:
+			hint_text = String(relic_texts.get("pick_hint", hint_text))
+		elif look == Look.RELIC_CELL:
+			hint_text = String(relic_texts.get("giveup_hint", hint_text))
+		elif look == Look.SKIP_FREE:
+			hint_text = String(relic_texts.get("skip_hint", hint_text))
+		hint_label = _label(hint_text, small_size, Color.html(String(cfg["option_focus_color"])), false)
 		hint_label.modulate.a = 0.0
 		_inner.add_child(hint_label)
 	_inner.minimum_size_changed.connect(_sync_min_size)  # wrapped labels settle after the first layout pass
@@ -200,6 +236,87 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 	focus_exited.connect(_on_focus_changed.bind(false))
 	mouse_entered.connect(_on_hover)
 	_sync_min_size()
+
+
+## Relic accent (data run_ui.relic_accent_color): the "Relic" band, the inner line and the hexagon. Not the keyword chip colour.
+func _relic_accent() -> Color:
+	return Color.html(String(_cfg.get("relic_accent_color", "#c9a2ff")))
+
+
+## The filled "Relic" band across the top of a relic offer: a hexagon, the word, and the tier on the right (shape and word, not colour alone).
+func _relic_band(opt: Dictionary, relic_texts: Dictionary, font_size: int) -> PanelContainer:
+	var band := PanelContainer.new()
+	band.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var style := StyleBoxFlat.new()
+	style.bg_color = _relic_accent()
+	style.content_margin_left = 6.0 * _scale
+	style.content_margin_right = 6.0 * _scale
+	style.content_margin_top = 2.0 * _scale
+	style.content_margin_bottom = 2.0 * _scale
+	band.add_theme_stylebox_override("panel", style)
+	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_theme_constant_override("separation", roundi(6.0 * _scale))
+	band.add_child(row)
+	var dark: Color = Color.html(String(_cfg.get("relic_band_text_color", "#1a1218")))
+	var hex := RunTypeIcon.new()
+	hex.shape = RunIcons.SHAPE_HEX
+	hex.color = dark
+	hex.custom_minimum_size = Vector2.ONE * float(font_size) * 1.1
+	hex.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(hex)
+	var word := _label(String(relic_texts.get("label", "Relic")), font_size, dark, false)
+	word.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(word)
+	row.add_child(_label(String(opt.get("tier_name", "")), font_size, dark, false))
+	return band
+
+
+## "[swatch] Fire": the relic's pool, a colour square in the pool's frame colour plus its name.
+func _relic_pool_row(opt: Dictionary, relic_texts: Dictionary, font_size: int, body_color: Color) -> Control:
+	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_theme_constant_override("separation", roundi(6.0 * _scale))
+	var swatch := ColorRect.new()
+	swatch.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	swatch.color = PoolDatabase.frame_color_for_pool(String(opt.get("pool", "")))
+	swatch.custom_minimum_size = Vector2.ONE * float(font_size) * 0.8
+	swatch.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(swatch)
+	var text_value: String = String(opt.get("pool_name", ""))
+	if look == Look.RELIC_CELL:
+		text_value = String(relic_texts.get("cell_format", "%s, %s")) % [String(opt.get("pool_name", "")), String(opt.get("tier_name", ""))]
+	row.add_child(_label(text_value, font_size, body_color, false))
+	return row
+
+
+## A relic's keywords as outlined chips (they are tags like Burn, never card keywords), or null.
+func _relic_chips(opt: Dictionary, width: float, font_px: int) -> ChipRow:
+	var tags: Array = opt.get("keywords", [])
+	if tags.is_empty():
+		return null
+	var hud_cfg: Dictionary = UiConfig.hud()
+	var row := ChipRow.new()
+	row.configure(hud_cfg, font_px, roundf(float(font_px) * 1.45), 6.0 * _scale, 5.0 * _scale, width, int(hud_cfg["chip_max"]), false, 0.0, false)
+	row.show_chips(tags)
+	return row
+
+
+## The "Free" pill on the skip tile.
+func _free_tag(word: String, font_px: int) -> PanelContainer:
+	var pill := PanelContainer.new()
+	pill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color.html(String(_cfg["option_accent_color"]))
+	style.set_corner_radius_all(roundi(4.0 * _scale))
+	style.content_margin_left = 7.0 * _scale
+	style.content_margin_right = 7.0 * _scale
+	style.content_margin_top = 1.0 * _scale
+	style.content_margin_bottom = 1.0 * _scale
+	pill.add_theme_stylebox_override("panel", style)
+	pill.add_child(_label(word, font_px, Color.html("#1a1218"), false))
+	pill.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	return pill
 
 
 ## "Keystone: The card a plan is built around." for each keyword the card carries (data/keywords.json), one per line; "" for none.
@@ -326,6 +443,8 @@ func frame_card_id() -> String:
 
 ## The frame colour this option's card wears (tests).
 func frame_color() -> Color:
+	if look == Look.RELIC or look == Look.RELIC_CELL:
+		return PoolDatabase.frame_color_for_pool(String(option.get("pool", "")))
 	return PoolDatabase.frame_color_for_card(frame_card_id()) if frame_card_id() != "" else Color.html(String(_cfg["option_card_border_color"]))
 
 
@@ -350,10 +469,16 @@ func _apply_styles(enabled: bool) -> void:
 	elif look == Look.BACK:
 		base.set_corner_radius_all(roundi(20.0 * _scale))
 	# A card (reward offer, removal cell) wears its family colour as a thicker frame (GDD section 4, card frame colours).
-	var family: bool = frame_card_id() != ""
+	var relic: bool = look == Look.RELIC or look == Look.RELIC_CELL
+	var family: bool = frame_card_id() != "" or relic
+	if relic:
+		base.set_corner_radius_all(0)  # square: a card is rounded
+	if look == Look.SKIP_FREE:
+		base.set_corner_radius_all(roundi(2.0 * _scale))
+		base.border_color = Color.html(String(_cfg["option_accent_color"]))
 	if family:
 		base.set_border_width_all(maxi(roundi(float(_cfg["option_frame_width"]) * _scale), 2))
-		base.border_color = PoolDatabase.frame_color_for_card(frame_card_id())
+		base.border_color = frame_color()
 	var hover := base.duplicate() as StyleBoxFlat
 	hover.bg_color = Color.html(String(_cfg["option_card_hover_color"]))
 	var off := base.duplicate() as StyleBoxFlat
@@ -361,7 +486,7 @@ func _apply_styles(enabled: bool) -> void:
 	off.border_color = Color(off.border_color, 0.5)
 	var focus := StyleBoxFlat.new()
 	focus.draw_center = false
-	focus.set_corner_radius_all(radius)
+	focus.set_corner_radius_all(0 if relic else radius)
 	var focus_w: int = focus_ring_width(_cfg, _scale)
 	focus.set_border_width_all(focus_w)
 	focus.border_color = Color.html(String(_cfg["option_focus_color"]))
@@ -400,6 +525,22 @@ func _draw() -> void:
 	elif look == Look.ACTION and kind == "remove":
 		var warn: Color = Color.html(String(_cfg["option_warn_color"])) if not disabled else color
 		draw_rect(Rect2(center + Vector2(-0.5, -0.12) * size_px, Vector2(size_px, size_px * 0.24)), warn)
+	elif look == Look.SKIP_FREE:
+		var green: Color = Color.html(String(_cfg["option_accent_color"]))
+		var tip: Vector2 = center + Vector2(0.5, 0.0) * size_px
+		draw_line(center + Vector2(-0.5, 0.0) * size_px, tip, green, w)
+		draw_line(tip, tip + Vector2(-0.3, -0.3) * size_px, green, w)
+		draw_line(tip, tip + Vector2(-0.3, 0.3) * size_px, green, w)
+	elif look == Look.RELIC_CELL:
+		var pts_hex := RunIcons.polygon(RunIcons.SHAPE_HEX, size_px * 0.5)
+		var hex_moved := PackedVector2Array()
+		for p in pts_hex:
+			hex_moved.append(p + center)
+		draw_colored_polygon(hex_moved, _relic_accent())
+	elif look == Look.RELIC:
+		# The inner line of the double frame: a card has one thick frame, a relic has a second thin one inside it.
+		var inset: float = float(maxi(roundi(float(_cfg["option_frame_width"]) * _scale), 2)) + maxf(2.0 * _scale, 2.0)
+		draw_rect(Rect2(Vector2.ONE * inset, size - Vector2.ONE * inset * 2.0), _relic_accent(), false, maxf(_scale, 1.0))
 	elif look == Look.BACK:
 		return
 

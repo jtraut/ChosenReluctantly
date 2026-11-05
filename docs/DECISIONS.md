@@ -1546,3 +1546,31 @@ ux-designer made these calls in b61c388..1d3cbda. All values live in `data/ui.js
 - **Card text order:** in `CardSummary.effect_line`, condition lines now come after the cooldown, each on its own line.
 - **No condition sentence on the HUD in combat.** The HUD ignores the mouse, and the sentence doesn't fit. A pause-screen list of slot cards is the fallback idea, not scheduled.
 - **1024x600 card-strip overflow:** fixed (3.3 px -> 0.3 px).
+
+## 2026-11-04 - BD2 split into two gameplay-dev sittings (game-lead)
+- **Choice:** BD2's gameplay-dev step runs in two sittings, like BD1. The rest of the loop (ux -> qa -> playtester -> tech-writer -> close, one tag) runs once, after both.
+  - **BD2-A (engine, no player-visible change):**
+    - the rest of the `CombatEvents` relay (BUILD_DEPTH §4.3), with every event the 7 relics need, including `status_ended` with reason `owner_died` fired before the node frees, and `dash_ended`;
+    - `hit_landed.origin`;
+    - `RelicManager`;
+    - the `data/relics/*.json` loader and validator, with the full `sources` list (`elite`, `relic_room`, `merchant`, `mini_boss`, `curse_room`, `buff_room`, `boss`, `starter`, `event`, `altar`; chests are a `relic_room` size, BUILD_DEPTH §4.7 row 4, not a source) and `boss` tier valid only with `mini_boss`;
+    - the `run.json` `relics` block, including `enabled`;
+    - `RunState.relics` and `relics_given_up`;
+    - the recursion guard;
+    - the pure offer function: source, count and rng in; pool, source, owned and given-up filters; tier weights per act.
+    - Test fixture relics only. No relic files ship in `data/relics/` yet.
+    - BD1 carry-overs: the `JsonDataTable.get_entry` type fix, the `status_damage_mult` validator floor, and the slice6 crowd flake.
+  - **BD2-B (content and run flow):**
+    - the 7 relics;
+    - elite relic offers and the straight-run relic room;
+    - the at-cap give-one-up step;
+    - ux data exposure (trigger signal, owned and given-up lists, pending swap state with cancel);
+    - bot sim relic picks;
+    - BD1 carry-overs: the sim tooling (damage-by-source tally, preset card swap, timed-out boss runs reported separately) and the seed 7 no-card Rogue soft lock.
+- **Save round trip means `RunState.to_dict()` / `from_dict()`, proven by tests.** No save file is written in BD2. A save file and resume are MAP3 (D32). Rejected: building the save file now, which is MAP3's scope.
+- **Hash gates:**
+  - **BD2-A:** suite all green; arena 30 s seed 1 = 1897787086, 90 s = 4207041509; bot sim `-Rooms 20 -Seed 3` = 846850403. None may move, since no relic ships.
+  - **BD2-B:** the relic room changes the run's room list, so the bot-sim hash will move. With `relics.enabled` false the run must still give 846850403. New relics-on baselines are logged, as BD1-B did. The arena hashes shouldn't move.
+- **Exit Strategy:** BUILD_DEPTH §4.5 already lets it slip to BD3. gameplay-dev makes that call in BD2-B and reports it. `dash_ended` is built in BD2-A either way.
+- **Why:** BD2 is as large as BD1. The relics need every engine piece, so the seam sits between the engine and the content. Each sitting leaves the repo running and committed.
+- **Rejected:** two full loops (engine-only work has nothing to playtest), and one sitting (it risks a half-built engine at a cutoff).

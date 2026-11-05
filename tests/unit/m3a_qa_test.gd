@@ -65,8 +65,8 @@ func test_generator_does_not_repeat_a_wave_list_when_another_fits() -> void:
 		var rooms := RunGenerator.generate(seed_value, config)
 		var last_wave := ""
 		for room: Dictionary in rooms:
-			if room["type"] == "rest":
-				continue
+			if room["type"] == "rest" or room["type"] == "relic_room":
+				continue  # neither has a wave list (the relic room takes one from `relics.relic_room`, BD2)
 			var options := RunConfig.variants_for(int(room["index"]), (config["rooms"] as Dictionary)[room["type"]])
 			var others := options.filter(func(v: Dictionary) -> bool: return String(v["id"]) != last_wave)
 			if not others.is_empty():

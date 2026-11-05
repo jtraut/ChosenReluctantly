@@ -832,6 +832,22 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
       - **Pre-BD2 flake:** `c1e_cues_test` "ghost look lasts until the player is clear" (`c1e_cues_test.gd:199`) fails about 1 in 5. Routed to qa with MAP1.
       - **`RunState.from_dict` crashes on a null, array or object `offer` entry** (RunState.gd:151). 3d item 6a moves into MAP3, before the save file ships (DECISIONS "BD2 qa carry-overs").
       - **Balance, BD3:** with relics on, the Controlled Burn `-Plan` boss median drops 73.4 s -> 54.2 s (6 runs, noisy). Wizard relic damage is 1.15%, not under 1%.
+  - **Playtest: no blocker** (`docs/playtests/2026-11-04-bd2-short.md`, 87116a8). Captures and scripted input only, no hand play.
+    - **Fixed before close (ux):** Cancel is the default focus on give-one-up, so one Enter can't lose a relic; "1 relic" is singular.
+    - **Not faults:**
+      - The Wizard was offered Spite Knuckles, but only through the `--relic-offer` capture flag, which skips the pool filter on purpose. Normal offers filter by pool (qa).
+      - "20 held" is right; the cap is 20 (D34 = C). The playtester read older roadmap text.
+    - **Carry-overs, ux, with MAP1's ux step:**
+      - a floating relic name or ring at the trigger point, since today only the top-left chip says why something exploded;
+      - a counter on the Spite Knuckles chip;
+      - HUD chip initials (PI, SK, HS) are hard to tell apart;
+      - the pause relic list shows 2 of 3 relics in a short box (with qa's see-through note);
+      - "Reject" is unexplained on the relic offer screen;
+      - "After Move" is about 9 px and could name the key, e.g. "After Move (Ctrl)", from InputLabels.
+    - **Kept as built (game-lead):**
+      - **Relic room up to room 9.** The playtester would cap it at about room 7. MAP1 replaces it with map nodes, so MAP1's node rules take that note.
+      - **Spite Knuckles counts per room** (DECISIONS "BD2-A follow-ups"). A visible counter comes first; carrying the count across rooms waits for the director's play.
+    - **Not verified by the playtester:** the primed marker and USED flash at 1024x600, the dim condition line on a really unlit slot, the chip flash over time, Cancel keeping your relics (qa tested it), and Heavy Sigh or Spite Knuckles firing in play. These go to the director's "what to try".
 
 - [ ] **BD3, depth 2 (after 3d unless the director moves it).** Stacking statuses (`stacking`, `per_stack`, `status_max_stacks.<id>`), `scale`, `detonate_status`, triggers on card buffs, conditions `self_stacks_at_least`/`deck_count_at_least`/`hp_below`; archetypes R-C Bleed Out, R-D Grudge Brawler, W-B Thesis, W-D Ward Battlemage (about 9 NEW cards, incl. a 4th Rogue Utility card); the other 8 relics plus Exit Strategy (slipped from BD2: a line of fire along the dash path needs new zone placement; DECISIONS "BD2-B"); stack counts on enemies. The sim checks become gating after tuning. Brief to be written at BD2's close.
 

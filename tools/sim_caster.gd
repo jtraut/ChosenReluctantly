@@ -7,5 +7,5 @@ var stat_modifiers := StatModifiers.new()
 var dashes: int = 0
 
 
-func start_forced_move(_direction: Vector3, _speed: float, _duration: float, _invulnerable: bool = false, _look: Dictionary = {}, _path_hit: Dictionary = {}, _pass_through: bool = false) -> void:
+func start_forced_move(_direction: Vector3, _speed: float, _duration: float, _invulnerable: bool = false, _look: Dictionary = {}, _path_hit: Dictionary = {}, _pass_through: bool = false, _origin: String = "") -> void:
 	dashes += 1

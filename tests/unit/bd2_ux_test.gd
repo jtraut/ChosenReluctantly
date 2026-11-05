@@ -7,9 +7,14 @@ const HUD_SCENE := "res://scenes/ui/Hud.tscn"
 const SIZES: Array[Vector2] = [Vector2(1024, 600), Vector2(1280, 720), Vector2(1920, 1080), Vector2(2560, 1440)]
 
 
+var _window_size: Vector2i = Vector2i.ZERO
+
+
 func after_test() -> void:
 	Juice.reset()
 	SlotSynergyView.reset_cache()
+	if _window_size != Vector2i.ZERO:
+		get_window().size = _window_size  # a test that resized the window must not leak the size into the next suite
 
 
 func _ids(count: int) -> Array[String]:
@@ -158,6 +163,7 @@ const SCREEN_PATH := "res://scenes/ui/RunPromptScreen.tscn"
 
 func before_test() -> void:
 	RunSession.clear()
+	_window_size = get_window().size
 
 
 func _frames(count: int = 3) -> void:
@@ -371,9 +377,11 @@ func test_a_full_house_of_twenty_giveable_relics_scrolls_and_stays_inside_the_wi
 		var cancel_rect: Rect2 = screen.footer_box.get_global_transform() * Rect2(Vector2.ZERO, screen.footer_box.size)
 		assert_float(cancel_rect.end.y).is_less_equal(size.y + 0.5)
 		var last: Control = screen.options_box.get_child(19) as Control
+		assert_int(screen.scroll.scroll_vertical).is_equal(0)
 		last.grab_focus()  # the 20th relic is reachable: focusing it scrolls it into view
 		await _frames(3)
 		assert_bool(last.has_focus()).is_true()
+		assert_int(screen.scroll.scroll_vertical).override_failure_message("focusing the last relic did not scroll the list at %s" % size).is_greater(0)
 
 
 # --- a real run: the HUD row and the pause list read the run ---
@@ -515,7 +523,10 @@ func test_the_strong_chip_is_wider_than_its_word_by_the_star_and_is_never_droppe
 	assert_float(float(starred[1]["width"])).is_equal_approx(float(plain[1]["width"]), 0.01)
 	var cfg: Dictionary = UiConfig.hud()
 	assert_str(String(cfg["chip_keystone_color"])).is_not_equal(String(cfg["chip_keyword_color"]))  # Keystone is not the Primer/Payoff look
-	assert_str(String(UiConfig.run_ui()["relic_accent_color"]).to_lower()).is_not_equal(String(cfg["chip_keyword_color"]).to_lower())  # nor the relic colour
+	# nor the relic colour: a clearly different hue (the old pale lavender sat right next to the relic violet)
+	var relic_hue: float = Color.html(String(UiConfig.run_ui()["relic_accent_color"])).h
+	var keyword_hue: float = Color.html(String(cfg["chip_keyword_color"])).h
+	assert_float(absf(relic_hue - keyword_hue)).is_greater(0.08)
 
 
 func test_the_prime_ended_mark_fires_on_the_edge_fades_and_clears_on_a_new_prime() -> void:
@@ -593,3 +604,44 @@ func test_a_movement_conditional_reward_card_carries_the_dodge_note_and_others_d
 		auto_free(button)
 		button.setup(opt, RunOptionCard.Look.CARD, 268.0, cfg, 1.0, {"index": -1, "owned": 0, "texts": texts})
 		assert_bool(button.dodge_note_label != null).override_failure_message(String(pair[0])).is_equal(bool(pair[1]))
+
+
+func test_arrow_keys_walk_from_the_giveup_cells_to_cancel() -> void:
+	var screen: RunPromptScreen = await _open_model(Vector2(1280, 720), _model(["pyre_insurance", "heavy_sigh"], ["lingering_embers"], 2, "lingering_embers"))
+	var cells: Array[Control] = []
+	for child: Node in screen.options_box.get_children():
+		cells.append(child as Control)
+	assert_int(cells.size()).is_equal(2)
+	assert_bool(cells[0].has_focus()).is_true()  # the first giveable relic starts highlighted
+	var cancel: Button = screen.footer_box.get_child(0) as Button
+	var viewport: Viewport = screen.get_viewport()
+	var right := InputEventKey.new()
+	right.keycode = KEY_RIGHT
+	right.pressed = true
+	viewport.push_input(right)
+	await _frames(2)
+	assert_bool(cells[1].has_focus()).is_true()
+	var down := InputEventKey.new()
+	down.keycode = KEY_DOWN
+	down.pressed = true
+	viewport.push_input(down)
+	await _frames(2)
+	assert_bool(cancel.has_focus()).override_failure_message("Down from the last cell did not reach Cancel").is_true()
+
+
+func test_a_focused_pause_list_scrolls_with_the_arrow_keys() -> void:
+	var main: Main = await _spawn_run(["pyre_insurance", "heavy_sigh", "smoldering_grudge", "lingering_embers", "second_wind_unwillingly", "spite_knuckles"] as Array[String], [] as Array[String])
+	var screen: SettingsScreen = main.get_node("SettingsScreen")
+	screen.open()
+	await _frames(3)
+	assert_int(screen.relic_scroll.scroll_vertical).is_equal(0)
+	screen.relic_scroll.grab_focus()
+	var down := InputEventKey.new()
+	down.keycode = KEY_DOWN
+	down.pressed = true
+	for i in range(3):
+		screen.get_viewport().push_input(down)
+		await _frames(1)
+	assert_int(screen.relic_scroll.scroll_vertical).override_failure_message("Down did not scroll the focused relic list").is_greater(0)
+	screen.close()
+	RunSession.clear()

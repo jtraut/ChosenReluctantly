@@ -247,7 +247,7 @@ func _draw_condition_line(inset: float) -> void:
 	var room: float = _overlay.size.x * 0.5 - key_w * 0.5 - _px(4.0) - left
 	if room < 8.0:
 		return
-	var fit: Dictionary = TextFit.fit(_condition_short, font, room, 1, base_px, maxi(base_px - 2, 8))
+	var fit: Dictionary = TextFit.fit(_condition_short, font, room, 1, base_px, int(_cfg.get("condition_min_font_px", 10)))
 	var color := Color.html(String(_cfg.get("condition_color", "#b9aeb5")))
 	var shown_px: int = int(fit["font_size"])
 	var kr := Rect2(key_label.position, key_label.size)

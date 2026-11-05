@@ -166,6 +166,7 @@ func _build_relic_section() -> void:
 	relic_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	relic_scroll.follow_focus = true
 	relic_scroll.focus_mode = Control.FOCUS_ALL  # arrow keys scroll a long list once it has focus
+	relic_scroll.gui_input.connect(_on_relic_scroll_input)
 	relic_section.add_child(relic_scroll)
 	relic_list = VBoxContainer.new()
 	relic_list.name = "List"
@@ -232,6 +233,22 @@ func _keep_clear_of_slots() -> void:
 	var vp: Vector2 = get_viewport().get_visible_rect().size
 	var bar: Rect2 = HudLayout.slot_bar_rect(vp, UiConfig.hud(), CardSlotController.SLOT_TYPE_ORDER.size())
 	center.offset_bottom = -(vp.y - bar.position.y)
+
+
+## Up and Down scroll the focused relic list a few lines at a time. At either end the key is left alone, so focus moves on
+## (Down from the end of the list reaches Resume). Mouse wheel scrolling is the ScrollContainer's own.
+func _on_relic_scroll_input(event: InputEvent) -> void:
+	var up: bool = event.is_action_pressed(&"ui_up", true)
+	var down: bool = event.is_action_pressed(&"ui_down", true)
+	if not (up or down):
+		return
+	var step: int = roundi(float(UiConfig.settings_screen()["relic_scroll_step"]) * GameOverScreen.ui_scale(get_viewport().get_visible_rect().size.y, float(UiConfig.settings_screen()["reference_height"])))
+	var limit: int = int(relic_scroll.get_v_scroll_bar().max_value - relic_scroll.get_v_scroll_bar().page)
+	var target: int = clampi(relic_scroll.scroll_vertical + (step if down else -step), 0, maxi(limit, 0))
+	if target == relic_scroll.scroll_vertical:
+		return
+	relic_scroll.scroll_vertical = target
+	relic_scroll.accept_event()
 
 
 func _relic_text(text: String, px: int, color: Color, wrap: bool) -> Label:

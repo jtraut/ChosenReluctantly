@@ -1649,3 +1649,20 @@ Gates: suite 1546/1546 (128 suites); arena 1897787086 / 4207041509 / `-Plan` 116
   - A relic just before the boss is a fair "prepare for the boss" beat.
 - **Rejected:** on-screen 2-8 (it bunches up at room 2 and breaks two qa tests that use seed 42's room 2).
 - The playtester is asked whether room 9 feels right. The MAP1 map replaces this with a node anyway.
+
+## 2026-11-04 - BD2 ux calls (ux-designer, logged by game-lead)
+ux-designer made these in 4040259..92e4a31. Suite 1581/1581 (129 suites). All hashes unchanged and the reload soak is OK.
+- **HUD relic row:** under the dodge pips, as wide as the health panel, and it wraps. Each chip shows a two-letter mark in a pool-colour frame. A trigger lights the chip with a ring and shows a name tag. Rapid repeats stay lit and show "xN" instead of strobing.
+- **Offer cards:** square corners, a filled "Relic" band, a hexagon, the tier, the pool, keyword chips, the rule and the flavour. Skip is a green "Free" tile. The give-up step shows a "Taking: X" plate and a Cancel button. Boss relics show in a "Cannot be given up" row.
+- **`chip_keyword_color`** changed from `#d8c8ff` to `#b8dcff`, so it doesn't clash with the relic violet `#c9a2ff`.
+- **"Minimum HUD scale"** means 1024x600 (scale 0.833), since there is no UI-scale setting.
+- **BD1 carry-overs:**
+  - The primed marker has a 12 px font floor and a flash with "USED" or "GONE" when the prime ends.
+  - A slot that isn't lit shows a dim condition line such as "Needs Burn".
+  - Reward cards that need a Movement cast note that the dodge doesn't count.
+  - A card that is both Keystone and Payoff gets one "Keystone + Payoff" chip, in gold with a star.
+  - A non-breaking space keeps "3 s" together.
+
+## 2026-11-04 - Two small ux calls ux-designer raised (game-lead)
+- **The relic room plate keeps "Relics".** "Relic room" would push the boss bar to about 502 px at 1024x600, against a 500 px stack threshold. It would also need a test edit. The map (MAP1) turns this room into a node anyway. Rejected: widening the plate.
+- **No dodge note on the HUD slot.** It's on reward cards only. The slot's key row is about 55 px wide, and a taller slot would reopen PL3's pinned 142 px. Rejected: a wider key row or a taller slot. Revisit if the playtester finds the HUD's "After Move" confusing.

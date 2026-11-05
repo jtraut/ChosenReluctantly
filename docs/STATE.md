@@ -3,10 +3,30 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-04 (BD1 closed, tag `playtest-2026-11-04-BD1`). **Run order:** BD1 (done) -> **BD2 (relics, next)** -> MAP1 (map, gold) -> MAP2 (merchant) -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1.
+Last updated: 2026-11-05 (BD2 closed, tag `playtest-2026-11-05-BD2`). **Run order:** BD2 (done) -> **MAP1 (map, gold, next)** -> MAP2 (merchant) -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2.
 
 ## What's done
-- **GDD §15 note 2026-11-04 (game-lead, docs only):** the free-to-play, cosmetics-only idea, from a playtester (the director's brother). The director isn't on board: it's single player. **Pending for tech-writer (BD2 docs pass):** a CHANGELOG "director note, not a decision" entry.
+- **BD2 closed 2026-11-05:** split into two gameplay-dev sittings (DECISIONS "BD2 split").
+  - **Commits:**
+    - gameplay-dev 3b1ac07..fe051cc (BD2-A, engine) and 673db13..1af42c5 (BD2-B, content and run flow);
+    - ux 4040259..92e4a31, plus fix 9901776 (Cancel focused on give-one-up);
+    - qa PASS with carry-overs 9f9a241..1d9d3b9, plus addendum 1b53f62;
+    - playtest 87116a8 (no blocker);
+    - docs 3a75162.
+  - Tag `playtest-2026-11-05-BD2`. 6 relics shipped; Exit Strategy moved to BD3.
+  - **Baselines now:**
+    - suite 1591/1591 (130 suites);
+    - arena 30 s seed 1 = 1897787086, 90 s = 4207041509, `-Plan` 1160207333;
+    - bot sim `-Rooms 20 -Seed 3` = 846850403 (unchanged; the bot sim builds no rooms, so it can't see relics);
+    - relic run baselines: `run_wave_sim.ps1 -Run -Seed 1 -Runs 12 -Class rogue|wizard`, 12/12 won each, boss medians 57.3 s / 62.5 s.
+  - **Carry-overs** are under the BD2 brief in ROADMAP:
+    - MAP1 gameplay-dev: the `rooms.relic_room` stopgap, and checking whether the bot sim `-Swap` is a no-op;
+    - MAP1 ux: the playtest readability items and the pause list showing the scene through it;
+    - MAP1 qa: the c1e flake;
+    - MAP3: save robustness, moved from 3d 6a;
+    - BD3: chain depth on delayed relic spawns, Exit Strategy, and the Controlled Burn-with-relics balance.
+  - **Relic room placement:** MAP1's relic-node rules take the playtester's "by room 7" note, plus the director's answer to item 49.
+- **GDD §15 note 2026-11-04 (game-lead, docs only):** the free-to-play, cosmetics-only idea, from a playtester (the director's brother). The director isn't on board: it's single player. CHANGELOG "director note, not a decision" entry added in 3a75162.
 - **BD1 closed 2026-11-04:** gameplay-dev a141865..7c5a66b (BD1-A, engine) and 3e297d5..49b117b (BD1-B, content and tooling), ux b61c388..1d3cbda, qa PASS with carry-overs 2796aa4, playtest 433ca0b (no blocker), docs e254881. Tag `playtest-2026-11-04-BD1`.
   - **Baselines now:** suite 1413/1413 (121 suites); arena 30 s seed 1 = 1897787086, 90 s = 4207041509; bot sim `-Rooms 20 -Seed 3` = 846850403. These were rebaselined because the new pool cards fill the sim slots (DECISIONS "BD1-B"). The plan baselines are in the same entry.
   - **Carry-overs** are listed under the BD1 brief in ROADMAP. Do the gameplay-dev and ux items with BD2's steps, and the balance items with BD3.
@@ -54,24 +74,15 @@ Last updated: 2026-11-04 (BD1 closed, tag `playtest-2026-11-04-BD1`). **Run orde
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **BD2 started 2026-11-04.** It's split into BD2-A (engine) and BD2-B (content and run flow), logged in DECISIONS "BD2 split" and under the ROADMAP brief. **BD2-A is done:** 3b1ac07..fe051cc. Suite 1499/1499 (125 suites); arena 1897787086 / 4207041509; bot sim 846850403, which game-lead re-ran. Its calls are in DECISIONS "BD2-A engine calls" and "BD2-A follow-ups".
-  - **BD2-B is done:** 673db13..1af42c5. Suite 1546/1546 (128 suites). The hashes are unchanged; the bot sim can't see relics, so the relic baselines are the `wave_sim -Run` numbers. 6 relics shipped; Exit Strategy moved to BD3. Calls are in DECISIONS "BD2-B" and "Relic room position".
-  - **ux is done:** 4040259..92e4a31. Suite 1581/1581 (129 suites). Captures are in `docs/playtests/img/bd2-ux-*`. Calls are in DECISIONS "BD2 ux calls" and "Two small ux calls".
-  - **qa: PASS with carry-overs** (9f9a241..1d9d3b9, review `docs/reviews/2026-11-04-bd2-qa.md`). Suite 1589/1589 (130 suites). Carry-overs are under the BD2 brief in ROADMAP. 3d item 6a moved to MAP3. Playtest 87116a8: no blocker. ux fix 9901776 (Cancel focused on give-one-up, singular "1 relic"), qa addendum PASS 1b53f62 (suite 1591/1591). **tech-writer docs pass is running now.** Then close.
-  - Then tech-writer -> close.
-  - The untracked `tests/unit/bd2b_tools_test.gd.uid` is Godot's generated uid for gameplay-dev's test. qa commits it.
-  - The docs handoff also needs the README pause-capture command from ux's hand-back.
-  - qa's step also covers:
-    - the slice6 warm-up patch (see DECISIONS);
-    - making its generator test skip `relic_room`, so the `rooms.relic_room: []` stopgap can go.
-  - The playtester checks whether a relic room at room 9, just before the boss, feels right.
-  - The docs handoff needs README test counts and ARCHITECTURE notes on the relay, RelicManager and deferred effects.
-- **For the BD2 docs handoff:** the GDD §15 free-to-play note (de84af1) still needs its CHANGELOG "director note, not a decision" entry.
+- Nothing in progress. Working tree clean.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step
-1. **BD2, relics** (ROADMAP brief; BUILD_DEPTH §4). Split logged. Order: gameplay-dev **BD2-A** (done) -> gameplay-dev **BD2-B** (done) -> ux-designer (done) -> qa (PASS) -> playtester (no blocker) -> tech-writer (in progress) -> close, tag `playtest-YYYY-MM-DD-BD2`.
-2. Then **MAP1**, **MAP2**, **MAP3**, **MAP4**, **3d**, **BD3**.
+1. **MAP1, the map** (ROADMAP brief; `docs/MAP.md`).
+   - game-lead re-reads the brief, folds in the BD2 carry-overs for MAP1 (gameplay-dev, ux and qa items under the BD2 brief), and splits it into sittings if it's as large as BD2 (log the split).
+   - Full loop: gameplay-dev -> ux-designer -> qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-MAP1`.
+   - MAP1 also brings the treasure chest sizes (BUILD_DEPTH §4.7 row 4).
+2. Then **MAP2**, **MAP3**, **MAP4**, **3d**, **BD3**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).
 
@@ -80,4 +91,4 @@ Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions open; eyes 48 (BD1 decks) and 47 (35 when he has time). Answered items are in `docs/RESOLVED.md` (D34-D39 archived in e254881).
+All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions open; eyes 49 (try the relics, new), 48 (BD1 decks), 47 and 35. The round 2 vision check is due now that BD2 is in. Answered items are in `docs/RESOLVED.md` (D34-D39 archived in e254881).

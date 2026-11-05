@@ -1,0 +1,9 @@
+{
+  "id": "some_other_id",
+  "name": "Mismatch",
+  "pool": "neutral",
+  "rarity": "tier1",
+  "sources": ["elite"],
+  "modifiers": [ { "stat": "move_speed", "modifier_type": "additive", "value": 0.5 } ],
+  "flavor_text": "x"
+}

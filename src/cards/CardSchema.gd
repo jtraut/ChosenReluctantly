@@ -62,6 +62,12 @@ static func _validate_effects(card_data: Dictionary, errors: Array[String]) -> v
 		_validate_effect(effects_array[i], i, errors)
 
 
+## Checks one effect entry ({template, params, condition?}) the way a card's effects are checked. Relics reuse it, so a
+## relic effect and a card effect can never be validated differently. Problems read "effects[<index>] ...".
+static func validate_effect_entry(effect: Variant, index: int, errors: Array[String]) -> void:
+	_validate_effect(effect, index, errors)
+
+
 static func _validate_effect(effect: Variant, index: int, errors: Array[String]) -> void:
 	if typeof(effect) != TYPE_DICTIONARY:
 		errors.append("effects[%d] must be an object" % index)

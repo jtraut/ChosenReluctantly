@@ -1,0 +1,19 @@
+{
+  "id": "test_pyre",
+  "name": "Test Pyre",
+  "pool": "fire",
+  "rarity": "tier1",
+  "sources": ["elite", "relic_room", "merchant", "mini_boss"],
+  "keywords": ["Burn"],
+  "modifiers": [],
+  "triggers": [
+    {
+      "event": "status_ended",
+      "filter": { "status_id": "burn", "reason": ["expired", "owner_died"], "target_team": "enemy" },
+      "at": "event_position",
+      "internal_cooldown": 0.0,
+      "effects": [ { "template": "aoe", "params": { "damage": 4, "damage_type": "fire", "radius": 2.0 } } ]
+    }
+  ],
+  "flavor_text": "Fixture. Explodes burns."
+}

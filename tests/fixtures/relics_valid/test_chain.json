@@ -1,0 +1,16 @@
+{
+  "id": "test_chain",
+  "name": "Test Chain",
+  "pool": "neutral",
+  "rarity": "tier2",
+  "sources": ["elite", "altar", "event"],
+  "triggers": [
+    {
+      "event": "status_applied",
+      "filter": { "status_id": "burn", "allow_relic_origin": true },
+      "at": "event_position",
+      "effects": [ { "template": "aoe", "params": { "damage": 1, "damage_type": "fire", "radius": 1.0 } } ]
+    }
+  ],
+  "flavor_text": "Fixture. Allows relic origin."
+}

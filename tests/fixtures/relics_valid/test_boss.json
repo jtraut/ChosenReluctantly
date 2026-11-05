@@ -1,0 +1,12 @@
+{
+  "id": "test_boss",
+  "name": "Test Boss Relic",
+  "pool": "neutral",
+  "rarity": "boss",
+  "sources": ["mini_boss"],
+  "sacrifice_cost": 2,
+  "triggers": [
+    { "event": "room_started", "effects": [ { "template": "heal", "params": { "amount": 1.0 } } ] }
+  ],
+  "flavor_text": "Fixture. Boss tier."
+}

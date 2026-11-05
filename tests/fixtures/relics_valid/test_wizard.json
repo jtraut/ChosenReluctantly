@@ -1,0 +1,9 @@
+{
+  "id": "test_wizard",
+  "name": "Test Wizard Relic",
+  "pool": "wizard",
+  "rarity": "tier3",
+  "sources": ["elite", "relic_room"],
+  "modifiers": [ { "stat": "move_speed", "modifier_type": "additive", "value": 0.5 } ],
+  "flavor_text": "Fixture. Wizard pool, tier 3."
+}

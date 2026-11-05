@@ -26,6 +26,14 @@ func _init(team: String = "enemy", hp: float = 20.0) -> void:
 	hurtbox.team = team
 	hurtbox.health = health
 	hurtbox.status_manager = status_manager
+	# A body the shape queries (cone, aoe, zone) can find: the hurtbox layer and a small sphere.
+	hurtbox.collision_layer = CollisionLayers.HURTBOX
+	hurtbox.collision_mask = 0
+	var shape := CollisionShape3D.new()
+	var sphere := SphereShape3D.new()
+	sphere.radius = 0.5
+	shape.shape = sphere
+	hurtbox.add_child(shape)
 	add_child(hurtbox)
 	health.died.connect(_on_died)
 

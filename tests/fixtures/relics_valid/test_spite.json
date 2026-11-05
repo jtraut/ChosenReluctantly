@@ -1,0 +1,16 @@
+{
+  "id": "test_spite",
+  "name": "Test Spite",
+  "pool": "rogue",
+  "rarity": "tier1",
+  "sources": ["elite", "relic_room"],
+  "triggers": [
+    {
+      "event": "hit_landed",
+      "filter": { "origin": "light", "every_nth": 4, "target_team": "enemy" },
+      "at": "event_target",
+      "effects": [ { "template": "apply_status", "params": { "status_id": "burn", "duration": 3.0 } } ]
+    }
+  ],
+  "flavor_text": "Fixture. Every fourth light hit burns."
+}

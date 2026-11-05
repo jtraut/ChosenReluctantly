@@ -48,6 +48,7 @@ static func validate(config: Dictionary, known_enemies: Array[String], _known_ca
 	errors.append_array(_validate_tiers(config.get("tiers")))
 	errors.append_array(_validate_rooms(config, known_enemies, total))
 	errors.append_array(_validate_ui(config.get("ui")))
+	errors.append_array(RelicConfig.validate_block(config.get("relics")))
 	return errors
 
 

@@ -1,0 +1,12 @@
+{
+  "id": "test_grudge",
+  "name": "Test Grudge",
+  "pool": "neutral",
+  "rarity": "tier2",
+  "sources": ["elite", "relic_room", "merchant"],
+  "modifiers": [
+    { "stat": "move_speed", "modifier_type": "multiplicative", "value": 0.1 },
+    { "stat": "status_damage_mult.burn", "modifier_type": "multiplicative", "value": 0.25 }
+  ],
+  "flavor_text": "Fixture. Modifiers only."
+}

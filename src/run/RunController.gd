@@ -46,6 +46,7 @@ var _launch_clear_after: float = -1.0
 var _prepared: bool = false
 var _launch_ok: bool = true
 var _fresh_launch: bool = false
+var _relics: RelicManager = null
 
 
 ## Called by Main._ready in run mode, after the scene is wired. Starts the current room.
@@ -71,6 +72,7 @@ func begin(main: Main) -> void:
 		player.health.current_health = clampf(_state.hp, 1.0, _state.max_hp)
 		player.health.health_changed.emit(player.health.current_health, player.health.max_health)
 	player.card_slots.set_deck(_state.deck)
+	_setup_relics(main)
 	_ctx = RunChoices.shipped_context(player.owned_pools)
 	player.player_died.connect(_on_player_died, CONNECT_ONE_SHOT)
 	var room: Dictionary = current_room()
@@ -96,6 +98,26 @@ func begin(main: Main) -> void:
 		relay.notify_room_started(_state.room_index, String(room["type"]))
 	if _launch_clear_after >= 0.0 and fresh_launch:
 		get_tree().create_timer(_launch_clear_after).timeout.connect(_debug_clear_room)
+
+
+## Builds this room's RelicManager from the run's relics (BD2). With relics off, or none held, nothing is created, so a run
+## without relics is exactly the run it was. The shipped relic files are validated here, so a corrupt one fails at run start.
+func _setup_relics(main: Main) -> void:
+	if not RelicConfig.enabled():
+		return
+	RelicDatabase.problems()  # loads data/relics once; every bad file has already been push_error'd
+	if _state.relics.is_empty():
+		return
+	_relics = RelicManager.new()
+	_relics.name = "RelicManager"
+	add_child(_relics)
+	_relics.configure(main.player, main, main.player.status_rng, CombatLink.events())
+	_relics.load_relics(_state.relics)
+
+
+## This room's RelicManager, or null when the run holds no relics (or relics are off). ux connects `relic_triggered` here.
+func relic_manager() -> RelicManager:
+	return _relics
 
 
 ## Reads the launch args (first scene of a launch only) and makes sure a run exists, so the character is known. Main calls

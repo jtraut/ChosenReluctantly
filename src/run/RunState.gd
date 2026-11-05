@@ -37,6 +37,10 @@ var offer: Array[String] = []
 ## One entry per choice made: {index, kind: pick|reject|heal|remove, card_id, amount}. Picks and removals also
 ## change `deck`; this is the record the sim and the end screens read.
 var choice_log: Array[Dictionary] = []
+## The relic ids this run holds, in the order they were taken (BD2). Reset with the run: nothing persists between runs.
+var relics: Array[String] = []
+## Relic ids the player gave up this run (a swap at the cap, a sacrifice). They are never offered again this run.
+var relics_given_up: Array[String] = []
 
 
 ## A fresh run: the reject allowance comes from data/run.json (RunConfig), the starter from the caller (the character's).
@@ -98,6 +102,8 @@ func to_dict() -> Dictionary:
 		"pending": pending,
 		"offer": offer.duplicate(),
 		"choice_log": choice_log.duplicate(true),
+		"relics": relics.duplicate(),
+		"relics_given_up": relics_given_up.duplicate(),
 	}
 
 
@@ -153,6 +159,9 @@ static func from_dict(data: Dictionary) -> RunState:
 			"card_id": String(c.get("card_id", "")),
 			"amount": float(c.get("amount", 0.0)),
 		})
+	# Old dicts (before BD2) have no relic lists: they load as empty.
+	state.relics = _id_list(data.get("relics", []), "relics")
+	state.relics_given_up = _id_list(data.get("relics_given_up", []), "relics_given_up")
 	for card_id: Variant in (data["deck"] as Array):
 		state.deck.append(String(card_id))
 	for entry: Variant in (data["history"] as Array):
@@ -170,6 +179,44 @@ static func from_dict(data: Dictionary) -> RunState:
 	if dropped_choice and not state.history.is_empty() and int((state.history[state.history.size() - 1] as Dictionary)["index"]) == state.room_index:
 		state.room_index += 1
 	return state
+
+
+## A list of ids from saved data: anything that is not an array of strings is dropped (loudly), duplicates are kept out.
+static func _id_list(value: Variant, label: String) -> Array[String]:
+	var ids: Array[String] = []
+	if typeof(value) != TYPE_ARRAY:
+		push_error("RunState.from_dict: '%s' must be an array; using none" % label)
+		return ids
+	for item: Variant in (value as Array):
+		if typeof(item) != TYPE_STRING or String(item).is_empty():
+			push_error("RunState.from_dict: '%s' holds a value that is not an id; dropped" % label)
+			continue
+		if not ids.has(String(item)):
+			ids.append(String(item))
+	return ids
+
+
+## True when the run holds this relic.
+func has_relic(relic_id: String) -> bool:
+	return relics.has(relic_id)
+
+
+## Adds a relic (no duplicates). Returns false when it is already held.
+func add_relic(relic_id: String) -> bool:
+	if relics.has(relic_id):
+		return false
+	relics.append(relic_id)
+	return true
+
+
+## Gives a held relic up: it leaves `relics` and joins `relics_given_up`, so it is not offered again. False when not held.
+func give_up_relic(relic_id: String) -> bool:
+	if not relics.has(relic_id):
+		return false
+	relics.erase(relic_id)
+	if not relics_given_up.has(relic_id):
+		relics_given_up.append(relic_id)
+	return true
 
 
 static func from_json(text: String) -> RunState:

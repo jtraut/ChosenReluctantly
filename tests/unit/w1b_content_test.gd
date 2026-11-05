@@ -3,6 +3,8 @@ extends GdUnitTestSuite
 ## W1b content: the Wizard's attack cards, the rebuilt starter, the Wizard presets, the armor wording and the ward.
 
 const NEW_ATTACK_CARDS: Array[String] = ["wizard_bolt_volley", "wizard_overqualified_bolt", "wizard_arcane_nova"]
+## BD1-B's new Fire cards by id (qa BD2: was a tag test, which would silently skip a future Keystone or Primer card).
+const BD1_FIRE_CARDS: Array[String] = ["fire_fan_the_flames", "fire_kindling", "fire_heat_sink", "fire_slow_burn"]
 
 
 func test_new_wizard_cards_pass_the_damage_rule_with_margin_over_the_rogue_light() -> void:
@@ -47,7 +49,7 @@ func test_wizard_presets_exist_and_are_valid() -> void:
 	assert_array(mixed["full"]).contains_exactly_in_any_order(CharacterDatabase.full_deck("wizard"))
 	var fire_heavy: Array = ((directory["presets"] as Dictionary)["fire-heavy-wizard"] as Dictionary)["starter"]
 	for id: String in RunConfig.cards_in_pools(["fire"]):
-		if CardDatabase.has_tag(id, "Keystone") or CardDatabase.has_tag(id, "Primer") or id == "fire_slow_burn":
+		if BD1_FIRE_CARDS.has(id):
 			continue  # BD1-B's new Fire cards are in the archetype decks, not in the unchanged preset starters
 		assert_bool(fire_heavy.has(id)).override_failure_message("fire-heavy-wizard lacks " + id).is_true()
 

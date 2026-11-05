@@ -6,6 +6,7 @@
 Last updated: 2026-11-04 (BD1 closed, tag `playtest-2026-11-04-BD1`). **Run order:** BD1 (done) -> **BD2 (relics, next)** -> MAP1 (map, gold) -> MAP2 (merchant) -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1.
 
 ## What's done
+- **GDD §15 note 2026-11-04 (game-lead, docs only):** the free-to-play, cosmetics-only idea, from a playtester (the director's brother). The director isn't on board: it's single player. **Pending for tech-writer (BD2 docs pass):** a CHANGELOG "director note, not a decision" entry.
 - **BD1 closed 2026-11-04:** gameplay-dev a141865..7c5a66b (BD1-A, engine) and 3e297d5..49b117b (BD1-B, content and tooling), ux b61c388..1d3cbda, qa PASS with carry-overs 2796aa4, playtest 433ca0b (no blocker), docs e254881. Tag `playtest-2026-11-04-BD1`.
   - **Baselines now:** suite 1413/1413 (121 suites); arena 30 s seed 1 = 1897787086, 90 s = 4207041509; bot sim `-Rooms 20 -Seed 3` = 846850403. These were rebaselined because the new pool cards fill the sim slots (DECISIONS "BD1-B"). The plan baselines are in the same entry.
   - **Carry-overs** are listed under the BD1 brief in ROADMAP. Do the gameplay-dev and ux items with BD2's steps, and the balance items with BD3.

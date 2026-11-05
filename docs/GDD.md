@@ -421,6 +421,11 @@ Nothing in this section is scheduled. **DO NOT IMPLEMENT** anything here without
 - Utility cards that force-reset another slot's cooldown, for synergy with Recovery (the slot with the longest base cooldown).
 - The effect system should make a `reset_slot_cooldown` effect easy to add later. Don't build it yet.
 
+### Free to play with cosmetics only **[IDEA, very late, only if commercialized]** (2026-11-04)
+- **The suggestion:** a playtester, the director's brother, proposed offering the game free to play and charging only for cosmetics.
+- **The director's view:** he isn't on board. In a single-player game, cosmetics probably sell poorly. They sell mostly in multiplayer, where players want to look the coolest in front of others.
+- Noted only. §1 says Steam is a possible far-future goal, not a driver. No pricing or monetization work is planned.
+
 ### Corporate setting **[IDEA, not scheduled]** (director, 2026-11-04)
 The director's words: "just an idea to note, not a hard plan yet." It's a possible art and story direction, and it would replace the fantasy world in §11's tone.
 - **Premise:** you play a reluctant worker who is good at his job. The company is corrupt and is plotting something that could end the world or the economy, for example an AI takeover. Leadership won't stop pushing the product because it makes them a lot of money. Stopping it falls to you, reluctantly.

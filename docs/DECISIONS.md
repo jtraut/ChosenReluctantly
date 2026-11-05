@@ -1610,3 +1610,42 @@ gameplay-dev made these calls in 3b1ac07..fe051cc. All of them are cheap to chan
 - **Relic counters and internal cooldowns reset every room,** as built. Spite Knuckles' "every 4th light hit" restarts each room. That is the simplest rule, and it matches cooldowns resetting between rooms. Rejected: keeping counters in `RunState`, which adds save state for little gain. If the playtest finds it feels wrong, game-lead writes a proposal.
 - **Relics get a required `rule_text` field in BD2-B,** a plain one-line rule for the HUD chip and the pause list. Rejected: deriving the text from triggers, which reads badly for rule-changing relics.
 - **slice6 crowd flake:** localized (the first crowd run in a suite differs from tick 73), not fixed. The test is qa's file. qa tries the warm-up patch in BD2's qa step: one discarded `await _aligned_crowd(11)` before `var first := await _aligned_crowd(11)` in `slice6_qa_test.gd`. qa validates it over several full runs.
+
+## 2026-11-04 - BD2-B content and run-flow calls (gameplay-dev, logged by game-lead)
+gameplay-dev made these in 673db13..1af42c5. All are cheap to change.
+
+Gates: suite 1546/1546 (128 suites); arena 1897787086 / 4207041509 / `-Plan` 1160207333; bot sim 846850403 and every `-Plan` checksum unchanged. Relics off: `wave_sim -Run -NoRelics` matches the pre-BD2-B repo line for line.
+
+- **Correction to "BD2 split":** that entry expected the bot-sim hash to move with relics on. It can't: `tools/bot_sim.gd` builds no rooms, choices or relics. The relic run baselines are the `wave_sim -Run` numbers, not the bot sim:
+  - Rogue and Wizard each won 12/12 with relics on.
+  - Boss time medians are 57.3 s (Rogue) and 62.5 s (Wizard).
+  - Relic damage is under 1% of the total.
+- **Exit Strategy moves to BD3.** A line of fire along the dash path needs new zone placement code. The 6 relics shipped are Pyre Insurance, Smoldering Grudge, Lingering Embers, Second Wind (Unwillingly), Spite Knuckles and Heavy Sigh.
+- **New generic pieces:**
+  - New stats:
+    - `card_damage_mult_vs_status.<id>` applies to card-origin damage only;
+    - `zone_duration_mult` is clamped to the zone cap;
+    - `zone_status_chance` is additive and capped at 1.
+  - A new effect template, `reduce_cooldown {slot_type, seconds}`, for Second Wind.
+  - The validator floors the factor stats at -1.
+- **Relic room placement:** it turns one combat room into the relic room, so the run stays 10 rooms. It has its own seeded RNG and is never next to the rest room, the elite or another relic room. The next fight may redraw its wave list to keep the no-repeat rule. `run.json` gets `relics.relic_room {count, first, last}`. The `rooms.relic_room: []` entry is a stopgap for qa's generator test.
+- **Fallbacks and costs:** a relic room with nothing eligible gives a card offer, as the elite does. Skipping a relic offer costs no reject.
+- **Relic tuning:**
+  - Pyre Insurance has `allow_relic_origin` true, so it pops Spite Knuckles' Burns.
+  - Heavy Sigh has a 0.5 s internal cooldown.
+  - Spite Knuckles' Burn lasts 4 s.
+  - Smoldering Grudge counts card zone ticks.
+  - Lingering Embers makes any zone status certain.
+- **Odds and pools:** the straight run uses act 1 tier odds. The Wizard sees 5 of the 6 relics, because Spite Knuckles is in the rogue pool.
+- **Bot relic policy:** a relic "matches" the deck when one of its keywords is carried by at least 3 deck cards. Otherwise the bot takes the first offered. At the cap it gives up the first giveable relic.
+- **The seed 7 no-card soft lock was a bot deadlock,** not a game bug. After 45 s with no kill and one enemy left, the bot stops dodging. Seed 7 now reads LOST.
+- **The relic room is named "Relics" on the plate,** to fit the existing plate-width test. ux may change it.
+
+## 2026-11-04 - Relic room position (game-lead)
+- **Choice:** keep the shipped range, 0-based `first: 2, last: 8`, which is on-screen rooms 3-9. About 31% of seeds put it on room 9, right before the boss.
+- **Why:**
+  - "Rooms 2-8" was game-lead's wording in BUILD_DEPTH §4.1, not the director's, so this is a game-lead call.
+  - The literal reading (on-screen 2-8) puts the relic room at room 2 in about 80% of seeds, because of the rest and elite spacing. That's a poor spread.
+  - A relic just before the boss is a fair "prepare for the boss" beat.
+- **Rejected:** on-screen 2-8 (it bunches up at room 2 and breaks two qa tests that use seed 42's room 2).
+- The playtester is asked whether room 9 feels right. The MAP1 map replaces this with a node anyway.

@@ -2,7 +2,55 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-11-04 (Slice BD1: synergy core; director decisions D34-D39; Slice PL3 below)
+## 2026-11-04 (Slice BD2: relics; Slice BD1: synergy core; director decisions D34-D39; Slice PL3 below)
+
+### Slice BD2: relics
+
+Commit range de84af1..eb290e1. gameplay-dev BD2-A 3b1ac07..fe051cc (engine) and BD2-B 673db13..1af42c5 (content and run flow); ux 4040259..92e4a31 and the fix 9901776; qa 9f9a241..1d9d3b9 and the addendum 1b53f62 (PASS with carry-overs, `docs/reviews/2026-11-04-bd2-qa.md`); playtest no blocker (`docs/playtests/2026-11-04-bd2-short.md`, 87116a8). Planned tag: `playtest-2026-11-04-BD2`. Plan: `docs/BUILD_DEPTH.md` section 4. No director decisions were made in this slice.
+
+#### Added
+- **Six relics** (673db13), one file each in `data/relics/`: Pyre Insurance, Smoldering Grudge, Lingering Embers, Second Wind (Unwillingly), Spite Knuckles and Heavy Sigh. Rules and numbers are in the files. Exit Strategy slipped to BD3 (a line of fire along the dash path needs new zone placement code).
+- **Elite rooms now offer a relic** (pick 1 of 3, or a free Skip that spends no reject) instead of a card offer; with nothing eligible the elite gives its card offer (0273b65).
+- **A relic room** (0273b65, aa6be14): once per straight run, with no fight, offering the same. It turns one combat room into the relic room (the run stays 10 rooms), on on-screen rooms 3 to 9 (`first: 2, last: 8` in `data/run.json`), never beside the rest room, the elite or another relic room. Its plate reads "Relics". MAP1 replaces it with a map node.
+- **Relic cap 20 and the give-one-up step** (0273b65; the rule is D34 = C, decided earlier in BD1 and built here): at the cap, taking a relic first asks which owned relic to give up. Cancel keeps everything (and, since 9901776, is focused by default). Boss-tier relics can't be given up. No duplicates, and a given-up relic never returns that run. Tier odds per act are in `data/run.json` `relics.tier_weights` (act 1: 80/20/0, act 2: 15/70/15, act 3: 5/25/70; the straight run uses act 1). `relics.enabled` false gives the pre-BD2 run exactly.
+- **The full CombatEvents relay** (93abb5c): `hit_landed`, `enemy_killed`, `status_applied`, `status_ended` (reasons `expired`, `owner_died`, `consumed`), `attack_fired`, `dash_ended`, `player_damaged`, `zone_started/ended`, `room_started/cleared`, with an `origin` string on every hit and status (`light`, `heavy`, `card:<id>`, `status:<id>`, `relic:<id>`, `enemy`). On a kill the order is `hit_landed`, `enemy_killed`, `status_ended(owner_died)`, then the enemy's own died handler.
+- **`RelicManager`** (c51c718, fe051cc): a per-room child of the run, not an autoload. Relic effects run deferred (end of frame) because Godot blocks spawning a projectile or dash inside a physics callback. A recursion guard ignores relic-origin events unless a trigger sets `allow_relic_origin`, and chains stop at depth 1. Counters and internal cooldowns reset every room.
+- **Relic loader and validator** (c51c718): `RelicSchema`, `RelicDatabase`, `RelicConfig`, `RelicOffer`. Reserved `sources` values (`starter`, `event`, `altar`, ...) and `sacrifice_cost` are accepted but unused; `rule_text` and `flavor_text` are required (673db13). A missing or empty `data/relics/` means no relics.
+- **New stats and effect template** (673db13): `card_damage_mult_vs_status.<id>` (card-origin damage only), `zone_duration_mult` (clamped to the zone cap) and `zone_status_chance` (additive, capped at 1); the effect template `reduce_cooldown {slot_type, seconds}` (used by Second Wind).
+- **`JsonDataTable.get_raw`** (7d11d75), for validators that must see a non-object entry.
+- **HUD and screens** (ux 4040259, e1a216f, 2d04186, 6ffff7b):
+  - a relic chip row under the dodge pips (two-letter mark, pool-colour frame); a trigger lights the chip and shows a name tag, and rapid repeats stay lit with an "xN" count instead of strobing (`RelicRow`, `RelicFlash`);
+  - relic offer cards (a "Relic" band, tier, pool, keyword chips, rule text, flavour) and a green "Free" Skip tile;
+  - the give-one-up screen (a "Taking: X" plate, the list to give up, a "Cannot be given up" row for boss relics, Cancel);
+  - the pause screen lists owned relics (name, rule, flavour) and notes given-up ones; the list scrolls with Up and Down.
+- **Launch flags** (0273b65): `--relics=a+b`, `--relic-offer=a+b+c` and `--relic-cap=N`. Bad input (unknown or repeated id, an offer longer than `relics.offer_count`, a cap below 1) exits 2 with "Launch refused: ...".
+- **Capture tooling** (2ccbc73, 92e4a31): presets `bd2_relic_elite`, `bd2_relic_room`, `bd2_relic_swap` and `bd2_pyre_explosion`; a scenario `relics` key; the scenario `bd2_pyre_explosion`.
+- **Sim tooling** (2ccbc73, 1f74ff6, 1aff708): wave sim `-Relics`, `-RelicCap`, `-Swap`, `-NoRelics`, damage by source (including relics), fingerprint spread, relic pick/skip/swap counts, a `BOSS TIMES` line with timed-out fights apart, and a soft-lock detail line; bot sim `-Swap` (with `-Plan -Deck`); the bot relic policy `RelicPolicy`.
+- Tests: 1413 -> 1591 test cases, 121 -> 130 suites (gameplay-dev's BD2 suites, ux's, and qa's `bd2_qa_test`; 1591 verified by a full run in the docs pass).
+
+#### Changed
+- **`chip_keyword_color` `#d8c8ff` -> `#b8dcff`** in `data/ui.json` (ux 6ffff7b), so keyword chips don't clash with the relic violet.
+- **BD1 readability fixes from the playtest** (ux 3bf739a): the primed marker has a 12 px font floor and flashes "USED" or "GONE" when the prime ends; an unlit slot shows a dim condition line such as "Needs Burn" (it honours its font floor, 6ffff7b); a card that is both Keystone and Payoff gets one gold "Keystone + Payoff" chip; reward cards that need a Movement cast note that the dodge doesn't count; "3 s" no longer breaks across a line.
+- **`status_damage_mult` validator floor** (7d11d75): a buff or relic modifier at or below -1 is rejected. The factor stats added in 673db13 have the same floor.
+- **Run baselines with relics on** (wave sim `-Run -Seed 1 -Runs 12`, verified by tech-writer): Rogue and Wizard each won 12 of 12; boss-time medians are 57.3 s (Rogue) and 62.5 s (Wizard); relic damage is about 1% of all damage (Rogue 0.45%, Wizard 1.15%, from qa). The bot sim can't carry relic baselines (it builds no rooms), so these are `wave_sim -Run` numbers. With relics off (`-NoRelics`) the run line matches the pre-BD2 repo.
+- **No seeded hash moved.** Arena `-Seed 1` 30 s 1897787086 and 90 s 4207041509, arena `-Plan` 1160207333, bot sim 846850403 and every `-Plan` checksum are unchanged from BD1.
+- Relics roll their chances on the player's `status_rng`, so holding relics shifts card status rolls (expected; only relic runs).
+
+#### Fixed
+- The seed 7 no-card Rogue "soft lock" (`-Run -LightHeavyOnly -Class rogue -Seed 7`) was a bot deadlock, not a game bug: after 45 s with no kill and one enemy left, the bot stopped dodging. It now reads LOST (1aff708).
+- `JsonDataTable.get_entry` no longer crashes on a non-object entry; it errors loudly and returns `{}` (7d11d75).
+- The `slice6_qa_test` same-seed crowd flake is mitigated by one discarded warm-up crowd run (7120158 found the cause: the first crowd run in a suite differs from the rest from tick 73; qa applied the patch in b770c4c). About 1 failure in 10 isolated runs before, 0 in 15 after.
+- Give-one-up screen (9901776): it opens with Cancel focused, and the text is singular for a cap of 1 ("You hold 1 relic").
+- BD1 qa carry-overs (qa b55f5e8): Fan the Flames' cooldown is asserted on the first card line, `w1b_content_test` skips the four BD1 Fire cards by id instead of tag, an escaped newline in `m3c_qa_test`.
+
+#### Docs and process
+- BD2 ran as two gameplay-dev sittings, BD2-A (engine, no visible change) and BD2-B (content and run flow), then one ux, qa, playtest and docs pass (3b1ac07).
+- Correction to the BD2 plan: the bot sim can't move with relics (see Changed); relic baselines are the `wave_sim -Run` numbers (DECISIONS "BD2-B").
+- The relic room keeps on-screen rooms 3 to 9 for now (about 31% of seeds put it on room 9); MAP1 replaces it. 3d item 6a (save robustness: `RunState.from_dict` crashes on a null, array or object `offer` entry) moved into MAP3, before the save file ships.
+- Known issues, not fixed in BD2 (full list: `docs/reviews/2026-11-04-bd2-qa.md`, "Carry-overs"): `c1e_cues_test` "ghost look lasts until the player is clear" is a flake that predates BD2 (about 1 in 5 isolated runs), routed to qa with MAP1; the chain-depth cap covers only work inside the deferred flush (a relic-spawned projectile or zone that hits later runs at depth 0; nothing shipped does this); `from_dict` doesn't check that owned and given-up relics are disjoint, fit the cap or exist; `RunConfig._validate_relic_text` doesn't format-check `swap_line_one`; the pause relic list has no backing panel at 1024x600; the `rooms.relic_room: []` stopgap in `data/run.json` goes with MAP1.
+- Playtest findings (`docs/playtests/2026-11-04-bd2-short.md`): no blocker; captures and scripted input only, no hand play. Fixed before close: the give-one-up focus and plural. Not faults: the Wizard offered Spite Knuckles (only through `--relic-offer`, which skips the pool filter), and "20 held" (the cap is 20). Carried to MAP1's ux step: a floating relic name or ring at the trigger point, a Spite Knuckles counter, hard-to-tell-apart chip initials, the pause list showing 2 of 3 relics in a short box, "Reject" unexplained on the relic offer, and "After Move" naming the key. Kept as built (game-lead): the relic room up to room 9, and Spite Knuckles counting per room. Balance signal for BD3: with relics on, the Controlled Burn `-Plan` boss median drops 73.4 s -> 54.2 s (6 runs, noisy).
+- Director note, not a decision: a playtester (the director's brother) suggested making the game free to play and charging only for cosmetics. The director isn't on board: in a single-player game cosmetics probably sell poorly, since they sell mostly where players want to look good in front of others. Recorded in GDD section 15 (de84af1), not scheduled.
+- README (tech-writer): new Relics section, the `--relics`, `--relic-offer` and `--relic-cap` flags, the four BD2 capture presets and the pause capture command, the wave sim and bot sim BD2 options, and a rewritten Last verification block. ARCHITECTURE: the Relics section (relay, `RelicManager`, offers, `RunController` relic API, UI pieces), "A relic" checklist and the new sharp edges.
 
 ### Slice BD1: cards start to work together
 

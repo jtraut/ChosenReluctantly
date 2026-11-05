@@ -96,6 +96,7 @@
             "room_title": "Relic room", "room_line": "Nobody is guarding this one. Pick a relic to keep for this run, or skip.",
             "skip_label": "Skip", "skip_detail": "Take nothing. This does not use a reject.",
             "swap_title": "Too many relics", "swap_line": "You hold %d relics, the most you can carry. Give one up to take %s.",
+            "swap_line_one": "You hold %d relic, the most you can carry. Give it up to take %s.",
             "cancel_label": "Cancel", "none_giveable": "Nothing you hold can be given up.",
             "label": "Relic", "owned_title": "Relics", "none_owned": "No relics yet.",
             "taking_format": "Taking: %s (%s, %s)", "free_tag": "Free", "pick_hint": "Enter to take", "giveup_hint": "Enter to give this one up", "skip_hint": "Enter to skip",

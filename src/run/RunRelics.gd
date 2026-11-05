@@ -144,7 +144,8 @@ static func title_and_line(state: RunState, ctx: Dictionary, room_type: String =
 	var ui: Dictionary = (ctx.get("relics", {}) as Dictionary).get("ui", {})
 	if state.pending == RunState.PENDING_RELIC_SWAP:
 		var incoming: Dictionary = display(state.relic_incoming, ctx)
-		return {"title": String(ui.get("swap_title", "")), "line": String(ui.get("swap_line", "")) % [state.relics.size(), String(incoming["name"])]}
+		var line_key: String = "swap_line_one" if (state.relics.size() == 1 and ui.has("swap_line_one")) else "swap_line"  # singular text for a cap of 1
+		return {"title": String(ui.get("swap_title", "")), "line": String(ui.get(line_key, "")) % [state.relics.size(), String(incoming["name"])]}
 	if room_type == "relic_room":
 		return {"title": String(ui.get("room_title", "")), "line": String(ui.get("room_line", ""))}
 	return {"title": String(ui.get("title", "")), "line": String(ui.get("line", ""))}

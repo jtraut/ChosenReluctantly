@@ -325,6 +325,35 @@ func test_the_give_up_step_shows_the_incoming_relic_the_giveable_ones_and_a_canc
 	assert_array(picked).is_equal(["giveup_cancel"] as Array[String])
 
 
+func test_the_give_up_step_opens_with_cancel_focused_and_a_deliberate_move_reaches_a_relic() -> void:
+	var model: Dictionary = _model(["pyre_insurance", "heavy_sigh"], ["lingering_embers"], 2, "lingering_embers")
+	var screen: RunPromptScreen = await _open_model(Vector2(1280, 720), model)
+	var picked: Array[String] = []
+	screen.option_chosen.connect(func(id: String) -> void: picked.append(id))
+	var cancel: Button = screen.footer_box.get_child(0) as Button
+	assert_bool(cancel.has_focus()).is_true()
+	var enter := InputEventKey.new()
+	enter.keycode = KEY_ENTER
+	enter.pressed = true
+	screen.get_viewport().push_input(enter)
+	var enter_up := InputEventKey.new()
+	enter_up.keycode = KEY_ENTER
+	enter_up.pressed = false
+	screen.get_viewport().push_input(enter_up)
+	await _frames(2)
+	assert_array(picked).is_equal(["giveup_cancel"] as Array[String])  # a reflexive Enter gives nothing away
+	var relic: Control = screen.options_box.get_child(0) as Control
+	relic.grab_focus()  # mouse hover, arrows or Tab put the highlight on a relic; then Enter would give it up
+	assert_bool(relic.has_focus()).is_true()
+
+
+func test_the_give_up_line_is_singular_for_one_relic() -> void:
+	var one: Dictionary = _model(["heavy_sigh"], ["lingering_embers"], 1, "lingering_embers")
+	assert_str(String(one["line"])).contains("1 relic,").not_contains("relics")
+	var two: Dictionary = _model(["heavy_sigh", "pyre_insurance"], ["lingering_embers"], 2, "lingering_embers")
+	assert_str(String(two["line"])).contains("2 relics")
+
+
 func test_cancel_keeps_everything_and_returns_to_the_offer() -> void:
 	var ctx := _ctx(2)
 	var state := RunSession.begin_new_run(3)
@@ -612,8 +641,9 @@ func test_arrow_keys_walk_from_the_giveup_cells_to_cancel() -> void:
 	for child: Node in screen.options_box.get_children():
 		cells.append(child as Control)
 	assert_int(cells.size()).is_equal(2)
-	assert_bool(cells[0].has_focus()).is_true()  # the first giveable relic starts highlighted
 	var cancel: Button = screen.footer_box.get_child(0) as Button
+	assert_bool(cancel.has_focus()).is_true()  # Cancel starts highlighted, not a relic
+	cells[0].grab_focus()  # the walk starts from the first relic
 	var viewport: Viewport = screen.get_viewport()
 	var right := InputEventKey.new()
 	right.keycode = KEY_RIGHT

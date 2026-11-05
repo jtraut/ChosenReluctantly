@@ -214,7 +214,7 @@ func show_content(content: Dictionary) -> void:
 	if _options.is_empty():
 		button.grab_focus()
 	else:
-		_last_focus = _first_enabled()
+		_last_focus = _default_focus()
 		_focus_option(_last_focus)
 		_debug_auto_choose()
 
@@ -263,7 +263,7 @@ func _restore_focus() -> void:
 	if _options.is_empty():
 		button.grab_focus()
 		return
-	var index: int = _last_focus if (_last_focus >= 0 and _last_focus < _option_buttons.size() and not _option_buttons[_last_focus].disabled) else _first_enabled()
+	var index: int = _last_focus if (_last_focus >= 0 and _last_focus < _option_buttons.size() and not _option_buttons[_last_focus].disabled) else _default_focus()
 	_focus_option(index)
 
 
@@ -570,6 +570,15 @@ func options_armed() -> bool:
 ## Skips the arm delay (tests and scripted input).
 func disarm() -> void:
 	_armed_at_msec = 0
+
+
+## Where the highlight starts: Cancel in the give-one-up step (a reflexive Enter must not give a relic away), else the first enabled option.
+func _default_focus() -> int:
+	if _layout == "cells":
+		for i in range(_options.size()):
+			if String(_options[i].get("kind", "")) == "back" and bool(_options[i].get("enabled", true)):
+				return i
+	return _first_enabled()
 
 
 func _first_enabled() -> int:

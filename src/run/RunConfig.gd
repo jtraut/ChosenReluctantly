@@ -9,6 +9,10 @@ const PATH := "res://data/run.json"
 const ROOM_TYPES: Array[String] = ["combat", "elite", "rest", "boss"]
 ## Room types that fight (they need a wave list); `rest` has none.
 const FIGHT_TYPES: Array[String] = ["combat", "elite", "boss"]
+## The relic room (BD2-B) is added by RunGenerator when relics are on; it is not a composition key. No fight, like rest.
+const RELIC_ROOM := "relic_room"
+## Every room type a generated run can hold (ROOM_TYPES plus the relic room).
+const ALL_ROOM_TYPES: Array[String] = ["combat", "elite", "rest", "boss", "relic_room"]
 const TIER_IDS: Array[String] = ["elite", "boss"]
 
 static var _cache: Dictionary = {}
@@ -236,9 +240,35 @@ static func _validate_ui(ui_value: Variant) -> Array[String]:
 	for key: String in ["room_cleared", "win", "reward", "rest"]:
 		if typeof(u.get(key)) != TYPE_DICTIONARY:
 			errors.append("ui.%s must be an object" % key)
+	errors.append_array(_validate_relic_text(u.get("relic")))
 	errors.append_array(_validate_effect_text(u.get("effect")))
 	if typeof(u.get("next_line")) != TYPE_STRING or String(u["next_line"]).count("%d") != 2 or String(u["next_line"]).count("%s") != 1:
 		errors.append("ui.next_line must be a format string with two %d and one %s")
+	return errors
+
+
+## ui.relic strings the relic choices need (BD2-B).
+const RELIC_TEXT_KEYS: Array[String] = ["title", "line", "room_title", "room_line", "skip_label", "skip_detail", "swap_title", "swap_line", "cancel_label", "none_giveable", "label", "owned_title", "none_owned"]
+
+
+static func _validate_relic_text(value: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(value) != TYPE_DICTIONARY:
+		errors.append("ui.relic must be an object")
+		return errors
+	var r: Dictionary = value
+	for key: String in RELIC_TEXT_KEYS:
+		if typeof(r.get(key)) != TYPE_STRING:
+			errors.append("ui.relic.%s must be a string" % key)
+	if typeof(r.get("swap_line")) == TYPE_STRING and (String(r["swap_line"]).count("%d") != 1 or String(r["swap_line"]).count("%s") != 1):
+		errors.append("ui.relic.swap_line must be a format string with one %d and one %s")
+	var tiers: Variant = r.get("tier_names")
+	if typeof(tiers) != TYPE_DICTIONARY:
+		errors.append("ui.relic.tier_names must be an object")
+	else:
+		for tier: String in RelicSchema.RARITIES:
+			if typeof((tiers as Dictionary).get(tier)) != TYPE_STRING:
+				errors.append("ui.relic.tier_names.%s must be a string" % tier)
 	return errors
 
 

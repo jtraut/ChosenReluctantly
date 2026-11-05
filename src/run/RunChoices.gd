@@ -26,7 +26,8 @@ extends RefCounted
 ## Model dict (`model`): {choice: "reward"|"rest"|"rest_remove", title, line, options, rejects_remaining, rejects_max,
 ## owned: Dictionary card_id -> copies, next_room_type: String ("" here; RunController fills it from the room list)}.
 
-const KINDS: Array[String] = ["card", "remove", "heal", "skip", "back"]
+## "relic", "relic_skip" and "giveup" belong to the relic choices (RunRelics); the model then carries the relic keys too.
+const KINDS: Array[String] = ["card", "remove", "heal", "skip", "back", "relic", "relic_skip", "giveup"]
 
 
 ## The shipped databases and data as one context. Tests build their own with fixtures.
@@ -46,6 +47,7 @@ static func shipped_context(pools: Array) -> Dictionary:
 		for status_id: String in CardSummary.status_ids(card as Dictionary):
 			statuses[status_id] = StatusDatabase.get_status(status_id)
 	return {
+		"relics": RunRelics.shipped_context(),
 		"statuses": statuses,
 		"cards": cards,
 		"by_id": by_id,
@@ -85,6 +87,7 @@ static func forced_offer_problems(ids: Array[String], offer_size: int) -> Array[
 static func open_for_room(state: RunState, room_type: String, is_last_room: bool, ctx: Dictionary) -> String:
 	state.pending = RunState.PENDING_NONE
 	state.offer = []
+	state.relic_incoming = ""
 	if room_type == "rest":
 		state.pending = RunState.PENDING_REST
 	elif not is_last_room and (RunConfig.ROOM_TYPES.has(room_type) and ((ctx["rewards"] as Dictionary).get("reward_room_types", []) as Array).has(room_type)):
@@ -98,7 +101,7 @@ static func open_for_room(state: RunState, room_type: String, is_last_room: bool
 	return state.pending
 
 
-static func model(state: RunState, ctx: Dictionary) -> Dictionary:
+static func model(state: RunState, ctx: Dictionary, room_type: String = "") -> Dictionary:
 	var ui: Dictionary = ctx["ui"]
 	var title: String = ""
 	var line: String = ""
@@ -112,7 +115,7 @@ static func model(state: RunState, ctx: Dictionary) -> Dictionary:
 		RunState.PENDING_REST_REMOVE:
 			title = String((ui["rest"] as Dictionary)["remove_title"])
 			line = String((ui["rest"] as Dictionary)["remove_line"])
-	return {
+	var model: Dictionary = {
 		"choice": state.pending,
 		"title": title,
 		"line": line,
@@ -122,6 +125,12 @@ static func model(state: RunState, ctx: Dictionary) -> Dictionary:
 		"owned": owned_counts(state),
 		"next_room_type": "",
 	}
+	if state.has_relic_choice():
+		var texts: Dictionary = RunRelics.title_and_line(state, ctx, room_type)
+		model["title"] = texts["title"]
+		model["line"] = texts["line"]
+		model.merge(RunRelics.model_extras(state, ctx))
+	return model
 
 
 ## card id -> copies in the deck.
@@ -150,6 +159,8 @@ static func slot_contents(state: RunState, slot_type: String, ctx: Dictionary) -
 
 static func options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
+	if state.has_relic_choice():
+		return RunRelics.options(state, ctx)
 	var ui: Dictionary = ctx["ui"]
 	match state.pending:
 		RunState.PENDING_REWARD:
@@ -205,7 +216,9 @@ static func options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 ## is done (the caller moves on), false when the screen should rebuild from `model` (the rest removal list, Back).
 ## A disabled or unknown option changes nothing and returns ok = false with a `reason`.
 static func apply(state: RunState, option_id: String, ctx: Dictionary) -> Dictionary:
-	var result: Dictionary = {"ok": false, "kind": "", "card_id": "", "amount": 0.0, "finished": false, "reason": ""}
+	if state.has_relic_choice():
+		return RunRelics.apply(state, option_id, ctx)
+	var result: Dictionary = blank_result()
 	var found: Dictionary = {}
 	for option: Dictionary in options(state, ctx):
 		if String(option["id"]) == option_id:
@@ -251,8 +264,24 @@ static func apply(state: RunState, option_id: String, ctx: Dictionary) -> Dictio
 
 
 static func _close(state: RunState) -> void:
+	close(state)
+
+
+## Ends the open choice (nothing pending, no offer, no relic being taken).
+static func close(state: RunState) -> void:
 	state.pending = RunState.PENDING_NONE
 	state.offer = []
+	state.relic_incoming = ""
+
+
+## The result dict of `apply` before anything happened. Relic results add `relic_id` (and `gave_up` on a swap).
+static func blank_result() -> Dictionary:
+	return {"ok": false, "kind": "", "card_id": "", "amount": 0.0, "finished": false, "reason": "", "relic_id": ""}
+
+
+## An option with every key present and default values (public for RunRelics).
+static func blank_option(option_id: String, kind: String) -> Dictionary:
+	return _blank(option_id, kind)
 
 
 ## HP a rest would heal now (0 at full HP).

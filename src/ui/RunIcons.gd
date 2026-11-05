@@ -2,12 +2,13 @@ class_name RunIcons
 extends RefCounted
 ## One shape per room type and enemy tier, reused everywhere (room indicator, prompt screens, the marker
 ## above elites and bosses), so the shape carries the meaning when colour does not:
-## combat = circle, elite = diamond, rest = plus, boss = star. Pure geometry, unit-tested.
+## combat = circle, elite = diamond, rest = plus, boss = star, relic room = hexagon (BD2-B). Pure geometry, unit-tested.
 
 const SHAPE_CIRCLE := "circle"
 const SHAPE_DIAMOND := "diamond"
 const SHAPE_PLUS := "plus"
 const SHAPE_STAR := "star"
+const SHAPE_HEX := "hex"
 
 const BY_ID: Dictionary = {
 	"combat": SHAPE_CIRCLE,
@@ -15,6 +16,7 @@ const BY_ID: Dictionary = {
 	"elite": SHAPE_DIAMOND,
 	"rest": SHAPE_PLUS,
 	"boss": SHAPE_STAR,
+	"relic_room": SHAPE_HEX,
 }
 
 
@@ -36,6 +38,10 @@ static func polygon(shape: String, radius: float) -> PackedVector2Array:
 				Vector2(-a, -b), Vector2(a, -b), Vector2(a, -a), Vector2(b, -a), Vector2(b, a), Vector2(a, a),
 				Vector2(a, b), Vector2(-a, b), Vector2(-a, a), Vector2(-b, a), Vector2(-b, -a), Vector2(-a, -a),
 			])
+		SHAPE_HEX:
+			for i in 6:
+				var angle := -PI * 0.5 + float(i) * TAU / 6.0
+				pts.append(Vector2(cos(angle), sin(angle)) * radius * 0.92)
 		SHAPE_STAR:
 			for i in 10:
 				var angle := -PI * 0.5 + float(i) * PI / 5.0

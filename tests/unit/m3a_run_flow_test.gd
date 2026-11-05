@@ -203,6 +203,9 @@ func test_last_room_won_ends_the_run_with_a_win() -> void:
 func test_death_ends_the_run_and_try_again_starts_a_new_one() -> void:
 	var state := RunSession.begin_new_run(42)
 	state.room_index = 2
+	var rooms_42: Array[Dictionary] = RunGenerator.generate(42, RunConfig.get_config())
+	while String(rooms_42[state.room_index]["type"]) != "combat":
+		state.room_index += 1  # the run must be in a fight (a relic or rest room cannot kill the player)
 	state.rejects_remaining = 1
 	var old_seed := state.seed_value
 	var main := _spawn()

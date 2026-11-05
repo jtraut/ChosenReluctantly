@@ -232,7 +232,7 @@
         "indicator_bg_color": "#0d080bcc",
         "indicator_border_color": "#f4ece8",
         "indicator_text_color": "#ffffff",
-        "type_colors": { "combat": "#f4ece8", "elite": "#ffd23f", "rest": "#8fe388", "boss": "#ff3f6c" },
+        "type_colors": { "combat": "#f4ece8", "elite": "#ffd23f", "rest": "#8fe388", "boss": "#ff3f6c", "relic_room": "#c9a2ff" },
         "prompt_title_font_size": 44,
         "prompt_subtitle_font_size": 22,
         "prompt_stat_font_size": 22,

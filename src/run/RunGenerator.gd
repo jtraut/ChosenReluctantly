@@ -55,7 +55,43 @@ static func generate(seed_value: int, config: Dictionary) -> Array[Dictionary]:
 				wave_id = String((pool[rng.randi_range(0, pool.size() - 1)] as Dictionary)["id"])
 			last_wave = wave_id
 		rooms.append({"index": index, "type": room_type, "wave_id": wave_id})
+	_place_relic_rooms(rooms, seed_value, config)
 	return rooms
+
+
+## BD2-B: when relics are on, turns `count` combat rooms into relic rooms (no fight, a relic offer) inside [first, last] and never next
+## to the rest room, the elite or another relic room. It runs AFTER the rooms are laid out, with its own seeded stream, so the
+## room count, every other room's type and every wave list is exactly what a run without relics gets. (The converted room keeps
+## its place in the wave-list rotation, so nothing after it shifts.) With relics off, or no `relics` block, nothing happens.
+static func _place_relic_rooms(rooms: Array[Dictionary], seed_value: int, config: Dictionary) -> void:
+	var settings: Dictionary = RelicConfig.relic_room_settings(config)
+	if settings.is_empty():
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.seed = (seed_value * 2654435 + 0x5E11C) & RunState.SEED_LIMIT
+	for placed in range(int(settings["count"])):
+		var candidates: Array[int] = relic_room_candidates(rooms, int(settings["first"]), int(settings["last"]))
+		if candidates.is_empty():
+			push_error("RunGenerator: no combat room is free for relic room %d of %d (window %d to %d); the run has none" % [placed + 1, int(settings["count"]), int(settings["first"]), int(settings["last"])])
+			return
+		var index: int = candidates[rng.randi_range(0, candidates.size() - 1)]
+		rooms[index] = {"index": index, "type": RunConfig.RELIC_ROOM, "wave_id": ""}
+
+
+## The room indices a relic room may take: combat rooms in [first, last] (never the first or the last room) that are not next to
+## a rest, elite or relic room. (Next to the boss is allowed.)
+static func relic_room_candidates(rooms: Array[Dictionary], first: int, last: int) -> Array[int]:
+	var found: Array[int] = []
+	for index in range(maxi(first, 1), mini(last, rooms.size() - 2) + 1):
+		if String(rooms[index]["type"]) != "combat":
+			continue
+		var next_to_special: bool = false
+		for neighbour in [index - 1, index + 1]:
+			if neighbour >= 0 and neighbour < rooms.size() and ["rest", "elite", RunConfig.RELIC_ROOM].has(String(rooms[neighbour]["type"])):
+				next_to_special = true
+		if not next_to_special:
+			found.append(index)
+	return found
 
 
 static func _window_size(ranges: Dictionary, room_type: String) -> int:

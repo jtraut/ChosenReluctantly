@@ -15,7 +15,10 @@ const PENDING_NONE := ""
 const PENDING_REWARD := "reward"
 const PENDING_REST := "rest"
 const PENDING_REST_REMOVE := "rest_remove"
-const PENDING_VALUES: Array[String] = [PENDING_NONE, PENDING_REWARD, PENDING_REST, PENDING_REST_REMOVE]
+## BD2-B: a relic offer (pick one or skip) and, at the relic cap, the "give one up" step for the relic being taken.
+const PENDING_RELIC := "relic"
+const PENDING_RELIC_SWAP := "relic_swap"
+const PENDING_VALUES: Array[String] = [PENDING_NONE, PENDING_REWARD, PENDING_REST, PENDING_REST_REMOVE, PENDING_RELIC, PENDING_RELIC_SWAP]
 
 var seed_value: int = 0
 ## The character (data/characters.json id) this run is played as (W1a). Fixed for the whole run.
@@ -33,7 +36,10 @@ var outcome: String = ""
 ## The choice waiting for the player after a won room (3b), so a reload mid-choice reopens it instead of
 ## replaying the room: one of the PENDING_ values, and for a card reward the offered card ids.
 var pending: String = PENDING_NONE
+## For a card reward the offered card ids; for a relic offer (PENDING_RELIC / PENDING_RELIC_SWAP) the offered relic ids.
 var offer: Array[String] = []
+## PENDING_RELIC_SWAP only: the offered relic the player chose and must give another relic up to take ("" otherwise). Cancel clears it.
+var relic_incoming: String = ""
 ## One entry per choice made: {index, kind: pick|reject|heal|remove, card_id, amount}. Picks and removals also
 ## change `deck`; this is the record the sim and the end screens read.
 var choice_log: Array[Dictionary] = []
@@ -83,6 +89,11 @@ func has_pending() -> bool:
 	return pending != PENDING_NONE
 
 
+## True while the open choice is a relic offer or its give-one-up step.
+func has_relic_choice() -> bool:
+	return pending == PENDING_RELIC or pending == PENDING_RELIC_SWAP
+
+
 func log_choice(kind: String, card_id: String = "", amount: float = 0.0) -> void:
 	choice_log.append({"index": room_index, "kind": kind, "card_id": card_id, "amount": amount})
 
@@ -101,6 +112,7 @@ func to_dict() -> Dictionary:
 		"outcome": outcome,
 		"pending": pending,
 		"offer": offer.duplicate(),
+		"relic_incoming": relic_incoming,
 		"choice_log": choice_log.duplicate(true),
 		"relics": relics.duplicate(),
 		"relics_given_up": relics_given_up.duplicate(),
@@ -137,9 +149,19 @@ static func from_dict(data: Dictionary) -> RunState:
 	if typeof(offered_ids) == TYPE_ARRAY:
 		for offered: Variant in (offered_ids as Array):
 			state.offer.append(String(offered))
+	var incoming: Variant = data.get("relic_incoming", "")
+	var incoming_id: String = String(incoming) if typeof(incoming) == TYPE_STRING else ""
 	var pending_value: Variant = data.get("pending", PENDING_NONE)
-	if typeof(pending_value) == TYPE_STRING and PENDING_VALUES.has(String(pending_value)) and not (String(pending_value) == PENDING_REWARD and state.offer.is_empty()):
+	# A choice that cannot be shown (a reward or relic offer with nothing in it, a swap with no valid relic to take) is dropped.
+	var shows: bool = typeof(pending_value) == TYPE_STRING and PENDING_VALUES.has(String(pending_value))
+	if shows and [PENDING_REWARD, PENDING_RELIC, PENDING_RELIC_SWAP].has(String(pending_value)) and state.offer.is_empty():
+		shows = false
+	if shows and String(pending_value) == PENDING_RELIC_SWAP and (incoming_id.is_empty() or not state.offer.has(incoming_id)):
+		shows = false
+	if shows:
 		state.pending = String(pending_value)
+		if state.pending == PENDING_RELIC_SWAP:
+			state.relic_incoming = incoming_id
 	else:
 		# An unknown (or non-string, or an empty reward) pending must not leave a screen that can never close.
 		# The choice is dropped. If the room it followed was already won and recorded (the history holds

@@ -21,6 +21,11 @@ signal choice_requested(model: Dictionary)
 ## A choice was resolved (picked, rejected, healed, removed); the next room loads right after. `result` is
 ## RunChoices.apply's dict: {ok, kind, card_id, amount, finished}.
 signal choice_resolved(result: Dictionary)
+## The run's relics changed (a relic was taken, or swapped for another at the cap). `relic_ids` is `RunState.relics` in the order taken.
+signal relics_changed(relic_ids: Array[String])
+## A relic's trigger fired in this room (forwarded from this room's RelicManager, which is rebuilt every room; connect here once).
+## `trigger_index` is the trigger's place in the relic's `triggers`. ux flashes the relic's chip on this.
+signal relic_triggered(relic_id: String, trigger_index: int, event_id: String)
 ## The boss entered the room (3c). Its signals (phase_changed, transition_started, defeated, ...), `health.health_changed`,
 ## `display_name()` and `phase_thresholds()` are what a boss HP bar needs. Also available any time as `current_boss()`.
 signal boss_spawned(boss: Boss)
@@ -72,8 +77,8 @@ func begin(main: Main) -> void:
 		player.health.current_health = clampf(_state.hp, 1.0, _state.max_hp)
 		player.health.health_changed.emit(player.health.current_health, player.health.max_health)
 	player.card_slots.set_deck(_state.deck)
-	_setup_relics(main)
 	_ctx = RunChoices.shipped_context(player.owned_pools)
+	_setup_relics(main)
 	player.player_died.connect(_on_player_died, CONNECT_ONE_SHOT)
 	var room: Dictionary = current_room()
 	var spawner: EnemySpawner = main.enemy_spawner
@@ -83,8 +88,8 @@ func begin(main: Main) -> void:
 		_cleared = true
 		player.health.damage_immune = true
 		_resume_choice.call_deferred()
-	elif String(room["type"]) == "rest":
-		spawner.process_mode = Node.PROCESS_MODE_DISABLED
+	elif String(room["type"]) == "rest" or String(room["type"]) == RunConfig.RELIC_ROOM:
+		spawner.process_mode = Node.PROCESS_MODE_DISABLED  # no fight: the room is over at once and its choice opens
 		_start_rest.call_deferred()
 	else:
 		var variant: Dictionary = RunConfig.variant_by_id(config, String(room["type"]), String(room["wave_id"]))
@@ -103,16 +108,37 @@ func begin(main: Main) -> void:
 ## Builds this room's RelicManager from the run's relics (BD2). With relics off, or none held, nothing is created, so a run
 ## without relics is exactly the run it was. The shipped relic files are validated here, so a corrupt one fails at run start.
 func _setup_relics(main: Main) -> void:
-	if not RelicConfig.enabled():
+	if not RunRelics.enabled(_ctx):
 		return
 	RelicDatabase.problems()  # loads data/relics once; every bad file has already been push_error'd
 	if _state.relics.is_empty():
 		return
+	_create_relic_manager(main)
+	_relics.load_relics(_state.relics)
+
+
+func _create_relic_manager(main: Main) -> void:
 	_relics = RelicManager.new()
 	_relics.name = "RelicManager"
 	add_child(_relics)
 	_relics.configure(main.player, main, main.player.status_rng, CombatLink.events())
-	_relics.load_relics(_state.relics)
+	_relics.relic_triggered.connect(func(relic_id: String, trigger_index: int, event_id: String) -> void: relic_triggered.emit(relic_id, trigger_index, event_id))
+
+
+## After a relic was taken or swapped: bring this room's manager in line with RunState.relics (creating it when the first relic
+## arrives), so the relic is live at once and the next room only has to rebuild from the state. Then tell the UI.
+func _sync_relics() -> void:
+	if RunRelics.enabled(_ctx) and _main != null and _main.player != null:
+		if _relics == null and not _state.relics.is_empty():
+			_create_relic_manager(_main)
+		if _relics != null:
+			for held: String in _relics.relic_ids():
+				if not _state.relics.has(held):
+					_relics.remove_relic(held)
+			for owned: String in _state.relics:
+				if not _relics.has_relic(owned):
+					_relics.add_relic(owned)
+	relics_changed.emit(_state.relics.duplicate())
 
 
 ## This room's RelicManager, or null when the run holds no relics (or relics are off). ux connects `relic_triggered` here.
@@ -200,6 +226,8 @@ func _apply_launch_args(tree: SceneTree) -> bool:
 				tree.quit(2)
 				return false
 			RunSession.forced_offer = offer_ids
+	if not _apply_relic_args(args, tree):
+		return false
 	if String(launch["deck"]) != "":
 		RunSession.debug_deck = (directory["presets"] as Dictionary)[String(launch["deck"])]
 	if String(launch["character"]) != "":
@@ -215,6 +243,33 @@ func _apply_launch_args(tree: SceneTree) -> bool:
 		elif arg.begins_with("--run-clear-after=") and arg.substr(18).is_valid_float():
 			_launch_clear_after = maxf(arg.substr(18).to_float(), 0.0)
 	return true
+
+
+## `--relics=<id>+<id>`, `--relic-offer=<id>+<id>` and `--relic-cap=N` (BD2-B; "+" or "," between ids): a run that starts holding those
+## relics, the first relic choice offering exactly those, and a lower relic cap (so the give-one-up step shows in a short run).
+## An unknown id, a repeated id, an offer longer than `relics.offer_count` or a cap below 1 is refused (exit 2) like a bad `--run-offer`.
+func _apply_relic_args(args: PackedStringArray, tree: SceneTree) -> bool:
+	var problems: Array[String] = []
+	for arg: String in args:
+		if arg.begins_with("--relics="):
+			var held: Array[String] = RelicArgs.parse_ids(arg.substr(9))
+			problems.append_array(RelicArgs.id_problems("--relics", held, 0))
+			RunSession.start_relics = held
+		elif arg.begins_with("--relic-offer="):
+			var offered: Array[String] = RelicArgs.parse_ids(arg.substr(14))
+			problems.append_array(RelicArgs.id_problems("--relic-offer", offered, RelicConfig.offer_count()))
+			RunSession.forced_relic_offer = offered
+		elif arg.begins_with("--relic-cap="):
+			if not arg.substr(12).is_valid_int() or arg.substr(12).to_int() < 1:
+				problems.append("--relic-cap needs a whole number from 1, as --relic-cap=2")
+			else:
+				RunSession.relic_cap = arg.substr(12).to_int()
+	if problems.is_empty():
+		return true
+	for problem: String in problems:
+		printerr("Launch refused: " + problem)
+	tree.quit(2)
+	return false
 
 
 func _on_enemy_spawned(enemy: Enemy, _alive_count: int) -> void:
@@ -282,7 +337,7 @@ func _finish_room(healed: float) -> void:
 		_state.outcome = "won"
 		run_won.emit()
 		return
-	if RunChoices.open_for_room(_state, String(room["type"]), false, _ctx) != RunState.PENDING_NONE:
+	if RunRelics.open_for_room(_state, String(room["type"]), false, _ctx) != RunState.PENDING_NONE:
 		choice_requested.emit(current_choice())
 	else:
 		room_cleared.emit(_summary)
@@ -296,6 +351,8 @@ func choose(option_id: String) -> Dictionary:
 	var result: Dictionary = RunChoices.apply(_state, option_id, _ctx)
 	if not bool(result["ok"]):
 		return result
+	if ["relic_pick", "relic_swap"].has(String(result["kind"])):
+		_sync_relics()
 	var health: Health = _main.player.health
 	if String(result["kind"]) == "heal" and float(result["amount"]) > 0.0:
 		health.heal(float(result["amount"]))
@@ -339,13 +396,68 @@ func _on_player_died() -> void:
 func current_choice() -> Dictionary:
 	if _state == null or not _state.has_pending():
 		return {}
-	var model: Dictionary = RunChoices.model(_state, _ctx)
+	var model: Dictionary = RunChoices.model(_state, _ctx, room_type())
 	model["room_label"] = room_label()
 	model["room_type"] = room_type()
 	model["room_type_name"] = room_type_name()
 	model["next_line"] = next_room_line()
 	model["next_room_type"] = next_room_type()
 	return model
+
+
+# ---- Relic data for the UI (BD2-B) ----
+
+## The relic offer waiting now (an offer, or the give-up step's underlying offer), as display dictionaries
+## {relic_id, name, tier, tier_name, pool, pool_name, rule_text, flavor, keywords, boss, giveable}; [] when no relic choice is open.
+func relic_offer() -> Array[Dictionary]:
+	var list: Array[Dictionary] = []
+	if _state != null and _state.has_relic_choice():
+		for relic_id: String in _state.offer:
+			list.append(RunRelics.display(relic_id, _ctx))
+	return list
+
+
+## The give-one-up step: {active, incoming (display dict, {} when inactive), giveable (display dicts), owned_count, max_owned}.
+## `active` is true only after a relic was chosen at the cap. Confirm with `give_up_relic`, back out with `cancel_relic_swap`.
+func relic_swap_state() -> Dictionary:
+	var active: bool = _state != null and _state.pending == RunState.PENDING_RELIC_SWAP
+	var giveable: Array[Dictionary] = []
+	if active:
+		for relic_id: String in RunRelics.giveable_ids(_state, _ctx):
+			giveable.append(RunRelics.display(relic_id, _ctx))
+	return {
+		"active": active, "incoming": RunRelics.display(_state.relic_incoming, _ctx) if active else {}, "giveable": giveable,
+		"owned_count": _state.relics.size() if _state != null else 0, "max_owned": RunRelics.max_owned(_ctx),
+	}
+
+
+## The relics the run holds, in the order taken, and the ones it gave up, as display dictionaries (the HUD row and the pause list).
+func owned_relics() -> Array[Dictionary]:
+	return RunRelics.owned_display(_state, _ctx) if _state != null else ([] as Array[Dictionary])
+
+
+func given_up_relics() -> Array[Dictionary]:
+	return RunRelics.given_up_display(_state, _ctx) if _state != null else ([] as Array[Dictionary])
+
+
+## Takes an offered relic (at the cap this opens the give-up step instead; the result's kind is "relic_swap_open").
+func pick_relic(relic_id: String) -> Dictionary:
+	return choose(RunRelics.OPTION_RELIC + ":" + relic_id)
+
+
+## Skips the relic offer (free: no reject is spent).
+func skip_relic_offer() -> Dictionary:
+	return choose(RunRelics.OPTION_SKIP)
+
+
+## Gives up an owned relic to take the one being swapped in.
+func give_up_relic(relic_id: String) -> Dictionary:
+	return choose(RunRelics.OPTION_GIVEUP + ":" + relic_id)
+
+
+## Backs out of the give-up step: everything is kept and the offer is shown again.
+func cancel_relic_swap() -> Dictionary:
+	return choose(RunRelics.OPTION_CANCEL)
 
 
 func has_choice() -> bool:

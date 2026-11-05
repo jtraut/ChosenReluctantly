@@ -23,6 +23,13 @@ static var character_forced: bool = false
 ## `--run-offer=<card>,<card>,...` (capture tooling, BD1-B): the card offer of the FIRST reward screen, instead of the seeded draw
 ## (for example to show a Keystone on the reward screen without hunting for a seed). Consumed by that one offer.
 static var forced_offer: Array[String] = []
+## `--relics=<id>+<id>` (BD2-B, capture and sim tooling): new runs start holding these relics. Sticky for the launch like `debug_deck`.
+static var start_relics: Array[String] = []
+## `--relic-offer=<id>+<id>` (capture tooling): the relic offer of the FIRST relic choice, instead of the seeded draw. Consumed by that one offer.
+static var forced_relic_offer: Array[String] = []
+## `--relic-cap=N` (capture and test tooling): replaces `relics.max_owned` for this launch (0 = use the data), so the give-one-up step
+## can be reached in a short run. Sticky for the launch.
+static var relic_cap: int = 0
 
 
 static func has_run() -> bool:
@@ -57,6 +64,8 @@ static func begin_new_run(seed_value: int = -1, character: String = "") -> RunSt
 	else:
 		deck = CharacterDatabase.full_deck(who) if full_deck else CharacterDatabase.starting_deck(who)
 	current = RunState.new_run(chosen, deck, RunConfig.rejects_per_run(), who)
+	for relic_id: String in start_relics:
+		current.add_relic(relic_id)
 	return current
 
 

@@ -119,11 +119,11 @@ func test_every_seed_follows_the_rules() -> void:
 	for seed_value in range(1, 400):
 		var rooms := RunGenerator.generate(seed_value, config)
 		assert_int(rooms.size()).is_equal(10)
-		var counts: Dictionary = {"combat": 0, "elite": 0, "rest": 0, "boss": 0}
+		var counts: Dictionary = {"combat": 0, "elite": 0, "rest": 0, "boss": 0, "relic_room": 0}
 		for room: Dictionary in rooms:
 			counts[room["type"]] = int(counts[room["type"]]) + 1
 			var index: int = room["index"]
-			if room["type"] == "rest":
+			if room["type"] == "rest" or room["type"] == "relic_room":
 				assert_str(room["wave_id"]).is_empty()
 			else:
 				var variant := RunConfig.variant_by_id(config, room["type"], room["wave_id"])
@@ -132,7 +132,9 @@ func test_every_seed_follows_the_rules() -> void:
 			if room["type"] == "elite" or room["type"] == "rest":
 				var window: Array = ranges[room["type"]]
 				assert_bool(index >= int(window[0]) and index <= int(window[1])).is_true()
-		assert_int(counts["combat"]).is_equal(7)
+		# BD2-B: with relics on (the shipped data) one combat room of the 7 becomes the relic room; the room count stays 10.
+		assert_int(counts["relic_room"]).is_equal(1 if RelicConfig.enabled() else 0)
+		assert_int(counts["combat"] + counts["relic_room"]).is_equal(7)
 		assert_int(counts["elite"]).is_equal(1)
 		assert_int(counts["rest"]).is_equal(1)
 		assert_int(counts["boss"]).is_equal(1)

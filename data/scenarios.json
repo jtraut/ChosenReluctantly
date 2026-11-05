@@ -1020,5 +1020,26 @@
         "casts": [
             {"at": 0.3, "slot": "movement", "card": "rogue_momentum"}
         ]
+    },
+    "bd2_pyre_explosion": {
+        "_note": "BD2 capture: the player holds Pyre Insurance. Enemy 0 is Burning and dies at 0.6 s, so its Burn ends with the owner and explodes (4 fire, radius 2) over the three enemies beside it. Shoot at 0.7 s and 1.0 s.",
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "freeze_aim": true,
+        "aim_preview_distance": 5.0,
+        "enemy_max_health": 2000,
+        "enemies_idle": true,
+        "disable_auto_attack": true,
+        "relics": ["pyre_insurance"],
+        "deck": ["rogue_drive_by", "fire_fine_burn_then", "fire_kindling", "rogue_momentum", "neutral_healing_potion"],
+        "origin_offset": [-0.7, 0.0, -4.5],
+        "spacing": [1.4, -1.2],
+        "columns": 2,
+        "groups": [
+            {"scene": "res://scenes/enemies/MeleeChaser.tscn", "count": 4}
+        ],
+        "burn_indices": [0, 1],
+        "burn_duration": 60.0,
+        "late_hit": {"at": 0.6, "indices": [0], "amount": 5000.0}
     }
 }

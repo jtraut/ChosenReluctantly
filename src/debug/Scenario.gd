@@ -177,6 +177,16 @@ func _build() -> void:
 		for card_id: Variant in (_def["deck"] as Array):
 			fixed.append(String(card_id))
 		player.card_slots.set_deck(fixed)
+	# Capture-only (BD2-B): the player holds these relics, through the real RelicManager (the run builds the same node per room).
+	if _def.has("relics"):
+		var held: Array[String] = []
+		for relic_id: Variant in (_def["relics"] as Array):
+			held.append(String(relic_id))
+		var manager := RelicManager.new()
+		manager.name = "RelicManager"
+		_main.add_child(manager)
+		manager.configure(player, _main, player.status_rng, CombatLink.events())
+		manager.load_relics(held)
 	# Capture-only: the heavy's ground aim point, as an [x, z] offset from the player.
 	if _def.has("aim_point_offset"):
 		var aim_values: Array = _def["aim_point_offset"]

@@ -124,6 +124,16 @@ var _run_results: Array[Dictionary] = []
 var _card_casts: Dictionary = {}
 var _slot_stuck_since: Dictionary = {}
 var _room_min_hp: float = INF
+## `--sim-relics=<id>+<id>` (wave sim -Relics, run mode): every run starts holding these relics (BD2-B). `--sim-relic-cap=N` (-RelicCap) lowers the
+## relic cap so the give-one-up step is reached in a short run. Both are checked at launch (an unknown id exits 2).
+## `--sim-swap=<old>=<new>` (-Swap, run mode): after the run starts, one copy of card <old> in the deck is replaced by <new> (checked against the
+## deck rules), so a removal-pain measurement needs no temporary preset file.
+var _swap_out: String = ""
+var _swap_in: String = ""
+## Damage the player's side dealt to enemies, by origin, for the current run and for all runs (BD2-B; run mode). Fed by CombatEvents.hit_landed.
+var _damage_run: Dictionary = {}
+var _damage_all: Dictionary = {}
+var _damage_by_run: Array[Dictionary] = []
 ## 3b: the reward bot's own stream (seeded per run, so the picks repeat from --seed and never touch the combat bot).
 var _policy_rng := RandomNumberGenerator.new()
 const REJECT_CHANCE := 0.25
@@ -178,6 +188,23 @@ func _ready() -> void:
 				get_tree().quit(2)
 				return
 			RunSession.selected_character = _sim_class
+		elif arg.begins_with("--sim-relics="):
+			var held: Array[String] = RelicArgs.parse_ids(arg.substr(13))
+			var held_problems: Array[String] = RelicArgs.id_problems("-Relics", held, 0)
+			if not held_problems.is_empty():
+				push_error("wave sim: " + "; ".join(held_problems))
+				get_tree().quit(2)
+				return
+			RunSession.start_relics = held
+		elif arg.begins_with("--sim-relic-cap="):
+			if not arg.substr(16).is_valid_int() or arg.substr(16).to_int() < 1:
+				push_error("wave sim: -RelicCap needs a whole number from 1")
+				get_tree().quit(2)
+				return
+			RunSession.relic_cap = arg.substr(16).to_int()
+		elif arg.begins_with("--sim-swap="):
+			_swap_out = arg.substr(11).get_slice("=", 0)
+			_swap_in = arg.substr(11).get_slice("=", 1)
 		elif arg.begins_with("--room-timeout="):
 			_room_timeout = maxf(10.0, float(arg.substr(15)))
 	# A preset deck is for one class: refuse a clash like a real launch does, and let a preset alone pick its class.
@@ -188,6 +215,14 @@ func _ready() -> void:
 			get_tree().quit(2)
 			return
 		RunSession.selected_character = preset_class
+	if (_swap_out != "" or _swap_in != "") and not _run_mode:
+		push_error("wave sim: -Swap needs -Run")
+		get_tree().quit(2)
+		return
+	if (_swap_out != "" or _swap_in != "") and (not CardDatabase.has_card(_swap_out) or not CardDatabase.has_card(_swap_in)):
+		push_error("wave sim: -Swap needs two card ids, as old=new (got '%s' and '%s')" % [_swap_out, _swap_in])
+		get_tree().quit(2)
+		return
 	if _sim_class != "" and not _run_mode:
 		print("note: -Class only applies to whole runs (-Run); the endless arena always plays the Rogue")
 	_run_all.call_deferred()
@@ -760,6 +795,13 @@ func _run_whole(run_seed: int) -> void:
 	Juice.hit_stop_enabled = false
 	RunSession.clear()
 	RunSession.begin_new_run(run_seed)
+	if not _apply_swap(run_seed):
+		return
+	_damage_run = {}
+	var relay: CombatEventsRelay = CombatLink.events()
+	var tally := _on_hit_for_tally
+	if relay != null:
+		relay.hit_landed.connect(tally)
 	var rooms: Array[Dictionary] = RunGenerator.generate(run_seed, RunConfig.get_config())
 	if _god:
 		RunSession.current.max_hp = 9999.0
@@ -796,6 +838,7 @@ func _run_whole(run_seed: int) -> void:
 		if _boss_start >= 0.0:
 			var fight: float = (_boss_end if _boss_end >= 0.0 else _sim_time) - _boss_start
 			result["boss_fight_s"] = snappedf(fight, 0.1)
+			result["boss_died"] = _boss_end >= 0.0
 			print("    boss fight (spawn to death): %.1f s, %s | player lowest HP %.1f" % [fight, "boss died" if _boss_end >= 0.0 else "boss NOT dead", _room_min_hp])
 		if _boss_log:
 			_boss_room_done(run_seed, room_result)
@@ -821,6 +864,11 @@ func _run_whole(run_seed: int) -> void:
 		else:
 			controller.continue_to_next_room()
 		room_index += 1
+	if relay != null and relay.hit_landed.is_connected(tally):
+		relay.hit_landed.disconnect(tally)
+	_damage_by_run.append(_damage_run)
+	for origin: Variant in _damage_run.keys():
+		_damage_all[origin] = float(_damage_all.get(origin, 0.0)) + float(_damage_run[origin])
 	result["wall_ms"] = Time.get_ticks_msec() - wall_start
 	result["sim_s"] = run_sim_total
 	result["hp_end"] = snappedf(RunSession.current.hp, 0.1) if RunSession.current != null else -1.0
@@ -832,12 +880,14 @@ func _run_whole(run_seed: int) -> void:
 	_run_results.append(result)
 	var type_letters: Array[String] = []
 	for t: String in (result["types"] as Array):
-		type_letters.append(t.substr(0, 1))
+		type_letters.append("R" if t == RunConfig.RELIC_ROOM else t.substr(0, 1))  # "r" is the rest room
 	print("  run seed %d: %s | rooms reached %d of %d | sim %.0f s in %.1f s wall | types %s | room seconds %s | lowest HP in each room %s | HP at last room clear %s" % [
 		run_seed, String(result["outcome"]).to_upper(), int(result["rooms_reached"]), rooms.size(), float(result["sim_s"]), float(result["wall_ms"]) / 1000.0, ",".join(type_letters), str(result["room_s"]), str(result["room_min_hp"]), str(result["hp_end"])])
 	print("    HP at each room end %s (max %s) | deck %d cards %s | picks %d, rejects used %d, removals %d, rest heals %d" % [
 		str(result["room_hp_end"]), str(result["max_hp"]), int(result["deck_size"]), str(result["deck_slots"]), int(result["picks"]), int(result["rejects_used"]), int(result["removals"]), int(result["heals"])])
 	print("    run stat: seed %d outcome %s rooms_reached %d damage_taken %.1f" % [run_seed, String(result["outcome"]), int(result["rooms_reached"]), _damage_taken])
+	print("    relics: held %s | given up %s | offers taken %d, skipped %d, swapped %d" % [str(RunSession.current.relics if RunSession.current != null else []), str(RunSession.current.relics_given_up if RunSession.current != null else []), int(result["relic_picks"]), int(result["relic_skips"]), int(result["relic_swaps"])])
+	print("    damage by source (HP removed from enemies): %s" % _damage_line(_damage_run))
 	if _plan:
 		print("    plan policy: %d card casts (%d with the condition live, %d held payoff casts), %d dead-card swaps" % [int(_plan_stats["casts"]), int(_plan_stats["live_casts"]), int(_plan_stats["held_casts"]), int(_plan_stats["swaps"])])
 	# Leave nothing of this run behind for the next one.
@@ -871,6 +921,10 @@ func _policy_choose(controller: RunController) -> String:
 				return skip_id
 			var pool: Array[Dictionary] = unowned if not unowned.is_empty() else cards
 			return String(pool[_policy_rng.randi_range(0, pool.size() - 1)]["id"])
+		RunState.PENDING_RELIC:
+			return RelicPolicy.offer_choice(options, state.deck)
+		RunState.PENDING_RELIC_SWAP:
+			return RelicPolicy.giveup_choice(options)
 		RunState.PENDING_REST:
 			var heal_id: String = ""
 			var menu_id: String = ""
@@ -907,6 +961,9 @@ func _record_deck_and_hp(result: Dictionary) -> void:
 	var rejects_used: int = 0
 	var removals: int = 0
 	var heals: int = 0
+	var relic_picks: int = 0
+	var relic_skips: int = 0
+	var relic_swaps: int = 0
 	if state != null:
 		for entry: Dictionary in state.history:
 			hp_ends.append(snappedf(float(entry["hp_end"]), 0.1))
@@ -919,6 +976,11 @@ func _record_deck_and_hp(result: Dictionary) -> void:
 				"reject": rejects_used += 1
 				"remove": removals += 1
 				"heal": heals += 1
+				"relic": relic_picks += 1
+				"relic_skip": relic_skips += 1
+				"relic_swap":
+					relic_picks += 1
+					relic_swaps += 1
 	result["room_hp_end"] = hp_ends
 	result["max_hp"] = snappedf(state.max_hp, 0.1) if state != null else -1.0
 	result["deck_size"] = state.deck.size() if state != null else 0
@@ -927,6 +989,9 @@ func _record_deck_and_hp(result: Dictionary) -> void:
 	result["rejects_used"] = rejects_used
 	result["removals"] = removals
 	result["heals"] = heals
+	result["relic_picks"] = relic_picks
+	result["relic_skips"] = relic_skips
+	result["relic_swaps"] = relic_swaps
 	if state != null and state.deck.is_empty():
 		_fail("run %d: the deck ended empty" % int(result["seed"]))
 
@@ -1188,6 +1253,8 @@ func _run_summary() -> void:
 	print("RUN SUMMARY over %d run(s): outcomes %s | rooms reached (rooms: runs) %s" % [_run_results.size(), str(outcomes), str(reached)])
 	print("  room types in the played runs: %s" % str(played_types))
 	_print_attrition()
+	_print_boss_times()
+	_print_damage_summary()
 	# Distribution of the generator alone over many seeds (cheap and pure).
 	var counts: Dictionary = {}
 	var index_counts: Dictionary = {}
@@ -1201,7 +1268,7 @@ func _run_summary() -> void:
 	for key: Variant in counts.keys():
 		per_run[key] = snappedf(float(counts[key]) / float(seeds), 0.01)
 	print("  generator, %d seeds: rooms per run by type %s" % [seeds, str(per_run)])
-	for room_type: String in ["elite", "rest"]:
+	for room_type: String in ["elite", "rest", "relic_room"]:
 		var parts: Array[String] = []
 		for index in range(1, 9):
 			var n: int = int(index_counts.get("%s@%d" % [room_type, index], 0))
@@ -1211,6 +1278,126 @@ func _run_summary() -> void:
 	_print_pick_rates()
 	if _boss_log:
 		_boss_summary()
+
+
+## Boss fight times (spawn to death) over the runs that reached the boss. A fight the boss survived to the room timeout is not a time: it is
+## listed on its own, so one stuck fight cannot skew the median (BD1 qa carry-over).
+func _print_boss_times() -> void:
+	var finished: Array[float] = []
+	var timed_out: Array[String] = []
+	for result: Dictionary in _run_results:
+		if not result.has("boss_fight_s"):
+			continue
+		if bool(result.get("boss_died", false)):
+			finished.append(float(result["boss_fight_s"]))
+		elif String(result["outcome"]) == "soft_lock":
+			timed_out.append("seed %d" % int(result["seed"]))
+	if finished.is_empty() and timed_out.is_empty():
+		return
+	finished.sort()
+	var median: float = 0.0
+	if not finished.is_empty():
+		var mid: int = finished.size() / 2
+		median = finished[mid] if finished.size() % 2 == 1 else (finished[mid - 1] + finished[mid]) / 2.0
+	var mean: float = 0.0
+	for t: float in finished:
+		mean += t
+	mean /= maxf(float(finished.size()), 1.0)
+	print("  BOSS TIMES (spawn to boss death): %d finished: median %.1f s, mean %.1f s, range %.1f to %.1f s | %d TIMED OUT (boss alive at the %.0f s room limit; not in the median): %s" % [
+		finished.size(), median, mean, finished[0] if not finished.is_empty() else 0.0, finished[finished.size() - 1] if not finished.is_empty() else 0.0, timed_out.size(), _room_timeout, ", ".join(timed_out) if not timed_out.is_empty() else "none"])
+
+
+# ---- Damage by source (BD2-B; the run fingerprint check of BUILD_DEPTH 2) ----
+
+## Records HP the player's side removed from an enemy, by origin. Enemy-on-player damage is player_damaged, not counted here.
+func _on_hit_for_tally(target: Node, amount: float, _damage_type: String, _kind: StringName, origin: String, _position: Vector3) -> void:
+	if CombatEventsRelay.team_of(target) != "enemy":
+		return
+	var key: String = origin if origin != "" else "unknown"
+	_damage_run[key] = float(_damage_run.get(key, 0.0)) + amount
+
+
+## Origins grouped for the fingerprint: light, heavy, each card by its slot type ("slot:attack_single"), each status ("status:burn"), each relic ("relic:<id>").
+func _damage_group(origin: String) -> String:
+	if origin.begins_with("card:"):
+		return "slot:" + String(CardDatabase.get_card(origin.substr(5)).get("slot_type", "?"))
+	return origin
+
+
+## "light 45.2 (30%), slot:attack_single 33.0 (22%), status:burn 12.0 (8%) | total 150.3", biggest first.
+func _damage_line(by_origin: Dictionary) -> String:
+	var grouped: Dictionary = {}
+	var total: float = 0.0
+	for origin: Variant in by_origin.keys():
+		var group: String = _damage_group(String(origin))
+		grouped[group] = float(grouped.get(group, 0.0)) + float(by_origin[origin])
+		total += float(by_origin[origin])
+	var keys: Array = grouped.keys()
+	keys.sort_custom(func(a: Variant, b: Variant) -> bool: return float(grouped[a]) > float(grouped[b]))
+	var parts: Array[String] = []
+	for key: Variant in keys:
+		parts.append("%s %.1f (%.0f%%)" % [str(key), float(grouped[key]), 100.0 * float(grouped[key]) / maxf(total, 0.001)])
+	return "%s | total %.1f" % [", ".join(parts), total]
+
+
+## All runs together: the grouped line, then each card's damage (so a card that carries a plan shows), and the L1 distance of each
+## run's grouped shares from the mean run (the "fingerprint spread": 0 = every run spends damage alike, 2 = nothing in common).
+func _print_damage_summary() -> void:
+	if _damage_by_run.is_empty():
+		return
+	print("  DAMAGE BY SOURCE over %d run(s): %s" % [_damage_by_run.size(), _damage_line(_damage_all)])
+	var cards: Array[String] = []
+	var keys: Array = _damage_all.keys()
+	keys.sort_custom(func(a: Variant, b: Variant) -> bool: return float(_damage_all[a]) > float(_damage_all[b]))
+	for key: Variant in keys:
+		if String(key).begins_with("card:") or String(key).begins_with("relic:"):
+			cards.append("%s %.1f" % [str(key), float(_damage_all[key])])
+	print("    per card and relic: %s" % ", ".join(cards))
+	var shares: Array[Dictionary] = []
+	var names: Dictionary = {}
+	for run: Dictionary in _damage_by_run:
+		var grouped: Dictionary = {}
+		var total: float = 0.0
+		for origin: Variant in run.keys():
+			var group: String = _damage_group(String(origin))
+			grouped[group] = float(grouped.get(group, 0.0)) + float(run[origin])
+			total += float(run[origin])
+		for group: Variant in grouped.keys():
+			grouped[group] = float(grouped[group]) / maxf(total, 0.001)
+			names[group] = true
+		shares.append(grouped)
+	var mean: Dictionary = {}
+	for group: Variant in names.keys():
+		var sum: float = 0.0
+		for run_shares: Dictionary in shares:
+			sum += float(run_shares.get(group, 0.0))
+		mean[group] = sum / float(shares.size())
+	var distances: Array[String] = []
+	var distance_total: float = 0.0
+	for run_shares: Dictionary in shares:
+		var distance: float = 0.0
+		for group: Variant in names.keys():
+			distance += absf(float(run_shares.get(group, 0.0)) - float(mean[group]))
+		distances.append("%.2f" % distance)
+		distance_total += distance
+	print("    fingerprint spread (L1 distance of each run's shares from the mean run; mean %.2f): %s" % [distance_total / float(shares.size()), ", ".join(distances)])
+
+
+## --sim-swap: replaces one copy of <old> by <new> in the fresh run's deck. False (and a failed run) when the swap breaks the deck rules.
+func _apply_swap(run_seed: int) -> bool:
+	if _swap_out == "":
+		return true
+	var state: RunState = RunSession.current
+	var index: int = state.deck.find(_swap_out)
+	if index < 0:
+		_fail("run %d: -Swap: the starting deck has no '%s' to take out" % [run_seed, _swap_out])
+		return false
+	var problems: Array[String] = DeckRules.can_swap(state.deck, _swap_out, _swap_in, DeckRules.shipped_config(), DeckRules.slot_map_from_database(), SlotTypeDatabase.known_ids(), DeckRules.slot_names_from_database())
+	if not problems.is_empty():
+		_fail("run %d: -Swap %s=%s breaks the deck rules: %s" % [run_seed, _swap_out, _swap_in, "; ".join(problems)])
+		return false
+	state.deck[index] = _swap_in
+	return true
 
 
 ## 3b: HP at the end of each room, averaged over the runs that got that far (is there attrition?), and the deck sizes.

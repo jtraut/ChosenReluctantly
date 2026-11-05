@@ -35,5 +35,24 @@
     "pl3_heavy_bolt": {
         "description": "Overqualified Bolt cast by the Wizard (fixed deck, so the slot really holds it).",
         "class": "wizard", "scenario": "pl3_heavy_bolt", "after": "0.7,0.9,1.1"
+    },
+    "bd2_relic_elite": {
+        "description": "BD2: the relic offer after an elite room (3 relics and Skip; the elite replaces its card offer). Run mode, seed 1 has its elite at room 4; a fixed offer.",
+        "class": "rogue", "scenario": "", "after": "3.0",
+        "extra": ["--run-seed=1", "--run-room=4", "--run-clear-after=1", "--relic-offer=pyre_insurance+smoldering_grudge+heavy_sigh"]
+    },
+    "bd2_relic_room": {
+        "description": "BD2: the relic room (no fight; the offer opens at once). Run mode, seed 1 has its relic room at room 9; the player already holds Spite Knuckles.",
+        "class": "rogue", "scenario": "", "after": "3.0",
+        "extra": ["--run-seed=1", "--run-room=9", "--relics=spite_knuckles", "--relic-offer=lingering_embers+second_wind_unwillingly+heavy_sigh"]
+    },
+    "bd2_relic_swap": {
+        "description": "BD2: the give-one-up step at a relic cap of 2. The player holds Pyre Insurance and Heavy Sigh and picks Lingering Embers in the relic room (seed 1, room 9); the second screen lists the two relics that can be given up and Cancel.",
+        "class": "rogue", "scenario": "", "after": "3.0",
+        "extra": ["--run-seed=1", "--run-room=9", "--relics=pyre_insurance+heavy_sigh", "--relic-cap=2", "--relic-offer=lingering_embers+second_wind_unwillingly+smoldering_grudge", "--run-auto-choose=relic:lingering_embers"]
+    },
+    "bd2_pyre_explosion": {
+        "description": "BD2: a Pyre Insurance explosion. Arena scenario, fixed deck: a Burning enemy dies at 0.6 s and its Burn bursts over the three beside it.",
+        "class": "rogue", "scenario": "bd2_pyre_explosion", "after": "0.7,1.0"
     }
 }

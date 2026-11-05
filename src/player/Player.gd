@@ -147,6 +147,9 @@ var _forced_move_pass: bool = false
 ## Element look for the dash card's trail and end puff; empty (dodge roll) means no trail.
 var _forced_move_look: Dictionary = {}
 var _forced_move_trail_timer: float = 0.0
+## The card behind the current forced move ("" for the dodge) and where it began, for the dash_ended relay event.
+var _forced_move_card_id: String = ""
+var _forced_move_start: Vector3 = Vector3.ZERO
 
 ## Physics ticks after a pause or resume in which a dodge press is ignored (S6-5); from data/player.json.
 var dodge_block_ticks_after_pause: int = 2
@@ -395,6 +398,9 @@ func _on_damaged(amount: float, damage_type: String, knockback: Vector3) -> void
 	_knockback_velocity = knockback
 	_flash_body(HIT_FLASH_COLOR)
 	Juice.on_hit_landed(global_position, amount, damage_type, health.last_kind, health.last_channel, health.last_reduction)
+	var relay := CombatLink.events()
+	if relay != null:
+		relay.notify_player_damaged(amount, health.last_origin)
 
 
 func _flash_body(color: Color) -> void:
@@ -483,9 +489,11 @@ func _handle_dodge_input() -> void:
 ## move; if it ends inside one, the normal pass-through restore waits until the body is clear (no stuck player).
 ## `path_hit` (optional, from the dash template): {damage, damage_type, hit_radius, knockback_strength}
 ## damages each enemy the body sweeps through, at most once per move.
-func start_forced_move(direction: Vector3, speed: float, duration: float, invulnerable: bool = false, vfx_look: Dictionary = {}, path_hit: Dictionary = {}, pass_through: bool = false) -> void:
+func start_forced_move(direction: Vector3, speed: float, duration: float, invulnerable: bool = false, vfx_look: Dictionary = {}, path_hit: Dictionary = {}, pass_through: bool = false, origin: String = "") -> void:
 	if _dead:
 		return
+	_forced_move_card_id = origin.trim_prefix("card:") if origin.begins_with("card:") else ""
+	_forced_move_start = global_position if is_inside_tree() else Vector3.ZERO
 	_release_forced_move_pass()  # a move started over a running one hands its grant back first
 	if pass_through and duration > 0.0 and is_inside_tree():
 		_forced_move_pass = true
@@ -531,6 +539,11 @@ func _apply_forced_move(delta: float) -> void:
 			hurtbox.set_invulnerable(false)
 		_forced_move_invulnerable = false
 		_release_forced_move_pass()
+		if _forced_move_card_id != "":
+			var relay := CombatLink.events()
+			if relay != null:
+				relay.notify_dash_ended(_forced_move_start, global_position, _forced_move_card_id)
+			_forced_move_card_id = ""
 
 
 ## Hits every enemy within hit_radius of the body's path since the last tick, once each per dash. The path
@@ -552,7 +565,7 @@ func _tick_path_hits() -> void:
 				continue
 			_path_hit_ids[id] = true
 			target.receive_damage(float(_path_hit["damage"]), String(_path_hit["damage_type"]),
-					EffectTemplates.knockback_from(global_position, target.global_position, float(_path_hit["knockback_strength"])), self, Health.KIND_HIT)
+					EffectTemplates.knockback_from(global_position, target.global_position, float(_path_hit["knockback_strength"])), self, Health.KIND_HIT, String(_path_hit.get("origin", "")))
 
 
 ## Walk through enemies for `duration` seconds: the body stops colliding with enemy bodies (both ways)
@@ -802,6 +815,7 @@ func get_arena_rect() -> Rect2:
 func _on_attack_fired(attack_id: StringName) -> void:
 	var def := attacks.get_def(attack_id)
 	var context := EffectContext.new(self, WorldRef.get_world(get_tree()), hurtbox.team if hurtbox != null else "neutral")
+	context.origin = String(attack_id)
 	if String(def["shape"]) == "targeted_aoe":
 		# The same "aoe" template cards use, centred on the locked target.
 		var target: Vector3 = _aoe_targets.get(attack_id, AoeTargeting.clamp_target(global_position, null, get_aim_direction(), float(def["max_range"]), _arena_rect()))
@@ -828,6 +842,7 @@ func _on_attack_fired(attack_id: StringName) -> void:
 			"lane": false,
 			"look": _bolt_look(attack_id, def),
 		}, context)
+		_relay_attack_fired(attack_id)
 		attack_fired.emit(attack_id)
 		return
 	else:
@@ -842,11 +857,22 @@ func _on_attack_fired(attack_id: StringName) -> void:
 			"vfx": false,
 		}, context)
 		(_attack_visuals[attack_id] as AttackArcVisual).flash(float(def["flash_duration"]))
-	AttackStatuses.apply_on_hit(def, character_element_id(), context.last_hits, status_rng, self)
+	AttackStatuses.apply_on_hit(def, character_element_id(), context.last_hits, status_rng, self, context.origin)
 	if not context.last_hits.is_empty():
 		Juice.hit_stop(float(def["hit_stop_duration"]), float(def["hit_stop_scale"]))
 		Juice.screen_shake(float(def["shake_strength"]), float(def["shake_duration"]))
+	_relay_attack_fired(attack_id)
 	attack_fired.emit(attack_id)
+
+
+## Tells the CombatEvents relay a light or heavy attack fired, with the point it was aimed at (the player's own position when
+## nothing is aimed at).
+func _relay_attack_fired(attack_id: StringName) -> void:
+	var relay := CombatLink.events()
+	if relay == null:
+		return
+	var aim: Variant = get_aim_point()
+	relay.notify_attack_fired(String(attack_id), aim as Vector3 if aim != null else global_position)
 
 
 ## The bolt's own look ({"color", "scale"}) from the attack's `bolt_look` data, built once per attack (auto-fire shoots one

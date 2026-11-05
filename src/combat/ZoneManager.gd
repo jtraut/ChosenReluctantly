@@ -38,6 +38,8 @@ class Zone extends RefCounted:
 	var condition: Dictionary = {}
 	var team: String = "neutral"
 	var source_id: int = 0
+	## EffectContext.origin of the cast that placed it, stamped on its hits and statuses.
+	var origin: String = ""
 	var rng: RandomNumberGenerator = null
 	var elapsed: float = 0.0
 	var ticks_done: int = 0
@@ -103,6 +105,7 @@ func spawn(params: Dictionary, center: Vector3, cast_dir: Vector3, context: Effe
 	zone.condition = params.get(EffectCondition.PARAM_KEY, {})
 	zone.team = context.caster_team
 	zone.source_id = context.caster.get_instance_id() if context.caster != null else 0
+	zone.origin = context.origin
 	zone.rng = context.rng
 	zone.elapsed = 0.0
 	zone.ticks_done = 0
@@ -113,6 +116,9 @@ func spawn(params: Dictionary, center: Vector3, cast_dir: Vector3, context: Effe
 	_build_visual(zone)
 	_live.append(zone)
 	zone_started.emit(zone.id)
+	var relay := CombatLink.events()
+	if relay != null:
+		relay.notify_zone_started(zone.id, zone.shape, zone.center)
 	_tick(zone)
 	return zone.id
 
@@ -227,13 +233,13 @@ func _tick(zone: Zone) -> void:
 		if not zone.condition.is_empty() and not EffectCondition.target_ok(zone.condition, hurtbox):
 			continue
 		if zone.damage > 0.0:
-			hurtbox.receive_damage(zone.damage, zone.damage_type, EffectTemplates.knockback_from(zone.center, hurtbox.global_position, zone.knockback), source, Health.KIND_DOT)
+			hurtbox.receive_damage(zone.damage, zone.damage_type, EffectTemplates.knockback_from(zone.center, hurtbox.global_position, zone.knockback), source, Health.KIND_DOT, zone.origin)
 		if status_def.is_empty() or hurtbox.status_manager == null or not chance_ok:
 			continue
 		if hurtbox.health != null and hurtbox.health.is_dead():
 			continue
 		if AttackStatuses.roll(zone.rng, zone.status_chance):
-			hurtbox.status_manager.apply_status(zone.status_id, status_def, zone.status_duration, source)
+			hurtbox.status_manager.apply_status(zone.status_id, status_def, zone.status_duration, source, zone.origin)
 
 
 func _end(zone: Zone) -> void:
@@ -246,6 +252,9 @@ func _end(zone: Zone) -> void:
 	zone.timer.visible = false
 	_free.append(zone)
 	zone_ended.emit(zone.id)
+	var relay := CombatLink.events()
+	if relay != null:
+		relay.notify_zone_ended(zone.id, zone.shape, zone.center)
 
 
 func _acquire() -> Zone:

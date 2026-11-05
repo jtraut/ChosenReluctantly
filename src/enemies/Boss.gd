@@ -509,6 +509,7 @@ func _land_attack() -> void:
 	var hit_player: bool = false
 	var pool: EffectPool = EffectPool.for_world(get_parent())
 	var context := EffectContext.new(self, WorldRef.get_world(get_tree()), hurtbox.team if hurtbox != null else "enemy")
+	context.origin = "enemy"
 	var color: Color = _telegraph_color()
 	match kind:
 		"cone":
@@ -572,7 +573,7 @@ func _charge_sweep() -> bool:
 		return false
 	for hurtbox_hit: Hurtbox in hits:
 		hurtbox_hit.receive_damage(float(_attack["damage"]), String(_attack["damage_type"]),
-				EffectTemplates.knockback_from(global_position - _lock_dir * 0.5, hurtbox_hit.global_position, float(_attack["knockback"])), self, Health.KIND_HIT)
+				EffectTemplates.knockback_from(global_position - _lock_dir * 0.5, hurtbox_hit.global_position, float(_attack["knockback"])), self, Health.KIND_HIT, "enemy")
 	Juice.screen_shake(float(_attack["shake"]), float(_attack["shake_duration"]))
 	Juice.hit_stop(float(_attack["hit_stop"]), 0.05)
 	attack_landed.emit(_attack_id, true)

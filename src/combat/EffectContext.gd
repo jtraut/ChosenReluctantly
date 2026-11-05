@@ -20,6 +20,9 @@ var arena: Rect2 = Rect2()
 ## CombatEvents). Null history = no cast ever counts.
 var cast_history: CastHistory = null
 var now: float = 0.0
+## Who this effect run is for, stamped on every hit and status it causes: "light", "heavy", "card:<id>", "relic:<id>" or "enemy"
+## ("" = not set). See CombatEvents.
+var origin: String = ""
 
 
 func _init(p_caster: Node3D, p_spawn_parent: Node, p_caster_team: String = "neutral") -> void:

@@ -49,6 +49,9 @@ var last_reduction: float = 0.0
 var last_raw_amount: float = 0.0
 ## Instance id of whoever dealt the last damage event (0 = unknown or none). Read-only telemetry for tools (the wave sim's boss log); no gameplay reads it.
 var last_source_id: int = 0
+## Where the last damage event came from ("light", "card:<id>", "status:burn", "enemy", ...); "" when the caller gave none.
+## Valid in `damaged` handlers like last_kind. It travels on the CombatEvents hit_landed and player_damaged events.
+var last_origin: String = ""
 
 
 func _ready() -> void:
@@ -58,7 +61,7 @@ func _ready() -> void:
 ## `source` is whoever dealt it (may be null or freed). If it has a `damage_dealt`
 ## signal it is emitted once per event with the HP actually removed (overkill is not
 ## counted), so lifesteal and similar listeners cover every damage source.
-func take_damage(amount: float, damage_type: String = "physical", knockback: Vector3 = Vector3.ZERO, source: Node = null, kind: StringName = KIND_HIT) -> void:
+func take_damage(amount: float, damage_type: String = "physical", knockback: Vector3 = Vector3.ZERO, source: Node = null, kind: StringName = KIND_HIT, origin: String = "") -> void:
 	if _is_dead or damage_immune or amount <= 0.0:
 		return
 	var channel: StringName = CHANNEL_NONE
@@ -84,14 +87,32 @@ func take_damage(amount: float, damage_type: String = "physical", knockback: Vec
 	last_channel = channel
 	last_raw_amount = amount
 	last_source_id = source.get_instance_id() if source != null and is_instance_valid(source) else 0
+	last_origin = origin
 	last_reduction = 1.0 - final_amount / amount
 	damaged.emit(final_amount, damage_type, knockback)
 	health_changed.emit(current_health, max_health)
 	if source != null and is_instance_valid(source) and source.has_signal(&"damage_dealt"):
 		source.emit_signal(&"damage_dealt", get_parent(), removed, damage_type, kind)
+	# The relay hears about the hit before the death is final. A relic reacting to it that damages this target again takes
+	# nothing (the HP is already at or below zero, so `removed` is 0 above), so the target cannot die twice.
+	var relay := CombatLink.events()
+	if relay != null:
+		relay.notify_hit(get_parent(), removed, damage_type, kind, origin)
 	if current_health <= 0.0 and not _is_dead:
+		if relay != null and CombatEventsRelay.team_of(get_parent()) == "enemy":
+			relay.notify_enemy_killed(get_parent(), origin, _held_status_ids())
 		_is_dead = true
 		died.emit()
+
+
+## The ids of the statuses the owner holds right now (read from a sibling StatusEffectManager), for the enemy_killed event.
+func _held_status_ids() -> Array[String]:
+	var ids: Array[String] = []
+	var manager := get_parent().get_node_or_null("StatusEffectManager") as StatusEffectManager if get_parent() != null else null
+	if manager != null:
+		for status_id: Variant in manager.active_status_ids():
+			ids.append(String(status_id))
+	return ids
 
 
 func heal(amount: float) -> void:

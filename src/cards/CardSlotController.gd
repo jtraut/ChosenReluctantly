@@ -143,6 +143,7 @@ func try_swap(slot_type: String) -> bool:
 
 func _cast_card(card_data: Dictionary) -> void:
 	var context := EffectContext.new(caster, spawn_parent, caster_team)
+	context.origin = "card:" + String(card_data.get("id", ""))
 	context.rng = status_rng
 	var relay := CombatLink.events()
 	if relay != null:

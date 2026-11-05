@@ -358,7 +358,7 @@ static func _cone_hit(params: Dictionary, context: EffectContext, index: int) ->
 		_play_cone_vfx(params, context, forward)
 	var knockback_strength: float = params.get("knockback_strength", 0.0)
 	for hurtbox: Hurtbox in hits:
-		hurtbox.receive_damage(params["damage"], params["damage_type"], knockback_from(context.caster.global_position, hurtbox.global_position, knockback_strength), context.caster, _kind_for(index))
+		hurtbox.receive_damage(params["damage"], params["damage_type"], knockback_from(context.caster.global_position, hurtbox.global_position, knockback_strength), context.caster, _kind_for(index), context.origin)
 
 
 ## Ground wedge through the shared EffectPool, sized by VfxSizing (the same
@@ -448,7 +448,7 @@ static func _aoe_hit(params: Dictionary, context: EffectContext, index: int) -> 
 		_play_aoe_vfx(params, context, center)
 	var knockback_strength: float = params.get("knockback_strength", 0.0)
 	for hurtbox: Hurtbox in hits:
-		hurtbox.receive_damage(params["damage"], params["damage_type"], knockback_from(center, hurtbox.global_position, knockback_strength), context.caster, _kind_for(index))
+		hurtbox.receive_damage(params["damage"], params["damage_type"], knockback_from(center, hurtbox.global_position, knockback_strength), context.caster, _kind_for(index), context.origin)
 
 
 ## Ground disc through the shared EffectPool, sized exactly to the hit radius.
@@ -528,6 +528,7 @@ static func _projectile_shot(params: Dictionary, context: EffectContext, index: 
 	if params.has(EffectCondition.PARAM_KEY):
 		instance.condition = params[EffectCondition.PARAM_KEY]
 	instance.set_source(context.caster, _kind_for(index))
+	instance.origin = context.origin
 	# Player shots only: an enemy shot's lane would look like a telegraph it is not.
 	if context.caster_team == "player" and bool(params.get("lane", true)):
 		TemplateVfx.projectile_lane(_vfx_pool(context), origin, forward, float(params["max_range"]), float(params["hit_radius"]),
@@ -562,10 +563,10 @@ static func _execute_dash(params: Dictionary, context: EffectContext) -> void:
 	var path_hit: Dictionary = {}
 	if params.has("damage"):
 		path_hit = {"damage": float(params["damage"]), "damage_type": String(params["damage_type"]),
-				"hit_radius": float(params["hit_radius"]), "knockback_strength": float(params.get("knockback_strength", 0.0))}
+				"hit_radius": float(params["hit_radius"]), "knockback_strength": float(params.get("knockback_strength", 0.0)), "origin": context.origin}
 	TemplateVfx.dash_start(_vfx_pool(context), _caster_pos(context), look)
 	TemplateVfx.dash_path(_vfx_pool(context), _caster_pos(context), forward, distance, look, float(path_hit["hit_radius"]) if not path_hit.is_empty() else -1.0)
-	context.caster.start_forced_move(forward, speed, duration, params.get("invulnerable", false), look, path_hit, bool(params.get("pass_through", false)))
+	context.caster.start_forced_move(forward, speed, duration, params.get("invulnerable", false), look, path_hit, bool(params.get("pass_through", false)), context.origin)
 
 
 static func _execute_heal(params: Dictionary, context: EffectContext) -> void:
@@ -604,7 +605,7 @@ static func _apply_status_once(params: Dictionary, context: EffectContext) -> vo
 			continue
 		# roll() draws nothing at chance 0 or 1, so chance-less cards leave seeded sequences untouched.
 		if AttackStatuses.roll(context.rng, chance):
-			hurtbox.status_manager.apply_status(status_id, status_def, duration, context.caster)
+			hurtbox.status_manager.apply_status(status_id, status_def, duration, context.caster, context.origin)
 
 
 ## Counter for unique buff modifier ids (not the clock, so seeded sim runs repeat).

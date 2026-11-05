@@ -23,7 +23,8 @@ signal lifesteal_healed(amount: float)
 
 @export var health_path: NodePath
 
-var health: Health = null
+var health: Health = null:
+	set = _set_health
 ## Enemy rank ("normal" / "elite" / "boss"); decides how long a stun lasts. Set by the owner.
 var rank: String = "normal"
 ## Where visuals are drawn. Null means "the parent's parent" (the arena the
@@ -64,6 +65,9 @@ class ActiveStatus:
 	var source_id: int = 0
 	## The status's "visual" block from data (a reference, not a copy); {} when it has none. Read by the tick cues.
 	var cue: Dictionary = {}
+	## Where the status came from ("card:<id>", "relic:<id>", "light", ...), latest applier wins on refresh. It rides on the
+	## CombatEvents status events, so a relic can tell a status its own effects applied (the recursion guard).
+	var origin: String = ""
 
 	func source_node() -> Node:
 		return instance_from_id(source_id) as Node if source_id != 0 else null
@@ -100,10 +104,55 @@ func _ready() -> void:
 	tree_exiting.connect(_stop_all_flames)
 
 
+## Assigning `health` also listens for its death (once), so the owner's statuses can announce "owner_died" before the
+## node is freed. This connects in _ready, ahead of the owner's own died handler, so the order is fixed.
+func _set_health(value: Health) -> void:
+	if health != null and health.died.is_connected(_on_owner_died):
+		health.died.disconnect(_on_owner_died)
+	health = value
+	if health != null and not health.died.is_connected(_on_owner_died):
+		health.died.connect(_on_owner_died)
+
+
+## The owner died: tell the relay each status ended with reason owner_died. Relay only: nothing is erased or stopped here
+## (the node is about to be freed, and dying has never emitted status_expired; that stays true).
+func _on_owner_died() -> void:
+	var relay := CombatLink.events()
+	if relay == null:
+		return
+	for status_id: String in _active.keys():
+		var active: ActiveStatus = _active[status_id]
+		relay.notify_status_ended(get_parent(), status_id, CombatEventsRelay.STATUS_END_OWNER_DIED, active.source_node(), active.origin)
+
+
+## Ends an active status early (a relic or effect that uses it up). Emits status_ended with reason "consumed" and the
+## existing status_expired signal's cues are stopped as for an expiry. Returns false when the status was not active.
+func consume_status(status_id: String) -> bool:
+	if not _active.has(status_id):
+		return false
+	var active: ActiveStatus = _active[status_id]
+	_erase_status(status_id)
+	var relay := CombatLink.events()
+	if relay != null:
+		relay.notify_status_ended(get_parent(), status_id, CombatEventsRelay.STATUS_END_CONSUMED, active.source_node(), active.origin)
+	status_expired.emit(status_id)
+	return true
+
+
+func _erase_status(status_id: String) -> void:
+	var expired_type: String = (_active[status_id] as ActiveStatus).effect_type
+	if expired_type == "stun":
+		_stun_count -= 1
+	elif expired_type == "lifesteal":
+		_lifesteal_count -= 1
+	_active.erase(status_id)
+	_stop_flame(status_id)
+
+
 ## Applying the same status_id again refreshes its duration (does not stack
 ## multiple instances of the same status). `source` is who applied it; a damage tick
 ## is credited to it (so lifesteal covers DoTs). It may be null.
-func apply_status(status_id: String, status_def: Dictionary, duration: float, source: Node = null) -> void:
+func apply_status(status_id: String, status_def: Dictionary, duration: float, source: Node = null, origin: String = "") -> void:
 	var was_active: bool = _active.has(status_id)
 	if String(status_def.get("effect_type", "")) == "stun":
 		# Rank and diminishing returns decide the real length; 0 means immune, which
@@ -118,14 +167,20 @@ func apply_status(status_id: String, status_def: Dictionary, duration: float, so
 		# A refresh keeps the tick phase (time_to_next_tick) and takes the longer duration,
 		# so recasting before expiry never restarts the tick timer or shortens the status.
 		(_active[status_id] as ActiveStatus).refresh(status_def, duration, source)
+		if origin != "":
+			(_active[status_id] as ActiveStatus).origin = origin
 	else:
 		var created := ActiveStatus.new(status_id, status_def, duration, source)
+		created.origin = origin
 		_active[status_id] = created
 		if created.effect_type == "stun":
 			_stun_count += 1
 		elif created.effect_type == "lifesteal":
 			_lifesteal_count += 1
 		status_applied.emit(status_id)
+		var relay := CombatLink.events()
+		if relay != null:
+			relay.notify_status_applied(get_parent(), status_id, source, origin)
 	# A refresh emits nothing, so check the flame is still alive (it could have
 	# been recycled) and restart it if not.
 	_ensure_flame(status_id, status_def)
@@ -167,7 +222,10 @@ func _process(delta: float) -> void:
 	if _active.is_empty():
 		return
 	_expired.clear()
-	for status_id: String in _active:
+	# Over a copy of the keys: a tick's damage reaches the relay, and a relic reacting to it may apply a status to this owner.
+	for status_id: String in _active.keys():
+		if not _active.has(status_id):
+			continue  # consumed by a relay listener during an earlier tick
 		var active: ActiveStatus = _active[status_id]
 		active.time_remaining -= delta
 		active.time_to_next_tick -= delta
@@ -177,14 +235,12 @@ func _process(delta: float) -> void:
 		if active.time_remaining <= 0.0:
 			_expired.append(status_id)
 	for status_id: String in _expired:
-		var expired_type: String = (_active[status_id] as ActiveStatus).effect_type
-		if expired_type == "stun":
-			_stun_count -= 1
-		elif expired_type == "lifesteal":
-			_lifesteal_count -= 1
-		_active.erase(status_id)
-		_stop_flame(status_id)
+		var ended: ActiveStatus = _active[status_id]
+		_erase_status(status_id)
 		status_expired.emit(status_id)
+		var relay := CombatLink.events()
+		if relay != null:
+			relay.notify_status_ended(get_parent(), status_id, CombatEventsRelay.STATUS_END_EXPIRED, ended.source_node(), ended.origin)
 
 
 func _tick(active: ActiveStatus) -> void:
@@ -192,7 +248,7 @@ func _tick(active: ActiveStatus) -> void:
 		return
 	if active.effect_type == "damage_over_time":
 		var source: Node = active.source_node()
-		health.take_damage(active.damage_per_tick * _status_damage_mult(active, source), active.damage_type, Vector3.ZERO, source, Health.KIND_DOT)
+		health.take_damage(active.damage_per_tick * _status_damage_mult(active, source), active.damage_type, Vector3.ZERO, source, Health.KIND_DOT, "status:" + active.status_id)
 		if String(active.cue.get("kind", "")) == "drips":
 			_tick_cue_drop(active.cue)
 	elif active.effect_type == "heal_over_time":

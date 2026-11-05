@@ -443,6 +443,7 @@ func _execute_attack() -> void:
 	if not _has_live_target():
 		return
 	var context := EffectContext.new(self, WorldRef.get_world(get_tree()), hurtbox.team if hurtbox != null else "enemy")
+	context.origin = "enemy"
 	if is_ranged:
 		EffectTemplates.execute("projectile", {
 			"damage": attack_damage,

@@ -91,6 +91,9 @@ func begin(main: Main) -> void:
 		spawner.configure_room(RunConfig.room_wave_config(variant, WaveConfig.get_config()), room_spawn_seed(_state.seed_value, _state.room_index))
 		set_process(true)
 	room_started.emit(_state.room_index, _rooms.size(), String(room["type"]))
+	var relay := CombatLink.events()
+	if relay != null:
+		relay.notify_room_started(_state.room_index, String(room["type"]))
 	if _launch_clear_after >= 0.0 and fresh_launch:
 		get_tree().create_timer(_launch_clear_after).timeout.connect(_debug_clear_room)
 
@@ -250,6 +253,9 @@ func _finish_room(healed: float) -> void:
 		"index": int(room["index"]), "type": String(room["type"]), "wave_id": String(room["wave_id"]),
 		"hp": health.current_health, "max_hp": health.max_health, "healed": healed, "seconds": _room_seconds,
 	}
+	var relay := CombatLink.events()
+	if relay != null:
+		relay.notify_room_cleared(int(room["index"]), String(room["type"]))
 	if _state.room_index >= _rooms.size() - 1:
 		_state.outcome = "won"
 		run_won.emit()

@@ -4,6 +4,6 @@
 
 [node name="MapScreen" type="CanvasLayer"]
 process_mode = 3
-layer = 9
+layer = 11
 visible = false
 script = ExtResource("1")

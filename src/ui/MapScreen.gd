@@ -44,8 +44,8 @@ var _arm_generation: int = 0
 var _hovered: int = -1
 var _last_focus: int = -1
 var _scale: float = 1.0
-## The layer the PICK screen uses (same as the other run prompts); VIEW goes above the pause screen.
-var _pick_layer: int = 9
+## The layer the PICK screen uses (11: above the run HUD gold badge on layer 10, below the pause screen on 20); VIEW goes above the pause screen.
+var _pick_layer: int = 11
 
 
 func _ready() -> void:

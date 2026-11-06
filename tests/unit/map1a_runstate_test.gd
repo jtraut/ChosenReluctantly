@@ -7,6 +7,7 @@ func _state() -> RunState:
 	var state := RunState.new_run(42, CharacterDatabase.starting_deck("rogue"), 3)
 	state.map = MapGenerator.generate(42)
 	state.path = MapGraph.first_route(state.map).slice(0, 4)
+	state.room_index = 3  # one node per room played so far
 	state.gold = 47
 	return state
 

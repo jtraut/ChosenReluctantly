@@ -180,7 +180,14 @@ static func normalize(value: Variant, problems: Array[String] = []) -> Dictionar
 			problems.append("map node %d is a duplicate or has a bad room or column" % id)
 			return {}
 		seen[id] = true
-		nodes.append({"id": id, "room": int(e["room"]), "column": int(e["column"]), "type": String(e["type"]), "wave_id": String(e["wave_id"])})
+		var clean: Dictionary = {"id": id, "room": int(e["room"]), "column": int(e["column"]), "type": String(e["type"]), "wave_id": String(e["wave_id"])}
+		if e.has("chest"):
+			# MAP1-B: only a relic stage carries a chest size. Anything else is a damaged map.
+			if typeof(e["chest"]) != TYPE_STRING or not MapConfig.CHEST_SIZES.has(String(e["chest"])) or String(e["type"]) != "relic_room":
+				problems.append("map node %d has a bad chest %s" % [id, str(e["chest"])])
+				return {}
+			clean["chest"] = String(e["chest"])
+		nodes.append(clean)
 	var edges: Array = []
 	for edge: Variant in (source["edges"] as Array):
 		if typeof(edge) != TYPE_ARRAY or (edge as Array).size() != 2 or not _whole((edge as Array)[0]) or not _whole((edge as Array)[1]):

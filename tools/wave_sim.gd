@@ -136,6 +136,10 @@ var _room_min_hp: float = INF
 var _no_relics: bool = false
 var _swap_out: String = ""
 var _swap_in: String = ""
+## `--sim-route=first|relic|safe|random` (wave sim -Route, run mode, MAP1-B): the runs walk the branching map and the bot follows that route policy (RouteBot).
+## `--sim-map` (-Map) turns the map on with the `first` route. Either one forces the map on for this process (data/map.json stays off). "" = the straight run.
+var _route_policy: String = ""
+var _route: Array[int] = []
 ## Damage the player's side dealt to enemies, by origin, for the current run and for all runs (BD2-B; run mode). Fed by CombatEvents.hit_landed.
 var _damage_run: Dictionary = {}
 var _damage_all: Dictionary = {}
@@ -210,6 +214,15 @@ func _ready() -> void:
 			RunSession.relic_cap = arg.substr(16).to_int()
 		elif arg == "--sim-no-relics":
 			_no_relics = true
+		elif arg == "--sim-map":
+			if _route_policy == "":
+				_route_policy = "first"
+		elif arg.begins_with("--sim-route="):
+			_route_policy = arg.substr(12)
+			if not RouteBot.is_policy(_route_policy):
+				push_error("wave sim: -Route must be one of %s, got '%s'" % [", ".join(RouteBot.POLICIES), _route_policy])
+				get_tree().quit(2)
+				return
 		elif arg.begins_with("--sim-swap="):
 			_swap_out = arg.substr(11).get_slice("=", 0)
 			_swap_in = arg.substr(11).get_slice("=", 1)
@@ -223,6 +236,12 @@ func _ready() -> void:
 			get_tree().quit(2)
 			return
 		RunSession.selected_character = preset_class
+	if _route_policy != "" and not _run_mode:
+		push_error("wave sim: -Route and -Map need -Run")
+		get_tree().quit(2)
+		return
+	if _route_policy != "":
+		RunSession.map_override = MapLaunch.OVERRIDE_ON
 	if _no_relics:
 		(RunConfig.get_config()["relics"] as Dictionary)["enabled"] = false  # the cached config, for this process only
 	if (_swap_out != "" or _swap_in != "") and not _run_mode:
@@ -828,7 +847,7 @@ func _run_whole(run_seed: int) -> void:
 	var tally := _on_hit_for_tally
 	if relay != null:
 		relay.hit_landed.connect(tally)
-	var rooms: Array[Dictionary] = RunGenerator.generate(run_seed, RunConfig.get_config())
+	var rooms: Array[Dictionary] = _setup_route(run_seed)
 	if _god:
 		RunSession.current.max_hp = 9999.0
 		RunSession.current.hp = 9999.0
@@ -846,6 +865,8 @@ func _run_whole(run_seed: int) -> void:
 		print("note: -StartRoom %d is past the last room; every run starts at room %d (the boss) instead" % [_start_room, rooms.size()])
 	if room_index > 0:
 		RunSession.current.room_index = room_index
+		if not _route.is_empty():
+			RunSession.current.path = _route.slice(0, room_index + 1)
 	while room_index < rooms.size():
 		var main_node: Node = await _await_new_main(previous)
 		if not (main_node is Main) or (main_node as Main).run_controller == null:
@@ -878,6 +899,8 @@ func _run_whole(run_seed: int) -> void:
 		if controller.is_last_room():
 			result["outcome"] = "won"
 			break
+		if not controller.has_choice():
+			controller.continue_to_next_room()  # a straight run swaps scenes here; a map run opens its pick-next-node choice
 		if controller.has_choice():
 			var guard: int = 0
 			while controller.has_choice() and guard < 8:
@@ -887,8 +910,6 @@ func _run_whole(run_seed: int) -> void:
 				if not bool(outcome["ok"]):
 					_fail("run %d room %d: the bot choice '%s' was refused: %s" % [run_seed, room_index + 1, choice_id, str(outcome.get("reason", ""))])
 					break
-		else:
-			controller.continue_to_next_room()
 		room_index += 1
 	if relay != null and relay.hit_landed.is_connected(tally):
 		relay.hit_landed.disconnect(tally)
@@ -914,6 +935,9 @@ func _run_whole(run_seed: int) -> void:
 	print("    run stat: seed %d outcome %s rooms_reached %d damage_taken %.1f" % [run_seed, String(result["outcome"]), int(result["rooms_reached"]), _damage_taken])
 	print("    relics: held %s | given up %s | offers taken %d, skipped %d, swapped %d" % [str(RunSession.current.relics if RunSession.current != null else []), str(RunSession.current.relics_given_up if RunSession.current != null else []), int(result["relic_picks"]), int(result["relic_skips"]), int(result["relic_swaps"])])
 	print("    damage by source (HP removed from enemies): %s" % _damage_line(_damage_run))
+	if result.has("route_summary"):
+		var route_info: Dictionary = result["route_summary"]
+		print("    route (%s): nodes %s | fights %d, elites %d, relic stages %d (chests %s), rests %d | gold %d, relics held %d" % [_route_policy, str(_route), int(route_info["fights"]), int(route_info["elites"]), int(route_info["relic_nodes"]), str(route_info["chests"]), int(route_info["rest"]), int(result["gold"]), int(result["relics_held"])])
 	if _plan:
 		print("    plan policy: %d card casts (%d with the condition live, %d held payoff casts), %d dead-card swaps" % [int(_plan_stats["casts"]), int(_plan_stats["live_casts"]), int(_plan_stats["held_casts"]), int(_plan_stats["swaps"])])
 	# Leave nothing of this run behind for the next one.
@@ -951,6 +975,8 @@ func _policy_choose(controller: RunController) -> String:
 			return RelicPolicy.offer_choice(options, state.deck)
 		RunState.PENDING_RELIC_SWAP:
 			return RelicPolicy.giveup_choice(options)
+		RunState.PENDING_NODE:
+			return "node:%d" % _route[state.room_index + 1]  # the route bot follows its planned route (RouteBot)
 		RunState.PENDING_REST:
 			var heal_id: String = ""
 			var menu_id: String = ""
@@ -1018,6 +1044,10 @@ func _record_deck_and_hp(result: Dictionary) -> void:
 	result["relic_picks"] = relic_picks
 	result["relic_skips"] = relic_skips
 	result["relic_swaps"] = relic_swaps
+	if state != null and not _route.is_empty():
+		result["gold"] = state.gold
+		result["relics_held"] = state.relics.size()
+		result["route_summary"] = RouteBot.summary(state.map, _route)
 	if state != null and state.deck.is_empty():
 		_fail("run %d: the deck ended empty" % int(result["seed"]))
 
@@ -1290,6 +1320,8 @@ func _run_summary() -> void:
 	_print_attrition()
 	_print_boss_times()
 	_print_damage_summary()
+	if _route_policy != "":
+		_print_route_summary()
 	# Distribution of the generator alone over many seeds (cheap and pure).
 	var counts: Dictionary = {}
 	var index_counts: Dictionary = {}
@@ -1313,6 +1345,69 @@ func _run_summary() -> void:
 	_print_pick_rates()
 	if _boss_log:
 		_boss_summary()
+
+
+## MAP1-B: the route bots' report. Wins, relics held and gold per run (mean and median), fights and elites on the routes, the chest sizes the runs passed,
+## and the MAP.md section 8 checks (informational): the relic route's median relics against its estimate, and the clear rate by route.
+func _print_route_summary() -> void:
+	var wins: int = 0
+	var relics: Array[float] = []
+	var golds: Array[float] = []
+	var fights: Array[float] = []
+	var elites: Array[float] = []
+	var chest_counts: Dictionary = {}
+	for result: Dictionary in _run_results:
+		if String(result["outcome"]) == "won":
+			wins += 1
+		if not result.has("route_summary"):
+			continue
+		var info: Dictionary = result["route_summary"]
+		relics.append(float(result["relics_held"]))
+		golds.append(float(result["gold"]))
+		fights.append(float(info["fights"]))
+		elites.append(float(info["elites"]))
+		for size_id: Variant in (info["chests"] as Array):
+			chest_counts[String(size_id)] = int(chest_counts.get(String(size_id), 0)) + 1
+	print("  ROUTE SUMMARY (%s, %s): %d of %d run(s) won | relics per run mean %.2f median %.1f | gold per run mean %.1f median %.1f | fights per route mean %.1f | elites per route mean %.1f | chest sizes on the routes %s" % [
+		_route_policy, _sim_class if _sim_class != "" else CharacterDatabase.DEFAULT_ID, wins, _run_results.size(), _mean(relics), _median(relics), _mean(golds), _median(golds), _mean(fights), _mean(elites), str(chest_counts)])
+	print("  MAP.md section 8 checks (informational): the %s route's median relics %.1f (the estimate for relic routes is %s); clear rate %d%%" % [
+		_route_policy, _median(relics), str(MapConfig.get_config()["path_rules"]["relic_route"]), roundi(100.0 * float(wins) / maxf(float(_run_results.size()), 1.0))])
+
+
+func _mean(values: Array[float]) -> float:
+	if values.is_empty():
+		return 0.0
+	var total: float = 0.0
+	for v: float in values:
+		total += v
+	return total / float(values.size())
+
+
+func _median(values: Array[float]) -> float:
+	if values.is_empty():
+		return 0.0
+	var sorted: Array[float] = values.duplicate()
+	sorted.sort()
+	var mid: int = sorted.size() / 2
+	return sorted[mid] if sorted.size() % 2 == 1 else (sorted[mid - 1] + sorted[mid]) / 2.0
+
+
+## The rooms a run walks. A straight run: RunGenerator's list. With the map on: the route the policy plans through this seed's map. The run state is
+## set to its first node (the bot skips the start pick), and each room is {index, type, wave_id, node_id, chest} like RunController's room list.
+func _setup_route(run_seed: int) -> Array[Dictionary]:
+	_route = []
+	var state: RunState = RunSession.current
+	if state == null or state.map.is_empty():
+		return RunGenerator.generate(run_seed, RunConfig.get_config())
+	_route = RouteBot.plan(state.map, _route_policy if _route_policy != "" else "first", MapConfig.get_config(), run_seed)
+	state.path = [_route[0]] as Array[int]
+	state.pending = RunState.PENDING_NONE
+	state.room_index = 0
+	var rooms: Array[Dictionary] = []
+	for index in range(_route.size()):
+		var node: Dictionary = MapGraph.node(state.map, _route[index])
+		rooms.append({"index": index, "type": String(node["type"]), "wave_id": String(node["wave_id"]), "node_id": int(node["id"]), "chest": RunNodes.chest_of(node) if String(node["type"]) == RunConfig.RELIC_ROOM else ""})
+	return rooms
 
 
 ## Boss fight times (spawn to death) over the runs that reached the boss. A fight the boss survived to the room timeout is not a time: it is

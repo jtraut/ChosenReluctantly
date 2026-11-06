@@ -21,6 +21,8 @@ const TYPE_DRAWS_PER_GRID := 10
 const MAX_GRID_DRAWS := 5000
 const SEED_MIX := 40503
 const SEED_SALT := 0x3AB5
+const CHEST_SEED_MIX := 69069
+const CHEST_SEED_SALT := 0x7C4E5
 
 
 ## The map for `seed_value`, or {} (after a push_error) when no valid map turned up in `max_attempts`.
@@ -57,6 +59,7 @@ static func build(seed_value: int, cfg: Dictionary = {}, run_config: Dictionary 
 		var problems: Array[String] = MapRules.path_problems(map, config) if not map.is_empty() else ["a node had no type to draw"] as Array[String]
 		if problems.is_empty():
 			_assign_waves(map, rng, run)
+			_assign_chests(map, seed_value, config)
 			return {"ok": true, "map": map, "attempts": attempts, "error": ""}
 		last_problem = problems[0]
 		type_draws += 1
@@ -237,3 +240,33 @@ static func _assign_waves(map: Dictionary, rng: RandomNumberGenerator, run_confi
 				wave_id = String((pool[rng.randi_range(0, pool.size() - 1)] as Dictionary)["id"])
 		node["wave_id"] = wave_id
 		last_waves[id] = [wave_id] as Array[String] if not wave_id.is_empty() else before
+
+
+# ---- 6. chest sizes (MAP1-B) ----
+
+## Gives every relic stage a chest size (MAP.md section 4.7 / BUILD_DEPTH 4.7 row 4), weighted by `chests` in the map config. Runs last, with its
+## own stream per node (seeded from the run seed and the node id), so it draws nothing from the generator's rng: layout, types and wave ids are
+## exactly what a map without chests gets, and one node's size does not depend on the others. A config without `chests` leaves the map alone.
+static func _assign_chests(map: Dictionary, seed_value: int, config: Dictionary) -> void:
+	var chests: Dictionary = MapConfig.chests(config)
+	if chests.is_empty():
+		return
+	for entry: Variant in (map["nodes"] as Array):
+		var node: Dictionary = entry
+		if String(node["type"]) == "relic_room":
+			node["chest"] = roll_chest(seed_value, int(node["id"]), chests)
+
+
+## One node's chest size: a weighted pick from `chests` with a stream seeded from the run seed and the node id.
+static func roll_chest(seed_value: int, node_id: int, chests: Dictionary) -> String:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = ((seed_value & RunState.SEED_LIMIT) * CHEST_SEED_MIX + node_id * 7919 + CHEST_SEED_SALT) & RunState.SEED_LIMIT
+	var total: float = 0.0
+	for size_id: String in MapConfig.CHEST_SIZES:
+		total += float((chests[size_id] as Dictionary)["weight"])
+	var roll: float = rng.randf() * total
+	for size_id: String in MapConfig.CHEST_SIZES:
+		roll -= float((chests[size_id] as Dictionary)["weight"])
+		if roll < 0.0:
+			return size_id
+	return MapConfig.CHEST_SIZES[MapConfig.CHEST_SIZES.size() - 1]

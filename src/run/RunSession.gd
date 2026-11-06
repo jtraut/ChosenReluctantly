@@ -32,6 +32,18 @@ static var forced_relic_offer: Array[String] = []
 static var relic_cap: int = 0
 
 
+## `--map` / `--no-map` (MAP1-B): -1 uses data/map.json `enabled`, 1 forces the branching map on, 0 forces the straight run. Sticky for the launch
+## like `debug_deck`, so Try again keeps it. A tool or test sets and clears it.
+static var map_override: int = -1
+
+
+## True when new runs use the branching map: the launch override, else data/map.json `enabled`.
+static func map_on() -> bool:
+	if map_override >= 0:
+		return map_override == 1
+	return MapConfig.enabled()
+
+
 static func has_run() -> bool:
 	return current != null
 
@@ -66,6 +78,13 @@ static func begin_new_run(seed_value: int = -1, character: String = "") -> RunSt
 	current = RunState.new_run(chosen, deck, RunConfig.rejects_per_run(), who)
 	for relic_id: String in start_relics:
 		current.add_relic(relic_id)
+	if map_on():
+		# The map is made once, from the run seed, and kept in the state. The run opens on the pick of a room-1 node. (A map that fails to
+		# generate has already reported itself loudly; the run is then the straight run.)
+		var map: Dictionary = MapGenerator.generate(chosen)
+		if not map.is_empty():
+			current.map = map
+			RunNodes.open(current)
 	return current
 
 

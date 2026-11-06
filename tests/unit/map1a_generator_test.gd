@@ -46,7 +46,10 @@ func test_map_has_the_documented_format() -> void:
 	assert_array(map.keys()).contains_exactly_in_any_order(["nodes", "edges"])
 	var ids: Dictionary = {}
 	for node: Dictionary in (map["nodes"] as Array):
-		assert_array(node.keys()).contains_exactly_in_any_order(["id", "room", "column", "type", "wave_id"])
+		var expected_keys: Array = ["id", "room", "column", "type", "wave_id"]
+		if String(node["type"]) == "relic_room":
+			expected_keys.append("chest")  # MAP1-B: a relic stage also carries its chest size
+		assert_array(node.keys()).contains_exactly_in_any_order(expected_keys)
 		assert_int(typeof(node["id"])).is_equal(TYPE_INT)
 		ids[node["id"]] = true
 	assert_int(ids.size()).is_equal((map["nodes"] as Array).size())

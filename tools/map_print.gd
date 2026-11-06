@@ -36,6 +36,12 @@ func _initialize() -> void:
 	var map: Dictionary = result["map"]
 	print("seed %d: %d nodes, %d edges, %d attempts (columns 0..%d left to right; rooms top to bottom)" % [seed_value, (map["nodes"] as Array).size(), (map["edges"] as Array).size(), int(result["attempts"]), int(cfg["columns"]) - 1])
 	print(MapGraph.to_text(map, int(cfg["columns"])))
+	var chest_parts: Array[String] = []
+	for entry: Dictionary in (map["nodes"] as Array):
+		if entry.has("chest"):
+			chest_parts.append("%d (room %d) %s" % [int(entry["id"]), int(entry["room"]), String(entry["chest"])])
+	if not chest_parts.is_empty():
+		print("chests: ", ", ".join(chest_parts))
 	var stats: MapRules.Extremes = MapRules.evaluate(map, cfg)
 	print("paths %d | min fights %d (rule >= %d) | max elite-like %d (<= %d) | max rest %d (<= %d) | max merchants %d (<= %d) | relic estimate best %d (in %s) worst %d (<= %d)" % [
 		stats.paths, stats.min_fights, int(cfg["path_rules"]["min_fights"]), stats.max_elite_like, int(cfg["path_rules"]["max_elite_like"]),

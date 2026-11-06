@@ -49,6 +49,7 @@ static func validate(config: Dictionary, known_enemies: Array[String], _known_ca
 	if not _is_whole(rejects) or int(rejects) < 0 or int(rejects) > 99:
 		errors.append("'rejects_per_run' must be a whole number in [0, 99]")
 	errors.append_array(_validate_rewards(config.get("rewards")))
+	errors.append_array(_validate_gold(config.get("gold")))
 	errors.append_array(_validate_tiers(config.get("tiers")))
 	errors.append_array(_validate_rooms(config, known_enemies, total))
 	errors.append_array(_validate_ui(config.get("ui")))
@@ -116,6 +117,54 @@ static func _validate_rewards(value: Variant) -> Array[String]:
 		for t: Variant in (types as Array):
 			if typeof(t) != TYPE_STRING or not FIGHT_TYPES.has(String(t)):
 				errors.append("rewards.reward_room_types: '%s' is not a fighting room type (combat, elite, boss)" % str(t))
+	return errors
+
+
+## MAP1-B `gold`: {fight node type: [low, high]} paid when a fight node is won. Optional (no block = no gold); the boss pays nothing.
+static func _validate_gold(value: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if value == null:
+		return errors
+	if typeof(value) != TYPE_DICTIONARY:
+		errors.append("'gold' must be an object {node type: [low, high]}")
+		return errors
+	for key: Variant in (value as Dictionary).keys():
+		var entry: Variant = (value as Dictionary)[key]
+		if not ["combat", "elite", "mini_boss"].has(String(key)):
+			errors.append("gold: '%s' is not a fight node type that pays gold (combat, elite, mini_boss)" % str(key))
+		elif typeof(entry) != TYPE_ARRAY or (entry as Array).size() != 2 or not _is_whole((entry as Array)[0]) or not _is_whole((entry as Array)[1]) 				or int((entry as Array)[0]) < 0 or int((entry as Array)[0]) > int((entry as Array)[1]) or int((entry as Array)[1]) > 9999:
+			errors.append("gold.%s must be [low, high], whole numbers with 0 <= low <= high <= 9999" % str(key))
+	return errors
+
+
+## MAP1-B `ui.map`: the strings the pick-next-node screen reads. Optional as a block (a straight-run fixture needs none), but every part is checked when present.
+static func _validate_map_text(value: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if value == null:
+		return errors
+	if typeof(value) != TYPE_DICTIONARY:
+		errors.append("ui.map must be an object")
+		return errors
+	var m: Dictionary = value
+	for key: String in ["title", "line", "gold_label", "gold_format", "gold_earned", "start_hint"]:
+		if typeof(m.get(key)) != TYPE_STRING:
+			errors.append("ui.map.%s must be a string" % key)
+	for key: String in ["gold_format", "gold_earned"]:
+		if typeof(m.get(key)) == TYPE_STRING and String(m[key]).count("%d") != 1:
+			errors.append("ui.map.%s must be a format string with one %%d" % key)
+	var chest_names: Variant = m.get("chest_names")
+	var chest_notes: Variant = m.get("chest_notes")
+	for size_id: String in MapConfig.CHEST_SIZES:
+		if typeof(chest_names) != TYPE_DICTIONARY or typeof((chest_names as Dictionary).get(size_id)) != TYPE_STRING:
+			errors.append("ui.map.chest_names.%s must be a string" % size_id)
+		if typeof(chest_notes) != TYPE_DICTIONARY or typeof((chest_notes as Dictionary).get(size_id)) != TYPE_STRING:
+			errors.append("ui.map.chest_notes.%s must be a string" % size_id)
+	var hover: Variant = m.get("hover")
+	var hover_ids: Array[String] = MapConfig.NODE_TYPES.duplicate()
+	hover_ids.append(MapConfig.BOSS)
+	for type_id: String in hover_ids:
+		if typeof(hover) != TYPE_DICTIONARY or typeof((hover as Dictionary).get(type_id)) != TYPE_STRING:
+			errors.append("ui.map.hover.%s must be a string" % type_id)
 	return errors
 
 
@@ -241,6 +290,7 @@ static func _validate_ui(ui_value: Variant) -> Array[String]:
 		if typeof(u.get(key)) != TYPE_DICTIONARY:
 			errors.append("ui.%s must be an object" % key)
 	errors.append_array(_validate_relic_text(u.get("relic")))
+	errors.append_array(_validate_map_text(u.get("map")))
 	errors.append_array(_validate_effect_text(u.get("effect")))
 	if typeof(u.get("next_line")) != TYPE_STRING or String(u["next_line"]).count("%d") != 2 or String(u["next_line"]).count("%s") != 1:
 		errors.append("ui.next_line must be a format string with two %d and one %s")
@@ -402,6 +452,11 @@ static func rest_heal_fraction() -> float:
 ## The pools a character draws cards from (data/characters.json); the Rogue's by default.
 static func character_pools(character_id: String = CharacterDatabase.DEFAULT_ID) -> Array[String]:
 	return CharacterDatabase.pools(character_id)
+
+
+## MAP1-B: the gold ranges {node type: [low, high]} (empty when the file has none).
+static func gold() -> Dictionary:
+	return get_config().get("gold", {})
 
 
 static func rewards() -> Dictionary:

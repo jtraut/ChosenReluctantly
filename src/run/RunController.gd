@@ -31,6 +31,8 @@ signal relic_triggered(relic_id: String, trigger_index: int, event_id: String)
 signal boss_spawned(boss: Boss)
 ## The class pick was confirmed (`confirm_class_pick`): the run is (re)started as `character_id`. The scene swaps right after.
 signal class_picked(character_id: String)
+## The run's gold changed (a fight node paid out). `total` is `RunState.gold`, `delta` the amount just earned. Gold is earned only until MAP2.
+signal gold_changed(total: int, delta: int)
 ## The last room was won.
 signal run_won()
 ## The player died; Main shows Game Over after its death beat.
@@ -47,6 +49,7 @@ var _summary: Dictionary = {}
 var _ctx: Dictionary = {}
 var _boss: Boss = null
 var _launch_room: int = 0
+var _launch_room_set: bool = false
 var _launch_clear_after: float = -1.0
 var _prepared: bool = false
 var _launch_ok: bool = true
@@ -60,11 +63,13 @@ func begin(main: Main) -> void:
 		return  # a bad --deck / --class or --list-decks: the game is quitting (see _apply_launch_args)
 	var config: Dictionary = RunConfig.get_config()
 	var fresh_launch: bool = _fresh_launch
-	_rooms = RunGenerator.generate(_state.seed_value, config)
+	_rooms = _build_rooms(config)
 	if _state.room_index < 0 or _state.room_index >= _rooms.size():
 		push_error("RunController: room index %d is outside the %d-room run; starting a new run" % [_state.room_index, _rooms.size()])
 		_state = RunSession.begin_new_run(-1, _state.character_id)
-		_rooms = RunGenerator.generate(_state.seed_value, config)
+		_rooms = _build_rooms(config)
+	if RunNodes.active(_state) and _state.path.is_empty() and not _state.has_pending():
+		RunNodes.open(_state)  # a map run opens on the pick of a room-1 node
 	_active = true
 	_cleared = false
 	_room_seconds = 0.0
@@ -103,6 +108,24 @@ func begin(main: Main) -> void:
 		relay.notify_room_started(_state.room_index, String(room["type"]))
 	if _launch_clear_after >= 0.0 and fresh_launch:
 		get_tree().create_timer(_launch_clear_after).timeout.connect(_debug_clear_room)
+
+
+## The room list the run walks. A straight run: RunGenerator's list. A map run: one entry per room of the map, filled from the path so far
+## ({index, type, wave_id, node_id, chest}); the rooms ahead are not chosen yet and read {type: ""}. Before the first pick, room 1 reads as a
+## combat room (every room-1 node is one).
+func _build_rooms(config: Dictionary) -> Array[Dictionary]:
+	if not RunNodes.active(_state):
+		return RunGenerator.generate(_state.seed_value, config)
+	var rooms: Array[Dictionary] = []
+	var boss: Dictionary = MapGraph.node(_state.map, MapGraph.boss_id(_state.map))
+	var total: int = int(boss.get("room", 0))
+	for index in range(total):
+		if index < _state.path.size():
+			var node: Dictionary = MapGraph.node(_state.map, _state.path[index])
+			rooms.append({"index": index, "type": String(node["type"]), "wave_id": String(node["wave_id"]), "node_id": int(node["id"]), "chest": RunNodes.chest_of(node) if String(node["type"]) == RunConfig.RELIC_ROOM else ""})
+		else:
+			rooms.append({"index": index, "type": "combat" if index == 0 else "", "wave_id": "", "node_id": -1, "chest": ""})
+	return rooms
 
 
 ## Builds this room's RelicManager from the run's relics (BD2). With relics off, or none held, nothing is created, so a run
@@ -159,8 +182,8 @@ func prepare(main: Main) -> bool:
 		_launch_ok = false
 		return false
 	_state = RunSession.ensure_run()
-	if _fresh_launch and _launch_room > 0:
-		_state.room_index = _launch_room
+	if _fresh_launch and (_launch_room > 0 or (_launch_room_set and RunNodes.active(_state))):
+		_state.jump_to_room(_launch_room)  # a map run is laid along the `first` route (no gold for the rooms skipped)
 	return true
 
 
@@ -188,9 +211,11 @@ func confirm_class_pick(character: String) -> bool:
 		push_error("RunController.confirm_class_pick: a run in progress keeps its class")
 		return false
 	var room_index: int = _state.room_index
+	var had_path: bool = not _state.path.is_empty()
 	_active = false
 	var fresh: RunState = RunSession.begin_new_run(_state.seed_value, character)
-	fresh.room_index = room_index
+	if room_index > 0 or had_path:
+		fresh.jump_to_room(room_index)
 	class_picked.emit(character)
 	_main.swap_to_fresh_scene()
 	return true
@@ -226,6 +251,14 @@ func _apply_launch_args(tree: SceneTree) -> bool:
 				tree.quit(2)
 				return false
 			RunSession.forced_offer = offer_ids
+	var map_launch: Dictionary = MapLaunch.resolve(args)
+	if not (map_launch["errors"] as Array[String]).is_empty():
+		for problem: String in (map_launch["errors"] as Array[String]):
+			printerr("Launch refused: " + problem)
+		tree.quit(2)
+		return false
+	if int(map_launch["override"]) != MapLaunch.OVERRIDE_NONE:
+		RunSession.map_override = int(map_launch["override"])
 	if not _apply_relic_args(args, tree):
 		return false
 	if String(launch["deck"]) != "":
@@ -240,6 +273,7 @@ func _apply_launch_args(tree: SceneTree) -> bool:
 			RunSession.forced_seed = absi(arg.substr(11).to_int()) & RunState.SEED_LIMIT
 		elif arg.begins_with("--run-room=") and arg.substr(11).is_valid_int():
 			_launch_room = maxi(arg.substr(11).to_int() - 1, 0)
+			_launch_room_set = true
 		elif arg.begins_with("--run-clear-after=") and arg.substr(18).is_valid_float():
 			_launch_clear_after = maxf(arg.substr(18).to_float(), 0.0)
 	return true
@@ -326,10 +360,18 @@ func _finish_room(healed: float) -> void:
 	_state.hp = health.current_health
 	_state.max_hp = health.max_health
 	_state.record_room(room, health.current_health, _room_seconds)
+	# MAP1-B: a won fight node pays gold, rolled from the run seed and the node id (so a reload can't pay twice: this runs once per room).
+	var earned: int = 0
+	if RunNodes.active(_state):
+		earned = RunNodes.roll_gold(_state.seed_value, int(room.get("node_id", -1)), String(room["type"]), RunConfig.gold())
+		_state.gold += earned
 	_summary = {
 		"index": int(room["index"]), "type": String(room["type"]), "wave_id": String(room["wave_id"]),
 		"hp": health.current_health, "max_hp": health.max_health, "healed": healed, "seconds": _room_seconds,
+		"gold": earned, "node_id": int(room.get("node_id", -1)),
 	}
+	if earned > 0:
+		gold_changed.emit(_state.gold, earned)
 	var relay := CombatLink.events()
 	if relay != null:
 		relay.notify_room_cleared(int(room["index"]), String(room["type"]))
@@ -357,6 +399,11 @@ func choose(option_id: String) -> Dictionary:
 	if String(result["kind"]) == "heal" and float(result["amount"]) > 0.0:
 		health.heal(float(result["amount"]))
 	_state.hp = health.current_health
+	if bool(result["finished"]) and String(result["kind"]) == RunNodes.OPTION_NODE:
+		choice_resolved.emit(result)
+		_active = false  # RunNodes.apply has moved the path and the room index on: the picked room is a fresh scene
+		_main.swap_to_fresh_scene()
+		return result
 	if bool(result["finished"]):
 		if not _state.history.is_empty():
 			(_state.history[_state.history.size() - 1] as Dictionary)["hp_end"] = _state.hp  # the room ends when the choice does
@@ -376,6 +423,10 @@ func continue_to_next_room(force: bool = false) -> void:
 			return  # a choice is open: only `choose` ends it (force = tests and debug only)
 		_state.pending = RunState.PENDING_NONE
 		_state.offer = []
+	if RunNodes.active(_state):
+		RunNodes.open(_state)  # a map run never walks on by itself: the player picks the next node (`pick_node`)
+		choice_requested.emit(current_choice())
+		return
 	_active = false
 	_state.room_index += 1
 	_main.swap_to_fresh_scene()
@@ -402,6 +453,7 @@ func current_choice() -> Dictionary:
 	model["room_type_name"] = room_type_name()
 	model["next_line"] = next_room_line()
 	model["next_room_type"] = next_room_type()
+	model["gold"] = _state.gold
 	return model
 
 
@@ -466,16 +518,82 @@ func has_choice() -> bool:
 
 ## "Next: Room 4 of 10 - Elite" (data ui.next_line), or "" after the last room.
 func next_room_line() -> String:
-	if _state == null or _state.room_index + 1 >= _rooms.size():
+	if _state == null or RunNodes.active(_state) or _state.room_index + 1 >= _rooms.size():
 		return ""
 	var next_room: Dictionary = _rooms[_state.room_index + 1]
 	return String(RunConfig.ui()["next_line"]) % [_state.room_index + 2, _rooms.size(), room_type_name(String(next_room["type"]))]
 
 ## The room type after this one ("combat", "elite", "rest", "boss"), or "" after the last room.
 func next_room_type() -> String:
-	if _state == null or _state.room_index + 1 >= _rooms.size():
+	if _state == null or RunNodes.active(_state) or _state.room_index + 1 >= _rooms.size():
 		return ""
 	return String((_rooms[_state.room_index + 1] as Dictionary)["type"])
+
+
+# ---- Map data for the UI (MAP1-B) ----
+
+## True when this run walks a branching map (its RunState holds one). False for the straight run: nothing below applies then.
+func map_on() -> bool:
+	return RunNodes.active(_state)
+
+
+## The map {nodes: [{id, room, column, type, wave_id, chest?}], edges: [[from_id, to_id]]}, or {} for a straight run. Read-only for the UI.
+func map() -> Dictionary:
+	return _state.map if _state != null else {}
+
+
+## The node the player is in now, or -1 before the first pick (the start of a map run).
+func current_node_id() -> int:
+	if _state == null or _state.path.is_empty():
+		return -1
+	return _state.path[_state.path.size() - 1]
+
+
+## The node ids taken so far, in order (the current node is the last).
+func taken_path() -> Array[int]:
+	return _state.path.duplicate() if _state != null else ([] as Array[int])
+
+
+## The node ids the player can pick now (only while the pick-next-node choice is open; [] otherwise), lowest column first.
+func reachable_nodes() -> Array[int]:
+	if _state == null or _state.pending != RunState.PENDING_NODE:
+		return [] as Array[int]
+	return RunNodes.reachable_ids(_state)
+
+
+## One node for the map screen: {id, room, column, type, type_name, wave_id, chest, chest_name, hover, gold_low, gold_high, reachable, taken, current}.
+## `hover` is the data text for the hover or focus line ("Elite: a relic, 30-40 gold"). {} for an unknown id.
+func node_info(node_id: int) -> Dictionary:
+	if _state == null or not RunNodes.active(_state):
+		return {}
+	return RunNodes.node_info(_state, node_id, _ctx)
+
+
+## Every node of the map as `node_info` dictionaries, in map order (rooms, then columns).
+func node_infos() -> Array[Dictionary]:
+	var infos: Array[Dictionary] = []
+	if _state == null or not RunNodes.active(_state):
+		return infos
+	for entry: Variant in (_state.map["nodes"] as Array):
+		infos.append(RunNodes.node_info(_state, int((entry as Dictionary)["id"]), _ctx))
+	return infos
+
+
+## Picks the next node while the pick-next-node choice is open. Moves the run into that room (a fresh scene). Returns RunChoices.apply's dict
+## ({ok, kind: "node", node_id, finished, reason}); a node that is not reachable changes nothing and returns ok = false.
+func pick_node(node_id: int) -> Dictionary:
+	return choose("%s:%d" % [RunNodes.OPTION_NODE, node_id])
+
+
+## Gold earned this run (0 in a straight run).
+func gold() -> int:
+	return _state.gold if _state != null else 0
+
+
+## "12 gold" from data (ui.map.gold_format).
+func gold_text() -> String:
+	var texts: Dictionary = RunConfig.ui().get("map", {})
+	return String(texts.get("gold_format", "%d")) % gold()
 
 
 func state() -> RunState:

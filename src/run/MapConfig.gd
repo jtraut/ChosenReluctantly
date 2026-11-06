@@ -16,6 +16,10 @@ const ELITE_LIKE_TYPES: Array[String] = ["elite", "mini_boss"]
 ## Node types the relic estimate counts as one relic each (MAP.md section 4.1). The merchant is counted from gold instead.
 const RELIC_TYPES: Array[String] = ["elite", "relic_room", "mini_boss", "curse_room", "buff_room"]
 const TOP_KEYS: Array[String] = ["enabled", "rooms", "columns", "walks", "max_attempts", "fixed", "types", "path_rules", "estimate"]
+## Keys a map file may leave out (MAP1-B): `chests`, the relic stage's chest sizes. Without it relic stages carry no chest and play as small.
+const OPTIONAL_KEYS: Array[String] = ["chests"]
+const CHEST_KEYS: Array[String] = ["weight", "act_offset", "act", "min_tier"]
+const CHEST_SIZES: Array[String] = ["small", "medium", "large"]
 const TYPE_KEYS: Array[String] = ["weight", "rooms", "no_repeat"]
 const RULE_KEYS: Array[String] = ["min_fights", "max_elite_like", "max_merchants", "max_rest", "relic_route", "ignore_route_max", "min_branching"]
 const ESTIMATE_KEYS: Array[String] = ["gold_mean", "merchant_price", "merchant_stock"]
@@ -36,7 +40,9 @@ static func validate(config: Variant) -> Array[String]:
 		errors.append("map config must be an object")
 		return errors
 	var c: Dictionary = config
-	_unknown_keys(c, TOP_KEYS, "map", errors)
+	var known_keys: Array[String] = TOP_KEYS.duplicate()
+	known_keys.append_array(OPTIONAL_KEYS)
+	_unknown_keys(c, known_keys, "map", errors)
 	for key: String in TOP_KEYS:
 		if not c.has(key):
 			errors.append("map: missing '%s'" % key)
@@ -51,6 +57,8 @@ static func validate(config: Variant) -> Array[String]:
 		_validate_types(c.get("types"), rooms, errors)
 		_validate_rules(c.get("path_rules"), rooms, errors)
 	_validate_estimate(c.get("estimate"), errors)
+	if c.has("chests"):
+		_validate_chests(c["chests"], errors)
 	if columns > 0 and rooms > 0 and c.has("types") and typeof(c["types"]) == TYPE_DICTIONARY:
 		var any_weight: bool = false
 		for entry: Variant in (c["types"] as Dictionary).values():
@@ -163,6 +171,42 @@ static func _validate_estimate(estimate: Variant, errors: Array[String]) -> void
 	if e.has("merchant_price") and (not _is_number(e["merchant_price"]) or float(e["merchant_price"]) <= 0.0 or float(e["merchant_price"]) > 100000.0):
 		errors.append("map.estimate.merchant_price must be a number above 0")
 	_whole_in(e, "merchant_stock", 1, 9, "map.estimate.merchant_stock", errors)
+
+
+## `chests`: {small, medium, large: {weight, min_tier, and either act_offset (a row relative to the room's act) or act (a fixed row)}}.
+## All three sizes are required once the block exists. `min_tier` 1-3: relics below that tier are not offered from this chest.
+static func _validate_chests(chests: Variant, errors: Array[String]) -> void:
+	if typeof(chests) != TYPE_DICTIONARY:
+		errors.append("map.chests must be an object {small, medium, large}")
+		return
+	_unknown_keys(chests as Dictionary, CHEST_SIZES, "map.chests", errors)
+	var total: float = 0.0
+	for size_id: String in CHEST_SIZES:
+		var entry: Variant = (chests as Dictionary).get(size_id)
+		if typeof(entry) != TYPE_DICTIONARY:
+			errors.append("map.chests.%s must be an object {weight, act_offset or act, min_tier}" % size_id)
+			continue
+		var e: Dictionary = entry
+		_unknown_keys(e, CHEST_KEYS, "map.chests." + size_id, errors)
+		if not _is_number(e.get("weight")) or float(e["weight"]) < 0.0 or float(e["weight"]) > MAX_WEIGHT:
+			errors.append("map.chests.%s.weight must be a number in [0, %s]" % [size_id, str(MAX_WEIGHT)])
+		else:
+			total += float(e["weight"])
+		if e.has("act_offset") == e.has("act"):
+			errors.append("map.chests.%s needs exactly one of act_offset and act" % size_id)
+		_whole_in(e, "act_offset", 0, 8, "map.chests.%s.act_offset" % size_id, errors)
+		_whole_in(e, "act", 1, 9, "map.chests.%s.act" % size_id, errors)
+		if not e.has("min_tier"):
+			errors.append("map.chests.%s: missing 'min_tier'" % size_id)
+		_whole_in(e, "min_tier", 1, 3, "map.chests.%s.min_tier" % size_id, errors)
+	if total <= 0.0:
+		errors.append("map.chests: every weight is 0, so no chest size could be picked")
+
+
+## The chest block of a validated config ({} when the file has none).
+static func chests(config: Dictionary = {}) -> Dictionary:
+	var source: Dictionary = config if not config.is_empty() else get_config()
+	return source.get("chests", {})
 
 
 ## Pushes a problem for every key of `dict` that is not in `allowed`.

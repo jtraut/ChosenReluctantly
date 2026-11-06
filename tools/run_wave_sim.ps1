@@ -9,11 +9,14 @@
 # -Relics "a+b" (needs -Run; --sim-relics=): every run starts holding those relics. -RelicCap N (--sim-relic-cap=): a lower relic cap, to reach the give-one-up step in a short run.
 # -NoRelics (--sim-no-relics): relics.enabled false for this process: today's run exactly (no relic room, a card offer after the elite).
 # -Swap "old=new" (needs -Run; --sim-swap=): replace one copy of card old by new in the starting deck (checked against the deck rules), e.g. -Deck rogue-kindling -Swap fire_kindling=fire_ember_whatever, for removal-pain runs.
+# -Route first|relic|safe|random (needs -Run; --sim-route=, MAP1-B): the runs walk the branching map (forced on for this process; data/map.json stays off) and the bot follows that route:
+#   first = the lowest column, relic = the most relics by MapRules.relic_estimate, safe = the fewest elite-like nodes and the most rests, random = seeded. -Map alone = the map with the first route (--sim-map).
+#   Prints a route line per run (nodes, fights, elites, relic stages and their chest sizes, gold, relics) and a ROUTE SUMMARY (wins, relics and gold per run, chest sizes seen). Without -Route/-Map the run is the straight run, unchanged.
 # -Run also prints the damage the player's side dealt by source (light, heavy, each slot type, each status, each relic) per run and over all runs with the fingerprint spread, relic pick/skip/swap counts, and BOSS TIMES with timed-out boss fights listed apart.
 # -StartRoom N (needs -Run): start every run at room N (10 = the boss) with the starter deck and full HP (--start-room).
 # -Run plays whole seeded runs (Milestone 3a): -Seed is the first run seed, -Runs the number of runs, -RoomTimeout sim seconds before a room counts as a soft lock.
 # Fails on a failed check OR any ERROR / SCRIPT ERROR / WARNING line in the engine output.
-param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets, [int]$StartRoom = 0, [switch]$Plan, [string]$Relics = "", [int]$RelicCap = 0, [string]$Swap = "", [switch]$NoRelics)
+param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets, [int]$StartRoom = 0, [switch]$Plan, [string]$Relics = "", [int]$RelicCap = 0, [string]$Swap = "", [switch]$NoRelics, [string]$Route = "", [switch]$Map)
 
 $root = Split-Path -Parent $PSScriptRoot
 $godot = $env:GODOT_BIN
@@ -50,6 +53,8 @@ if ($Relics) { $extra += "--sim-relics=$Relics" }
 if ($RelicCap -gt 0) { $extra += "--sim-relic-cap=$RelicCap" }
 if ($NoRelics) { $extra += "--sim-no-relics" }
 if ($Swap) { $extra += "--sim-swap=$Swap" }
+if ($Route) { $extra += "--sim-route=$Route" }
+if ($Map) { $extra += "--sim-map" }
 if ($StartRoom -gt 0) { $extra += "--start-room=$StartRoom" }
 if ($Run) { $extra += "--run"; $extra += "--room-timeout=$RoomTimeout" }
 Push-Location $root

@@ -18,7 +18,9 @@ const PENDING_REST_REMOVE := "rest_remove"
 ## BD2-B: a relic offer (pick one or skip) and, at the relic cap, the "give one up" step for the relic being taken.
 const PENDING_RELIC := "relic"
 const PENDING_RELIC_SWAP := "relic_swap"
-const PENDING_VALUES: Array[String] = [PENDING_NONE, PENDING_REWARD, PENDING_REST, PENDING_REST_REMOVE, PENDING_RELIC, PENDING_RELIC_SWAP]
+## MAP1-B: the pick-next-node choice of a map run (the map screen). Its options come from the map and the path, so it needs no `offer`.
+const PENDING_NODE := "node"
+const PENDING_VALUES: Array[String] = [PENDING_NONE, PENDING_REWARD, PENDING_REST, PENDING_REST_REMOVE, PENDING_RELIC, PENDING_RELIC_SWAP, PENDING_NODE]
 
 var seed_value: int = 0
 ## The character (data/characters.json id) this run is played as (W1a). Fixed for the whole run.
@@ -91,6 +93,19 @@ func record_room(room: Dictionary, hp_end: float, seconds: float) -> void:
 		"hp_end": hp_end,
 		"seconds": seconds,
 	})
+
+
+## Moves a fresh run to room `index` (0-based) for a launch flag or a tool. A map run gets the `first` route's nodes up to and including that
+## room as its path (no gold for the skipped rooms), so the position stays consistent. Straight runs only set the index.
+func jump_to_room(index: int) -> void:
+	room_index = maxi(index, 0)
+	if map.is_empty():
+		return
+	var route: Array[int] = MapGraph.first_route(map)
+	room_index = mini(room_index, route.size() - 1)
+	path = route.slice(0, room_index + 1)
+	if pending == PENDING_NODE:
+		pending = PENDING_NONE
 
 
 func has_pending() -> bool:
@@ -170,6 +185,8 @@ static func from_dict(data: Dictionary) -> RunState:
 		shows = false
 	if shows and String(pending_value) == PENDING_RELIC_SWAP and (incoming_id.is_empty() or not state.offer.has(incoming_id)):
 		shows = false
+	if shows and String(pending_value) == PENDING_NODE and (typeof(data.get("map")) != TYPE_DICTIONARY or (data["map"] as Dictionary).is_empty()):
+		shows = false  # a node pick needs a map to pick from
 	if shows:
 		state.pending = String(pending_value)
 		if state.pending == PENDING_RELIC_SWAP:
@@ -211,7 +228,17 @@ static func from_dict(data: Dictionary) -> RunState:
 			"hp_end": float(e.get("hp_end", 0.0)),
 			"seconds": float(e.get("seconds", 0.0)),
 		})
-	if dropped_choice and not state.history.is_empty() and int((state.history[state.history.size() - 1] as Dictionary)["index"]) == state.room_index:
+	if not state.map.is_empty() and not RunNodes.consistent(state):
+		# A map run whose path and room index disagree cannot be followed: say so and fall back to the straight run (no map, no path).
+		push_error("RunState.from_dict: the path (%d nodes) does not fit room index %d; the map is dropped and the run is straight" % [state.path.size(), state.room_index])
+		state.map = {}
+		state.path = []
+		if state.pending == PENDING_NODE:
+			state.pending = PENDING_NONE
+	elif dropped_choice and not state.map.is_empty():
+		# A map run that lost an unreadable choice reopens the pick-next-node choice instead of guessing the next room.
+		state.pending = PENDING_NODE
+	elif dropped_choice and not state.history.is_empty() and int((state.history[state.history.size() - 1] as Dictionary)["index"]) == state.room_index:
 		state.room_index += 1
 	return state
 

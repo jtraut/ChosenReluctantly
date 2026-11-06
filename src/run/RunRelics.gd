@@ -54,7 +54,8 @@ static func offer_rng(run_seed: int, room_index: int) -> RandomNumberGenerator:
 ## RunChoices.open_for_room opens (a card reward, the rest menu, nothing). Returns the pending value.
 static func open_for_room(state: RunState, room_type: String, is_last_room: bool, ctx: Dictionary) -> String:
 	if is_last_room or not enabled(ctx) or not SOURCE_BY_ROOM.has(room_type):
-		return RunChoices.open_for_room(state, room_type, is_last_room, ctx)
+		# A map's relic stage with relics switched off has nothing to offer: it gives a card offer like a combat room (the straight run never makes one then).
+		return RunChoices.open_for_room(state, "combat" if room_type == RunConfig.RELIC_ROOM and not is_last_room and not enabled(ctx) else room_type, is_last_room, ctx)
 	var relics: Dictionary = ctx["relics"]
 	var pools: Array[String] = []
 	for pool_id: Variant in (ctx.get("pools", []) as Array):
@@ -64,8 +65,12 @@ static func open_for_room(state: RunState, room_type: String, is_last_room: bool
 		ids = RunSession.forced_relic_offer.duplicate()  # --relic-offer (capture tooling): used by this one offer only
 		RunSession.forced_relic_offer = []
 	else:
+		var weights: Dictionary = relics["weights"]
+		var chest_weights: Dictionary = RunNodes.weights_for_current_room(state, ctx)  # a map's relic stage: its chest size sets the tier odds
+		if not chest_weights.is_empty():
+			weights = chest_weights
 		ids = RelicOffer.offer(String(SOURCE_BY_ROOM[room_type]), int(relics["offer_count"]), offer_rng(state.seed_value, state.room_index),
-				relics["weights"], state.relics, state.relics_given_up, pools, relics["catalog"])
+				weights, state.relics, state.relics_given_up, pools, relics["catalog"])
 	state.pending = RunState.PENDING_NONE
 	state.offer = []
 	state.relic_incoming = ""

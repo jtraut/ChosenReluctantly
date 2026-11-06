@@ -27,7 +27,8 @@ extends RefCounted
 ## owned: Dictionary card_id -> copies, next_room_type: String ("" here; RunController fills it from the room list)}.
 
 ## "relic", "relic_skip" and "giveup" belong to the relic choices (RunRelics); the model then carries the relic keys too.
-const KINDS: Array[String] = ["card", "remove", "heal", "skip", "back", "relic", "relic_skip", "giveup"]
+## "node" is the pick-next-node choice of a map run (RunNodes).
+const KINDS: Array[String] = ["card", "remove", "heal", "skip", "back", "relic", "relic_skip", "giveup", "node"]
 
 
 ## The shipped databases and data as one context. Tests build their own with fixtures.
@@ -62,6 +63,7 @@ static func shipped_context(pools: Array) -> Dictionary:
 		"slot_of": DeckRules.slot_map_from_database(),
 		"known_slots": SlotTypeDatabase.known_ids(),
 		"slot_names": DeckRules.slot_names_from_database(),
+		"nodes": RunNodes.shipped_context(),
 	}
 
 
@@ -130,6 +132,11 @@ static func model(state: RunState, ctx: Dictionary, room_type: String = "") -> D
 		model["title"] = texts["title"]
 		model["line"] = texts["line"]
 		model.merge(RunRelics.model_extras(state, ctx))
+	elif state.pending == RunState.PENDING_NODE:
+		var node_texts: Dictionary = RunNodes.title_and_line(ctx)
+		model["title"] = node_texts["title"]
+		model["line"] = node_texts["line"]
+		model.merge(RunNodes.model_extras(state, ctx))
 	return model
 
 
@@ -161,6 +168,8 @@ static func options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	if state.has_relic_choice():
 		return RunRelics.options(state, ctx)
+	if state.pending == RunState.PENDING_NODE:
+		return RunNodes.options(state, ctx)
 	var ui: Dictionary = ctx["ui"]
 	match state.pending:
 		RunState.PENDING_REWARD:
@@ -218,6 +227,8 @@ static func options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 static func apply(state: RunState, option_id: String, ctx: Dictionary) -> Dictionary:
 	if state.has_relic_choice():
 		return RunRelics.apply(state, option_id, ctx)
+	if state.pending == RunState.PENDING_NODE:
+		return RunNodes.apply(state, option_id, ctx)
 	var result: Dictionary = blank_result()
 	var found: Dictionary = {}
 	for option: Dictionary in options(state, ctx):

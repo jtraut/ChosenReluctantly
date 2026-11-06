@@ -30,7 +30,7 @@ static func _shop(options: Array, state: RunState, route_policy: String) -> Stri
 		steps = ["relic", "removal", "card"]
 	var leave: String = ""
 	for option: Variant in options:
-		if String((option as Dictionary).get("kind", "")) == "leave":
+		if String((option as Dictionary).get("id", "")) == RunMerchant.OPTION_LEAVE:
 			leave = String((option as Dictionary)["id"])
 	for step: String in steps:
 		var picked: String = ""

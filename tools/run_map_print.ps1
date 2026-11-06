@@ -2,6 +2,7 @@
 # Usage: powershell -File tools\run_map_print.ps1 [-Seed 7] [-Route]      one map: rooms, columns, edges, wave ids, path-rule scores
 #        powershell -File tools\run_map_print.ps1 -Sweep 1000             generate seeds 1..N, print failures, the attempts histogram and the time
 # -Merchant turns the merchant on first (data/merchant_on.json, MAP2-B: the shipped data has it off); -Set values apply on top of it.
+# -Routes (with -Sweep) also prints, per route policy (first, relic, safe), the median relic estimate and the mean nodes of each kind: a fast stand-in for the bot sim when tuning weights.
 # -From N starts the sweep at seed N (seeds N .. N+Sweep-1). -Set "types.rest.weight=20" overrides one config value for this run (repeatable).
 # -Route also prints the `first` route (lowest column) as node ids. Exit code 1 when a map breaks a rule or fails to generate.
 # Resolves the Godot 4 binary the same way tools/run_tests.ps1 does.
@@ -12,6 +13,7 @@ param(
     [int]$From = 1,
     [switch]$Route,
     [switch]$Merchant,
+    [switch]$Routes,
     [string[]]$Set = @()
 )
 
@@ -37,6 +39,7 @@ try {
     if ($Sweep -gt 0) { $extra = @("--sweep=$Sweep", "--from=$From") }
     if ($Route) { $extra += "--route=first" }
     if ($Merchant) { $extra += "--merchant" }
+    if ($Routes) { $extra += "--routes" }
     foreach ($s in $Set) { $extra += "--set=$s" }
     & $godot --headless --path . -s res://tools/map_print.gd -- @extra
     exit $LASTEXITCODE

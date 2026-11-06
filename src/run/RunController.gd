@@ -31,7 +31,7 @@ signal relic_triggered(relic_id: String, trigger_index: int, event_id: String)
 signal boss_spawned(boss: Boss)
 ## The class pick was confirmed (`confirm_class_pick`): the run is (re)started as `character_id`. The scene swaps right after.
 signal class_picked(character_id: String)
-## The run's gold changed (a fight node paid out). `total` is `RunState.gold`, `delta` the amount just earned. Gold is earned only until MAP2.
+## The run's gold changed: a fight node paid out (`delta` above 0), or a merchant purchase (`delta` below 0). `total` is `RunState.gold`.
 signal gold_changed(total: int, delta: int)
 ## The last room was won.
 signal run_won()

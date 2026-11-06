@@ -12,7 +12,7 @@ extends RefCounted
 ## Buying several items in one visit, in any order, is just several choices; Leaving (`finished`) closes the visit and the run picks its next node.
 ##
 ## Option ids (kind in brackets): "buy_relic:<id>" [buy_relic], "buy_card:<id>" [buy_card], "merchant_remove_menu" [buy_removal],
-## "merchant_remove:<card_id>" [remove] (accepted from the shop too), "merchant_reroll" [reroll], "merchant_leave" [leave], "merchant_back" [back],
+## "merchant_remove:<card_id>" [remove] (accepted from the shop too), "merchant_reroll" [reroll], "merchant_leave" [back], "merchant_back" [back],
 ## "merchant_giveup:<relic_id>" [giveup], "merchant_cancel" [back]. Every option carries `price`, `reason_code` ("" when buyable, else a Merchant reason
 ## code or "sold") and, as the usual `reason`, the words for it from data/run.json `ui.merchant.reasons`. A refused apply returns ok false with `reason`
 ## (the words) and `reason_code`.
@@ -150,7 +150,9 @@ static func _shop_options(state: RunState, ctx: Dictionary) -> Array[Dictionary]
 		reroll["reason_code"] = "" if left > 0 else "no_rerolls"
 		reroll["reason"] = reason_text(String(reroll["reason_code"]), ctx)
 		out.append(reroll)
-	var leave: Dictionary = RunChoices.blank_option(OPTION_LEAVE, "leave")
+	# Kind "back" on purpose: the run screen puts a "back" option in its footer, which is always on screen, so Leave stays reachable by mouse however many
+	# items the shop holds (the row of items can be wider than the screen). Tell it from the removal list's Back by its id.
+	var leave: Dictionary = RunChoices.blank_option(OPTION_LEAVE, "back")
 	leave["label"] = String(ui.get("leave_label", ""))
 	leave["detail"] = String(ui.get("leave_detail", ""))
 	out.append(leave)

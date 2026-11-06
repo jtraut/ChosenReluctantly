@@ -155,7 +155,8 @@ func test_a_merchant_node_opens_the_shop_with_stock_prices_gold_and_the_leave_op
 	assert_int(_options_of_kind(model, "buy_relic").size()).is_equal(3)
 	assert_int(_options_of_kind(model, "buy_card").size()).is_equal(3)
 	assert_int(_options_of_kind(model, "buy_removal").size()).is_equal(1)
-	assert_int(_options_of_kind(model, "leave").size()).is_equal(1)
+	assert_dict(_option(model, "merchant_leave")).is_not_empty()
+	assert_str(String(_option(model, "merchant_leave")["kind"])).is_equal("back")  # the run screen keeps a "back" option in its always-visible footer
 	assert_int(_options_of_kind(model, "reroll").size()).is_equal(0)  # no relic grants a reroll yet
 	for option: Dictionary in _options_of_kind(model, "buy_relic"):
 		assert_int(int(option["price"])).is_between(RelicConfig.price_for_tier("tier1"), RelicConfig.price_for_tier("tier2"))

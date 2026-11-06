@@ -102,6 +102,8 @@ func _draw() -> void:
 	if _delta_left > 0.0 and _delta_text != "":
 		var state: Dictionary = float_state(_delta_left, _hold, _rise)
 		var color := Color(_color.lightened(0.35), float(state["alpha"]))
-		var pos := Vector2(text_x + text_size.x + gap, base_y - float(state["offset"]))
+		var delta_w: float = font.get_string_size(_delta_text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, _font_px).x
+		# Right-aligned (the HUD): the "+N" goes left of the coin so it never leaves the screen edge; left-aligned (the map): right of the total.
+		var pos := Vector2(x0 - gap - delta_w if _align_right else text_x + text_size.x + gap, base_y - float(state["offset"]))
 		draw_string_outline(font, pos, _delta_text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, _font_px, 4, Color(0.05, 0.03, 0.04, float(state["alpha"])))
 		draw_string(font, pos, _delta_text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, _font_px, color)

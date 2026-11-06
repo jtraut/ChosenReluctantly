@@ -9,20 +9,60 @@ class_name RunHud
 @onready var label: Label = $Panel/Row/Label
 
 var _room_type: String = "combat"
+## MAP1: the gold readout (coin, total, a "+N" when a fight pays). Its own layer, above the prompt panels (layer 9), so the "+N" is not dimmed by
+## the reward screen it lands behind. Shown only in a map run: gold is earned only there.
+var gold_layer: CanvasLayer = null
+var gold_badge: GoldBadge = null
+var _controller: RunController = null
 
 
 func _ready() -> void:
 	_apply_layout()
 	get_viewport().size_changed.connect(_apply_layout)
 	var controller := get_parent().get_node_or_null("RunController") as RunController
+	_controller = controller
+	_build_gold()
+	_apply_layout()
 	if controller != null:
 		controller.room_started.connect(_on_room_started.bind(controller))
+		controller.gold_changed.connect(_on_gold_changed)
+		_sync_gold()
 
 
 func _on_room_started(_index: int, _total: int, room_type: String, controller: RunController) -> void:
+	_sync_gold()
 	_room_type = room_type
 	label.text = "%s  -  %s" % [controller.room_label(), controller.room_type_name()]
 	_apply_icon()
+
+
+func _build_gold() -> void:
+	gold_layer = CanvasLayer.new()
+	gold_layer.name = "GoldLayer"
+	gold_layer.layer = 10
+	add_child(gold_layer)
+	gold_badge = GoldBadge.new()
+	gold_badge.name = "Gold"
+	gold_layer.add_child(gold_badge)
+	gold_badge.visible = false
+
+
+## Shows the gold readout in a map run, with the run's total; hidden in a straight run.
+func _sync_gold() -> void:
+	if gold_badge == null:
+		return
+	var on: bool = _controller != null and _controller.map_on()
+	gold_badge.visible = on
+	if on:
+		gold_badge.set_total(_controller.gold())
+
+
+func _on_gold_changed(total: int, delta: int) -> void:
+	if gold_badge == null:
+		return
+	gold_badge.visible = true
+	gold_badge.set_total(total)
+	gold_badge.show_delta(delta)
 
 
 func _apply_icon() -> void:
@@ -53,4 +93,17 @@ func _apply_layout() -> void:
 	icon.custom_minimum_size = Vector2(icon_px, icon_px)
 	label.add_theme_font_size_override("font_size", roundi(float(cfg["indicator_font_size"]) * s))
 	label.add_theme_color_override("font_color", Color.html(String(cfg["indicator_text_color"])))
+	_apply_gold_layout(hud_cfg, vp, s)
 	_apply_icon()
+
+
+func _apply_gold_layout(hud_cfg: Dictionary, vp: Vector2, s: float) -> void:
+	if gold_badge == null:
+		return
+	var map_cfg: Dictionary = UiConfig.map_screen()
+	var rect := HudLayout.gold_rect(vp, hud_cfg, map_cfg)
+	gold_badge.position = rect.position
+	gold_badge.size = rect.size
+	gold_badge.custom_minimum_size = rect.size
+	gold_badge.configure(roundi(float(map_cfg["hud_gold_font_size"]) * s), float(map_cfg["hud_gold_hold"]), float(map_cfg["hud_gold_rise"]) * s,
+		Color.html(String(map_cfg["gold_color"])), Color.WHITE, true)

@@ -70,6 +70,16 @@ static func room_indicator_rect(viewport_size: Vector2, cfg: Dictionary) -> Rect
 	return Rect2(Vector2(viewport_size.x - margin - size.x, margin), size)
 
 
+## The gold readout (MAP1): right under the room indicator, same right edge, `hud_gold_size` from data/ui.json `map_screen`. It sits in the
+## top-right column, clear of the boss bar (top centre), the health panel (top left) and the slots.
+static func gold_rect(viewport_size: Vector2, cfg: Dictionary, map_cfg: Dictionary) -> Rect2:
+	var s := ui_scale(viewport_size, cfg)
+	var indicator := room_indicator_rect(viewport_size, cfg)
+	var sz: Array = map_cfg["hud_gold_size"]
+	var size := Vector2(float(sz[0]), float(sz[1])) * s
+	return Rect2(Vector2(indicator.end.x - size.x, indicator.end.y + float(map_cfg["hud_gold_gap"]) * s), size)
+
+
 ## The boss HP bar block (name, bar, phase line, attack line): top centre at the safe margin. It is centred, and
 ## its width is the authored width shrunk, if needed, to fit between the player's HUD (health panel and attack
 ## meters, top left) and the room indicator (top right) with `boss_bar_gap` between: it never overlaps either.
@@ -85,7 +95,7 @@ static func boss_bar_rect(viewport_size: Vector2, cfg: Dictionary) -> Rect2:
 		left_end = maxf(left_end, (meters[key] as Rect2).end.x)
 	var right_start: float = room_indicator_rect(viewport_size, cfg).position.x
 	var half: float = minf(centre - left_end, right_start - centre) - float(cfg.get("boss_bar_gap", 8.0)) * s
-	size.x = clampf(2.0 * half, 0.0, size.x)
+	size.x = clampf(floorf(2.0 * half), 0.0, size.x)  # whole pixels, rounded down: float noise must never eat into the gap
 	if boss_bar_stacked_width(size.x / s, cfg):
 		size.y += float(cfg["boss_bar_stack_extra"]) * s
 	return Rect2(Vector2(centre - size.x * 0.5, margin), size)

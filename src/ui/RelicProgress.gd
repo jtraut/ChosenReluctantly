@@ -2,11 +2,7 @@ class_name RelicProgress
 extends RefCounted
 ## The "2/4" counter on a HUD relic chip (MAP1 ux, BD2 playtest carry-over): a relic whose trigger fires on every Nth match (Spite Knuckles: every
 ## 4th light attack that hits) shows how far along it is. The N comes from the relic's data (`filter.every_nth`); the progress comes from the
-## room's RelicManager. Display only.
-##
-## The manager does not expose its per-trigger match counter yet. `matches_of` asks for `RelicManager.trigger_progress(relic_id) -> int` (matches so far
-## in this room) and, until that exists, reads the manager's `_triggers` list. That fallback is TEMPORARY and lives only here, so the day gameplay adds
-## the accessor nothing else changes; if the field is renamed the counter hides instead of showing a wrong number (NO_PROGRESS).
+## room's RelicManager (`trigger_progress`). Display only.
 
 const NO_PROGRESS := -1
 
@@ -21,19 +17,12 @@ static func nth_of(relic_id: String) -> int:
 	return 0
 
 
-## Matches counted so far for `relic_id` in the manager's room, or NO_PROGRESS when the manager can't say.
+## Matches counted so far for `relic_id` in the manager's room (`RelicManager.trigger_progress`), or NO_PROGRESS when there is no manager.
 static func matches_of(manager: Node, relic_id: String) -> int:
 	if manager == null or not is_instance_valid(manager):
 		return NO_PROGRESS
 	if manager.has_method("trigger_progress"):
 		return int(manager.call("trigger_progress", relic_id))
-	var triggers: Variant = manager.get("_triggers")
-	if not (triggers is Array):
-		return NO_PROGRESS
-	for trigger: Variant in (triggers as Array):
-		var entry: Dictionary = trigger
-		if String(entry.get("relic_id", "")) == relic_id and int((entry.get("filter", {}) as Dictionary).get("every_nth", 0)) > 1:
-			return int(entry.get("matches", 0))
 	return NO_PROGRESS
 
 

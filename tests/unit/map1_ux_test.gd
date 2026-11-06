@@ -708,24 +708,18 @@ func test_the_every_nth_counter_reads_the_n_from_data_and_the_progress_from_the_
 	var asked: _AskedManager = _AskedManager.new()
 	auto_free(asked)
 	assert_int(RelicProgress.matches_of(asked, "spite_knuckles")).is_equal(3)
-	var legacy: _LegacyManager = _LegacyManager.new()
-	auto_free(legacy)
-	assert_int(RelicProgress.matches_of(legacy, "spite_knuckles")).is_equal(6)
-	assert_int(RelicProgress.matches_of(legacy, "pyre_insurance")).is_equal(RelicProgress.NO_PROGRESS)
+	var silent: Node = Node.new()
+	auto_free(silent)
+	assert_int(RelicProgress.matches_of(silent, "spite_knuckles")).is_equal(RelicProgress.NO_PROGRESS)  # a manager without the accessor hides the counter
 	assert_int(RelicProgress.matches_of(null, "spite_knuckles")).is_equal(RelicProgress.NO_PROGRESS)
-	# The fallback reads a private field of the real manager; if gameplay renames it, this fails and the counter is then hidden, not wrong.
 	var real := RelicManager.new()
 	auto_free(real)
-	assert_bool(real.get("_triggers") is Array).override_failure_message("RelicManager._triggers is gone: ask for trigger_progress(relic_id)").is_true()
+	assert_int(RelicProgress.matches_of(real, "spite_knuckles")).is_equal(0)  # the real manager answers through trigger_progress
 
 
 class _AskedManager extends Node:
 	func trigger_progress(_relic_id: String) -> int:
 		return 3
-
-
-class _LegacyManager extends Node:
-	var _triggers: Array = [{"relic_id": "spite_knuckles", "filter": {"every_nth": 4}, "matches": 6}]
 
 
 func test_the_chip_of_an_every_nth_relic_shows_its_counter_and_others_do_not() -> void:

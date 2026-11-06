@@ -57,24 +57,24 @@
         "extra": ["--map", "--run-seed=1"]
     },
     "map_mid": {
-        "description": "MAP1-B: mid-run. Seed 30 along the first route, room 7 cleared (gold paid), its card offer rejected, so the map screen is open to pick the next node with 6 nodes already walked (a medium chest relic stage sits at room 6).",
+        "description": "MAP1-B: mid-run. Seed 54 along the first route, room 7 cleared (gold paid), its card offer rejected, so the map screen is open to pick the next node with 6 nodes already walked (a medium chest relic stage sits at room 6).",
         "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--map", "--run-seed=30", "--run-room=7", "--run-clear-after=1", "--run-auto-choose=skip"]
+        "extra": ["--map", "--run-seed=54", "--run-room=7", "--run-clear-after=1", "--run-auto-choose=skip"]
     },
     "map_room9": {
-        "description": "MAP1-B: room 9. Seed 30, room 9 cleared and its card offer rejected; the only way on is the boss.",
+        "description": "MAP1-B: room 9. Seed 54, room 9 cleared and its card offer rejected; the only way on is the boss.",
         "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--map", "--run-seed=30", "--run-room=9", "--run-clear-after=1", "--run-auto-choose=skip"]
+        "extra": ["--map", "--run-seed=54", "--run-room=9", "--run-clear-after=1", "--run-auto-choose=skip"]
     },
     "map_chest_large": {
-        "description": "MAP1-B: a large chest relic stage (seed 22, room 5, first route). No fight, the offer opens at once. A large chest draws from the act 3 row (tier 1 5, tier 2 25, tier 3 70 as shipped, min_tier 1).",
+        "description": "MAP1-B: a large chest relic stage (seed 157, room 5, first route). No fight, the offer opens at once. A large chest draws from the act 3 row (tier 1 5, tier 2 25, tier 3 70 as shipped, min_tier 1).",
         "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--map", "--run-seed=22", "--run-room=5"]
+        "extra": ["--map", "--run-seed=157", "--run-room=5"]
     },
     "map_chest_medium": {
-        "description": "MAP1-B: a medium chest relic stage (seed 30, room 6, first route).",
+        "description": "MAP1-B: a medium chest relic stage (seed 54, room 6, first route).",
         "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--map", "--run-seed=30", "--run-room=6"]
+        "extra": ["--map", "--run-seed=54", "--run-room=6"]
     },
     "bd2_pyre_explosion": {
         "description": "BD2: a Pyre Insurance explosion. Arena scenario, fixed deck: a Burning enemy dies at 0.6 s and its Burn bursts over the three beside it.",

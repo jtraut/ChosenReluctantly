@@ -962,7 +962,7 @@ func _run_whole(run_seed: int) -> void:
 	if result.has("route_summary"):
 		var route_info: Dictionary = result["route_summary"]
 		print("    route (%s): nodes %s | fights %d, elites %d, relic stages %d (chests %s), rests %d | gold %d, relics held %d" % [_route_policy, str(_route), int(route_info["fights"]), int(route_info["elites"]), int(route_info["relic_nodes"]), str(route_info["chests"]), int(route_info["rest"]), int(result["gold"]), int(result["relics_held"])])
-	if _merchant:
+	if _merchant or (result.has("route_summary") and MerchantSwitch.shipped_is_on()):  # qa MAP2: the merchant ships on, so a plain -Route reports it too
 		print("    merchant: visited %s | gold spent %d | relics bought %d, cards bought %d, removals %d, rerolls %d" % [str(_visited_merchant(result)), int(result["gold_spent"]), int(result["shop_relics"]), int(result["shop_cards"]), int(result["shop_removals"]), int(result["shop_rerolls"])])
 	if _plan:
 		print("    plan policy: %d card casts (%d with the condition live, %d held payoff casts), %d dead-card swaps" % [int(_plan_stats["casts"]), int(_plan_stats["live_casts"]), int(_plan_stats["held_casts"]), int(_plan_stats["swaps"])])
@@ -1416,7 +1416,7 @@ func _print_route_summary() -> void:
 			chest_counts[String(size_id)] = int(chest_counts.get(String(size_id), 0)) + 1
 	print("  ROUTE SUMMARY (%s, %s): %d of %d run(s) won | relics per run mean %.2f median %.1f | gold per run mean %.1f median %.1f | fights per route mean %.1f | elites per route mean %.1f | chest sizes on the routes %s" % [
 		_route_policy, _sim_class if _sim_class != "" else CharacterDatabase.DEFAULT_ID, wins, _run_results.size(), _mean(relics), _median(relics), _mean(golds), _median(golds), _mean(fights), _mean(elites), str(chest_counts)])
-	if _merchant:
+	if _merchant or (_route_policy != "" and MerchantSwitch.shipped_is_on()):
 		var spent: Array[float] = []
 		var bought: Array[float] = []
 		var removed: Array[float] = []

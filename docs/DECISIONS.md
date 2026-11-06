@@ -1706,3 +1706,34 @@ ux-designer made these in 4040259..92e4a31. Suite 1581/1581 (129 suites). All ha
   - **`map.enabled` stays false in shipped data until ux's map screen exists.** ux flips it to true in its step, and qa then re-baselines. Rejected: shipping it on in MAP1-B with no way to pick a node.
 - **The route policy goes in `wave_sim -Run`, not `bot_sim`.** BD2 found that `tools/bot_sim.gd` builds no rooms, choices or relics, so it can't follow a route. The `-Rooms 20 -Seed 3` bot-sim hash stays a combat baseline and shouldn't move. The run-sim baselines are re-taken with `-Route first`. This corrects MAP.md §8 and the MAP1 brief, which named the bot sim.
 - **Why the split:** the generator and its rules are self-contained and testable alone, and the run flow needs them. Each sitting leaves the repo running with the map off.
+
+## 2026-11-05 - MAP1-A map engine calls (gameplay-dev, logged by game-lead)
+gameplay-dev made these in afdf30d..ed4e2aa. The map ships off (`data/map.json` `enabled` false).
+
+**Gates:** suite 1640/1640 (134 suites) at afdf30d; ed4e2aa added 2 tests, so 1642 is expected, to be confirmed by MAP1-B's full run. Arena, bot-sim and run-sim baselines are unchanged. The 1000-seed sweep has 0 failures (worst 83 of 200 attempts, about 41-52 s).
+
+- **`min_branching` 0.6 -> 0.4 (accepted by game-lead).**
+  - 4 random walks gave 0 valid grids in 20,000 draws at 0.6. Typical valid grids branch at 0.2-0.4.
+  - Rejected: 6 walks with 0.5 (more nodes and clutter); a merge-biased walk (an algorithm change).
+  - **Revisit if the MAP1 playtest says routes don't feel like decisions.** A merge-biased walk is then the fix.
+- **Type weights:**
+
+  | Type | Old | New |
+  |---|---|---|
+  | combat | 50 | 40 |
+  | elite | 14 | 16 |
+  | relic_room | 10 | 14 |
+  | rest | 10 | 10 |
+  - **Accepted by game-lead.** The old weights rarely met the best-path relic estimate of 5 or more, and the sweep took 2.7x as long.
+  - **Cost:** fewer combat nodes (about 60% -> 50% of picks), so fewer card offers and less gold per route. More elites and relic rooms.
+  - Rejected: the old weights with `max_attempts` 400 (content-neutral, but a thin margin and a slow sweep).
+  - This is first-pass data, so the MAP1 sim and playtest should check run difficulty and card count.
+- **Node ids** are `(room - 1) * columns + column`, with the boss in column 2.
+- **Attempts:** `max_attempts` counts type draws only. Grid redraws for shape rules cost no attempt (bounded at 5000).
+- **The map seed** is its own stream derived from the run seed; RunGenerator's stream is untouched.
+- **Wave ids** avoid the predecessors' lists when another list fits. With 3 combat lists and 1 elite list, some repeats are unavoidable.
+- **A type with no candidate left fails the draw**; there is no fallback to combat.
+- **`swap_line_one`** is validated only when present.
+- **Validator bounds:** `MAX_ROOMS` 16, `walks` 2-16, `columns` 2-8.
+- **Relic-counting types** for the estimate are a code constant (`MapConfig.RELIC_TYPES`), not data.
+- **Docs:** MAP.md §3.4 and §6 are updated by game-lead to 0.4 and the new weights.

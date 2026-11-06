@@ -62,7 +62,7 @@ The generator is seeded from the run seed, like `RunGenerator` today: **the same
    - `max_elite_like` 3: elites plus mini-bosses on one path.
    - `max_merchants` 1 and `max_rest` 2 per path.
    - **Relic estimate** (§4.1): the best path scores in `relic_route` [6, 8], and the worst path scores at most `ignore_route_max` 3.
-4. **Shape rules:** rooms 2-9 each have 2-4 nodes. Every node has an outgoing edge, except the boss. At least `min_branching` (60%) of the nodes in rooms 1-8 have 2 or more next choices.
+4. **Shape rules:** rooms 2-9 each have 2-4 nodes. Every node has an outgoing edge, except the boss. At least `min_branching` (40%; was 60%, which 4 walks can't reach, MAP1-A 2026-11-05) of the nodes in rooms 1-8 have 2 or more next choices.
 5. **If a rule fails,** the generator redraws the types; after every 10 failed type draws it redraws the grid. The same rng keeps running, so the result stays deterministic. It gives up after `max_attempts` (200) with a loud error. A test sweeps 1000 seeds and requires zero failures.
 
 ## 4. Relics and gold: the arithmetic
@@ -214,9 +214,9 @@ Starting values below are game-lead proposals (DECISIONS 2026-11-04), all data, 
   "max_attempts": 200,
   "fixed": { "1": "combat", "2": "combat", "10": "boss" },
   "types": {
-    "combat":     { "weight": 50, "rooms": [1, 9] },
-    "elite":      { "weight": 14, "rooms": [3, 9], "no_repeat": true },
-    "relic_room": { "weight": 10, "rooms": [3, 8], "no_repeat": true },
+    "combat":     { "weight": 40, "rooms": [1, 9] },
+    "elite":      { "weight": 16, "rooms": [3, 9], "no_repeat": true },
+    "relic_room": { "weight": 14, "rooms": [3, 8], "no_repeat": true },
     "rest":       { "weight": 10, "rooms": [5, 9], "no_repeat": true },
     "merchant":   { "weight": 0,  "rooms": [4, 9], "no_repeat": true },
     "mini_boss":  { "weight": 0,  "rooms": [5, 8], "no_repeat": true },
@@ -225,7 +225,7 @@ Starting values below are game-lead proposals (DECISIONS 2026-11-04), all data, 
   },
   "path_rules": {
     "min_fights": 6, "max_elite_like": 3, "max_merchants": 1, "max_rest": 2,
-    "relic_route": [6, 8], "ignore_route_max": 3, "min_branching": 0.6
+    "relic_route": [6, 8], "ignore_route_max": 3, "min_branching": 0.4
   },
   "estimate": { "gold_mean": { "combat": 15, "elite": 35, "mini_boss": 50 }, "merchant_price": 60, "merchant_stock": 3 }
 }

@@ -74,12 +74,12 @@ Last updated: 2026-11-05 (BD2 closed, tag `playtest-2026-11-05-BD2`). **Run orde
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **MAP1 started 2026-11-05.** It is split into MAP1-A (engine) and MAP1-B (run flow); see DECISIONS "MAP1 split" and the ROADMAP brief. **gameplay-dev is running MAP1-A now.** If cut off, check `git log` for MAP1-A commits and resume or re-dispatch. Then MAP1-B -> ux (turns the map on) -> qa -> playtester -> tech-writer -> close.
+- **MAP1 started 2026-11-05.** It is split into MAP1-A (engine) and MAP1-B (run flow); see DECISIONS "MAP1 split" and the ROADMAP brief. MAP1-A is done (afdf30d..ed4e2aa; DECISIONS "MAP1-A"). **gameplay-dev is running MAP1-B now.** If cut off, check `git log` for MAP1-B commits and resume or re-dispatch. Then MAP1-B -> ux (turns the map on) -> qa -> playtester -> tech-writer -> close.
 - **For the MAP1 docs handoff:** the director's 2026-11-05 feedback ("relics feel fun so far, builds are starting to get more exciting and strategy starting to fold in") goes in the CHANGELOG as a human-playtest note. The answered parts of item 49 go to RESOLVED; the old text is in 9cde725.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step
-1. **MAP1, the map** (ROADMAP brief; `docs/MAP.md`). Split logged. Order: gameplay-dev **MAP1-A** (in progress) -> **MAP1-B** -> ux -> qa -> playtester -> tech-writer -> close.
+1. **MAP1, the map** (ROADMAP brief; `docs/MAP.md`). Split logged. Order: gameplay-dev **MAP1-A** (done) -> **MAP1-B** (in progress) -> ux -> qa -> playtester -> tech-writer -> close.
    - game-lead re-reads the brief, folds in the BD2 carry-overs for MAP1 (gameplay-dev, ux and qa items under the BD2 brief), and splits it into sittings if it's as large as BD2 (log the split).
    - Full loop: gameplay-dev -> ux-designer -> qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-MAP1`.
    - MAP1 also brings the treasure chest sizes (BUILD_DEPTH §4.7 row 4).

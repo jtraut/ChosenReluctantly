@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-06 (MAP2-A, MAP2-B and the ux step done, merchant on; **qa next**). MAP1 closed with tag `playtest-2026-11-05-MAP1`. **Run order:** MAP1 (done) -> **MAP2 (merchant, next)** -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1.
+Last updated: 2026-11-06 (MAP2 built, merchant on, qa PASS; **playtester next**). MAP1 closed with tag `playtest-2026-11-05-MAP1`. **Run order:** MAP1 (done) -> **MAP2 (merchant, next)** -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1.
 
 ## What's done
 - **MAP1 closed 2026-11-05:** split into MAP1-A and MAP1-B (DECISIONS "MAP1 split").
@@ -104,11 +104,11 @@ Last updated: 2026-11-06 (MAP2-A, MAP2-B and the ux step done, merchant on; **qa
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step
-1. **qa: MAP2 review** (ROADMAP MAP2, "qa (after ux)").
+1. **playtester: MAP2** (ROADMAP MAP2, the Playtester bullet). qa PASS with carry-overs (bbac2e0..38f20bd; suite 1843).
    - **Done:** MAP2-A (66ba317..9321820), MAP2-B (5801fe7..6a3e780), and ux (8897701..accf46f), which turned the merchant on.
    - **Numbers:** suite 1821 with 2 skipped; `-NoMap` 57.5 s / 63.3 s.
    - **D41** (relic prices) is open, with default A as built.
-   - **After qa:** then ux-designer, qa, playtester, tech-writer, and close with tag `playtest-YYYY-MM-DD-MAP2`. The merchant stays off (weight 0) until ux's step.
+   - **After the playtester:** tech-writer, then close with tag `playtest-YYYY-MM-DD-MAP2`. The merchant is on in shipped data.
 2. Then **MAP3**, **MAP4**, **3d**, **BD3**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).

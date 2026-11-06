@@ -1990,3 +1990,7 @@ All accepted:
 - **The map's gold line** shows only while a merchant can still be reached forward from where you are.
 - **`--run-auto-choose` also splits on `+`.**
 - **Open, cosmetic:** the legend's merchant icon is a plain square, while the node has a coin. The playtester can say whether it matters.
+
+## 2026-11-06 - MAP2 qa carry-overs routed (game-lead)
+- **Request for Quotation dominates the shop-only slot** (about 79% of shops). That's because the shop-only slot uses the act's tier weights. **Left as built for MAP2, and goes to BD3.** Rejected: weighting the shop-only slot evenly now, which is a code change after qa PASS for a balance problem a playtest hasn't confirmed.
+- **The flag robustness items, the stale comment, the Liquidate refresh and the at-cap-with-nothing-to-give display go to MAP3 housekeeping.** None of them is reachable through normal play today.

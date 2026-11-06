@@ -1034,6 +1034,34 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
           - merchant capture presets in `tools/capture_presets.json` (a qa/gameplay-dev tool);
           - stale "ships off" comments in `RunController.gd` (about lines 242-243), the `run_map_print.ps1` header, and the `map2b_merchant_flow_test.gd` header.
     - **qa (after ux):** the qa bullet above, plus re-baselining the map-on `-Route` numbers. The `-NoMap`, arena and bot-sim numbers must not move. gameplay-dev comes back only if switching the merchant on turns the suite red.
+  - **qa: PASS with carry-overs** (`docs/reviews/2026-11-06-map2-qa.md`; qa bbac2e0..38f20bd).
+    - **Suite:** 1843 tests (143 suites), 2 skipped (MAP3 save carry-overs), 0 failures.
+    - **Unchanged:** the arena and bot-sim hashes.
+    - **`-NoMap`:** 57.5 s Rogue, 63.3 s Wizard.
+    - **D40 sweeps:** 0 failures on seeds 1-1000 (worst 479 of 1000 tries) and 9000-9999 (worst 410). Every path has at least 1 rest.
+    - **No-card gate:** 0/12.
+    - **Merchant-on baselines** (`-Run -Seed 1 -Runs 12`, median relics in brackets):
+
+      | Route | Rogue | Wizard |
+      |---|---|---|
+      | first | 11/12, 58.1 s (3) | 11/12, 70.9 s (3) |
+      | relic | 12/12, 56.4 s (6) | 12/12, 54.6 s (6) |
+      | safe | 10/12, 57.6 s (1) | 12/12, 67.3 s (1) |
+
+      The relic route sits exactly on the 6 floor.
+    - **qa added:** the merchant capture presets (`merchant_shop`, `merchant_shop_poor`, `merchant_removal`) and a relic-trigger counter in the sim.
+    - **Carry-overs:**
+      - **gameplay-dev, MAP3 housekeeping:**
+        - `--run-node` and `--run-gold` accept bad values silently, unlike every other flag (exit 2). `--merchant`, `--run-node` and `--run-gold` have no unit tests. Fix with a pure `resolve(args)` plus a test.
+        - The stale "ships off" comment at `RunController.gd:242-243`.
+        - Liquidate Assets' stat only refreshes on a relic buy.
+        - `Merchant.items()` shows a relic as buyable at the cap when nothing can be given up. Not reachable until boss relics exist in MAP3.
+      - **BD3 (balance):**
+        - Request for Quotation is in about 79% of shops, because the shop-only slot is tier-weighted.
+        - The Rogue `safe` route went from 12/12 to 10/12, and the Wizard `first` boss median is 70.9 s.
+        - Paperwork Fire rarely fires on real runs.
+        - Watch the Severance Package chains.
+    - **Not checked:** nobody has hand-played the shop yet.
 - [ ] **MAP3, three acts (right after MAP2; D33 = B, director 2026-11-04). Full loop. Tag `playtest-YYYY-MM-DD-MAP3`.** Plan: `docs/MAP.md` §1, §4.5, §8. Detailed brief at MAP2's close.
   - **Goal:** a run is three acts of 10 rooms (30 rooms). Acts 1 and 2 end in a mini-boss, act 3 in the final boss. 30-45 minutes per run, and you can save and come back later (GDD §9).
   - **Scope:** acts 2-3 as their own maps; 2 act-end mini-boss encounters (`run.json` `tiers.mini_boss`, existing enemies + adds); act scaling (data multipliers per act; values from the sim, not hand-picked); new wave lists for acts 2-3 (today's 4 combat + 1 elite list would repeat badly); act transition screen ("Act 2"); "Room N of 30"; relics, cards and gold per D34 = C as revised by the director 2026-11-04 (MAP.md §4.5): cap 20, relic tier odds per act, per-act path rules, merchant 80/120/170; act-end mini-bosses give gold, a boss-tier relic (pick 1 of 3, no skip, the only source) and 3 rare (act 1) or 3 legendary (act 2) cards; card `rarity` (common/rare/legendary) with rare from act 2 and legendary from act 3; rejects stay 3 per run (D35 = A). **Content:** about 5+ rare and 4+ legendary cards per class pool, about 6 boss-tier relics per class (a game-lead design pass in BUILD_DEPTH first; they may need new effect code), about 22 tier 1-3 relics per class (15 sketched today). **At MAP2's close, split the rarity and boss-relic content into its own slice (MAP3b) if MAP3 is too big for one sitting.** **Save and resume:** autosave at every room boundary, one slot, `user://` with an injectable path, versioned and validated, built on RunState `to_json`/`equals`; Continue on the start screen; deleted on win or loss; quitting mid-fight restarts the room. Must ship in this slice, not later. **Restore the large chest's `min_tier` 2 in `data/map.json` once tier 3 relics exist (DECISIONS "Large chest", 2026-11-05).** **Save robustness first (moved from 3d item 6a at BD2's qa, game-lead 2026-11-04):** `from_dict` must not crash on wrongly-typed `offer`, `deck` or `choice_log` entries. It must also check that relics and given-up relics don't overlap, that relics fit the cap, and that relic ids exist.

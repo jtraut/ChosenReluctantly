@@ -131,8 +131,9 @@ func test_the_pick_next_node_choice_lists_the_reachable_nodes_and_a_pick_moves_t
 
 
 func test_the_start_of_a_map_run_lists_the_room_one_nodes() -> void:
+	RunSession.map_override = 0
 	var state := RunSession.begin_new_run(7)
-	assert_bool(state.map.is_empty()).is_true()  # shipped data: the map is off
+	assert_bool(state.map.is_empty()).is_true()  # the straight run
 	RunSession.map_override = 1
 	var mapped := RunSession.begin_new_run(7)
 	assert_bool(RunNodes.active(mapped)).is_true()
@@ -254,8 +255,8 @@ func test_a_chest_size_picks_its_tier_row() -> void:
 	assert_array([float(small["tier1"]), float(small["tier2"]), float(small["tier3"])]).is_equal([80.0, 20.0, 0.0])
 	var medium: Dictionary = RunNodes.chest_weights("medium", 1, chests, rows)  # the next act's row
 	assert_array([float(medium["tier1"]), float(medium["tier2"]), float(medium["tier3"])]).is_equal([15.0, 70.0, 15.0])
-	var large: Dictionary = RunNodes.chest_weights("large", 1, chests, rows)  # the act 3 row, never tier 1
-	assert_float(float(large["tier1"])).is_equal(0.0)
+	var large: Dictionary = RunNodes.chest_weights("large", 1, chests, rows)  # the act 3 row; min_tier 1 now (MAP1), so a thin tier 1 share remains
+	assert_float(float(large["tier1"])).is_equal(5.0)
 	assert_float(float(large["tier2"])).is_equal(25.0)
 	assert_float(float(large["tier3"])).is_equal(70.0)
 	assert_str(JSON.stringify(RunNodes.chest_weights("large", 2, chests, rows))).is_equal(JSON.stringify(large))  # a fixed row whatever the act
@@ -264,7 +265,7 @@ func test_a_chest_size_picks_its_tier_row() -> void:
 
 
 func test_a_relic_stage_offers_from_its_chest_row() -> void:
-	# A large chest never offers a tier 1 relic; a small one never a tier 3. (The shipped catalog is thin: see the hand-back.)
+	# A small chest never offers a tier 3 relic. A large one may offer any tier (min_tier 1 as shipped), so it only has to offer something.
 	var ctx: Dictionary = _ctx()
 	var by_id: Dictionary = (ctx["relics"] as Dictionary)["by_id"]
 	for chest_size: String in MapConfig.CHEST_SIZES:
@@ -277,12 +278,10 @@ func test_a_relic_stage_offers_from_its_chest_row() -> void:
 			checked += 1
 			for relic_id: String in state.offer:
 				var rarity: String = String((by_id[relic_id] as Dictionary)["rarity"])
-				if chest_size == "large":
-					assert_str(rarity).is_not_equal("tier1")
 				if chest_size == "small":
 					assert_str(rarity).is_not_equal("tier3")
-			if chest_size == "large" and state.pending == RunState.PENDING_RELIC:
-				assert_int(state.offer.size()).is_less_equal(2)  # only two tier 2 relics exist so far: an offer shows what is left
+			if chest_size == "large":
+				assert_int(state.offer.size()).is_greater(0)
 		assert_int(checked).override_failure_message("no %s chest found in seeds 1-79" % chest_size).is_greater(0)
 
 
@@ -300,8 +299,8 @@ func test_map_and_no_map_flags() -> void:
 
 
 func test_the_override_beats_the_data_switch_both_ways() -> void:
-	assert_bool(MapConfig.enabled()).is_false()  # shipped data keeps the map off until the map screen exists
-	assert_bool(RunSession.map_on()).is_false()
+	assert_bool(MapConfig.enabled()).is_true()  # shipped data has the map on
+	assert_bool(RunSession.map_on()).is_true()
 	RunSession.map_override = 1
 	assert_bool(RunSession.map_on()).is_true()
 	assert_bool(RunNodes.active(RunSession.begin_new_run(3))).is_true()
@@ -456,6 +455,7 @@ func test_the_route_summary_counts_fights_elites_and_chests() -> void:
 # --- the straight run is unchanged ---------------------------------------------------------------
 
 func test_a_straight_run_has_no_map_gold_or_node_choice() -> void:
+	RunSession.map_override = 0  # the shipped data has the map on
 	var state := RunSession.begin_new_run(5)
 	assert_bool(RunNodes.active(state)).is_false()
 	assert_bool(state.map.is_empty()).is_true()

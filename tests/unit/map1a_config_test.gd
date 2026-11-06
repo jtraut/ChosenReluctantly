@@ -18,11 +18,11 @@ func _has(problems: Array[String], fragment: String) -> bool:
 	return false
 
 
-func test_shipped_file_is_valid_and_ships_switched_off() -> void:
+func test_shipped_file_is_valid_and_ships_switched_on() -> void:
 	MapConfig.reset_cache()
 	assert_bool(MapConfig.is_valid()).is_true()
 	assert_array(MapConfig.load_problems()).is_empty()
-	assert_bool(MapConfig.enabled()).is_false()
+	assert_bool(MapConfig.enabled()).is_true()  # MAP1 ux turned the map on
 	var config: Dictionary = MapConfig.get_config()
 	assert_array((config["path_rules"] as Dictionary)["relic_route"]).contains_exactly([5.0, 7.0])
 	assert_float(float(config["types"]["merchant"]["weight"])).is_equal(0.0)

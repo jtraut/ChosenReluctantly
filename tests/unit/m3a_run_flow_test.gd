@@ -8,10 +8,12 @@ const MAIN_PATH := "res://scenes/main/Main.tscn"
 
 
 func before_test() -> void:
+	RunSession.map_override = 0  # MAP1: this suite is about the straight run
 	RunSession.clear()
 
 
 func after_test() -> void:
+	RunSession.map_override = -1
 	RunSession.clear()
 	Juice.reset()
 	GamePause.reset()

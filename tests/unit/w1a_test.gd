@@ -18,10 +18,12 @@ const OLD_ROGUE_STARTER: Array[String] = [
 
 
 func before_test() -> void:
+	RunSession.map_override = 0  # MAP1: this suite is about the straight run
 	_reset_statics()
 
 
 func after_test() -> void:
+	RunSession.map_override = -1
 	_reset_statics()
 	Juice.reset()
 	GamePause.reset()

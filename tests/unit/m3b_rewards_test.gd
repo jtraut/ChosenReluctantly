@@ -7,7 +7,12 @@ extends GdUnitTestSuite
 const POOLS: Array = ["rogue", "fire", "neutral"]
 
 
+func before_test() -> void:
+	RunSession.map_override = 0  # MAP1: straight run
+
+
 func after_test() -> void:
+	RunSession.map_override = -1
 	RunSession.clear()
 	RunSession.full_deck = false
 	RunSession.forced_seed = -1

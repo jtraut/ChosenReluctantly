@@ -10,11 +10,13 @@ const SHIPPED: Array[String] = ["heavy_sigh", "lingering_embers", "pyre_insuranc
 
 
 func before_test() -> void:
+	RunSession.map_override = 0  # MAP1: this suite is about the straight run
 	RunSession.clear()
 	RelicDatabase.load_all()
 
 
 func after_test() -> void:
+	RunSession.map_override = -1
 	RunSession.clear()
 	RunSession.start_relics = []
 	RunSession.forced_relic_offer = []

@@ -15,6 +15,7 @@ var _main: Main = null
 
 
 func before_test() -> void:
+	RunSession.map_override = 0  # MAP1: this suite is about the straight run
 	CardDatabase.load_all()
 	PlayerConfig.reload()
 	_original_store = Settings.store
@@ -23,6 +24,7 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	RunSession.map_override = -1
 	DodgeSwitch.reset()
 	ClassPickScreen.enabled_override = false
 	GamePause.reset()

@@ -11,6 +11,7 @@ const BOSS_ID := "boss_guardian"
 
 
 func before_test() -> void:
+	RunSession.map_override = 0  # MAP1: this suite is about the straight run
 	BossConfig.reset_cache()
 	BossStagger.disable()  # D16: this suite pins the roar; the stagger has its own suite (p_dodge_boss_test)
 	Juice.hit_stop_enabled = false  # no slow-mo or hit-stop: tests count frames
@@ -18,6 +19,7 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	RunSession.map_override = -1
 	Juice.hit_stop_enabled = true
 	Juice.reset()
 	Engine.time_scale = 1.0

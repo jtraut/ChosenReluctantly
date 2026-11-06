@@ -10,10 +10,12 @@ const CHASER_PATH := "res://scenes/enemies/MeleeChaser.tscn"
 
 
 func before_test() -> void:
+	RunSession.map_override = 0  # MAP1: this suite is about the straight run
 	DodgeSwitch.enable()  # H2: the shipped data has the dodge off; these tests cover the dodge itself
 
 
 func after_test() -> void:
+	RunSession.map_override = -1
 	DodgeSwitch.reset()
 	Enemy.set_player_body_suppressed(false)
 	RunSession.clear()

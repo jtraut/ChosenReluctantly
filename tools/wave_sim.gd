@@ -146,6 +146,8 @@ var _merchant: bool = false
 var _route: Array[int] = []
 ## Damage the player's side dealt to enemies, by origin, for the current run and for all runs (BD2-B; run mode). Fed by CombatEvents.hit_landed.
 var _damage_run: Dictionary = {}
+## qa MAP2: relic id -> how many times its triggers fired this run (counted from the controller's relic_triggered signal; output only).
+var _trigger_run: Dictionary = {}
 var _damage_all: Dictionary = {}
 var _damage_by_run: Array[Dictionary] = []
 ## 3b: the reward bot's own stream (seeded per run, so the picks repeat from --seed and never touch the combat bot).
@@ -867,6 +869,7 @@ func _run_whole(run_seed: int) -> void:
 	if not _apply_swap(run_seed):
 		return
 	_damage_run = {}
+	_trigger_run = {}
 	var relay: CombatEventsRelay = CombatLink.events()
 	var tally := _on_hit_for_tally
 	if relay != null:
@@ -902,6 +905,7 @@ func _run_whole(run_seed: int) -> void:
 		previous = _main
 		result["rooms_reached"] = room_index + 1
 		var controller: RunController = _main.run_controller
+		controller.relic_triggered.connect(func(relic_id: String, _index: int, _event: String) -> void: _trigger_run[relic_id] = int(_trigger_run.get(relic_id, 0)) + 1)
 		_begin_run_room(run_seed, rooms[room_index])
 		var room_result: String = await _play_room(run_seed, controller, rooms[room_index])
 		(result["room_s"] as Array).append(snappedf(_sim_time, 0.1))
@@ -959,6 +963,8 @@ func _run_whole(run_seed: int) -> void:
 	print("    run stat: seed %d outcome %s rooms_reached %d damage_taken %.1f" % [run_seed, String(result["outcome"]), int(result["rooms_reached"]), _damage_taken])
 	print("    relics: held %s | given up %s | offers taken %d, skipped %d, swapped %d" % [str(RunSession.current.relics if RunSession.current != null else []), str(RunSession.current.relics_given_up if RunSession.current != null else []), int(result["relic_picks"]), int(result["relic_skips"]), int(result["relic_swaps"])])
 	print("    damage by source (HP removed from enemies): %s" % _damage_line(_damage_run))
+	if not _trigger_run.is_empty():
+		print("    relic triggers fired: %s" % str(_trigger_run))
 	if result.has("route_summary"):
 		var route_info: Dictionary = result["route_summary"]
 		print("    route (%s): nodes %s | fights %d, elites %d, relic stages %d (chests %s), rests %d | gold %d, relics held %d" % [_route_policy, str(_route), int(route_info["fights"]), int(route_info["elites"]), int(route_info["relic_nodes"]), str(route_info["chests"]), int(route_info["rest"]), int(result["gold"]), int(result["relics_held"])])

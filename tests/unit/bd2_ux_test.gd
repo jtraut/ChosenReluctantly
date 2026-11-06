@@ -266,7 +266,7 @@ func test_skip_is_free_it_is_not_the_reject_tile() -> void:
 	assert_int(skip.look).is_equal(RunOptionCard.Look.SKIP_FREE)
 	assert_object(skip.free_tag).is_not_null()
 	assert_str(skip.title_label.text).is_equal(String(RunConfig.ui()["relic"]["skip_label"]))
-	assert_str(skip.detail_label.text).contains("leaves your card rejects alone")
+	assert_str(skip.detail_label.text).contains("card rejects stay as they are")
 	assert_bool(skip._pips == null).is_true()  # a reject draws pips; a free skip must not
 
 

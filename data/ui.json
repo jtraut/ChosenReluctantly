@@ -316,6 +316,9 @@
         "relic_cell_columns": 3,
         "relic_cell_width": 290,
         "relic_cells_scroll_above": 6,
+        "shop_tile_width": 520,
+        "shop_service_width": 360,
+        "shop_gold_color": "#ffd23f",
         "option_fit_margin": 0.94,
         "option_min_fit_scale": 0.8,
         "offer_min_fit_scale": 0.45

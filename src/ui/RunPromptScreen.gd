@@ -36,6 +36,9 @@ signal option_chosen(option_id: String)
 @onready var hint_label: Label = $Root/Center/Panel/Column/NextRow/Hint
 ## BD2: the relic being taken, shown above the give-one-up list (built in code, hidden otherwise).
 var incoming_plate: PanelContainer = null
+## MAP2: the gold left, in the header of every merchant screen (hidden otherwise).
+var gold_badge: GoldBadge = null
+var _gold_gap: Control = null
 
 var _controller: RunController = null
 var _pending: Dictionary = {}
@@ -43,7 +46,8 @@ var _pending: Dictionary = {}
 var _options: Array[Dictionary] = []
 var _option_buttons: Array[Button] = []
 ## How the open options are laid out: "row" (cards side by side), "grid" (a removal list, one column per slot),
-## "cells" (BD2: the give-one-up relic list, wrapping rows that scroll), "actions" (a short row of wide choices). Number keys pick nothing in any of them (PL3): arrows and Tab move the highlight.
+## "cells" (BD2: the give-one-up relic list, wrapping rows that scroll), "shop" (MAP2: the merchant's stock as tiles in a relics row, a cards row and a
+## services row, scrolling only as a fallback), "actions" (a short row of wide choices). Number keys pick nothing in any of them (PL3): arrows and Tab move the highlight.
 var _layout: String = "row"
 var _scroll_on: bool = false
 var _last_focus: int = -1
@@ -60,6 +64,7 @@ func _ready() -> void:
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS  # keeps the focus restore alive across a pause; nothing here ticks
 	_build_incoming_plate()
+	_build_gold_badge()
 	_apply_style()
 	get_viewport().size_changed.connect(_apply_style)
 	panel.minimum_size_changed.connect(_fit_panel)
@@ -142,10 +147,14 @@ func show_choice(model: Dictionary) -> void:
 		return
 	var room_type: String = String(model.get("room_type", ""))
 	var tiers: Dictionary = RunConfig.get_config().get("tiers", {})
+	var merchant: Dictionary = model.get("merchant", {})
 	show_content({
 		"title": String(model.get("title", "")),
 		"subtitle": "%s  -  %s" % [String(model.get("room_label", "")), String(model.get("room_type_name", ""))],
-		"line": String(model.get("line", "")),
+		"line": merchant_line(model),
+		"screen": String(model.get("merchant_screen", "")),
+		"merchant": merchant,
+		"gold": int(merchant.get("gold", -1)) if not merchant.is_empty() else -1,
 		"options": model.get("options", []),
 		"rejects_remaining": int(model.get("rejects_remaining", 0)),
 		"rejects_max": int(model.get("rejects_max", 0)),
@@ -156,6 +165,23 @@ func show_choice(model: Dictionary) -> void:
 		"icon_shape": RunIcons.shape_for(room_type),
 		"icon_color": RunIcons.color_for(room_type, UiConfig.run_ui(), tiers),
 	})
+
+
+## The line under a merchant screen's title. In the give-one-up step it also says what the relic costs and that Cancel is free (the plain relic
+## step has no price); anything that is not a merchant choice is the model's own line.
+static func merchant_line(model: Dictionary) -> String:
+	var line: String = String(model.get("line", ""))
+	if String(model.get("merchant_screen", "")) == "shop":
+		return ""  # the gold badge in the header says what is left, and the tiles say the rest: the height goes to the stock
+	if String(model.get("merchant_screen", "")) != "swap":
+		return line
+	var texts: Dictionary = RunConfig.ui().get("merchant", {})
+	var incoming_id: String = String((model.get("incoming", {}) as Dictionary).get("relic_id", ""))
+	for item: Variant in ((model.get("merchant", {}) as Dictionary).get("items", []) as Array):
+		var entry: Dictionary = item
+		if String(entry.get("kind", "")) == "relic" and String(entry.get("id", "")) == incoming_id and String(texts.get("swap_cost", "")) != "":
+			return line + " " + String(texts["swap_cost"]) % int(entry.get("price", 0))
+	return line
 
 
 ## True when the run has a MapScreen sibling, which then shows the pick-next-node choice instead of this panel's placeholder list.
@@ -215,23 +241,79 @@ func show_content(content: Dictionary) -> void:
 		_pending = content
 		return
 	_pending = {}
+	# MAP2: a purchase refills the open merchant screen. That is the same screen, not a new one: no new arm delay or dimming (the player is buying
+	# several things in a row) and the highlight stays where it was.
+	var screen: String = String(content.get("screen", ""))
+	var was_open: bool = visible and not _shown.is_empty()
+	var refresh: bool = was_open and screen != "" and String(_shown.get("screen", "")) == screen
+	var came_from: String = String(_shown.get("screen", "")) if was_open else ""
+	var old_ids: Array[String] = _option_ids()
+	var old_focus: int = _last_focus
 	_shown = content
 	_fill(content)
 	visible = true
 	var delay: float = float(UiConfig.run_ui().get("prompt_option_arm_delay", 0.4))
-	_armed_at_msec = Time.get_ticks_msec() + roundi(delay * 1000.0)
 	_fit_panel()
-	_dim_until_armed(delay)
+	if refresh:
+		for dimmable: Control in [options_box, footer_box, button]:
+			dimmable.modulate.a = 1.0
+	else:
+		_armed_at_msec = Time.get_ticks_msec() + roundi(delay * 1000.0)
+		_dim_until_armed(delay)
 	if _options.is_empty():
 		button.grab_focus()
 	else:
-		_last_focus = _default_focus()
+		_last_focus = focus_after_refill(old_ids, old_focus, _option_ids(), _enabled_flags(), came_from, screen) if was_open and screen != "" else _default_focus()
 		_focus_option(_last_focus)
 		_debug_auto_choose()
 
 
 func is_open() -> bool:
 	return visible
+
+
+func _option_ids() -> Array[String]:
+	var ids: Array[String] = []
+	for option: Dictionary in _options:
+		ids.append(String(option.get("id", "")))
+	return ids
+
+
+func _enabled_flags() -> Array[bool]:
+	var flags: Array[bool] = []
+	for option: Dictionary in _options:
+		flags.append(bool(option.get("enabled", true)))
+	return flags
+
+
+## Where the highlight goes when a merchant screen is refilled (pure, unit-tested). The same option when it can still be used; else the nearest option
+## that can (the tile you just bought is sold now, so the next one gets the highlight); coming back from the removal list or the give-one-up step to the
+## shop, the entry that opened it. `old_ids` and `old_focus` are the options before the refill and the index that had the highlight.
+static func focus_after_refill(old_ids: Array[String], old_focus: int, new_ids: Array[String], enabled: Array[bool], came_from: String, screen: String) -> int:
+	if new_ids.is_empty():
+		return 0
+	if came_from != screen and screen == "shop":
+		var opener: int = new_ids.find("merchant_remove_menu") if came_from == "remove" else -1
+		if opener >= 0 and enabled[opener]:
+			return opener
+		return _first_enabled_index(enabled)
+	var kept: String = old_ids[old_focus] if old_focus >= 0 and old_focus < old_ids.size() else ""
+	var same: int = new_ids.find(kept) if kept != "" else -1
+	if same >= 0 and enabled[same]:
+		return same
+	var anchor: int = clampi(old_focus if old_focus >= 0 else 0, 0, new_ids.size() - 1)
+	for step in range(new_ids.size()):
+		for candidate: int in [anchor + step, anchor - step]:
+			if candidate >= 0 and candidate < new_ids.size() and enabled[candidate]:
+				return candidate
+	return 0
+
+
+static func _first_enabled_index(enabled: Array[bool]) -> int:
+	for i in range(enabled.size()):
+		if enabled[i]:
+			return i
+	return 0
 
 
 func _blocked_by_game_over() -> bool:
@@ -256,7 +338,8 @@ func _debug_auto_choose() -> void:
 	for arg: String in OS.get_cmdline_user_args():
 		if not arg.begins_with("--run-auto-choose="):
 			continue
-		var ids: PackedStringArray = arg.get_slice("=", 1).split(",")
+		# `+` also separates ids: capture_screenshot.ps1 splits -Extra on commas, and merchant ids hold a colon, so a run of buys needs a safe joiner.
+		var ids: PackedStringArray = arg.get_slice("=", 1).replace("+", ",").split(",")
 		var used: int = _auto_chosen
 		if used >= ids.size():
 			return
@@ -308,6 +391,17 @@ func _fill(content: Dictionary) -> void:
 	_fill_options(content.get("options", []), content)
 	_fill_incoming_plate(content.get("relic", {}))
 	button.visible = _options.is_empty()
+	var shop: bool = String(content.get("screen", "")) == "shop"
+	var cfg_now := UiConfig.run_ui()
+	var scale_now: float = _scale(cfg_now)
+	# The shop gives its height to the stock: a smaller title and tighter spacing than the other prompts.
+	title_label.add_theme_font_size_override("font_size", roundi(float(cfg_now["prompt_title_font_size"]) * (0.72 if shop else 1.0) * scale_now))
+	column.add_theme_constant_override("separation", roundi((7.0 if shop else 12.0) * scale_now))
+	var gold: int = int(content.get("gold", -1))
+	gold_badge.visible = gold >= 0
+	_gold_gap.visible = gold >= 0
+	if gold >= 0:
+		gold_badge.set_total(gold)
 	if not _options.is_empty():
 		subtitle_label.visible = false  # the room indicator at the top already says it; the cards need the height
 	var hint: String = String(content.get("hint", ""))
@@ -343,11 +437,19 @@ static func layout_for(options: Array) -> String:
 			return "grid"  # a list of cards to pick from; the rest menu's "Remove a card" has no card_id
 		if String(d.get("kind", "")) == "giveup":
 			return "cells"  # BD2: the relics that can be given up, a wrapping list
+		if SHOP_KINDS.has(String(d.get("kind", ""))):
+			return "shop"  # MAP2: the merchant's stock
 		has_card = has_card or String(d.get("kind", "")) == "card" or String(d.get("kind", "")) == "relic"
 	return "row" if has_card else "actions"
 
 
+## The option kinds of the merchant's shop screen (RunMerchant): they get the shop tiles.
+const SHOP_KINDS: Array[String] = ["buy_relic", "buy_card", "buy_removal", "reroll"]
+
+
 static func look_for(kind: String) -> RunOptionCard.Look:
+	if SHOP_KINDS.has(kind):
+		return RunOptionCard.Look.SHOP
 	match kind:
 		"card":
 			return RunOptionCard.Look.CARD
@@ -380,7 +482,7 @@ func _fill_options(options: Array, content: Dictionary = {}) -> void:
 	if options.is_empty():
 		return
 	_layout = layout_for(options)
-	_scroll_on = _layout == "grid" or (_layout == "cells" and options.size() > int(UiConfig.run_ui().get("relic_cells_scroll_above", 6)))
+	_scroll_on = _layout == "grid" or _layout == "shop" or (_layout == "cells" and options.size() > int(UiConfig.run_ui().get("relic_cells_scroll_above", 6)))
 	# Only the removal grid (and a long give-one-up list) may scroll; an offer (cards, reject, rest choices) always shows whole and the panel scales.
 	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO if _scrolls() else ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -399,6 +501,8 @@ func _fill_options(options: Array, content: Dictionary = {}) -> void:
 	options_box.add_theme_constant_override("v_separation", gap)
 	footer_box.add_theme_constant_override("separation", gap)
 	var numbered: int = 0
+	var shop_width: float = _shop_tile_width(options, cfg, s) if _layout == "shop" else 0.0
+	var merchant_texts: Dictionary = RunConfig.ui().get("merchant", {})
 	for i in range(options.size()):
 		var option: Dictionary = options[i]
 		_options.append(option)
@@ -422,6 +526,8 @@ func _fill_options(options: Array, content: Dictionary = {}) -> void:
 				width = float(cfg["option_reject_width"])
 			RunOptionCard.Look.RELIC_CELL:
 				width = float(cfg.get("relic_cell_width", cfg["option_cell_width"]))
+			RunOptionCard.Look.SHOP:
+				width = shop_width if shop_row_of(kind) != "service" else float(cfg.get("shop_service_width", 360))
 		var index: int = -1  # no number badge on an option any more
 		if _layout != "grid" and kind != "back":
 			numbered += 1
@@ -431,6 +537,9 @@ func _fill_options(options: Array, content: Dictionary = {}) -> void:
 			"owned": int(owned.get(String(option.get("card_id", "")), 0)) if kind == "card" else 0,
 			"rejects_remaining": int(content.get("rejects_remaining", 0)),
 			"rejects_max": int(content.get("rejects_max", 0)),
+			"shop_texts": merchant_texts, "gold": int(content.get("gold", 0)),
+			"shop_name": _shop_name(option, content, merchant_texts) if look == RunOptionCard.Look.SHOP else "",
+			"shop_only": _is_shop_only(option) if look == RunOptionCard.Look.SHOP else false,
 		})
 		var option_id: String = String(option.get("id", ""))
 		card.pressed.connect(_on_option_pressed.bind(option_id))
@@ -438,12 +547,16 @@ func _fill_options(options: Array, content: Dictionary = {}) -> void:
 		_option_buttons.append(card)
 	var in_footer: Array[int] = []
 	for i in range(_option_buttons.size()):
-		if String(_options[i].get("kind", "")) == "back":
+		var footer_kind: String = String(_options[i].get("kind", ""))
+		if footer_kind == "back" or (_layout == "shop" and shop_row_of(footer_kind) == "service"):  # the shop's services sit beside Leave: always on screen
+			_option_buttons[i].size_flags_vertical = Control.SIZE_SHRINK_CENTER  # the footer's buttons keep their own height, not the tallest one's
 			footer_box.add_child(_option_buttons[i])
 			in_footer.append(i)
 	footer_box.visible = not in_footer.is_empty()
 	if _layout == "grid":
 		_place_grid(cfg, s, texts)
+	elif _layout == "shop":
+		_place_shop(in_footer, shop_width * s)
 	elif _layout == "cells":
 		options_box.columns = clampi(_option_buttons.size() - in_footer.size(), 1, int(cfg.get("relic_cell_columns", 4)))
 		for i in range(_option_buttons.size()):
@@ -457,7 +570,76 @@ func _fill_options(options: Array, content: Dictionary = {}) -> void:
 	var hint_key: String = "remove_list_hint" if _layout == "grid" else "list_hint"
 	var hint_count: int = CardSlotController.SLOT_TYPE_ORDER.size() if _layout == "grid" else numbered
 	keys_label.text = String(texts.get(hint_key, ""))
+	if String(content.get("screen", "")) == "remove":
+		keys_label.text = String(merchant_texts.get(hint_key, keys_label.text))
+		hint_count = 2
+	if _layout == "shop":
+		hint_count = 0  # the highlight and the Leave button explain themselves; the height goes to the stock
 	keys_label.visible = keys_label.text != "" and hint_count > 1
+
+
+## The width of one shop tile: two columns (relics left, cards right), at the data width or narrower when the window is too narrow for both.
+func _shop_tile_width(_options_list: Array, cfg: Dictionary, s: float) -> float:
+	var gap: float = float(cfg["option_gap"])
+	var room: float = get_viewport().get_visible_rect().size.x / maxf(s, 0.01) * float(cfg["option_fit_margin"]) - 2.0 * float(cfg["prompt_panel_padding"]) - 2.0 * float(RunOptionCard.focus_ring_width(cfg, 1.0))
+	return minf(float(cfg.get("shop_tile_width", cfg["option_card_width"])), (room - gap) / 2.0)
+
+
+## Which shop row an option kind sits in: "relic", "card" or "service" (removal and reroll).
+static func shop_row_of(kind: String) -> String:
+	match kind:
+		"buy_relic":
+			return "relic"
+		"buy_card":
+			return "card"
+	return "service"
+
+
+## The item's own name (the option label has the price baked in by RunMerchant), from the view's items; services use their data names.
+func _shop_name(option: Dictionary, content: Dictionary, texts: Dictionary) -> String:
+	match String(option.get("kind", "")):
+		"buy_removal":
+			return String(texts.get("removal_name", option.get("label", "")))
+		"reroll":
+			return String(option.get("label", ""))
+	var wanted_kind: String = "relic" if String(option.get("kind", "")) == "buy_relic" else "card"
+	var wanted_id: String = String(option.get("relic_id", "")) if wanted_kind == "relic" else String(option.get("card_id", ""))
+	for item: Variant in ((content.get("merchant", {}) as Dictionary).get("items", []) as Array):
+		var entry: Dictionary = item
+		if String(entry.get("kind", "")) == wanted_kind and String(entry.get("id", "")) == wanted_id:
+			return String(entry.get("name", option.get("label", "")))
+	return String(option.get("label", ""))
+
+
+## A relic only the merchant sells (its `sources` are exactly ["merchant"]): read from the relic's data, no id named here.
+func _is_shop_only(option: Dictionary) -> bool:
+	if String(option.get("kind", "")) != "buy_relic":
+		return false
+	return Merchant.is_shop_only(RelicDatabase.get_relic(String(option.get("relic_id", ""))))
+
+
+## The shop: two columns, relics on the left and cards on the right, row by row (the third relic beside the third card); a short column gets
+## spacers so the grid stays aligned. Services and Leave are footer options and are already placed.
+func _place_shop(in_footer: Array[int], width: float) -> void:
+	options_box.columns = 2
+	var relics: Array[Button] = []
+	var cards: Array[Button] = []
+	for i in range(_option_buttons.size()):
+		if in_footer.has(i):
+			continue
+		if shop_row_of(String(_options[i].get("kind", ""))) == "relic":
+			relics.append(_option_buttons[i])
+		else:
+			cards.append(_option_buttons[i])
+	for r in range(maxi(relics.size(), cards.size())):
+		for column_list: Array[Button] in [relics, cards]:
+			if r < column_list.size():
+				options_box.add_child(column_list[r])
+			else:
+				var spacer := Control.new()
+				spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				spacer.custom_minimum_size = Vector2(width, 0.0)
+				options_box.add_child(spacer)
 
 
 ## The removal list: one column per HUD slot (same order and keys as the bottom bar), a header per column, cards
@@ -497,6 +679,21 @@ func _build_incoming_plate() -> void:
 	rule.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	rule.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	body.add_child(rule)
+
+
+## The gold left, in the header beside the title (merchant screens only), so the price tags below can be weighed against it.
+func _build_gold_badge() -> void:
+	var header: HBoxContainer = icon.get_parent() as HBoxContainer
+	_gold_gap = Control.new()
+	_gold_gap.name = "GoldGap"
+	_gold_gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_gold_gap.visible = false
+	header.add_child(_gold_gap)
+	gold_badge = GoldBadge.new()
+	gold_badge.name = "Gold"
+	gold_badge.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	gold_badge.visible = false
+	header.add_child(gold_badge)
 
 
 func _fill_incoming_plate(relic: Dictionary) -> void:
@@ -708,6 +905,10 @@ func _apply_style() -> void:
 	icon.custom_minimum_size = Vector2(icon_px, icon_px)
 	(icon.get_parent() as HBoxContainer).add_theme_constant_override("separation", roundi(16.0 * s))
 	var text_color := Color.html(String(cfg["prompt_text_color"]))
+	var gold_px: int = roundi(float(cfg["prompt_subtitle_font_size"]) * 1.1 * s)
+	gold_badge.configure(gold_px, 1.6, 20.0 * s, Color.html(String(cfg.get("shop_gold_color", "#ffd23f"))), Color.html("#ffffff"), false)
+	gold_badge.custom_minimum_size = Vector2(float(gold_px) * 6.0, float(gold_px) * 1.5)
+	_gold_gap.custom_minimum_size.x = 28.0 * s
 	_font(title_label, "prompt_title_font_size", s, cfg)
 	title_label.add_theme_color_override("font_color", Color.html(String(cfg["prompt_title_color"])))
 	_font(subtitle_label, "prompt_subtitle_font_size", s, cfg)
@@ -749,6 +950,9 @@ func _fit_panel() -> void:
 		var wanted: float = minf(content_h, maxf(room, 120.0 * _scale(cfg)))
 		if not is_equal_approx(scroll.custom_minimum_size.y, wanted):
 			scroll.custom_minimum_size.y = wanted
+		# When it does scroll, the bar must not sit on top of the tiles: the area is that much wider.
+		var bar_w: float = scroll.get_v_scroll_bar().get_combined_minimum_size().x if wanted < content_h else 0.0
+		scroll.custom_minimum_size.x = options_box.get_combined_minimum_size().x + scroll.get_theme_stylebox("panel").get_minimum_size().x + bar_w
 	elif scroll.visible:
 		# An offer never scrolls: the area is exactly as tall as its content and the whole panel shrinks to fit.
 		var whole_h: float = options_box.get_combined_minimum_size().y + scroll.get_theme_stylebox("panel").get_minimum_size().y

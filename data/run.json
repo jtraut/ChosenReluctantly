@@ -94,9 +94,14 @@
         "rest": { "title": "Rest", "line": "Heal a little, or get rid of a card.", "heal_label": "Rest and heal", "heal_detail": "Heal %d HP (%d%% of max)", "heal_full_detail": "HP is already full", "remove_label": "Remove a card", "remove_detail": "Take one card out of your deck", "remove_none": "Every card is needed to meet the deck minimums", "remove_locked": "Get another card for the %s slot first (minimum %d different)", "remove_locked_group": "Get another card for %s first", "remove_title": "Remove which card?", "remove_line": "Pick a card to remove. Greyed cards would break a deck minimum.", "remove_option": "Remove %s", "copies": "x%d", "back_label": "Back" },
         "merchant": {
             "title": "Merchant", "line": "Spend your gold, then leave. You have %d gold.",
-            "item_format": "%s - %d gold", "removal_format": "Remove a card - %d gold", "removal_detail": "Take one card out of your deck. Each removal costs %d gold more than the last.",
+            "item_format": "%s - %d gold", "removal_format": "Remove a card - %d gold", "removal_name": "Remove a card", "removal_detail": "Each removal costs %d more.",
             "reroll_label": "Reroll the stock (free)", "reroll_detail": "Redraw everything not yet sold. Free rerolls left this visit: %d",
             "leave_label": "Leave", "leave_detail": "Back to the map.", "back_label": "Back",
+            "price_format": "%d gold", "free_tag": "Free", "sold_tag": "Sold", "shop_only_tag": "Only sold here", "need_more": "Need %d more gold",
+            "tile_reasons": { "none_removable": "No card can go: deck minimums", "no_rerolls": "No free rerolls left" },
+            "swap_note": "At the relic limit: you give one up first.", "relic_band": "%s, %s", "service_removal": "Service", "service_reroll": "Service",
+            "list_hint": "Arrow keys move, Enter or click buys. Leave when you are done.", "remove_list_hint": "Arrow keys move, Enter or click removes the card. Back changes your mind.",
+            "swap_cost": "It costs %d gold. You pay only when you give one up. Cancel charges nothing.", "sold_line": "Gone. The merchant is not restocking.",
             "remove_title": "Remove which card?", "remove_line": "Removing a card costs %d gold. Greyed cards would break a deck minimum.",
             "reasons": {
                 "sold": "Sold", "too_expensive": "Not enough gold", "not_for_sale": "Not for sale", "none_removable": "Every card is needed to meet the deck minimums",
@@ -109,7 +114,7 @@
         "relic": {
             "title": "Relic found", "line": "Pick a relic to keep for this run, or skip.",
             "room_title": "Relic room", "room_line": "Nobody is guarding this one. Pick a relic to keep for this run, or skip.",
-            "skip_label": "Skip", "skip_detail": "Take nothing. It is free and leaves your card rejects alone.",
+            "skip_label": "Skip", "skip_detail": "Take nothing. Free: your card rejects stay as they are.",
             "swap_title": "Too many relics", "swap_line": "You hold %d relics, the most you can carry. Give one up to take %s.",
             "swap_line_one": "You hold %d relic, the most you can carry. Give it up to take %s.",
             "cancel_label": "Cancel", "none_giveable": "Nothing you hold can be given up.",

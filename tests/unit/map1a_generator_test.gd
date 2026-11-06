@@ -197,7 +197,7 @@ func test_to_text_prints_every_room() -> void:
 # --- the relic estimate (MAP.md section 4.1 / 4.2 worked routes) ---------------------------------
 
 ## The shipped config with the estimate's merchant prices pinned to the MAP2-A tier prices (60, 60, 90), so the worked routes below mean the same
-## whether the merchant ships off (those prices) or on (cheaper ones, MAP2-B).
+## the merchant is off (those prices) or on (cheaper ones, MAP2-B; it ships on since the MAP2 ux step).
 func _priced_config() -> Dictionary:
 	var config: Dictionary = MapConfig.get_config().duplicate(true)
 	(config["estimate"] as Dictionary)["merchant_prices"] = [60, 60, 90]

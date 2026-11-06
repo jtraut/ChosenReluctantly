@@ -24,7 +24,7 @@ func test_shipped_file_is_valid_and_ships_switched_on() -> void:
 	assert_array(MapConfig.load_problems()).is_empty()
 	assert_bool(MapConfig.enabled()).is_true()  # MAP1 ux turned the map on
 	var config: Dictionary = MapConfig.get_config()
-	var merchant_on: bool = MerchantSwitch.shipped_is_on()  # MAP2-B: the merchant ships off until ux flips it; either state is valid
+	var merchant_on: bool = MerchantSwitch.shipped_is_on()  # MAP2-B: ships ON since the MAP2 ux step (map2_qa_test pins on); this pin accepts either state
 	assert_array((config["path_rules"] as Dictionary)["relic_route"]).contains_exactly([6.0, 8.0] if merchant_on else [5.0, 7.0])
 	assert_float(float(config["types"]["merchant"]["weight"])).is_equal(8.0 if merchant_on else 0.0)
 	assert_array(config["types"]["relic_room"]["rooms"]).contains_exactly([3.0, 8.0])

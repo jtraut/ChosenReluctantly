@@ -1,6 +1,6 @@
 class_name Map2bMerchantFlowTest
 extends GdUnitTestSuite
-## MAP2-B: the merchant node in the run flow. The merchant ships OFF, so every test here turns it on for the process (MerchantSwitch.apply) and
+## MAP2-B: the merchant node in the run flow. The merchant ships ON since the MAP2 ux step (8994863); every test here still applies MerchantSwitch (harmless when already on, and it keeps them valid if the data is ever flipped back) and
 ## restores the shipped config afterwards. The model is checked through RunChoices / RunMerchant; one pass goes through the real RunController.
 
 const RUN_MAIN_PATH := "res://scenes/main/RunMain.tscn"

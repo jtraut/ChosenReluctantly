@@ -122,6 +122,20 @@ func test_with_the_merchant_on_maps_hold_at_most_one_merchant_per_path_and_some_
 	assert_int(with_merchant).is_greater(10)
 
 
+func test_jump_to_node_lays_the_path_back_to_room_one_and_refuses_a_missing_node() -> void:
+	var state: RunState = _state_on_merchant(1)
+	var node: int = state.path[state.path.size() - 1]
+	var fresh := RunState.new_run(state.seed_value, CharacterDatabase.starting_deck("rogue"), 3)
+	fresh.map = state.map
+	assert_bool(fresh.jump_to_node(node)).is_true()
+	assert_array(fresh.path).is_equal(state.path)
+	assert_int(fresh.room_index).is_equal(state.room_index)
+	assert_str(fresh.pending).is_equal(RunState.PENDING_NONE)
+	assert_bool(RunNodes.consistent(fresh)).is_true()
+	assert_bool(fresh.jump_to_node(99999)).is_false()
+	assert_bool(RunState.new_run(1, CharacterDatabase.starting_deck("rogue"), 3).jump_to_node(0)).is_false()  # a straight run has no nodes
+
+
 # --- opening the shop ------------------------------------------------------------------------------
 
 func test_a_merchant_node_opens_the_shop_with_stock_prices_gold_and_the_leave_option() -> void:

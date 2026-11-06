@@ -85,6 +85,14 @@ func _initialize() -> void:
 			chest_parts.append("%d (room %d) %s" % [int(entry["id"]), int(entry["room"]), String(entry["chest"])])
 	if not chest_parts.is_empty():
 		print("chests: ", ", ".join(chest_parts))
+	var ids_by_type: Dictionary = {}
+	for entry: Dictionary in (map["nodes"] as Array):
+		if String(entry["type"]) != "combat":
+			var list: Array = ids_by_type.get(String(entry["type"]), [])
+			list.append("%d (room %d)" % [int(entry["id"]), int(entry["room"])])
+			ids_by_type[String(entry["type"])] = list
+	for type_id: String in ids_by_type.keys():
+		print("node ids, %s: %s" % [type_id, ", ".join(ids_by_type[type_id])])  # for --run-node=N in a launch
 	var stats: MapRules.Extremes = MapRules.evaluate(map, cfg)
 	print("paths %d | min fights %d (rule >= %d) | max elite-like %d (<= %d) | min rest %d (>= %d) | max rest %d (<= %d) | max merchants %d (<= %d) | relic estimate best %d (in %s) worst %d (<= %d)" % [
 		stats.paths, stats.min_fights, int(cfg["path_rules"]["min_fights"]), stats.max_elite_like, int(cfg["path_rules"]["max_elite_like"]),

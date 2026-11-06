@@ -122,6 +122,24 @@ func jump_to_room(index: int) -> void:
 		pending = PENDING_NONE
 
 
+## Moves a fresh map run onto node `node_id` for a launch flag or a tool (`--run-node`): the path runs back to a room-1 node through each node's first
+## predecessor, and the run is in that node's room with no choice open. False (nothing changed) when the run has no map or no such node.
+func jump_to_node(node_id: int) -> bool:
+	if map.is_empty() or MapGraph.node(map, node_id).is_empty():
+		return false
+	var trail: Array[int] = [node_id]
+	while int(MapGraph.node(map, trail[0]).get("room", 1)) > 1:
+		var before: Array[int] = MapGraph.prev_ids(map, trail[0])
+		if before.is_empty():
+			return false
+		trail.push_front(before[0])
+	path = trail
+	room_index = trail.size() - 1
+	pending = PENDING_NONE
+	offer = []
+	return true
+
+
 func has_pending() -> bool:
 	return pending != PENDING_NONE
 

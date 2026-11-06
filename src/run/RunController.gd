@@ -50,6 +50,8 @@ var _ctx: Dictionary = {}
 var _boss: Boss = null
 var _launch_room: int = 0
 var _launch_room_set: bool = false
+var _launch_node: int = -1
+var _launch_gold: int = -1
 var _launch_clear_after: float = -1.0
 var _prepared: bool = false
 var _launch_ok: bool = true
@@ -191,6 +193,10 @@ func prepare(main: Main) -> bool:
 	_state = RunSession.ensure_run()
 	if _fresh_launch and (_launch_room > 0 or (_launch_room_set and RunNodes.active(_state))):
 		_state.jump_to_room(_launch_room)  # a map run is laid along the `first` route (no gold for the rooms skipped)
+	if _fresh_launch and _launch_node >= 0 and RunNodes.active(_state) and not _state.jump_to_node(_launch_node):
+		push_error("RunController: --run-node=%d is not a node of this run's map" % _launch_node)
+	if _fresh_launch and _launch_gold >= 0:
+		_state.gold = _launch_gold
 	return true
 
 
@@ -232,6 +238,8 @@ func confirm_class_pick(character: String) -> bool:
 ## `--run-seed=N` fixes the seed, `--run-room=K` starts at room K (1-based), `--full-deck` starts with every card of the character's pools (debug), `--run-clear-after=S` wins the room
 ## S seconds in (so a screenshot can show the room-cleared prompt or the win screen). `--deck=<name>` starts with a debug
 ## preset deck from data/debug_decks (its `starter`, or its `full` with `--full-deck`) and `--list-decks` prints them and quits.
+## `--run-node=N` (map runs, MAP2-B): start in map node N (the path runs back to room 1 along first predecessors); `--run-gold=N` starts with N gold. Both are for captures
+## (for example the merchant: `--merchant --run-seed=54 --run-node=<its id> --run-gold=200`; the map print tool with -Merchant lists the ids).
 ## `--merchant` turns the merchant on for this launch (MerchantSwitch: data/merchant_on.json merged into the map and run config; the shipped data has it off).
 ## `--class=<rogue|wizard>` plays the run as that character (a `--deck` preset names its class, and a `--class` that disagrees is refused).
 ## Returns false when the launch must not go on: it has asked the tree to quit (exit 0 for --list-decks, 2 for bad args).
@@ -286,6 +294,10 @@ func _apply_launch_args(tree: SceneTree) -> bool:
 		elif arg.begins_with("--run-room=") and arg.substr(11).is_valid_int():
 			_launch_room = maxi(arg.substr(11).to_int() - 1, 0)
 			_launch_room_set = true
+		elif arg.begins_with("--run-node=") and arg.substr(11).is_valid_int():
+			_launch_node = maxi(arg.substr(11).to_int(), 0)
+		elif arg.begins_with("--run-gold=") and arg.substr(11).is_valid_int():
+			_launch_gold = maxi(arg.substr(11).to_int(), 0)
 		elif arg.begins_with("--run-clear-after=") and arg.substr(18).is_valid_float():
 			_launch_clear_after = maxf(arg.substr(18).to_float(), 0.0)
 	return true

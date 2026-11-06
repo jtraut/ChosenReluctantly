@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-05 (MAP1 closed; latest tag `playtest-2026-11-05-MAP1`)
-**Status: 1 decision (D40, a rest on every route); 5 things to look at (50 new, 49, 48, 47, 35), plus the round 2 vision check, which is now due. Next: MAP2 (merchant, shop-only relics) -> MAP3 (three acts, save and resume, rare/legendary cards, boss relics) -> MAP4 (events, curse cards, sacrifices, rest dig; probably two sittings) -> 3d (loadouts, starter relic).**
+Last updated: 2026-11-06 (D40 = A recorded; MAP2 in progress; latest tag `playtest-2026-11-05-MAP1`)
+**Status: no decisions waiting; 5 things to look at (50 new, 49, 48, 47, 35), plus the round 2 vision check, which is now due. Next: MAP2 (merchant, shop-only relics) -> MAP3 (three acts, save and resume, rare/legendary cards, boss relics) -> MAP4 (events, curse cards, sacrifices, rest dig; probably two sittings) -> 3d (loadouts, starter relic).**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -17,13 +17,7 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## Needs your decision
 
-**D40. Should every map route have a rest?** (from the MAP1 playtest)
-- **The problem:** today a route can have no rest at all. 3 of the 4 Rogue routes the playtester looked at had none, and on some maps the "safe" route is the same as the plain one. So picking a careful route often isn't a real option.
-- **A (my default):** every path from room 1 to the boss has at least 1 rest (a new `min_rest` 1 path rule; the limit of 2 stays). Built with MAP2. It costs a little map variety and maybe a few more redraws when a map is generated.
-- **B:** no guarantee. Rests stay random, and the risk of a route with no rest is part of the game.
-- **C:** a fixed rest right before the boss, on room 9 for every path, as in Slay the Spire. It's predictable, and it removes room 9 as a choice.
-
-Without an answer, MAP2 builds A. Next new number: D41.
+Nothing right now. (D40 = A, a rest on every route, is recorded and being built in MAP2.) Next new number: D41.
 
 ## Needs your eyes
 
@@ -32,7 +26,7 @@ Reply with the number and a word or two.
 50. **Play a run on the map (MAP1).** `godot --path .`, one run per class if you can.
     - **Does picking a route feel like a decision?** About 40% of nodes branch (the plan was 60%, which the generator can't reach). If it feels too linear, a generator that forks and merges more is the fix.
     - **Is the map clear at a glance?** Where you are, what you can pick, and the chest sizes (1-3 dots). Pause -> Map shows it view-only.
-    - **Try an elite-and-chest route and a cautious one.** The bots won every relic route. D40 asks whether every route should have a rest.
+    - **Try an elite-and-chest route and a cautious one.** The bots won every relic route. From MAP2, every route has a rest (your D40 = A).
     - **Gold** shows on the HUD with "+N". There's nothing to spend it on until MAP2's merchant.
     - **Known and scheduled for MAP2:** the chest size isn't shown on the chest's reward screen; room 9 has a pointless one-choice pick before the boss; small legend text.
 

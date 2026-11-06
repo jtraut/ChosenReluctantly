@@ -1870,7 +1870,7 @@ The boss bar width is now floored to whole pixels.
     - bots;
     - getting the suite ready for the switch.
   - ux, qa, playtest and docs then run once each. **Why:** MAP1 was this size and needed two sittings. The engine can be tested on its own.
-- **D40 is built as default A** (`min_rest` 1). The director hasn't answered. If he picks B, set `min_rest` to 0. If he picks C, it's a fixed room 9 rest, which is a data change plus a generator rule.
+- **D40 is built as default A** (`min_rest` 1). **Update 2026-11-06: the director answered D40 = A, so this is now his decision (GDD §9).** At the time of writing he hadn't answered. If he picks B, set `min_rest` to 0. If he picks C, it's a fixed room 9 rest, which is a data change plus a generator rule.
 - **The relic pool grows in MAP2. This was found while scoping.**
   - **The gap:** 6 relics exist. A Rogue is eligible for 6 and a Wizard for 5. A relic hunter would empty the pool before reaching the merchant, so MAP2's qa target of 6-8 relics on relic routes couldn't be met.
   - **The fix:** add 4 pool relics (ASAP Notice, Severance Package, Paperwork Fire, Grading Curve) and 3 shop-only relics. Each class then has 11 eligible relics.

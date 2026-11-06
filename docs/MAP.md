@@ -61,6 +61,7 @@ The generator is seeded from the run seed, like `RunGenerator` today: **the same
    - `min_fights` 6: combat, elite, mini_boss and boss rooms make up at least 6 of the 10. So at most 4 rooms are non-fights, and run length stays close to today's 9 fights.
    - `max_elite_like` 3: elites plus mini-bosses on one path.
    - `max_merchants` 1 and `max_rest` 2 per path.
+   - `min_rest` 1: every path has at least one rest (D40 = A, director 2026-11-06; built in MAP2-A).
    - **Relic estimate** (§4.1): the best path scores in `relic_route` [6, 8], and the worst path scores at most `ignore_route_max` 3.
 4. **Shape rules:** rooms 2-9 each have 2-4 nodes. Every node has an outgoing edge, except the boss. At least `min_branching` (40%; was 60%, which 4 walks can't reach, MAP1-A 2026-11-05) of the nodes in rooms 1-8 have 2 or more next choices.
 5. **If a rule fails,** the generator redraws the types; after every 10 failed type draws it redraws the grid. The same rng keeps running, so the result stays deterministic. It gives up after `max_attempts` (200) with a loud error. A test sweeps 1000 seeds and requires zero failures.
@@ -224,7 +225,7 @@ Starting values below are game-lead proposals (DECISIONS 2026-11-04), all data, 
     "buff_room":  { "weight": 0,  "rooms": [3, 8], "no_repeat": true }
   },
   "path_rules": {
-    "min_fights": 6, "max_elite_like": 3, "max_merchants": 1, "max_rest": 2,
+    "min_fights": 6, "max_elite_like": 3, "max_merchants": 1, "min_rest": 1, "max_rest": 2,
     "relic_route": [6, 8], "ignore_route_max": 3, "min_branching": 0.4
   },
   "estimate": { "gold_mean": { "combat": 15, "elite": 35, "mini_boss": 50 }, "merchant_price": 60, "merchant_stock": 3 }

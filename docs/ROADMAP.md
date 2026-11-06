@@ -950,7 +950,7 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
   - **Also (director 2026-11-04, BUILD_DEPTH §4.7):** the third relic slot holds shop-only relics (`sources` exactly `["merchant"]`, falling back to normal stock), plus about 3 shop-only relics, one of which expands the shop; curse cards (D38 = A) are removed through the normal card removal.
   - **Close:** item 35 (builds) gets the map; OPEN_ITEMS asks whether the relic route feels different.
   - **Folded in at MAP1's close (game-lead, 2026-11-05):**
-    - **D40 (a rest on every route):** build the director's answer. The default is A: a `min_rest` 1 path rule, checked by the sweep.
+    - **D40 = A (director, 2026-11-06):** a rest on every route. A `min_rest` 1 path rule, checked by the sweep.
     - **gameplay-dev, from the MAP1 qa carry-overs:**
       - add `--no-map` to the `removal_screen` and `bd2_relic_*` presets;
       - fix the `MapGenerator.gd:59` script error when no type is a candidate.
@@ -964,7 +964,7 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
   - **Split and scope (game-lead, 2026-11-06; DECISIONS "MAP2 split").** gameplay-dev works in two sittings, then ux, qa, playtest and docs run once each.
     - **Blocker found while scoping: the relic pool is too small.** There are 6 relics. A Rogue can be offered 6 of them, a Wizard 5 (no Wizard-pool relic). A relic hunter would empty the pool before the merchant, so the 6-8 target can't be met. MAP2 therefore adds 4 pool relics and 3 shop-only relics, which gives each class 11 eligible relics.
     - **MAP2-A, the merchant engine (gameplay-dev). Nothing changes for the player except the D40 rule.**
-      1. **D40 default A:** a `min_rest` 1 path rule in `data/map.json` `path_rules`, validated, checked on every path, and covered by the sweep.
+      1. **D40 = A (director, 2026-11-06):** a `min_rest` 1 path rule in `data/map.json` `path_rules`, validated, checked on every path, and covered by the sweep.
       2. `run.json` `merchant` block (card price 40, removal 50 + 25 per removal, relic stock 3, card stock 3) and `relics.prices` (tier1 60, tier2 90, tier3 130; boss never sold), validated.
       3. A merchant model (no UI):
          - **stock seeded from the run seed and node id:** 2 relics from source `merchant` through the BD2 offer function, plus a third slot that holds only shop-only relics (`sources` exactly `["merchant"]`) and falls back to normal stock when none is eligible; 3 cards by the reward weights; removal;

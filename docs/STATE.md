@@ -26,7 +26,7 @@ Last updated: 2026-11-06 (MAP2 scoped and split; **MAP2-A in progress, gameplay-
     - MAP2 (gameplay-dev and ux lists, folded into the MAP2 brief);
     - MAP3 save robustness (`from_dict` node-pending soft lock, negative gold, the large chest `min_tier` 2 back once tier 3 relics exist);
     - BD3 (the Wizard on elite-heavy routes).
-  - **New director decision D40:** a rest on every route. The default A is built in MAP2.
+  - **New director question D40:** a rest on every route (answered A on 2026-11-06).
   - **Director feedback 2026-11-05:** "relics feel fun so far, builds are starting to get more exciting". It's recorded in the CHANGELOG, and item 49 is archived in RESOLVED; c4bda37 did both.
 - **BD2 closed 2026-11-05:** split into two gameplay-dev sittings (DECISIONS "BD2 split").
   - **Commits:**
@@ -99,7 +99,8 @@ Last updated: 2026-11-06 (MAP2 scoped and split; **MAP2-A in progress, gameplay-
 - **MAP2, the merchant. Scoped and split 2026-11-06** (ROADMAP MAP2, "Split and scope"; DECISIONS "MAP2 split").
   - **Order:** MAP2-A (the merchant engine, D40 `min_rest`, MAP1 carry-overs) -> MAP2-B (7 relics, the run flow, the sim override, bots, getting the suite ready for the switch) -> ux (panel, carry-overs, switches the merchant on) -> qa -> playtester -> tech-writer -> close.
   - **Found while scoping:** the relic pool was too small for the 6-8 hunter target (Rogue 6 eligible, Wizard 5). MAP2-B adds 4 pool relics and 3 shop-only relics (BUILD_DEPTH §4.7, "MAP2 relic picks").
-  - D40 isn't answered yet, so the build uses default A.
+  - **D40 = A (director, 2026-11-06):** a rest on every route, recorded in GDD §9 and MAP.md §3. MAP2-A builds it.
+  - **Pending for tech-writer (MAP2 docs pass):** archive D40 with his answer in RESOLVED (the OPEN_ITEMS text is in commit 4145235), and add a CHANGELOG `[Director decision]` entry: every route has at least 1 rest (`min_rest` 0 -> 1).
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step
@@ -108,9 +109,9 @@ Last updated: 2026-11-06 (MAP2 scoped and split; **MAP2-A in progress, gameplay-
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).
 
-**D-numbers:** D21-D33 answered (D31 = A, D32 = A + three acts, D33 = B on 2026-11-04). D34 = C, D35 = A, D36 = A answered 2026-11-04. D37 = A (dig relic at rest), D38 = A (curse cards) answered 2026-11-04. D39 = A (dodge isn't a Movement cast) answered 2026-11-04. D40 open (a rest on every route). Next free: D41.
+**D-numbers:** D21-D33 answered (D31 = A, D32 = A + three acts, D33 = B on 2026-11-04). D34 = C, D35 = A, D36 = A answered 2026-11-04. D37 = A (dig relic at rest), D38 = A (curse cards) answered 2026-11-04. D39 = A (dodge isn't a Movement cast) answered 2026-11-04. D40 = A (a rest on every route) answered 2026-11-06. Next free: D41.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: D40 (a rest on every route, default A); eyes 50 (play the map, new), 49, 48, 47 and 35; the round 2 vision check is due. Answered items are in `docs/RESOLVED.md`.
+All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions open; eyes 50 (play the map, new), 49, 48, 47 and 35; the round 2 vision check is due. Answered items are in `docs/RESOLVED.md`.

@@ -137,8 +137,10 @@ var _no_relics: bool = false
 var _swap_out: String = ""
 var _swap_in: String = ""
 ## `--sim-route=first|relic|safe|random` (wave sim -Route, run mode, MAP1-B): the runs walk the branching map and the bot follows that route policy (RouteBot).
-## `--sim-map` (-Map) turns the map on with the `first` route. Either one forces the map on for this process (data/map.json stays off). "" = the straight run.
+## `--sim-map` (-Map) turns the map on with the `first` route. Either one forces the map on for this process. "" = whatever data/map.json says (on as shipped); `--sim-no-map` forces the straight run.
 var _route_policy: String = ""
+## `--sim-no-map` (-NoMap): the straight run, whatever data/map.json says (RunSession.map_override = 0). Not combinable with -Route / -Map.
+var _no_map: bool = false
 var _route: Array[int] = []
 ## Damage the player's side dealt to enemies, by origin, for the current run and for all runs (BD2-B; run mode). Fed by CombatEvents.hit_landed.
 var _damage_run: Dictionary = {}
@@ -214,6 +216,8 @@ func _ready() -> void:
 			RunSession.relic_cap = arg.substr(16).to_int()
 		elif arg == "--sim-no-relics":
 			_no_relics = true
+		elif arg == "--sim-no-map":
+			_no_map = true
 		elif arg == "--sim-map":
 			if _route_policy == "":
 				_route_policy = "first"
@@ -240,6 +244,12 @@ func _ready() -> void:
 		push_error("wave sim: -Route and -Map need -Run")
 		get_tree().quit(2)
 		return
+	if _no_map and _route_policy != "":
+		push_error("wave sim: -NoMap cannot be combined with -Route or -Map")
+		get_tree().quit(2)
+		return
+	if _no_map:
+		RunSession.map_override = MapLaunch.OVERRIDE_OFF
 	if _route_policy != "":
 		RunSession.map_override = MapLaunch.OVERRIDE_ON
 	if _no_relics:

@@ -259,6 +259,12 @@ func test_a_chest_size_picks_its_tier_row() -> void:
 	assert_float(float(large["tier1"])).is_equal(5.0)
 	assert_float(float(large["tier2"])).is_equal(25.0)
 	assert_float(float(large["tier3"])).is_equal(70.0)
+	var strict: Dictionary = chests.duplicate(true)  # the min_tier filter itself: a large chest at min_tier 2 never rolls tier 1 (it did before MAP1 ux)
+	(strict["large"] as Dictionary)["min_tier"] = 2
+	assert_float(float(RunNodes.chest_weights("large", 1, strict, rows)["tier1"])).is_equal(0.0)
+	assert_float(float(RunNodes.chest_weights("large", 1, strict, rows)["tier2"])).is_equal(25.0)
+	(strict["large"] as Dictionary)["min_tier"] = 3
+	assert_float(float(RunNodes.chest_weights("large", 1, strict, rows)["tier2"])).is_equal(0.0)
 	assert_str(JSON.stringify(RunNodes.chest_weights("large", 2, chests, rows))).is_equal(JSON.stringify(large))  # a fixed row whatever the act
 	assert_float(float(RunNodes.chest_weights("medium", 3, chests, rows)["tier3"])).is_equal(70.0)  # past the last row: the highest row
 	assert_dict(RunNodes.chest_weights("huge", 1, chests, rows)).is_empty()

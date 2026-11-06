@@ -360,6 +360,27 @@ func test_offers_for_a_wizard_never_hold_a_rogue_card_and_vice_versa() -> void:
 func test_a_wizard_run_in_the_scene_offers_only_wizard_fire_and_neutral_cards() -> void:
 	RunSession.selected_character = "wizard"
 	RunSession.begin_new_run(21)
+	await _clear_room_and_check_offer_pools()
+
+
+## MAP1: the same on a map run, standing in a combat node (the first room-1 node).
+func test_a_wizard_map_run_combat_node_offers_only_wizard_fire_and_neutral_cards() -> void:
+	RunSession.map_override = 1
+	RunSession.selected_character = "wizard"
+	var state: RunState = RunSession.begin_new_run(21)
+	var node_id: int = -1
+	for id: int in MapGraph.start_ids(state.map):
+		if String(MapGraph.node(state.map, id)["type"]) == "combat":
+			node_id = id
+			break
+	assert_int(node_id).is_not_equal(-1)
+	state.path = [node_id] as Array[int]
+	state.room_index = 0
+	state.pending = RunState.PENDING_NONE
+	await _clear_room_and_check_offer_pools()
+
+
+func _clear_room_and_check_offer_pools() -> void:
 	var main: Main = _spawn_run()
 	await get_tree().process_frame
 	var table: Dictionary = WaveConfig.get_config().duplicate(true)

@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-11-05 (BD2 closed; latest tag `playtest-2026-11-05-BD2`)
-**Status: nothing waiting on a decision; 4 things to look at (49 new, 48, 47, 35), plus the round 2 vision check, which is now due. Next: MAP1 (map, treasure chests) -> MAP2 (merchant, shop-only relics) -> MAP3 (three acts, save and resume, rare/legendary cards, boss relics) -> MAP4 (events, curse cards, sacrifices, rest dig; probably two sittings) -> 3d (loadouts, starter relic).**
+**Status: 1 decision (D40, a rest on every route); 4 things to look at (49, 48, 47, 35), plus the round 2 vision check, which is now due. MAP1 (the map) is being wrapped up. Next: MAP2 (merchant, shop-only relics) -> MAP3 (three acts, save and resume, rare/legendary cards, boss relics) -> MAP4 (events, curse cards, sacrifices, rest dig; probably two sittings) -> 3d (loadouts, starter relic).**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -17,7 +17,13 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## Needs your decision
 
-Nothing right now. Your D39 = A (the dodge doesn't count as a Movement cast) is recorded in GDD §4a. Next new number: D40.
+**D40. Should every map route have a rest?** (from the MAP1 playtest)
+- **The problem:** today a route can have no rest at all. 3 of the 4 Rogue routes the playtester looked at had none, and on some maps the "safe" route is the same as the plain one. So picking a careful route often isn't a real option.
+- **A (my default):** every path from room 1 to the boss has at least 1 rest (a new `min_rest` 1 path rule; the limit of 2 stays). Built with MAP2. It costs a little map variety and maybe a few more redraws when a map is generated.
+- **B:** no guarantee. Rests stay random, and the risk of a route with no rest is part of the game.
+- **C:** a fixed rest right before the boss, on room 9 for every path, as in Slay the Spire. It's predictable, and it removes room 9 as a choice.
+
+Without an answer, MAP2 builds A. Next new number: D41.
 
 ## Needs your eyes
 

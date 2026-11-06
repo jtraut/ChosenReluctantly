@@ -923,6 +923,24 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
         - `from_dict` accepts negative gold.
 
         Skipped regression tests for both exist in `map1_qa_test.gd`.
+  - **Playtest: no blocker** (`docs/playtests/2026-11-05-map1-short.md`, e1e31b5). Captures, a scripted launch, and 48 bot runs on seeds 100-107; no hand play.
+    - **Works:**
+      - the map reads at 1024x600 and 720p;
+      - the default focus is safe;
+      - the relic label fixes the BD2 "what exploded?" complaint;
+      - relic routes paid off (8/8 for both classes).
+    - **Carry-overs, ux, with MAP2's ux step:**
+      - show the chest size on the relic-room offer screen (it says "Relic room" for every size);
+      - skip the forced one-option pick at room 9 -> boss, or make it read as "Face the boss";
+      - small legend text, about 11 px, and the tiny small-chest dot at 1024x600;
+      - the Spite Knuckles pips are tiny;
+      - the Skip line "leaves your card rejects alone" reads oddly.
+    - **Resolved by the next slices, not changed now:**
+      - Gold has no stated use. The MAP2 merchant comes next, so ux adds the spend line then.
+      - Medium and large chests are near-identical. Tier 3 relics come in MAP3.
+      - Bot runs take 3-6.5 min, against the 30-45 min target. That target is for three acts (MAP3), and bot time isn't human time.
+    - **Kept as built:** room 1's two start nodes are both combat. Rooms 1-2 are fixed combat in MAP.md §3, to ease the player in, and they differ by wave list.
+    - **Proposal to the director: D40,** a rest on every route. Many routes have no rest at all; 3 of the 4 Rogue `first` routes the playtester saw had none. This also covers "safe" routes that equal `first`.
 - [ ] **MAP2, the merchant (right after MAP1). Full loop. Tag `playtest-YYYY-MM-DD-MAP2`.** Plan: `docs/MAP.md` §4.4.
   - **Goal:** gold buys things. The merchant sells several relics at once (D22 = C), cards and card removal.
   - **gameplay-dev:** merchant node (`map.json` weight about 8, `max_merchants` 1); stock seeded from run seed and node id: 3 relics from source `merchant` (BD2 offer function; no owned or given-up relics; at the cap, buying uses BD2's give-one-up step), 3 cards at 40 (reward weights), removal 50 then +25 per removal (through `can_remove`); `run.json` `merchant` and `relics.prices` by tier (60/90/130; boss tier never sold); RunState `merchant_removals` + save; `relic_route` back to [6, 8]. Bots: the `relic` route buys relics first, `safe` buys a removal then a card.

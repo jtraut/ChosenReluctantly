@@ -266,7 +266,7 @@ func test_skip_is_free_it_is_not_the_reject_tile() -> void:
 	assert_int(skip.look).is_equal(RunOptionCard.Look.SKIP_FREE)
 	assert_object(skip.free_tag).is_not_null()
 	assert_str(skip.title_label.text).is_equal(String(RunConfig.ui()["relic"]["skip_label"]))
-	assert_str(skip.detail_label.text).contains("does not use a reject")
+	assert_str(skip.detail_label.text).contains("leaves your card rejects alone")
 	assert_bool(skip._pips == null).is_true()  # a reject draws pips; a free skip must not
 
 
@@ -446,6 +446,9 @@ func test_the_hud_row_follows_the_run_and_flashes_on_the_controllers_trigger_sig
 
 func test_the_pause_screen_lists_owned_relics_and_notes_the_given_up_ones() -> void:
 	var main: Main = await _spawn_run(["pyre_insurance", "heavy_sigh"] as Array[String], ["spite_knuckles"] as Array[String])
+	_window_size = get_window().size
+	get_window().size = Vector2i(1280, 720)  # MAP1: the flavour lines only go when the list would not fit above the slots (1024x600 drops them, see map1_ux_test)
+	await _frames(3)
 	var screen: SettingsScreen = main.get_node("SettingsScreen")
 	assert_bool(screen.open()).is_true()
 	await _frames(3)
@@ -598,7 +601,7 @@ func test_a_slot_shows_the_ended_mark_after_its_prime_goes_and_the_marker_font_h
 func test_short_conditions_read_from_the_card_and_the_dodge_note_follows_the_rule() -> void:
 	var texts: Dictionary = RunConfig.ui()["slot_condition"]
 	assert_str(ConditionCue.short_text(CardDatabase.get_card("fire_fan_the_flames"), texts)).is_equal("Needs Burn")
-	assert_str(ConditionCue.short_text(CardDatabase.get_card("rogue_drive_by"), texts)).is_equal("After Move")
+	assert_str(ConditionCue.short_text(CardDatabase.get_card("rogue_drive_by"), texts)).is_equal("After Move (%s)" % InputLabels.slot_key("movement"))
 	assert_str(ConditionCue.short_text(CardDatabase.get_card("fire_kindling"), texts)).is_equal("")  # no condition, no line
 	var slots: Array = RunConfig.ui()["option"]["dodge_slots"]
 	assert_bool(ConditionCue.needs_dodge_note(CardDatabase.get_card("rogue_drive_by"), slots, false)).is_true()
@@ -614,7 +617,7 @@ func test_a_slot_holding_a_conditional_card_keeps_a_dim_reason_and_the_row_fit_i
 	var widget: CardSlotWidget = hud.slot_widgets[0]
 	var slot := CardSlot.new("movement", 1.0, ["rogue_drive_by"] as Array[String])
 	widget.update_from_slot(slot)
-	assert_str(widget.condition_short()).is_equal("After Move")
+	assert_str(widget.condition_short()).is_equal("After Move (%s)" % InputLabels.slot_key("movement"))  # MAP1: names the key; drawn as a tag above the slot
 	widget.update_from_slot(null)
 	assert_str(widget.condition_short()).is_equal("")
 	# No row was added: the five rows still fit the slot at the smallest size.

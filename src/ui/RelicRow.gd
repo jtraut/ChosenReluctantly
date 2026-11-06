@@ -11,6 +11,8 @@ extends Control
 
 ## The set of relics shown changed (the HUD re-sizes the row).
 signal relics_set()
+## A held relic fired (the floating relic cue listens; MAP1).
+signal triggered(relic_id: String)
 
 var _cfg: Dictionary = {}
 var _scale: float = 1.0
@@ -21,13 +23,15 @@ var _tag_left: float = 0.0
 var _controller: RunController = null
 var _host: Node = null
 var _manager: RelicManager = null
+## relic id -> matches counted so far, for relics with an every-Nth trigger (the "2/4" counter).
+var _progress: Dictionary = {}
 
 
 ## `{id, name, mark, color}` for a relic id. An id the data does not have still gives a chip.
 static func entry_for(relic_id: String) -> Dictionary:
 	var relic: Dictionary = RelicDatabase.get_relic(relic_id)
 	var relic_name: String = String(relic.get("name", relic_id))
-	return {"id": relic_id, "name": relic_name, "mark": RelicFlash.initials(relic_name), "color": PoolDatabase.frame_color_for_pool(String(relic.get("pool", "")))}
+	return {"id": relic_id, "name": relic_name, "mark": RelicFlash.initials(relic_name), "nth": RelicProgress.nth_of(relic_id), "color": PoolDatabase.frame_color_for_pool(String(relic.get("pool", "")))}
 
 
 func _ready() -> void:
@@ -70,6 +74,13 @@ func set_relics(ids: Array[String]) -> void:
 	_entries.clear()
 	for relic_id: String in ids:
 		_entries.append(entry_for(relic_id))
+	var names: Array[String] = []
+	for entry: Dictionary in _entries:
+		names.append(String(entry["name"]))
+	var marks: Array[String] = RelicFlash.unique_marks(names)  # two relics never share a mark
+	for i in range(_entries.size()):
+		_entries[i]["mark"] = marks[i]
+	_progress.clear()
 	for key: Variant in _flashes.keys():
 		if not ids.has(String(key)):
 			_flashes.erase(key)
@@ -88,6 +99,7 @@ func on_trigger(relic_id: String, _trigger_index: int = 0, _event_id: String = "
 		held = held or String(entry["id"]) == relic_id
 	if not held:
 		return
+	triggered.emit(relic_id)
 	var old: Dictionary = _flashes.get(relic_id, RelicFlash.fresh())
 	_flashes[relic_id] = RelicFlash.trigger(old, float(_cfg.get("relic_flash_hold", 0.5)), float(_cfg.get("relic_count_window", 1.5)))
 	_tag_name = String(entry_for(relic_id)["name"])
@@ -102,7 +114,7 @@ func flash_state(relic_id: String) -> Dictionary:
 func _process(delta: float) -> void:
 	if _controller == null:
 		_poll_manager()
-	var animating: bool = _tag_left > 0.0
+	var animating: bool = _tag_left > 0.0 or _poll_progress()
 	if _tag_left > 0.0:
 		_tag_left = maxf(_tag_left - delta, 0.0)
 	for key: Variant in _flashes.keys():
@@ -115,6 +127,28 @@ func _process(delta: float) -> void:
 			_flashes.erase(key)
 	if animating:
 		queue_redraw()
+
+
+## Reads the every-Nth counters from the room's manager; true when one changed (so the row redraws).
+func _poll_progress() -> bool:
+	var changed: bool = false
+	var manager: Node = _controller.relic_manager() if _controller != null else _manager
+	for entry: Dictionary in _entries:
+		if int(entry["nth"]) <= 1:
+			continue
+		var matches: int = RelicProgress.matches_of(manager, String(entry["id"]))
+		if matches != int(_progress.get(String(entry["id"]), RelicProgress.NO_PROGRESS - 1)):
+			_progress[String(entry["id"])] = matches
+			changed = true
+	return changed
+
+
+## The counter text on a chip ("2/4"), or "" for a relic without one or while the manager can't say.
+func counter_text(relic_id: String) -> String:
+	for entry: Dictionary in _entries:
+		if String(entry["id"]) == relic_id:
+			return RelicProgress.text(int(_progress.get(relic_id, RelicProgress.NO_PROGRESS)), int(entry["nth"]))
+	return ""
 
 
 ## Arena scenarios: find the RelicManager the scenario adds to the host, follow its relic list and its triggers.
@@ -161,9 +195,26 @@ func _draw() -> void:
 			# The flash is a bright outer ring that grows a little as well as a brighter tile, so it does not rest on colour alone.
 			draw_rect(rect.grow(frame_w * (0.5 + level)), Color(lit, level), false, maxf(frame_w * 0.8, 2.0))
 		var mark: String = String(entry["mark"])
+		var counter_label: String = counter_text(String(entry["id"]))
 		var text_size: Vector2 = font.get_string_size(mark, HORIZONTAL_ALIGNMENT_LEFT, -1.0, px)
-		var base := Vector2(rect.position.x + (rect.size.x - text_size.x) * 0.5, rect.position.y + (rect.size.y + font.get_ascent(px) - font.get_descent(px)) * 0.5)
+		var mark_mid: float = rect.position.y + rect.size.y * (0.4 if counter_label != "" else 0.5)
+		var base := Vector2(rect.position.x + (rect.size.x - text_size.x) * 0.5, mark_mid + (font.get_ascent(px) - font.get_descent(px)) * 0.5)
 		draw_string(font, base, mark, HORIZONTAL_ALIGNMENT_LEFT, -1.0, px, back if level > 0.6 else text_color)
+		if counter_label != "":
+			# Progress to the next firing of an every-Nth relic, as N pips along the chip's bottom edge: filled = counted so far (the text is
+			# `counter_text`, "2/4"). Pips stay legible at any chip size, where a number would collide with the mark.
+			var nth: int = int(entry["nth"])
+			var done: int = int(_progress.get(String(entry["id"]), 0)) % nth
+			var inner: Rect2 = rect.grow(-frame_w)
+			var pip_h: float = maxf(roundf(4.0 * _scale), 3.0)
+			var gap_px: float = maxf(roundf(1.5 * _scale), 1.0)
+			var pip_w: float = (inner.size.x - gap_px * float(nth - 1)) / float(nth)
+			for k in range(nth):
+				var pip := Rect2(Vector2(inner.position.x + float(k) * (pip_w + gap_px), inner.end.y - pip_h), Vector2(pip_w, pip_h))
+				if k < done:
+					draw_rect(pip, lit)
+				else:
+					draw_rect(pip, Color(text_color, 0.28))
 		var counter: String = RelicFlash.count_text(state)
 		if counter != "":
 			var cs: Vector2 = font.get_string_size(counter, HORIZONTAL_ALIGNMENT_LEFT, -1.0, px)

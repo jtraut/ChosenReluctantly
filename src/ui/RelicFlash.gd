@@ -51,3 +51,27 @@ static func initials(relic_name: String) -> String:
 	if words.size() == 1:
 		return words[0].substr(0, 2).capitalize() if words[0].length() > 1 else words[0].to_upper()
 	return (words[0].substr(0, 1) + words[1].substr(0, 1)).to_upper()
+
+
+## Marks for a set of relic names that never repeat inside the set: the usual initials, and when two relics would share one, each clashing relic
+## tries longer forms from its own words ("Pyre Insurance" and "Pyre Ice" -> "PyIn" and "PyIc") until none is taken. Deterministic.
+static func unique_marks(names: Array[String]) -> Array[String]:
+	var marks: Array[String] = []
+	for relic_name: String in names:
+		marks.append(initials(relic_name))
+	var counts: Dictionary = {}
+	for mark: String in marks:
+		counts[mark] = int(counts.get(mark, 0)) + 1
+	for i in range(names.size()):
+		if int(counts[marks[i]]) <= 1:
+			continue
+		var words: PackedStringArray = names[i].get_slice("(", 0).strip_edges().split(" ", false)
+		if words.size() < 2:
+			continue
+		var second: String = words[1]
+		for length in range(2, second.length() + 1):
+			var candidate: String = words[0].substr(0, 1).to_upper() + second.substr(0, length).capitalize()
+			if not marks.has(candidate):
+				marks[i] = candidate
+				break
+	return marks

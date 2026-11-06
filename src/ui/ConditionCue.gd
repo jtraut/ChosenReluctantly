@@ -25,6 +25,10 @@ static func _short(condition: Dictionary, texts: Dictionary) -> String:
 			if condition.has("slot_type"):
 				var slot_type: String = String(condition["slot_type"])
 				var short_names: Dictionary = texts.get("slot_short", {})
+				var key: String = InputLabels.slot_key(slot_type)
+				if String(texts.get("cast_within_slot_key", "")) != "" and key != "" and key != "?":
+					# "After Move (Ctrl)": the player acts on a key, not on a slot name.
+					return String(texts["cast_within_slot_key"]) % [String(short_names.get(slot_type, InputLabels.slot_name(slot_type))), key]
 				return String(texts.get("cast_within_slot", "")) % String(short_names.get(slot_type, InputLabels.slot_name(slot_type)))
 			return String(texts.get("cast_within_tag", "")) % String(condition.get("tag", ""))
 		EffectCondition.ZONE_ACTIVE:

@@ -234,25 +234,32 @@ func _draw_cues(r: Rect2, inset: float) -> void:
 	_overlay.draw_rect(Rect2(bar.position, Vector2(bar.size.x * _primed_fraction, bar.size.y)), color)
 
 
-## The dim "why isn't it lit" line, on the left of the key row: short ("Needs Burn", "After Move"). Only while the slot holds a
-## conditional card that is not lit and not primed, so it never fights the LIVE pill or the primed marker. It sits on the overlay,
-## so it adds no row and the five-row fit is untouched.
-func _draw_condition_line(inset: float) -> void:
+## The dim "why isn't it lit" tag ("Needs Burn", "After Move (Ctrl)"). It sits as a small pill just above the slot frame, not in the key row:
+## the key row only had about 45 px beside the key at 1024x600, so "After Move" came out as "After M..." at 9 px. Only while the slot holds a
+## conditional card that is not lit and not primed, so it never fights the LIVE pill or the primed marker. It is drawn on the overlay, so it adds
+## no row and the five-row fit is untouched; the tag is at least `condition_min_font_px` (12) tall text.
+func _draw_condition_line(_inset: float) -> void:
 	if _condition_short == "" or _primed or float(_glow["level"]) >= 0.5 or float(_spent["level"]) > 0.01:
 		return
 	var font: Font = key_label.get_theme_font("font")
-	var base_px: int = maxi(roundi(float(_cfg.get("condition_font_size", 11)) * _scale), int(_cfg.get("condition_min_font_px", 10)))
-	var key_w: float = font.get_string_size(key_label.text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, key_label.get_theme_font_size("font_size")).x
-	var left: float = inset + _px(3.0)
-	var room: float = _overlay.size.x * 0.5 - key_w * 0.5 - _px(4.0) - left
-	if room < 8.0:
-		return
-	var fit: Dictionary = TextFit.fit(_condition_short, font, room, 1, base_px, int(_cfg.get("condition_min_font_px", 10)))
-	var color := Color.html(String(_cfg.get("condition_color", "#b9aeb5")))
+	var base_px: int = maxi(roundi(float(_cfg.get("condition_font_size", 12)) * _scale), int(_cfg.get("condition_min_font_px", 12)))
+	var pad: float = _px(5.0)
+	var room: float = _overlay.size.x - 2.0 * pad
+	var fit: Dictionary = TextFit.fit(_condition_short, font, room, 1, base_px, int(_cfg.get("condition_min_font_px", 12)))
 	var shown_px: int = int(fit["font_size"])
-	var kr := Rect2(key_label.position, key_label.size)
-	var baseline: float = kr.position.y + (kr.size.y + font.get_ascent(shown_px) - font.get_descent(shown_px)) * 0.5 + _px(1.0)
-	_overlay.draw_string(font, Vector2(left, baseline), String(fit["text"]), HORIZONTAL_ALIGNMENT_LEFT, room, shown_px, color)
+	var text: String = String(fit["text"])
+	var text_w: float = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, shown_px).x
+	var h: float = float(shown_px) + _px(6.0)
+	var pill := Rect2(Vector2((_overlay.size.x - text_w) * 0.5 - pad, -h - _px(3.0)), Vector2(text_w + 2.0 * pad, h))
+	var color := Color.html(String(_cfg.get("condition_color", "#b9aeb5")))
+	var box := StyleBoxFlat.new()
+	box.bg_color = Color.html(String(_cfg.get("condition_pill_color", "#1a1218e6")))
+	box.border_color = color
+	box.set_border_width_all(1)
+	box.set_corner_radius_all(roundi(_px(4.0)))
+	_overlay.draw_style_box(box, pill)
+	var baseline: float = pill.position.y + (pill.size.y + font.get_ascent(shown_px) - font.get_descent(shown_px)) * 0.5
+	_overlay.draw_string(font, Vector2(pill.position.x + pad, baseline), text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, shown_px, color)
 
 
 func _px(value: float) -> float:

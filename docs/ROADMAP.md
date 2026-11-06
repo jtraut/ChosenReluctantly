@@ -902,6 +902,27 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
   - **qa:** generator tests (determinism; 1000 seeds with zero failures; every rule on every path; no crossing edges; every node reachable), validator tests, save round trip mid-map, the switch off gives today's straight run and its old bot-sim hash; full suite, headless run, SceneSelfCheck, reload soak; re-baseline the hashes with `-Route first`. Check README and CHANGELOG.
   - **Playtester:** does choosing a route feel like a decision? Is the map readable at a glance? Does the run still last about as long?
   - **Close:** OPEN_ITEMS asks the director to play a run: is the map clear, do the choices matter?
+  - **qa: PASS with carry-overs** (`docs/reviews/2026-11-05-map1-qa.md`; qa 19272da..e1c7c5d).
+    - **Results:** suite 1737 (0 failures, 3 skipped carry-over tests, 137 suites). Hashes unchanged. Soaks OK, including `-Map`. qa's own independent generator sweep (seeds 5000-5999) passed. The c1e flake is root-caused (a test-setup race) and fixed.
+    - **Map-on baselines** (`-Run -Seed 1 -Runs 12`):
+
+      | Route | Rogue | Wizard |
+      |---|---|---|
+      | first | 12/12, 66.2 s | 10/12, 60.6 s |
+      | relic | 12/12, 52.1 s | 11/12, 63.2 s |
+      | safe | 12/12, 58.4 s | 12/12, 65.0 s |
+
+      With `-NoMap`: 12/12, 57.3 s / 62.5 s. The Wizard's two first-route losses are on elite-heavy routes (up to 3 elites, against 1 in the straight run). That's informational, for BD3 tuning.
+    - **Carry-overs:**
+      - **gameplay-dev, with MAP2:**
+        - add `--no-map` to the `removal_screen`, `bd2_relic_room`, `bd2_relic_swap` and `bd2_relic_elite` capture presets, which now land on the wrong rooms;
+        - `MapGenerator.gd:59` script-errors when no type is a candidate (data-only; repro in the review);
+        - delete the dead `_triggers` fallback in `RelicProgress` (a ux file; tell ux, or ux does it with MAP2's ux step).
+      - **gameplay-dev, with MAP3's save robustness:**
+        - `from_dict` keeps `pending: "node"` after it drops a damaged map (soft lock);
+        - `from_dict` accepts negative gold.
+
+        Skipped regression tests for both exist in `map1_qa_test.gd`.
 - [ ] **MAP2, the merchant (right after MAP1). Full loop. Tag `playtest-YYYY-MM-DD-MAP2`.** Plan: `docs/MAP.md` §4.4.
   - **Goal:** gold buys things. The merchant sells several relics at once (D22 = C), cards and card removal.
   - **gameplay-dev:** merchant node (`map.json` weight about 8, `max_merchants` 1); stock seeded from run seed and node id: 3 relics from source `merchant` (BD2 offer function; no owned or given-up relics; at the cap, buying uses BD2's give-one-up step), 3 cards at 40 (reward weights), removal 50 then +25 per removal (through `can_remove`); `run.json` `merchant` and `relics.prices` by tier (60/90/130; boss tier never sold); RunState `merchant_removals` + save; `relic_route` back to [6, 8]. Bots: the `relic` route buys relics first, `safe` buys a removal then a card.

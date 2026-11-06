@@ -1846,3 +1846,11 @@ The boss bar width is now floored to whole pixels.
 - **Rejected:**
   - turning the map back off until every test is fixed (that hides the real shipped state);
   - one role editing every file.
+
+## 2026-11-05 - MAP1 qa: correction and carry-overs routed (game-lead)
+- **Correction to "MAP1-B map run flow calls":** the Rogue relic-route row is **12/12 at 52.1 s**, not 11/12 at 52.9 s. qa ran it twice.
+- **Carry-overs:**
+  - The capture presets that now land on the wrong room, the generator script error and the dead `_triggers` fallback go with MAP2.
+  - The `from_dict` node-pending soft lock and negative gold go with MAP3's save robustness, before any save file exists.
+  - Rejected: fixing them before the MAP1 playtest. None of them is reachable from play or from shipped data.
+- **The playtester uses the `map_*` presets.** For the older `bd2_*` and `removal_screen` presets it adds `--no-map`.

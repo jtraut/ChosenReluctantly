@@ -25,7 +25,7 @@ func test_thousand_seeds_obey_every_rule() -> void:
 		if not problem.is_empty():
 			failures.append("seed %d: %s" % [seed_value, problem])
 	assert_array(failures).override_failure_message("sweep failures:\n" + "\n".join(failures.slice(0, 10))).is_empty()
-	assert_int(worst_attempts).override_failure_message("worst case %d of %d attempts leaves too little headroom" % [worst_attempts, int(cfg["max_attempts"])]).is_less(int(cfg["max_attempts"]) / 2)
+	assert_int(worst_attempts).override_failure_message("worst case %d of %d attempts leaves too little headroom" % [worst_attempts, int(cfg["max_attempts"])]).is_less(floori(float(cfg["max_attempts"]) / 2.0))
 
 
 func _check_map(map: Dictionary, cfg: Dictionary, rules: Dictionary, estimate: Dictionary, route: Array) -> String:

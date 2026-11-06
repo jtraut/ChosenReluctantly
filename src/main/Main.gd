@@ -107,6 +107,8 @@ func _setup_run_mode() -> void:
 	var controller := get_node_or_null("RunController") as RunController
 	if uses_run_mode(run_mode, OS.get_cmdline_user_args()) and controller != null:
 		if RunConfig.is_valid():
+			if not MapConfig.is_valid():  # MAP1-A: a broken data/map.json fails loudly at run start (it reports itself); the run stays straight
+				push_error("data/map.json is invalid, so the run is the straight run. " + "; ".join(MapConfig.load_problems()))
 			run_controller = controller
 			controller.begin(self)
 			return

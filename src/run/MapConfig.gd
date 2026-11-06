@@ -193,25 +193,32 @@ static func _is_whole(value: Variant) -> bool:
 
 # ---- Shipped config ----
 
+## Reads and validates one map file: {config, problems}. `config` is {} when the file is missing, not a JSON object, or breaks a rule
+## (`problems` says why). Pure with respect to the shipped cache, so tests point it at fixtures.
+static func load_from(path: String) -> Dictionary:
+	var table := JsonDataTable.new(path)
+	var raw: Dictionary = {}
+	for key: Variant in table.ids():
+		raw[String(key)] = table.get_raw(String(key))
+	if raw.is_empty():
+		return {"config": {}, "problems": ["%s is missing, empty or not a JSON object" % path] as Array[String]}
+	var problems: Array[String] = validate(raw)
+	if not problems.is_empty():
+		return {"config": {}, "problems": problems}
+	return {"config": raw, "problems": [] as Array[String]}
+
+
 ## The validated shipped config, or {} when missing or invalid (push_error, never a crash; `is_valid()` tells).
 static func get_config() -> Dictionary:
 	if _loaded:
 		return _cache
 	_loaded = true
-	var table := JsonDataTable.new(PATH)
-	var raw: Dictionary = {}
-	for key: Variant in table.ids():
-		raw[String(key)] = table.get_raw(String(key))
-	if raw.is_empty():
-		_load_problems = ["%s is missing, empty or not a JSON object" % PATH]
-		push_error("MapConfig: " + _load_problems[0])
+	var result: Dictionary = load_from(PATH)
+	_load_problems = result["problems"]
+	if not _load_problems.is_empty():
+		push_error("MapConfig: invalid %s: %s" % [PATH, "; ".join(_load_problems)])
 		return _cache
-	var problems: Array[String] = validate(raw)
-	if not problems.is_empty():
-		_load_problems = problems
-		push_error("MapConfig: invalid %s: %s" % [PATH, "; ".join(problems)])
-		return _cache
-	_cache = raw
+	_cache = result["config"]
 	return _cache
 
 

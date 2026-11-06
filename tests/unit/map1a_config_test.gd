@@ -162,3 +162,22 @@ func test_swap_line_one_needs_one_number_and_one_name() -> void:
 	var good := _run_config()
 	good["ui"]["relic"]["swap_line_one"] = "You hold %d relic. Give it up to take %s."
 	assert_array(RunConfig.validate(good, [], [])).is_empty()
+
+
+# --- the file path: a broken map.json fails loudly and loads nothing -------------------------------
+
+const FIXTURES := "res://tests/fixtures/map_bad/"
+
+
+func test_load_from_the_shipped_file_gives_the_config_and_no_problems() -> void:
+	var result: Dictionary = MapConfig.load_from(MapConfig.PATH)
+	assert_array(result["problems"]).is_empty()
+	assert_bool((result["config"] as Dictionary).is_empty()).is_false()
+
+
+func test_broken_files_give_no_config_and_a_reason() -> void:
+	var expected: Dictionary = {"not_json.json": "missing, empty or not a JSON object", "array.json": "missing, empty or not a JSON object", "unknown_key.json": "unknown key 'bogus'", "bad_window.json": "map.types.elite.rooms", "does_not_exist.json": "missing, empty or not a JSON object"}
+	for file_name: String in expected:
+		var result: Dictionary = MapConfig.load_from(FIXTURES + file_name)
+		assert_bool((result["config"] as Dictionary).is_empty()).override_failure_message("%s loaded" % file_name).is_true()
+		assert_bool(_has(result["problems"], String(expected[file_name]))).override_failure_message("%s: %s" % [file_name, str(result["problems"])]).is_true()

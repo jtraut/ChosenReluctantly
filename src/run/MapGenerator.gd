@@ -71,7 +71,7 @@ static func node_id(room: int, column: int, columns: int) -> int:
 
 
 static func boss_column(columns: int) -> int:
-	return columns / 2
+	return floori(columns / 2.0)
 
 
 # ---- 1. grid ----

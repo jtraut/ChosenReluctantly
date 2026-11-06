@@ -2,13 +2,18 @@ class_name RunIcons
 extends RefCounted
 ## One shape per room type and enemy tier, reused everywhere (room indicator, prompt screens, the marker
 ## above elites and bosses), so the shape carries the meaning when colour does not:
-## combat = circle, elite = diamond, rest = plus, boss = star, relic room = hexagon (BD2-B). Pure geometry, unit-tested.
+## combat = circle, elite = diamond, rest = plus, boss = star, relic room = hexagon (BD2-B). MAP1 adds merchant = square,
+## mini-boss = triangle, curse room = X, buff room = up arrow, so the map reads without colour. Pure geometry, unit-tested.
 
 const SHAPE_CIRCLE := "circle"
 const SHAPE_DIAMOND := "diamond"
 const SHAPE_PLUS := "plus"
 const SHAPE_STAR := "star"
 const SHAPE_HEX := "hex"
+const SHAPE_SQUARE := "square"
+const SHAPE_TRIANGLE := "triangle"
+const SHAPE_X := "x"
+const SHAPE_ARROW := "arrow"
 
 const BY_ID: Dictionary = {
 	"combat": SHAPE_CIRCLE,
@@ -17,6 +22,10 @@ const BY_ID: Dictionary = {
 	"rest": SHAPE_PLUS,
 	"boss": SHAPE_STAR,
 	"relic_room": SHAPE_HEX,
+	"merchant": SHAPE_SQUARE,
+	"mini_boss": SHAPE_TRIANGLE,
+	"curse_room": SHAPE_X,
+	"buff_room": SHAPE_ARROW,
 }
 
 
@@ -37,6 +46,19 @@ static func polygon(shape: String, radius: float) -> PackedVector2Array:
 			pts.append_array([
 				Vector2(-a, -b), Vector2(a, -b), Vector2(a, -a), Vector2(b, -a), Vector2(b, a), Vector2(a, a),
 				Vector2(a, b), Vector2(-a, b), Vector2(-a, a), Vector2(-b, a), Vector2(-b, -a), Vector2(-a, -a),
+			])
+		SHAPE_SQUARE:
+			var q := radius * 0.78
+			pts.append_array([Vector2(-q, -q), Vector2(q, -q), Vector2(q, q), Vector2(-q, q)])
+		SHAPE_TRIANGLE:
+			pts.append_array([Vector2(0, -radius), Vector2(radius * 0.95, radius * 0.72), Vector2(-radius * 0.95, radius * 0.72)])
+		SHAPE_X:
+			for p: Vector2 in polygon(SHAPE_PLUS, radius * 1.1):
+				pts.append(p.rotated(PI * 0.25))
+		SHAPE_ARROW:
+			pts.append_array([
+				Vector2(0, -radius), Vector2(radius * 0.92, -radius * 0.02), Vector2(radius * 0.42, -radius * 0.02), Vector2(radius * 0.42, radius * 0.9),
+				Vector2(-radius * 0.42, radius * 0.9), Vector2(-radius * 0.42, -radius * 0.02), Vector2(-radius * 0.92, -radius * 0.02),
 			])
 		SHAPE_HEX:
 			for i in 6:

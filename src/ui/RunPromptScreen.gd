@@ -135,6 +135,11 @@ func _next_hint(hint: String) -> String:
 ## Opens a choice (RunController.choice_requested): the model's options become buttons in `options_box`.
 ## Placeholder look; ux restyles it. See RunChoices for the option dict.
 func show_choice(model: Dictionary) -> void:
+	if String(model.get("choice", "")) == RunNodes.OPTION_NODE and _map_screen_takes_picks():
+		# MAP1: the map screen owns the pick-next-node choice. A reward panel still open (the pick follows a reward) closes behind it.
+		_pending = {}
+		visible = false
+		return
 	var room_type: String = String(model.get("room_type", ""))
 	var tiers: Dictionary = RunConfig.get_config().get("tiers", {})
 	show_content({
@@ -151,6 +156,12 @@ func show_choice(model: Dictionary) -> void:
 		"icon_shape": RunIcons.shape_for(room_type),
 		"icon_color": RunIcons.color_for(room_type, UiConfig.run_ui(), tiers),
 	})
+
+
+## True when the run has a MapScreen sibling, which then shows the pick-next-node choice instead of this panel's placeholder list.
+func _map_screen_takes_picks() -> bool:
+	var host: Node = get_parent()
+	return host != null and host.get_node_or_null("MapScreen") is MapScreen
 
 
 ## The relic parts of a choice model (BD2): {} for anything that is not a relic choice, else the give-up step's incoming relic.

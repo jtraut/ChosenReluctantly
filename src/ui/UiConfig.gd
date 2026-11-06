@@ -126,6 +126,56 @@ const DEFAULT_SETTINGS_SCREEN: Dictionary = {
 	"relic_flavor_color": "#c9bcc4",
 }
 
+## The map screen (MAP1): look and sizes (authored at `reference_height`, scaled by viewport height). Words are data/run.json `ui.map`.
+const DEFAULT_MAP_SCREEN: Dictionary = {
+	"reference_height": 720,
+	"margin": 20,
+	"title_font_size": 30,
+	"line_font_size": 17,
+	"gold_font_size": 24,
+	"hover_font_size": 19,
+	"hover_lines": 2,
+	"legend_font_size": 15,
+	"hint_font_size": 15,
+	"node_label_font_size": 14,
+	"room_font_size": 14,
+	"min_font_px": 12,
+	"node_radius_max": 26,
+	"node_radius_cell": 0.3,
+	"chest_scale": {
+		"small": 0.8,
+		"medium": 1.0,
+		"large": 1.22,
+	},
+	"legend_icon_size": 22,
+	"edge_width": 2,
+	"path_edge_width": 6,
+	"reach_edge_width": 4,
+	"ring_width": 4,
+	"dim_alpha": 0.5,
+	"backdrop_color": "#0d080bff",
+	"title_color": "#ffd7a8",
+	"text_color": "#e8dfe3",
+	"hint_color": "#c9bcc4",
+	"room_color": "#9d8f98",
+	"edge_color": "#6b5a66",
+	"path_color": "#ffd7a8",
+	"reach_color": "#ffffff",
+	"current_color": "#ffd7a8",
+	"focus_color": "#ffffff",
+	"gold_color": "#ffd23f",
+	"pip_color": "#1a1218",
+	"button_font_size": 24,
+	"button_min_size": [220, 52],
+	"view_layer": 24,
+	"default_focus_order": ["combat", "rest", "relic_room", "merchant", "buff_room", "curse_room", "elite", "mini_boss", "boss"],
+	"hud_gold_size": [150, 30],
+	"hud_gold_font_size": 20,
+	"hud_gold_gap": 6,
+	"hud_gold_hold": 1.6,
+	"hud_gold_rise": 26,
+}
+
 ## The see-through-enemies cue on the player (Slice 6b): drawn only where something hides them.
 const DEFAULT_PLAYER_OUTLINE: Dictionary = {
 	"enabled": true,
@@ -139,7 +189,7 @@ const DEFAULT_PLAYER_OUTLINE: Dictionary = {
 const DEFAULT_HUD: Dictionary = {
 	"reference_height": 720,
 	"safe_margin": 16,
-	"room_indicator_size": [280, 36],
+	"room_indicator_size": [304, 36],
 	"boss_bar_size": [560, 104],
 	"debug_overlay_gap": 16,
 	"fit_padding": 12,
@@ -509,6 +559,10 @@ static func game_over() -> Dictionary:
 	return merge_with_defaults(DEFAULT_GAME_OVER, _table.get_entry("game_over"))
 
 
+static func map_screen() -> Dictionary:
+	return merge_with_defaults(DEFAULT_MAP_SCREEN, _table.get_entry("map_screen"))
+
+
 static func settings_screen() -> Dictionary:
 	return merge_with_defaults(DEFAULT_SETTINGS_SCREEN, _table.get_entry("settings_screen"))
 
@@ -548,7 +602,7 @@ const DEFAULT_RUN_UI: Dictionary = {
 	"indicator_bg_color": "#0d080bcc",
 	"indicator_border_color": "#f4ece8",
 	"indicator_text_color": "#ffffff",
-	"type_colors": {"combat": "#f4ece8", "elite": "#ffd23f", "rest": "#8fe388", "boss": "#ff3f6c", "relic_room": "#c9a2ff"},
+	"type_colors": {"combat": "#f4ece8", "elite": "#ffd23f", "rest": "#8fe388", "boss": "#ff3f6c", "relic_room": "#c9a2ff", "merchant": "#ffb347", "mini_boss": "#ff7f50", "curse_room": "#5fd6c8", "buff_room": "#7fb8ff"},
 	"prompt_title_font_size": 44,
 	"prompt_subtitle_font_size": 22,
 	"prompt_stat_font_size": 22,

@@ -596,6 +596,23 @@ func test_a_map_run_walks_start_pick_fight_gold_reward_next_pick() -> void:
 	assert_int(room_two.run_controller.gold()).is_equal(expected_gold)
 
 
+func test_the_prompt_stays_open_on_the_next_node_pick_after_a_reward_is_taken() -> void:
+	RunSession.map_override = 1
+	var state := RunSession.begin_new_run(31)
+	state.jump_to_room(1)  # room 2 is always a combat node
+	var main := _spawn()
+	await _frames(3)
+	var screen := main.get_node("RoomClearedScreen") as RunPromptScreen
+	await _win_room(main)
+	assert_bool(screen.is_open()).is_true()
+	assert_str(state.pending).is_equal(RunState.PENDING_REWARD)
+	screen.disarm()
+	screen._on_option_pressed("skip")
+	assert_str(state.pending).is_equal(RunState.PENDING_NODE)
+	assert_bool(screen.is_open()).is_true()  # the pick-next-node choice replaced the reward; the panel must not close on the finished reward
+	assert_int(screen.options_box.get_child_count()).is_equal(RunNodes.reachable_ids(state).size())
+
+
 func test_a_map_relic_stage_opens_its_offer_at_once_and_a_reload_mid_pick_reopens_the_map() -> void:
 	RunSession.map_override = 1
 	var state: RunState = _state_on("relic_room", 1)

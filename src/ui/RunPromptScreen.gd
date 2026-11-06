@@ -645,7 +645,9 @@ func _on_option_pressed(option_id: String) -> void:
 	if _controller == null:
 		return
 	var result: Dictionary = _controller.choose(option_id)
-	if bool(result.get("ok", false)) and bool(result.get("finished", false)):
+	# A finished choice closes the panel, unless the run now asks something else (a map run's pick-next-node choice follows a reward, MAP1-B:
+	# `choice_requested` has already refilled the panel for it).
+	if bool(result.get("ok", false)) and bool(result.get("finished", false)) and not _controller.has_choice():
 		visible = false
 
 

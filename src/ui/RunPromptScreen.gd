@@ -171,8 +171,8 @@ func show_choice(model: Dictionary) -> void:
 ## "Relic room" for all three. Any other choice keeps the model's title.
 func _titled(model: Dictionary, room_type: String) -> String:
 	var title: String = String(model.get("title", ""))
-	if room_type != RunConfig.RELIC_ROOM or _controller == null:
-		return title
+	if room_type != RunConfig.RELIC_ROOM or _controller == null or String(model.get("relic_choice", "")) != "offer":
+		return title  # not a relic room, or its give-one-up step ("Too many relics") which is no offer
 	return chest_title(title, String(_controller.current_room().get("chest", "")))
 
 
@@ -282,7 +282,9 @@ func show_content(content: Dictionary) -> void:
 	if _options.is_empty():
 		button.grab_focus()
 	else:
-		_last_focus = focus_after_refill(old_ids, old_focus, _option_ids(), _enabled_flags(), came_from, screen) if was_open and screen != "" else _default_focus()
+		# Only the shop keeps or restores a highlight. The give-one-up step opens on Cancel and the removal list on its first card whatever had the focus
+		# before (a reflexive Enter must never give a relic away: BD2).
+		_last_focus = focus_after_refill(old_ids, old_focus, _option_ids(), _enabled_flags(), came_from, screen) if was_open and screen == "shop" else _default_focus()
 		_focus_option(_last_focus)
 		_debug_auto_choose()
 
@@ -664,6 +666,46 @@ func _place_shop(in_footer: Array[int], width: float) -> void:
 				spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 				spacer.custom_minimum_size = Vector2(width, 0.0)
 				options_box.add_child(spacer)
+	var footer: Array[Button] = []
+	for i in in_footer:
+		footer.append(_option_buttons[i])
+	_wire_shop_focus(relics, cards, footer)
+
+
+## The arrow keys inside the shop. The grid finds its own neighbours, but the footer (Remove a card, Reroll, Leave) is shorter and lower than the tiles and
+## the engine's geometric search does not always reach it (Leave could not be reached from the tiles). So the footer is wired by hand: left and right along
+## the footer, the last usable tile of each column goes down to the footer (the left column to its first button, the right column to its last) and the
+## footer goes up to the last usable tile of the left or right column. Disabled options (sold, too dear) are skipped, as the keys skip them.
+func _wire_shop_focus(relics: Array[Button], cards: Array[Button], footer: Array[Button]) -> void:
+	var usable: Array[Button] = []
+	for button: Button in footer:
+		if not button.disabled:
+			usable.append(button)
+	if usable.is_empty():
+		return
+	for i in range(usable.size()):
+		var button: Button = usable[i]
+		button.focus_neighbor_left = button.get_path_to(usable[maxi(i - 1, 0)])
+		button.focus_neighbor_right = button.get_path_to(usable[mini(i + 1, usable.size() - 1)])
+		button.focus_neighbor_bottom = button.get_path_to(button)  # nothing below the footer: the key stays put
+	var columns: Array = [relics, cards]
+	var last_usable: Array[Button] = []
+	for column_list: Array in columns:
+		var found: Button = null
+		for tile: Button in column_list:
+			if not tile.disabled:
+				found = tile
+		last_usable.append(found)
+	for c in range(2):
+		var tile: Button = last_usable[c]
+		if tile != null:
+			tile.focus_neighbor_bottom = tile.get_path_to(usable[0] if c == 0 else usable[usable.size() - 1])
+	for i in range(usable.size()):
+		var up_tile: Button = last_usable[0] if (i < int(usable.size() / 2.0) or usable.size() == 1 and last_usable[1] == null) else last_usable[1]
+		if up_tile == null:
+			up_tile = last_usable[0] if last_usable[0] != null else last_usable[1]
+		if up_tile != null:
+			usable[i].focus_neighbor_top = usable[i].get_path_to(up_tile)
 
 
 ## The removal list: one column per HUD slot (same order and keys as the bottom bar), a header per column, cards

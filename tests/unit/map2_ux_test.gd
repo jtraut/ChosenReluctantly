@@ -361,20 +361,46 @@ func test_the_pick_that_leaves_only_the_boss_reads_face_the_boss() -> void:
 	assert_str(screen.line_label.text).not_contains("Spend")
 
 
-func test_the_map_says_where_gold_goes_only_while_a_merchant_is_still_ahead_and_there_is_gold() -> void:
-	var ahead: Array[Dictionary] = [_info(1, "combat", true), _info(2, "merchant", false)]
-	assert_bool(MapLayout.merchant_ahead(ahead)).is_true()
-	var behind: Array[Dictionary] = [_info(1, "combat", true), _info(2, "merchant", false, true)]
-	assert_bool(MapLayout.merchant_ahead(behind)).is_false()
-	var none: Array[Dictionary] = [_info(1, "combat", true)]
-	assert_bool(MapLayout.merchant_ahead(none)).is_false()
-	var map: Dictionary = {"nodes": [{"id": 1, "room": 2, "column": 0, "type": "combat", "wave_id": ""}, {"id": 2, "room": 3, "column": 0, "type": "merchant", "wave_id": ""}, {"id": 3, "room": 3, "column": 1, "type": "combat", "wave_id": ""}], "edges": [[1, 2], [1, 3]]}
-	var data: Dictionary = {"map": map, "path": [0], "reachable": [1], "nodes": ahead, "gold": 25, "gold_earned": 0}
+func test_the_map_says_where_gold_goes_only_while_a_merchant_is_still_reachable_and_there_is_gold() -> void:
+	# 0 start, 1 and 3 on room 2, the merchant 2 on room 3 behind 1; node 3 leads on to 4 (a combat) only.
+	var edges: Array = [[0, 1], [0, 3], [1, 2], [3, 4]]
+	var map: Dictionary = {"nodes": [{"id": 0, "room": 1, "column": 0, "type": "combat", "wave_id": ""}, {"id": 1, "room": 2, "column": 0, "type": "combat", "wave_id": ""},
+		{"id": 2, "room": 3, "column": 0, "type": "merchant", "wave_id": ""}, {"id": 3, "room": 2, "column": 1, "type": "combat", "wave_id": ""}, {"id": 4, "room": 3, "column": 1, "type": "combat", "wave_id": ""}], "edges": edges}
+	var start: Array[Dictionary] = [_info(0, "combat", true), _info(1, "combat", false), _info(2, "merchant", false), _info(3, "combat", false), _info(4, "combat", false)]
+	assert_bool(MapLayout.merchant_ahead(start, edges)).is_true()  # before the first pick, every merchant is ahead
+	var on_node_0: Array[Dictionary] = _with_current(start, 0)
+	assert_bool(MapLayout.merchant_ahead(on_node_0, edges)).is_true()
+	var on_node_1: Array[Dictionary] = _with_current(start, 1)
+	assert_bool(MapLayout.merchant_ahead(on_node_1, edges)).is_true()
+	# took the other branch: the merchant is skipped, whatever its room number
+	var on_node_3: Array[Dictionary] = _with_current(start, 3)
+	assert_bool(MapLayout.merchant_ahead(on_node_3, edges)).is_false()
+	# stood on the merchant (or passed it): not ahead
+	var on_merchant: Array[Dictionary] = _with_current(start, 2)
+	assert_bool(MapLayout.merchant_ahead(on_merchant, edges)).is_false()
+	var none: Array[Dictionary] = [_info(0, "combat", true)]
+	assert_bool(MapLayout.merchant_ahead(none, [])).is_false()
+	var data: Dictionary = {"map": map, "path": [0], "reachable": [1, 3], "nodes": on_node_0, "gold": 25, "gold_earned": 0}
 	var rich: MapScreen = await _map_screen(data)
 	assert_str(rich.line_label.text).contains(String(RunConfig.ui()["map"]["spend_line"]))
 	data["gold"] = 0
 	var broke: MapScreen = await _map_screen(data)
 	assert_str(broke.line_label.text).not_contains(String(RunConfig.ui()["map"]["spend_line"]))
+	data["gold"] = 25
+	data["nodes"] = on_node_3
+	data["path"] = [0, 3]
+	var skipped: MapScreen = await _map_screen(data)
+	assert_str(skipped.line_label.text).not_contains(String(RunConfig.ui()["map"]["spend_line"]))
+
+
+func _with_current(infos: Array[Dictionary], id: int) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for info: Dictionary in infos:
+		var copy: Dictionary = info.duplicate()
+		copy["current"] = int(info["id"]) == id
+		copy["taken"] = int(info["id"]) == id
+		out.append(copy)
+	return out
 
 
 func test_the_merchant_has_a_hover_text_that_says_what_it_sells_and_a_legend_entry() -> void:
@@ -403,3 +429,125 @@ func test_the_relic_skip_line_no_longer_leaves_rejects_alone() -> void:
 	var line: String = String(RunConfig.ui()["relic"]["skip_detail"])
 	assert_str(line).not_contains("alone")
 	assert_str(line).contains("card rejects")
+
+
+func test_a_relic_room_give_one_up_step_keeps_its_own_title() -> void:
+	# The chest size belongs on the offer only. "Too many relics" has the relic room's room_type too, and must not read "(large chest)".
+	var offer_model: Dictionary = {"relic_choice": "offer", "title": "Relic room", "room_type": "relic_room", "options": []}
+	var swap_model: Dictionary = {"relic_choice": "giveup", "title": "Too many relics", "room_type": "relic_room", "options": []}
+	var viewport := SubViewport.new()
+	add_child(viewport)
+	auto_free(viewport)
+	var screen: RunPromptScreen = (load(SCREEN_PATH) as PackedScene).instantiate()
+	viewport.add_child(screen)
+	await _frames(2)
+	assert_str(screen._titled(swap_model, "relic_room")).is_equal("Too many relics")
+	assert_str(screen._titled(offer_model, "relic_room")).is_equal("Relic room")  # no controller here: nothing to look the chest up in
+
+
+func test_buying_a_relic_at_the_cap_opens_the_give_one_up_step_on_cancel_not_on_a_relic() -> void:
+	RunSession.relic_cap = 2
+	var state: RunState = _shop(200, ["pyre_insurance", "heavy_sigh"])
+	var ctx: Dictionary = _ctx()
+	var screen: RunPromptScreen = await _open(Vector2(1024, 600), _model(state))
+	screen.disarm()
+	var buy: Dictionary = {}
+	for option: Dictionary in screen._options:
+		if String(option["kind"]) == "buy_relic" and bool(option["enabled"]):
+			buy = option
+			break
+	var index: int = screen._options.find(buy)
+	screen._option_buttons[index].grab_focus()
+	await _frames(1)
+	var result: Dictionary = RunChoices.apply(state, String(buy["id"]), ctx)
+	assert_str(String(result["kind"])).is_equal("merchant_swap_open")
+	screen.show_choice(_model(state))  # the real refill: the shop was open and the screen is now the swap
+	await _frames(3)
+	assert_str(String(screen._shown["screen"])).is_equal("swap")
+	var focused: Control = screen.get_viewport().gui_get_focus_owner()
+	assert_object(focused).is_not_null()
+	assert_str(String((focused as RunOptionCard).option["id"])).is_equal("merchant_cancel")
+	# the same for the removal list: it never opens on a card cell the old highlight happened to map to
+	var other: RunState = _shop(200)
+	var deck: Array[String] = []
+	for card: Variant in (ctx["cards"] as Array):
+		deck.append(String((card as Dictionary)["id"]))
+	other.deck = deck
+	var shop_screen: RunPromptScreen = await _open(Vector2(1024, 600), _model(other))
+	shop_screen._option_buttons[3].grab_focus()
+	await _frames(1)
+	assert_str(String(RunChoices.apply(other, "merchant_remove_menu", ctx).get("kind", ""))).is_equal("merchant_menu")
+	shop_screen.show_choice(_model(other))
+	await _frames(3)
+	assert_str(String(shop_screen._shown["screen"])).is_equal("remove")
+	assert_int(shop_screen._last_focus).is_equal(shop_screen._first_enabled())
+
+
+## The options the arrow keys can reach from the default focus, by the engine's own neighbour search (the one the keys use).
+func _reachable_by_arrows(screen: RunPromptScreen) -> Array[Button]:
+	var seen: Array[Button] = []
+	var start: Button = screen._option_buttons[screen._default_focus()]
+	var queue: Array[Button] = [start]
+	seen.append(start)
+	while not queue.is_empty():
+		var at: Button = queue.pop_back()
+		for side in [SIDE_TOP, SIDE_RIGHT, SIDE_BOTTOM, SIDE_LEFT]:
+			var next: Control = at.find_valid_focus_neighbor(side)
+			if next is Button and screen._option_buttons.has(next) and not seen.has(next):
+				seen.append(next as Button)
+				queue.append(next as Button)
+	return seen
+
+
+func test_every_enabled_shop_option_can_be_reached_with_the_arrow_keys_at_1024_by_600() -> void:
+	var state: RunState = _shop(200, ["request_for_quotation"])
+	var screen: RunPromptScreen = await _open(Vector2(1024, 600), _model(state))
+	var reached: Array[Button] = _reachable_by_arrows(screen)
+	for button: Button in screen._option_buttons:
+		if not button.disabled:
+			assert_bool(reached.has(button)).override_failure_message("%s cannot be reached by the arrow keys" % String((button as RunOptionCard).option["id"])).is_true()
+	# a real key press moves the highlight too (Down from the first tile)
+	screen.disarm()
+	var first: Button = screen._option_buttons[screen._default_focus()]
+	first.grab_focus()
+	await _frames(1)
+	var down := InputEventKey.new()
+	down.keycode = KEY_DOWN
+	down.physical_keycode = KEY_DOWN
+	down.pressed = true
+	screen.get_viewport().push_input(down)
+	await _frames(2)
+	assert_bool(screen.get_viewport().gui_get_focus_owner() != first).is_true()
+
+
+func test_the_clipped_rows_of_a_long_shop_are_reached_and_scrolled_into_view() -> void:
+	var state: RunState = _shop(200, ["request_for_quotation"])
+	var visit: Dictionary = state.merchant_visit
+	for relic: Variant in RelicDatabase.all_relics():
+		var id: String = String((relic as Dictionary)["id"])
+		if not (visit["relics"] as Array).has(id) and not state.has_relic(id) and Merchant.relic_price(id, _ctx()) > 0:
+			(visit["relics"] as Array).append(id)
+			break
+	for card: Variant in (_ctx()["cards"] as Array):
+		var card_id: String = String((card as Dictionary)["id"])
+		if not (visit["cards"] as Array).has(card_id):
+			(visit["cards"] as Array).append(card_id)
+			break
+	var screen: RunPromptScreen = await _open(Vector2(1024, 600), _model(state))
+	assert_bool(screen.scroll.get_v_scroll_bar().visible).is_true()
+	var reached: Array[Button] = _reachable_by_arrows(screen)
+	for button: Button in screen._option_buttons:
+		if not button.disabled:
+			assert_bool(reached.has(button)).override_failure_message("%s cannot be reached" % String((button as RunOptionCard).option["id"])).is_true()
+	# the last tile of the grid, off the bottom of the scroll area: focusing it brings it into view
+	var last_tile: Button = null
+	for child: Node in screen.options_box.get_children():
+		if child is RunOptionCard:
+			last_tile = child as Button
+	assert_object(last_tile).is_not_null()
+	last_tile.grab_focus()
+	await _frames(4)
+	var area: Rect2 = screen.scroll.get_global_rect()
+	var tile_rect: Rect2 = last_tile.get_global_rect()
+	assert_float(tile_rect.end.y).override_failure_message("the focused last tile is below its scroll area: %s in %s" % [tile_rect, area]).is_less_equal(area.end.y + 1.0)
+	assert_float(tile_rect.position.y).is_greater_equal(area.position.y - 1.0)

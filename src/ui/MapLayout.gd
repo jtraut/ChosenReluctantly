@@ -104,11 +104,31 @@ static func boss_only(infos: Array[Dictionary]) -> bool:
 	return reachable == 1 and boss
 
 
-## True when a merchant node is still ahead (on the map and not walked): the gold line only helps then.
-static func merchant_ahead(infos: Array[Dictionary]) -> bool:
+## True when a merchant node can still be reached: from the node the player stands on, forward along `edges` ([from_id, to_id] pairs). A merchant in a
+## room the player passed, or on a branch that no longer connects, does not count. Before the first pick (no current node) every unwalked merchant does.
+static func merchant_ahead(infos: Array[Dictionary], edges: Array) -> bool:
+	var current: int = -1
 	for info: Dictionary in infos:
-		if String(info.get("type", "")) == "merchant" and not bool(info.get("taken", false)):
+		if bool(info.get("current", false)):
+			current = int(info["id"])
+	var types: Dictionary = {}
+	for info: Dictionary in infos:
+		types[int(info["id"])] = String(info.get("type", ""))
+		if current < 0 and String(info.get("type", "")) == "merchant" and not bool(info.get("taken", false)):
 			return true
+	if current < 0:
+		return false
+	var seen: Dictionary = {current: true}
+	var queue: Array[int] = [current]
+	while not queue.is_empty():
+		var at: int = queue.pop_back()
+		for edge: Variant in edges:
+			var pair: Array = edge
+			if int(pair[0]) == at and not seen.has(int(pair[1])):
+				seen[int(pair[1])] = true
+				if String(types.get(int(pair[1]), "")) == "merchant":
+					return true
+				queue.append(int(pair[1]))
 	return false
 
 

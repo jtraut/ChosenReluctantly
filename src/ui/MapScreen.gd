@@ -313,7 +313,7 @@ func _fill() -> void:
 	if not view and MapLayout.boss_only(_info_list()):
 		title_label.text = String(texts.get("boss_title", title_label.text))  # one way on: say what it is, not "choose your path"
 		line = String(texts.get("boss_line", line))
-	elif int(_data.get("gold", 0)) > 0 and MapLayout.merchant_ahead(_info_list()) and String(texts.get("spend_line", "")) != "":
+	elif int(_data.get("gold", 0)) > 0 and MapLayout.merchant_ahead(_info_list(), (_data.get("map", {}) as Dictionary).get("edges", [])) and String(texts.get("spend_line", "")) != "":
 		line += "  " + String(texts["spend_line"])  # gold has a use: say where
 	line_label.text = line
 	gold_badge.set_total(int(_data.get("gold", 0)))

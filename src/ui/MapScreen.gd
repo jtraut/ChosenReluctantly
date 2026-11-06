@@ -554,7 +554,20 @@ func hover_text(node_id: int) -> String:
 	return text
 
 
+## While the pick is up the room behind it is not paused (the fight is over, the player is alive), so the keys that belong to the fight must not
+## reach it: Space (the dodge, and `ui_accept` on a focused node) and the slot keys and their swaps are swallowed, like RunPromptScreen does. Only
+## Enter confirms a node. In the pause screen's view the tree is paused and none of this applies.
 func _input(event: InputEvent) -> void:
+	if _mode == Mode.PICK and visible and not GamePause.is_paused():
+		var key := event as InputEventKey
+		if key != null:
+			var slot_action: bool = RunPromptScreen.swallows_slot_action(key)
+			if not key.pressed:
+				if slot_action:
+					get_viewport().set_input_as_handled()
+			elif key.keycode == KEY_SPACE or slot_action:
+				get_viewport().set_input_as_handled()
+		return
 	if _mode != Mode.VIEW:
 		return
 	if event.is_action_pressed(&"pause", false) or event.is_action_pressed(&"ui_cancel", false):

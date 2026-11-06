@@ -206,15 +206,16 @@ func _draw() -> void:
 			var nth: int = int(entry["nth"])
 			var done: int = int(_progress.get(String(entry["id"]), 0)) % nth
 			var inner: Rect2 = rect.grow(-frame_w)
-			var pip_h: float = maxf(roundf(4.0 * _scale), 3.0)
+			var pip_h: float = maxf(roundf(5.0 * _scale), 4.0)
 			var gap_px: float = maxf(roundf(1.5 * _scale), 1.0)
 			var pip_w: float = (inner.size.x - gap_px * float(nth - 1)) / float(nth)
+			draw_rect(Rect2(Vector2(inner.position.x, inner.end.y - pip_h - gap_px), Vector2(inner.size.x, pip_h + gap_px)), Color(back, 0.95))  # a dark strip so the pips read on any frame colour
 			for k in range(nth):
 				var pip := Rect2(Vector2(inner.position.x + float(k) * (pip_w + gap_px), inner.end.y - pip_h), Vector2(pip_w, pip_h))
 				if k < done:
 					draw_rect(pip, lit)
 				else:
-					draw_rect(pip, Color(text_color, 0.28))
+					draw_rect(pip, Color(text_color, 0.5))
 		var counter: String = RelicFlash.count_text(state)
 		if counter != "":
 			var cs: Vector2 = font.get_string_size(counter, HORIZONTAL_ALIGNMENT_LEFT, -1.0, px)

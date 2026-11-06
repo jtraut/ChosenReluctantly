@@ -57,6 +57,17 @@ func _sync_gold() -> void:
 		gold_badge.set_total(_controller.gold())
 
 
+## The gold badge sits on layer 10, above the reward panels, so it must step aside for the screens that are not "in the run": the class pick (layer 9)
+## and Game Over (layer 10, earlier in the tree).
+func _process(_delta: float) -> void:
+	if gold_layer == null:
+		return
+	var host: Node = get_parent()
+	var class_pick: CanvasLayer = host.get_node_or_null("ClassPickScreen") as CanvasLayer
+	var game_over: CanvasLayer = host.get_node_or_null("GameOverScreen") as CanvasLayer
+	gold_layer.visible = not ((class_pick != null and class_pick.visible) or (game_over != null and game_over.visible))
+
+
 func _on_gold_changed(total: int, delta: int) -> void:
 	if gold_badge == null:
 		return

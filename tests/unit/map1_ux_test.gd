@@ -106,10 +106,12 @@ func _resize(size: Vector2i) -> void:
 func _key(viewport: Viewport, keycode: Key) -> void:
 	var down := InputEventKey.new()
 	down.keycode = keycode
+	down.physical_keycode = keycode  # a real key event has both; the slot actions are bound by physical key
 	down.pressed = true
 	viewport.push_input(down)
 	var up := InputEventKey.new()
 	up.keycode = keycode
+	up.physical_keycode = keycode
 	up.pressed = false
 	viewport.push_input(up)
 
@@ -350,6 +352,38 @@ func test_a_reflexive_enter_inside_the_arm_delay_picks_nothing_and_a_deliberate_
 	assert_array(picked).is_equal([default_id] as Array[int])
 
 
+class _KeyProbe extends Node:
+	var seen: Array[int] = []
+
+	func _unhandled_input(event: InputEvent) -> void:
+		var key := event as InputEventKey
+		if key != null and key.pressed:
+			seen.append(key.keycode)
+
+
+func test_space_and_the_slot_keys_never_reach_the_fight_behind_the_pick_and_space_never_picks() -> void:
+	var screen: MapScreen = await _spawn_screen()
+	var probe := _KeyProbe.new()
+	add_child(probe)
+	auto_free(probe)
+	var picked: Array[int] = []
+	screen.node_chosen.connect(func(id: int) -> void: picked.append(id))
+	_key(screen.get_viewport(), KEY_SPACE)
+	assert_array(probe.seen).is_equal([KEY_SPACE] as Array[int])  # with the map closed the probe does hear Space: the probe works
+	probe.seen.clear()
+	screen.show_pick(_generated(_four_lane_seed(), 0))
+	await _frames(2)
+	screen.disarm()
+	for key: Key in [KEY_SPACE, KEY_Q, KEY_E, KEY_F, KEY_R]:
+		_key(screen.get_viewport(), key)
+	await _frames(2)
+	assert_array(probe.seen).override_failure_message("a fight key got past the open map: %s" % [probe.seen]).is_empty()
+	assert_array(picked).override_failure_message("Space or a slot key picked a room").is_empty()
+	_key(screen.get_viewport(), KEY_ENTER)  # Enter does
+	await _frames(2)
+	assert_int(picked.size()).is_equal(1)
+
+
 func test_a_click_on_a_node_you_cannot_pick_does_nothing() -> void:
 	var screen: MapScreen = await _spawn_screen()
 	var picked: Array[int] = []
@@ -578,6 +612,41 @@ func test_the_run_hud_shows_gold_in_a_map_run_with_a_plus_n_and_hides_it_in_a_st
 	auto_free(straight)
 	await _frames(3)
 	assert_bool((straight.get_node("RunHud") as RunHud).gold_badge.visible).is_false()
+
+
+func test_the_gold_badge_steps_aside_for_the_class_pick_and_game_over() -> void:
+	RunSession.map_override = 1
+	RunSession.begin_new_run(30)
+	var main: Main = (load(RUN_MAIN_PATH) as PackedScene).instantiate()
+	add_child(main)
+	auto_free(main)
+	await _frames(4)
+	var hud: RunHud = main.get_node("RunHud")
+	var class_pick: CanvasLayer = main.get_node("ClassPickScreen")
+	var game_over: CanvasLayer = main.get_node("GameOverScreen")
+	class_pick.visible = false
+	game_over.visible = false
+	await _frames(2)
+	assert_bool(hud.gold_layer.visible).is_true()
+	class_pick.visible = true
+	await _frames(2)
+	assert_bool(hud.gold_layer.visible).is_false()
+	class_pick.visible = false
+	game_over.visible = true
+	await _frames(2)
+	assert_bool(hud.gold_layer.visible).is_false()
+	game_over.visible = false
+	await _frames(2)
+	assert_bool(hud.gold_layer.visible).is_true()
+
+
+func test_the_condition_tag_above_the_slots_stays_clear_of_the_boss_bar_at_every_size() -> void:
+	var cfg: Dictionary = UiConfig.hud()
+	for size: Vector2 in [Vector2(1024, 600), Vector2(1280, 720), Vector2(1920, 1080)]:
+		var s: float = HudLayout.ui_scale(size, cfg)
+		var tag_top: float = HudLayout.slot_bar_rect(size, cfg, 5).position.y - (float(cfg["condition_font_size"]) + 12.0) * s - 3.0 * s
+		assert_float(tag_top).override_failure_message("the condition tag would touch the boss bar at %s" % size).is_greater(HudLayout.boss_bar_rect(size, cfg).end.y)
+		assert_float(tag_top).is_greater(HudLayout.room_indicator_rect(size, cfg).end.y)
 
 
 func test_the_map_screen_shows_the_gold_total_and_what_the_last_fight_paid() -> void:

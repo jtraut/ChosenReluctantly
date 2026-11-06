@@ -18,6 +18,11 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	BodyFlag.reset()
+	CombatEvents.reset()
+	Juice.reset()
+	GamePause.reset()
+	Engine.time_scale = 1.0
 	RunSession.clear()
 	RunSession.map_override = -1
 	RunConfig.reset_cache()
@@ -928,3 +933,96 @@ func test_the_shipped_data_has_the_merchant_fully_on() -> void:
 	assert_array(MerchantSwitch.shipped_problems()).is_empty()
 	assert_float(float(map["types"]["rest"]["weight"])).is_equal(25.0)
 	assert_int(int(map["max_attempts"])).is_equal(1000)
+
+
+# ---- 12. relic behaviour spot checks that go beyond the dev's: a dense Severance chain and a real Movement cast ----
+
+const MAIN_SCENE_PATH := "res://scenes/main/Main.tscn"
+
+
+func _spawn_main() -> Main:
+	BodyFlag.set_collide(false)
+	CombatEvents.reset()
+	var main: Main = (load(MAIN_SCENE_PATH) as PackedScene).instantiate()
+	(main.get_node("EnemySpawner") as Node).process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(main)
+	auto_free(main)
+	main.player.camera = null
+	main.player.attacks.set_auto(&"light", false)
+	main.player.attacks.set_auto(&"heavy", false)
+	return main
+
+
+func _manager(main: Main, ids: Array[String]) -> RelicManager:
+	var manager := RelicManager.new()
+	main.add_child(manager)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 5
+	manager.configure(main.player, main, rng, CombatEvents)
+	manager.load_relics(ids)
+	return manager
+
+
+func test_a_dense_cluster_of_bleeding_enemies_chains_severance_package_but_the_chain_ends() -> void:
+	var main := _spawn_main()
+	var manager := _manager(main, ["severance_package"] as Array[String])
+	var cluster: Array[RelayTarget] = []
+	for row in range(4):
+		for col in range(4):
+			var t := RelayTarget.new("enemy", 3.0)
+			main.add_child(t)
+			t.global_position = Vector3(float(col) * 1.2, 0.0, -5.0 - float(row) * 1.2)
+			cluster.append(t)
+	for i in range(2):
+		await get_tree().physics_frame
+	for t: RelayTarget in cluster:
+		t.status_manager.apply_status("bleed", StatusDatabase.get_status("bleed"), 30.0, null, "card:x")
+	cluster[0].hurtbox.receive_damage(50.0, "physical", Vector3.ZERO, main.player, Health.KIND_HIT, "light")
+	manager.flush()
+	var fired_after_first: int = manager.fired_total()
+	assert_int(fired_after_first).is_equal(1)
+	var rounds: int = 0
+	var stable_rounds: int = 0
+	var last_total: int = fired_after_first
+	while rounds < 60 and stable_rounds < 5:  # bounded: the loop itself is the "it ends" check
+		for t: RelayTarget in cluster:
+			if is_instance_valid(t) and t.health.current_health > 0.0:
+				t.status_manager._process(1.0)
+		manager.flush()
+		rounds += 1
+		if manager.fired_total() == last_total:
+			stable_rounds += 1
+		else:
+			stable_rounds = 0
+			last_total = manager.fired_total()
+	assert_int(stable_rounds).override_failure_message("the chain was still firing after %d rounds" % rounds).is_equal(5)
+	assert_int(manager.fired_total()).override_failure_message("more bursts than enemies").is_less_equal(cluster.size())
+	var alive: int = cluster.filter(func(t: RelayTarget) -> bool: return is_instance_valid(t) and t.health.current_health > 0.0).size()
+	print("map2_qa severance: 16 bleeders in a 4x4 cluster, %d bursts, %d alive after the chain, %d rounds" % [manager.fired_total(), alive, rounds])
+
+
+func test_asap_notice_cuts_a_real_movement_cooldown_by_fifteen_percent_and_other_slots_by_nothing() -> void:
+	var main := _spawn_main()
+	var movement: CardSlot = main.player.card_slots.get_slot("movement")
+	var utility: CardSlot = main.player.card_slots.get_slot("utility")
+	var mods: StatModifiers = main.player.stat_modifiers
+	movement.cooldown_remaining = 0.0
+	movement.use_card(0.0, mods)
+	var plain: float = movement.last_cooldown_duration
+	utility.cooldown_remaining = 0.0
+	utility.use_card(0.0, mods)
+	var utility_plain: float = utility.last_cooldown_duration
+	assert_float(plain).is_greater(0.0)
+	var manager := _manager(main, ["asap_notice"] as Array[String])
+	movement.cooldown_remaining = 0.0
+	movement.use_card(0.0, mods)
+	assert_float(movement.last_cooldown_duration).is_equal_approx(plain * 0.85, 0.0001)
+	utility.cooldown_remaining = 0.0
+	utility.use_card(0.0, mods)
+	assert_float(utility.last_cooldown_duration).is_equal_approx(utility_plain, 0.0001)
+	manager.remove_relic("asap_notice")
+	movement.cooldown_remaining = 0.0
+	movement.use_card(0.0, mods)
+	assert_float(movement.last_cooldown_duration).is_equal_approx(plain, 0.0001)
+	BodyFlag.reset()
+	CombatEvents.reset()

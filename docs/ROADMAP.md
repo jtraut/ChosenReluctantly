@@ -1062,6 +1062,21 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
         - Paperwork Fire rarely fires on real runs.
         - Watch the Severance Package chains.
     - **Not checked:** nobody has hand-played the shop yet.
+  - **Playtest: no blocker** (`docs/playtests/2026-11-06-map2-short.md`, d503d36). Captures and 40 bot runs (seed 200); no hand play.
+    - **What works:**
+      - the shop's price pills;
+      - the "Need N more gold" line;
+      - "Only sold here";
+      - "Cancel charges nothing";
+      - the map's spend line.
+    - **Rests don't make runs too safe:** about 1.1-1.4 rests per run, and still 6-7 combat rooms.
+    - **Triage (game-lead):**
+      - **The shop opens focused on a purchase. Kept as built.** The prompt's 0.4 s arm delay already stops a carried-over Enter. Focusing Leave by default would make a reflexive Enter throw the whole shop away, which is worse. Ask the director when he plays (eyes item 51).
+      - **Gold is dead on routes with no merchant** (5 of 8 `first`/`safe` routes reached one). Proposal **D42** to the director, default A: no guarantee. Gold carries between acts from MAP3, so a skipped merchant costs less then.
+      - **Prices make relics too easy a pick.** Added to D41 as option D (45/65/90). qa's numbers say that drops the relic route below 6.
+      - **Request for Quotation is in about 79% of shops; Liquidate Assets is weak, and its current value is hidden.** Goes to BD3, with qa's carry-over. Showing Liquidate's current value goes to ux in BD3.
+      - **"No card can go: deck minimums" gives no next step.** The legend square doesn't match the coin. Both go to ux, as MAP3 polish.
+      - **Run length (3-6.5 min of bot play):** MAP3's three acts address it.
 - [ ] **MAP3, three acts (right after MAP2; D33 = B, director 2026-11-04). Full loop. Tag `playtest-YYYY-MM-DD-MAP3`.** Plan: `docs/MAP.md` §1, §4.5, §8. Detailed brief at MAP2's close.
   - **Goal:** a run is three acts of 10 rooms (30 rooms). Acts 1 and 2 end in a mini-boss, act 3 in the final boss. 30-45 minutes per run, and you can save and come back later (GDD §9).
   - **Scope:** acts 2-3 as their own maps; 2 act-end mini-boss encounters (`run.json` `tiers.mini_boss`, existing enemies + adds); act scaling (data multipliers per act; values from the sim, not hand-picked); new wave lists for acts 2-3 (today's 4 combat + 1 elite list would repeat badly); act transition screen ("Act 2"); "Room N of 30"; relics, cards and gold per D34 = C as revised by the director 2026-11-04 (MAP.md §4.5): cap 20, relic tier odds per act, per-act path rules, merchant 80/120/170; act-end mini-bosses give gold, a boss-tier relic (pick 1 of 3, no skip, the only source) and 3 rare (act 1) or 3 legendary (act 2) cards; card `rarity` (common/rare/legendary) with rare from act 2 and legendary from act 3; rejects stay 3 per run (D35 = A). **Content:** about 5+ rare and 4+ legendary cards per class pool, about 6 boss-tier relics per class (a game-lead design pass in BUILD_DEPTH first; they may need new effect code), about 22 tier 1-3 relics per class (15 sketched today). **At MAP2's close, split the rarity and boss-relic content into its own slice (MAP3b) if MAP3 is too big for one sitting.** **Save and resume:** autosave at every room boundary, one slot, `user://` with an injectable path, versioned and validated, built on RunState `to_json`/`equals`; Continue on the start screen; deleted on win or loss; quitting mid-fight restarts the room. Must ship in this slice, not later. **Restore the large chest's `min_tier` 2 in `data/map.json` once tier 3 relics exist (DECISIONS "Large chest", 2026-11-05).** **Save robustness first (moved from 3d item 6a at BD2's qa, game-lead 2026-11-04):** `from_dict` must not crash on wrongly-typed `offer`, `deck` or `choice_log` entries. It must also check that relics and given-up relics don't overlap, that relics fit the cap, and that relic ids exist.

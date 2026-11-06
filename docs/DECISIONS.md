@@ -1994,3 +1994,12 @@ All accepted:
 ## 2026-11-06 - MAP2 qa carry-overs routed (game-lead)
 - **Request for Quotation dominates the shop-only slot** (about 79% of shops). That's because the shop-only slot uses the act's tier weights. **Left as built for MAP2, and goes to BD3.** Rejected: weighting the shop-only slot evenly now, which is a code change after qa PASS for a balance problem a playtest hasn't confirmed.
 - **The flag robustness items, the stale comment, the Liquidate refresh and the at-cap-with-nothing-to-give display go to MAP3 housekeeping.** None of them is reachable through normal play today.
+
+## 2026-11-06 - MAP2 playtest triage (game-lead)
+- **The shop keeps its first-purchase focus.**
+  - The 0.4 s `prompt_option_arm_delay` already catches a carried-over Enter.
+  - **Rejected:** focusing Leave by default, where one reflexive Enter throws away the whole shop.
+  - **Rejected:** a confirm on every purchase, which slows down "buy several then leave".
+  - The director is asked to check it (eyes item 51).
+- **A merchant on every route is a director question (D42, default A: no guarantee).** It changes the map design.
+- **D41 gets the playtester's 45/65/90 as option D.** The default stays A, because the bot evidence says D drops the relic route below the director's 6-8.

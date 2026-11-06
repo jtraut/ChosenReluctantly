@@ -274,7 +274,7 @@ static func shop_price_state(opt: Dictionary, gold: int, texts: Dictionary) -> D
 	if bool(opt.get("sold", false)):
 		return {"text": String(texts.get("sold_tag", "Sold")), "mode": "sold"}
 	if String(opt.get("kind", "")) == "reroll":
-		return {"text": String(texts.get("free_tag", "Free")), "mode": "free"}
+		return {"text": String(texts.get("free_tag", "Free")), "mode": "free" if bool(opt.get("enabled", true)) else "sold"}  # used up: the tag goes grey
 	var text: String = String(texts.get("price_format", "%d")) % price
 	if String(opt.get("reason_code", "")) == "too_expensive":
 		return {"text": text, "mode": "short"}
@@ -350,7 +350,9 @@ func _build_shop(opt: Dictionary, extra: Dictionary, enabled: bool, inner_width:
 	title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	title_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	var separation: float = 6.0 * _scale
-	var left_w: float = band.get_combined_minimum_size().x + tag.get_combined_minimum_size().x + separation * float(band.get_child_count() + 1)
+	# The chips are measured before they are in the tree and come out a fifth short, so the estimate gets that slack. It only decides whether the name
+	# gets its own row; an inline name takes whatever width the row leaves (it is not given a fixed one, so the price tag can never be pushed out).
+	var left_w: float = band.get_combined_minimum_size().x * 1.2 + tag.get_combined_minimum_size().x + separation * float(band.get_child_count() + 1)
 	var name_px: int = roundi(float(title_size) * 0.86)
 	var name_w: float = title_label.get_theme_font("font").get_string_size(name_text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, name_px).x
 	var room: float = inner_width - left_w
@@ -366,7 +368,7 @@ func _build_shop(opt: Dictionary, extra: Dictionary, enabled: bool, inner_width:
 		title_label.custom_minimum_size.x = inner_width
 		_inner.add_child(title_label)
 	else:
-		title_label.custom_minimum_size.x = maxf(room, float(small_size) * 5.0)
+		title_label.custom_minimum_size.x = float(small_size) * 4.0
 		band.add_child(title_label)
 		band.add_child(tag)
 		_inner.add_child(band)

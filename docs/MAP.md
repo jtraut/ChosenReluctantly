@@ -31,7 +31,7 @@ C combat · E elite · R* relic stage · M merchant · Rs rest · (mini-boss and
 |---|---|---|---|---|
 | `combat` | yes | Card offer (pick 1 of 3 or reject), gold 12-18 | 1-9 | MAP1 |
 | `elite` | yes, elite tier | **Relic** offer (pick 1 of 3 or skip; replaces the card offer, BD2 rule), gold 30-40. Never cards. Relic tier odds rise per act (director 2026-11-04, §4.5) | 3-9 | MAP1 |
-| `relic_room` (the "dedicated relic reward stage", D22) | no | Treasure chest, small, medium or large and shown on the map; the size shifts the tier odds. Relic offer (pick 1 of 3 or skip) (BUILD_DEPTH §4.7) | 3-9 | MAP1 |
+| `relic_room` (the "dedicated relic reward stage", D22) | no | Treasure chest, small, medium or large and shown on the map; the size shifts the tier odds. Relic offer (pick 1 of 3 or skip) (BUILD_DEPTH §4.7) | 3-8 (was 3-9; game-lead 2026-11-05, BD2 playtest) | MAP1 |
 | `rest` | no | Today's rest: heal 30% or remove a card (**D31 = A**, director 2026-11-04) | 5-9 | MAP1 |
 | `merchant` | no | Spend gold: **several relics at once** if you can afford them, card removal, cards (§4.3) | 4-9 | MAP2 |
 | **act-end mini-boss** (`mini_boss`, fixed) | yes, new `mini_boss` tier | Gold 60, a **boss-tier relic** offer (the only source), then a card offer: **3 rare** (act 1) or **3 legendary** (act 2) (director 2026-11-04, §4.5) | 10 of acts 1-2 | MAP3 |
@@ -216,7 +216,7 @@ Starting values below are game-lead proposals (DECISIONS 2026-11-04), all data, 
   "types": {
     "combat":     { "weight": 50, "rooms": [1, 9] },
     "elite":      { "weight": 14, "rooms": [3, 9], "no_repeat": true },
-    "relic_room": { "weight": 10, "rooms": [3, 9], "no_repeat": true },
+    "relic_room": { "weight": 10, "rooms": [3, 8], "no_repeat": true },
     "rest":       { "weight": 10, "rooms": [5, 9], "no_repeat": true },
     "merchant":   { "weight": 0,  "rooms": [4, 9], "no_repeat": true },
     "mini_boss":  { "weight": 0,  "rooms": [5, 8], "no_repeat": true },
@@ -269,7 +269,7 @@ Starting values below are game-lead proposals (DECISIONS 2026-11-04), all data, 
   - `gold`, and `merchant_removals` (MAP2).
   - All of it goes into the save round trip and `equals`. A mid-map save restores the position and the open choice.
 - **Determinism:** the same run seed gives the same map and the same rolls (gold and offers are seeded from the run seed and node id). Tested.
-- **Bots:** the bot sim gets a route policy, `-Route first|relic|safe|random`:
+- **Bots:** the run sim (`wave_sim -Run`; corrected 2026-11-05, since the bot sim builds no rooms) gets a route policy, `-Route first|relic|safe|random`:
   - `first`: the lowest column, the default for hash baselines.
   - `relic`: maximizes the relic estimate.
   - `safe`: fewest elite-like nodes; prefers rest.

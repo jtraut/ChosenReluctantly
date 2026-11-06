@@ -7,8 +7,8 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## How to playtest
 
-- **Latest known-good build:** `git checkout playtest-2026-11-05-BD2`, play, then `git checkout main`. The one before it is `playtest-2026-11-04-BD1`.
-- **Relics:** `-- --relics=pyre_insurance+heavy_sigh` starts with relics; `-- --relic-cap=1` tries the give-one-up step. Older tags are in `docs/RESOLVED.md`.
+- **Latest known-good build:** `git checkout playtest-2026-11-05-BD2`, play, then `git checkout main`. The one before it is `playtest-2026-11-04-BD1`. Older tags are in `docs/RESOLVED.md`.
+- **Relics:** `-- --relics=pyre_insurance+heavy_sigh` starts with relics; `-- --relic-cap=1` tries the give-one-up step.
 - **Normal run:** `godot --path .` (10 rooms). Extras: `-- --run-seed=5`, `-- --run-room=10` (boss), `-- --class=wizard`.
 - **Preset decks:** `godot --path . -- --list-decks`, then for example `-- --deck=fire-heavy-rogue --full-deck --run-room=10`.
 - **Keys (since H3):** WASD move · mouse aims · left click light (also auto-fires) · right click heavy · **Space dodges** · **Q, E, F, Ctrl, R** cast Attack, Area, Utility, Movement, Recovery (hold to aim, release to cast; Q/E/F/R still work while Ctrl is held) · Shift + the same key swaps · Esc pause · F3 debug. On Windows with several keyboard layouts, Ctrl+Shift may switch layout.
@@ -23,18 +23,9 @@ Nothing right now. Your D39 = A (the dodge doesn't count as a Movement cast) is 
 
 Reply with the number and a word or two.
 
-49. **Try the relics (BD2).** A normal run (`godot --path .`) now has a relic room (no fight) somewhere in rooms 3-9, and the elite gives a relic instead of cards. Six relics: Pyre Insurance, Smoldering Grudge, Lingering Embers, Second Wind (Unwillingly), Spite Knuckles (Rogue only) and Heavy Sigh.
-    - **Quick start:** `godot --path . -- --relics=pyre_insurance+heavy_sigh+spite_knuckles` (Rogue). Hit Burning enemies with heavies and watch the top-left chips flash.
-    - **When something explodes, can you tell which relic did it?** Today only the corner chip says so; the playtester wants a label at the blast.
-    - **Do relics change how you play,** or are they silent numbers? The playtester guessed Heavy Sigh and Spite Knuckles do, and Pyre Insurance and Smoldering Grudge don't.
-    - **The relic room can land on room 9, just before the boss** (about 1 run in 3). Too late? The playtester would say "by room 7". The map (MAP1) replaces this room, so I'll apply your answer there.
+49. **Two relic details, when you next play** (you said 2026-11-05 that relics feel fun and builds are getting more exciting; recorded). No rush. Without an answer I keep both as they are.
+    - **The relic room can land on room 9, just before the boss** (about 1 run in 3). Too late? The playtester would say "by room 7". MAP1 replaces this room with map nodes. I've set those nodes to rooms 3-8 (was 3-9), so room 9 never has one. Say if you'd rather have room 9 back.
     - **Spite Knuckles' "every 4th light hit" restarts each room.** OK, or should it carry over?
-    - **The give-one-up step:** `-- --relic-cap=1`, then take a second relic. Cancel is focused first, so Enter backs out.
-    - **BD1 fixes nobody has checked in play yet:**
-      - the bigger primed marker and its "USED" flash;
-      - the dim "Needs Burn" reason on a slot that isn't ready;
-      - the gold "Keystone + Payoff" chip.
-    - **Changed from the plan:** Exit Strategy slipped to BD3 (it needs new placement code).
 
 48. **Try the BD1 archetype decks** (new cards and combo cues). Launch with `godot --path . -- --deck=<id>`, adding `--run-room=10` for the boss.
     - **rogue-hit-and-run:** dash with Ctrl, watch Drive-By light up yellow ("LIVE"), and cast it. Then press Space instead and see how long it takes to work out why it stays dark. The dodge doesn't count, per your D39 = A.

@@ -1674,3 +1674,35 @@ ux-designer made these in 4040259..92e4a31. Suite 1581/1581 (129 suites). All ha
 - **The `rooms.relic_room: []` stopgap goes with MAP1's gameplay-dev step.** It's a one-line data change. The stopgap note in "BD2-B content and run-flow calls" is now out of date.
 - **The c1e ghost-look flake** (pre-BD2, about 1 in 5) goes to qa with MAP1.
 - **Correction to "BD2-B content and run-flow calls":** relic damage is about 1% of the total, not under 1%. qa measured 0.45% for the Rogue and 1.15% for the Wizard.
+
+## 2026-11-05 - MAP1 relic nodes on rooms 3-8 (game-lead)
+- **Choice:** MAP.md's `relic_room` node window changes from rooms 3-9 to **3-8** (1-based, with the boss on room 10). Room 9, just before the boss, never holds a relic node.
+- **Why:** the BD2 playtest said a relic on room 9 gets only one fight of use and suggested "by room 7". On the map a relic hunter passes several relic nodes, so 3-8 still leaves room for a relic route. It's a one-number data change.
+- **Rejected:**
+  - 3-7, which squeezes the relic route with `relic_route` [5, 7];
+  - keeping 3-9.
+- The director can say otherwise (OPEN_ITEMS 49). BD2's straight-run relic room is unchanged, since it only runs with the map off.
+- **Director feedback 2026-11-05 (recorded, not a decision):** "Relics feel fun so far, builds are starting to get more exciting and strategy starting to fold in." Pending for tech-writer at MAP1's docs pass: a CHANGELOG human-playtest note, and archiving the answered parts of item 49 in RESOLVED. The old item 49 text is in commit 9cde725.
+
+## 2026-11-05 - MAP1 split into two gameplay-dev sittings; route bots in the run sim (game-lead)
+- **Choice:** MAP1's gameplay-dev step runs in two sittings, like BD1 and BD2. ux, qa, playtest and docs run once, after both.
+  - **MAP1-A (map engine, no player-visible change):**
+    - the `data/map.json` loader and validator (MAP.md §6), shipped with **`enabled` false**;
+    - the seeded generator (MAP.md §3) with every rule, and a loud error after `max_attempts`;
+    - the relic estimate (§4.1);
+    - RunState `map`, `path`, `gold` and `xp_earned` in `to_dict`/`from_dict`/`equals`;
+    - a map print helper for debugging;
+    - the 1000-seed generation sweep;
+    - the BD2 carry-over that validates `ui.relic.swap_line_one` in `RunConfig`.
+  - **MAP1-B (map run flow):**
+    - node handling (combat card offer + gold, elite relic offer + gold, relic_room with chest sizes, rest, boss);
+    - gold rolls seeded from the run seed and node id (`run.json` `gold`);
+    - mid-map restore of the open choice;
+    - `--run-room=N` along the `first` route;
+    - route bots;
+    - ux data exposure (map, reachable nodes, current node, hover text from data, gold);
+    - a `--map` / `--no-map` launch override;
+    - BD2 carry-overs: delete the `rooms.relic_room: []` stopgap, and check whether bot sim `-Swap` is a no-op.
+  - **`map.enabled` stays false in shipped data until ux's map screen exists.** ux flips it to true in its step, and qa then re-baselines. Rejected: shipping it on in MAP1-B with no way to pick a node.
+- **The route policy goes in `wave_sim -Run`, not `bot_sim`.** BD2 found that `tools/bot_sim.gd` builds no rooms, choices or relics, so it can't follow a route. The `-Rooms 20 -Seed 3` bot-sim hash stays a combat baseline and shouldn't move. The run-sim baselines are re-taken with `-Route first`. This corrects MAP.md §8 and the MAP1 brief, which named the bot sim.
+- **Why the split:** the generator and its rules are self-contained and testable alone, and the run flow needs them. Each sitting leaves the repo running with the map off.

@@ -882,6 +882,14 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
 - Later in M3 or after: shops and drops (GDD §14 item 1, [OPEN], not started).
 - [ ] **MAP1, the map (after BD2; D28 = A). Full loop. Tag `playtest-YYYY-MM-DD-MAP1`.** Plan: `docs/MAP.md` (MAP0).
   - **Goal:** the run becomes a branching map of 10 rooms (GDD §9). The player picks a route; gold is earned. Merchant, mini-bosses and curse/buff rooms come later (weights 0 in data).
+  - **Split (game-lead, 2026-11-05, DECISIONS "MAP1 split"):** gameplay-dev runs **MAP1-A** (engine: items 1, 2 and 4, the print helper, the 1000-seed sweep, `swap_line_one` validation) and then **MAP1-B** (items 3, 5, 5a and 6, ux data exposure, the `--map`/`--no-map` override, and the BD2 carry-overs). ux, qa, playtest and docs run once, after both.
+    - `map.enabled` ships **false** until ux's map screen exists; ux turns it on.
+    - **Item 6 correction:** the `-Route` policy goes in `wave_sim -Run`, not the bot sim, which builds no rooms. The bot-sim hash stays 846850403.
+    - **Relic nodes:** rooms 3-8, not 3-9 (DECISIONS "MAP1 relic nodes").
+    - **BD2 carry-overs folded in:**
+      - gameplay-dev: the `rooms.relic_room` stopgap, and the `-Swap` no-op check;
+      - ux: the BD2 playtest readability list and the pause list see-through;
+      - qa: the c1e flake.
   - **gameplay-dev:**
     1. `data/map.json` loader and validator (MAP.md §6), including unknown-key rejection; `map.enabled` switch (shipped **on**). With it off, today's straight run (`RunGenerator`, BD2's relic room) is unchanged.
     2. Seeded generator (MAP.md §3): grid walks with no crossing edges, typed nodes with room windows and `no_repeat`, path rules checked on every path, deterministic redraws, loud error after `max_attempts`. Fight nodes get a `wave_id` as today. MAP1 ships `relic_route` [5, 7] (no merchant yet).

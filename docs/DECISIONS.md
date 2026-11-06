@@ -1785,3 +1785,64 @@ gameplay-dev made these calls in 2181b9b..3a2d9d8. The map is still off in shipp
   - keeping the floor (thin or empty offers);
   - setting the large weight to 0 (it loses the visible chest-size choice the director asked for).
 - **Owner:** ux makes this one-line `data/map.json` edit when it flips `enabled` to true (game-lead's instruction).
+
+## 2026-11-05 - MAP1 ux calls (ux-designer, logged by game-lead)
+ux-designer made these calls in a1a4155..ac7baa2. The map is turned on: `data/map.json` `enabled` true, and the large chest `min_tier` 2 -> 1.
+
+**Map screen**
+- **Default focus:** the least surprising reachable node, in this type order: combat, rest, relic_room, merchant, buff_room, curse_room, elite, mini_boss, boss. Ties go to the lowest lane. A reflexive Enter lands on a plain fight. Rejected: lowest column, which can land on an elite.
+- **Focus and input:**
+  - When picking, only reachable nodes take focus. In view mode every node is focusable.
+  - Pick mode ignores presses during `prompt_option_arm_delay`, and it swallows Space and the slot keys.
+- **Shapes and legend:**
+  - New shapes: merchant square, mini-boss triangle, curse X, buff up-arrow.
+  - Chest size shows as the hexagon size plus 1, 2 or 3 dots.
+  - The legend lists only the types on the current map.
+- **Gold** shows only in map runs. A "+N" appears when a fight pays.
+
+**Layout values**
+
+| Item | Old | New |
+|---|---|---|
+| Room plate | 280 | 304 |
+| Relic chip | 26 | 30 |
+| Relic font | 12 (min 10) | 15 (min 12) |
+| Condition font | 11 (min 10) | 13 (min 12) |
+| `relic_list_max_height` | 150 | 320, plus a new min of 90 |
+| `relic_list_width` | 560 | 640 |
+
+The boss bar width is now floored to whole pixels.
+
+**BD2 carry-overs, all done**
+- A relic cue ring and name at the trigger point. Repeats nearby merge into "x3", with at most 6 cues.
+- Pips on the chip of an every-Nth relic.
+- Chip marks are unique within the held set.
+- The pause relic list sits on an opaque plate, sized to the space available.
+- The relic Skip text explains rejects.
+- "After Move (Ctrl)" is drawn as a 12 px or larger tag above the slot.
+
+**Stopgap:** `RelicProgress` reads `RelicManager._triggers` because no API exists yet. A tripwire test catches a rename. gameplay-dev adds `RelicManager.trigger_progress(relic_id) -> int`.
+
+**Test edits**
+- ux rewrote one gameplay-dev test, the `map1b_flow_test` prompt-stays-open test. It pinned the placeholder that the map screen replaced.
+
+**Run sim with the map on** (`-Run -Seed 1 -Runs 12`, which plays the first route): Rogue won 12/12 with a 66.2 s boss median; Wizard won 10/12 with 60.6 s.
+
+**49 failing tests after the flip, none in ux code**
+- **gameplay-dev's:**
+  - `bd2b_flow` 4, `h2` 3, `m3a_run_flow` 7, `m3b_flow` 8, `m3b_rewards` 1, `m3c_boss` 3, `p_dodge` 1, `w1a_test` 1;
+  - plus the old-data pins `map1a_config` 1 and `map1b_flow` 5.
+- **qa's:** `m3a_qa` 8, `m3b_qa` 5, `m3c_qa` 1, `pl3_qa` 1.
+- **Verified fix:** `RunSession.map_override = 0` in `before_test`, and -1 in `after_test`.
+
+## 2026-11-05 - The red suite after the map flip: how it's fixed (game-lead)
+- **Choice:**
+  - gameplay-dev fixes its own failing tests, pinning the straight run where a test is about the straight run.
+  - It updates the old-data pins to the shipped data.
+  - It makes the reload soak run with `--no-map` and adds a map-aware pass.
+  - It adds `RelicManager.trigger_progress`, and updates the `map_*` capture preset descriptions.
+  - Then qa fixes its 4 suites in its review step.
+- **Why:** each role edits only its own files. Pinning the straight run keeps those tests about what they were written to test. The map flow has its own tests (map1b, map1_ux).
+- **Rejected:**
+  - turning the map back off until every test is fixed (that hides the real shipped state);
+  - one role editing every file.

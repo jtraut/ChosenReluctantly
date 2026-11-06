@@ -173,7 +173,7 @@ func _check(map: Dictionary, cfg: Dictionary, run: Dictionary) -> String:
 	var starts: Array = by_id.keys().filter(func(i: int) -> bool: return int((by_id[i] as Dictionary)["room"]) == 1)
 	var stack: Array = []
 	for s: int in starts:
-		stack.append([s, 0, 0, 0, 0, 0, 1])  # id, fights, elite, rest, merchants, relics, length
+		stack.append([s, 0, 0, 0, 0, 0, 1, 0.0])  # id, fights, elite, rest, merchants, relics, length, gold on arrival
 	var path_count: int = 0
 	while not stack.is_empty():
 		var f: Array = stack.pop_back()
@@ -183,6 +183,17 @@ func _check(map: Dictionary, cfg: Dictionary, run: Dictionary) -> String:
 		var rest: int = int(f[3]) + (1 if t == "rest" else 0)
 		var merch: int = int(f[4]) + (1 if t == "merchant" else 0)
 		var relics: int = int(f[5]) + (1 if (t == "elite" or t == "relic_room" or t == "mini_boss" or t == "curse_room" or t == "buff_room") else 0)
+		if t == "merchant":
+			# MAP2-B: this checker's own copy of the estimate. A merchant counts what the expected gold on arrival buys, cheapest slot first.
+			var left: float = float(f[7])
+			var slots: Array = (cfg["estimate"]["merchant_prices"] as Array).map(func(p: Variant) -> float: return float(p))
+			slots.sort()
+			for price: float in slots:
+				if left + 0.000001 < price:
+					break
+				left -= price
+				relics += 1
+		var gold_here: float = float(f[7]) + float(((cfg["estimate"] as Dictionary)["gold_mean"] as Dictionary).get(t, 0.0))
 		if t == "boss":
 			path_count += 1
 			if int(f[6]) != rooms:
@@ -195,7 +206,7 @@ func _check(map: Dictionary, cfg: Dictionary, run: Dictionary) -> String:
 		for nxt: int in (adj.get(int(f[0]), []) as Array):
 			if String((by_id[nxt] as Dictionary)["type"]) == t and t != "combat" and t != "boss":
 				return "no_repeat broken on edge %d>%d (%s)" % [int(f[0]), nxt, t]
-			stack.append([nxt, fights, elite, rest, merch, relics, int(f[6]) + 1])
+			stack.append([nxt, fights, elite, rest, merch, relics, int(f[6]) + 1, gold_here])
 	if path_count == 0:
 		return "no path reaches the boss"
 	if best < lo or best > hi:
@@ -227,8 +238,12 @@ func test_independent_sweep_of_a_thousand_other_seeds() -> void:
 	assert_array(failures).override_failure_message("\n".join(failures.slice(0, 8))).is_empty()
 	assert_int(worst).is_less(int(cfg["max_attempts"]))
 	# weight-0 types never show up in shipped data
-	for t: String in ["merchant", "mini_boss", "curse_room", "buff_room"]:
+	for t: String in ["mini_boss", "curse_room", "buff_room"]:
 		assert_int(int(type_count.get(t, 0))).is_equal(0)
+	if MerchantSwitch.shipped_is_on():  # MAP2-B: with the merchant switched on it must show up; off it must not
+		assert_int(int(type_count.get("merchant", 0))).is_greater(0)
+	else:
+		assert_int(int(type_count.get("merchant", 0))).is_equal(0)
 	# every shipped type appears across the sweep (a type that never appears is dead data)
 	for t: String in ["combat", "elite", "relic_room", "rest", "boss"]:
 		assert_int(int(type_count.get(t, 0))).is_greater(0)
@@ -279,10 +294,12 @@ func test_golden_maps_pin_determinism_across_runs_and_versions() -> void:
 	for s in range(1, 41):
 		again += JSON.stringify(MapGenerator.generate(s), "", true) + "\n"
 	assert_str(text).is_equal(again)
-	assert_int(text.hash()).is_equal(GOLDEN_HASH)
+	# Two pins, one per state of the merchant switch (MAP2-B): the shipped data is either fully off or fully on (map2b_merchant_flow_test checks that).
+	assert_int(text.hash()).is_equal(GOLDEN_HASH_MERCHANT_ON if MerchantSwitch.shipped_is_on() else GOLDEN_HASH)
 
 
 const GOLDEN_HASH := 2713285137  # MAP2-A: min_rest 1 + rest weight 25 + max_attempts 1000 + 40 type draws per grid (was 1128919566)
+const GOLDEN_HASH_MERCHANT_ON := 1726783216  # MAP2-B: the same seeds with data/merchant_on.json applied (merchant weight 8, relic_route [6, 8], estimate prices 30/30/45)
 
 
 func test_a_separate_process_prints_the_same_maps() -> void:
@@ -459,15 +476,17 @@ func test_the_shipped_data_matches_the_accepted_changes() -> void:
 	var c: Dictionary = _shipped_json()
 	assert_bool(bool(c["enabled"])).is_true()
 	assert_float(float((c["path_rules"] as Dictionary)["min_branching"])).is_equal(0.4)
-	assert_array(((c["path_rules"] as Dictionary)["relic_route"] as Array).map(func(v: Variant) -> int: return int(v))).is_equal([5, 7])
+	var merchant_on: bool = MerchantSwitch.shipped_is_on()  # MAP2-B: the data ships either fully off or fully on; both states are pinned
+	assert_array(((c["path_rules"] as Dictionary)["relic_route"] as Array).map(func(v: Variant) -> int: return int(v))).is_equal([6, 8] if merchant_on else [5, 7])
 	var t: Dictionary = c["types"]
 	assert_int(int((t["combat"] as Dictionary)["weight"])).is_equal(40)
 	assert_int(int((t["elite"] as Dictionary)["weight"])).is_equal(16)
 	assert_int(int((t["relic_room"] as Dictionary)["weight"])).is_equal(14)
 	assert_int(int((t["rest"] as Dictionary)["weight"])).is_equal(25)  # MAP2-A: was 10, raised so every path can hold a rest (D40)
 	assert_array(((t["relic_room"] as Dictionary)["rooms"] as Array).map(func(v: Variant) -> int: return int(v))).is_equal([3, 8])
-	for zero: String in ["merchant", "mini_boss", "curse_room", "buff_room"]:
+	for zero: String in ["mini_boss", "curse_room", "buff_room"]:
 		assert_int(int((t[zero] as Dictionary)["weight"])).is_equal(0)
+	assert_int(int((t["merchant"] as Dictionary)["weight"])).is_equal(8 if merchant_on else 0)
 	var ch: Dictionary = c["chests"]
 	assert_int(int((ch["small"] as Dictionary)["weight"])).is_equal(50)
 	assert_int(int((ch["medium"] as Dictionary)["weight"])).is_equal(35)

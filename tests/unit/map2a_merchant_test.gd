@@ -63,9 +63,10 @@ func test_shipped_data_has_the_merchant_block_and_the_relic_prices() -> void:
 	assert_int(int(merchant["relic_stock"])).is_equal(3)
 	assert_int(int(merchant["card_stock"])).is_equal(3)
 	assert_array(MerchantConfig.validate_block(merchant)).is_empty()
-	assert_int(RelicConfig.price_for_tier("tier1")).is_equal(60)
-	assert_int(RelicConfig.price_for_tier("tier2")).is_equal(90)
-	assert_int(RelicConfig.price_for_tier("tier3")).is_equal(130)
+	var on: bool = MerchantSwitch.shipped_is_on()  # MAP2-B: the relic prices change with the merchant switch (data/merchant_on.json)
+	assert_int(RelicConfig.price_for_tier("tier1")).is_equal(30 if on else 60)
+	assert_int(RelicConfig.price_for_tier("tier2")).is_equal(45 if on else 90)
+	assert_int(RelicConfig.price_for_tier("tier3")).is_equal(65 if on else 130)
 	assert_int(RelicConfig.price_for_tier("boss")).is_equal(-1)
 
 
@@ -103,9 +104,14 @@ func test_the_estimate_prices_match_the_relic_prices_and_the_stock_size() -> voi
 		assert_bool(relic_prices.has(int(price))).override_failure_message("estimate price %s is not a tier price" % str(price)).is_true()
 
 
-func test_the_merchant_ships_off() -> void:
-	assert_float(float(MapConfig.get_config()["types"]["merchant"]["weight"])).is_equal(0.0)
-	assert_array(MapConfig.get_config()["path_rules"]["relic_route"]).contains_exactly([5.0, 7.0])
+func test_the_merchant_ships_off_or_fully_on() -> void:
+	# MAP2-A shipped it off; MAP2-B's switch (data/merchant_on.json) turns it on, and ux flips the data. Either state is fine, a half flip is not.
+	MapConfig.reset_cache()
+	RunConfig.reset_cache()
+	var on: bool = MerchantSwitch.shipped_is_on()
+	assert_float(float(MapConfig.get_config()["types"]["merchant"]["weight"])).is_equal(8.0 if on else 0.0)
+	assert_array(MapConfig.get_config()["path_rules"]["relic_route"]).contains_exactly([6.0, 8.0] if on else [5.0, 7.0])
+	assert_array(MerchantSwitch.shipped_problems()).is_empty()
 
 
 # --- stock ---------------------------------------------------------------------------------------
@@ -237,10 +243,11 @@ func test_a_purchase_the_player_cannot_afford_changes_nothing() -> void:
 	assert_bool(bool(card_result["ok"])).is_false()
 	assert_str(String(card_result["reason"])).is_equal("too_expensive")
 	assert_str(String(Merchant.buy_removal(state, state.deck[0], ctx)["reason"])).is_equal("too_expensive")
-	state.gold = 59
+	state.gold = Merchant.relic_price(String(visit["relics"][0]), ctx) - 1  # one gold short
+	var short: int = state.gold
 	var relic_result: Dictionary = Merchant.buy_relic(state, String(visit["relics"][0]), ctx)
 	assert_str(String(relic_result["reason"])).is_equal("too_expensive")
-	assert_int(state.gold).is_equal(59)
+	assert_int(state.gold).is_equal(short)
 	assert_int(state.deck.size()).is_equal(deck_size)
 	assert_int(state.relics.size()).is_equal(0)
 	assert_int(state.gold_spent_merchant).is_equal(0)
@@ -353,7 +360,9 @@ func test_items_lists_prices_and_the_reason_an_item_cannot_be_bought() -> void:
 	assert_int(items.size()).is_equal(7)  # 3 relics, 3 cards, removal
 	for item: Dictionary in items:
 		match String(item["kind"]):
-			"relic": assert_str(String(item["reason"])).is_equal("too_expensive")
+			"relic":  # 45 gold: the relics priced above it (60 or 90 as shipped off, 45 is just enough when the merchant is on) are too expensive
+				assert_bool(bool(item["can_buy"])).is_equal(int(item["price"]) <= 45)
+				assert_str(String(item["reason"])).is_equal("" if int(item["price"]) <= 45 else "too_expensive")
 			"card":
 				assert_int(int(item["price"])).is_equal(40)
 				assert_bool(bool(item["can_buy"])).is_true()

@@ -844,8 +844,6 @@ func _report(run_seed: int, wall_ms: int) -> void:
 		_damage_taken, _kills, _casts, _max_alive, mean_alive, _main.enemy_spawner.plan.stages_started(), _max_stall])
 	print("    result: seed %d hp_lost %.3f kills %d casts %d alive_max %d stages %d sim_time %.3f state_hash %d" % [
 		run_seed, _damage_taken, _kills, _casts, _max_alive, _main.enemy_spawner.plan.stages_started(), _sim_time, _state_hash()])
-	if _merchant:
-		print("    merchant: visited %s | gold spent %d | relics bought %d, cards bought %d, removals %d, rerolls %d" % [str(_visited_merchant(result)), int(result["gold_spent"]), int(result["shop_relics"]), int(result["shop_cards"]), int(result["shop_removals"]), int(result["shop_rerolls"])])
 	if _plan:
 		print("    plan policy: %d card casts (%d with the condition live, %d held payoff casts), %d dead-card swaps" % [int(_plan_stats["casts"]), int(_plan_stats["live_casts"]), int(_plan_stats["held_casts"]), int(_plan_stats["swaps"])])
 	print("    pinned: %d of %d move-commanded frames (%.1f%%), longest stretch %d frames (%.2f s)" % [
@@ -964,6 +962,8 @@ func _run_whole(run_seed: int) -> void:
 	if result.has("route_summary"):
 		var route_info: Dictionary = result["route_summary"]
 		print("    route (%s): nodes %s | fights %d, elites %d, relic stages %d (chests %s), rests %d | gold %d, relics held %d" % [_route_policy, str(_route), int(route_info["fights"]), int(route_info["elites"]), int(route_info["relic_nodes"]), str(route_info["chests"]), int(route_info["rest"]), int(result["gold"]), int(result["relics_held"])])
+	if _merchant:
+		print("    merchant: visited %s | gold spent %d | relics bought %d, cards bought %d, removals %d, rerolls %d" % [str(_visited_merchant(result)), int(result["gold_spent"]), int(result["shop_relics"]), int(result["shop_cards"]), int(result["shop_removals"]), int(result["shop_rerolls"])])
 	if _plan:
 		print("    plan policy: %d card casts (%d with the condition live, %d held payoff casts), %d dead-card swaps" % [int(_plan_stats["casts"]), int(_plan_stats["live_casts"]), int(_plan_stats["held_casts"]), int(_plan_stats["swaps"])])
 	# Leave nothing of this run behind for the next one.

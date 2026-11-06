@@ -65,7 +65,7 @@ func test_an_elite_node_offers_relics_and_pays_gold_and_falls_back_to_cards_with
 	assert_int(state.offer.size()).is_equal(3)
 	assert_int(RunNodes.roll_gold(state.seed_value, int(RunNodes.current_node(state)["id"]), "elite", RunConfig.gold())).is_between(30, 40)
 	var empty: RunState = _state_on("elite", 1)
-	empty.relics_given_up = ["pyre_insurance", "heavy_sigh", "lingering_embers", "second_wind_unwillingly", "smoldering_grudge", "spite_knuckles"] as Array[String]
+	empty.relics_given_up = RelicDatabase.ids()  # every relic there is (13 since MAP2-B), so none is left to offer
 	assert_str(RunRelics.open_for_room(empty, "elite", false, ctx)).is_equal(RunState.PENDING_REWARD)
 
 

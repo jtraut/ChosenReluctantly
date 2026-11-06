@@ -7,6 +7,8 @@ extends SceneTree
 ##   --set=a.b.c=JSON  override one config value for this run only (tuning experiments; repeatable), e.g. --set=types.rest.weight=20 --set=types.rest.rooms=[4,9]
 ##   --from=N        with --sweep: start at seed N (seeds N .. N+sweep-1; default 1)
 ##   --merchant      turn the merchant on first (data/merchant_on.json merged into the map config, MAP2-B); --set values are applied on top
+##   --routes        with --sweep: also print, per route policy (first, relic, safe), the median of the relic estimate and the mean nodes of each kind over the
+##                   seeds (a fast stand-in for the bot sim when tuning weights; the real numbers come from `wave_sim -Run -Route`)
 ##   --route=first   also print the `first` route's node ids
 ## Output: one line per room (cells by column: C combat, E elite, R* relic stage, Rs rest, M merchant, MB mini-boss, BOSS), the edges
 ## as column pairs, the wave ids, then the path-rule scores (paths, min fights, max elite-like, rests, merchants, relic estimate best and worst).
@@ -17,6 +19,7 @@ func _initialize() -> void:
 	var sweep: int = 0
 	var first_seed: int = 1
 	var show_route: bool = false
+	var route_stats: bool = false
 	var merchant_on: bool = false
 	var overrides: Array[String] = []
 	for arg: String in OS.get_cmdline_user_args():
@@ -28,6 +31,8 @@ func _initialize() -> void:
 			first_seed = int(arg.substr(7))
 		elif arg == "--route=first":
 			show_route = true
+		elif arg == "--routes":
+			route_stats = true
 		elif arg == "--merchant":
 			merchant_on = true
 		elif arg.begins_with("--set="):
@@ -64,7 +69,7 @@ func _initialize() -> void:
 			quit(2)
 			return
 	if sweep > 0:
-		quit(_sweep(sweep, cfg, first_seed))
+		quit(_sweep(sweep, cfg, first_seed, route_stats))
 		return
 	var result: Dictionary = MapGenerator.build(seed_value, cfg)
 	if not bool(result["ok"]):
@@ -92,8 +97,9 @@ func _initialize() -> void:
 	quit(0 if problems.is_empty() else 1)
 
 
-func _sweep(count: int, cfg: Dictionary, first_seed: int = 1) -> int:
+func _sweep(count: int, cfg: Dictionary, first_seed: int = 1, route_stats: bool = false) -> int:
 	var started: int = Time.get_ticks_msec()
+	var per_policy: Dictionary = {}
 	var failures: int = 0
 	var histogram: Dictionary = {}
 	var worst: int = 0
@@ -107,9 +113,28 @@ func _sweep(count: int, cfg: Dictionary, first_seed: int = 1) -> int:
 		if not problems.is_empty():
 			failures += 1
 			printerr("seed %d breaks a rule: %s" % [seed_value, "; ".join(problems)])
+		if route_stats:
+			for policy: String in ["first", "relic", "safe"]:
+				var route: Array[int] = RouteBot.plan(result["map"], policy, cfg, seed_value)
+				var stats: Dictionary = MapRules.path_stats(result["map"], route, cfg)
+				var rows: Array = per_policy.get(policy, [])
+				rows.append(stats)
+				per_policy[policy] = rows
 		var bucket: int = int(result["attempts"])
 		worst = maxi(worst, bucket)
 		var key: String = "1" if bucket == 1 else ("2-5" if bucket <= 5 else ("6-20" if bucket <= 20 else ("21-60" if bucket <= 60 else "61+")))
 		histogram[key] = int(histogram.get(key, 0)) + 1
 	print("sweep %d..%d: %d failures, worst attempts %d, attempts histogram %s, %d ms" % [first_seed, first_seed + count - 1, failures, worst, str(histogram), Time.get_ticks_msec() - started])
+	for policy: String in per_policy.keys():
+		var rows: Array = per_policy[policy]
+		var estimates: Array[int] = []
+		var sums: Dictionary = {"fights": 0, "elite_like": 0, "merchants": 0, "rest": 0}
+		for stats: Dictionary in rows:
+			estimates.append(int(stats["relics"]))
+			for key: String in sums.keys():
+				sums[key] = int(sums[key]) + int(stats[key])
+		estimates.sort()
+		print("route %-5s: relic estimate median %d (min %d, max %d) | mean per route: fights %.1f, elite-like %.2f, merchants %.2f, rests %.2f" % [
+			policy, estimates[estimates.size() / 2], estimates[0], estimates[estimates.size() - 1], float(sums["fights"]) / float(rows.size()),
+			float(sums["elite_like"]) / float(rows.size()), float(sums["merchants"]) / float(rows.size()), float(sums["rest"]) / float(rows.size())])
 	return 0 if failures == 0 else 1

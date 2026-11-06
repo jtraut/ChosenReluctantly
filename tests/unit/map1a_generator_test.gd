@@ -196,20 +196,28 @@ func test_to_text_prints_every_room() -> void:
 
 # --- the relic estimate (MAP.md section 4.1 / 4.2 worked routes) ---------------------------------
 
+## The shipped config with the estimate's merchant prices pinned to the MAP2-A tier prices (60, 60, 90), so the worked routes below mean the same
+## whether the merchant ships off (those prices) or on (cheaper ones, MAP2-B).
+func _priced_config() -> Dictionary:
+	var config: Dictionary = MapConfig.get_config().duplicate(true)
+	(config["estimate"] as Dictionary)["merchant_prices"] = [60, 60, 90]
+	return config
+
+
 func test_relic_hunter_route_estimates_seven() -> void:
 	# C C E R* E C E R* M Boss: 150 gold on arrival at the merchant buys 2, plus 5 relic nodes.
 	var map: Dictionary = _lane(["combat", "combat", "elite", "relic_room", "elite", "combat", "elite", "relic_room", "merchant", "boss"])
-	assert_int(MapRules.relic_estimate(map, MapGraph.first_route(map), MapConfig.get_config())).is_equal(7)
+	assert_int(MapRules.relic_estimate(map, MapGraph.first_route(map), _priced_config())).is_equal(7)
 
 
 func test_ignore_relics_route_estimates_two() -> void:
 	# C C C C E C Rs M C Boss: 110 gold buys 1, plus the elite.
 	var map: Dictionary = _lane(["combat", "combat", "combat", "combat", "elite", "combat", "rest", "merchant", "combat", "boss"])
-	assert_int(MapRules.relic_estimate(map, MapGraph.first_route(map), MapConfig.get_config())).is_equal(2)
+	assert_int(MapRules.relic_estimate(map, MapGraph.first_route(map), _priced_config())).is_equal(2)
 
 
 func test_merchant_stock_caps_the_estimate_and_gold_floors() -> void:
-	var estimate: Dictionary = MapConfig.get_config()["estimate"]
+	var estimate: Dictionary = _priced_config()["estimate"]
 	assert_int(MapRules.merchant_relics(0.0, estimate)).is_equal(0)
 	assert_int(MapRules.merchant_relics(59.0, estimate)).is_equal(0)
 	assert_int(MapRules.merchant_relics(60.0, estimate)).is_equal(1)

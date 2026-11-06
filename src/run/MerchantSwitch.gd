@@ -86,3 +86,34 @@ static func apply() -> bool:
 static func _replace(target: Dictionary, source: Dictionary) -> void:
 	target.clear()
 	target.merge(source.duplicate(true))
+
+
+## True when the shipped data/map.json has the merchant on (its type weight is above 0). Reads the file, not the loaded (possibly patched) config.
+static func shipped_is_on() -> bool:
+	var config: Dictionary = MapConfig.load_from(MapConfig.PATH)["config"]
+	return not config.is_empty() and float(config["types"]["merchant"]["weight"]) > 0.0
+
+
+## Problems when the shipped data is switched halfway. ON (merchant weight above 0) means every value in data/merchant_on.json equals the value in
+## data/map.json and data/run.json, so a flip is all or nothing. OFF means weight 0 and nothing else is checked. Reads the files, not the loaded config.
+static func shipped_problems() -> Array[String]:
+	var problems: Array[String] = []
+	if not shipped_is_on():
+		return problems
+	var file: Dictionary = patch()
+	var map_config: Variant = JSON.parse_string(FileAccess.get_file_as_string(MapConfig.PATH))
+	var run_config: Variant = JSON.parse_string(FileAccess.get_file_as_string(RunConfig.PATH))
+	if file.is_empty() or typeof(map_config) != TYPE_DICTIONARY or typeof(run_config) != TYPE_DICTIONARY:
+		problems.append("the patch, map.json or run.json could not be read")
+		return problems
+	_differences(file["map"], map_config, "map", problems)
+	_differences(file["run"], run_config, "run", problems)
+	return problems
+
+
+static func _differences(want: Variant, have: Variant, path: String, problems: Array[String]) -> void:
+	if typeof(want) == TYPE_DICTIONARY and typeof(have) == TYPE_DICTIONARY:
+		for key: Variant in (want as Dictionary).keys():
+			_differences((want as Dictionary)[key], (have as Dictionary).get(key), "%s.%s" % [path, str(key)], problems)
+	elif str(want) != str(have):
+		problems.append("%s is %s in the data but data/merchant_on.json says %s" % [path, str(have), str(want)])

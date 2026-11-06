@@ -74,11 +74,13 @@ func _options_of_kind(model: Dictionary, kind: String) -> Array[Dictionary]:
 
 # --- the switch ------------------------------------------------------------------------------------
 
-func test_shipped_data_has_the_merchant_off_and_the_switch_turns_it_on_for_the_process_only() -> void:
+func test_the_switch_turns_the_merchant_on_for_the_process_only_and_the_shipped_data_is_all_off_or_all_on() -> void:
 	RunConfig.reset_cache()
 	MapConfig.reset_cache()
-	assert_float(float(MapConfig.get_config()["types"]["merchant"]["weight"])).is_equal(0.0)
-	assert_array(MapConfig.get_config()["path_rules"]["relic_route"]).is_equal([5.0, 7.0])
+	var shipped_on: bool = MerchantSwitch.shipped_is_on()
+	assert_array(MerchantSwitch.shipped_problems()).is_empty()  # never half flipped
+	assert_float(float(MapConfig.get_config()["types"]["merchant"]["weight"])).is_equal(8.0 if shipped_on else 0.0)
+	assert_array(MapConfig.get_config()["path_rules"]["relic_route"]).is_equal([6.0, 8.0] if shipped_on else [5.0, 7.0])
 	assert_bool(MerchantSwitch.apply()).is_true()
 	assert_float(float(MapConfig.get_config()["types"]["merchant"]["weight"])).is_equal(8.0)
 	assert_int(int(MapConfig.get_config()["path_rules"]["max_merchants"])).is_equal(1)
@@ -86,7 +88,12 @@ func test_shipped_data_has_the_merchant_off_and_the_switch_turns_it_on_for_the_p
 	assert_bool(MerchantSwitch.apply()).is_true()  # twice is harmless
 	assert_array(MapConfig.get_config()["path_rules"]["relic_route"]).is_equal([6.0, 8.0])
 	MapConfig.reset_cache()  # the shipped file again
-	assert_float(float(MapConfig.get_config()["types"]["merchant"]["weight"])).is_equal(0.0)
+	assert_float(float(MapConfig.get_config()["types"]["merchant"]["weight"])).is_equal(8.0 if shipped_on else 0.0)
+	# the patch's values are the ones in the file: prices and estimate move together
+	var patch: Dictionary = MerchantSwitch.patch()
+	var prices: Dictionary = patch["run"]["relics"]["prices"]
+	var estimate: Array = patch["map"]["estimate"]["merchant_prices"]
+	assert_array(estimate).is_equal([float(prices["tier1"]), float(prices["tier1"]), float(prices["tier2"])])
 
 
 func test_a_broken_patch_changes_nothing_and_says_so() -> void:
@@ -137,7 +144,7 @@ func test_a_merchant_node_opens_the_shop_with_stock_prices_gold_and_the_leave_op
 	assert_int(_options_of_kind(model, "leave").size()).is_equal(1)
 	assert_int(_options_of_kind(model, "reroll").size()).is_equal(0)  # no relic grants a reroll yet
 	for option: Dictionary in _options_of_kind(model, "buy_relic"):
-		assert_int(int(option["price"])).is_between(60, 90)
+		assert_int(int(option["price"])).is_between(RelicConfig.price_for_tier("tier1"), RelicConfig.price_for_tier("tier2"))
 		assert_bool(bool(option["enabled"])).is_true()
 		assert_str(String(option["detail"])).is_not_empty()
 		assert_bool(RunChoices.KINDS.has(String(option["kind"]))).is_true()
@@ -153,7 +160,8 @@ func test_a_merchant_node_opens_the_shop_with_stock_prices_gold_and_the_leave_op
 
 func test_the_reasons_a_disabled_item_gives_are_codes_with_words() -> void:
 	var ctx: Dictionary = _ctx()
-	var state: RunState = _shop(1, 45, ctx)
+	var poor: int = RelicConfig.price_for_tier("tier1") - 1  # one gold short of the cheapest relic
+	var state: RunState = _shop(1, poor, ctx)
 	var model: Dictionary = RunChoices.model(state, ctx, "merchant")
 	for option: Dictionary in _options_of_kind(model, "buy_relic"):
 		assert_bool(bool(option["enabled"])).is_false()
@@ -162,9 +170,10 @@ func test_the_reasons_a_disabled_item_gives_are_codes_with_words() -> void:
 	var refused: Dictionary = RunChoices.apply(state, String(_options_of_kind(model, "buy_relic")[0]["id"]), ctx)
 	assert_bool(bool(refused["ok"])).is_false()
 	assert_str(String(refused["reason_code"])).is_equal("too_expensive")
-	assert_int(state.gold).is_equal(45)  # a refusal changes nothing
+	assert_int(state.gold).is_equal(poor)  # a refusal changes nothing
+	state.gold = Merchant.card_price(ctx) + 5
 	var card: Dictionary = RunChoices.apply(state, String(_options_of_kind(model, "buy_card")[0]["id"]), ctx)
-	assert_bool(bool(card["ok"])).is_true()  # 40 gold, 45 in hand
+	assert_bool(bool(card["ok"])).is_true()  # the card price, and 5 over
 	assert_int(state.gold).is_equal(5)
 
 

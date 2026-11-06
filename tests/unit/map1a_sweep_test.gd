@@ -135,7 +135,9 @@ func _check_map(map: Dictionary, cfg: Dictionary, rules: Dictionary, estimate: D
 			if type_id == "merchant":
 				merchants += 1
 				var spare: float = gold
-				for price: float in [60.0, 60.0, 90.0]:  # the estimate's merchant_prices, cheapest first (written out so this checker stays independent)
+				var prices: Array = (estimate["merchant_prices"] as Array).map(func(p: Variant) -> float: return float(p))
+				prices.sort()  # the estimate's merchant_prices, cheapest first (read from the data since MAP2-B: the prices differ with the merchant switched on)
+				for price: float in prices:
 					if spare >= price:
 						spare -= price
 						relics += 1

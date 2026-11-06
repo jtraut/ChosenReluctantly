@@ -982,7 +982,12 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
         - the arena hashes, bot sim 846850403 and `-NoMap` run baselines are unchanged;
         - map-on `-Route` numbers can move only through `min_rest`; report the new ones;
         - the 1000-seed sweep has 0 failures, with worst-case attempt counts reported after `min_rest` lands.
-    - **MAP2-B, content, run flow and bots (gameplay-dev).**
+      - **MAP2-A done 2026-11-06** (66ba317, bf80b35, 9321820; DECISIONS "MAP2-A merchant engine calls").
+        - **Suite:** 1770, with 2 skipped.
+        - **Unchanged:** the arena, bot-sim and `-NoMap` numbers.
+        - **Sweep:** 0 failures.
+        - **Data changes forced by `min_rest`:** rest weight 10 -> 25, `max_attempts` 200 -> 1000, `TYPE_DRAWS_PER_GRID` 10 -> 40. They moved the map-on route numbers (interim).
+    - **MAP2-B, content, run flow and bots (gameplay-dev).** Also from MAP2-A: set `free_rerolls` from owned relics for each visit, and give the removal entry a "nothing can be removed" reason.
       1. **7 relics** (BUILD_DEPTH §4.7, "MAP2 relic picks"). They use existing triggers and effects, except where noted.
          - **Pool**, sources elite, relic_room and merchant:
            - ASAP Notice [neutral, tier 1];

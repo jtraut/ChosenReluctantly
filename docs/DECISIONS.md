@@ -1886,3 +1886,51 @@ The boss bar width is now floored to whole pixels.
   - ux switches the merchant on with its panel, and qa re-baselines the map-on `-Route` numbers. The `-NoMap`, arena and bot-sim numbers mustn't move.
   - **Rejected: MAP1's approach** (ux switches the feature on with no preparation). It turned the suite red and needed a gameplay-dev return trip (3841b41..0226ec9).
 - **Allowed data knobs** if the 1000-seed sweep or the relic targets fail: type weights, `max_attempts` up to 1000, the rest window down to [4, 9], and relic prices. Each change gets logged.
+
+## 2026-11-06 - MAP2-A merchant engine calls (gameplay-dev, logged by game-lead)
+gameplay-dev's commits are 66ba317, bf80b35 and 9321820. The merchant ships off (`merchant` weight 0, `relic_route` [5, 7]).
+
+**Gates:**
+- **Suite:** 1770, with 2 skipped (the MAP3 save carry-overs) and 0 failures, in 139 suites. The `:59` test is un-skipped.
+- **Unchanged:** the arena hashes, bot sim 846850403, and `-NoMap` 57.3 s / 62.5 s.
+- **Sweep:** 0 failures on seeds 1-1000 (worst 593 of 1000 attempts) and on 5000-5999 (worst 676).
+
+- **`min_rest` 1 couldn't be met with the old data.** At 200 attempts, 351 of 1000 seeds failed, and some still failed at 1000. Accepted by game-lead:
+  - **`types.rest.weight` 10 -> 25.**
+    - Rejected 20: a worst case of 905 attempts on seeds 5000-6999.
+    - Rejected 30: no better.
+    - Rejected combat 30 with rest 30: it changes the fight mix more.
+    - **Cost:** more rest nodes on the map. `max_rest` 2 and `min_fights` 6 still cap them per path. The MAP2 playtest should check run difficulty and the number of card offers.
+  - **`max_attempts` 200 -> 1000**, the allowed ceiling.
+- **A code change outside the knob list (accepted):** `MapGenerator` `TYPE_DRAWS_PER_GRID` 10 -> 40, plus a one-pass rest pre-check.
+  - **Why:** it's about 3x faster. At 10, a 1000-seed sweep took about 305 s, and the suite runs two sweeps.
+  - **Seeds:** those that succeeded within 10 draws on their first grid are unchanged. The rest generate different maps.
+  - **Rejected:** keeping 10 and living with suite times about 7 min longer.
+- **Every map-on route baseline moved** (12 runs, seed 1). The brief's "move only through `min_rest`" gate was impossible, because `min_rest` forced the knobs.
+
+  | Class | Route | Before | After |
+  |---|---|---|---|
+  | Rogue | first | 12/12, 66.2 s | 12/12, 54.7 s |
+  | Rogue | relic | 12/12, 52.1 s | 12/12, 56.5 s |
+  | Rogue | safe | 12/12, 58.4 s | 11/12, 62.2 s |
+  | Wizard | first | 10/12, 60.6 s | 11/12, 64.8 s |
+  | Wizard | relic | 11/12, 63.2 s | 10/12, 60.0 s |
+  | Wizard | safe | 12/12, 65.0 s | 11/12, 62.5 s |
+
+  These are interim. MAP2-B's merchant override and ux's switch move them again, and qa re-baselines after the switch.
+- **qa pins that gameplay-dev changed** (for qa to review in its MAP2 pass):
+  - `map1_qa_test` `GOLDEN_HASH` -> 2713285137;
+  - the rest weight pin 10 -> 25;
+  - the sweep headroom from worst < 50% to worst < 80% of `max_attempts`;
+  - the unreachable-rules test now loosens the other rules, so the relic rule is the one that fails.
+- **Presets re-pinned:** `map_mid`, `map_room9` and `map_chest_medium` -> seed 54; `map_chest_large` -> seed 157. ux and the playtester re-look at them.
+- **Merchant design calls (accepted):**
+  - **Data:** a `merchant.shop_only_slots` 1 key, so the slot count is data.
+  - **Draw order:** the shop-only slot is drawn first, and shop-only relics can also fill a normal slot.
+  - **Removal price:** rest-room removals don't raise the merchant's price; only merchant removals do.
+  - **Reroll:** redraws only the slots that aren't sold.
+  - **Refusals and old saves:** refusals are reason codes (ux maps them to text). An old save whose stocked relic id is no longer in the catalog returns `unknown_relic` and doesn't crash.
+  - **Estimate:** `estimate.merchant_prices` [60, 60, 90] replaces `merchant_price` and `merchant_stock`.
+- **For MAP2-B:**
+  - `free_rerolls` is fixed at 0 in `MerchantConfig.shipped_context`, and the run flow must set it from owned relics.
+  - `Merchant.items()` marks removal buyable even when no card can be removed, so B or ux must surface the per-card `removal_problems` reason.

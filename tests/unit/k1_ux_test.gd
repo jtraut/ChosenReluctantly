@@ -10,12 +10,14 @@ var _saved: Dictionary = {}
 
 
 func before_test() -> void:
+	RunSession.map_override = 0  # MAP1: these pin the straight run's prompts; with the map on a run opens on the map's pick, which swallows the same keys
 	_saved = {}
 	for action: StringName in [&"slot_5", &"slot_4", &"slot_2", &"dodge", &"attack_light", &"pause"]:
 		_saved[action] = InputMap.action_get_events(action)
 
 
 func after_test() -> void:
+	RunSession.map_override = -1
 	for action: StringName in _saved.keys():
 		InputMap.action_erase_events(action)
 		for event: InputEvent in _saved[action]:

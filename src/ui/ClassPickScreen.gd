@@ -84,6 +84,10 @@ static func should_open(state: RunState) -> bool:
 		return false
 	if enabled_override != null and not bool(enabled_override):
 		return false
+	# A map run opens on its pick of a room-1 node (MAP1-B): that pending choice is the start, not a choice after a room, so the class pick comes
+	# first, and only then (the room-1 scene that follows the node pick has an empty history too but must not ask again).
+	if not state.map.is_empty():
+		return state.pending == RunState.PENDING_NODE and state.path.is_empty() and state.history.is_empty() and not state.is_over()
 	return state.history.is_empty() and not state.has_pending() and not state.is_over()
 
 

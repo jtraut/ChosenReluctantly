@@ -20,6 +20,7 @@ func after_test() -> void:
 	RunSession.relic_cap = 0
 	RunConfig.reset_cache()
 	MapConfig.reset_cache()
+	ClassPickScreen.reset()
 	Juice.reset()
 	GamePause.reset()
 
@@ -478,6 +479,18 @@ func test_a_straight_run_has_no_map_gold_or_node_choice() -> void:
 	var offer: Array[String] = RelicOffer.offer("relic_room", 3, RunRelics.offer_rng(5, relic_index), RelicConfig.tier_weights_for_act(1), legacy.relics, legacy.relics_given_up,
 			CharacterDatabase.pools("rogue"), RelicDatabase.all_relics())
 	assert_array(straight.offer).is_equal(offer)
+
+
+func test_the_class_pick_comes_before_the_first_node_pick_and_only_there() -> void:
+	ClassPickScreen.enabled_override = true
+	RunSession.map_override = 1
+	var state := RunSession.begin_new_run(12)
+	assert_bool(ClassPickScreen.should_open(state)).is_true()  # the start of a map run
+	RunChoices.apply(state, "node:%d" % MapGraph.start_ids(state.map)[0], _ctx())
+	assert_bool(ClassPickScreen.should_open(state)).is_false()  # room 1 after the pick: no second class pick
+	RunSession.map_override = 0
+	assert_bool(ClassPickScreen.should_open(RunSession.begin_new_run(12))).is_true()  # a straight run is as before
+	ClassPickScreen.enabled_override = null
 
 
 # --- through the real controller -----------------------------------------------------------------

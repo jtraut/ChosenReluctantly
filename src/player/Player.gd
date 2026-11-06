@@ -816,11 +816,13 @@ func _on_attack_fired(attack_id: StringName) -> void:
 	var def := attacks.get_def(attack_id)
 	var context := EffectContext.new(self, WorldRef.get_world(get_tree()), hurtbox.team if hurtbox != null else "neutral")
 	context.origin = String(attack_id)
+	var landed_at: Variant = null  # where a targeted heavy lands, for the attack_fired event
 	if String(def["shape"]) == "targeted_aoe":
 		# The same "aoe" template cards use, centred on the locked target.
 		var target: Vector3 = _aoe_targets.get(attack_id, AoeTargeting.clamp_target(global_position, null, get_aim_direction(), float(def["max_range"]), _arena_rect()))
 		_stop_telegraph(attack_id)
 		_aoe_targets.erase(attack_id)
+		landed_at = target
 		EffectTemplates.execute("aoe", {
 			"damage": def["damage"],
 			"damage_type": def["damage_type"],
@@ -861,17 +863,17 @@ func _on_attack_fired(attack_id: StringName) -> void:
 	if not context.last_hits.is_empty():
 		Juice.hit_stop(float(def["hit_stop_duration"]), float(def["hit_stop_scale"]))
 		Juice.screen_shake(float(def["shake_strength"]), float(def["shake_duration"]))
-	_relay_attack_fired(attack_id)
+	_relay_attack_fired(attack_id, landed_at)
 	attack_fired.emit(attack_id)
 
 
 ## Tells the CombatEvents relay a light or heavy attack fired, with the point it was aimed at (the player's own position when
-## nothing is aimed at).
-func _relay_attack_fired(attack_id: StringName) -> void:
+## nothing is aimed at). A targeted heavy passes the point it landed on (the locked target), which can differ from where the cursor is now.
+func _relay_attack_fired(attack_id: StringName, landed: Variant = null) -> void:
 	var relay := CombatLink.events()
 	if relay == null:
 		return
-	var aim: Variant = get_aim_point()
+	var aim: Variant = landed if landed is Vector3 else get_aim_point()
 	relay.notify_attack_fired(String(attack_id), aim as Vector3 if aim != null else global_position)
 
 

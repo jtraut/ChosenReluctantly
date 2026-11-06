@@ -65,6 +65,7 @@ func take_damage(amount: float, damage_type: String = "physical", knockback: Vec
 	if _is_dead or damage_immune or amount <= 0.0:
 		return
 	amount = _card_bonus_vs_statuses(amount, source, origin)
+	amount = _source_damage_mult(amount, source)
 	var channel: StringName = CHANNEL_NONE
 	var final_amount: float = amount
 	if ArmorConfig.is_non_elemental(damage_type):
@@ -119,6 +120,17 @@ func _card_bonus_vs_statuses(amount: float, source: Node, origin: String) -> flo
 		var stat: String = EffectTemplates.CARD_DAMAGE_VS_STATUS_PREFIX + status_id
 		if (mods as StatModifiers).has_modifier(stat):
 			amount = (mods as StatModifiers).apply(stat, amount)
+	return amount
+
+
+## MAP2-B: every hit the source deals is multiplied by its `damage_mult` stat (a relic modifier of +0.05 = +5%). Nothing happens without
+## the stat, so a run without such a relic takes the early exit.
+func _source_damage_mult(amount: float, source: Node) -> float:
+	if source == null or not is_instance_valid(source):
+		return amount
+	var mods: Variant = source.get(&"stat_modifiers")
+	if mods is StatModifiers and (mods as StatModifiers).has_modifier(EffectTemplates.DAMAGE_MULT_STAT):
+		return (mods as StatModifiers).apply(EffectTemplates.DAMAGE_MULT_STAT, amount)
 	return amount
 
 

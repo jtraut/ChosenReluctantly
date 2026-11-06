@@ -4,7 +4,9 @@ extends GdUnitTestSuite
 ## through the real RelicManager, the real relay and the real effect templates on a Main scene, never by reading its JSON.
 
 const MAIN_SCENE_PATH := "res://scenes/main/Main.tscn"
+## The original six (BD2-B). MAP2-B adds seven more (map2b_relics_test); every relic of both sets is listed here, sorted as the loader sorts them.
 const SHIPPED: Array[String] = ["heavy_sigh", "lingering_embers", "pyre_insurance", "second_wind_unwillingly", "smoldering_grudge", "spite_knuckles"]
+const ALL_SHIPPED: Array[String] = ["as_per_the_attached_document", "asap_notice", "grading_curve", "heavy_sigh", "lingering_embers", "liquidate_assets", "paperwork_fire", "pyre_insurance", "request_for_quotation", "second_wind_unwillingly", "severance_package", "smoldering_grudge", "spite_knuckles"]
 
 
 func before_test() -> void:
@@ -66,11 +68,12 @@ func _hit(target: RelayTarget, main: Main, origin: String, kind: StringName = He
 
 func test_the_shipped_relics_load_clean_and_follow_the_brief() -> void:
 	assert_array(RelicDatabase.problems()).is_empty()
-	assert_array(RelicDatabase.ids()).is_equal(SHIPPED)
+	assert_array(RelicDatabase.ids()).is_equal(ALL_SHIPPED)
 	for relic: Dictionary in RelicDatabase.all_relics():
 		assert_bool(["tier1", "tier2"].has(String(relic["rarity"]))).is_true()
 		assert_str(String(relic["rule_text"])).is_not_empty()
-		assert_bool((relic["sources"] as Array).has("elite") and (relic["sources"] as Array).has("relic_room")).is_true()
+		if not Merchant.is_shop_only(relic):  # the shop-only relics (MAP2-B) are sold by the merchant alone
+			assert_bool((relic["sources"] as Array).has("elite") and (relic["sources"] as Array).has("relic_room")).is_true()
 		assert_bool(not (relic["sources"] as Array).has("boss")).is_true()
 
 
@@ -83,9 +86,9 @@ func test_the_wizard_cannot_find_the_rogue_relic_and_both_classes_see_the_rest()
 	var tiers: Array[String] = ["tier1", "tier2"]
 	var rogue_all: Array[String] = RelicOffer.offer("elite", 20, rng, weights, empty, empty, rogue, RelicDatabase.all_relics(), tiers)
 	var wizard_all: Array[String] = RelicOffer.offer("elite", 20, rng, weights, empty, empty, wizard, RelicDatabase.all_relics(), tiers)
-	assert_int(rogue_all.size()).is_equal(6)
+	assert_int(rogue_all.size()).is_equal(8)  # the original six, ASAP Notice and Severance Package
 	assert_bool(rogue_all.has("spite_knuckles")).is_true()
-	assert_int(wizard_all.size()).is_equal(5)
+	assert_int(wizard_all.size()).is_equal(8)  # five of the six, ASAP Notice, Paperwork Fire and Grading Curve
 	assert_bool(wizard_all.has("spite_knuckles")).is_false()
 
 

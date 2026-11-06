@@ -1,0 +1,20 @@
+{
+    "id": "as_per_the_attached_document",
+    "name": "As Per the Attached Document",
+    "pool": "neutral",
+    "rarity": "tier2",
+    "sources": ["merchant"],
+    "keywords": [],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "hit_landed",
+            "filter": { "origin": "heavy", "target_team": "enemy" },
+            "at": "player",
+            "internal_cooldown": 0.5,
+            "effects": [ { "template": "reduce_cooldown", "params": { "slot_type": "attack_aoe", "seconds": 1.5 } } ]
+        }
+    ],
+    "rule_text": "A heavy attack that hits takes 1.5 s off your Attack: AoE cooldown.",
+    "flavor_text": "See page 4, paragraph 12, footnote the third."
+}

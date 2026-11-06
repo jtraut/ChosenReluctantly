@@ -1,0 +1,12 @@
+{
+    "id": "request_for_quotation",
+    "name": "Request for Quotation",
+    "pool": "neutral",
+    "rarity": "tier1",
+    "sources": ["merchant"],
+    "keywords": [],
+    "modifiers": [ { "stat": "merchant.free_rerolls", "modifier_type": "additive", "value": 1.0 } ],
+    "triggers": [],
+    "rule_text": "Once per merchant visit, reroll the unsold stock for free.",
+    "flavor_text": "We would like a different quote. Please advise."
+}

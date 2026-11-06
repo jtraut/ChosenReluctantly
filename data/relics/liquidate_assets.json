@@ -1,0 +1,12 @@
+{
+    "id": "liquidate_assets",
+    "name": "Liquidate Assets",
+    "pool": "neutral",
+    "rarity": "tier2",
+    "sources": ["merchant"],
+    "keywords": [],
+    "modifiers": [ { "stat": "damage_mult", "modifier_type": "multiplicative", "value": 0.01, "per_run_stat": "gold_spent_merchant", "per": 50 } ],
+    "triggers": [],
+    "rule_text": "You deal 1% more damage for every 50 gold you have spent at the merchant this run.",
+    "flavor_text": "Everything must go. Starting with your savings."
+}

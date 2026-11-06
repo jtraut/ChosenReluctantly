@@ -11,7 +11,9 @@ const SOURCES: Array[String] = ["elite", "relic_room", "merchant", "mini_boss", 
 const BOSS_SOURCE := "mini_boss"
 const TOP_KEYS: Array[String] = ["id", "name", "pool", "rarity", "sources", "keywords", "modifiers", "triggers", "rule_text", "flavor_text", "sacrifice_cost"]
 const TRIGGER_KEYS: Array[String] = ["event", "filter", "at", "internal_cooldown", "effects"]
-const MODIFIER_KEYS: Array[String] = ["stat", "modifier_type", "value"]
+const MODIFIER_KEYS: Array[String] = ["stat", "modifier_type", "value", "per_run_stat", "per"]
+## Run stats a modifier may scale by (MAP2-B): the modifier's value is multiplied by floor(stat / per). RunController feeds the values.
+const RUN_STATS: Array[String] = ["gold_spent_merchant"]
 const AT_PLAYER := "player"
 const AT_EVENT_POSITION := "event_position"
 const AT_EVENT_TARGET := "event_target"
@@ -37,7 +39,7 @@ const FILTER_KINDS: Dictionary = {
 ## Per event: `filter` (accepted filter keys), `position` (it has a place an effect can happen at) and `target` (it names a
 ## combatant the effect can be aimed at). `allow_relic_origin` and `every_nth` are accepted by every event.
 const EVENTS: Dictionary = {
-	"hit_landed": {"filter": ["origin", "damage_type", "kind", "target_team", "target_has_status", "min_amount"], "position": true, "target": true, "origin": true},
+	"hit_landed": {"filter": ["origin", "damage_type", "kind", "target_team", "target_has_status", "min_amount", "tag"], "position": true, "target": true, "origin": true},
 	"enemy_killed": {"filter": ["origin", "target_has_status"], "position": true, "target": true, "origin": true},
 	"status_applied": {"filter": ["origin", "status_id", "target_team"], "position": true, "target": true, "origin": true},
 	"status_ended": {"filter": ["origin", "status_id", "reason", "target_team"], "position": true, "target": true, "origin": true},
@@ -189,6 +191,13 @@ static func _validate_modifiers(relic: Dictionary, errors: Array[String]) -> int
 			errors.append("modifiers[%d].stat must be a non-empty string" % i)
 		if typeof(modifier.get("modifier_type")) != TYPE_STRING or not [StatModifiers.ADDITIVE, StatModifiers.MULTIPLICATIVE].has(String(modifier["modifier_type"])):
 			errors.append("modifiers[%d].modifier_type must be '%s' or '%s'" % [i, StatModifiers.ADDITIVE, StatModifiers.MULTIPLICATIVE])
+		if modifier.has("per_run_stat") != modifier.has("per"):
+			errors.append("modifiers[%d]: 'per_run_stat' and 'per' go together" % i)
+		elif modifier.has("per_run_stat"):
+			if typeof(modifier["per_run_stat"]) != TYPE_STRING or not RUN_STATS.has(String(modifier["per_run_stat"])):
+				errors.append("modifiers[%d].per_run_stat must be one of %s" % [i, RUN_STATS])
+			if not _is_whole(modifier["per"]) or int(modifier["per"]) < 1:
+				errors.append("modifiers[%d].per must be a whole number from 1" % i)
 		if not _is_number(modifier.get("value")):
 			errors.append("modifiers[%d].value must be a number" % i)
 		elif typeof(stat) == TYPE_STRING:

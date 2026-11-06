@@ -43,6 +43,8 @@ var _triggers: Array[Dictionary] = []
 var _connected: Dictionary = {}
 ## The chain level of the job whose effects are running now (0 = none). A trigger matched meanwhile is level _depth + 1.
 var _depth: int = 0
+## Run-long numbers a scaled modifier reads (`per_run_stat`, MAP2-B): {stat id: value}. RunController sets them from the RunState.
+var _run_stats: Dictionary = {}
 var _fired_total: int = 0
 ## Matched triggers waiting to run: {trigger, event, level}.
 var _pending: Array[Dictionary] = []
@@ -104,6 +106,13 @@ func remove_relic(relic_id: String) -> bool:
 		if not _triggers.any(func(t: Dictionary) -> bool: return String(t["event"]) == event_id):
 			_unlisten(event_id)
 	return true
+
+
+## Sets the run stats scaled modifiers read (for example gold_spent_merchant) and re-applies the held relics' modifiers, so a value that
+## changed (a purchase) takes effect at once.
+func set_run_stats(stats: Dictionary) -> void:
+	_run_stats = stats.duplicate()
+	apply_modifiers()
 
 
 ## Applies every held relic's modifiers to the player (room start). Safe to call again: ids replace themselves.
@@ -175,7 +184,15 @@ func _apply_relic_modifiers(relic: Dictionary) -> void:
 		return
 	for i in range(list.size()):
 		var entry: Dictionary = list[i]
-		mods.add_modifier(String(entry["stat"]), _modifier_id(String(relic["id"]), i), String(entry["modifier_type"]), float(entry["value"]))
+		mods.add_modifier(String(entry["stat"]), _modifier_id(String(relic["id"]), i), String(entry["modifier_type"]), scaled_value(entry, _run_stats))
+
+
+## A modifier's value for the run so far: `value`, or `value` x floor(run stat / per) when it names a `per_run_stat` (+1% per 50 gold spent).
+static func scaled_value(entry: Dictionary, run_stats: Dictionary) -> float:
+	var value: float = float(entry["value"])
+	if not entry.has("per_run_stat"):
+		return value
+	return value * float(floori(float(run_stats.get(String(entry["per_run_stat"]), 0)) / float(maxi(int(entry["per"]), 1))))
 
 
 func _remove_relic_modifiers(relic: Dictionary) -> void:
@@ -221,7 +238,7 @@ func _handler_for(event_id: String) -> Callable:
 	match event_id:
 		"hit_landed":
 			return func(target: Node, amount: float, damage_type: String, kind: StringName, origin: String, position: Vector3) -> void:
-				handle_event({"event": event_id, "target": target, "amount": amount, "damage_type": damage_type, "kind": String(kind), "origin": origin, "position": position})
+				handle_event({"event": event_id, "target": target, "amount": amount, "damage_type": damage_type, "kind": String(kind), "origin": origin, "position": position, "tags": _origin_tags(origin)})
 		"enemy_killed":
 			return func(target: Node, position: Vector3, origin: String, statuses: Array[String]) -> void:
 				handle_event({"event": event_id, "target": target, "position": position, "origin": origin, "statuses": statuses})
@@ -251,6 +268,13 @@ func _handler_for(event_id: String) -> Callable:
 				handle_event({"event": event_id, "room_type": room_type, "origin": ""})
 	push_error("RelicManager: no handler for event '%s'" % event_id)
 	return Callable()
+
+
+## The tags of the card behind a "card:<id>" origin (the `tag` filter of hit_landed), else none.
+static func _origin_tags(origin: String) -> Array[String]:
+	if origin.begins_with("card:"):
+		return CardDatabase.tags_for(origin.substr(5))
+	return [] as Array[String]
 
 
 # --- matching and firing -----------------------------------------------------------------------

@@ -30,7 +30,18 @@ func _ctx(cap: int = 20, enabled: bool = true, character: String = "rogue") -> D
 	var ctx: Dictionary = RunChoices.shipped_context(CharacterDatabase.pools(character))
 	(ctx["relics"] as Dictionary)["enabled"] = enabled
 	(ctx["relics"] as Dictionary)["max_owned"] = cap
+	_keep_only(ctx, SHIPPED)
 	return ctx
+
+
+## MAP2-B: these tests were written for the original six relics (BD2); the catalog is cut back to them so the counts they pin stay meaningful.
+func _keep_only(ctx: Dictionary, ids: Array[String]) -> void:
+	var relics: Dictionary = ctx["relics"]
+	relics["catalog"] = (relics["catalog"] as Array).filter(func(r: Variant) -> bool: return ids.has(String((r as Dictionary)["id"])))
+	var by_id: Dictionary = {}
+	for relic: Variant in (relics["catalog"] as Array):
+		by_id[String((relic as Dictionary)["id"])] = relic
+	relics["by_id"] = by_id
 
 
 func _state(seed_value: int = 5, room_index: int = 3) -> RunState:

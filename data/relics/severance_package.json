@@ -1,0 +1,23 @@
+{
+    "id": "severance_package",
+    "name": "Severance Package",
+    "pool": "rogue",
+    "rarity": "tier2",
+    "sources": ["elite", "relic_room", "merchant"],
+    "keywords": ["Bleed"],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "enemy_killed",
+            "filter": { "target_has_status": "bleed" },
+            "at": "event_position",
+            "internal_cooldown": 0.0,
+            "effects": [
+                { "template": "aoe", "params": { "damage": 2, "damage_type": "physical", "radius": 2.5 } },
+                { "template": "apply_status", "params": { "status_id": "bleed", "duration": 4.0 } }
+            ]
+        }
+    ],
+    "rule_text": "When a Bleeding enemy dies, it bursts: nearby enemies take 2 damage and start Bleeding.",
+    "flavor_text": "Terms and conditions apply. Mostly to them."
+}

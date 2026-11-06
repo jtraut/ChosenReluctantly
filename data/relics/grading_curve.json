@@ -1,0 +1,28 @@
+{
+    "id": "grading_curve",
+    "name": "Grading Curve",
+    "pool": "wizard",
+    "rarity": "tier2",
+    "sources": ["elite", "relic_room", "merchant"],
+    "keywords": ["Zone", "Burn"],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "attack_fired",
+            "filter": { "attack_id": "heavy" },
+            "at": "event_position",
+            "internal_cooldown": 0.0,
+            "effects": [
+                {
+                    "template": "zone",
+                    "params": {
+                        "shape": "circle", "radius": 2.0, "duration": 2.0, "tick_interval": 0.5, "damage": 2.0, "damage_type": "fire",
+                        "max_range": 7.0, "status_id": "burn", "status_duration": 3.0, "status_chance": 0.5
+                    }
+                }
+            ]
+        }
+    ],
+    "rule_text": "Your heavy attack leaves a burning zone for 2 s where it lands.",
+    "flavor_text": "Graded on a curve. The curve is on fire."
+}

@@ -1,0 +1,12 @@
+{
+    "id": "asap_notice",
+    "name": "ASAP Notice",
+    "pool": "neutral",
+    "rarity": "tier1",
+    "sources": ["elite", "relic_room", "merchant"],
+    "keywords": [],
+    "modifiers": [ { "stat": "slot_cooldown.movement", "modifier_type": "multiplicative", "value": -0.15 } ],
+    "triggers": [],
+    "rule_text": "Your Movement slot recovers 15% faster.",
+    "flavor_text": "Marked urgent. Everything is marked urgent."
+}

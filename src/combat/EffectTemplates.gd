@@ -80,6 +80,8 @@ const STATUS_DAMAGE_MULT_FLOOR := -1.0
 ## And one additive stat: zone_status_chance adds to the chance of a zone's status each tick (ZoneManager.spawn), capped at 1.
 const CARD_DAMAGE_VS_STATUS_PREFIX := "card_damage_mult_vs_status."
 const ZONE_DURATION_MULT_STAT := "zone_duration_mult"
+## MAP2-B: damage_mult scales every hit the owner deals (Health.take_damage), base 1.0 (Liquidate Assets).
+const DAMAGE_MULT_STAT := "damage_mult"
 const ZONE_STATUS_CHANCE_STAT := "zone_status_chance"
 ## reduce_cooldown (BD2-B, a new effect type): takes `seconds` off the running cooldown of the caster's `slot_type` slot (never below ready).
 const MAX_REDUCE_COOLDOWN := 60.0
@@ -171,7 +173,7 @@ static func _number_in(value: Variant, minimum: float, maximum: float, inclusive
 
 ## True for a stat whose base is 1.0 and which must stay above zero (a "factor" stat).
 static func is_factor_stat(stat: String) -> bool:
-	return stat.begins_with(StatusEffectManager.STATUS_DAMAGE_MULT_PREFIX) or stat.begins_with(CARD_DAMAGE_VS_STATUS_PREFIX) or stat == ZONE_DURATION_MULT_STAT
+	return stat.begins_with(StatusEffectManager.STATUS_DAMAGE_MULT_PREFIX) or stat.begins_with(CARD_DAMAGE_VS_STATUS_PREFIX) or stat == ZONE_DURATION_MULT_STAT or stat == DAMAGE_MULT_STAT
 
 
 static func _validate_buff(params: Dictionary, errors: Array[String]) -> void:

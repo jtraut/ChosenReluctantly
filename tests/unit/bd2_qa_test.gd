@@ -22,11 +22,22 @@ func _ctx(cap: int, character: String = "rogue", with_boss_fixture: bool = false
 	var ctx: Dictionary = RunChoices.shipped_context(CharacterDatabase.pools(character))
 	(ctx["relics"] as Dictionary)["enabled"] = true
 	(ctx["relics"] as Dictionary)["max_owned"] = cap
+	_keep_only(ctx, ["heavy_sigh", "lingering_embers", "pyre_insurance", "second_wind_unwillingly", "smoldering_grudge", "spite_knuckles"] as Array[String])
 	if with_boss_fixture:
 		var boss: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(BOSS_FIXTURE))
 		(ctx["relics"]["catalog"] as Array).append(boss)
 		(ctx["relics"]["by_id"] as Dictionary)["test_boss"] = boss
 	return ctx
+
+
+## MAP2-B: these tests were written for the original six relics (BD2); the catalog is cut back to them so the counts they pin stay meaningful.
+func _keep_only(ctx: Dictionary, ids: Array[String]) -> void:
+	var relics: Dictionary = ctx["relics"]
+	relics["catalog"] = (relics["catalog"] as Array).filter(func(r: Variant) -> bool: return ids.has(String((r as Dictionary)["id"])))
+	var by_id: Dictionary = {}
+	for relic: Variant in (relics["catalog"] as Array):
+		by_id[String((relic as Dictionary)["id"])] = relic
+	relics["by_id"] = by_id
 
 
 # --- the relic choice flow as a property run -----------------------------------------------------

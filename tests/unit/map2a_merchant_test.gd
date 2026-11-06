@@ -32,6 +32,14 @@ func _ctx_with(extra: Array[Dictionary], cap: int = 20, free_rerolls: int = 0) -
 	return ctx
 
 
+## Takes the shipped shop-only relics out of the context's catalog, so a test can use fixture shop-only relics alone.
+func _drop_shipped_shop_only(ctx: Dictionary) -> void:
+	var relics: Dictionary = ctx["relics"]
+	relics["catalog"] = (relics["catalog"] as Array).filter(func(r: Variant) -> bool: return not (Merchant.is_shop_only(r) and not String((r as Dictionary)["id"]).begins_with("t_")))
+	for id: String in ["liquidate_assets", "request_for_quotation", "as_per_the_attached_document"]:
+		(relics["by_id"] as Dictionary).erase(id)
+
+
 func _state(seed_value: int = 11, gold: int = 500) -> RunState:
 	var state := RunState.new_run(seed_value, CharacterDatabase.starting_deck("rogue"), 3)
 	state.gold = gold
@@ -152,6 +160,7 @@ func test_stock_never_holds_an_owned_or_given_up_relic() -> void:
 func test_the_third_slot_holds_a_shop_only_relic_when_one_is_eligible() -> void:
 	var shop_only: Array[Dictionary] = [_relic("t_shop_a", "tier1", ["merchant"]), _relic("t_shop_b", "tier2", ["merchant"])]
 	var ctx: Dictionary = _ctx_with(shop_only)
+	_drop_shipped_shop_only(ctx)  # the three shipped shop-only relics (MAP2-B) would also fill the slot
 	for seed_value in range(1, 40):
 		var relics: Array = Merchant.open_visit(_state(seed_value), 20, ctx)["relics"]
 		assert_int(relics.size()).is_equal(3)

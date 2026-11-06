@@ -14,6 +14,7 @@ const BOSS_ID := "boss_guardian"
 func before_test() -> void:
 	BossConfig.reset_cache()
 	BossStagger.disable()  # D16: this suite pins the roar; the stagger has its own suite (p_dodge_boss_test)
+	RunSession.map_override = 0  # MAP1: straight run (the map ships on)
 	Juice.hit_stop_enabled = false
 	RunSession.clear()
 
@@ -25,6 +26,7 @@ func after_test() -> void:
 	Engine.time_scale = 1.0
 	RunSession.clear()
 	RunSession.full_deck = false
+	RunSession.map_override = -1
 	BossConfig.reset_cache()
 
 

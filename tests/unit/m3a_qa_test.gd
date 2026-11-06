@@ -11,11 +11,13 @@ const WAVE_SIM_PATH := "res://tools/wave_sim.gd"
 
 
 func before_test() -> void:
+	RunSession.map_override = 0  # MAP1: this suite is about the straight run (the map ships on)
 	RunSession.clear()
 
 
 func after_test() -> void:
 	RunSession.clear()
+	RunSession.map_override = -1
 	Juice.reset()
 	GamePause.reset()
 	Engine.time_scale = 1.0

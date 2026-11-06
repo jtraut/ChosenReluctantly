@@ -10,10 +10,12 @@ const BOSS_PATH := "res://scenes/enemies/BossGuardian.tscn"
 
 
 func before_test() -> void:
+	RunSession.map_override = 0  # MAP1: straight run (the map ships on)
 	Juice.hit_stop_enabled = false
 
 
 func after_test() -> void:
+	RunSession.map_override = -1
 	Juice.hit_stop_enabled = true
 	Juice.reset()
 

@@ -1737,3 +1737,51 @@ gameplay-dev made these in afdf30d..ed4e2aa. The map ships off (`data/map.json` 
 - **Validator bounds:** `MAX_ROOMS` 16, `walks` 2-16, `columns` 2-8.
 - **Relic-counting types** for the estimate are a code constant (`MapConfig.RELIC_TYPES`), not data.
 - **Docs:** MAP.md §3.4 and §6 are updated by game-lead to 0.4 and the new weights.
+
+## 2026-11-05 - MAP1-B map run flow calls (gameplay-dev, logged by game-lead)
+gameplay-dev made these calls in 2181b9b..3a2d9d8. The map is still off in shipped data.
+- **Gates:** suite 1671/1671. All map-off gates are unchanged (arena 1897787086 / 4207041509; bot sim 846850403; run sim 12/12, 57.3 s / 62.5 s). No-card runs: 0/12 on both the straight run and `-Route first`.
+- **Gold** (`run.json` `gold`):
+  - combat [12, 18], elite [30, 40], mini_boss [45, 55] (unused until MAP3);
+  - boss, rest and relic stage pay 0;
+  - gold is paid once, at `_finish_room`;
+  - `--run-room` gives no gold for skipped rooms.
+- **Chests** (`map.json` `chests`, optional):
+  - small uses the act's row, medium the next act's row, and large the act 3 row with `min_tier` 2;
+  - weights 50/35/15;
+  - sizes are assigned in a post-pass with their own stream, so map layouts are byte-identical to MAP1-A.
+- **Map runs:**
+  - A run is a map run when its RunState holds a map. The data switch only decides what new runs get.
+  - A map run opens on the room-1 pick.
+  - `--run-room=N` lays the path along the `first` route.
+  - `from_dict` drops the map loudly when `path` and `room_index` disagree.
+- **Launch refusals:** `--map` and `--no-map` exit 2 only when both are given, either is repeated, or a value form is used.
+- **Route policies:**
+  - `relic` maximizes the estimate; ties go to the lowest column.
+  - `safe` prefers the fewest elite-like nodes, then the most rests, then the lowest column.
+  - `random` has its own rng.
+- **Two edits in ux files,** both needed for the flow and pinned by tests:
+  - `ClassPickScreen.should_open` opens only at a map run's start.
+  - `RunPromptScreen` stays open when a new choice follows a reward.
+- **The bot sim `-Swap` carry-over is not a bug.** A Recovery swap never shows, because the bot-sim caster is never damaged. An Attack swap moves the plan checksum.
+- **Route baselines** (`-Run -Seed 1 -Runs 12 -Route r`):
+
+  | Class | Route | Won | Boss median | Median relics | Median gold |
+  |---|---|---|---|---|---|
+  | Rogue | first | 12/12 | 66.2 s | 2.5 | 144 |
+  | Rogue | relic | 11/12 | 52.9 s | 5 | 147.5 |
+  | Rogue | safe | 12/12 | 58.4 s | 2 | 100 |
+  | Wizard | first | 10/12 | 60.6 s | 2 | 130 |
+  | Wizard | relic | 11/12 | 63.2 s | 5 | 146 |
+  | Wizard | safe | 12/12 | 65.0 s | 2 | 100 |
+
+  The relic route's median of 5 sits at the bottom of `relic_route` [5, 7]. Content limits it: the Rogue has 6 relics and the Wizard 5.
+
+## 2026-11-05 - Large chest without its tier floor until tier 3 relics exist (game-lead)
+- **Choice:** the large chest's `min_tier` goes from 2 to 1 for now. It still uses the act 3 row (5/25/70), but today's catalog has no tier 3 relics. So it draws mostly tier 2, fills with tier 1, and offers a full 3.
+- **Why:** with only 2 tier 2 relics (Heavy Sigh, Lingering Embers) and 0 tier 3, a large chest with the floor offers at most 2 relics. Once both are held, it falls back to a card offer. A chest labelled "Large" that hands you cards reads as broken.
+- **Restore `min_tier` 2 in MAP3,** when tier 3 relics arrive.
+- **Rejected:**
+  - keeping the floor (thin or empty offers);
+  - setting the large weight to 0 (it loses the visible chest-size choice the director asked for).
+- **Owner:** ux makes this one-line `data/map.json` edit when it flips `enabled` to true (game-lead's instruction).

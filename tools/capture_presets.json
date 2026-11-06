@@ -76,6 +76,21 @@
         "class": "rogue", "scenario": "", "after": "3.0",
         "extra": ["--map", "--run-seed=54", "--run-room=6"]
     },
+    "merchant_shop": {
+        "description": "MAP2 (qa): the merchant's shop. Seed 54, map node 33 (the room 9 merchant), 200 gold, starter deck (the removal entry is greyed with its reason). Re-check the node id with tools\\run_map_print.ps1 -Seed 54 if the generator changes.",
+        "class": "rogue", "scenario": "", "after": "3.0",
+        "extra": ["--map", "--run-seed=54", "--run-node=33", "--run-gold=200"]
+    },
+    "merchant_shop_poor": {
+        "description": "MAP2 (qa): the same shop with 20 gold, so every item shows its 'Need N more gold' reason.",
+        "class": "rogue", "scenario": "", "after": "3.0",
+        "extra": ["--map", "--run-seed=54", "--run-node=33", "--run-gold=20"]
+    },
+    "merchant_removal": {
+        "description": "MAP2 (qa): the merchant's card removal list with a full deck and 200 gold (the opening option id is merchant_remove_menu).",
+        "class": "rogue", "scenario": "", "after": "4.0",
+        "extra": ["--map", "--run-seed=54", "--run-node=33", "--run-gold=200", "--full-deck", "--run-auto-choose=merchant_remove_menu"]
+    },
     "bd2_pyre_explosion": {
         "description": "BD2: a Pyre Insurance explosion. Arena scenario, fixed deck: a Burning enemy dies at 0.6 s and its Burn bursts over the three beside it.",
         "class": "rogue", "scenario": "bd2_pyre_explosion", "after": "0.7,1.0"

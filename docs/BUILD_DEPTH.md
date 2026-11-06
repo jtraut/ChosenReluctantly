@@ -292,6 +292,18 @@ The idea for each source is credited to his summary. Anything about those games 
   - They never appear in card offers.
   - Not relics, so they don't touch the cap.
 - **Counts:** more sources mean more relics, so MAP.md §4.5's targets stay (hunter 14-17, ignore route 6-8, cap 20 hard to reach) and the sim lowers weights or raises prices to hold them. Starter relics count toward the cap.
+- **MAP2 relic picks (game-lead, 2026-11-06; DECISIONS "MAP2 split"):**
+  - **Why:** the 6 BD2 relics give a Rogue 6 eligible relics and a Wizard 5, which is too few for a relic hunter's 6-8. MAP2 adds 7, so each class has 11.
+  - **Pool** (elite, relic_room, merchant):
+    - ASAP Notice [neutral, t1];
+    - Severance Package [rogue, t2];
+    - Paperwork Fire [wizard, t1];
+    - Grading Curve [wizard, t2].
+  - **Shop-only** (`["merchant"]`):
+    - Liquidate Assets [neutral, t2, was t3]: tier 3 has weight 0 in act 1, so a tier 3 relic would never be stocked;
+    - Request for Quotation [neutral, t1; placeholder name]: the shop expander, 1 free reroll per visit;
+    - As Per the Attached Document [neutral, t2, re-sourced as shop-only].
+  - Re-tier Liquidate Assets at MAP3 once acts 2-3 exist.
 - **Content to add over MAP2-3d:**
   - about 3 shop-only relics;
   - about 6 event-only relics;

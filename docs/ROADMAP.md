@@ -961,6 +961,51 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
       - bigger legend text, small-chest dot and Spite pips at 1024x600;
       - reword the Skip line;
       - add a gold "spend at the merchant" line on the map.
+  - **Split and scope (game-lead, 2026-11-06; DECISIONS "MAP2 split").** gameplay-dev works in two sittings, then ux, qa, playtest and docs run once each.
+    - **Blocker found while scoping: the relic pool is too small.** There are 6 relics. A Rogue can be offered 6 of them, a Wizard 5 (no Wizard-pool relic). A relic hunter would empty the pool before the merchant, so the 6-8 target can't be met. MAP2 therefore adds 4 pool relics and 3 shop-only relics, which gives each class 11 eligible relics.
+    - **MAP2-A, the merchant engine (gameplay-dev). Nothing changes for the player except the D40 rule.**
+      1. **D40 default A:** a `min_rest` 1 path rule in `data/map.json` `path_rules`, validated, checked on every path, and covered by the sweep.
+      2. `run.json` `merchant` block (card price 40, removal 50 + 25 per removal, relic stock 3, card stock 3) and `relics.prices` (tier1 60, tier2 90, tier3 130; boss never sold), validated.
+      3. A merchant model (no UI):
+         - **stock seeded from the run seed and node id:** 2 relics from source `merchant` through the BD2 offer function, plus a third slot that holds only shop-only relics (`sources` exactly `["merchant"]`) and falls back to normal stock when none is eligible; 3 cards by the reward weights; removal;
+         - **no owned or given-up relics, and no duplicates** within the stock;
+         - **a buy API:** gold never goes negative; buying a relic at the cap returns "needs a give-up" so the run flow can use BD2's give-one-up step; removal goes through `can_remove`, and the price rises after each removal; buy several in one visit, in any order;
+         - **a reroll hook** for the shop-expanding relic (MAP2-B), seeded and deterministic.
+      4. RunState: `merchant_removals`, `gold_spent_merchant`, and the open merchant visit (stock, sold items, reroll used) in `to_dict`/`from_dict`/`equals`. Restoring mid-merchant gives the same stock.
+      5. Bring `map.json` `estimate` in line with the stock: 2 normal relics plus 1 shop-only, at tier prices.
+      6. MAP1 carry-overs:
+         - add `--no-map` to the `removal_screen` and `bd2_relic_*` capture presets;
+         - fix the `MapGenerator.gd:59` script error when no type is a candidate.
+      7. **The merchant stays off in shipped data:** `merchant` weight 0, and `relic_route` stays [5, 7].
+      - **Gates:**
+        - the full suite is green;
+        - the arena hashes, bot sim 846850403 and `-NoMap` run baselines are unchanged;
+        - map-on `-Route` numbers can move only through `min_rest`; report the new ones;
+        - the 1000-seed sweep has 0 failures, with worst-case attempt counts reported after `min_rest` lands.
+    - **MAP2-B, content, run flow and bots (gameplay-dev).**
+      1. **7 relics** (BUILD_DEPTH §4.7, "MAP2 relic picks"). They use existing triggers and effects, except where noted.
+         - **Pool**, sources elite, relic_room and merchant:
+           - ASAP Notice [neutral, tier 1];
+           - Severance Package [rogue, tier 2];
+           - Paperwork Fire [wizard, tier 1];
+           - Grading Curve [wizard, tier 2].
+         - **Shop-only**, `sources` `["merchant"]`:
+           - Liquidate Assets [neutral, tier 2]: +1% damage per 50 gold spent at the merchant this run. New code: a gold-spent stat.
+           - Request for Quotation [neutral, tier 1]: 1 free reroll of the merchant's relic and card stock per visit, usable in the visit you buy it. New code: a `merchant.free_rerolls` modifier.
+           - As Per the Attached Document [neutral, tier 2]: a heavy hit takes 1.5 s off the Attack: AoE cooldown, using the existing `reduce_cooldown`.
+         - **If a pick needs new effect code**, swap in one of these and tell game-lead: Muscle Memory, Chronokeeper's Hourglass (elite half), Watercooler Chat, Overtime (Unpaid).
+      2. The merchant node in the map run flow, using the BD2 give-one-up step at the cap, plus a data hook for ux: the stock, prices, gold, the reason a disabled item can't be bought, and the removal list.
+      3. **A sim override that turns the merchant on** (`-Merchant` or a map-data override) with weight 8, `max_merchants` 1 and `relic_route` [6, 8].
+      4. **Bots:** on the `relic` route, buy relics first; on the `safe` route, buy a removal, then a card. The report adds gold spent, relics bought and removals.
+      5. Run `-Route relic|safe|first` for both classes with the override and report the median relic counts. The targets are 6-8 on relic routes and 2-3 on safe routes.
+      6. **Get the suite ready for the switch:** run the full suite locally with the override on, and fix any test that assumes there's no merchant. Then commit with the merchant still off.
+      - **Allowed data knobs if the sweep or the targets fail:** type weights, `max_attempts` (up to 1000), the rest window (down to [4, 9]) and relic prices. Report every change, and game-lead logs it.
+    - **ux-designer (after MAP2-B):**
+      - the merchant panel, as in the ux bullet above;
+      - the MAP1 ux carry-overs folded in above, including the `_triggers` cleanup;
+      - **turn the merchant on:** `map.json` `merchant` weight 8 and `relic_route` [6, 8];
+      - captures.
+    - **qa (after ux):** the qa bullet above, plus re-baselining the map-on `-Route` numbers. The `-NoMap`, arena and bot-sim numbers must not move. gameplay-dev comes back only if switching the merchant on turns the suite red.
 - [ ] **MAP3, three acts (right after MAP2; D33 = B, director 2026-11-04). Full loop. Tag `playtest-YYYY-MM-DD-MAP3`.** Plan: `docs/MAP.md` §1, §4.5, §8. Detailed brief at MAP2's close.
   - **Goal:** a run is three acts of 10 rooms (30 rooms). Acts 1 and 2 end in a mini-boss, act 3 in the final boss. 30-45 minutes per run, and you can save and come back later (GDD §9).
   - **Scope:** acts 2-3 as their own maps; 2 act-end mini-boss encounters (`run.json` `tiers.mini_boss`, existing enemies + adds); act scaling (data multipliers per act; values from the sim, not hand-picked); new wave lists for acts 2-3 (today's 4 combat + 1 elite list would repeat badly); act transition screen ("Act 2"); "Room N of 30"; relics, cards and gold per D34 = C as revised by the director 2026-11-04 (MAP.md §4.5): cap 20, relic tier odds per act, per-act path rules, merchant 80/120/170; act-end mini-bosses give gold, a boss-tier relic (pick 1 of 3, no skip, the only source) and 3 rare (act 1) or 3 legendary (act 2) cards; card `rarity` (common/rare/legendary) with rare from act 2 and legendary from act 3; rejects stay 3 per run (D35 = A). **Content:** about 5+ rare and 4+ legendary cards per class pool, about 6 boss-tier relics per class (a game-lead design pass in BUILD_DEPTH first; they may need new effect code), about 22 tier 1-3 relics per class (15 sketched today). **At MAP2's close, split the rarity and boss-relic content into its own slice (MAP3b) if MAP3 is too big for one sitting.** **Save and resume:** autosave at every room boundary, one slot, `user://` with an injectable path, versioned and validated, built on RunState `to_json`/`equals`; Continue on the start screen; deleted on win or loss; quitting mid-fight restarts the room. Must ship in this slice, not later. **Restore the large chest's `min_tier` 2 in `data/map.json` once tier 3 relics exist (DECISIONS "Large chest", 2026-11-05).** **Save robustness first (moved from 3d item 6a at BD2's qa, game-lead 2026-11-04):** `from_dict` must not crash on wrongly-typed `offer`, `deck` or `choice_log` entries. It must also check that relics and given-up relics don't overlap, that relics fit the cap, and that relic ids exist.

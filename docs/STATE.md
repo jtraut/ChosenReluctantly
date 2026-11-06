@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-05 (MAP1 closed, tag `playtest-2026-11-05-MAP1`). **Run order:** MAP1 (done) -> **MAP2 (merchant, next)** -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1.
+Last updated: 2026-11-06 (MAP2 scoped and split; **MAP2-A in progress, gameplay-dev next**). MAP1 closed with tag `playtest-2026-11-05-MAP1`. **Run order:** MAP1 (done) -> **MAP2 (merchant, next)** -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1.
 
 ## What's done
 - **MAP1 closed 2026-11-05:** split into MAP1-A and MAP1-B (DECISIONS "MAP1 split").
@@ -96,13 +96,14 @@ Last updated: 2026-11-05 (MAP1 closed, tag `playtest-2026-11-05-MAP1`). **Run or
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- Nothing in progress. Working tree clean.
+- **MAP2, the merchant. Scoped and split 2026-11-06** (ROADMAP MAP2, "Split and scope"; DECISIONS "MAP2 split").
+  - **Order:** MAP2-A (the merchant engine, D40 `min_rest`, MAP1 carry-overs) -> MAP2-B (7 relics, the run flow, the sim override, bots, getting the suite ready for the switch) -> ux (panel, carry-overs, switches the merchant on) -> qa -> playtester -> tech-writer -> close.
+  - **Found while scoping:** the relic pool was too small for the 6-8 hunter target (Rogue 6 eligible, Wizard 5). MAP2-B adds 4 pool relics and 3 shop-only relics (BUILD_DEPTH §4.7, "MAP2 relic picks").
+  - D40 isn't answered yet, so the build uses default A.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step
-1. **MAP2, the merchant** (ROADMAP brief; `docs/MAP.md` §4.4). It includes the items folded in at MAP1's close and the D40 answer (default A, `min_rest` 1).
-   - game-lead re-reads the brief and splits it into sittings if it's as large as MAP1 (log the split).
-   - Full loop: gameplay-dev -> ux-designer -> qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-MAP2`.
+1. **gameplay-dev: MAP2-A** (ROADMAP MAP2, "MAP2-A"). Then MAP2-B, then ux-designer, qa, playtester, tech-writer, and close with tag `playtest-YYYY-MM-DD-MAP2`. The merchant stays off (weight 0) until ux's step.
 2. Then **MAP3**, **MAP4**, **3d**, **BD3**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).

@@ -1854,3 +1854,35 @@ The boss bar width is now floored to whole pixels.
   - The `from_dict` node-pending soft lock and negative gold go with MAP3's save robustness, before any save file exists.
   - Rejected: fixing them before the MAP1 playtest. None of them is reachable from play or from shipped data.
 - **The playtester uses the `map_*` presets.** For the older `bd2_*` and `removal_screen` presets it adds `--no-map`.
+
+## 2026-11-06 - MAP2 split, relic pool growth, shop-only relic picks, and the merchant switch (game-lead)
+- **Split:** gameplay-dev works in two sittings, like MAP1.
+  - **MAP2-A, the merchant engine:**
+    - the `merchant` and `relics.prices` data;
+    - the stock, buying and reroll model;
+    - RunState and save;
+    - D40 `min_rest`;
+    - the MAP1 carry-overs.
+  - **MAP2-B:**
+    - 7 relics;
+    - the merchant node in the run flow;
+    - a sim override;
+    - bots;
+    - getting the suite ready for the switch.
+  - ux, qa, playtest and docs then run once each. **Why:** MAP1 was this size and needed two sittings. The engine can be tested on its own.
+- **D40 is built as default A** (`min_rest` 1). The director hasn't answered. If he picks B, set `min_rest` to 0. If he picks C, it's a fixed room 9 rest, which is a data change plus a generator rule.
+- **The relic pool grows in MAP2. This was found while scoping.**
+  - **The gap:** 6 relics exist. A Rogue is eligible for 6 and a Wizard for 5. A relic hunter would empty the pool before reaching the merchant, so MAP2's qa target of 6-8 relics on relic routes couldn't be met.
+  - **The fix:** add 4 pool relics (ASAP Notice, Severance Package, Paperwork Fire, Grading Curve) and 3 shop-only relics. Each class then has 11 eligible relics.
+  - They come from the BUILD_DEPTH §4.5 and §4.8 candidates, chosen because they need no new effect code. Backups are named in the brief.
+  - **Rejected:** logging the target as unreachable until MAP3. The merchant would often show an empty stock, and the playtest question ("is a relic route a real alternative?") couldn't be answered.
+- **Shop-only relics:**
+  - **Liquidate Assets:** the docs tag it as shop-only. It moves from tier 3 to tier 2, because act 1's weights are 80/20/0 and the offer function drops weight-0 tiers, so a tier 3 relic would never be stocked. Its value stays as documented (+1% per 50 gold spent). If that's weak in one act, it goes to BD3 or the sim. Re-tier it at MAP3.
+  - **The shop expander:** 1 free reroll per visit, usable in the visit you buy it. **Rejected: +1 relic slot.** With `max_merchants` 1 there's no later visit, so the extra slot would do nothing. "Request for Quotation" is a placeholder name.
+  - **The third:** As Per the Attached Document, moved to shop-only. It uses the existing `reduce_cooldown`.
+- **Switching the merchant on:**
+  - MAP2-A and MAP2-B ship with `merchant` weight 0 and `relic_route` [5, 7].
+  - MAP2-B adds a sim override that turns the merchant on, so prices, `relic_route` [6, 8] and the bot buying can be measured before the switch. It also runs the suite locally with the merchant on and fixes any test that assumes there's no merchant.
+  - ux switches the merchant on with its panel, and qa re-baselines the map-on `-Route` numbers. The `-NoMap`, arena and bot-sim numbers mustn't move.
+  - **Rejected: MAP1's approach** (ux switches the feature on with no preparation). It turned the suite red and needed a gameplay-dev return trip (3841b41..0226ec9).
+- **Allowed data knobs** if the 1000-seed sweep or the relic targets fail: type weights, `max_attempts` up to 1000, the rest window down to [4, 9], and relic prices. Each change gets logged.

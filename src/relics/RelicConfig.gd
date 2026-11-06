@@ -31,7 +31,9 @@ static func validate_block(block: Variant) -> Array[String]:
 		errors.append("relics.offer_count must be a whole number in [1, %d]" % MAX_OFFER_COUNT)
 	errors.append_array(_validate_tier_weights(b.get("tier_weights")))
 	errors.append_array(_validate_relic_room(b.get("relic_room")))
-	if b.has("prices"):
+	if not b.has("prices"):
+		errors.append("relics.prices is missing (the merchant's price per tier)")
+	else:
 		errors.append_array(validate_prices(b["prices"]))
 	return errors
 

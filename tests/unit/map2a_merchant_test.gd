@@ -82,7 +82,7 @@ func test_relic_prices_are_validated_and_the_boss_tier_is_never_priced() -> void
 	var block: Dictionary = (RunConfig.get_config()["relics"] as Dictionary).duplicate(true)
 	assert_array(RelicConfig.validate_block(block)).is_empty()
 	block.erase("prices")
-	assert_array(RelicConfig.validate_block(block)).is_empty()
+	assert_bool(" ".join(RelicConfig.validate_block(block)).contains("prices")).is_true()  # required, so a missing block is loud
 
 
 func test_the_estimate_prices_match_the_relic_prices_and_the_stock_size() -> void:

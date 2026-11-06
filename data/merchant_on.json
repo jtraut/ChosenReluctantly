@@ -1,0 +1,8 @@
+{
+    "map": {
+        "types": { "merchant": { "weight": 8 } },
+        "path_rules": { "max_merchants": 1, "relic_route": [6, 8] },
+        "estimate": { "merchant_prices": [35, 35, 55] }
+    },
+    "run": {}
+}

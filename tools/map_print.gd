@@ -6,6 +6,7 @@ extends SceneTree
 ##   --sweep=N       generate seeds 1..N instead: prints failures, the attempts histogram and the time taken; exits 1 on any failure
 ##   --set=a.b.c=JSON  override one config value for this run only (tuning experiments; repeatable), e.g. --set=types.rest.weight=20 --set=types.rest.rooms=[4,9]
 ##   --from=N        with --sweep: start at seed N (seeds N .. N+sweep-1; default 1)
+##   --merchant      turn the merchant on first (data/merchant_on.json merged into the map config, MAP2-B); --set values are applied on top
 ##   --route=first   also print the `first` route's node ids
 ## Output: one line per room (cells by column: C combat, E elite, R* relic stage, Rs rest, M merchant, MB mini-boss, BOSS), the edges
 ## as column pairs, the wave ids, then the path-rule scores (paths, min fights, max elite-like, rests, merchants, relic estimate best and worst).
@@ -16,6 +17,7 @@ func _initialize() -> void:
 	var sweep: int = 0
 	var first_seed: int = 1
 	var show_route: bool = false
+	var merchant_on: bool = false
 	var overrides: Array[String] = []
 	for arg: String in OS.get_cmdline_user_args():
 		if arg.begins_with("--seed="):
@@ -26,6 +28,8 @@ func _initialize() -> void:
 			first_seed = int(arg.substr(7))
 		elif arg == "--route=first":
 			show_route = true
+		elif arg == "--merchant":
+			merchant_on = true
 		elif arg.begins_with("--set="):
 			overrides.append(arg.substr(6))
 	var cfg: Dictionary = MapConfig.get_config()
@@ -33,6 +37,13 @@ func _initialize() -> void:
 		printerr("map_print: data/map.json is invalid: ", "; ".join(MapConfig.load_problems()))
 		quit(1)
 		return
+	if merchant_on:
+		var switched: Dictionary = MerchantSwitch.patched_map()
+		if (switched["config"] as Dictionary).is_empty():
+			printerr("map_print: the merchant patch is invalid: ", "; ".join(switched["problems"]))
+			quit(2)
+			return
+		cfg = switched["config"]
 	if not overrides.is_empty():
 		cfg = cfg.duplicate(true)
 		for item: String in overrides:

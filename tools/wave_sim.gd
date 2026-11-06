@@ -141,6 +141,8 @@ var _swap_in: String = ""
 var _route_policy: String = ""
 ## `--sim-no-map` (-NoMap): the straight run, whatever data/map.json says (RunSession.map_override = 0). Not combinable with -Route / -Map.
 var _no_map: bool = false
+## `--sim-merchant` (-Merchant, MAP2-B): the merchant is on for this process (MerchantSwitch: data/merchant_on.json). Implies the map (the `first` route when no -Route is given).
+var _merchant: bool = false
 var _route: Array[int] = []
 ## Damage the player's side dealt to enemies, by origin, for the current run and for all runs (BD2-B; run mode). Fed by CombatEvents.hit_landed.
 var _damage_run: Dictionary = {}
@@ -218,6 +220,8 @@ func _ready() -> void:
 			_no_relics = true
 		elif arg == "--sim-no-map":
 			_no_map = true
+		elif arg == "--sim-merchant":
+			_merchant = true
 		elif arg == "--sim-map":
 			if _route_policy == "":
 				_route_policy = "first"
@@ -242,6 +246,16 @@ func _ready() -> void:
 		RunSession.selected_character = preset_class
 	if _route_policy != "" and not _run_mode:
 		push_error("wave sim: -Route and -Map need -Run")
+		get_tree().quit(2)
+		return
+	if _merchant and _route_policy == "" and not _no_map:
+		_route_policy = "first"
+	if _merchant and _no_map:
+		push_error("wave sim: -Merchant needs the map; it cannot be combined with -NoMap")
+		get_tree().quit(2)
+		return
+	if _merchant and not MerchantSwitch.apply():
+		push_error("wave sim: -Merchant could not apply data/merchant_on.json")
 		get_tree().quit(2)
 		return
 	if _no_map and _route_policy != "":
@@ -830,6 +844,8 @@ func _report(run_seed: int, wall_ms: int) -> void:
 		_damage_taken, _kills, _casts, _max_alive, mean_alive, _main.enemy_spawner.plan.stages_started(), _max_stall])
 	print("    result: seed %d hp_lost %.3f kills %d casts %d alive_max %d stages %d sim_time %.3f state_hash %d" % [
 		run_seed, _damage_taken, _kills, _casts, _max_alive, _main.enemy_spawner.plan.stages_started(), _sim_time, _state_hash()])
+	if _merchant:
+		print("    merchant: visited %s | gold spent %d | relics bought %d, cards bought %d, removals %d, rerolls %d" % [str(_visited_merchant(result)), int(result["gold_spent"]), int(result["shop_relics"]), int(result["shop_cards"]), int(result["shop_removals"]), int(result["shop_rerolls"])])
 	if _plan:
 		print("    plan policy: %d card casts (%d with the condition live, %d held payoff casts), %d dead-card swaps" % [int(_plan_stats["casts"]), int(_plan_stats["live_casts"]), int(_plan_stats["held_casts"]), int(_plan_stats["swaps"])])
 	print("    pinned: %d of %d move-commanded frames (%.1f%%), longest stretch %d frames (%.2f s)" % [
@@ -913,7 +929,7 @@ func _run_whole(run_seed: int) -> void:
 			controller.continue_to_next_room()  # a straight run swaps scenes here; a map run opens its pick-next-node choice
 		if controller.has_choice():
 			var guard: int = 0
-			while controller.has_choice() and guard < 8:
+			while controller.has_choice() and guard < 60:  # a merchant visit is many choices
 				guard += 1
 				var choice_id: String = _policy_choose(controller)
 				var outcome: Dictionary = controller.choose(choice_id)
@@ -987,6 +1003,8 @@ func _policy_choose(controller: RunController) -> String:
 			return RelicPolicy.giveup_choice(options)
 		RunState.PENDING_NODE:
 			return "node:%d" % _route[state.room_index + 1]  # the route bot follows its planned route (RouteBot)
+		RunState.PENDING_MERCHANT, RunState.PENDING_MERCHANT_REMOVE, RunState.PENDING_MERCHANT_SWAP:
+			return MerchantPolicy.choose(String(model["choice"]), options, state, _route_policy)  # no random draws: the other seeded choices do not shift
 		RunState.PENDING_REST:
 			var heal_id: String = ""
 			var menu_id: String = ""
@@ -1026,6 +1044,10 @@ func _record_deck_and_hp(result: Dictionary) -> void:
 	var relic_picks: int = 0
 	var relic_skips: int = 0
 	var relic_swaps: int = 0
+	var shop_relics: int = 0
+	var shop_cards: int = 0
+	var shop_removals: int = 0
+	var shop_rerolls: int = 0
 	if state != null:
 		for entry: Dictionary in state.history:
 			hp_ends.append(snappedf(float(entry["hp_end"]), 0.1))
@@ -1043,6 +1065,10 @@ func _record_deck_and_hp(result: Dictionary) -> void:
 				"relic_swap":
 					relic_picks += 1
 					relic_swaps += 1
+				"merchant_relic": shop_relics += 1
+				"merchant_card": shop_cards += 1
+				"merchant_remove": shop_removals += 1
+				"merchant_reroll": shop_rerolls += 1
 	result["room_hp_end"] = hp_ends
 	result["max_hp"] = snappedf(state.max_hp, 0.1) if state != null else -1.0
 	result["deck_size"] = state.deck.size() if state != null else 0
@@ -1054,6 +1080,11 @@ func _record_deck_and_hp(result: Dictionary) -> void:
 	result["relic_picks"] = relic_picks
 	result["relic_skips"] = relic_skips
 	result["relic_swaps"] = relic_swaps
+	result["shop_relics"] = shop_relics
+	result["shop_cards"] = shop_cards
+	result["shop_removals"] = shop_removals
+	result["shop_rerolls"] = shop_rerolls
+	result["gold_spent"] = state.gold_spent_merchant if state != null else 0
 	if state != null and not _route.is_empty():
 		result["gold"] = state.gold
 		result["relics_held"] = state.relics.size()
@@ -1357,6 +1388,11 @@ func _run_summary() -> void:
 		_boss_summary()
 
 
+## True when the run's route held a merchant node (MAP2-B report line).
+func _visited_merchant(result: Dictionary) -> bool:
+	return (result["types"] as Array).has("merchant") and int(result["rooms_reached"]) >= (result["types"] as Array).find("merchant") + 1
+
+
 ## MAP1-B: the route bots' report. Wins, relics held and gold per run (mean and median), fights and elites on the routes, the chest sizes the runs passed,
 ## and the MAP.md section 8 checks (informational): the relic route's median relics against its estimate, and the clear rate by route.
 func _print_route_summary() -> void:
@@ -1380,6 +1416,21 @@ func _print_route_summary() -> void:
 			chest_counts[String(size_id)] = int(chest_counts.get(String(size_id), 0)) + 1
 	print("  ROUTE SUMMARY (%s, %s): %d of %d run(s) won | relics per run mean %.2f median %.1f | gold per run mean %.1f median %.1f | fights per route mean %.1f | elites per route mean %.1f | chest sizes on the routes %s" % [
 		_route_policy, _sim_class if _sim_class != "" else CharacterDatabase.DEFAULT_ID, wins, _run_results.size(), _mean(relics), _median(relics), _mean(golds), _median(golds), _mean(fights), _mean(elites), str(chest_counts)])
+	if _merchant:
+		var spent: Array[float] = []
+		var bought: Array[float] = []
+		var removed: Array[float] = []
+		var cards: Array[float] = []
+		var visits: int = 0
+		for result: Dictionary in _run_results:
+			if result.has("route_summary"):
+				spent.append(float(result["gold_spent"]))
+				bought.append(float(result["shop_relics"]))
+				removed.append(float(result["shop_removals"]))
+				cards.append(float(result["shop_cards"]))
+				visits += 1 if _visited_merchant(result) else 0
+		print("  MERCHANT SUMMARY (%s, %s): %d of %d run(s) visited the merchant | gold spent per run mean %.1f median %.1f | relics bought per run mean %.2f median %.1f | removals per run mean %.2f | cards bought per run mean %.2f" % [
+			_route_policy, _sim_class if _sim_class != "" else CharacterDatabase.DEFAULT_ID, visits, _run_results.size(), _mean(spent), _median(spent), _mean(bought), _median(bought), _mean(removed), _mean(cards)])
 	print("  MAP.md section 8 checks (informational): the %s route's median relics %.1f (the estimate for relic routes is %s); clear rate %d%%" % [
 		_route_policy, _median(relics), str(MapConfig.get_config()["path_rules"]["relic_route"]), roundi(100.0 * float(wins) / maxf(float(_run_results.size()), 1.0))])
 

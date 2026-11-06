@@ -20,7 +20,14 @@ const PENDING_RELIC := "relic"
 const PENDING_RELIC_SWAP := "relic_swap"
 ## MAP1-B: the pick-next-node choice of a map run (the map screen). Its options come from the map and the path, so it needs no `offer`.
 const PENDING_NODE := "node"
-const PENDING_VALUES: Array[String] = [PENDING_NONE, PENDING_REWARD, PENDING_REST, PENDING_REST_REMOVE, PENDING_RELIC, PENDING_RELIC_SWAP, PENDING_NODE]
+## MAP2-B: a merchant visit (the shop screen), its card removal list, and the give-one-up step of a relic bought at the relic cap (`relic_incoming`
+## holds the relic being bought). All three need the open `merchant_visit`.
+const PENDING_MERCHANT := "merchant"
+const PENDING_MERCHANT_REMOVE := "merchant_remove"
+const PENDING_MERCHANT_SWAP := "merchant_swap"
+const MERCHANT_PENDING: Array[String] = [PENDING_MERCHANT, PENDING_MERCHANT_REMOVE, PENDING_MERCHANT_SWAP]
+const PENDING_VALUES: Array[String] = [PENDING_NONE, PENDING_REWARD, PENDING_REST, PENDING_REST_REMOVE, PENDING_RELIC, PENDING_RELIC_SWAP, PENDING_NODE,
+		PENDING_MERCHANT, PENDING_MERCHANT_REMOVE, PENDING_MERCHANT_SWAP]
 
 var seed_value: int = 0
 ## The character (data/characters.json id) this run is played as (W1a). Fixed for the whole run.
@@ -119,6 +126,11 @@ func has_pending() -> bool:
 	return pending != PENDING_NONE
 
 
+## True while a merchant screen is open (the shop, its removal list or the give-one-up step).
+func has_merchant_choice() -> bool:
+	return MERCHANT_PENDING.has(pending)
+
+
 ## True while the open choice is a relic offer or its give-one-up step.
 func has_relic_choice() -> bool:
 	return pending == PENDING_RELIC or pending == PENDING_RELIC_SWAP
@@ -199,7 +211,7 @@ static func from_dict(data: Dictionary) -> RunState:
 		shows = false  # a node pick needs a map to pick from
 	if shows:
 		state.pending = String(pending_value)
-		if state.pending == PENDING_RELIC_SWAP:
+		if state.pending == PENDING_RELIC_SWAP or state.pending == PENDING_MERCHANT_SWAP:
 			state.relic_incoming = incoming_id
 	else:
 		# An unknown (or non-string, or an empty reward) pending must not leave a screen that can never close.
@@ -225,6 +237,13 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.relics_given_up = _id_list(data.get("relics_given_up", []), "relics_given_up")
 	_read_map_fields(state, data)
 	_read_merchant_fields(state, data)
+	if MERCHANT_PENDING.has(state.pending) and not _merchant_choice_fits(state):
+		# A merchant screen with no visit behind it (or a swap for a relic that is not for sale) cannot be shown: drop the choice like any other.
+		push_error("RunState.from_dict: pending '%s' has no usable merchant visit; no choice is open" % state.pending)
+		state.pending = PENDING_NONE
+		state.relic_incoming = ""
+		state.merchant_visit = {}
+		dropped_choice = true
 	for card_id: Variant in (data["deck"] as Array):
 		state.deck.append(String(card_id))
 	for entry: Variant in (data["history"] as Array):
@@ -252,6 +271,16 @@ static func from_dict(data: Dictionary) -> RunState:
 	elif dropped_choice and not state.history.is_empty() and int((state.history[state.history.size() - 1] as Dictionary)["index"]) == state.room_index:
 		state.room_index += 1
 	return state
+
+
+## True when a merchant pending value has what it needs: an open visit, and for the swap an incoming relic that is in stock, unsold and not owned.
+static func _merchant_choice_fits(state: RunState) -> bool:
+	if state.merchant_visit.is_empty():
+		return false
+	if state.pending == PENDING_MERCHANT_SWAP:
+		var incoming: String = state.relic_incoming
+		return (state.merchant_visit["relics"] as Array).has(incoming) and not (state.merchant_visit["sold_relics"] as Array).has(incoming) and not state.relics.has(incoming)
+	return true
 
 
 ## The map, path, gold and xp of saved data. Old dicts (before MAP1) have none of these keys and load as a straight run. A malformed

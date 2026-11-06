@@ -11,6 +11,8 @@ const ROOM_TYPES: Array[String] = ["combat", "elite", "rest", "boss"]
 const FIGHT_TYPES: Array[String] = ["combat", "elite", "boss"]
 ## The relic room (BD2-B) is added by RunGenerator when relics are on; it is not a composition key. No fight, like rest.
 const RELIC_ROOM := "relic_room"
+## The merchant node of a map run (MAP2-B): no fight either. Only the map makes one, so it is not in ALL_ROOM_TYPES.
+const MERCHANT_ROOM := "merchant"
 ## Every room type a generated run can hold (ROOM_TYPES plus the relic room).
 const ALL_ROOM_TYPES: Array[String] = ["combat", "elite", "rest", "boss", "relic_room"]
 const TIER_IDS: Array[String] = ["elite", "boss"]
@@ -290,9 +292,39 @@ static func _validate_ui(ui_value: Variant) -> Array[String]:
 			errors.append("ui.%s must be an object" % key)
 	errors.append_array(_validate_relic_text(u.get("relic")))
 	errors.append_array(_validate_map_text(u.get("map")))
+	errors.append_array(_validate_merchant_text(u.get("merchant")))
 	errors.append_array(_validate_effect_text(u.get("effect")))
 	if typeof(u.get("next_line")) != TYPE_STRING or String(u["next_line"]).count("%d") != 2 or String(u["next_line"]).count("%s") != 1:
 		errors.append("ui.next_line must be a format string with two %d and one %s")
+	return errors
+
+
+## ui.merchant strings the merchant choices need (MAP2-B). Required: a merchant node is reachable the moment the map holds one.
+const MERCHANT_TEXT_KEYS: Array[String] = ["title", "line", "item_format", "removal_format", "removal_detail", "reroll_label", "reroll_detail", "leave_label", "leave_detail", "back_label", "remove_title", "remove_line"]
+const MERCHANT_REASON_CODES: Array[String] = ["sold", "too_expensive", "not_for_sale", "none_removable", "removal_blocked", "no_rerolls"]
+
+
+static func _validate_merchant_text(value: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(value) != TYPE_DICTIONARY:
+		errors.append("ui.merchant must be an object")
+		return errors
+	var m: Dictionary = value
+	for key: String in MERCHANT_TEXT_KEYS:
+		if typeof(m.get(key)) != TYPE_STRING:
+			errors.append("ui.merchant.%s must be a string" % key)
+	for key: String in ["line", "removal_format", "removal_detail", "reroll_detail", "remove_line"]:
+		if typeof(m.get(key)) == TYPE_STRING and String(m[key]).count("%d") != 1:
+			errors.append("ui.merchant.%s must be a format string with one %%d" % key)
+	if typeof(m.get("item_format")) == TYPE_STRING and (String(m["item_format"]).count("%s") != 1 or String(m["item_format"]).count("%d") != 1):
+		errors.append("ui.merchant.item_format must be a format string with one %s and one %d")
+	var reasons: Variant = m.get("reasons")
+	if typeof(reasons) != TYPE_DICTIONARY:
+		errors.append("ui.merchant.reasons must be an object {reason code: text}")
+	else:
+		for code: String in MERCHANT_REASON_CODES:
+			if typeof((reasons as Dictionary).get(code)) != TYPE_STRING:
+				errors.append("ui.merchant.reasons.%s must be a string" % code)
 	return errors
 
 

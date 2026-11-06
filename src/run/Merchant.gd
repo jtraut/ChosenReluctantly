@@ -22,7 +22,7 @@ extends RefCounted
 ##
 ## Result dict of every buy / reroll: {ok, kind, id, price, reason, needs_giveup, giveable, gave_up}. `reason` is a code the UI words:
 ## "no_visit", "not_in_stock", "sold", "unknown_relic", "not_for_sale", "too_expensive", "needs_giveup", "none_giveable", "bad_giveup",
-## "not_in_deck", "removal_blocked", "no_rerolls".
+## "not_in_deck", "removal_blocked", "no_rerolls". `items` adds "none_removable" (the removal entry when no card of the deck may be removed).
 
 const KIND_RELIC := "relic"
 const KIND_CARD := "card"
@@ -328,6 +328,34 @@ static func items(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 		out.append({"kind": KIND_CARD, "id": card_id, "name": String(card.get("name", card_id)), "price": card_cost, "sold": card_sold,
 				"can_buy": card_reason.is_empty(), "reason": card_reason, "needs_giveup": false})
 	var removal: int = removal_price(state, ctx)
-	out.append({"kind": KIND_REMOVAL, "id": "", "name": "", "price": removal, "sold": false, "can_buy": removal <= state.gold,
-			"reason": "too_expensive" if removal > state.gold else "", "needs_giveup": false})
+	var removal_reason: String = ""
+	if RunChoices.removable_card_ids(state, ctx).is_empty():
+		removal_reason = "none_removable"  # no gold helps: every card is needed for a slot minimum (the list says which, per card)
+	elif removal > state.gold:
+		removal_reason = "too_expensive"
+	out.append({"kind": KIND_REMOVAL, "id": "", "name": "", "price": removal, "sold": false, "can_buy": removal_reason.is_empty(),
+			"reason": removal_reason, "needs_giveup": false})
+	return out
+
+
+## The card removal list for a panel, one entry per distinct card in deck order: {card_id, name, slot_type, slot_name, count, price, can_buy, reason,
+## problems, reason_text}. `reason` is "removal_blocked" (a slot minimum; `problems` and `reason_text` say which and what to do, the same words as the
+## rest room list), else "too_expensive", else "". Blocked wins over too expensive, since gold does not fix it.
+static func removal_entries(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	var price: int = removal_price(state, ctx)
+	for card_id: String in RunChoices.unique_deck_ids(state, ctx):
+		var card: Dictionary = (ctx["by_id"] as Dictionary).get(card_id, {})
+		var slot_type: String = String(card.get("slot_type", ""))
+		var problems: Array[String] = RunChoices.removal_problems(state, card_id, ctx)
+		var reason: String = ""
+		var reason_text: String = ""
+		if not problems.is_empty():
+			reason = "removal_blocked"
+			reason_text = RunChoices.removal_reason(state, card_id, problems, ctx)
+		elif price > state.gold:
+			reason = "too_expensive"
+		out.append({"card_id": card_id, "name": String(card.get("name", card_id)), "slot_type": slot_type,
+				"slot_name": String((ctx["slot_names"] as Dictionary).get(slot_type, slot_type)), "count": state.deck.count(card_id), "price": price,
+				"can_buy": reason.is_empty(), "reason": reason, "problems": problems, "reason_text": reason_text})
 	return out

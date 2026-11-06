@@ -93,7 +93,7 @@ func begin(main: Main) -> void:
 		_cleared = true
 		player.health.damage_immune = true
 		_resume_choice.call_deferred()
-	elif String(room["type"]) == "rest" or String(room["type"]) == RunConfig.RELIC_ROOM:
+	elif String(room["type"]) == "rest" or String(room["type"]) == RunConfig.RELIC_ROOM or String(room["type"]) == RunConfig.MERCHANT_ROOM:
 		spawner.process_mode = Node.PROCESS_MODE_DISABLED  # no fight: the room is over at once and its choice opens
 		_start_rest.call_deferred()
 	else:
@@ -145,6 +145,7 @@ func _create_relic_manager(main: Main) -> void:
 	_relics.name = "RelicManager"
 	add_child(_relics)
 	_relics.configure(main.player, main, main.player.status_rng, CombatLink.events())
+	_relics.set_run_stats(_run_stats())
 	_relics.relic_triggered.connect(func(relic_id: String, trigger_index: int, event_id: String) -> void: relic_triggered.emit(relic_id, trigger_index, event_id))
 
 
@@ -155,6 +156,7 @@ func _sync_relics() -> void:
 		if _relics == null and not _state.relics.is_empty():
 			_create_relic_manager(_main)
 		if _relics != null:
+			_relics.set_run_stats(_run_stats())
 			for held: String in _relics.relic_ids():
 				if not _state.relics.has(held):
 					_relics.remove_relic(held)
@@ -162,6 +164,11 @@ func _sync_relics() -> void:
 				if not _relics.has_relic(owned):
 					_relics.add_relic(owned)
 	relics_changed.emit(_state.relics.duplicate())
+
+
+## The run-long numbers relic modifiers can scale by (RelicSchema.RUN_STATS), from the RunState.
+func _run_stats() -> Dictionary:
+	return {"gold_spent_merchant": _state.gold_spent_merchant}
 
 
 ## This room's RelicManager, or null when the run holds no relics (or relics are off). ux connects `relic_triggered` here.
@@ -225,6 +232,7 @@ func confirm_class_pick(character: String) -> bool:
 ## `--run-seed=N` fixes the seed, `--run-room=K` starts at room K (1-based), `--full-deck` starts with every card of the character's pools (debug), `--run-clear-after=S` wins the room
 ## S seconds in (so a screenshot can show the room-cleared prompt or the win screen). `--deck=<name>` starts with a debug
 ## preset deck from data/debug_decks (its `starter`, or its `full` with `--full-deck`) and `--list-decks` prints them and quits.
+## `--merchant` turns the merchant on for this launch (MerchantSwitch: data/merchant_on.json merged into the map and run config; the shipped data has it off).
 ## `--class=<rogue|wizard>` plays the run as that character (a `--deck` preset names its class, and a `--class` that disagrees is refused).
 ## Returns false when the launch must not go on: it has asked the tree to quit (exit 0 for --list-decks, 2 for bad args).
 func _apply_launch_args(tree: SceneTree) -> bool:
@@ -251,6 +259,10 @@ func _apply_launch_args(tree: SceneTree) -> bool:
 				tree.quit(2)
 				return false
 			RunSession.forced_offer = offer_ids
+	if args.has("--merchant") and not MerchantSwitch.apply():  # MAP2-B: play the merchant before the shipped data turns it on
+		printerr("Launch refused: --merchant could not apply data/merchant_on.json")
+		tree.quit(2)
+		return false
 	var map_launch: Dictionary = MapLaunch.resolve(args)
 	if not (map_launch["errors"] as Array[String]).is_empty():
 		for problem: String in (map_launch["errors"] as Array[String]):
@@ -390,11 +402,14 @@ func _finish_room(healed: float) -> void:
 func choose(option_id: String) -> Dictionary:
 	if not _active or not _cleared or not _state.has_pending():
 		return {"ok": false, "kind": "", "card_id": "", "amount": 0.0, "finished": false, "reason": "no choice is open"}
+	var gold_before: int = _state.gold
 	var result: Dictionary = RunChoices.apply(_state, option_id, _ctx)
 	if not bool(result["ok"]):
 		return result
-	if ["relic_pick", "relic_swap"].has(String(result["kind"])):
+	if ["relic_pick", "relic_swap", "merchant_relic"].has(String(result["kind"])):
 		_sync_relics()
+	if _state.gold != gold_before:
+		gold_changed.emit(_state.gold, _state.gold - gold_before)  # a merchant purchase: a negative delta
 	var health: Health = _main.player.health
 	if String(result["kind"]) == "heal" and float(result["amount"]) > 0.0:
 		health.heal(float(result["amount"]))
@@ -583,6 +598,65 @@ func node_infos() -> Array[Dictionary]:
 ## ({ok, kind: "node", node_id, finished, reason}); a node that is not reachable changes nothing and returns ok = false.
 func pick_node(node_id: int) -> Dictionary:
 	return choose("%s:%d" % [RunNodes.OPTION_NODE, node_id])
+
+
+# ---- Merchant data and calls for the UI (MAP2-B) ----
+
+## True while a merchant choice is open (the shop, its removal list or the give-one-up step).
+func merchant_open() -> bool:
+	return _state != null and _state.has_merchant_choice()
+
+
+## Everything a merchant panel draws: see RunMerchant.view (items with price, sold, can_buy and a reason code, gold, the removal list with the
+## per-card reason, rerolls, the give-up step). {} when no merchant choice is open.
+func merchant_view() -> Dictionary:
+	if not merchant_open():
+		return {}
+	return RunMerchant.view(_state, _ctx)
+
+
+## Buys a stocked relic. At the relic cap this opens the give-up step instead (result kind "merchant_swap_open"); then call `give_up_for_purchase`.
+func buy_relic(relic_id: String) -> Dictionary:
+	return choose(RunMerchant.OPTION_BUY_RELIC + ":" + relic_id)
+
+
+func buy_card(card_id: String) -> Dictionary:
+	return choose(RunMerchant.OPTION_BUY_CARD + ":" + card_id)
+
+
+## Opens the card removal list (the shop screen's removal entry).
+func open_merchant_removal() -> Dictionary:
+	return choose(RunMerchant.OPTION_REMOVE_MENU)
+
+
+## Buys the removal of one copy of a card (from the removal list, or straight from the shop).
+func buy_removal(card_id: String) -> Dictionary:
+	return choose(RunMerchant.OPTION_REMOVE + ":" + card_id)
+
+
+## Back from the removal list to the shop.
+func merchant_back() -> Dictionary:
+	return choose(RunMerchant.OPTION_BACK)
+
+
+## Uses a free reroll of the unsold stock (needs a relic that grants one).
+func reroll_merchant() -> Dictionary:
+	return choose(RunMerchant.OPTION_REROLL)
+
+
+## In the give-up step: gives up an owned relic to take the one being bought.
+func give_up_for_purchase(relic_id: String) -> Dictionary:
+	return choose(RunMerchant.OPTION_GIVEUP + ":" + relic_id)
+
+
+## Backs out of the give-up step; nothing is charged.
+func cancel_purchase() -> Dictionary:
+	return choose(RunMerchant.OPTION_CANCEL)
+
+
+## Leaves the merchant: the visit closes and the run goes on to the map.
+func leave_merchant() -> Dictionary:
+	return choose(RunMerchant.OPTION_LEAVE)
 
 
 ## Gold earned this run (0 in a straight run).

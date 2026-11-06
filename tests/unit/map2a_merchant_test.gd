@@ -357,7 +357,14 @@ func test_items_lists_prices_and_the_reason_an_item_cannot_be_bought() -> void:
 			"card":
 				assert_int(int(item["price"])).is_equal(40)
 				assert_bool(bool(item["can_buy"])).is_true()
-			"removal": assert_str(String(item["reason"])).is_equal("too_expensive")
+			"removal": assert_str(String(item["reason"])).is_equal("none_removable")  # the starter deck: every card is needed for a slot minimum (MAP2-B)
+	var rich_deck: RunState = _full_state(7, 45)  # a deck with spare cards: only the price is in the way
+	Merchant.open_visit(rich_deck, 20, ctx)
+	var removal_item: Dictionary = Merchant.items(rich_deck, ctx)[6]
+	assert_str(String(removal_item["kind"])).is_equal("removal")
+	assert_str(String(removal_item["reason"])).is_equal("none_removable" if RunChoices.removable_card_ids(rich_deck, ctx).is_empty() else "too_expensive")
+	rich_deck.gold = 500
+	assert_bool(bool(Merchant.items(rich_deck, ctx)[6]["can_buy"])).is_equal(not RunChoices.removable_card_ids(rich_deck, ctx).is_empty())
 
 
 # --- the reroll hook -----------------------------------------------------------------------------

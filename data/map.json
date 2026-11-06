@@ -10,7 +10,7 @@
     "elite":      { "weight": 16, "rooms": [3, 9], "no_repeat": true },
     "relic_room": { "weight": 14, "rooms": [3, 8], "no_repeat": true },
     "rest":       { "weight": 25, "rooms": [5, 9], "no_repeat": true },
-    "merchant":   { "weight": 0,  "rooms": [4, 9], "no_repeat": true },
+    "merchant":   { "weight": 8,  "rooms": [4, 9], "no_repeat": true },
     "mini_boss":  { "weight": 0,  "rooms": [5, 8], "no_repeat": true },
     "curse_room": { "weight": 0,  "rooms": [3, 8], "no_repeat": true },
     "buff_room":  { "weight": 0,  "rooms": [3, 8], "no_repeat": true }
@@ -21,7 +21,7 @@
     "max_merchants": 1,
     "min_rest": 1,
     "max_rest": 2,
-    "relic_route": [5, 7],
+    "relic_route": [6, 8],
     "ignore_route_max": 3,
     "min_branching": 0.4
   },
@@ -32,6 +32,6 @@
   },
   "estimate": {
     "gold_mean": { "combat": 15, "elite": 35, "mini_boss": 50 },
-    "merchant_prices": [60, 60, 90]
+    "merchant_prices": [30, 30, 45]
   }
 }

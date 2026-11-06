@@ -17,7 +17,7 @@
         "enabled": true,
         "max_owned": 20,
         "offer_count": 3,
-        "prices": { "tier1": 60, "tier2": 90, "tier3": 130 },
+        "prices": { "tier1": 30, "tier2": 45, "tier3": 65 },
         "relic_room": { "count": 1, "first": 2, "last": 8 },
         "tier_weights": {
             "1": { "tier1": 80, "tier2": 20, "tier3": 0 },

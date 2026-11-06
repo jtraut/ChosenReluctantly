@@ -47,6 +47,14 @@ var choice_log: Array[Dictionary] = []
 var relics: Array[String] = []
 ## Relic ids the player gave up this run (a swap at the cap, a sacrifice). They are never offered again this run.
 var relics_given_up: Array[String] = []
+## MAP1-A: the branching map (MapGraph format {nodes, edges}), or {} for a straight run / an old save. Built once at the start of a run.
+var map: Dictionary = {}
+## The map node ids taken so far, in order (the current node is the last).
+var path: Array[int] = []
+## Gold earned this run (MAP1-B fills it; the merchant spends it in MAP2).
+var gold: int = 0
+## Reserved for the passive tree and meta-progression (MAP.md section 5): always 0 for now.
+var xp_earned: int = 0
 
 
 ## A fresh run: the reject allowance comes from data/run.json (RunConfig), the starter from the caller (the character's).
@@ -116,6 +124,10 @@ func to_dict() -> Dictionary:
 		"choice_log": choice_log.duplicate(true),
 		"relics": relics.duplicate(),
 		"relics_given_up": relics_given_up.duplicate(),
+		"map": map.duplicate(true),
+		"path": path.duplicate(),
+		"gold": gold,
+		"xp_earned": xp_earned,
 	}
 
 
@@ -184,6 +196,7 @@ static func from_dict(data: Dictionary) -> RunState:
 	# Old dicts (before BD2) have no relic lists: they load as empty.
 	state.relics = _id_list(data.get("relics", []), "relics")
 	state.relics_given_up = _id_list(data.get("relics_given_up", []), "relics_given_up")
+	_read_map_fields(state, data)
 	for card_id: Variant in (data["deck"] as Array):
 		state.deck.append(String(card_id))
 	for entry: Variant in (data["history"] as Array):
@@ -201,6 +214,36 @@ static func from_dict(data: Dictionary) -> RunState:
 	if dropped_choice and not state.history.is_empty() and int((state.history[state.history.size() - 1] as Dictionary)["index"]) == state.room_index:
 		state.room_index += 1
 	return state
+
+
+## The map, path, gold and xp of saved data. Old dicts (before MAP1) have none of these keys and load as a straight run. A malformed
+## map is dropped loudly (no map, no path) and a bad number falls back to 0, so a damaged save can't crash the loader.
+static func _read_map_fields(state: RunState, data: Dictionary) -> void:
+	if data.has("map"):
+		var problems: Array[String] = []
+		state.map = MapGraph.normalize(data["map"], problems)
+		if not problems.is_empty():
+			push_error("RunState.from_dict: 'map' is malformed (%s); no map" % "; ".join(problems))
+	state.gold = _whole_or_zero(data.get("gold", 0), "gold")
+	state.xp_earned = _whole_or_zero(data.get("xp_earned", 0), "xp_earned")
+	var saved_path: Variant = data.get("path", [])
+	if typeof(saved_path) != TYPE_ARRAY:
+		push_error("RunState.from_dict: 'path' must be an array; using none")
+		return
+	for item: Variant in (saved_path as Array):
+		var known: bool = (typeof(item) == TYPE_INT or typeof(item) == TYPE_FLOAT) and not state.map.is_empty() and not MapGraph.node(state.map, int(item)).is_empty()
+		if not known:
+			push_error("RunState.from_dict: 'path' holds a value that is not a node of the map; path dropped")
+			state.path = []
+			return
+		state.path.append(int(item))
+
+
+static func _whole_or_zero(value: Variant, label: String) -> int:
+	if (typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT) and not is_nan(float(value)) and not is_inf(float(value)) and absf(float(value)) < 1.0e9:
+		return int(value)
+	push_error("RunState.from_dict: '%s' must be a number; using 0" % label)
+	return 0
 
 
 ## A list of ids from saved data: anything that is not an array of strings is dropped (loudly), duplicates are kept out.

@@ -262,6 +262,9 @@ static func _validate_relic_text(value: Variant) -> Array[String]:
 			errors.append("ui.relic.%s must be a string" % key)
 	if typeof(r.get("swap_line")) == TYPE_STRING and (String(r["swap_line"]).count("%d") != 1 or String(r["swap_line"]).count("%s") != 1):
 		errors.append("ui.relic.swap_line must be a format string with one %d and one %s")
+	# The singular text for a cap of 1 is optional (RunRelics falls back to swap_line), but when present it takes the same two arguments.
+	if r.has("swap_line_one") and (typeof(r["swap_line_one"]) != TYPE_STRING or String(r["swap_line_one"]).count("%d") != 1 or String(r["swap_line_one"]).count("%s") != 1):
+		errors.append("ui.relic.swap_line_one must be a format string with one %d and one %s")
 	var tiers: Variant = r.get("tier_names")
 	if typeof(tiers) != TYPE_DICTIONARY:
 		errors.append("ui.relic.tier_names must be an object")

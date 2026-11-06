@@ -415,7 +415,12 @@ func _fill(content: Dictionary) -> void:
 	var scale_now: float = _scale(cfg_now)
 	# The shop gives its height to the stock: a smaller title and tighter spacing than the other prompts.
 	title_label.add_theme_font_size_override("font_size", roundi(float(cfg_now["prompt_title_font_size"]) * (0.72 if shop else 1.0) * scale_now))
-	column.add_theme_constant_override("separation", roundi((7.0 if shop else 12.0) * scale_now))
+	column.add_theme_constant_override("separation", roundi((5.0 if shop else 12.0) * scale_now))
+	var panel_style := panel.get_theme_stylebox("panel") as StyleBoxFlat
+	if panel_style != null:
+		panel_style.set_content_margin_all(float(cfg_now["prompt_panel_padding"]) * (0.62 if shop else 1.0) * scale_now)
+	var tile_gap: int = roundi(float(cfg_now["option_gap"]) * (0.7 if shop else 1.0) * scale_now)
+	options_box.add_theme_constant_override("v_separation", tile_gap)
 	var gold: int = int(content.get("gold", -1))
 	gold_badge.visible = gold >= 0
 	_gold_gap.visible = gold >= 0
@@ -620,7 +625,7 @@ func _shop_name(option: Dictionary, content: Dictionary, texts: Dictionary) -> S
 		"buy_removal":
 			return String(texts.get("removal_name", option.get("label", "")))
 		"reroll":
-			return String(option.get("label", ""))
+			return String(texts.get("reroll_name", option.get("label", "")))
 	var wanted_kind: String = "relic" if String(option.get("kind", "")) == "buy_relic" else "card"
 	var wanted_id: String = String(option.get("relic_id", "")) if wanted_kind == "relic" else String(option.get("card_id", ""))
 	for item: Variant in ((content.get("merchant", {}) as Dictionary).get("items", []) as Array):
@@ -1000,7 +1005,7 @@ func _avail_height(cfg: Dictionary) -> float:
 	var vp: Vector2 = get_viewport().get_visible_rect().size
 	var band: float = _band_end()
 	($Root/Center as Control).offset_top = band
-	return (vp.y - band) * float(cfg["option_fit_margin"])
+	return (vp.y - band) * (float(cfg.get("shop_fit_margin", cfg["option_fit_margin"])) if _layout == "shop" else float(cfg["option_fit_margin"]))
 
 
 func _band_end() -> float:

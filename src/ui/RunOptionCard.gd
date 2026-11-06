@@ -351,11 +351,29 @@ func _build_shop(opt: Dictionary, extra: Dictionary, enabled: bool, inner_width:
 	title_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	var separation: float = 6.0 * _scale
 	var left_w: float = band.get_combined_minimum_size().x + tag.get_combined_minimum_size().x + separation * float(band.get_child_count() + 1)
-	title_label.custom_minimum_size.x = maxf(inner_width - left_w, float(small_size) * 5.0)
-	band.add_child(title_label)
-	band.add_child(tag)
-	_inner.add_child(band)
+	var name_px: int = roundi(float(title_size) * 0.86)
+	var name_w: float = title_label.get_theme_font("font").get_string_size(name_text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, name_px).x
+	var room: float = inner_width - left_w
+	if (kind == "buy_relic" or kind == "buy_card") and name_w + 4.0 > room:
+		# A long name (with the chips and the price beside it) would wrap into three short lines: it gets a row of its own under them.
+		var spacer := Control.new()
+		spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		band.add_child(spacer)
+		band.add_child(tag)
+		_inner.add_child(band)
+		title_label.size_flags_horizontal = Control.SIZE_FILL
+		title_label.custom_minimum_size.x = inner_width
+		_inner.add_child(title_label)
+	else:
+		title_label.custom_minimum_size.x = maxf(room, float(small_size) * 5.0)
+		band.add_child(title_label)
+		band.add_child(tag)
+		_inner.add_child(band)
 	var detail: String = keep_units(String(opt.get("detail", "")))
+	var reason_text: String = shop_reason_line(opt, gold, texts)
+	if reason_text != "" and kind != "buy_relic" and kind != "buy_card":
+		detail = ""  # a service that cannot be used says why instead of what it does: a line less in the footer (the tooltip keeps both)
 	if detail != "":
 		var lines: PackedStringArray = detail.split("\n")
 		detail_label = _label(lines[0], body_size, body_color, true)
@@ -365,7 +383,6 @@ func _build_shop(opt: Dictionary, extra: Dictionary, enabled: bool, inner_width:
 			condition_label = _label("\n".join(lines.slice(1)), body_size, _text_color(enabled, Color.html(String(_cfg["option_accent_color"]))), true)
 			condition_label.custom_minimum_size.x = inner_width
 			_inner.add_child(condition_label)
-	var reason_text: String = shop_reason_line(opt, gold, texts)
 	if reason_text == "" and enabled and bool(opt.get("needs_swap", false)):
 		cap_note_label = _label(String(texts.get("swap_note", "")), small_size, Color.html(String(_cfg["option_warn_color"])), true)
 		cap_note_label.custom_minimum_size.x = inner_width

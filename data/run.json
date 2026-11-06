@@ -95,7 +95,7 @@
         "merchant": {
             "title": "Merchant", "line": "Spend your gold, then leave. You have %d gold.",
             "item_format": "%s - %d gold", "removal_format": "Remove a card - %d gold", "removal_name": "Remove a card", "removal_detail": "Each removal costs %d more.",
-            "reroll_label": "Reroll the stock (free)", "reroll_detail": "Redraw everything not yet sold. Free rerolls left this visit: %d",
+            "reroll_label": "Reroll the stock (free)", "reroll_name": "Reroll the stock", "reroll_detail": "Redraws what is unsold. Free rerolls left: %d",
             "leave_label": "Leave", "leave_detail": "Back to the map.", "back_label": "Back",
             "price_format": "%d gold", "free_tag": "Free", "sold_tag": "Sold", "shop_only_tag": "Only sold here", "need_more": "Need %d more gold",
             "tile_reasons": { "none_removable": "No card can go: deck minimums", "no_rerolls": "No free rerolls left" },

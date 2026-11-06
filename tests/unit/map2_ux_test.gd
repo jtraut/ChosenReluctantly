@@ -147,27 +147,32 @@ func test_a_swap_step_says_what_the_relic_costs_and_that_cancel_is_free() -> voi
 
 func test_the_shop_fits_without_clipping_at_small_and_common_sizes() -> void:
 	for size in SIZES:
-		var state: RunState = _shop(200, ["request_for_quotation"])
-		var screen: RunPromptScreen = await _open(size, _model(state))
-		var label: String = "%dx%d" % [int(size.x), int(size.y)]
-		var buttons: Array[RunOptionCard] = _buttons(screen)
-		assert_int(buttons.size()).override_failure_message("%s: %d options" % [label, buttons.size()]).is_greater_equal(8)
-		assert_str(screen._layout).is_equal("shop")
-		assert_bool(screen.scroll.get_v_scroll_bar().visible).override_failure_message("%s: the shop scrolls" % label).is_false()
-		assert_float(screen.fit_factor()).is_greater_equal(0.8)
-		for button in buttons:
-			var rect: Rect2 = button.get_global_rect()
-			assert_float(rect.position.x).override_failure_message("%s: %s left of the window" % [label, button.option["id"]]).is_greater_equal(-0.5)
-			assert_float(rect.end.x).override_failure_message("%s: %s right of the window" % [label, button.option["id"]]).is_less_equal(size.x + 0.5)
-			assert_float(rect.position.y).override_failure_message("%s: %s above the window" % [label, button.option["id"]]).is_greater_equal(-0.5)
-			assert_float(rect.end.y).override_failure_message("%s: %s below the window (%s)" % [label, button.option["id"], rect]).is_less_equal(size.y + 0.5)
-		var panel_rect: Rect2 = screen.panel.get_global_transform() * Rect2(Vector2.ZERO, screen.panel.size)
-		assert_float(panel_rect.position.y).is_greater_equal(screen._band_end() - 0.5)
-		assert_float(panel_rect.end.y).is_less_equal(size.y + 0.5)
-		# Leave, Remove a card and the reroll are footer options (always on screen); the price tags are drawn and the gold badge shows
-		assert_int(screen.footer_box.get_child_count()).is_equal(3)
-		assert_bool(screen.gold_badge.visible).is_true()
-		assert_int(screen.gold_badge.total()).is_equal(200)
+		for gold in [200, 35]:  # 35: every card and a relic or two show their "Need N more gold" line, the tallest the tiles get
+			await _check_shop_fits(size, gold)
+
+
+func _check_shop_fits(size: Vector2, gold: int) -> void:
+	var state: RunState = _shop(gold, ["request_for_quotation"])
+	var screen: RunPromptScreen = await _open(size, _model(state))
+	var label: String = "%dx%d, %d gold" % [int(size.x), int(size.y), gold]
+	var buttons: Array[RunOptionCard] = _buttons(screen)
+	assert_int(buttons.size()).override_failure_message("%s: %d options" % [label, buttons.size()]).is_greater_equal(8)
+	assert_str(screen._layout).is_equal("shop")
+	assert_bool(screen.scroll.get_v_scroll_bar().visible).override_failure_message("%s: the shop scrolls" % label).is_false()
+	assert_float(screen.fit_factor()).is_greater_equal(0.8)
+	for button in buttons:
+		var rect: Rect2 = button.get_global_rect()
+		assert_float(rect.position.x).override_failure_message("%s: %s left of the window" % [label, button.option["id"]]).is_greater_equal(-0.5)
+		assert_float(rect.end.x).override_failure_message("%s: %s right of the window" % [label, button.option["id"]]).is_less_equal(size.x + 0.5)
+		assert_float(rect.position.y).override_failure_message("%s: %s above the window" % [label, button.option["id"]]).is_greater_equal(-0.5)
+		assert_float(rect.end.y).override_failure_message("%s: %s below the window (%s)" % [label, button.option["id"], rect]).is_less_equal(size.y + 0.5)
+	var panel_rect: Rect2 = screen.panel.get_global_transform() * Rect2(Vector2.ZERO, screen.panel.size)
+	assert_float(panel_rect.position.y).is_greater_equal(screen._band_end() - 0.5)
+	assert_float(panel_rect.end.y).is_less_equal(size.y + 0.5)
+	# Leave, Remove a card and the reroll are footer options (always on screen); the price tags are drawn and the gold badge shows
+	assert_int(screen.footer_box.get_child_count()).is_equal(3)
+	assert_bool(screen.gold_badge.visible).is_true()
+	assert_int(screen.gold_badge.total()).is_equal(gold)
 
 
 func test_a_longer_shop_scrolls_and_every_tile_stays_reachable() -> void:

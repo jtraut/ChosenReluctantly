@@ -1,15 +1,15 @@
 # Director open items
 
-Last updated: 2026-11-05 (BD2 closed; latest tag `playtest-2026-11-05-BD2`)
-**Status: 1 decision (D40, a rest on every route); 4 things to look at (49, 48, 47, 35), plus the round 2 vision check, which is now due. MAP1 (the map) is being wrapped up. Next: MAP2 (merchant, shop-only relics) -> MAP3 (three acts, save and resume, rare/legendary cards, boss relics) -> MAP4 (events, curse cards, sacrifices, rest dig; probably two sittings) -> 3d (loadouts, starter relic).**
+Last updated: 2026-11-05 (MAP1 closed; latest tag `playtest-2026-11-05-MAP1`)
+**Status: 1 decision (D40, a rest on every route); 5 things to look at (50 new, 49, 48, 47, 35), plus the round 2 vision check, which is now due. Next: MAP2 (merchant, shop-only relics) -> MAP3 (three acts, save and resume, rare/legendary cards, boss relics) -> MAP4 (events, curse cards, sacrifices, rest dig; probably two sittings) -> 3d (loadouts, starter relic).**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
 ## How to playtest
 
-- **Latest known-good build:** `git checkout playtest-2026-11-05-BD2`, play, then `git checkout main`. The one before it is `playtest-2026-11-04-BD1`. Older tags are in `docs/RESOLVED.md`.
+- **Latest known-good build:** `git checkout playtest-2026-11-05-MAP1`, play, then `git checkout main`. The one before it is `playtest-2026-11-05-BD2`. Older tags are in `docs/RESOLVED.md`.
 - **Relics:** `-- --relics=pyre_insurance+heavy_sigh` starts with relics; `-- --relic-cap=1` tries the give-one-up step.
-- **Normal run:** `godot --path .` (10 rooms). Extras: `-- --run-seed=5`, `-- --run-room=10` (boss), `-- --class=wizard`.
+- **Normal run:** `godot --path .` (a branching map of 10 rooms; `-- --no-map` gives the old straight run). Extras: `-- --run-seed=5`, `-- --run-room=10` (boss), `-- --class=wizard`.
 - **Preset decks:** `godot --path . -- --list-decks`, then for example `-- --deck=fire-heavy-rogue --full-deck --run-room=10`.
 - **Keys (since H3):** WASD move · mouse aims · left click light (also auto-fires) · right click heavy · **Space dodges** · **Q, E, F, Ctrl, R** cast Attack, Area, Utility, Movement, Recovery (hold to aim, release to cast; Q/E/F/R still work while Ctrl is held) · Shift + the same key swaps · Esc pause · F3 debug. On Windows with several keyboard layouts, Ctrl+Shift may switch layout.
 - **The boss volley on its own:** `godot --path . -- --scenario=boss_volley`.
@@ -28,6 +28,13 @@ Without an answer, MAP2 builds A. Next new number: D41.
 ## Needs your eyes
 
 Reply with the number and a word or two.
+
+50. **Play a run on the map (MAP1).** `godot --path .`, one run per class if you can.
+    - **Does picking a route feel like a decision?** About 40% of nodes branch (the plan was 60%, which the generator can't reach). If it feels too linear, a generator that forks and merges more is the fix.
+    - **Is the map clear at a glance?** Where you are, what you can pick, and the chest sizes (1-3 dots). Pause -> Map shows it view-only.
+    - **Try an elite-and-chest route and a cautious one.** The bots won every relic route. D40 asks whether every route should have a rest.
+    - **Gold** shows on the HUD with "+N". There's nothing to spend it on until MAP2's merchant.
+    - **Known and scheduled for MAP2:** the chest size isn't shown on the chest's reward screen; room 9 has a pointless one-choice pick before the boss; small legend text.
 
 49. **Two relic details, when you next play** (you said 2026-11-05 that relics feel fun and builds are getting more exciting; recorded). No rush. Without an answer I keep both as they are.
     - **The relic room can land on room 9, just before the boss** (about 1 run in 3). Too late? The playtester would say "by room 7". MAP1 replaces this room with map nodes. I've set those nodes to rooms 3-8 (was 3-9), so room 9 never has one. Say if you'd rather have room 9 back.

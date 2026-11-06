@@ -3,9 +3,31 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-05 (BD2 closed, tag `playtest-2026-11-05-BD2`). **Run order:** BD2 (done) -> **MAP1 (map, gold, next)** -> MAP2 (merchant) -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2.
+Last updated: 2026-11-05 (MAP1 closed, tag `playtest-2026-11-05-MAP1`). **Run order:** MAP1 (done) -> **MAP2 (merchant, next)** -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1.
 
 ## What's done
+- **MAP1 closed 2026-11-05:** split into MAP1-A and MAP1-B (DECISIONS "MAP1 split").
+  - **Commits:**
+    - gameplay-dev afdf30d..ed4e2aa (MAP1-A), 2181b9b..3a2d9d8 (MAP1-B) and 3841b41..0226ec9 (post-flip test fixes);
+    - ux a1a4155..ac7baa2 (the map screen; turned the map on);
+    - qa PASS with carry-overs 19272da..e1c7c5d;
+    - playtest e1e31b5 (no blocker);
+    - docs c4bda37.
+  - Tag `playtest-2026-11-05-MAP1`. The map ships on; `--no-map` gives the old straight run.
+  - **Baselines now:**
+    - suite 1737 (137 suites, 3 skipped carry-over tests);
+    - arena 1897787086 / 4207041509 / `-Plan` 1160207333;
+    - bot sim 846850403;
+    - run sim `-Run -Seed 1 -Runs 12` (first route): Rogue 12/12 66.2 s, Wizard 10/12 60.6 s;
+    - `-Route relic`: 12/12 52.1 s, 11/12 63.2 s;
+    - `-Route safe`: 12/12 58.4 s, 12/12 65.0 s;
+    - `-NoMap`: 12/12 57.3 s, 12/12 62.5 s.
+  - **Carry-overs:**
+    - MAP2 (gameplay-dev and ux lists, folded into the MAP2 brief);
+    - MAP3 save robustness (`from_dict` node-pending soft lock, negative gold, the large chest `min_tier` 2 back once tier 3 relics exist);
+    - BD3 (the Wizard on elite-heavy routes).
+  - **New director decision D40:** a rest on every route. The default A is built in MAP2.
+  - **Director feedback 2026-11-05:** "relics feel fun so far, builds are starting to get more exciting". It's recorded in the CHANGELOG, and item 49 is archived in RESOLVED; c4bda37 did both.
 - **BD2 closed 2026-11-05:** split into two gameplay-dev sittings (DECISIONS "BD2 split").
   - **Commits:**
     - gameplay-dev 3b1ac07..fe051cc (BD2-A, engine) and 673db13..1af42c5 (BD2-B, content and run flow);
@@ -74,22 +96,20 @@ Last updated: 2026-11-05 (BD2 closed, tag `playtest-2026-11-05-BD2`). **Run orde
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **MAP1 started 2026-11-05.** It is split into MAP1-A (engine) and MAP1-B (run flow); see DECISIONS "MAP1 split" and the ROADMAP brief. MAP1-A done (afdf30d..ed4e2aa), MAP1-B done (2181b9b..3a2d9d8; suite 1671/1671; DECISIONS "MAP1-B", "Large chest"). ux done (a1a4155..ac7baa2): map screen, gold HUD, BD2 carry-overs, **map turned on**. Suite was red after the flip (49 of 1709); **gameplay-dev fixed its share in 3841b41..0226ec9, so 15 of 1711 still fail, all in qa's 4 suites**. Soaks OK, including the new `-Map` pass; `trigger_progress` added; wave sim `-NoMap`. Earlier note:: tests that assume a straight run or pin the old map data (none in ux code; list in DECISIONS "MAP1 ux"). The game runs. The reload soak fails with the map on (straight-run assumptions in `tools/reload_cycle.gd`). qa PASS with carry-overs (19272da..e1c7c5d; suite 1737, 0 fail, 3 skipped). Playtest e1e31b5: no blocker (triage under the MAP1 brief; new D40). **tech-writer docs pass is running now.** Then close. Then MAP1-B -> ux (turns the map on) -> qa -> playtester -> tech-writer -> close.
-- **For the MAP1 docs handoff:** the director's 2026-11-05 feedback ("relics feel fun so far, builds are starting to get more exciting and strategy starting to fold in") goes in the CHANGELOG as a human-playtest note. The answered parts of item 49 go to RESOLVED; the old text is in 9cde725.
+- Nothing in progress. Working tree clean.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step
-1. **MAP1, the map** (ROADMAP brief; `docs/MAP.md`). Split logged. Order: gameplay-dev **MAP1-A** (done) -> **MAP1-B** (done) -> ux (done) -> qa (PASS) -> playtester (no blocker) -> tech-writer (in progress) -> close.
-   - game-lead re-reads the brief, folds in the BD2 carry-overs for MAP1 (gameplay-dev, ux and qa items under the BD2 brief), and splits it into sittings if it's as large as BD2 (log the split).
-   - Full loop: gameplay-dev -> ux-designer -> qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-MAP1`.
-   - MAP1 also brings the treasure chest sizes (BUILD_DEPTH §4.7 row 4).
-2. Then **MAP2**, **MAP3**, **MAP4**, **3d**, **BD3**.
+1. **MAP2, the merchant** (ROADMAP brief; `docs/MAP.md` §4.4). It includes the items folded in at MAP1's close and the D40 answer (default A, `min_rest` 1).
+   - game-lead re-reads the brief and splits it into sittings if it's as large as MAP1 (log the split).
+   - Full loop: gameplay-dev -> ux-designer -> qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-MAP2`.
+2. Then **MAP3**, **MAP4**, **3d**, **BD3**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).
 
-**D-numbers:** D21-D33 answered (D31 = A, D32 = A + three acts, D33 = B on 2026-11-04). D34 = C, D35 = A, D36 = A answered 2026-11-04. D37 = A (dig relic at rest), D38 = A (curse cards) answered 2026-11-04. D39 = A (dodge isn't a Movement cast) answered 2026-11-04. None open. Next free: D40.
+**D-numbers:** D21-D33 answered (D31 = A, D32 = A + three acts, D33 = B on 2026-11-04). D34 = C, D35 = A, D36 = A answered 2026-11-04. D37 = A (dig relic at rest), D38 = A (curse cards) answered 2026-11-04. D39 = A (dodge isn't a Movement cast) answered 2026-11-04. D40 open (a rest on every route). Next free: D41.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions open; eyes 49 (try the relics, new), 48 (BD1 decks), 47 and 35. The round 2 vision check is due now that BD2 is in. Answered items are in `docs/RESOLVED.md` (D34-D39 archived in e254881).
+All director-facing items are in `docs/OPEN_ITEMS.md`: D40 (a rest on every route, default A); eyes 50 (play the map, new), 49, 48, 47 and 35; the round 2 vision check is due. Answered items are in `docs/RESOLVED.md`.

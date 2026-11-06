@@ -880,7 +880,7 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
     - A finished run counts whether it was won or lost.
   - **Owner sequence:** gameplay-dev (profile, storage, rules, placeholder screens) -> ux-designer (start screen and editor) -> qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-3d`. **This closes Milestone 3** except the out-of-scope items below.
 - Later in M3 or after: shops and drops (GDD §14 item 1, [OPEN], not started).
-- [ ] **MAP1, the map (after BD2; D28 = A). Full loop. Tag `playtest-YYYY-MM-DD-MAP1`.** Plan: `docs/MAP.md` (MAP0).
+- [x] **MAP1, the map — DONE 2026-11-05.** gameplay-dev afdf30d..ed4e2aa (MAP1-A), 2181b9b..3a2d9d8 (MAP1-B), 3841b41..0226ec9 (post-flip fixes); ux a1a4155..ac7baa2 (map on); qa PASS with carry-overs 19272da..e1c7c5d; playtest e1e31b5 (no blocker); docs c4bda37. Tag `playtest-2026-11-05-MAP1`. Suite 1737 (137 suites, 3 skipped). Original header: **MAP1, the map (after BD2; D28 = A). Full loop. Tag `playtest-YYYY-MM-DD-MAP1`.** Plan: `docs/MAP.md` (MAP0).
   - **Goal:** the run becomes a branching map of 10 rooms (GDD §9). The player picks a route; gold is earned. Merchant, mini-bosses and curse/buff rooms come later (weights 0 in data).
   - **Split (game-lead, 2026-11-05, DECISIONS "MAP1 split"):** gameplay-dev runs **MAP1-A** (engine: items 1, 2 and 4, the print helper, the 1000-seed sweep, `swap_line_one` validation) and then **MAP1-B** (items 3, 5, 5a and 6, ux data exposure, the `--map`/`--no-map` override, and the BD2 carry-overs). ux, qa, playtest and docs run once, after both.
     - `map.enabled` ships **false** until ux's map screen exists; ux turns it on.
@@ -949,6 +949,18 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
   - **Playtester:** is a relic route a real alternative to a card route? Does the merchant feel worth the detour?
   - **Also (director 2026-11-04, BUILD_DEPTH §4.7):** the third relic slot holds shop-only relics (`sources` exactly `["merchant"]`, falling back to normal stock), plus about 3 shop-only relics, one of which expands the shop; curse cards (D38 = A) are removed through the normal card removal.
   - **Close:** item 35 (builds) gets the map; OPEN_ITEMS asks whether the relic route feels different.
+  - **Folded in at MAP1's close (game-lead, 2026-11-05):**
+    - **D40 (a rest on every route):** build the director's answer. The default is A: a `min_rest` 1 path rule, checked by the sweep.
+    - **gameplay-dev, from the MAP1 qa carry-overs:**
+      - add `--no-map` to the `removal_screen` and `bd2_relic_*` presets;
+      - fix the `MapGenerator.gd:59` script error when no type is a candidate.
+    - **ux, from the MAP1 qa and playtest carry-overs:**
+      - delete the dead `_triggers` fallback in `RelicProgress`, and its stale comment;
+      - show the chest size on the relic-room offer screen;
+      - make the room 9 -> boss one-option pick read as "Face the boss", or skip it;
+      - bigger legend text, small-chest dot and Spite pips at 1024x600;
+      - reword the Skip line;
+      - add a gold "spend at the merchant" line on the map.
 - [ ] **MAP3, three acts (right after MAP2; D33 = B, director 2026-11-04). Full loop. Tag `playtest-YYYY-MM-DD-MAP3`.** Plan: `docs/MAP.md` §1, §4.5, §8. Detailed brief at MAP2's close.
   - **Goal:** a run is three acts of 10 rooms (30 rooms). Acts 1 and 2 end in a mini-boss, act 3 in the final boss. 30-45 minutes per run, and you can save and come back later (GDD §9).
   - **Scope:** acts 2-3 as their own maps; 2 act-end mini-boss encounters (`run.json` `tiers.mini_boss`, existing enemies + adds); act scaling (data multipliers per act; values from the sim, not hand-picked); new wave lists for acts 2-3 (today's 4 combat + 1 elite list would repeat badly); act transition screen ("Act 2"); "Room N of 30"; relics, cards and gold per D34 = C as revised by the director 2026-11-04 (MAP.md §4.5): cap 20, relic tier odds per act, per-act path rules, merchant 80/120/170; act-end mini-bosses give gold, a boss-tier relic (pick 1 of 3, no skip, the only source) and 3 rare (act 1) or 3 legendary (act 2) cards; card `rarity` (common/rare/legendary) with rare from act 2 and legendary from act 3; rejects stay 3 per run (D35 = A). **Content:** about 5+ rare and 4+ legendary cards per class pool, about 6 boss-tier relics per class (a game-lead design pass in BUILD_DEPTH first; they may need new effect code), about 22 tier 1-3 relics per class (15 sketched today). **At MAP2's close, split the rarity and boss-relic content into its own slice (MAP3b) if MAP3 is too big for one sitting.** **Save and resume:** autosave at every room boundary, one slot, `user://` with an injectable path, versioned and validated, built on RunState `to_json`/`equals`; Continue on the start screen; deleted on win or loss; quitting mid-fight restarts the room. Must ship in this slice, not later. **Restore the large chest's `min_tier` 2 in `data/map.json` once tier 3 relics exist (DECISIONS "Large chest", 2026-11-05).** **Save robustness first (moved from 3d item 6a at BD2's qa, game-lead 2026-11-04):** `from_dict` must not crash on wrongly-typed `offer`, `deck` or `choice_log` entries. It must also check that relics and given-up relics don't overlap, that relics fit the cap, and that relic ids exist.

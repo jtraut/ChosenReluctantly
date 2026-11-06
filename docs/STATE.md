@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-06 (MAP2-A done; **MAP2-B in progress, gameplay-dev next**). MAP1 closed with tag `playtest-2026-11-05-MAP1`. **Run order:** MAP1 (done) -> **MAP2 (merchant, next)** -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1.
+Last updated: 2026-11-06 (MAP2-A and MAP2-B done; **ux-designer next**: merchant panel, carry-overs, switch the merchant on). MAP1 closed with tag `playtest-2026-11-05-MAP1`. **Run order:** MAP1 (done) -> **MAP2 (merchant, next)** -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1.
 
 ## What's done
 - **MAP1 closed 2026-11-05:** split into MAP1-A and MAP1-B (DECISIONS "MAP1 split").
@@ -104,14 +104,14 @@ Last updated: 2026-11-06 (MAP2-A done; **MAP2-B in progress, gameplay-dev next**
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step
-1. **gameplay-dev: MAP2-B** (ROADMAP MAP2, "MAP2-B"). MAP2-A is done (66ba317..9321820): suite 1770 with 2 skipped, and new interim map-on route numbers in DECISIONS "MAP2-A merchant engine calls". Then then ux-designer, qa, playtester, tech-writer, and close with tag `playtest-YYYY-MM-DD-MAP2`. The merchant stays off (weight 0) until ux's step.
+1. **ux-designer: MAP2's ux step** (ROADMAP MAP2, "ux-designer (after MAP2-B)"). MAP2-A (66ba317..9321820) and MAP2-B (5801fe7..6a3e780) are done: suite 1800 with 2 skipped, `-NoMap` 57.5 / 63.3 s, D41 (relic prices) open with default A. Then then ux-designer, qa, playtester, tech-writer, and close with tag `playtest-YYYY-MM-DD-MAP2`. The merchant stays off (weight 0) until ux's step.
 2. Then **MAP3**, **MAP4**, **3d**, **BD3**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).
 
-**D-numbers:** D21-D33 answered (D31 = A, D32 = A + three acts, D33 = B on 2026-11-04). D34 = C, D35 = A, D36 = A answered 2026-11-04. D37 = A (dig relic at rest), D38 = A (curse cards) answered 2026-11-04. D39 = A (dodge isn't a Movement cast) answered 2026-11-04. D40 = A (a rest on every route) answered 2026-11-06. Next free: D41.
+**D-numbers:** D21-D33 answered (D31 = A, D32 = A + three acts, D33 = B on 2026-11-04). D34 = C, D35 = A, D36 = A answered 2026-11-04. D37 = A (dig relic at rest), D38 = A (curse cards) answered 2026-11-04. D39 = A (dodge isn't a Movement cast) answered 2026-11-04. D40 = A (a rest on every route) answered 2026-11-06. D41 open (relic prices, default A = 30/45/65). Next free: D42.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions open; eyes 50 (play the map, new), 49, 48, 47 and 35; the round 2 vision check is due. Answered items are in `docs/RESOLVED.md`.
+All director-facing items are in `docs/OPEN_ITEMS.md`: D41 (relic prices); eyes 50 (play the map, new), 49, 48, 47 and 35; the round 2 vision check is due. Answered items are in `docs/RESOLVED.md`.

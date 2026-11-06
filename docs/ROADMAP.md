@@ -945,7 +945,7 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
   - **Goal:** gold buys things. The merchant sells several relics at once (D22 = C), cards and card removal.
   - **gameplay-dev:** merchant node (`map.json` weight about 8, `max_merchants` 1); stock seeded from run seed and node id: 3 relics from source `merchant` (BD2 offer function; no owned or given-up relics; at the cap, buying uses BD2's give-one-up step), 3 cards at 40 (reward weights), removal 50 then +25 per removal (through `can_remove`); `run.json` `merchant` and `relics.prices` by tier (60/90/130; boss tier never sold); RunState `merchant_removals` + save; `relic_route` back to [6, 8]. Bots: the `relic` route buys relics first, `safe` buys a removal then a card.
   - **ux-designer:** merchant panel: prices, gold left, disabled items with the reason (too expensive, removal would break a slot minimum); at the relic cap a relic is buyable through the give-one-up step, buy several then leave; the removal list reuses the rest-room list. Captures.
-  - **qa:** buying (gold never negative, several relics in one visit, the swap at the cap, no duplicates in stock), removal guard, prices from data, determinism, save mid-merchant; bot checks: median relics on `relic` routes 6-8 and on `safe` routes 2-3; no-card gate. Full gates.
+  - **qa:** buying (gold never negative, several relics in one visit, the swap at the cap, no duplicates in stock), removal guard, prices from data, determinism, save mid-merchant; bot checks: median relics on `relic` routes 6-8 and on `safe` routes at most 3 (changed from 2-3 at MAP2-B, DECISIONS "MAP2-B calls"); no-card gate. Full gates.
   - **Playtester:** is a relic route a real alternative to a card route? Does the merchant feel worth the detour?
   - **Also (director 2026-11-04, BUILD_DEPTH §4.7):** the third relic slot holds shop-only relics (`sources` exactly `["merchant"]`, falling back to normal stock), plus about 3 shop-only relics, one of which expands the shop; curse cards (D38 = A) are removed through the normal card removal.
   - **Close:** item 35 (builds) gets the map; OPEN_ITEMS asks whether the relic route feels different.
@@ -1005,10 +1005,24 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
       5. Run `-Route relic|safe|first` for both classes with the override and report the median relic counts. The targets are 6-8 on relic routes and 2-3 on safe routes.
       6. **Get the suite ready for the switch:** run the full suite locally with the override on, and fix any test that assumes there's no merchant. Then commit with the merchant still off.
       - **Allowed data knobs if the sweep or the targets fail:** type weights, `max_attempts` (up to 1000), the rest window (down to [4, 9]) and relic prices. Report every change, and game-lead logs it.
+      - **MAP2-B done 2026-11-06** (5801fe7..6a3e780; DECISIONS "MAP2-B calls").
+        - **Suite:** 1800, 2 skipped, green with the merchant off and on.
+        - **Hashes:** unchanged.
+        - **`-NoMap`:** 57.5 s / 63.3 s.
+        - **7 relics:** built. No backups were needed.
+        - **With the merchant on:**
+          - the relic-route median is 6 (both classes), once relic prices are 30/45/65 (D41, default A);
+          - the safe-route median is 1. The safe target is now "at most 3".
     - **ux-designer (after MAP2-B):**
       - the merchant panel, as in the ux bullet above;
       - the MAP1 ux carry-overs folded in above, including the `_triggers` cleanup;
-      - **turn the merchant on:** `map.json` `merchant` weight 8 and `relic_route` [6, 8];
+      - **turn the merchant on.** Flip all four lines together; `MerchantSwitch.shipped_problems` checks this:
+        - `map.json` `types.merchant.weight` 0 -> 8;
+        - `path_rules.relic_route` [5, 7] -> [6, 8];
+        - `estimate.merchant_prices` [60, 60, 90] -> [30, 30, 45];
+        - `run.json` `relics.prices` 60/90/130 -> 30/45/65.
+      - The data hook is `RunController.merchant_view()` and its calls (MAP2-B hand-back, quoted in the ux brief).
+      - Known gap: 8 or 9 shop items clip the option row at 1280x720 and at 1024x600.
       - captures.
     - **qa (after ux):** the qa bullet above, plus re-baselining the map-on `-Route` numbers. The `-NoMap`, arena and bot-sim numbers must not move. gameplay-dev comes back only if switching the merchant on turns the suite red.
 - [ ] **MAP3, three acts (right after MAP2; D33 = B, director 2026-11-04). Full loop. Tag `playtest-YYYY-MM-DD-MAP3`.** Plan: `docs/MAP.md` §1, §4.5, §8. Detailed brief at MAP2's close.

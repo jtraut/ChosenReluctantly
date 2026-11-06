@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-06 (D40 = A recorded; MAP2 in progress; latest tag `playtest-2026-11-05-MAP1`)
-**Status: no decisions waiting; 5 things to look at (50 new, 49, 48, 47, 35), plus the round 2 vision check, which is now due. Next: MAP2 (merchant, shop-only relics) -> MAP3 (three acts, save and resume, rare/legendary cards, boss relics) -> MAP4 (events, curse cards, sacrifices, rest dig; probably two sittings) -> 3d (loadouts, starter relic).**
+Last updated: 2026-11-06 (MAP2 merchant built, ux next; D41 new; latest tag `playtest-2026-11-05-MAP1`)
+**Status: 1 decision (D41, merchant relic prices); 5 things to look at (50 new, 49, 48, 47, 35), plus the round 2 vision check, which is now due. Next: MAP2 (merchant, shop-only relics) -> MAP3 (three acts, save and resume, rare/legendary cards, boss relics) -> MAP4 (events, curse cards, sacrifices, rest dig; probably two sittings) -> 3d (loadouts, starter relic).**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -17,7 +17,13 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## Needs your decision
 
-Nothing right now. (D40 = A, a rest on every route, is recorded and being built in MAP2.) Next new number: D41.
+**D41. Merchant relic prices.** (from the MAP2 bot runs)
+- **The problem:** at the planned prices (tier 1 60, tier 2 90, tier 3 130), a relic-hunting route ends a run with about 5 relics. Your rule is 6-8. Gold income is about 15 a fight and 35 an elite.
+- **A (my default, as built):** halve the prices to 30 / 45 / 65. Relic hunters then end with 6. The catch: a tier 1 relic costs less than a card (40) or a card removal (50).
+- **B:** keep 60 / 90 / 130 and give more gold for fights. Hunters reach 6-8, but cards and removals get relatively cheaper too.
+- **C:** keep 60 / 90 / 130 and accept about 5 relics in a one-act run. Three acts (MAP3) add more sources anyway.
+
+All of these are data and easy to change. Without an answer, MAP2 ships A. Next new number: D42.
 
 ## Needs your eyes
 

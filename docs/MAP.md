@@ -124,7 +124,7 @@ Expected gold uses the mean income: combat 15, elite 35, mini-boss 50. The start
   - Non-fight rooms give 0.
   - Unspent gold is lost when the run ends, because there's no meta-progression yet.
 - **Merchant stock (run.json `merchant`):**
-  - **3 relics**, rarity-weighted from source `merchant`. Prices come from the relic's tier (run.json `relics.prices`): tier 1 60, tier 2 90, tier 3 130. Boss-tier relics are never sold.
+  - **3 relics**, rarity-weighted from source `merchant`. Prices come from the relic's tier (run.json `relics.prices`): ~~tier 1 60, tier 2 90, tier 3 130~~ **tier 1 30, tier 2 45, tier 3 65** (MAP2-B sim, 2026-11-06, D41 default A; at 60/90 a relic hunter ends with 5, short of 6-8). Boss-tier relics are never sold.
   - **3 cards** at 40 each, picked with the reward weights, including the "On your plan" highlight from 3d.
   - **Card removal** at 50, then +25 for each further removal in the run. It goes through the existing `can_remove` guard, so cards that would break a slot minimum are shown disabled with the reason, as at rest.
   - **Buy as many as you can afford, in any order** (the director: "several relics at once"). The panel stays open until you leave. At the relic cap (20 from MAP3, D34 = C), buying a relic first asks which owned relic to give up; the player can cancel.

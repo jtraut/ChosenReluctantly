@@ -1934,3 +1934,45 @@ gameplay-dev's commits are 66ba317, bf80b35 and 9321820. The merchant ships off 
 - **For MAP2-B:**
   - `free_rerolls` is fixed at 0 in `MerchantConfig.shipped_context`, and the run flow must set it from owned relics.
   - `Merchant.items()` marks removal buyable even when no card can be removed, so B or ux must surface the per-card `removal_problems` reason.
+
+## 2026-11-06 - MAP2-B calls: relic prices halved, the safe-route target, override knobs (gameplay-dev, logged and decided by game-lead)
+gameplay-dev did this in 5801fe7..6a3e780. The merchant still ships off.
+
+**Gates:**
+- **Suite:** 1800 with 2 skipped and 0 failures, with the merchant off and also with it switched on in a worktree.
+- **Unchanged:** the arena hashes and bot sim 846850403.
+- **`-NoMap` moved, because the 7 new relics widen the offers:**
+  - Rogue: 12/12, 57.3 s -> 12/12, 57.5 s.
+  - Wizard: 12/12, 62.5 s -> 12/12, 63.3 s.
+- **Sweep with the merchant on:** 0 failures, worst 479 of 1000 attempts.
+
+- **Relic prices go from 60/90/130 to 30/45/65 (tier 1/2/3). They take effect when ux switches the merchant on. The estimate goes from [60, 60, 90] to [30, 30, 45].** Accepted by game-lead and put to the director as D41, default A (as built).
+  - **Evidence** (relic-route median, 12 runs):
+    - 60/90: 5;
+    - 40/60: 5;
+    - 30/45: 6, meeting the 6-8 relic-hunter rule (D22).
+  - **Generator check:** with the estimate at 60/60/90 and `relic_route` [6, 8], 284 of 1000 seeds fail to generate.
+  - **What it costs:** a tier 1 relic (30) is cheaper than a card (40) or a removal (50).
+  - **Rejected:**
+    - more gold income: it makes cards and removals cheaper too;
+    - `relic_route` [5, 7] with the merchant on: a hunter would end with about 5, below the director's 6-8;
+    - more relic-room or rest weight, or a narrower rest window: no help, or more failed seeds.
+  - The prices are MAP0's proposal, not a director value, so they can be changed in data.
+  - **Fragile:** the relic route sits on the floor of 6-8. BD3 or MAP3 retunes it when the act count changes.
+- **The safe-route target is now "at most 3 relics", not "a median of 2-3".** With the merchant on, the safe median is 1 (2 with it off). The bot's safe policy (a removal, then a card) never buys a relic.
+  - MAP0's intent was that ignoring relics leaves you with few, and an upper bound is the rule the generator already uses (`ignore_route_max` 3).
+  - Rejected: making the safe bot buy a relic just to hit a number.
+- **Bot policy:** `first` and `random` shop like `safe` (a removal, then a card). Accepted.
+- **Relic implementation calls (accepted):**
+  - **ASAP Notice** scales base cooldown plus the card's own modifier, as `CardSlot` applies the stat.
+  - **Paperwork Fire** needed a `tag` filter on `hit_landed`. That's a matcher extension, not a new effect type.
+  - **Liquidate Assets:** the new `damage_mult` stat applies before armor and scales damage-over-time ticks. Modifiers can now carry `per_run_stat` and `per`.
+  - **Severance Package** can chain kill to kill. That's bounded by enemy count and pinned by a test. Watch it in BD3.
+  - **As Per the Attached Document** has a 0.5 s internal cooldown.
+- **qa-owned tests that gameplay-dev changed** (qa reviews them in the MAP2 pass):
+  - `bd2_qa_test` and `bd2b_flow_test` cut their catalog back to the original 6 relics;
+  - `map1_qa_test` models merchant relics and adds `GOLDEN_HASH_MERCHANT_ON` 1726783216;
+  - the `map1a_*` estimate pins;
+  - `map2a_merchant_test`: "ships off" becomes "off or fully on";
+  - the `bd2b_relics_test` counts.
+- **The switch is all-or-nothing:** `MerchantSwitch.shipped_problems` checks that the four data lines flip together.

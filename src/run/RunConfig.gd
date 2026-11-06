@@ -120,11 +120,9 @@ static func _validate_rewards(value: Variant) -> Array[String]:
 	return errors
 
 
-## MAP1-B `gold`: {fight node type: [low, high]} paid when a fight node is won. Optional (no block = no gold); the boss pays nothing.
+## MAP1-B `gold`: {fight node type: [low, high]} paid when a fight node is won (a map run only; the boss pays nothing). Required, but may be empty.
 static func _validate_gold(value: Variant) -> Array[String]:
 	var errors: Array[String] = []
-	if value == null:
-		return errors
 	if typeof(value) != TYPE_DICTIONARY:
 		errors.append("'gold' must be an object {node type: [low, high]}")
 		return errors

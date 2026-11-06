@@ -7,7 +7,7 @@
     "removal_screen": {
         "description": "The rest-room removal grid (the full deck, so removal is allowed). Run mode; seed 1 has its rest room at room 6.",
         "class": "rogue", "scenario": "", "after": "4.0",
-        "extra": ["--run-seed=1", "--run-room=6", "--full-deck", "--run-auto-choose=remove_menu"]
+        "extra": ["--no-map", "--run-seed=1", "--run-room=6", "--full-deck", "--run-auto-choose=remove_menu"]
     },
     "boss_smash": {
         "description": "The boss winding up its smash (cone) and landing it: shots 0.3 s and 0.6 s after the wind-up starts. Run mode, boss room.",
@@ -39,17 +39,17 @@
     "bd2_relic_elite": {
         "description": "BD2: the relic offer after an elite room (3 relics and Skip; the elite replaces its card offer). Run mode, seed 1 has its elite at room 4; a fixed offer.",
         "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--run-seed=1", "--run-room=4", "--run-clear-after=1", "--relic-offer=pyre_insurance+smoldering_grudge+heavy_sigh"]
+        "extra": ["--no-map", "--run-seed=1", "--run-room=4", "--run-clear-after=1", "--relic-offer=pyre_insurance+smoldering_grudge+heavy_sigh"]
     },
     "bd2_relic_room": {
         "description": "BD2: the relic room (no fight; the offer opens at once). Run mode, seed 1 has its relic room at room 9; the player already holds Spite Knuckles.",
         "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--run-seed=1", "--run-room=9", "--relics=spite_knuckles", "--relic-offer=lingering_embers+second_wind_unwillingly+heavy_sigh"]
+        "extra": ["--no-map", "--run-seed=1", "--run-room=9", "--relics=spite_knuckles", "--relic-offer=lingering_embers+second_wind_unwillingly+heavy_sigh"]
     },
     "bd2_relic_swap": {
         "description": "BD2: the give-one-up step at a relic cap of 2. The player holds Pyre Insurance and Heavy Sigh and picks Lingering Embers in the relic room (seed 1, room 9); the second screen lists the two relics that can be given up and Cancel.",
         "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--run-seed=1", "--run-room=9", "--relics=pyre_insurance+heavy_sigh", "--relic-cap=2", "--relic-offer=lingering_embers+second_wind_unwillingly+smoldering_grudge", "--run-auto-choose=relic:lingering_embers"]
+        "extra": ["--no-map", "--run-seed=1", "--run-room=9", "--relics=pyre_insurance+heavy_sigh", "--relic-cap=2", "--relic-offer=lingering_embers+second_wind_unwillingly+smoldering_grudge", "--run-auto-choose=relic:lingering_embers"]
     },
     "map_start": {
         "description": "MAP1-B: the map at run start. The map screen with the room-1 nodes pickable and the legend, with the branching map forced on (--map; data/map.json now ships it on, so the flag is explicit rather than needed). Run mode, seed 1.",

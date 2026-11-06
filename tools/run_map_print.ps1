@@ -1,13 +1,16 @@
 # Prints a seed's branching map as text (MAP1-A debug helper), or sweeps seeds 1..N for generation failures.
 # Usage: powershell -File tools\run_map_print.ps1 [-Seed 7] [-Route]      one map: rooms, columns, edges, wave ids, path-rule scores
 #        powershell -File tools\run_map_print.ps1 -Sweep 1000             generate seeds 1..N, print failures, the attempts histogram and the time
+# -From N starts the sweep at seed N (seeds N .. N+Sweep-1). -Set "types.rest.weight=20" overrides one config value for this run (repeatable).
 # -Route also prints the `first` route (lowest column) as node ids. Exit code 1 when a map breaks a rule or fails to generate.
 # Resolves the Godot 4 binary the same way tools/run_tests.ps1 does.
 
 param(
     [int]$Seed = 1,
     [int]$Sweep = 0,
-    [switch]$Route
+    [int]$From = 1,
+    [switch]$Route,
+    [string[]]$Set = @()
 )
 
 $root = Split-Path -Parent $PSScriptRoot
@@ -29,8 +32,9 @@ if ($godot -notmatch "_console\.exe$") {
 Push-Location $root
 try {
     $extra = @("--seed=$Seed")
-    if ($Sweep -gt 0) { $extra = @("--sweep=$Sweep") }
+    if ($Sweep -gt 0) { $extra = @("--sweep=$Sweep", "--from=$From") }
     if ($Route) { $extra += "--route=first" }
+    foreach ($s in $Set) { $extra += "--set=$s" }
     & $godot --headless --path . -s res://tools/map_print.gd -- @extra
     exit $LASTEXITCODE
 } finally {

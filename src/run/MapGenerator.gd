@@ -8,14 +8,14 @@ extends RefCounted
 ##    last-grid-room node leads to the boss. The first two walks start in different columns.
 ## 2. Shape rules on the grid (2-4 nodes a room, `min_branching`, ...). A bad grid is redrawn at once and costs no attempt (new types cannot fix it).
 ## 3. Types: `fixed` rooms first, then a weighted pick per node inside each type's room window, a `no_repeat` type never repeating along an edge.
-## 4. Path rules on every path (MapRules). A failed draw redraws the types; after 10 failed type draws the grid is redrawn too.
+## 4. Path rules on every path (MapRules). A failed draw redraws the types; after TYPE_DRAWS_PER_GRID (40) failed type draws the grid is redrawn too.
 ##    The one rng keeps running, so the result stays deterministic. After `max_attempts` it gives up with a loud error and no map.
 ## 5. Fight nodes get a `wave_id` from the lists that allow their room, avoiding the wave of the fight(s) just before them along the
 ##    edges (looking through rooms with no fight) when another fits. This runs once, after the types are final.
 ##
 ## Node ids are `(room - 1) * columns + column`; the boss sits in the middle column (`columns / 2`).
 
-const TYPE_DRAWS_PER_GRID := 10
+const TYPE_DRAWS_PER_GRID := 40
 ## A grid that breaks a shape rule is redrawn at once without spending an attempt (no types or paths are involved, so it is cheap).
 ## Plain random walks meet the shape rules only some of the time; this bounds the redraws so unreachable data still fails loudly.
 const MAX_GRID_DRAWS := 5000
@@ -48,15 +48,28 @@ static func build(seed_value: int, cfg: Dictionary = {}, run_config: Dictionary 
 	var grid: Dictionary = {}
 	var type_draws: int = 0
 	var last_problem: String = ""
+	var grid_preds: Dictionary = {}
 	while attempts < max_attempts:
 		if grid.is_empty():
 			grid = _draw_valid_grid(rng, config)
+			grid_preds = {}
 			if grid.is_empty():
 				return {"ok": false, "map": {}, "attempts": attempts, "error": "MapGenerator: no grid met the shape rules in %d walks-draws for seed %d (columns, walks and min_branching in data/map.json may be unreachable together)" % [MAX_GRID_DRAWS, seed_value]}
 			type_draws = 0
 		attempts += 1
-		var map: Dictionary = _assign_types(grid, rng, config)
-		var problems: Array[String] = MapRules.path_problems(map, config) if not map.is_empty() else ["a node had no type to draw"] as Array[String]
+		if grid_preds.is_empty():
+			grid_preds = _predecessors(grid)
+		var types: Dictionary = _draw_types(grid, grid_preds, rng, config)
+		var map: Dictionary = {}
+		var problems: Array[String] = []
+		if types.is_empty():
+			problems.append("a node had no type to draw")
+		elif _fewest_rests(grid, grid_preds, types) < int((config["path_rules"] as Dictionary).get("min_rest", 0)):
+			# D40's rest rule fails most draws; this pass over the nodes finds it without building the typed map or walking its paths.
+			problems.append("a path has only %d rest nodes (min_rest %d)" % [_fewest_rests(grid, grid_preds, types), int(config["path_rules"]["min_rest"])])
+		else:
+			map = _with_types(grid, types)
+			problems = MapRules.path_problems(map, config)
 		if problems.is_empty():
 			_assign_waves(map, rng, run)
 			_assign_chests(map, seed_value, config)
@@ -158,21 +171,25 @@ static func _draw_grid(rng: RandomNumberGenerator, cfg: Dictionary) -> Dictionar
 
 # ---- 2. types ----
 
-## A copy of `grid` with every node typed, or {} when some node has no type left to draw.
-static func _assign_types(grid: Dictionary, rng: RandomNumberGenerator, cfg: Dictionary) -> Dictionary:
-	var map: Dictionary = (grid as Dictionary).duplicate(true)
+## The ids with an edge into each node: {id: Array[int]}.
+static func _predecessors(grid: Dictionary) -> Dictionary:
+	var preds: Dictionary = {}
+	for edge: Variant in (grid["edges"] as Array):
+		if not preds.has(int((edge as Array)[1])):
+			preds[int((edge as Array)[1])] = [] as Array[int]
+		(preds[int((edge as Array)[1])] as Array[int]).append(int((edge as Array)[0]))
+	return preds
+
+
+## The type of every node as {id: type}, or {} when some node has no type left to draw.
+static func _draw_types(grid: Dictionary, preds: Dictionary, rng: RandomNumberGenerator, cfg: Dictionary) -> Dictionary:
 	var fixed: Dictionary = cfg["fixed"]
 	var types: Dictionary = cfg["types"]
 	var type_ids: Array = types.keys()
 	type_ids.sort()
 	var type_of: Dictionary = {}
-	var preds: Dictionary = {}
-	for edge: Variant in (map["edges"] as Array):
-		if not preds.has(int((edge as Array)[1])):
-			preds[int((edge as Array)[1])] = [] as Array[int]
-		(preds[int((edge as Array)[1])] as Array[int]).append(int((edge as Array)[0]))
 	# Nodes are stored by room then column, so every predecessor is typed before the node itself.
-	for entry: Variant in (map["nodes"] as Array):
+	for entry: Variant in (grid["nodes"] as Array):
 		var node: Dictionary = entry
 		var room: int = int(node["room"])
 		var type_id: String = ""
@@ -182,9 +199,32 @@ static func _assign_types(grid: Dictionary, rng: RandomNumberGenerator, cfg: Dic
 			type_id = _pick_type(rng, types, type_ids, room, preds.get(int(node["id"]), [] as Array[int]), type_of)
 			if type_id.is_empty():
 				return {}
-		node["type"] = type_id
 		type_of[int(node["id"])] = type_id
+	return type_of
+
+
+## A copy of `grid` with the drawn types set.
+static func _with_types(grid: Dictionary, type_of: Dictionary) -> Dictionary:
+	var map: Dictionary = (grid as Dictionary).duplicate(true)
+	for entry: Variant in (map["nodes"] as Array):
+		(entry as Dictionary)["type"] = type_of[int((entry as Dictionary)["id"])]
 	return map
+
+
+## The fewest rest nodes on any path of the typed grid (one pass in room order; the same number as MapRules.min_rest_over_paths).
+static func _fewest_rests(grid: Dictionary, preds: Dictionary, type_of: Dictionary) -> int:
+	var fewest: Dictionary = {}
+	var last: int = 0
+	for entry: Variant in (grid["nodes"] as Array):
+		var id: int = int((entry as Dictionary)["id"])
+		var best: int = 0
+		if preds.has(id):
+			best = 1000000
+			for from_id: int in (preds[id] as Array[int]):
+				best = mini(best, int(fewest.get(from_id, 1000000)))
+		last = best + (1 if String(type_of[id]) == "rest" else 0)
+		fewest[id] = last
+	return last  # the boss is the last node
 
 
 static func _pick_type(rng: RandomNumberGenerator, types: Dictionary, type_ids: Array, room: int, pred_ids: Array[int], type_of: Dictionary) -> String:

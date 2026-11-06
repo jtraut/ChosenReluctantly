@@ -50,6 +50,8 @@ static func validate(config: Dictionary, known_enemies: Array[String], _known_ca
 		errors.append("'rejects_per_run' must be a whole number in [0, 99]")
 	errors.append_array(_validate_rewards(config.get("rewards")))
 	errors.append_array(_validate_gold(config.get("gold")))
+	if config.has("merchant"):
+		errors.append_array(MerchantConfig.validate_block(config["merchant"]))
 	errors.append_array(_validate_tiers(config.get("tiers")))
 	errors.append_array(_validate_rooms(config, known_enemies, total))
 	errors.append_array(_validate_ui(config.get("ui")))

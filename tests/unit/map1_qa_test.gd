@@ -187,7 +187,7 @@ func _check(map: Dictionary, cfg: Dictionary, run: Dictionary) -> String:
 			path_count += 1
 			if int(f[6]) != rooms:
 				return "a path is %d rooms long" % int(f[6])
-			if fights < int(rules["min_fights"]) or elite > int(rules["max_elite_like"]) or rest > int(rules["max_rest"]) or merch > int(rules["max_merchants"]):
+			if fights < int(rules["min_fights"]) or elite > int(rules["max_elite_like"]) or rest > int(rules["max_rest"]) or rest < int(rules["min_rest"]) or merch > int(rules["max_merchants"]):
 				return "path rule broken: fights %d elite %d rest %d merchants %d" % [fights, elite, rest, merch]
 			best = maxi(best, relics)
 			worst = mini(worst, relics)
@@ -282,7 +282,7 @@ func test_golden_maps_pin_determinism_across_runs_and_versions() -> void:
 	assert_int(text.hash()).is_equal(GOLDEN_HASH)
 
 
-const GOLDEN_HASH := 1128919566
+const GOLDEN_HASH := 2713285137  # MAP2-A: min_rest 1 + rest weight 25 + max_attempts 1000 + 40 type draws per grid (was 1128919566)
 
 
 func test_a_separate_process_prints_the_same_maps() -> void:
@@ -464,7 +464,7 @@ func test_the_shipped_data_matches_the_accepted_changes() -> void:
 	assert_int(int((t["combat"] as Dictionary)["weight"])).is_equal(40)
 	assert_int(int((t["elite"] as Dictionary)["weight"])).is_equal(16)
 	assert_int(int((t["relic_room"] as Dictionary)["weight"])).is_equal(14)
-	assert_int(int((t["rest"] as Dictionary)["weight"])).is_equal(10)
+	assert_int(int((t["rest"] as Dictionary)["weight"])).is_equal(25)  # MAP2-A: was 10, raised so every path can hold a rest (D40)
 	assert_array(((t["relic_room"] as Dictionary)["rooms"] as Array).map(func(v: Variant) -> int: return int(v))).is_equal([3, 8])
 	for zero: String in ["merchant", "mini_boss", "curse_room", "buff_room"]:
 		assert_int(int((t[zero] as Dictionary)["weight"])).is_equal(0)
@@ -859,7 +859,7 @@ func test_carryover_a_damaged_map_with_an_open_node_pick_does_not_leave_a_straig
 	assert_array(bad).override_failure_message("straight run left holding a node pick for: %s" % str(bad)).is_empty()
 
 
-func test_carryover_a_config_the_validator_accepts_but_cannot_fill_fails_with_a_message_not_a_script_error(do_skip := true, skip_reason := "qa carry-over: MapGenerator.gd:59 `[..] as Array[String]` script-errors when a node has no candidate type (gameplay-dev one-liner); unskip when fixed") -> void:
+func test_carryover_a_config_the_validator_accepts_but_cannot_fill_fails_with_a_message_not_a_script_error() -> void:
 	var c: Dictionary = _cfg()
 	((c["types"] as Dictionary)["combat"] as Dictionary)["weight"] = 0
 	assert_array(MapConfig.validate(c)).is_empty()  # the validator lets it through

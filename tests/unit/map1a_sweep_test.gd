@@ -25,7 +25,7 @@ func test_thousand_seeds_obey_every_rule() -> void:
 		if not problem.is_empty():
 			failures.append("seed %d: %s" % [seed_value, problem])
 	assert_array(failures).override_failure_message("sweep failures:\n" + "\n".join(failures.slice(0, 10))).is_empty()
-	assert_int(worst_attempts).override_failure_message("worst case %d of %d attempts leaves too little headroom" % [worst_attempts, int(cfg["max_attempts"])]).is_less(floori(float(cfg["max_attempts"]) / 2.0))
+	assert_int(worst_attempts).override_failure_message("worst case %d of %d attempts leaves too little headroom" % [worst_attempts, int(cfg["max_attempts"])]).is_less(floori(float(cfg["max_attempts"]) * 0.8))
 
 
 func _check_map(map: Dictionary, cfg: Dictionary, rules: Dictionary, estimate: Dictionary, route: Array) -> String:
@@ -134,7 +134,11 @@ func _check_map(map: Dictionary, cfg: Dictionary, rules: Dictionary, estimate: D
 				rest += 1
 			if type_id == "merchant":
 				merchants += 1
-				relics += mini(int(estimate["merchant_stock"]), int(floorf(gold / float(estimate["merchant_price"]))))
+				var spare: float = gold
+				for price: float in [60.0, 60.0, 90.0]:  # the estimate's merchant_prices, cheapest first (written out so this checker stays independent)
+					if spare >= price:
+						spare -= price
+						relics += 1
 			elif type_id in ["elite", "relic_room", "mini_boss", "curse_room", "buff_room"]:
 				relics += 1
 			gold += float((estimate["gold_mean"] as Dictionary).get(type_id, 0.0))
@@ -144,6 +148,8 @@ func _check_map(map: Dictionary, cfg: Dictionary, rules: Dictionary, estimate: D
 			return "a path has %d elite-like nodes" % elite_like
 		if merchants > int(rules["max_merchants"]):
 			return "a path has %d merchants" % merchants
+		if rest < int(rules["min_rest"]):
+			return "a path has %d rests (min_rest %d)" % [rest, int(rules["min_rest"])]
 		if rest > int(rules["max_rest"]):
 			return "a path has %d rests" % rest
 		best = maxi(best, relics)

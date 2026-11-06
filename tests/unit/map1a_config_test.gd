@@ -94,7 +94,7 @@ func test_all_weights_zero_is_rejected() -> void:
 
 func test_path_rules_are_range_checked() -> void:
 	var bad: Dictionary = {
-		"min_fights": [-1, 11, 2.5, "six"], "max_elite_like": [-1, 11], "max_merchants": [-2], "max_rest": [11],
+		"min_fights": [-1, 11, 2.5, "six"], "max_elite_like": [-1, 11], "max_merchants": [-2], "min_rest": [-1, 11, 1.5], "max_rest": [11],
 		"ignore_route_max": [-1, 100], "min_branching": [-0.1, 1.5, "most"],
 		"relic_route": [[7, 5], [-1, 5], [1], [1, 2, 3], [0, 100], ["a", "b"]],
 	}
@@ -135,7 +135,7 @@ func test_fixed_entries_are_checked() -> void:
 
 
 func test_estimate_numbers_are_checked() -> void:
-	var cases: Array = [["merchant_price", 0], ["merchant_price", "sixty"], ["merchant_stock", 0], ["merchant_stock", 10], ["gold_mean", {"combat": -1}], ["gold_mean", {"nope": 1}], ["gold_mean", []]]
+	var cases: Array = [["merchant_prices", []], ["merchant_prices", [0]], ["merchant_prices", ["sixty"]], ["merchant_prices", 60], ["merchant_prices", [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]], ["gold_mean", {"combat": -1}], ["gold_mean", {"nope": 1}], ["gold_mean", []]]
 	for case: Array in cases:
 		var config := _good()
 		config["estimate"][case[0]] = case[1]

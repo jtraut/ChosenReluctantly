@@ -17,6 +17,7 @@ class Extremes:
 	var max_elite_like: int = 0
 	var max_merchants: int = 0
 	var max_rest: int = 0
+	var min_rest: int = 1000000
 	var best_relics: int = -1
 	var worst_relics: int = 1000000
 
@@ -116,7 +117,7 @@ static func type_problems(map: Dictionary, cfg: Dictionary) -> Array[String]:
 	return problems
 
 
-## Path rules (MAP.md section 3.3) over every path: min_fights, max_elite_like, max_merchants, max_rest, the best path's relic estimate
+## Path rules (MAP.md section 3.3) over every path: min_fights, max_elite_like, max_merchants, min_rest (D40: a rest on every route), max_rest, the best path's relic estimate
 ## inside `relic_route` and the worst path's at most `ignore_route_max`.
 static func path_problems(map: Dictionary, cfg: Dictionary) -> Array[String]:
 	var stats: Extremes = evaluate(map, cfg)
@@ -131,6 +132,8 @@ static func path_problems(map: Dictionary, cfg: Dictionary) -> Array[String]:
 		problems.append("a path has %d elite-like nodes (max_elite_like %d)" % [stats.max_elite_like, int(rules["max_elite_like"])])
 	if stats.max_merchants > int(rules["max_merchants"]):
 		problems.append("a path has %d merchants (max_merchants %d)" % [stats.max_merchants, int(rules["max_merchants"])])
+	if rules.has("min_rest") and stats.min_rest < int(rules["min_rest"]):
+		problems.append("a path has only %d rest nodes (min_rest %d)" % [stats.min_rest, int(rules["min_rest"])])
 	if stats.max_rest > int(rules["max_rest"]):
 		problems.append("a path has %d rest nodes (max_rest %d)" % [stats.max_rest, int(rules["max_rest"])])
 	var route: Array = rules["relic_route"]
@@ -139,6 +142,30 @@ static func path_problems(map: Dictionary, cfg: Dictionary) -> Array[String]:
 	if stats.worst_relics > int(rules["ignore_route_max"]):
 		problems.append("the worst path's relic estimate is %d (ignore_route_max %d)" % [stats.worst_relics, int(rules["ignore_route_max"])])
 	return problems
+
+
+## The fewest rest nodes on any start-to-boss path, in one pass over the nodes (room by room), not a walk of every path.
+static func min_rest_over_paths(map: Dictionary) -> int:
+	var nodes: Array = (map.get("nodes", []) as Array).duplicate()
+	nodes.sort_custom(func(a: Variant, b: Variant) -> bool: return int((a as Dictionary)["room"]) < int((b as Dictionary)["room"]))
+	var preds: Dictionary = {}
+	for edge: Variant in (map.get("edges", []) as Array):
+		var to_id: int = int((edge as Array)[1])
+		if not preds.has(to_id):
+			preds[to_id] = [] as Array[int]
+		(preds[to_id] as Array[int]).append(int((edge as Array)[0]))
+	var fewest: Dictionary = {}  # node id -> fewest rests on any path into and including it
+	var boss: int = MapGraph.boss_id(map)
+	for entry: Variant in nodes:
+		var id: int = int((entry as Dictionary)["id"])
+		var here: int = 1 if String((entry as Dictionary)["type"]) == "rest" else 0
+		var best: int = 0
+		if preds.has(id):
+			best = 1000000
+			for from_id: int in (preds[id] as Array[int]):
+				best = mini(best, int(fewest.get(from_id, 1000000)))
+		fewest[id] = best + here
+	return int(fewest.get(boss, 0))
 
 
 ## The extremes over every start-to-boss path (depth-first). Counts, not path lists, so it does not allocate per path.
@@ -175,6 +202,7 @@ static func _descend(id: int, boss: int, type_of: Dictionary, next: Dictionary, 
 		stats.max_elite_like = maxi(stats.max_elite_like, elite_like)
 		stats.max_merchants = maxi(stats.max_merchants, merchants)
 		stats.max_rest = maxi(stats.max_rest, rest)
+		stats.min_rest = mini(stats.min_rest, rest)
 		stats.best_relics = maxi(stats.best_relics, relics)
 		stats.worst_relics = mini(stats.worst_relics, relics)
 		return
@@ -182,9 +210,19 @@ static func _descend(id: int, boss: int, type_of: Dictionary, next: Dictionary, 
 		_descend(following, boss, type_of, next, estimate, stats, fights, elite_like, merchants, rest, relics, gold)
 
 
-## Relics a merchant visit counts for on arrival with `gold` (MAP.md section 4.1): floor(gold / tier 1 price), at most the stock.
+## Relics a merchant visit counts for on arrival with `gold` (MAP.md section 4.1, MAP2-A): the cheapest slots first, as many as `gold` pays
+## for (`estimate.merchant_prices`: 2 normal slots at the tier 1 price, 1 shop-only slot at the tier 2 price).
 static func merchant_relics(gold: float, estimate: Dictionary) -> int:
-	return mini(int(estimate["merchant_stock"]), int(floorf(gold / float(estimate["merchant_price"]))))
+	var prices: Array = (estimate["merchant_prices"] as Array).duplicate()
+	prices.sort()
+	var left: float = gold
+	var bought: int = 0
+	for price: Variant in prices:
+		if left + 0.000001 < float(price):
+			break
+		left -= float(price)
+		bought += 1
+	return bought
 
 
 ## The section 4.1 relic estimate for one path (a list of node ids): relic nodes count 1, a merchant counts what the expected gold

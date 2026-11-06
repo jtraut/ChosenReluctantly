@@ -64,6 +64,7 @@ static func shipped_context(pools: Array) -> Dictionary:
 		"known_slots": SlotTypeDatabase.known_ids(),
 		"slot_names": DeckRules.slot_names_from_database(),
 		"nodes": RunNodes.shipped_context(),
+		"merchant": MerchantConfig.shipped_context(),
 	}
 
 

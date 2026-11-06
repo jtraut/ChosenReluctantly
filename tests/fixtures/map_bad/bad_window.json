@@ -78,7 +78,7 @@
     "min_fights": 6,
     "max_elite_like": 3,
     "max_merchants": 1,
-    "max_rest": 2,
+    "min_rest": 1, "max_rest": 2,
     "relic_route": [
       5,
       7
@@ -92,7 +92,6 @@
       "elite": 35,
       "mini_boss": 50
     },
-    "merchant_price": 60,
-    "merchant_stock": 3
+    "merchant_prices": [60, 60, 90]
   }
 }

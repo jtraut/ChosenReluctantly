@@ -21,8 +21,9 @@ const OPTIONAL_KEYS: Array[String] = ["chests"]
 const CHEST_KEYS: Array[String] = ["weight", "act_offset", "act", "min_tier"]
 const CHEST_SIZES: Array[String] = ["small", "medium", "large"]
 const TYPE_KEYS: Array[String] = ["weight", "rooms", "no_repeat"]
-const RULE_KEYS: Array[String] = ["min_fights", "max_elite_like", "max_merchants", "max_rest", "relic_route", "ignore_route_max", "min_branching"]
-const ESTIMATE_KEYS: Array[String] = ["gold_mean", "merchant_price", "merchant_stock"]
+const RULE_KEYS: Array[String] = ["min_fights", "max_elite_like", "max_merchants", "min_rest", "max_rest", "relic_route", "ignore_route_max", "min_branching"]
+## `merchant_prices`: the price of each relic slot the merchant sells, cheapest first in the estimate (MAP2-A: 2 normal tier 1 slots and 1 shop-only tier 2 slot).
+const ESTIMATE_KEYS: Array[String] = ["gold_mean", "merchant_prices"]
 const MAX_ROOMS := 16  # paths are enumerated: 3^(rooms-2) at worst
 const MAX_COLUMNS := 8
 const MAX_WALKS := 16
@@ -134,8 +135,10 @@ static func _validate_rules(rules: Variant, rooms: int, errors: Array[String]) -
 	for key: String in RULE_KEYS:
 		if not r.has(key):
 			errors.append("map.path_rules: missing '%s'" % key)
-	for key: String in ["min_fights", "max_elite_like", "max_merchants", "max_rest"]:
+	for key: String in ["min_fights", "max_elite_like", "max_merchants", "min_rest", "max_rest"]:
 		_whole_in(r, key, 0, rooms, "map.path_rules." + key, errors)
+	if _is_whole(r.get("min_rest")) and _is_whole(r.get("max_rest")) and int(r["min_rest"]) > int(r["max_rest"]):
+		errors.append("map.path_rules.min_rest (%d) is above max_rest (%d)" % [int(r["min_rest"]), int(r["max_rest"])])
 	_whole_in(r, "ignore_route_max", 0, 99, "map.path_rules.ignore_route_max", errors)
 	var branching: Variant = r.get("min_branching")
 	if r.has("min_branching") and (not _is_number(branching) or float(branching) < 0.0 or float(branching) > 1.0):
@@ -150,7 +153,7 @@ static func _validate_rules(rules: Variant, rooms: int, errors: Array[String]) -
 
 static func _validate_estimate(estimate: Variant, errors: Array[String]) -> void:
 	if typeof(estimate) != TYPE_DICTIONARY:
-		errors.append("map.estimate must be an object {gold_mean, merchant_price, merchant_stock}")
+		errors.append("map.estimate must be an object {gold_mean, merchant_prices}")
 		return
 	var e: Dictionary = estimate
 	_unknown_keys(e, ESTIMATE_KEYS, "map.estimate", errors)
@@ -168,9 +171,14 @@ static func _validate_estimate(estimate: Variant, errors: Array[String]) -> void
 					errors.append("map.estimate.gold_mean: unknown node type '%s'" % str(key))
 				elif not _is_number(value) or float(value) < 0.0 or float(value) > 100000.0:
 					errors.append("map.estimate.gold_mean.%s must be a number in [0, 100000]" % str(key))
-	if e.has("merchant_price") and (not _is_number(e["merchant_price"]) or float(e["merchant_price"]) <= 0.0 or float(e["merchant_price"]) > 100000.0):
-		errors.append("map.estimate.merchant_price must be a number above 0")
-	_whole_in(e, "merchant_stock", 1, 9, "map.estimate.merchant_stock", errors)
+	if e.has("merchant_prices"):
+		var prices: Variant = e["merchant_prices"]
+		if typeof(prices) != TYPE_ARRAY or (prices as Array).is_empty() or (prices as Array).size() > 9:
+			errors.append("map.estimate.merchant_prices must be a list of 1 to 9 prices")
+		else:
+			for price: Variant in (prices as Array):
+				if not _is_number(price) or float(price) <= 0.0 or float(price) > 100000.0:
+					errors.append("map.estimate.merchant_prices: '%s' must be a number above 0" % str(price))
 
 
 ## `chests`: {small, medium, large: {weight, min_tier, and either act_offset (a row relative to the room's act) or act (a fixed row)}}.

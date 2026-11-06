@@ -3,13 +3,13 @@
   "rooms": 10,
   "columns": 4,
   "walks": 4,
-  "max_attempts": 200,
+  "max_attempts": 1000,
   "fixed": { "1": "combat", "2": "combat", "10": "boss" },
   "types": {
     "combat":     { "weight": 40, "rooms": [1, 9] },
     "elite":      { "weight": 16, "rooms": [3, 9], "no_repeat": true },
     "relic_room": { "weight": 14, "rooms": [3, 8], "no_repeat": true },
-    "rest":       { "weight": 10, "rooms": [5, 9], "no_repeat": true },
+    "rest":       { "weight": 25, "rooms": [5, 9], "no_repeat": true },
     "merchant":   { "weight": 0,  "rooms": [4, 9], "no_repeat": true },
     "mini_boss":  { "weight": 0,  "rooms": [5, 8], "no_repeat": true },
     "curse_room": { "weight": 0,  "rooms": [3, 8], "no_repeat": true },
@@ -19,6 +19,7 @@
     "min_fights": 6,
     "max_elite_like": 3,
     "max_merchants": 1,
+    "min_rest": 1,
     "max_rest": 2,
     "relic_route": [5, 7],
     "ignore_route_max": 3,
@@ -31,7 +32,6 @@
   },
   "estimate": {
     "gold_mean": { "combat": 15, "elite": 35, "mini_boss": 50 },
-    "merchant_price": 60,
-    "merchant_stock": 3
+    "merchant_prices": [60, 60, 90]
   }
 }

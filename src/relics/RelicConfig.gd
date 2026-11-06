@@ -21,7 +21,7 @@ static func validate_block(block: Variant) -> Array[String]:
 		return errors
 	var b: Dictionary = block
 	for key: Variant in b.keys():
-		if not ["enabled", "max_owned", "tier_weights", "offer_count", "relic_room"].has(String(key)):
+		if not ["enabled", "max_owned", "tier_weights", "offer_count", "relic_room", "prices"].has(String(key)):
 			errors.append("relics: unknown key '%s'" % str(key))
 	if typeof(b.get("enabled")) != TYPE_BOOL:
 		errors.append("relics.enabled must be true or false")
@@ -31,6 +31,25 @@ static func validate_block(block: Variant) -> Array[String]:
 		errors.append("relics.offer_count must be a whole number in [1, %d]" % MAX_OFFER_COUNT)
 	errors.append_array(_validate_tier_weights(b.get("tier_weights")))
 	errors.append_array(_validate_relic_room(b.get("relic_room")))
+	if b.has("prices"):
+		errors.append_array(validate_prices(b["prices"]))
+	return errors
+
+
+## MAP2-A `relics.prices`: the merchant's gold price per tier ({tier1, tier2, tier3}, whole numbers above 0). The boss tier is never sold,
+## so a `boss` key (or any other) is refused.
+static func validate_prices(value: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(value) != TYPE_DICTIONARY:
+		errors.append("relics.prices must be an object {tier1, tier2, tier3}")
+		return errors
+	for key: Variant in (value as Dictionary).keys():
+		if not TIER_KEYS.has(String(key)):
+			errors.append("relics.prices: unknown tier '%s' (boss relics are never sold)" % str(key))
+	for tier: String in TIER_KEYS:
+		var price: Variant = (value as Dictionary).get(tier)
+		if not _is_whole(price) or int(price) < 1 or int(price) > 99999:
+			errors.append("relics.prices.%s must be a whole number in [1, 99999]" % tier)
 	return errors
 
 
@@ -103,6 +122,14 @@ static func max_owned() -> int:
 
 static func offer_count() -> int:
 	return int(block().get("offer_count", 3))
+
+
+## The merchant price of a relic of `rarity` from a `prices` block (the shipped one by default), or -1 when that tier is not for sale (boss, unknown).
+static func price_for_tier(rarity: String, prices_block: Dictionary = {}) -> int:
+	var prices: Dictionary = prices_block if not prices_block.is_empty() else block().get("prices", {})
+	if not TIER_KEYS.has(rarity) or not prices.has(rarity):
+		return -1
+	return int(prices[rarity])
 
 
 ## The relic room settings {count, first, last} of a run config's `relics` block ({} when relics are off or the block is absent).

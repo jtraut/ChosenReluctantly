@@ -57,6 +57,13 @@ var path: Array[int] = []
 var gold: int = 0
 ## Reserved for the passive tree and meta-progression (MAP.md section 5): always 0 for now.
 var xp_earned: int = 0
+## MAP2-A: card removals bought at the merchant this run (each raises the next removal's price).
+var merchant_removals: int = 0
+## MAP2-A: gold spent at the merchant this run (a later relic scales with it).
+var gold_spent_merchant: int = 0
+## MAP2-A: the open merchant visit (see Merchant): {node, relics, cards, sold_relics, sold_cards, rerolls_used}, or {} when none is open.
+## It holds the stock, so restoring a save mid-visit gives the same shop.
+var merchant_visit: Dictionary = {}
 
 
 ## A fresh run: the reject allowance comes from data/run.json (RunConfig), the starter from the caller (the character's).
@@ -143,6 +150,9 @@ func to_dict() -> Dictionary:
 		"path": path.duplicate(),
 		"gold": gold,
 		"xp_earned": xp_earned,
+		"merchant_removals": merchant_removals,
+		"gold_spent_merchant": gold_spent_merchant,
+		"merchant_visit": merchant_visit.duplicate(true),
 	}
 
 
@@ -214,6 +224,7 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.relics = _id_list(data.get("relics", []), "relics")
 	state.relics_given_up = _id_list(data.get("relics_given_up", []), "relics_given_up")
 	_read_map_fields(state, data)
+	_read_merchant_fields(state, data)
 	for card_id: Variant in (data["deck"] as Array):
 		state.deck.append(String(card_id))
 	for entry: Variant in (data["history"] as Array):
@@ -264,6 +275,53 @@ static func _read_map_fields(state: RunState, data: Dictionary) -> void:
 			state.path = []
 			return
 		state.path.append(int(item))
+
+
+## The merchant fields of saved data. Old dicts (before MAP2) have none and load with no removals, nothing spent and no open visit. A bad
+## number falls back to 0 and a malformed visit is dropped, both loudly. The visit is rebuilt with whole numbers and in a fixed key order,
+## because a JSON round trip turns every number into a float and `equals` compares the JSON text.
+static func _read_merchant_fields(state: RunState, data: Dictionary) -> void:
+	state.merchant_removals = maxi(_whole_or_zero(data.get("merchant_removals", 0), "merchant_removals"), 0)
+	state.gold_spent_merchant = maxi(_whole_or_zero(data.get("gold_spent_merchant", 0), "gold_spent_merchant"), 0)
+	var visit: Variant = data.get("merchant_visit", {})
+	if typeof(visit) != TYPE_DICTIONARY:
+		push_error("RunState.from_dict: 'merchant_visit' must be an object; no visit is open")
+		return
+	if (visit as Dictionary).is_empty():
+		return
+	var v: Dictionary = visit
+	for key: String in ["node", "relics", "cards", "sold_relics", "sold_cards", "rerolls_used"]:
+		if not v.has(key):
+			push_error("RunState.from_dict: 'merchant_visit' is missing '%s'; no visit is open" % key)
+			return
+	for key: String in ["relics", "cards", "sold_relics", "sold_cards"]:
+		if typeof(v[key]) != TYPE_ARRAY:
+			push_error("RunState.from_dict: 'merchant_visit.%s' must be an array; no visit is open" % key)
+			return
+		for item: Variant in (v[key] as Array):
+			if typeof(item) != TYPE_STRING or String(item).is_empty():
+				push_error("RunState.from_dict: 'merchant_visit.%s' holds a value that is not an id; no visit is open" % key)
+				return
+	var numbers_ok: bool = (typeof(v["node"]) == TYPE_INT or typeof(v["node"]) == TYPE_FLOAT) and (typeof(v["rerolls_used"]) == TYPE_INT or typeof(v["rerolls_used"]) == TYPE_FLOAT)
+	if not numbers_ok or (not state.map.is_empty() and MapGraph.node(state.map, int(v["node"])).is_empty()):
+		push_error("RunState.from_dict: 'merchant_visit' has a bad node or reroll count; no visit is open")
+		return
+	state.merchant_visit = {
+		"node": int(v["node"]),
+		"relics": _plain_ids(v["relics"]),
+		"cards": _plain_ids(v["cards"]),
+		"sold_relics": _plain_ids(v["sold_relics"]),
+		"sold_cards": _plain_ids(v["sold_cards"]),
+		"rerolls_used": maxi(int(v["rerolls_used"]), 0),
+	}
+
+
+## Ids kept as they are, duplicates and all (a card id may repeat in a list of sold cards).
+static func _plain_ids(value: Variant) -> Array[String]:
+	var ids: Array[String] = []
+	for item: Variant in (value as Array):
+		ids.append(String(item))
+	return ids
 
 
 static func _whole_or_zero(value: Variant, label: String) -> int:

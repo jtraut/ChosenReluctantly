@@ -110,6 +110,10 @@ func test_unreachable_path_rules_fail_loudly_after_max_attempts() -> void:
 	var cfg := _cfg()
 	cfg["max_attempts"] = 5
 	cfg["path_rules"]["relic_route"] = [20, 20]  # no path can hold 20 relics
+	for loose: String in ["min_rest", "min_fights"]:
+		cfg["path_rules"][loose] = 0  # so the relic rule, not an earlier rule, is the one that keeps failing
+	for loose: String in ["max_rest", "max_elite_like", "max_merchants"]:
+		cfg["path_rules"][loose] = 9
 	var result: Dictionary = MapGenerator.build(3, cfg)
 	assert_bool(bool(result["ok"])).is_false()
 	assert_int(int(result["attempts"])).is_equal(5)
@@ -209,7 +213,10 @@ func test_merchant_stock_caps_the_estimate_and_gold_floors() -> void:
 	assert_int(MapRules.merchant_relics(0.0, estimate)).is_equal(0)
 	assert_int(MapRules.merchant_relics(59.0, estimate)).is_equal(0)
 	assert_int(MapRules.merchant_relics(60.0, estimate)).is_equal(1)
-	assert_int(MapRules.merchant_relics(179.0, estimate)).is_equal(2)
+	assert_int(MapRules.merchant_relics(119.0, estimate)).is_equal(1)
+	assert_int(MapRules.merchant_relics(120.0, estimate)).is_equal(2)
+	assert_int(MapRules.merchant_relics(209.0, estimate)).is_equal(2)  # the third slot is the 90 gold shop-only relic
+	assert_int(MapRules.merchant_relics(210.0, estimate)).is_equal(3)
 	assert_int(MapRules.merchant_relics(100000.0, estimate)).is_equal(3)
 
 

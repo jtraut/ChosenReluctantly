@@ -1024,6 +1024,15 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
       - The data hook is `RunController.merchant_view()` and its calls (MAP2-B hand-back, quoted in the ux brief).
       - Known gap: 8 or 9 shop items clip the option row at 1280x720 and at 1024x600.
       - captures.
+      - **ux done 2026-11-06** (8897701..accf46f; DECISIONS "MAP2 ux calls").
+        - **The merchant is on** (8994863).
+        - **Suite:** 1821 with 2 skipped.
+        - **Merchant panel:** fits 1024x600.
+        - **MAP1 carry-overs:** done.
+        - **Captures:** `screenshots/map2_ux/`.
+        - **Left for later:**
+          - merchant capture presets in `tools/capture_presets.json` (a qa/gameplay-dev tool);
+          - stale "ships off" comments in `RunController.gd` (about lines 242-243), the `run_map_print.ps1` header, and the `map2b_merchant_flow_test.gd` header.
     - **qa (after ux):** the qa bullet above, plus re-baselining the map-on `-Route` numbers. The `-NoMap`, arena and bot-sim numbers must not move. gameplay-dev comes back only if switching the merchant on turns the suite red.
 - [ ] **MAP3, three acts (right after MAP2; D33 = B, director 2026-11-04). Full loop. Tag `playtest-YYYY-MM-DD-MAP3`.** Plan: `docs/MAP.md` §1, §4.5, §8. Detailed brief at MAP2's close.
   - **Goal:** a run is three acts of 10 rooms (30 rooms). Acts 1 and 2 end in a mini-boss, act 3 in the final boss. 30-45 minutes per run, and you can save and come back later (GDD §9).

@@ -1976,3 +1976,17 @@ gameplay-dev did this in 5801fe7..6a3e780. The merchant still ships off.
   - `map2a_merchant_test`: "ships off" becomes "off or fully on";
   - the `bd2b_relics_test` counts.
 - **The switch is all-or-nothing:** `MerchantSwitch.shipped_problems` checks that the four data lines flip together.
+
+## 2026-11-06 - MAP2 ux calls (ux-designer, logged by game-lead)
+ux made these changes in 8897701..accf46f. **The merchant is now on in shipped data:** all four switch lines flipped (8994863).
+
+**Suite:** 1800 with 2 skipped right after the flip. It was 1821 with 2 skipped, 0 failures, after the panel work.
+
+All accepted:
+- **The shop has no instruction line and no keys hint.** The gold badge and the Leave button carry that. Rejected: keeping both and letting the shop scroll at 1024x600.
+- **Layout:** two columns, relics on the left and cards on the right. Remove, Reroll and Leave sit in the footer. Rejected: three rows of three tiles (about 100 px too tall) and a services row (about 70 px).
+- **Short reasons on the tiles** (`tile_reasons`), with the full text in the tooltip. "Need N more gold" is computed. The margin is `shop_fit_margin` 0.975, against 0.94 elsewhere, rather than smaller fonts.
+- **The room 9 -> boss pick is relabelled "Face the boss"** instead of being picked automatically. That's lower risk for the run flow.
+- **The map's gold line** shows only while a merchant can still be reached forward from where you are.
+- **`--run-auto-choose` also splits on `+`.**
+- **Open, cosmetic:** the legend's merchant icon is a plain square, while the node has a coin. The playtester can say whether it matters.

@@ -1,6 +1,6 @@
 # Chosen, Reluctantly
 
-A 3D isometric action RPG where your skills are cards: real-time combat driven by typed card slots, each with its own shuffled mini-deck. Built around deep class/element build combinations and roguelite runs with persistent between-run progression. Currently a placeholder-visuals prototype: two playable classes (a Fire Rogue and a Fire Wizard, picked at the start of each run), a seeded 10-room run (combat, elite, rest, boss) with card rewards after fights, a deck-clean choice in the rest room, and a three-phase final boss, The Overly Enthusiastic Guardian (placeholder name). Cards carry tags and keywords, and some card effects have conditions ("if the target is Burning", "if you used Movement in the last 2 s") so cards can set each other up (BD1). Runs also hand out relics (BD2): run-long passives with triggers, offered after the elite room and in a relic room, shown as a chip row on the HUD. See `docs/GDD.md` for the design and `docs/ROADMAP.md` for status.
+A 3D isometric action RPG where your skills are cards: real-time combat driven by typed card slots, each with its own shuffled mini-deck. Built around deep class/element build combinations and roguelite runs with persistent between-run progression. Currently a placeholder-visuals prototype: two playable classes (a Fire Rogue and a Fire Wizard, picked at the start of each run), a seeded 10-room run, a branching map you route through (combat, elite, relic chest, rest, boss; MAP1) with card rewards and gold after fights, a deck-clean choice in the rest room, and a three-phase final boss, The Overly Enthusiastic Guardian (placeholder name). Cards carry tags and keywords, and some card effects have conditions ("if the target is Burning", "if you used Movement in the last 2 s") so cards can set each other up (BD1). Runs also hand out relics (BD2): run-long passives with triggers, offered after the elite room and in a relic room, shown as a chip row on the HUD. See `docs/GDD.md` for the design and `docs/ROADMAP.md` for status.
 
 ## Docs
 | File | What it is |
@@ -40,7 +40,7 @@ godot --path . --quit   # smoke-check with no window (verified: exits 0)
 godot --path .          # play it: starts a run
 ```
 
-A normal launch shows the **class pick** (Rogue or Wizard; 1/2 or the arrows highlight, Enter or a click confirms; the HUD is hidden behind it), then starts a **run**: 10 rooms in a row (combat, 1 elite, 1 rest, boss last, and from BD2 one of the combat rooms is a **relic room** with no fight), built from a seed; see `data/run.json` and `docs/ARCHITECTURE.md` section 2. The room indicator at the top right shows "Room X of Y - Type" with a shape per type (circle combat, diamond elite, plus rest, star boss; the relic room's plate reads "Relics"). After a won combat room you pick a reward card (see below); after the elite room you pick a relic instead (see Relics below); a rest room offers heal or remove a card; any other room shows a "Room cleared" panel with Continue. The last room is the boss (`data/bosses.json`): its HP bar shows at the top centre with its name, phase notches and the attack it is winding up. Killing it ends with a short death beat, then the stats screen; Game Over shows "Reached room X of Y". Try again and New run start a new seed. `scenes/main/Main.tscn` is the endless arena, still used by tests, scenarios, the wave sim and VpCapture without `--run`.
+A normal launch shows the **class pick** (Rogue or Wizard; 1/2 or the arrows highlight, Enter or a click confirms; the HUD is hidden behind it), then starts a **run**. Since MAP1 the run is a **branching map of 10 rooms** (see "The map (MAP1)" below), generated from the seed, and you pick each next room on the map screen. `--no-map` gives the older straight run (10 rooms in a row: combat, 1 elite, 1 rest, boss last, and from BD2 one of the combat rooms is a **relic room** with no fight, on on-screen rooms 3 to 9), which the rest of this paragraph describes; see `data/run.json` and `docs/ARCHITECTURE.md` section 2. The room indicator at the top right shows "Room X of Y - Type" with a shape per type (circle combat, diamond elite, plus rest, star boss; the relic room's plate reads "Relics"). After a won combat room you pick a reward card (see below); after the elite room you pick a relic instead (see Relics below); a rest room offers heal or remove a card; any other room shows a "Room cleared" panel with Continue. The last room is the boss (`data/bosses.json`): its HP bar shows at the top centre with its name, phase notches and the attack it is winding up. Killing it ends with a short death beat, then the stats screen; Game Over shows "Reached room X of Y". Try again and New run start a new seed. `scenes/main/Main.tscn` is the endless arena, still used by tests, scenarios, the wave sim and VpCapture without `--run`.
 
 ### Launch options
 Game args go after `--`, for example `godot --path . -- --run-seed=7 --run-room=10`. Options marked "run" are read only by a normal run launch (RunMain) and are ignored with `--scenario` or in the endless arena. "First run" means Try again and New run do not repeat it; "whole launch" means they do. Parsed in `src/run/RunController.gd` (`_apply_launch_args`), `src/run/DebugDecks.gd` (also `--class`), `src/ui/ClassPickScreen.gd`, `src/ui/RunPromptScreen.gd` and `src/debug/CaptureArgs.gd`.
@@ -48,7 +48,8 @@ Game args go after `--`, for example `godot --path . -- --run-seed=7 --run-room=
 | Option | What it does | Example |
 |---|---|---|
 | `--run-seed=N` | Run: seed for the first run only. Later runs get random seeds. | `godot --path . -- --run-seed=7` |
-| `--run-room=K` | Run: start at room K (1-based), first run only. | `godot --path . -- --run-seed=1 --run-room=10` (boss room) |
+| `--run-room=K` | Run: start at room K (1-based), first run only. With the map on, the path is laid along the first route (lowest column) and no gold is paid for the skipped rooms. | `godot --path . -- --run-seed=1 --run-room=10` (boss room) |
+| `--map` / `--no-map` | Run (MAP1): force the branching map on, or the old straight run. Neither takes a value, and they cannot be combined or repeated: any of those exits 2 with "Launch refused: ..." (verified by qa). Without either, `data/map.json` `enabled` decides (shipped true). | `godot --path . -- --run-seed=1 --no-map` |
 | `--run-clear-after=S` | Run: clear the first room after S seconds (debug, for captures). | `godot --path . -- --run-clear-after=1` |
 | `--run-auto-choose=<id>[,<id>...]` | Run: the choice screen picks those option ids in turn, skipping the arm delay (debug). | `godot --path . -- --run-seed=1 --run-room=5 --full-deck --run-auto-choose=remove_menu` |
 | `--full-deck` | Run: start with the full card list instead of the starter (every card of the character's pools: 30 for the Rogue, 28 for the Wizard; or the preset's `full` list with `--deck`). Whole launch. | `godot --path . -- --full-deck` |
@@ -59,8 +60,8 @@ Game args go after `--`, for example `godot --path . -- --run-seed=7 --run-room=
 | `--list-decks` | Run launch: print the preset names and descriptions and quit. Exit 0; exit 2 if a preset file is broken (verified). | `godot --headless --path . -- --list-decks` |
 | `--run-offer=a+b+c` | Run, capture only (BD1): the first reward screen offers exactly these card ids instead of the seeded draw (up to the offer size, all known, none twice; bad input exits 2). Separate ids with `+` (`,` also works in a direct launch), because `capture_screenshot.ps1` splits `-Extra` on commas. | `godot --path . -- --run-seed=3 --run-room=1 --run-clear-after=1 --run-offer=fire_fan_the_flames+rogue_drive_by+fire_kindling` |
 | `--relics=a+b` | Run (BD2, debug): the run starts holding those relics (ids from `data/relics/`; none twice; `+` or `,` between ids). Whole launch (Try again keeps it). | `godot --path . -- --run-seed=1 --relics=pyre_insurance+heavy_sigh` |
-| `--relic-offer=a+b+c` | Run, capture only (BD2): the first relic offer shows exactly these relics (at most `relics.offer_count`, all known, none twice). | `godot --path . -- --run-seed=1 --run-room=9 --relic-offer=lingering_embers+second_wind_unwillingly+heavy_sigh` |
-| `--relic-cap=N` | Run (BD2, debug): a lower relic cap (N from 1), so the give-one-up step shows in a short run. Whole launch. | `godot --path . -- --run-seed=1 --run-room=9 --relics=pyre_insurance+heavy_sigh --relic-cap=2` |
+| `--relic-offer=a+b+c` | Run, capture only (BD2): the first relic offer shows exactly these relics (at most `relics.offer_count`, all known, none twice). The example needs `--no-map`: the room numbers are the straight run's (with the map on, `--run-room=9` is a different node and never a relic node). | `godot --path . -- --run-seed=1 --no-map --run-room=9 --relic-offer=lingering_embers+second_wind_unwillingly+heavy_sigh` |
+| `--relic-cap=N` | Run (BD2, debug): a lower relic cap (N from 1), so the give-one-up step shows in a short run. Whole launch. | `godot --path . -- --run-seed=1 --no-map --run-room=9 --relics=pyre_insurance+heavy_sigh --relic-cap=2` |
 | `--scenario=<id>` | Play a scripted scenario in the endless arena (ids in `data/scenarios.json`, table below). Unknown id: error, exit 1. | `godot --path . -- --scenario=hp_bars` |
 | `--screenshot-after=T[,T...]` | Capture a PNG at each time (seconds), then quit. Needs a renderer. | `godot --path . -- --screenshot-after=3.0,6.0 --screenshot-out=screenshots/a.png` |
 | `--screenshot-count=N` with `--screenshot-interval=S` | N shots at S, 2S, ... (interval default 1.0). Ignored if `--screenshot-after` is given. | `godot --path . -- --screenshot-count=3 --screenshot-interval=2.0` |
@@ -79,9 +80,16 @@ Notes:
 - To jump straight to the boss: `-- --run-seed=1 --run-room=10`, or capture it with `-Scenario "" -Extra "--run-seed=1","--run-room=10"`.
 - `--scenario=...` always keeps the endless arena, even on a normal launch.
 
+### The map (MAP1)
+- **What it is:** the run is a branching map of 10 rooms (`data/map.json`, `enabled` true; plan in `docs/MAP.md`). It is generated from the run seed and checked against every path rule (fights, elites, rests, a relic route). You pick each next room on the map screen with the arrow keys or mouse and Enter; the pause screen has a view-only map. Default focus is a plain fight.
+- **Node types:** combat (card offer + gold), elite (relic offer + more gold), relic stage (a treasure chest with no fight: small, medium or large, which sets the relic odds; rooms 3 to 8), rest (heal or remove a card) and the boss on room 10. Merchant, mini-boss, curse and buff nodes exist in the schema with weight 0 and are not generated yet. Weights, windows, path rules and chest odds are in `data/map.json`; gold amounts are `data/run.json` `gold`.
+- **Gold** is earned only for now (spending arrives with MAP2). It shows on the HUD and the map screen, with a "+N" when a fight pays.
+- **Print a map** (verified: exit 0): `powershell -File tools\run_map_print.ps1 -Seed 7 -Route` prints rooms, columns, edges, wave ids, chest sizes, path-rule scores and the first route. `-Sweep 1000` generates seeds 1 to 1000 and prints failures and timing (exit 1 on any failure; the sweep takes about a minute, unverified here).
+- **Straight run:** `-- --no-map` gives the pre-MAP1 run unchanged. Tests about the straight run pin it with `RunSession.map_override = 0`.
+
 ### Relics (BD2)
 - Six relics in `data/relics/`, one per file: Pyre Insurance, Smoldering Grudge, Lingering Embers, Second Wind (Unwillingly), Spite Knuckles, Heavy Sigh. A relic is a run-long passive (stat modifiers and/or triggers on combat events); numbers and rules are in the files. Exit Strategy slipped to BD3.
-- **Where they come from:** the elite room offers relics instead of cards (pick 1 of 3, or take the free Skip; skipping costs no reject), and the new **relic room** (once per run, never beside the rest room or the elite, on-screen rooms 3 to 9 for now) offers the same with no fight. If no relic is eligible the room gives a card offer instead. Rest rooms and card rewards never offer relics.
+- **Where they come from:** the elite room offers relics instead of cards (pick 1 of 3, or take the free Skip; skipping costs no reject), and the **relic room** (straight run only, since MAP1: once per run, never beside the rest room or the elite, on-screen rooms 3 to 9; on the map it is a relic stage on rooms 3 to 8, see below) offers the same with no fight. If no relic is eligible the room gives a card offer instead. Rest rooms and card rewards never offer relics.
 - **Rules:** cap 20 (`relics.max_owned` in `data/run.json`). At the cap, taking a relic first asks which owned relic to give up; Cancel is focused by default and keeps everything; boss-tier relics can't be given up. No duplicates, and a relic you gave up is never offered again that run. Tier odds per act are `relics.tier_weights` (the straight run uses act 1). The block also holds `enabled`: set it false and the run is exactly the pre-BD2 run (no relic room, a card offer after the elite).
 - **On screen:** a chip row under the dodge pips (a trigger lights the chip and shows its name; rapid repeats stay lit with an "xN" count), relic offer cards with a free Skip tile, the give-one-up screen, and the owned and given-up relics on the pause screen.
 - Counters (Spite Knuckles' every-Nth-hit count) and internal cooldowns restart each room.
@@ -105,7 +113,7 @@ Tests use [gdUnit4](https://github.com/godot-gdunit-labs/gdUnit4), vendored in `
 powershell -File tools\run_tests.ps1
 ```
 
-This runs every suite under `/tests` and exits non-zero on any failure. Last run: see "Last verification" below (1591 test cases, 130 suites, all passing; about 8 min 15 s). Reports go to `reports/` (gitignored). The script uses the console-subsystem `*_console.exe` build when one sits next to the resolved binary, because PowerShell cannot reliably wait on or read the windowed build, which made failures look like passes (see `docs/DECISIONS.md`).
+This runs every suite under `/tests` and exits non-zero on any failure. Last run: see "Last verification" below (1737 test cases, 137 suites, 3 skipped, all others passing; about 11 min 30 s). Reports go to `reports/` (gitignored). The script uses the console-subsystem `*_console.exe` build when one sits next to the resolved binary, because PowerShell cannot reliably wait on or read the windowed build, which made failures look like passes (see `docs/DECISIONS.md`).
 
 > After adding a new global class (`class_name`) the plain headless run may fail with "Could not find type X in current scope". Run `godot --headless --editor --quit --path .` once to rebuild the class cache (verified: exits 0), then re-run the tests.
 
@@ -139,7 +147,7 @@ godot --path . -- --scenario=hp_bars                                          # 
 
 ```
 powershell -File tools\capture_screenshot.ps1 -Scenario "" -After "3.0" -Out screenshots/reward.png -Extra "--run-seed=3","--run-room=1","--run-clear-after=1"   # reward screen
-powershell -File tools\capture_screenshot.ps1 -Scenario "" -After "4.0" -Out screenshots/remove.png -Extra "--class=rogue","--run-seed=1","--run-room=6","--full-deck","--run-auto-choose=remove_menu"   # removal grid (needs --full-deck: with the plain starter the menu is disabled; seed 1's rest room is room 6, so the room is seed-dependent)
+powershell -File tools\capture_screenshot.ps1 -Scenario "" -After "4.0" -Out screenshots/remove.png -Extra "--class=rogue","--run-seed=1","--no-map","--run-room=6","--full-deck","--run-auto-choose=remove_menu"   # removal grid (needs --full-deck: with the plain starter the menu is disabled; needs --no-map: with the map on, room 6 is a different node; on the straight run seed 1's rest room is room 6, so the room is seed-dependent. --no-map added in MAP1, this edited command not re-run)
 ```
 
 **Presets** (BD1-B) are named captures in `tools/capture_presets.json` (`description`, `class`, `scenario`, `after`, optional `at_boss_attack`, `actions`, `extra`), used as `powershell -File tools\capture_screenshot.ps1 -Preset <name>`. An unknown name lists the known ones.
@@ -158,6 +166,13 @@ powershell -File tools\capture_screenshot.ps1 -Scenario "" -After "4.0" -Out scr
 | `bd2_relic_room` | BD2: the relic room (seed 1, room 9; holds Spite Knuckles; a forced offer) |
 | `bd2_relic_swap` | BD2: the give-one-up step at a cap of 2 (seed 1, room 9) |
 | `bd2_pyre_explosion` | scenario `bd2_pyre_explosion`: a Pyre Insurance explosion over three enemies (two shots) |
+| `map_start` | MAP1: the map screen at run start (seed 1, `--map`) |
+| `map_mid` | MAP1: the map screen mid-run (seed 30, room 7 cleared, 6 nodes walked) |
+| `map_room9` | MAP1: room 9 cleared; the boss is the only way on (seed 30) |
+| `map_chest_large` | MAP1: a large chest relic stage (seed 22, room 5) |
+| `map_chest_medium` | MAP1: a medium chest relic stage (seed 30, room 6) |
+
+**Known stale presets (qa carry-over, MAP2 fixes):** `removal_screen`, `bd2_relic_elite`, `bd2_relic_room` and `bd2_relic_swap` use straight-run room numbers. With the map on (the shipped default) they land on the wrong rooms until MAP2 adds `--no-map` to them. For now pass your own `-Extra` with `--no-map` added: an explicit `-Extra` replaces the preset's `extra` list (read from `tools\capture_screenshot.ps1`), so copy the preset's args from `tools/capture_presets.json` too. The `map_*` presets force `--map` and are not affected.
 
 The pause screen with the relic list (BD2, ux; verified: saved a PNG, exit 0): `powershell -File tools\capture_screenshot.ps1 -Scenario "" -Class rogue -After 2.5 -Actions "1.0:pause" -Resolution 1024x600 -Extra "--run-seed=1","--relics=pyre_insurance+smoldering_grudge+heavy_sigh+spite_knuckles+lingering_embers"`. The four BD2 presets were each run and saved their PNG(s), exit 0.
 
@@ -238,9 +253,11 @@ powershell -File tools\run_wave_sim.ps1 -Seed 1 -Seconds 20 -God -Deck physical-
 ```
 ```
 powershell -File tools\run_wave_sim.ps1 -Run -Seed 1 -Runs 2    # whole runs; verified in the 3b pass: both runs WON, prints WAVE SIM OK
-powershell -File tools\run_wave_sim.ps1 -Run -Seed 1 -Runs 12 -Class rogue    # BD2 relic baseline: 12 of 12 won, boss median 57.3 s; verified
-powershell -File tools\run_wave_sim.ps1 -Run -Seed 1 -Runs 12 -Class wizard    # BD2 relic baseline: 12 of 12 won, boss median 62.5 s; verified
-powershell -File tools\run_wave_sim.ps1 -Run -Seed 1 -Runs 1 -NoRelics -Class rogue    # the pre-BD2 run (no relic room, card offer after the elite); verified
+powershell -File tools\run_wave_sim.ps1 -Run -Seed 1 -Runs 12 -Class rogue    # MAP1 baseline, map on, first route: 12 of 12 won, boss median 66.2 s (qa and ux measured; table under "Last verification")
+powershell -File tools\run_wave_sim.ps1 -Run -Seed 1 -Runs 12 -Class wizard    # MAP1 baseline, map on, first route: 10 of 12 won, boss median 60.6 s
+powershell -File tools\run_wave_sim.ps1 -Run -Seed 1 -Runs 12 -Class rogue -NoMap    # the straight run, the old BD2 -Run baseline: 12 of 12, 57.3 s (Wizard 12 of 12, 62.5 s)
+powershell -File tools\run_wave_sim.ps1 -Run -Seed 1 -Runs 12 -Class rogue -Route relic    # MAP1: bot follows the relic route (also first, safe, random; -Map alone = map with the first route)
+powershell -File tools\run_wave_sim.ps1 -Run -Seed 1 -Runs 1 -NoRelics -NoMap -Class rogue    # the pre-BD2 run (no relic room, card offer after the elite); -NoMap needed since MAP1
 powershell -File tools\run_wave_sim.ps1 -Run -Seed 1 -Runs 1 -StartRoom 10 -Class wizard -BossLog    # PL3: boss room only; verified in BD1: WAVE SIM OK, exit 0
 powershell -File tools\run_wave_sim.ps1 -Run -Seed 1 -Runs 1 -Class wizard -WizardNoKite -BossLog -DodgePellets    # W1b flags; verified: WAVE SIM OK, exit 0, prints a BOSS LOG summary
 ```
@@ -267,16 +284,28 @@ powershell -File tools\run_reload_cycle.ps1 -Cycles 2 -Class wizard    # verifie
 `-Class rogue|wizard` runs the soak as that class (passed as `--class=`). It runs `tools/ReloadCycle.tscn` headless; it must be a scene so autoloads resolve. Re-run it whenever `Main`, `Juice`, `Player` or the autoloads change.
 
 ## Last verification
-BD2 docs pass, 2026-11-05, Windows, Godot 4.7.2 (console build via `GODOT_BIN`), HEAD eb290e1. Tech-writer re-ran everything listed under "Run in this pass"; the rest is carried from earlier passes.
+MAP1 docs pass, 2026-11-05, Windows, Godot 4.7.2 (console build via `GODOT_BIN`), HEAD bb328ed. Tech-writer re-ran everything listed under "Run in this pass"; the rest is carried from earlier passes.
 
 Run in this pass:
-- `tools\run_tests.ps1`: **1591 of 1591 test cases pass, 130 suites**, exit 0 (8 min 14 s). Two known flakes predate BD2 and did not fire: the `slice6_qa_test` same-seed crowd test (qa measured about 1 failure in 10 isolated runs; a discarded warm-up crowd run now precedes the compared runs and qa saw 0 in 15) and `c1e_cues_test` "ghost look lasts until the player is clear" (about 1 in 5 isolated runs, not fixed, routed to qa with MAP1). If a full run fails on one of them, re-run that suite alone before suspecting your change.
-- Hashes, all unchanged from BD1: `tools\run_wave_sim.ps1 -Seed 1 -Seconds 30 -Scale 1` `state_hash 1897787086`; `-Seconds 90` `4207041509`; `-Plan`, 30 s `1160207333`; all end with WAVE SIM OK. `tools\run_bot_sim.ps1 -Rooms 20 -Seed 3` checksum 846850403; with `-Plan`, plain checksum 1061091817 and plan checksum 2387448677 (standard deck); `-Plan -Deck rogue-kindling` plan checksum 3642396276. qa reproduced the other three archetype plan checksums (`rogue-hit-and-run` 212612574, `wizard-controlled-burn` 1247966865, `wizard-departure-lounge` 1255552678); tech-writer did not re-run those three.
-- **Relic run baselines** (relics on, the shipped `data/run.json`): `tools\run_wave_sim.ps1 -Run -Seed 1 -Runs 12 -Class rogue` and the same with `-Class wizard`. Both: 12 of 12 runs WON, WAVE SIM OK. Boss time (spawn to death): Rogue median 57.3 s (range 41.6 to 76.6 s), Wizard median 62.5 s (43.6 to 74.8 s); none timed out. Relic damage is about 1% of all damage (qa measured Rogue 0.45%, Wizard 1.15%; tech-writer did not recompute it). `... -Run -Seed 1 -Runs 1 -NoRelics -Class rogue` plays 10 rooms with the old room mix (7 combat, 1 elite, 1 rest, boss) and no relics.
-- `tools\run_wave_sim.ps1 -Run -Seed 1 -Runs 1 -StartRoom 10 -Class wizard -BossLog` and `-WizardNoKite -BossLog -DodgePellets` were verified in BD1 and not re-run now.
-- `godot --headless --path . -- --relics=nope`, `--relic-offer=pyre_insurance+pyre_insurance`, `--relic-cap=0` and a 4-relic `--relic-offer`: exit 2 with "Launch refused: ...". `--relics=pyre_insurance`: exit 0. `-- --list-decks`: exit 0, 10 presets. `godot --headless --path . --quit`: exit 0.
-- `tools\capture_screenshot.ps1 -Preset bd2_relic_elite`, `bd2_relic_room`, `bd2_relic_swap` and `bd2_pyre_explosion` each saved their PNG(s), exit 0 (windowed), and so did the pause capture command in "Screenshots and scripted scenarios".
-- `tools\run_reload_cycle.ps1 -Cycles 5` and `-Cycles 2 -Class wizard`: RELOAD CYCLE OK.
-- Bot sim `-Swap`: an illegal swap fails with "breaks the deck rules"; a legal swap runs but left the plan checksum unchanged (see the bot-sim section; effect unverified).
+- `tools\run_tests.ps1`: **1737 of 1737 test cases pass, 137 suites, 3 skipped** (the three qa carry-over tests), exit 0 (11 min 26 s). One known flake remains: the `slice6_qa_test` same-seed crowd test (about 1 failure in 10 isolated runs before the warm-up fix, 0 in 15 after). The other old flake, `c1e_cues_test` "ghost look lasts until the player is clear", was a test setup race and is fixed (eee5813). If a full run fails on the crowd test, re-run that suite alone before suspecting your change.
+- Hashes, unchanged from BD1: `tools\run_wave_sim.ps1 -Seed 1 -Seconds 30 -Scale 1` `state_hash 1897787086` (re-run now, WAVE SIM OK); `-Seconds 90` `4207041509` (qa reproduced it in the MAP1 review) and `-Plan`, 30 s `1160207333` (unchanged per the MAP1 handoff; not re-run). `tools\run_bot_sim.ps1 -Rooms 20 -Seed 3` checksum 846850403 (re-run now); with `-Plan`, plain checksum 1061091817 and plan checksum 2387448677 (standard deck); `-Plan -Deck rogue-kindling` plan checksum 3642396276 (qa reproduced the `rogue-kindling` one in MAP1; the other plan checksums are carried from BD1/BD2: `rogue-hit-and-run` 212612574, `wizard-controlled-burn` 1247966865, `wizard-departure-lounge` 1255552678).
+- **Run sim baselines with the map on** (`-Run -Seed 1 -Runs 12`, the shipped `data/map.json`; a plain `-Run` follows the first route). Tech-writer re-ran Rogue and Wizard on the first route and got the same numbers; the other rows are from qa's review (`docs/reviews/2026-11-05-map1-qa.md`),. Boss time = spawn to death, median.
 
-Carried from earlier passes, not re-run: `VolleyProbe.tscn`, the older `capture_screenshot.ps1` scenarios, `UxCapture.tscn`, `SlotStateCapture.tscn`, `-TrueSize`, the BD1 presets, and the `--deck` and `--class` refusal checks. Not run interactively: plain `godot --path .`, which opens a window and waits for a person (nobody has hand-played the relic screens yet; the playtest used captures and scripted input).
+  | Class | Route | Won | Boss median |
+  |---|---|---|---|
+  | Rogue | first (plain `-Run`) | 12/12 | 66.2 s |
+  | Rogue | relic | 12/12 | 52.1 s |
+  | Rogue | safe | 12/12 | 58.4 s |
+  | Rogue | `-NoMap` (old BD2 baseline) | 12/12 | 57.3 s |
+  | Wizard | first (plain `-Run`) | 10/12 | 60.6 s |
+  | Wizard | relic | 11/12 | 63.2 s |
+  | Wizard | safe | 12/12 | 65.0 s |
+  | Wizard | `-NoMap` (old BD2 baseline) | 12/12 | 62.5 s |
+
+  The Wizard's two first-route losses (seeds 5 and 12) are on elite-heavy routes. `-Route relic` with 2 runs: both won (re-run now, ROUTE SUMMARY printed). `... -Run -Seed 1 -Runs 1 -NoRelics -NoMap -Class rogue`: WAVE SIM OK (the pre-BD2 run: old room mix, no relics; `-NoMap` is needed since MAP1).
+- `tools\run_map_print.ps1 -Seed 7 -Route`: prints the map, "rules: all hold" and the first route, exit 0. `-Sweep 100`: 0 failures, worst 42 attempts, about 7.5 s. (qa ran the 1000-seed sweep and an independent 1000-seed checker on seeds 5000..5999.)
+- Launch flags (real launches, headless): `--map --no-map`, `--no-map=1` and `--no-map --no-map` each exit 2 with "Launch refused: ..."; `--no-map` alone exits 0.
+- `tools\run_reload_cycle.ps1 -Cycles 2 -Map`: RELOAD CYCLE OK. (qa also ran `-Cycles 5` and `-Cycles 2 -Class wizard -Map`.)
+- `tools\run_wave_sim.ps1 -Run -Seed 1 -Runs 1 -StartRoom 10 -Class wizard -BossLog` and `-WizardNoKite -BossLog -DodgePellets` were verified in BD1 and not re-run.
+
+Carried from earlier passes, not re-run: the BD2 launch refusals (`--relics`, `--relic-offer`, `--relic-cap`), `VolleyProbe.tscn`, the older `capture_screenshot.ps1` scenarios and presets (including the `map_*` presets, which qa and the playtester captured on a real renderer), `UxCapture.tscn`, `SlotStateCapture.tscn`, `-TrueSize`, and the `--deck` and `--class` refusal checks. Not run interactively: plain `godot --path .`, which opens a window and waits for a person. Nobody has hand-played the map screen yet; the MAP1 playtest used captures, scripted input and bot runs.

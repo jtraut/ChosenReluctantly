@@ -2,6 +2,16 @@
 
 The archive of the director's answered, received and acknowledged items, moved here from `docs/OPEN_ITEMS.md`. Owned by tech-writer (director, 2026-11-02). Newest dated section first; IDs (D19, call 16, checklist item 33) are kept so they can be searched. Old entries change only to fix a factual error.
 
+## 2026-11-05
+
+### Feedback recorded in fe10173 (item 49, general part; the old "Try the relics (BD2)" item)
+
+The old item 49 text is in `git show 9cde725:docs/OPEN_ITEMS.md`. The trimmed item 49 stays in OPEN_ITEMS with its two specific questions (the relic room on room 9, and whether Spite Knuckles' "every 4th light hit" count carries over between rooms); those are not archived here.
+
+| Item | What it asked | Your reply | Where it went |
+|---|---|---|---|
+| 49 (general part) | Try the relics (BD2): do relics change how you play, or are they silent numbers? Can you tell which relic did an explosion? | General feedback, 2026-11-05: "Relics feel fun so far, builds are starting to get more exciting and strategy starting to fold in." | DECISIONS "MAP1 relic nodes on rooms 3-8" (recorded as feedback, not a decision); `docs/CHANGELOG.md` 2026-11-05 as a human-playtest note. He did not answer the two sub-questions separately; MAP1 ux built the playtester's requested relic cue (a floating name and ring at the trigger point) anyway. |
+
 ## 2026-11-04
 
 ### Answer recorded in a4802ab (D39)

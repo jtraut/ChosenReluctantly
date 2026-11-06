@@ -2,6 +2,61 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
+## 2026-11-05 (Slice MAP1: the branching map)
+
+### Slice MAP1: the branching map
+
+Commit range 9cde725..bb328ed. gameplay-dev MAP1-A afdf30d..ed4e2aa, MAP1-B 2181b9b..3a2d9d8 and the post-flip fixes 3841b41..0226ec9; ux a1a4155..ac7baa2 (map turned on); qa 19272da..e1c7c5d (PASS with carry-overs, `docs/reviews/2026-11-05-map1-qa.md`); playtest e1e31b5 (no blocker, `docs/playtests/2026-11-05-map1-short.md`). Plan: `docs/MAP.md`. Calls: `docs/DECISIONS.md`, entries "MAP1 relic nodes on rooms 3-8" to "MAP1 qa: correction and carry-overs routed". The map is on by default.
+
+#### Added
+- **The run is a branching map of 10 rooms, on by default** (`data/map.json` `enabled` true; turned on in 9dd161b).
+  - The map is generated from the run seed (its own RNG stream, so the spawner and player streams are untouched) and checked against every path rule (`MapRules`). A map that cannot meet the rules after `max_attempts` fails loudly.
+  - You pick each next room on the map screen. A view-only map opens from the pause screen.
+  - **Node types and what they pay:**
+    - combat: a card offer and gold (12 to 18);
+    - elite: a relic offer and gold (30 to 40);
+    - relic stage (`relic_room`): a treasure chest, small, medium or large (weights 50/35/15), no fight, on rooms 3 to 8;
+    - rest: heal or remove a card;
+    - boss: room 10, pays nothing.
+  - Merchant, mini-boss, curse and buff nodes are in the schema with weight 0 (not generated yet; MAP2 to MAP4).
+  - **Gold is earned only**; spending comes in MAP2. It is paid once, when the room is finished (`_finish_room`), rolled from the run seed and node id so a reload cannot pay twice. Gold shows on the HUD, with a "+N" when a fight pays. Amounts: `data/run.json` `gold`.
+  - `--no-map` gives the old straight run unchanged (verified by qa: Rogue 12/12 at 57.3 s, Wizard 12/12 at 62.5 s, the BD2 numbers exactly).
+- **Engine** (afdf30d, ed4e2aa, 2181b9b): `MapConfig` (loader and validator, unknown keys rejected at every level), `MapGraph` (pure helpers), `MapRules` (path rules and the relic estimate), `MapGenerator` (seeded grid walks), `RunNodes` (the pick-next-node choice, gold rolls, chest odds, hover text; pending choice `PENDING_NODE`), `MapLaunch` (`--map` / `--no-map`) and `RouteBot` (route policies for the sim). A run is a map run when its `RunState` holds a map; `RunState` also gained `map`, `path`, `gold` and `xp_earned`. Chest sizes are assigned in a post-pass with their own stream, so map layouts did not change when chests were added.
+- **Launch flags:** `--map` and `--no-map` (give both, repeat one, or give either a value and the launch exits 2 with "Launch refused: ..."). `--run-room=N` now lays the path along the first route (no gold for the skipped rooms).
+- **Map screen and gold UI** (ux a1a4155..ac7baa2): `MapScreen`, `MapCanvas`, `MapNodeButton`, `MapLayout` (pure geometry and focus order), `GoldBadge` (HUD and map header). Default focus lands on a plain fight, so a reflexive Enter never takes an elite or a chest. Only reachable nodes take focus while picking. The pick swallows Space and the slot keys. New node shapes: merchant square, mini-boss triangle, curse X, buff up-arrow; chest size shows as hexagon size plus 1 to 3 dots. The legend lists only the types on the current map. The gold badge steps aside for the class pick and Game Over.
+- **BD2 playtest readability carry-overs** (b6a76cf): `RelicCueLayer` and `RelicCues` (a floating relic name and ring where it triggered; repeats merge into "x3", at most 6 cues), `RelicProgress` (pips on a chip of an every-Nth relic; reads the new `RelicManager.trigger_progress`, 1958843), distinct chip marks within the held set, the pause relic list on an opaque plate, clearer Skip text that explains rejects, and an "After Move (Ctrl)" tag of 12 px or more above the slot.
+- **Tools:**
+  - `tools\run_map_print.ps1` (`-Seed`, `-Route`, `-Sweep N`): prints a seed's map and path-rule scores, or sweeps seeds 1..N for failures. Exit 1 on a rule break.
+  - Wave sim: `-Route first|relic|safe|random`, `-Map`, `-NoMap`, and per-run route lines plus a ROUTE SUMMARY. Route bots live in the run sim because `bot_sim` builds no rooms.
+  - Reload soak: `-Map` adds a map pass; without it the soak pins the straight run.
+  - Capture presets `map_start`, `map_mid`, `map_room9`, `map_chest_large` and `map_chest_medium`.
+- Tests: 1591 -> 1737 test cases (3 skipped, the carry-over tests below), 130 -> 137 suites.
+
+#### Changed
+- **Data and design values, old -> new:**
+  - `data/map.json` `path_rules.min_branching` 0.6 -> 0.4. Four random walks gave no valid grid in 20,000 draws at 0.6. Revisit if routes do not feel like decisions (a merge-biased walk is the fix).
+  - Type weights: combat 50 -> 40, elite 14 -> 16, relic_room 10 -> 14, rest 10 -> 10. Cost: fewer combat nodes, so fewer card offers and less gold per route; more elites and relic stages.
+  - Relic node window (rooms) 3-9 -> 3-8, so room 9 never holds one (the BD2 playtest said a relic on room 9 gets one fight of use). The straight run's relic room is unchanged.
+  - Large chest `min_tier` 2 -> 1 until tier 3 relics exist (with 2 tier 2 relics and no tier 3, a large chest with the floor would offer at most 2 relics, then fall back to cards). Restore 2 in MAP3.
+  - `data/run.json` gained a required `gold` block (combat, elite and mini-boss ranges; boss, rest and relic stage pay 0).
+  - The `rooms.relic_room: []` stopgap in `data/run.json` is removed.
+  - `ui.relic.swap_line_one` is now validated by `RunConfig` when present.
+- **Map screen layout values, old -> new** (ux; table in DECISIONS "MAP1 ux calls"): room plate 280 -> 304, relic chip 26 -> 30, relic font 12 -> 15, condition font 11 -> 13, `relic_list_max_height` 150 -> 320 (new min 90), `relic_list_width` 560 -> 640. The boss bar width is now floored to whole pixels.
+- **Run sim baselines with the map on** (`-Run -Seed 1 -Runs 12`; plain `-Run` follows the first route): Rogue 12/12 at 66.2 s boss median, Wizard 10/12 at 60.6 s. Other routes are in the README. The map-off run (`-NoMap`) keeps the BD2 numbers.
+- Elites and the relic stage on the map reuse the BD2 relic offer; the class pick still comes first and only at the start of a map run (788eca8).
+
+#### Fixed
+- **c1e ghost-look flake root-caused and fixed** (eee5813, qa): a test setup race (the pass-through grant landed after depenetration had already separated the bodies under load). 24/24 under CPU load, was 7/24 failing. The flake the README listed as known and unfixed is gone.
+- **The suite was briefly red after the map flip** (49 of 1709 cases fail, 3b78f46): tests about the straight run now pin it with `RunSession.map_override = 0` (3841b41, ac7baa2, 19272da); old-data pins were updated to the shipped data.
+- The reload soak runs with the straight run pinned and gained a map pass (1958843).
+
+#### Docs and process
+- MAP1 ran as two gameplay-dev sittings: A (engine, shipped with the map off) then B (run flow), then ux turned the map on and qa re-baselined. Route bots live in the run sim, not the bot sim; this corrects MAP.md section 8 (DECISIONS, "MAP1 split into two gameplay-dev sittings").
+- **qa verdict: PASS with carry-overs** (no blocker). Independent generator sweep: 1000 seeds the dev sweep never used (5000..5999), all pass; maps identical across processes. qa corrected a dev baseline: Rogue relic route is 12/12 at 52.1 s, not 11/12 at 52.9 s (the README has the corrected number). Carry-overs routed: the `bd2_relic_elite`, `bd2_relic_room`, `bd2_relic_swap` and `removal_screen` presets land on the wrong rooms with the map on, the generator script error and the dead `_triggers` fallback (all MAP2); the `from_dict` node-pending soft lock and negative gold (MAP3, before any save file exists). None is reachable from play or shipped data.
+- **Playtest: no blocker** (bot sim and captures only; nobody played by hand). Findings: both room-1 nodes are plain combat, so the first choice is cosmetic; the "safe" route often is not safer (3 of 4 Rogue routes had no rest); gold has no use until MAP2; the bot runs are far shorter than the GDD's 30 to 60 minute target (a pacing question, not a MAP1 regression).
+- **New director question D40: should every map route have a rest?** Options A (default: at least 1 rest on every path, a new `min_rest` rule, built in MAP2), B (no guarantee), C (a fixed rest before the boss). Open, no decision yet (`docs/OPEN_ITEMS.md`).
+- **Human-playtest note, 2026-11-05 (director feedback, recorded):** "Relics feel fun so far, builds are starting to get more exciting and strategy starting to fold in." Archived with the answered part of item 49 in `docs/RESOLVED.md`.
+
 ## 2026-11-04 (Slice BD2: relics; Slice BD1: synergy core; director decisions D34-D39; Slice PL3 below)
 
 ### Slice BD2: relics

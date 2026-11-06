@@ -189,10 +189,14 @@ func test_pass_through_ghosts_the_body_and_survives_a_hit_flash() -> void:
 func test_the_ghost_look_lasts_until_the_player_is_clear_of_enemies() -> void:
 	var main: Main = _main()
 	var blocker: Enemy = _enemy_at(main, Vector3(0.2, 0, 0))  # standing inside the player
-	await _frames(2)
 	var player: Player = main.player
 	var cues: PlayerCues = _cues(main)
+	# qa, MAP1 (the c1e flake, about 1 in 5 alone and 4 in 10 under CPU load): the grant used to come after `await _frames(2)`. While both bodies
+	# were still solid, depenetration pushed them apart by a load-dependent amount (the physics ticks per frame vary). At 0.905 m or more (player
+	# radius 0.4 + chaser 0.5) nothing overlapped when the buff ended, so the player never entered the wait-until-clear state and the test failed.
+	# Granting before the first physics tick keeps the body non-solid from the start, so the overlap this test needs is the same every run.
 	player.grant_pass_through(0.2)
+	await _frames(2)
 	await get_tree().create_timer(VfxConfig.marker("ghost_show_delay") + 0.25, false).timeout
 	await _frames(3)
 	# The buff ended, but the body is still inside an enemy, so it is still non-solid and still drawn ghosted.

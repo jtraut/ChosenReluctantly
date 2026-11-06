@@ -1,5 +1,5 @@
 {
-  "enabled": false,
+  "enabled": true,
   "rooms": 10,
   "columns": 4,
   "walks": 4,
@@ -27,7 +27,7 @@
   "chests": {
     "small":  { "weight": 50, "act_offset": 0, "min_tier": 1 },
     "medium": { "weight": 35, "act_offset": 1, "min_tier": 1 },
-    "large":  { "weight": 15, "act": 3,        "min_tier": 2 }
+    "large":  { "weight": 15, "act": 3,        "min_tier": 1 }
   },
   "estimate": {
     "gold_mean": { "combat": 15, "elite": 35, "mini_boss": 50 },

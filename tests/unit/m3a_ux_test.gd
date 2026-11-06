@@ -8,10 +8,12 @@ const RESOLUTIONS: Array[Vector2] = [Vector2(1280, 720), Vector2(1920, 1080), Ve
 
 
 func before_test() -> void:
+	RunSession.map_override = 0  # MAP1: these pin the straight run's Continue prompt; the map is on in the shipped data
 	RunSession.clear()
 
 
 func after_test() -> void:
+	RunSession.map_override = -1
 	RunSession.clear()
 	Juice.reset()
 	GamePause.reset()

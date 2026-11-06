@@ -19,6 +19,7 @@ const TIME_SCALE_GRACE_MSEC := 50
 
 var _failures: Array[String] = []
 var _cycles: int = 5
+var _map_mode: bool = false  # --map: the run-mode part walks the branching map instead of the straight run
 var _lags_ms: Array[float] = []
 
 
@@ -26,6 +27,8 @@ func _ready() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--cycles="):
 			_cycles = maxi(1, int(arg.substr(9)))
+		elif arg == "--map":
+			_map_mode = true
 		elif arg.begins_with("--class="):
 			# The run-mode parts (reward reload, Try again, boss reload, win) play as this character. The endless-arena
 			# parts always play the Rogue, by design (the arena has no class).
@@ -138,6 +141,8 @@ func _kill(main: Main) -> void:
 
 
 func _run() -> void:
+	# MAP1: data/map.json ships the map on. The default soak is about the straight run, so it pins it off (like --no-map); `--map` forces it on.
+	RunSession.map_override = 1 if _map_mode else 0
 	var packed: PackedScene = load(MAIN_PATH)
 	var first: Node = packed.instantiate()
 	get_tree().root.add_child(first)
@@ -147,7 +152,7 @@ func _run() -> void:
 	# (cycles 1..N) goes through the real reload path and binds itself.
 	(first.get_node("GameOverScreen") as GameOverScreen).bind(first)
 	await _frames(SETTLE_FRAMES)
-	print("Reload cycle soak: %d full cycles + mid-slow-mo + double-call" % _cycles)
+	print("Reload cycle soak (%s): %d full cycles + mid-slow-mo + double-call" % ["map" if _map_mode else "straight run", _cycles])
 	_check_fresh("initial")
 	var baseline := _snapshot("baseline")
 	var snaps: Array[Dictionary] = []
@@ -214,8 +219,11 @@ func _run() -> void:
 	_check_fresh("live reload")
 	snaps.append(_snapshot("after live reload"))
 
-	await _run_mode_soak(snaps)
-	await _boss_soak(snaps)
+	if _map_mode:
+		await _map_soak(snaps)
+	else:
+		await _run_mode_soak(snaps)
+		await _boss_soak(snaps)
 
 	# Orphan / object growth: compare last full cycle to the first.
 	if snaps.size() >= 2:
@@ -512,3 +520,129 @@ func _boss_soak(snaps: Array[Dictionary]) -> void:
 	_check((_main().get_node("WinScreen") as CanvasLayer).visible == false, "boss reload mid-death-beat: a win screen showed in the new run")
 	snaps.append(_snapshot("after boss death-beat reload"))
 	RunSession.clear()
+
+
+# ---- MAP1: the branching map ----
+
+## Resolves whatever choice is open (card reward, rest, relic) the cheapest way: Skip when it is offered, else the first enabled plain option.
+func _resolve_open_choice(label: String) -> void:
+	var guard: int = 0
+	while RunSession.current.has_pending() and RunSession.current.pending != RunState.PENDING_NODE and guard < 6:
+		guard += 1
+		var controller: RunController = _main().run_controller
+		var pick: String = ""
+		for option: Variant in (controller.current_choice().get("options", []) as Array):
+			var entry: Dictionary = option
+			if not bool(entry["enabled"]) or bool(entry["opens_list"]):
+				continue
+			if String(entry["id"]) == "skip":
+				pick = "skip"
+				break
+			if pick.is_empty():
+				pick = String(entry["id"])
+		_check(not pick.is_empty(), "%s: pending '%s' has no usable option" % [label, RunSession.current.pending])
+		if pick.is_empty():
+			return
+		var result: Dictionary = controller.choose(pick)
+		_check(bool(result["ok"]), "%s: choosing '%s' was refused (%s)" % [label, pick, String(result.get("reason", ""))])
+		if not bool(result["ok"]):
+			return
+	_check(RunSession.current.pending == RunState.PENDING_NODE or not RunSession.current.has_pending(), "%s: choice still open ('%s')" % [label, RunSession.current.pending])
+
+
+## Map-run soak: starts a map run, walks the first route through a few rooms and reloads at every kind of state (the pick, a live room, a
+## cleared room with its choice open, the pick after a room), then Try again and the boss room.
+func _map_soak(snaps: Array[Dictionary]) -> void:
+	print("Map soak: first route, reload at the pick / in a room / mid-choice, Try again, boss room")
+	RunSession.clear()
+	RunSession.map_override = 1
+	var state := RunSession.begin_new_run(31)
+	_check(RunNodes.active(state) and state.pending == RunState.PENDING_NODE, "map start: the run has no map or no open pick")
+	var main := await _enter_run_main()
+	_check(main.run_controller != null and main.run_controller.map_on() and main.run_controller.current_node_id() == -1, "map start: no map pick open")
+	_check(_enemy_count(main) == 0, "map start: enemies before the first pick")
+	_check(SceneSelfCheck.find_problems(main).is_empty(), "map start: SceneSelfCheck problems %s" % str(SceneSelfCheck.find_problems(main)))
+	var route: Array[int] = MapGraph.first_route(state.map)
+	_check(route.size() >= 5, "map start: the first route is too short (%d)" % route.size())
+
+	# A reload at the start pick reopens the same pick, with nothing played.
+	var old_id: int = main.get_instance_id()
+	main = await _enter_run_main()
+	_check(main.get_instance_id() != old_id and RunSession.current == state and state.path.is_empty(), "map pick reload: state changed")
+	_check(main.run_controller.reachable_nodes() == MapGraph.start_ids(state.map), "map pick reload: the pick did not reopen")
+	snaps.append(_snapshot("after map pick reload"))
+
+	var rooms_to_walk: int = mini(4, route.size() - 1)
+	for step in range(rooms_to_walk):
+		var label: String = "map room %d" % (step + 1)
+		main = _main()
+		var controller: RunController = main.run_controller
+		_check(controller.reachable_nodes().has(route[step]), "%s: the first-route node %d is not reachable" % [label, route[step]])
+		old_id = main.get_instance_id()
+		var picked: Dictionary = controller.pick_node(route[step])
+		_check(bool(picked["ok"]), "%s: pick refused" % label)
+		await _frames(SETTLE_FRAMES)
+		_check(_main().get_instance_id() != old_id, "%s: the pick did not load the room" % label)
+		_check_run_fresh(label, step + 1)
+		_check(_main().run_controller.current_node_id() == route[step], "%s: wrong node" % label)
+		# Reload in the middle of the room: the same room, same node, nothing of it played yet.
+		old_id = _main().get_instance_id()
+		var history_before: int = state.history.size()
+		main = await _enter_run_main()
+		_check(main.get_instance_id() != old_id and RunSession.current == state, "%s: mid-room reload replaced the state" % label)
+		_check(state.history.size() == history_before and state.path.size() == step + 1, "%s: mid-room reload changed the path or history" % label)
+		_check_run_fresh(label + " reloaded", step + 1)
+		# Win it; a reload with the choice open reopens the same choice and pays no second gold.
+		main.run_controller._finish_room(0.0)
+		var gold_after: int = state.gold
+		var pending_after: String = state.pending
+		var recorded: int = state.history.size()
+		main = await _enter_run_main()
+		_check(RunSession.current == state and state.gold == gold_after and state.history.size() == recorded, "%s: reload after the win paid or recorded twice" % label)
+		_check(state.pending == pending_after, "%s: reload after the win lost the open choice ('%s' -> '%s')" % [label, pending_after, state.pending])
+		_check(_enemy_count(main) == 0 and main.enemy_spawner.alive_count() == 0, "%s: the cleared room was fought again" % label)
+		_check(SceneSelfCheck.find_problems(main).is_empty(), "%s: SceneSelfCheck problems after the reload" % label)
+		snaps.append(_snapshot("after %s reload" % label))
+		await _resolve_open_choice(label)
+		# A map run never walks on by itself: after the choice (or none), the next-node pick opens.
+		if state.pending != RunState.PENDING_NODE:
+			_main().run_controller.continue_to_next_room(true)
+		_check(state.pending == RunState.PENDING_NODE, "%s: no next-node pick after the room (pending '%s')" % [label, state.pending])
+		# Reload at the pick after a room: same reachable nodes, path kept.
+		var path_before: Array[int] = state.path.duplicate()
+		main = await _enter_run_main()
+		_check(RunSession.current == state and state.path == path_before, "%s: pick reload changed the path" % label)
+		_check(main.run_controller.reachable_nodes() == MapGraph.next_ids(state.map, route[step]), "%s: the pick after the room did not reopen" % label)
+
+	# Try again from a map pick: a new map run, no gold, no path.
+	main = _main()
+	var old_seed: int = state.seed_value
+	old_id = main.get_instance_id()
+	main.restart_arena()
+	await _frames(SETTLE_FRAMES)
+	_check(_main().get_instance_id() != old_id, "map try again: scene not replaced")
+	_check(RunSession.current != state and RunSession.current.seed_value != old_seed, "map try again: the run kept its state or seed")
+	_check(RunNodes.active(RunSession.current) and RunSession.current.path.is_empty() and RunSession.current.gold == 0, "map try again: the new run is not a fresh map run")
+	_check(_main().run_controller.reachable_nodes() == MapGraph.start_ids(RunSession.current.map), "map try again: the first pick is not open")
+	snaps.append(_snapshot("after map try again"))
+
+	# The boss room: jump along the first route to it (what --run-room does), reload mid-fight.
+	RunSession.clear()
+	var boss_state := RunSession.begin_new_run(31)
+	var boss_route: Array[int] = MapGraph.first_route(boss_state.map)
+	boss_state.path = boss_route.duplicate()
+	boss_state.room_index = boss_route.size() - 1
+	boss_state.pending = RunState.PENDING_NONE
+	main = await _enter_run_main()
+	var boss := _spawn_boss_in(main)
+	_check(boss != null, "map boss: no Boss in the last room of the route")
+	if boss != null:
+		await _frames(5)
+		old_id = main.get_instance_id()
+		main = await _enter_run_main()
+		_check(main.get_instance_id() != old_id, "map boss reload: scene not replaced")
+		_check_boss_gone("map boss reload")
+		_check_run_fresh("map boss reload", boss_route.size())
+		snaps.append(_snapshot("after map boss reload"))
+	RunSession.clear()
+	RunSession.map_override = -1

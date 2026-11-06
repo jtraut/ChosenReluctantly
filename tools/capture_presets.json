@@ -52,12 +52,12 @@
         "extra": ["--run-seed=1", "--run-room=9", "--relics=pyre_insurance+heavy_sigh", "--relic-cap=2", "--relic-offer=lingering_embers+second_wind_unwillingly+smoldering_grudge", "--run-auto-choose=relic:lingering_embers"]
     },
     "map_start": {
-        "description": "MAP1-B: the map at run start. The pick-next-node prompt (placeholder: the existing prompt listing the room-1 nodes) with the branching map forced on (--map; data/map.json stays off). Run mode, seed 1.",
+        "description": "MAP1-B: the map at run start. The map screen with the room-1 nodes pickable and the legend, with the branching map forced on (--map; data/map.json now ships it on, so the flag is explicit rather than needed). Run mode, seed 1.",
         "class": "rogue", "scenario": "", "after": "3.0",
         "extra": ["--map", "--run-seed=1"]
     },
     "map_mid": {
-        "description": "MAP1-B: mid-run. Seed 30 along the first route, room 7 cleared (gold paid), its card offer rejected, so the pick-next-node choice is open with 6 nodes already walked (a medium chest relic stage sits at room 6).",
+        "description": "MAP1-B: mid-run. Seed 30 along the first route, room 7 cleared (gold paid), its card offer rejected, so the map screen is open to pick the next node with 6 nodes already walked (a medium chest relic stage sits at room 6).",
         "class": "rogue", "scenario": "", "after": "3.0",
         "extra": ["--map", "--run-seed=30", "--run-room=7", "--run-clear-after=1", "--run-auto-choose=skip"]
     },
@@ -67,7 +67,7 @@
         "extra": ["--map", "--run-seed=30", "--run-room=9", "--run-clear-after=1", "--run-auto-choose=skip"]
     },
     "map_chest_large": {
-        "description": "MAP1-B: a large chest relic stage (seed 22, room 5, first route). No fight, the offer opens at once. A large chest never offers a tier 1 relic; only two tier 2 relics exist so far, so it shows at most two.",
+        "description": "MAP1-B: a large chest relic stage (seed 22, room 5, first route). No fight, the offer opens at once. A large chest draws from the act 3 row (tier 1 5, tier 2 25, tier 3 70 as shipped, min_tier 1).",
         "class": "rogue", "scenario": "", "after": "3.0",
         "extra": ["--map", "--run-seed=22", "--run-room=5"]
     },

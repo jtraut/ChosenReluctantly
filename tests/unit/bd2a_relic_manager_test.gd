@@ -232,6 +232,21 @@ func test_every_nth_fires_on_the_nth_matching_event_and_each_multiple() -> void:
 	assert_int(_flushed(manager).size()).is_equal(2)  # the 4th and 8th light hit
 
 
+func test_trigger_progress_counts_the_matches_of_an_every_nth_trigger() -> void:
+	var main := _spawn_main()
+	var manager := _counting_manager(main)
+	assert_int(manager.trigger_progress("test_spite")).is_equal(0)  # not held
+	manager.load_relics(["test_spite"] as Array[String])
+	assert_int(manager.trigger_progress("test_spite")).is_equal(0)
+	var enemy := _target(main)
+	for i in range(6):
+		enemy.hurtbox.receive_damage(1.0, "physical", Vector3.ZERO, null, Health.KIND_HIT, "light")
+	enemy.hurtbox.receive_damage(1.0, "physical", Vector3.ZERO, null, Health.KIND_HIT, "heavy")  # not a match
+	assert_int(manager.trigger_progress("test_spite")).is_equal(6)
+	assert_int(RelicProgress.matches_of(manager, "test_spite")).is_equal(6)  # the HUD reads this method, not the private list
+	assert_int(manager.trigger_progress("nonexistent")).is_equal(0)
+
+
 func test_the_relic_triggered_signal_names_the_relic_the_trigger_and_the_event() -> void:
 	var main := _spawn_main()
 	var manager := _counting_manager(main)

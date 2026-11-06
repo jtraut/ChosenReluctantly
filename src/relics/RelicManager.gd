@@ -284,6 +284,15 @@ func handle_event(event: Dictionary) -> void:
 			flush.call_deferred()
 
 
+## The matches counted so far this room for the relic's every-Nth trigger (0 when it has none or is not held). Display and tests; the
+## HUD shows it as "matches mod N / N" (see RelicProgress).
+func trigger_progress(relic_id: String) -> int:
+	for trigger: Dictionary in _triggers:
+		if String(trigger["relic_id"]) == relic_id and int((trigger["filter"] as Dictionary).get("every_nth", 0)) > 1:
+			return int(trigger["matches"])
+	return 0
+
+
 func _now() -> float:
 	return _relay.now() if _relay != null and is_instance_valid(_relay) else 0.0
 

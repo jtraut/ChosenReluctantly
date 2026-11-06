@@ -1,7 +1,7 @@
 # Real scene-reload soak (death -> game over -> restart_arena, repeated). See tools/reload_cycle.gd.
 # Usage: powershell -File tools\run_reload_cycle.ps1 [-Cycles 5]
 # Fails on a failed check OR any ERROR / SCRIPT ERROR / WARNING line in the engine output.
-param([int]$Cycles = 5, [string]$Class = "")
+param([int]$Cycles = 5, [string]$Class = "", [switch]$Map)
 
 $root = Split-Path -Parent $PSScriptRoot
 $godot = $env:GODOT_BIN
@@ -21,6 +21,7 @@ if ($godot -notmatch "_console\.exe$") {
 
 $classArg = @()
 if ($Class) { $classArg = @("--class=$Class") }
+if ($Map) { $classArg += "--map" }  # MAP1: the run part walks the branching map; without it the soak pins the straight run
 Push-Location $root
 try {
     $out = & $godot --headless --path . res://tools/ReloadCycle.tscn -- "--cycles=$Cycles" @classArg 2>&1 | Out-String

@@ -113,7 +113,7 @@
         "slot_condition": { "target_has_status": "Needs %s", "cast_within_slot": "After %s", "cast_within_slot_key": "After %s (%s)", "cast_within_tag": "After %s", "zone_active": "Needs zone", "slot_short": { "movement": "Move" } },
         "relic": {
             "title": "Relic found", "line": "Pick a relic to keep for this run, or skip.",
-            "room_title": "Relic room", "room_line": "Nobody is guarding this one. Pick a relic to keep for this run, or skip.",
+            "room_title": "Relic room", "room_title_chest": "%s (%s chest)", "room_line": "Nobody is guarding this one. Pick a relic to keep for this run, or skip.",
             "skip_label": "Skip", "skip_detail": "Take nothing. Free: your card rejects stay as they are.",
             "swap_title": "Too many relics", "swap_line": "You hold %d relics, the most you can carry. Give one up to take %s.",
             "swap_line_one": "You hold %d relic, the most you can carry. Give it up to take %s.",
@@ -133,7 +133,7 @@
             "pick_hint": "Arrow keys move, Enter or click picks the room", "view_title": "Your route", "view_line": "Where you have been, and where you could still go.",
             "view_hint": "Arrow keys look around. Esc, Enter or Back closes", "back_label": "Back", "button_label": "Map",
             "legend_chest": "Dots show a relic stage's size: 1 small, 2 medium, 3 large.", "legend_states": "Gold ring: you are here.  White ring: you can pick it.  Dim: later.",
-            "legend_title": "Key",
+            "legend_title": "Key", "boss_title": "Face the boss", "boss_line": "Nothing else is left. Pick the boss when you are ready.", "spend_line": "Spend your gold at the merchant (the square).",
             "chest_names": { "small": "Small", "medium": "Medium", "large": "Large" },
             "chest_notes": { "small": " Small chest: mostly tier 1.", "medium": " Medium chest: mostly tier 2.", "large": " Large chest: the best odds of high-tier relics." },
             "hover": {
@@ -141,7 +141,7 @@
                 "elite": "Elite: a relic, {gold} gold",
                 "relic_room": "Relic stage: pick 1 of {relics} relics.",
                 "rest": "Rest: heal {heal}% or remove a card",
-                "merchant": "Merchant: spend gold",
+                "merchant": "Merchant: spend gold on relics, cards or a card removal",
                 "mini_boss": "Mini-boss: a tough fight, {gold} gold",
                 "curse_room": "Curse room: a risky deal",
                 "buff_room": "Buff room: a free boost",

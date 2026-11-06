@@ -316,3 +316,85 @@ func test_a_purchase_refill_keeps_the_screen_armed_and_the_highlight() -> void:
 	assert_float(screen.options_box.modulate.a).is_equal(1.0)
 	assert_int(screen._last_focus).is_equal(1)
 	assert_bool(screen._option_buttons[1].has_focus()).is_true()
+
+
+# --- MAP1 carry-overs ------------------------------------------------------------------------------
+
+func _map_screen(data: Dictionary) -> MapScreen:
+	var screen: MapScreen = (load("res://scenes/ui/MapScreen.tscn") as PackedScene).instantiate()
+	add_child(screen)
+	auto_free(screen)
+	await _frames(1)
+	screen.show_pick(data)
+	await _frames(2)
+	return screen
+
+
+func _info(id: int, type_id: String, reachable: bool, taken: bool = false) -> Dictionary:
+	return {"id": id, "room": 9, "column": id, "type": type_id, "type_name": type_id, "wave_id": "", "chest": "", "chest_name": "", "hover": "x",
+		"gold_low": 0, "gold_high": 0, "reachable": reachable, "taken": taken, "current": false}
+
+
+func test_a_relic_room_title_says_its_chest_size_and_other_titles_are_left_alone() -> void:
+	assert_str(RunPromptScreen.chest_title("Relic room", "small")).is_equal("Relic room (small chest)")
+	assert_str(RunPromptScreen.chest_title("Relic room", "large")).is_equal("Relic room (large chest)")
+	assert_str(RunPromptScreen.chest_title("Relic room", "")).is_equal("Relic room")
+	assert_str(RunPromptScreen.chest_title("Relic room", "gigantic")).is_equal("Relic room")
+
+
+func test_the_pick_that_leaves_only_the_boss_reads_face_the_boss() -> void:
+	var only_boss: Array[Dictionary] = [_info(1, "combat", false, true), _info(2, "boss", true)]
+	assert_bool(MapLayout.boss_only(only_boss)).is_true()
+	var two: Array[Dictionary] = [_info(1, "combat", true), _info(2, "boss", true)]
+	assert_bool(MapLayout.boss_only(two)).is_false()
+	var one_other: Array[Dictionary] = [_info(1, "combat", true), _info(2, "boss", false)]
+	assert_bool(MapLayout.boss_only(one_other)).is_false()
+	var data: Dictionary = {"map": {"nodes": [{"id": 1, "room": 9, "column": 0, "type": "combat", "wave_id": ""}, {"id": 2, "room": 10, "column": 0, "type": "boss", "wave_id": ""}], "edges": [[1, 2]]},
+		"path": [1], "reachable": [2], "nodes": [_info(1, "combat", false, true), _info(2, "boss", true)], "gold": 10, "gold_earned": 0}
+	var screen: MapScreen = await _map_screen(data)
+	assert_str(screen.title_label.text).is_equal("Face the boss")
+	assert_str(screen.line_label.text).not_contains("Spend")
+
+
+func test_the_map_says_where_gold_goes_only_while_a_merchant_is_still_ahead_and_there_is_gold() -> void:
+	var ahead: Array[Dictionary] = [_info(1, "combat", true), _info(2, "merchant", false)]
+	assert_bool(MapLayout.merchant_ahead(ahead)).is_true()
+	var behind: Array[Dictionary] = [_info(1, "combat", true), _info(2, "merchant", false, true)]
+	assert_bool(MapLayout.merchant_ahead(behind)).is_false()
+	var none: Array[Dictionary] = [_info(1, "combat", true)]
+	assert_bool(MapLayout.merchant_ahead(none)).is_false()
+	var map: Dictionary = {"nodes": [{"id": 1, "room": 2, "column": 0, "type": "combat", "wave_id": ""}, {"id": 2, "room": 3, "column": 0, "type": "merchant", "wave_id": ""}, {"id": 3, "room": 3, "column": 1, "type": "combat", "wave_id": ""}], "edges": [[1, 2], [1, 3]]}
+	var data: Dictionary = {"map": map, "path": [0], "reachable": [1], "nodes": ahead, "gold": 25, "gold_earned": 0}
+	var rich: MapScreen = await _map_screen(data)
+	assert_str(rich.line_label.text).contains(String(RunConfig.ui()["map"]["spend_line"]))
+	data["gold"] = 0
+	var broke: MapScreen = await _map_screen(data)
+	assert_str(broke.line_label.text).not_contains(String(RunConfig.ui()["map"]["spend_line"]))
+
+
+func test_the_merchant_has_a_hover_text_that_says_what_it_sells_and_a_legend_entry() -> void:
+	var hover: String = String(RunConfig.ui()["map"]["hover"]["merchant"])
+	assert_str(hover).contains("relics")
+	assert_str(hover).contains("cards")
+	assert_str(hover).contains("removal")
+	assert_array(MapLayout.legend_types({"nodes": [{"type": "combat"}, {"type": "merchant"}]})).contains(["merchant"])
+	assert_str(RunIcons.shape_for("merchant")).is_equal(RunIcons.SHAPE_SQUARE)
+
+
+func test_the_legend_text_the_chest_dots_and_the_every_nth_pips_are_big_enough_at_1024_by_600() -> void:
+	var s: float = 600.0 / 720.0
+	var cfg: Dictionary = UiConfig.map_screen()
+	assert_int(MapLayout.font_px(float(cfg["legend_font_size"]), s, float(cfg["min_font_px"]))).is_greater_equal(15)
+	assert_int(MapLayout.font_px(float(cfg["hint_font_size"]), s, float(cfg["min_font_px"]))).is_greater_equal(14)
+	# the smallest chest is 0.8 of a node: its dot must still be about 5 px across or more
+	var base_radius: float = float(cfg["node_radius_max"]) * s
+	var small_chest: float = base_radius * float(cfg["chest_scale"]["small"])
+	assert_float(MapNodeButton.pip_radius(small_chest) * 2.0).is_greater_equal(5.0)
+	assert_float(RelicRow.pip_height(s)).is_greater_equal(6.0)
+	assert_float(RelicRow.pip_height(1.0)).is_greater_equal(RelicRow.pip_height(s))
+
+
+func test_the_relic_skip_line_no_longer_leaves_rejects_alone() -> void:
+	var line: String = String(RunConfig.ui()["relic"]["skip_detail"])
+	assert_str(line).not_contains("alone")
+	assert_str(line).contains("card rejects")

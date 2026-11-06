@@ -144,6 +144,11 @@ func _poll_progress() -> bool:
 
 
 ## The counter text on a chip ("2/4"), or "" for a relic without one or while the manager can't say.
+## Height in pixels of the every-Nth progress pips at UI scale `scale`: tall enough to count at 1024x600 (they were 4 px there).
+static func pip_height(scale: float) -> float:
+	return maxf(roundf(8.0 * scale), 6.0)
+
+
 func counter_text(relic_id: String) -> String:
 	for entry: Dictionary in _entries:
 		if String(entry["id"]) == relic_id:
@@ -206,7 +211,7 @@ func _draw() -> void:
 			var nth: int = int(entry["nth"])
 			var done: int = int(_progress.get(String(entry["id"]), 0)) % nth
 			var inner: Rect2 = rect.grow(-frame_w)
-			var pip_h: float = maxf(roundf(5.0 * _scale), 4.0)
+			var pip_h: float = pip_height(_scale)
 			var gap_px: float = maxf(roundf(1.5 * _scale), 1.0)
 			var pip_w: float = (inner.size.x - gap_px * float(nth - 1)) / float(nth)
 			draw_rect(Rect2(Vector2(inner.position.x, inner.end.y - pip_h - gap_px), Vector2(inner.size.x, pip_h + gap_px)), Color(back, 0.95))  # a dark strip so the pips read on any frame colour

@@ -257,6 +257,7 @@ func _build() -> void:
 	titles.add_child(title_label)
 	line_label = Label.new()
 	line_label.name = "Line"
+	line_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	titles.add_child(line_label)
 	gold_badge = GoldBadge.new()
 	gold_badge.name = "Gold"
@@ -309,6 +310,11 @@ func _fill() -> void:
 	var view: bool = _mode == Mode.VIEW
 	title_label.text = String(texts.get("view_title" if view else "title", ""))
 	var line: String = String(texts.get("view_line", "")) if view else (String(texts.get("start_hint", "")) if (_data.get("path", []) as Array).is_empty() else String(texts.get("line", "")))
+	if not view and MapLayout.boss_only(_info_list()):
+		title_label.text = String(texts.get("boss_title", title_label.text))  # one way on: say what it is, not "choose your path"
+		line = String(texts.get("boss_line", line))
+	elif int(_data.get("gold", 0)) > 0 and MapLayout.merchant_ahead(_info_list()) and String(texts.get("spend_line", "")) != "":
+		line += "  " + String(texts["spend_line"])  # gold has a use: say where
 	line_label.text = line
 	gold_badge.set_total(int(_data.get("gold", 0)))
 	var earned: int = int(_data.get("gold_earned", 0))

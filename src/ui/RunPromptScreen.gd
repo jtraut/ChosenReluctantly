@@ -149,7 +149,7 @@ func show_choice(model: Dictionary) -> void:
 	var tiers: Dictionary = RunConfig.get_config().get("tiers", {})
 	var merchant: Dictionary = model.get("merchant", {})
 	show_content({
-		"title": String(model.get("title", "")),
+		"title": _titled(model, room_type),
 		"subtitle": "%s  -  %s" % [String(model.get("room_label", "")), String(model.get("room_type_name", ""))],
 		"line": merchant_line(model),
 		"screen": String(model.get("merchant_screen", "")),
@@ -165,6 +165,25 @@ func show_choice(model: Dictionary) -> void:
 		"icon_shape": RunIcons.shape_for(room_type),
 		"icon_color": RunIcons.color_for(room_type, UiConfig.run_ui(), tiers),
 	})
+
+
+## The title of a choice. A relic room says its chest size ("Relic room (small chest)"): the size sets the odds of high-tier relics and the room used to say
+## "Relic room" for all three. Any other choice keeps the model's title.
+func _titled(model: Dictionary, room_type: String) -> String:
+	var title: String = String(model.get("title", ""))
+	if room_type != RunConfig.RELIC_ROOM or _controller == null:
+		return title
+	return chest_title(title, String(_controller.current_room().get("chest", "")))
+
+
+## "Relic room (small chest)" from the title and a chest id ("small", "medium", "large"); the title unchanged for no chest. Words from data (ui.relic, ui.map.chest_names).
+static func chest_title(title: String, chest: String) -> String:
+	var ui: Dictionary = RunConfig.ui()
+	var chest_name: String = String(((ui.get("map", {}) as Dictionary).get("chest_names", {}) as Dictionary).get(chest, ""))
+	var format: String = String((ui.get("relic", {}) as Dictionary).get("room_title_chest", ""))
+	if chest == "" or chest_name == "" or format == "":
+		return title
+	return format % [title, chest_name.to_lower()]
 
 
 ## The line under a merchant screen's title. In the give-one-up step it also says what the relic costs and that Cancel is free (the plain relic

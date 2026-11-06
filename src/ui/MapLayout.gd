@@ -93,6 +93,25 @@ static func legend_types(map: Dictionary) -> Array[String]:
 	return out
 
 
+## True when the only room the player can pick next is the boss (room 9 on to room 10): there is no choice left, so the screen says so.
+static func boss_only(infos: Array[Dictionary]) -> bool:
+	var reachable: int = 0
+	var boss: bool = false
+	for info: Dictionary in infos:
+		if bool(info.get("reachable", false)):
+			reachable += 1
+			boss = String(info.get("type", "")) == "boss"
+	return reachable == 1 and boss
+
+
+## True when a merchant node is still ahead (on the map and not walked): the gold line only helps then.
+static func merchant_ahead(infos: Array[Dictionary]) -> bool:
+	for info: Dictionary in infos:
+		if String(info.get("type", "")) == "merchant" and not bool(info.get("taken", false)):
+			return true
+	return false
+
+
 ## The chest sizes the map holds, small to large.
 static func legend_chests(infos: Array[Dictionary]) -> Array[String]:
 	var present: Dictionary = {}

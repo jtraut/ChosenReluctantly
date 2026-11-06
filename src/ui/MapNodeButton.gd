@@ -70,6 +70,11 @@ func _draw() -> void:
 	else:
 		draw_polyline(outline, dark, maxf(radius * 0.14, 1.5), true)
 	_draw_pips(centre, alpha)
+	if String(info.get("type", "")) == "merchant":
+		# A coin in the square: the merchant is where gold goes, and it must read at a glance even when it is dimmed.
+		var coin := Color(0.1, 0.06, 0.04, alpha)
+		draw_arc(centre, radius * 0.45, 0.0, TAU, 20, coin, maxf(radius * 0.14, 2.0), true)
+		draw_circle(centre, radius * 0.16, coin)
 	match node_state:
 		MapLayout.STATE_CURRENT:
 			var gold := Color.html(String(_cfg.get("current_color", "#ffd7a8")))
@@ -87,11 +92,16 @@ func _draw() -> void:
 		_draw_brackets(centre)
 
 
+## The radius of a chest pip for a node of `radius`: big enough to count at 1024x600 on the smallest chest.
+static func pip_radius(node_radius: float) -> float:
+	return maxf(node_radius * 0.2, 2.6)
+
+
 func _draw_pips(centre: Vector2, alpha: float) -> void:
 	var count: int = MapLayout.pip_count(String(info.get("chest", "")))
 	if count <= 0:
 		return
-	var pip_r: float = maxf(radius * 0.13, 1.6)
+	var pip_r: float = pip_radius(radius)
 	var color := Color(Color.html(String(_cfg.get("pip_color", "#1a1218"))), alpha)
 	var offsets: Array[Vector2] = []
 	match count:

@@ -1026,3 +1026,59 @@ func test_asap_notice_cuts_a_real_movement_cooldown_by_fifteen_percent_and_other
 	assert_float(movement.last_cooldown_duration).is_equal_approx(plain, 0.0001)
 	BodyFlag.reset()
 	CombatEvents.reset()
+
+
+# ---- 13. the elite and relic-room offers with the FULL catalog (bd2_qa_test and bd2b_flow_test now cut it to the original 6) ----
+
+func test_elite_and_relic_room_offers_over_the_full_catalog_hold_the_relic_rules() -> void:
+	var failures: Array[String] = []
+	var seen_new: Dictionary = {}
+	for seed_value in range(1, 201):
+		var character: String = "rogue" if seed_value % 2 == 0 else "wizard"
+		var rng := RandomNumberGenerator.new()
+		rng.seed = seed_value * 104729
+		var cap: int = [1, 2, 3, 20][rng.randi() % 4]
+		var ctx: Dictionary = _ctx(character, cap)
+		var state: RunState = _state(seed_value, 0, character)
+		for r: Dictionary in (ctx["relics"]["catalog"] as Array):
+			if rng.randf() < 0.25 and state.relics.size() < cap and (ctx["pools"] as Array).has(String(r["pool"])):
+				state.add_relic(String(r["id"]))
+		for step in range(4):
+			var room_type: String = ["elite", "relic_room"][rng.randi() % 2]
+			state.room_index = 2 + step
+			var pending: String = RunRelics.open_for_room(state, room_type, false, ctx)
+			if pending != RunState.PENDING_RELIC:
+				continue
+			var tag: String = "seed %d %s %s cap %d" % [seed_value, character, room_type, cap]
+			if state.offer.size() > 3 or state.offer.size() == 0:
+				failures.append("%s: offer of %d" % [tag, state.offer.size()])
+			var seen: Dictionary = {}
+			for id: String in state.offer:
+				var relic: Dictionary = (ctx["relics"]["by_id"] as Dictionary)[id]
+				if seen.has(id) or state.relics.has(id) or state.relics_given_up.has(id):
+					failures.append("%s: %s duplicated/owned/given up" % [tag, id])
+				seen[id] = true
+				if Merchant.is_shop_only(relic):
+					failures.append("%s: shop-only %s offered by %s" % [tag, id, room_type])
+				if String(relic["rarity"]) == "boss":
+					failures.append("%s: boss relic offered" % tag)
+				if not (ctx["pools"] as Array).has(String(relic["pool"])):
+					failures.append("%s: %s from another class's pool" % [tag, id])
+				if NEW_RELICS.has(id):
+					seen_new[id] = true
+			var options: Array[Dictionary] = RunChoices.options(state, ctx)
+			var choice: Dictionary = options[rng.randi() % options.size()]
+			var result: Dictionary = RunChoices.apply(state, String(choice["id"]), ctx)
+			if String(result.get("kind", "")) == "relic_swap_open":
+				var swap_options: Array[Dictionary] = RunChoices.options(state, ctx)
+				var swap_pick: Dictionary = swap_options[rng.randi() % swap_options.size()]
+				RunChoices.apply(state, String(swap_pick["id"]), ctx)
+			if state.relics.size() > cap:
+				failures.append("%s: %d relics over cap" % [tag, state.relics.size()])
+			if state.pending != RunState.PENDING_NONE and state.pending != RunState.PENDING_RELIC:
+				failures.append("%s: left in %s" % [tag, state.pending])
+				state.pending = RunState.PENDING_NONE
+			RunChoices.close(state)
+	assert_array(failures).override_failure_message("\n".join(failures.slice(0, 8))).is_empty()
+	for id: String in ["asap_notice", "severance_package", "paperwork_fire", "grading_curve"]:
+		assert_bool(seen_new.has(id)).override_failure_message("%s never offered by an elite or relic room in 200 seeds" % id).is_true()

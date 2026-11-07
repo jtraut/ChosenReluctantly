@@ -2,6 +2,82 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
+## 2026-11-06 (Slice MAP2: the merchant; D40 = A)
+
+### Slice MAP2: the merchant
+
+Commit range ca5574a..110cc45. game-lead docs 4145235, b050aab, 1b43709, 1bf9eb6, a9c4f52, 46065c1, 110cc45; gameplay-dev MAP2-A 66ba317, bf80b35, 9321820 and MAP2-B 5801fe7..6a3e780; ux 8897701..accf46f (the merchant was turned on in 8994863); qa bbac2e0..38f20bd (PASS with carry-overs, `docs/reviews/2026-11-06-map2-qa.md`); playtest d503d36 (no blocker, `docs/playtests/2026-11-06-map2-short.md`). Plan: `docs/MAP.md` section 4.4. Calls: `docs/DECISIONS.md`, the four "2026-11-06 - MAP2" entries and the qa and playtest triage entries. **The merchant is on in shipped data.** Nobody has hand-played the shop yet (the playtest used captures and bot runs).
+
+#### Added
+- **The merchant node** (weight 8, at most 1 on any route (`max_merchants` is a path rule), rooms 4 to 9; some routes pass none). A merchant room has no fight. What it sells (amounts are `data/run.json` `merchant` and `relics.prices`):
+  - 3 relics: 2 normal merchant-source slots plus a third slot that holds only shop-only relics (it falls back to normal stock when none is eligible);
+  - 3 cards at 40 gold each (drawn by the reward weights);
+  - card removal at 50 gold, then +25 for each removal bought at the merchant (rest-room removals do not raise the price). It goes through the same deck-minimum guard as the rest room;
+  - relic prices by tier: 30 / 45 / 65. Boss-tier relics are never sold.
+  - Stock is seeded from the run seed and node id, with no owned or given-up relics and no duplicates. Buy any number of items in any order, then Leave. Gold never goes negative.
+  - **At the relic cap** a relic is still buyable: you give one up first (the BD2 step); Cancel charges nothing.
+  - **Rerolls** only come from the relic Request for Quotation. A reroll redraws only the unsold slots.
+  - **You can save mid-visit:** the open visit (stock, what is sold, rerolls used) is part of `RunState`, so a restore gives the same stock. Three pending screens: the shop, the removal list and the give-one-up step.
+- **7 new relics (13 in total in `data/relics/`).**
+  - Pool relics (sources elite, relic room, merchant): ASAP Notice [neutral, tier 1], Severance Package [rogue, tier 2], Paperwork Fire [wizard, tier 1], Grading Curve [wizard, tier 2].
+  - Shop-only relics (`sources` exactly `["merchant"]`): Liquidate Assets [neutral, tier 2], Request for Quotation [neutral, tier 1], As Per the Attached Document [neutral, tier 2]. Each class now has 11 eligible relics (6 were not enough for a relic hunter to reach the merchant with a full pool).
+  - Why Liquidate Assets is tier 2, not the documented tier 3: act 1's tier weights are 80/20/0 and a weight-0 tier is never stocked. Re-tier it in MAP3.
+  - Rules are in the files (`rule_text`); numbers are not repeated here.
+- **Engine** (66ba317, b521aeb): `Merchant` (stock, buying, reroll; pure), `RunMerchant` (turns it into the choice model and builds the panel's `view`), `MerchantConfig` (the `run.json` `merchant` block), `MerchantSwitch` (the all-or-nothing on switch, with `shipped_problems` checking the data lines flip together) and `MerchantPolicy` (the bots' choices). `RunState` gained `merchant_removals`, `gold_spent_merchant` and `merchant_visit`, all in the save round trip. The UI hook is `RunController.merchant_view()`.
+- **New relic engine pieces** (5801fe7): a `damage_mult` stat (multiplies a source's hits before armor, and scales damage-over-time ticks), relic modifiers that scale with a run stat (`per_run_stat` and `per`; today `gold_spent_merchant`), a `merchant.free_rerolls` modifier, and a `tag` filter on the `hit_landed` relic event.
+- **The shop panel** (ux 335f7bb..accf46f): two columns (relics left, cards right), Remove, Reroll and Leave in the footer, price pills, "Need N more gold", "Only sold here", a gold-left line and a give-one-up cost line. The tile reasons are short, with the full text in the tooltip. It fits 1024x600. Look values: `data/ui.json` `run_ui` (`shop_*`); words: `data/run.json` `ui.merchant`.
+- **Launch flags and tools:**
+  - `--run-node=N` (start a map run at node N) and `--run-gold=N` (start with N gold), for captures. `--run-auto-choose` now also splits ids on `+` (merchant ids hold a colon, and `capture_screenshot.ps1` splits `-Extra` on commas).
+  - `--merchant`: turns the merchant on for one launch from `data/merchant_on.json`. Now redundant, because the shipped data has it on.
+  - `tools\run_wave_sim.ps1 -Merchant` (same patch, for the sim), `tools\run_map_print.ps1 -Merchant -Routes -From N -Set "path=JSON"` (`-Routes` prints per-route medians in a sweep, `-From` starts the sweep at a seed, `-Set` overrides one config value and may repeat). `-Seed` map prints now list node ids per type.
+  - `data/merchant_on.json`: the patch that holds exactly the values the merchant switch changes.
+  - Capture presets `merchant_shop`, `merchant_shop_poor` and `merchant_removal` (qa). The wave sim reports merchant spending and a relic-trigger counter (`relic triggers fired:`) (qa).
+- Tests: 1737 -> 1843 test cases (2 skipped), 137 -> 143 suites.
+
+#### Changed
+- **[Director decision] D40 = A (2026-11-06): every route has at least 1 rest.** `data/map.json` `path_rules.min_rest` none -> 1 (a new rule, validated, checked on every path and by the sweep). The other options were B (no guarantee) and C (a fixed rest on room 9). Recorded in GDD section 9 and `docs/MAP.md` section 3; archived in `docs/RESOLVED.md`.
+- **Data values forced by `min_rest` (MAP2-A, accepted by game-lead), old -> new:**
+  - `types.rest.weight` 10 -> 25 (20 and 30 were tried: a worst case of 905 attempts, or no better). Cost: more rest nodes. `max_rest` 2 and `min_fights` 6 still cap them per path.
+  - `max_attempts` 200 -> 1000 (the allowed ceiling). At 200, 351 of 1000 seeds failed.
+  - `MapGenerator` `TYPE_DRAWS_PER_GRID` (code) 10 -> 40, plus a one-pass rest pre-check. About 3x faster (a 1000-seed sweep took about 305 s at 10). Seeds that succeeded within 10 draws on their first grid keep their map; the rest generate different maps.
+- **Switching the merchant on (ux, 8994863), old -> new:**
+  - `types.merchant.weight` 0 -> 8.
+  - `path_rules.relic_route` [5, 7] -> [6, 8] (the director's 6 to 8 relics for a relic hunter).
+  - `estimate`: `merchant_price` 60 and `merchant_stock` 3 replaced by `merchant_prices` [60, 60, 90], then set to [30, 30, 45] with the prices below.
+  - **Relic prices (new): none -> 30 / 45 / 65 for tier 1 / 2 / 3.** MAP0 had planned 60 / 90 / 130. With 60/90 the relic route's median was 5 relics, with 40/60 also 5, with 30/45 it is 6. With the old estimate and `relic_route` [6, 8], 284 of 1000 seeds failed to generate. **This is D41, a game-lead default waiting on the director, not a director decision** (the playtest added option D, 45/65/90, which qa's numbers say drops the relic route below 6). Cost: a tier 1 relic (30) is cheaper than a card (40) or a removal (50). The relic route sits exactly on the floor of 6.
+  - The four lines flip together; `MerchantSwitch.shipped_problems` checks it.
+- **The safe-route bot target** changed from a median of 2 to 3 relics to **at most 3** (the median is now 1 with the merchant on). The safe bot buys a removal, then a card, never a relic. `first` and `random` shop the same way.
+- **Run sim baselines, old -> new:**
+  - The straight run (`-NoMap`) moved because the 7 new relics widen the offers: Rogue 12/12, 57.3 s -> 57.5 s; Wizard 12/12, 62.5 s -> 63.3 s.
+  - The arena hashes (1897787086, 4207041509, `-Plan` 1160207333) and the bot sim (846850403) did not move.
+  - Map-on route numbers (`-Run -Seed 1 -Runs 12`, merchant on, median relics in brackets; qa's re-baseline). MAP1 values in the last column are for comparison:
+
+    | Route | Rogue | Wizard | MAP1 (Rogue / Wizard) |
+    |---|---|---|---|
+    | first | 11/12, 58.1 s (3) | 11/12, 70.9 s (3) | 12/12, 66.2 s / 10/12, 60.6 s |
+    | relic | 12/12, 56.4 s (6) | 12/12, 54.6 s (6) | 12/12, 52.1 s / 11/12, 63.2 s |
+    | safe | 10/12, 57.6 s (1) | 12/12, 67.3 s (1) | 12/12, 58.4 s / 12/12, 65.0 s |
+
+- **Capture presets re-pinned** (9321820): `map_mid`, `map_room9` and `map_chest_medium` to seed 54, `map_chest_large` to seed 157, because the generator change moved their maps. `removal_screen` and `bd2_relic_*` now pass `--no-map` (MAP1 carry-over fixed).
+- **UI text and layout, old -> new** (ux; full list in DECISIONS "MAP2 ux calls" and `git diff ca5574a..110cc45 -- data/run.json data/ui.json`):
+  - The room 9 to boss pick is now labelled "Face the boss" (title, line) instead of a bare one-option pick.
+  - The relic-room offer title shows the chest size: "Relic room" -> `room_title_chest` "%s (%s chest)".
+  - Relic Skip line: "Take nothing. It is free and leaves your card rejects alone." -> "Take nothing. Free: your card rejects stay as they are."
+  - Map merchant hover: "Merchant: spend gold" -> "Merchant: spend gold on relics, cards or a card removal".
+  - Map legend font 15 -> 18 and hint font 15 -> 17 (`data/ui.json` `map_screen`); the small-chest dots and Spite Knuckles' pips were enlarged for 1024x600.
+  - New: a gold line on the map ("Spend your gold at the merchant (the square)."), shown only while a merchant can still be reached; the merchant node has a coin. The legend's merchant icon is still a plain square (cosmetic, open).
+
+#### Fixed
+- **`MapGenerator` script error when no node type is a candidate** (the `:59` carry-over): fixed in 66ba317 and its test un-skipped.
+- **Capture presets landing on the wrong rooms with the map on** (`removal_screen`, `bd2_relic_elite`, `bd2_relic_room`, `bd2_relic_swap`): they now pass `--no-map`.
+- **The dead `RelicProgress._triggers` fallback** was removed (8897701).
+- The suite was ready for the switch before it happened: it ran green with the merchant off and on (e59a25f), so there was no red-suite return trip like MAP1's.
+
+#### Docs and process
+- **qa verdict: PASS with carry-overs** (no blocker). The sweeps found 0 failures on seeds 1 to 1000 (worst 479 of 1000 attempts) and on 9000 to 9999 (worst 410). The no-card gate is 0/12. Every number that must not move did not move. qa wrote 22 independent cases (shop fuzz, stock, determinism, prices, removal guard, swap, reroll, saves). Carry-overs are routed: gameplay-dev MAP3 housekeeping (`--run-node` and `--run-gold` accept bad values silently and have no unit tests; a stale "ships off" comment in `RunController.gd`; Liquidate Assets' stat refreshes only on a relic buy; `Merchant.items()` shows a relic as buyable at the cap when nothing can be given up, unreachable until boss relics exist), and BD3 (Request for Quotation is in about 79% of shops because the shop-only slot is tier-weighted; the Rogue safe route went from 12/12 to 10/12; Paperwork Fire rarely fires in real runs; watch Severance Package chains).
+- **Playtest: no blocker** (captures and 40 bot runs, seed 200; nobody played by hand). Rests do not make runs too safe (about 1.1 to 1.4 per run, still 6 to 7 combat rooms). Findings routed: the shop opens focused on a purchase and stays that way (the 0.4 s arm delay already catches a carried-over Enter; eyes item 51 asks the director); **D42** (should every route pass a merchant? 5 of 8 first/safe routes reached one; default A, no guarantee) goes to the director; D41 got option D.
+- Open director questions after this slice: D41 (relic prices) and D42 (a merchant on every route); see `docs/OPEN_ITEMS.md`.
+
 ## 2026-11-05 (Slice MAP1: the branching map)
 
 ### Slice MAP1: the branching map

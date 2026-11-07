@@ -2,6 +2,16 @@
 
 The archive of the director's answered, received and acknowledged items, moved here from `docs/OPEN_ITEMS.md`. Owned by tech-writer (director, 2026-11-02). Newest dated section first; IDs (D19, call 16, checklist item 33) are kept so they can be searched. Old entries change only to fix a factual error.
 
+## 2026-11-06
+
+### Answer recorded in b050aab (D40)
+
+Removed from OPEN_ITEMS in b050aab; the full question text is in `git show 4145235:docs/OPEN_ITEMS.md`.
+
+| ID | Question | Your answer | Where it went |
+|---|---|---|---|
+| D40 | Should every map route have a rest? Today a route can have none (3 of the 4 Rogue routes the MAP1 playtester looked at had none), so the "safe" route often isn't a real option. **A** (default): every path from room 1 to the boss has at least 1 rest (a new `min_rest` 1 path rule; the limit of 2 stays), built with MAP2. **B**: no guarantee. **C**: a fixed rest on room 9 for every path. | **A** (2026-11-06). | GDD §9 and `docs/MAP.md` §3 (b050aab); DECISIONS "MAP2 split ..." note. Built in MAP2-A as `data/map.json` `path_rules.min_rest` 1 (66ba317). To undo: set `min_rest` to 0 for B; C is a data change plus a generator rule. The rest weight, `max_attempts` and generator changes it forced are in `docs/CHANGELOG.md` 2026-11-06. |
+
 ## 2026-11-05
 
 ### Feedback recorded in fe10173 (item 49, general part; the old "Try the relics (BD2)" item)

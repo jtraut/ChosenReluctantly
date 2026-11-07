@@ -2046,3 +2046,12 @@ All accepted:
 - **Starting act scaling:** act 2 HP x1.35, damage x1.15; act 3 HP x1.7, damage x1.3. These are proposals the sim tunes, not final values.
 - **`map.json` `acts` (3, with 1 = MAP2's behaviour) and the sim's `-Acts 1`** keep one-act tests, scenarios and baselines working. That's the same idea as `--no-map`.
 - **Rare and legendary cards, retag or new:** decided in MAP3b's design pass. Default: legendary cards all new; rare may retag up to 2 existing cards per pool.
+
+## 2026-11-07 - MAP3 sitting A calls (gameplay-dev, decided by game-lead)
+- **Gold income doubles (combat 24-36, elite 60-80, mini-boss 90-110; `estimate.gold_mean` 30/70/100), accepted.** The ratio to the doubled prices is unchanged, so every generated map, the golden-map hash, seed 54 and the capture presets stay valid.
+  - Rejected: 25/55/80, the smallest change that met the sim. It failed `map1a_sweep_test`'s headroom (worst seed 945 attempts, limit 800) and would have changed every map.
+  - It goes past the brief's "only as far as needed". That's acceptable because sitting B retunes gold for three acts and MAP3b does the final tuning.
+- **`tiers.boss` stays.** `RunConfig`, the tests and ux's marker colour and size read it. Its HP, armor and resistance fields are probably dead, because `Boss.gd` takes its stats from `bosses.json`. Cleaning that up goes to BD3 housekeeping. Rejected: removing it now, which would touch ux files for no player gain.
+- **Saves happen at the map screen and at a room's start.** There's no save before the first room and none on straight (no-map) runs, and debug launch flags never touch the save. `from_dict` refuses bad relic lists and clamps negative gold to 0. All accepted as built.
+- **The `first`/`safe` bots end runs with about 200 unspent gold.** They buy only a removal and a card. Goes to MAP3b's gold tuning (and the bot's buy policy). Not a blocker.
+- **Shop overflows 4 px at 1280x720 when every tile shows "Need N more gold":** goes to ux in MAP3's ux step.

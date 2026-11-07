@@ -125,7 +125,7 @@ Last updated: 2026-11-07 (MAP3 detailed brief written; MAP3 split into MAP3 stru
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **MAP3 sitting A handed to gameplay-dev 2026-11-07** (after b54a453). If the session was cut off: check `git log` for gameplay-dev commits after b54a453, then resume sitting A at the first unfinished step (robustness -> save file -> D41 prices/gold -> housekeeping). Each step is committed separately.
+- **MAP3: sitting A done** (gameplay-dev 239c856..da739de; suite 1878/146; calls in DECISIONS "MAP3 sitting A calls"). **Sitting B (three acts) handed to gameplay-dev 2026-11-07.** If cut off: check `git log` after the commit that recorded sitting A, and resume sitting B at the first unfinished step of the brief.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step

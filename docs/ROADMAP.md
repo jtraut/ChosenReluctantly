@@ -1125,6 +1125,21 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
       4. **Housekeeping:** the MAP2 fold-ins above (`resolve(args)` with exit 2 and tests, stale comments, the `run_wave_sim.ps1` line 16 comment, Liquidate Assets refreshing on every purchase, `Merchant.items()` at the cap).
 
       Main must still run as a one-act game at the end of sitting A. `-NoMap`, the arena and bot-sim hashes must not move. The map-on `-Route` numbers can move because of the price change; record them.
+    - **Sitting A: done 2026-11-07** (gameplay-dev 239c856..da739de).
+      - **Suite:** 1878 (146 suites), 0 skipped. `-NoMap`, the arena and bot-sim hashes are unchanged; reload soak OK.
+      - **D41 values:** prices 60/90/130; gold doubled (24-36 / 60-80 / 90-110); `estimate.gold_mean` 30/70/100 and `merchant_prices` [60, 60, 90]. The brief's `merchant_price` key is really `merchant_prices`. Maps are unchanged.
+      - **`-Route` (seed 1, 12 runs; wins, boss median, median relics):**
+
+        | Route | Rogue | Wizard |
+        |---|---|---|
+        | first | 11/12, 60.3 s, 3 | 11/12, 66.9 s, 3 |
+        | relic | 12/12, 49.8 s, 6 | 12/12, 51.8 s, 6 |
+        | safe | 11/12, 53.3 s, 1 | 12/12, 66.2 s, 1 |
+      - **Save API for ux:** `RunSave.has_save()`, `load_save()` (then start `RunMain`), `delete_save()`.
+      - **`tiers.boss` is live, so it was kept.** Cleaning up its dead stat fields goes to BD3.
+      - **Carry-overs:**
+        - ux: the shop overflows 4 px at 1280x720 when poor;
+        - MAP3b: the bots hoard about 200 gold on the `first` and `safe` routes.
     - **gameplay-dev, sitting B (three acts):**
       1. **Acts:**
          - `map.json` gains `acts` (3; with 1 it plays as MAP2);

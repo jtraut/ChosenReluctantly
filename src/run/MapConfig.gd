@@ -17,11 +17,16 @@ const ELITE_LIKE_TYPES: Array[String] = ["elite", "mini_boss"]
 const RELIC_TYPES: Array[String] = ["elite", "relic_room", "mini_boss", "curse_room", "buff_room"]
 const TOP_KEYS: Array[String] = ["enabled", "rooms", "columns", "walks", "max_attempts", "fixed", "types", "path_rules", "estimate"]
 ## Keys a map file may leave out (MAP1-B): `chests`, the relic stage's chest sizes. Without it relic stages carry no chest and play as small.
-const OPTIONAL_KEYS: Array[String] = ["chests"]
+## MAP3-B: `acts` (how many acts a run has, 1 when absent: plays as MAP2) and `multi_act`, the rule changes that apply only when acts is above 1
+## ({path_rules: {relic_route, max_relic_rooms}, estimate: {gold_mean, merchant_prices}}, each part optional).
+const OPTIONAL_KEYS: Array[String] = ["chests", "acts", "multi_act"]
+const MULTI_ACT_RULE_KEYS: Array[String] = ["relic_route", "max_relic_rooms"]
 const CHEST_KEYS: Array[String] = ["weight", "act_offset", "act", "min_tier"]
 const CHEST_SIZES: Array[String] = ["small", "medium", "large"]
 const TYPE_KEYS: Array[String] = ["weight", "rooms", "no_repeat"]
 const RULE_KEYS: Array[String] = ["min_fights", "max_elite_like", "max_merchants", "min_rest", "max_rest", "relic_route", "ignore_route_max", "min_branching"]
+## Optional path rule (MAP3-B): the most relic stages on one path. Absent = no limit (the one-act rules).
+const OPTIONAL_RULE_KEYS: Array[String] = ["max_relic_rooms"]
 ## `merchant_prices`: the price of each relic slot the merchant sells, cheapest first in the estimate (MAP2-A: 2 normal tier 1 slots and 1 shop-only tier 2 slot).
 const ESTIMATE_KEYS: Array[String] = ["gold_mean", "merchant_prices"]
 const MAX_ROOMS := 16  # paths are enumerated: 3^(rooms-2) at worst
@@ -60,6 +65,10 @@ static func validate(config: Variant) -> Array[String]:
 	_validate_estimate(c.get("estimate"), errors)
 	if c.has("chests"):
 		_validate_chests(c["chests"], errors)
+	if c.has("acts"):
+		_whole_in(c, "acts", 1, RunState.MAX_ACTS, "map.acts", errors)
+	if c.has("multi_act"):
+		_validate_multi_act(c["multi_act"], rooms, errors)
 	if columns > 0 and rooms > 0 and c.has("types") and typeof(c["types"]) == TYPE_DICTIONARY:
 		var any_weight: bool = false
 		for entry: Variant in (c["types"] as Dictionary).values():
@@ -131,7 +140,11 @@ static func _validate_rules(rules: Variant, rooms: int, errors: Array[String]) -
 		errors.append("map.path_rules must be an object")
 		return
 	var r: Dictionary = rules
-	_unknown_keys(r, RULE_KEYS, "map.path_rules", errors)
+	var known_rules: Array[String] = RULE_KEYS.duplicate()
+	known_rules.append_array(OPTIONAL_RULE_KEYS)
+	_unknown_keys(r, known_rules, "map.path_rules", errors)
+	if r.has("max_relic_rooms"):
+		_whole_in(r, "max_relic_rooms", 0, rooms, "map.path_rules.max_relic_rooms", errors)
 	for key: String in RULE_KEYS:
 		if not r.has(key):
 			errors.append("map.path_rules: missing '%s'" % key)
@@ -149,6 +162,38 @@ static func _validate_rules(rules: Variant, rooms: int, errors: Array[String]) -
 			errors.append("map.path_rules.relic_route must be [low, high], two whole numbers")
 		elif int((route as Array)[0]) < 0 or int((route as Array)[1]) > 99 or int((route as Array)[0]) > int((route as Array)[1]):
 			errors.append("map.path_rules.relic_route must satisfy 0 <= low <= high <= 99")
+
+
+## `multi_act`: the parts of `path_rules` and `estimate` that replace the one-act ones when a run has several acts.
+static func _validate_multi_act(value: Variant, rooms: int, errors: Array[String]) -> void:
+	if typeof(value) != TYPE_DICTIONARY:
+		errors.append("map.multi_act must be an object {path_rules, estimate}")
+		return
+	var m: Dictionary = value
+	_unknown_keys(m, ["path_rules", "estimate"], "map.multi_act", errors)
+	if m.has("path_rules"):
+		if typeof(m["path_rules"]) != TYPE_DICTIONARY:
+			errors.append("map.multi_act.path_rules must be an object")
+		else:
+			var r: Dictionary = m["path_rules"]
+			_unknown_keys(r, MULTI_ACT_RULE_KEYS, "map.multi_act.path_rules", errors)
+			if r.has("max_relic_rooms"):
+				_whole_in(r, "max_relic_rooms", 0, rooms, "map.multi_act.path_rules.max_relic_rooms", errors)
+			if r.has("relic_route"):
+				var route: Variant = r["relic_route"]
+				if typeof(route) != TYPE_ARRAY or (route as Array).size() != 2 or not _is_whole((route as Array)[0]) or not _is_whole((route as Array)[1]) 						or int((route as Array)[0]) < 0 or int((route as Array)[1]) > 99 or int((route as Array)[0]) > int((route as Array)[1]):
+					errors.append("map.multi_act.path_rules.relic_route must be [low, high] with 0 <= low <= high <= 99")
+	if m.has("estimate"):
+		if typeof(m["estimate"]) != TYPE_DICTIONARY:
+			errors.append("map.multi_act.estimate must be an object")
+		else:
+			var partial: Dictionary = {"gold_mean": {}, "merchant_prices": [1]}
+			for key: Variant in (m["estimate"] as Dictionary).keys():
+				partial[String(key)] = (m["estimate"] as Dictionary)[key]
+			var inner: Array[String] = []
+			_validate_estimate(partial, inner)
+			for problem: String in inner:
+				errors.append(problem.replace("map.estimate", "map.multi_act.estimate"))
 
 
 static func _validate_estimate(estimate: Variant, errors: Array[String]) -> void:
@@ -209,6 +254,29 @@ static func _validate_chests(chests: Variant, errors: Array[String]) -> void:
 		_whole_in(e, "min_tier", 1, 3, "map.chests.%s.min_tier" % size_id, errors)
 	if total <= 0.0:
 		errors.append("map.chests: every weight is 0, so no chest size could be picked")
+
+
+## How many acts a run has (data/map.json `acts`, 1 when absent or the file is broken).
+static func acts(config: Dictionary = {}) -> int:
+	var source: Dictionary = config if not config.is_empty() else get_config()
+	return clampi(int(source.get("acts", 1)), 1, RunState.MAX_ACTS)
+
+
+## The config the generator and the rules use for act `act_number` of a run with `acts_total` acts. One act (or the last act's own fixed boss) keeps
+## the file as it is. With several acts the `multi_act` rule changes apply (per-act relic_route, max_relic_rooms, the merchant price estimate), and
+## every act before the last ends in a mini-boss instead of the boss (the last room's `fixed` type becomes "mini_boss").
+static func for_act(config: Dictionary, act_number: int, acts_total: int) -> Dictionary:
+	if acts_total <= 1:
+		return config
+	var out: Dictionary = config.duplicate(true)
+	var multi: Dictionary = config.get("multi_act", {})
+	for key: Variant in (multi.get("path_rules", {}) as Dictionary).keys():
+		(out["path_rules"] as Dictionary)[key] = (multi["path_rules"] as Dictionary)[key]
+	for key: Variant in (multi.get("estimate", {}) as Dictionary).keys():
+		(out["estimate"] as Dictionary)[key] = (multi["estimate"] as Dictionary)[key]
+	if act_number < acts_total:
+		(out["fixed"] as Dictionary)[str(int(config["rooms"]))] = "mini_boss"
+	return out
 
 
 ## The chest block of a validated config ({} when the file has none).

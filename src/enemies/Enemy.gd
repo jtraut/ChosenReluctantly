@@ -252,6 +252,19 @@ func apply_tier(tier_id: String, cfg: Dictionary) -> void:
 	health.health_changed.emit(health.current_health, health.max_health)
 
 
+## MAP3-B act scaling (data/run.json `acts`): this enemy's HP and every attack it makes are multiplied for the act it spawns in. Call after `apply_tier`.
+## A multiplier of 1 changes nothing. `damage_scale` is read by the attack code of the enemy and (through `Boss._start_attack`) the boss.
+var damage_scale: float = 1.0
+
+
+func apply_act_scale(hp_multiplier: float, damage_multiplier: float) -> void:
+	if not is_equal_approx(hp_multiplier, 1.0):
+		health.max_health *= hp_multiplier
+		health.current_health = health.max_health
+		health.health_changed.emit(health.current_health, health.max_health)
+	damage_scale = damage_multiplier
+
+
 func is_elite() -> bool:
 	return tier != "normal"
 
@@ -446,7 +459,7 @@ func _execute_attack() -> void:
 	context.origin = "enemy"
 	if is_ranged:
 		EffectTemplates.execute("projectile", {
-			"damage": attack_damage,
+			"damage": attack_damage * damage_scale,
 			"damage_type": attack_damage_type,
 			"speed": projectile_speed,
 			"max_range": projectile_max_range,
@@ -454,7 +467,7 @@ func _execute_attack() -> void:
 		}, context)
 	else:
 		EffectTemplates.execute("cone", {
-			"damage": attack_damage,
+			"damage": attack_damage * damage_scale,
 			"damage_type": attack_damage_type,
 			"range": attack_range,
 			"half_angle_degrees": EnemyConfig.melee_half_angle_degrees(),

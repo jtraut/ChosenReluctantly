@@ -35,6 +35,15 @@ static func resolve(args: PackedStringArray) -> Dictionary:
 	return {"override": override, "errors": errors}
 
 
+## `--run-room=N` counts rooms over the whole run (MAP3-B: 1 to `limit`, 30 for three acts of 10). "" when it is fine or absent, else why the launch is refused (exit 2).
+## Only a value that is a whole number above `limit` is a problem here; the other malformed values keep their old behaviour (the flag is ignored).
+static func run_room_problem(args: PackedStringArray, limit: int) -> String:
+	for arg: String in args:
+		if arg.begins_with("--run-room=") and arg.substr(11).is_valid_int() and arg.substr(11).to_int() > limit:
+			return "--run-room=%s is past the last room; this run has %d rooms (1 to %d)" % [arg.substr(11), limit, limit]
+	return ""
+
+
 ## `--run-node=N`, `--run-gold=N` and `--merchant` (MAP2-B debug flags): {node: int, gold: int, errors: Array[String]}; node and gold are -1 when not given.
 ## Each of the two numbers needs a whole number from 0 (`--run-node=33`) and may be given once; `--merchant` takes no value and may be given once.
 ## Any error means the launch is refused (exit 2) instead of a silently ignored flag.

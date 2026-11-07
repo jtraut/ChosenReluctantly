@@ -33,6 +33,10 @@ signal boss_spawned(boss: Boss)
 signal class_picked(character_id: String)
 ## The run's gold changed: a fight node paid out (`delta` above 0), or a merchant purchase (`delta` below 0). `total` is `RunState.gold`.
 signal gold_changed(total: int, delta: int)
+## MAP3-B: the run moved on to the next act (the mini-boss's rewards are done and the next act's map is open on its first pick). `act` is the new act (2, 3, ...);
+## `summary` is `act_summary()`: {act, acts_total, title, line, hp, max_hp, gold, relic_count, relics (display dictionaries), run_room_number, run_room_total, rooms_done}.
+## It fires before `choice_requested` for the new act's map, so an "Act 2" screen can show first. The state is autosaved right after.
+signal act_started(act: int, summary: Dictionary)
 ## The last room was won.
 signal run_won()
 ## The player died; Main shows Game Over after its death beat.
@@ -101,8 +105,9 @@ func begin(main: Main) -> void:
 	else:
 		var variant: Dictionary = RunConfig.variant_by_id(config, String(room["type"]), String(room["wave_id"]))
 		spawner.tier_configs = (config["tiers"] as Dictionary).duplicate(true)
+		spawner.act_scale = RunConfig.act_scale(_state.act)
 		spawner.enemy_spawned.connect(_on_enemy_spawned)
-		spawner.configure_room(RunConfig.room_wave_config(variant, WaveConfig.get_config()), room_spawn_seed(_state.seed_value, _state.room_index))
+		spawner.configure_room(RunConfig.room_wave_config(variant, WaveConfig.get_config()), room_spawn_seed(_state.seed_value, _state.stream_index()))
 		set_process(true)
 	room_started.emit(_state.room_index, _rooms.size(), String(room["type"]))
 	if not _fresh_launch:
@@ -290,6 +295,12 @@ func _apply_launch_args(tree: SceneTree) -> bool:
 	_launch_gold = int(run_launch["gold"])
 	if int(map_launch["override"]) != MapLaunch.OVERRIDE_NONE:
 		RunSession.map_override = int(map_launch["override"])
+	if RunSession.map_on() and RunSession.acts_total() > 1:
+		var room_problem: String = MapLaunch.run_room_problem(args, RunSession.acts_total() * int(MapConfig.get_config().get("rooms", 10)))
+		if not room_problem.is_empty():
+			printerr("Launch refused: " + room_problem)
+			tree.quit(2)
+			return false
 	if not _apply_relic_args(args, tree):
 		return false
 	if String(launch["deck"]) != "":
@@ -394,7 +405,7 @@ func _finish_room(healed: float) -> void:
 	# MAP1-B: a won fight node pays gold, rolled from the run seed and the node id (so a reload can't pay twice: this runs once per room).
 	var earned: int = 0
 	if RunNodes.active(_state):
-		earned = RunNodes.roll_gold(_state.seed_value, int(room.get("node_id", -1)), String(room["type"]), RunConfig.gold())
+		earned = RunNodes.roll_gold(_state.current_act_seed(), int(room.get("node_id", -1)), String(room["type"]), RunConfig.gold(), float(RunConfig.act_scale(_state.act)["gold"]))
 		_state.gold += earned
 	_summary = {
 		"index": int(room["index"]), "type": String(room["type"]), "wave_id": String(room["wave_id"]),
@@ -406,7 +417,7 @@ func _finish_room(healed: float) -> void:
 	var relay := CombatLink.events()
 	if relay != null:
 		relay.notify_room_cleared(int(room["index"]), String(room["type"]))
-	if _state.room_index >= _rooms.size() - 1:
+	if _state.room_index >= _rooms.size() - 1 and not RunNodes.has_next_act(_state):
 		_state.outcome = "won"
 		RunSave.delete_save()
 		run_won.emit()
@@ -433,6 +444,13 @@ func choose(option_id: String) -> Dictionary:
 		_relics.set_run_stats(_run_stats())  # any merchant purchase (a card, a removal) moves the run stats a relic scales by (Liquidate Assets)
 	if _state.gold != gold_before:
 		gold_changed.emit(_state.gold, _state.gold - gold_before)  # a merchant purchase: a negative delta
+	if bool(result["finished"]) and ["relic_pick", "relic_swap", "relic_skip"].has(String(result["kind"])) and room_type() == "mini_boss":
+		# The act-end mini-boss pays a relic offer and then a card offer (interim reward, MAP3b swaps in the boss-tier and rare/legendary offers).
+		if RunChoices.open_for_room(_state, "mini_boss", false, _ctx) != RunState.PENDING_NONE:
+			_state.hp = _main.player.health.current_health
+			choice_resolved.emit(result)
+			choice_requested.emit(current_choice())
+			return result
 	var health: Health = _main.player.health
 	if String(result["kind"]) == "heal" and float(result["amount"]) > 0.0:
 		health.heal(float(result["amount"]))
@@ -462,7 +480,19 @@ func continue_to_next_room(force: bool = false) -> void:
 		_state.pending = RunState.PENDING_NONE
 		_state.offer = []
 	if RunNodes.active(_state):
-		RunNodes.open(_state)  # a map run never walks on by itself: the player picks the next node (`pick_node`)
+		if RunNodes.at_act_end(_state) and RunNodes.has_next_act(_state):
+			# MAP3-B: the act's mini-boss is done. Archive the act, make the next act's map and open its first pick (HP, gold, deck, relics, rejects carry over; no free heal).
+			if RunNodes.advance_act(_state):
+				_rooms = _build_rooms(RunConfig.get_config())
+				act_started.emit(_state.act, act_summary())
+			else:
+				push_error("RunController: act %d's map could not be made; the run ends here as a win" % (_state.act + 1))
+				_state.outcome = "won"
+				RunSave.delete_save()
+				run_won.emit()
+				return
+		else:
+			RunNodes.open(_state)  # a map run never walks on by itself: the player picks the next node (`pick_node`)
 		RunSave.autosave(_state)  # MAP3-A: the map screen is a save point
 		choice_requested.emit(current_choice())
 		return
@@ -494,6 +524,10 @@ func current_choice() -> Dictionary:
 	model["next_line"] = next_room_line()
 	model["next_room_type"] = next_room_type()
 	model["gold"] = _state.gold
+	model["act"] = _state.act
+	model["acts_total"] = _state.acts_total
+	model["run_room_number"] = run_room_number()
+	model["run_room_total"] = run_room_total()
 	return model
 
 
@@ -712,6 +746,56 @@ func current_room() -> Dictionary:
 
 func room_type() -> String:
 	return String(current_room()["type"])
+
+
+# ---- Acts for the UI (MAP3-B) ----
+
+## The act the run is in (1-based) and how many acts it has.
+func current_act() -> int:
+	return _state.act if _state != null else 1
+
+
+func act_count() -> int:
+	return _state.acts_total if _state != null else 1
+
+
+## 1-based room number over the whole run (14 in act 2's room 4), and the whole run's room count (30). A straight run has no acts: its own room number and total.
+func run_room_number() -> int:
+	return _state.run_room_number() if _state != null and RunNodes.active(_state) else room_number()
+
+
+func run_room_total() -> int:
+	return _state.run_room_total() if _state != null and RunNodes.active(_state) else room_total()
+
+
+## "Act 2 of 3" from data (ui.act.label); "" for a run with one act.
+func act_label() -> String:
+	if _state == null or _state.acts_total <= 1:
+		return ""
+	return String((RunConfig.ui().get("act", {}) as Dictionary).get("label", "Act %d of %d")) % [_state.act, _state.acts_total]
+
+
+## "Room 14 of 30" over the whole run, from data (ui.act.run_room_label); the plain room label for a run with one act.
+func run_room_label() -> String:
+	if _state == null or _state.acts_total <= 1:
+		return room_label()
+	return String((RunConfig.ui().get("act", {}) as Dictionary).get("run_room_label", "Room %d of %d")) % [run_room_number(), run_room_total()]
+
+
+## What the act transition screen shows: {act, acts_total, title ("Act 2"), line (HP, gold, relics), hp, max_hp, gold, relic_count, relics, run_room_number,
+## run_room_total, rooms_done}. Read it any time; `act_started` hands it over at the moment the act changes.
+func act_summary() -> Dictionary:
+	if _state == null:
+		return {}
+	var texts: Dictionary = RunConfig.ui().get("act", {})
+	var relics_held: Array[Dictionary] = owned_relics()
+	return {
+		"act": _state.act, "acts_total": _state.acts_total,
+		"title": String(texts.get("title", "Act %d")) % _state.act,
+		"line": String(texts.get("summary", "HP %d of %d, %d gold, %d relics")) % [roundi(_state.hp), roundi(_state.max_hp), _state.gold, _state.relics.size()],
+		"hp": _state.hp, "max_hp": _state.max_hp, "gold": _state.gold, "relic_count": _state.relics.size(), "relics": relics_held,
+		"run_room_number": run_room_number(), "run_room_total": run_room_total(), "rooms_done": (_state.act - 1) * _state.rooms_per_act(),
+	}
 
 
 ## 1-based number for display.

@@ -92,12 +92,14 @@ static func open_for_room(state: RunState, room_type: String, is_last_room: bool
 	state.pending = RunState.PENDING_NONE
 	state.offer = []
 	state.relic_incoming = ""
+	if room_type == "mini_boss":
+		room_type = "combat"  # MAP3-B: the act-end mini-boss's card offer is a normal one (MAP3b swaps in the rare or legendary offer)
 	if room_type == "merchant":
 		RunMerchant.open_for_room(state, ctx)  # MAP2-B: a merchant node is a room with no fight; its choice is the shop
 	elif room_type == "rest":
 		state.pending = RunState.PENDING_REST
 	elif not is_last_room and (RunConfig.ROOM_TYPES.has(room_type) and ((ctx["rewards"] as Dictionary).get("reward_room_types", []) as Array).has(room_type)):
-		var offered: Array[String] = RewardOffer.generate(state.seed_value, state.room_index, state.deck, ctx["cards"], ctx["pools"], ctx["pool_defs"], ctx["rewards"])
+		var offered: Array[String] = RewardOffer.generate(state.seed_value, state.stream_index(), state.deck, ctx["cards"], ctx["pools"], ctx["pool_defs"], ctx["rewards"])
 		if not RunSession.forced_offer.is_empty():
 			offered = RunSession.forced_offer.duplicate()  # --run-offer (capture tooling): used by this one offer only
 			RunSession.forced_offer = []

@@ -35,6 +35,8 @@ static var relic_cap: int = 0
 ## `--map` / `--no-map` (MAP1-B): -1 uses data/map.json `enabled`, 1 forces the branching map on, 0 forces the straight run. Sticky for the launch
 ## like `debug_deck`, so Try again keeps it. A tool or test sets and clears it.
 static var map_override: int = -1
+## MAP3-B: the number of acts new map runs have. 0 uses data/map.json `acts`; a tool or test sets it (1 = a MAP2 run) and clears it. Sticky like `map_override`.
+static var acts_override: int = 0
 
 
 ## True when new runs use the branching map: the launch override, else data/map.json `enabled`.
@@ -42,6 +44,13 @@ static func map_on() -> bool:
 	if map_override >= 0:
 		return map_override == 1
 	return MapConfig.enabled()
+
+
+## The acts a new run has: the override, else data/map.json `acts` (1 when the map is off or the file is broken).
+static func acts_total() -> int:
+	if not map_on():
+		return 1
+	return clampi(acts_override, 1, RunState.MAX_ACTS) if acts_override > 0 else MapConfig.acts()
 
 
 static func has_run() -> bool:
@@ -81,9 +90,11 @@ static func begin_new_run(seed_value: int = -1, character: String = "") -> RunSt
 	if map_on():
 		# The map is made once, from the run seed, and kept in the state. The run opens on the pick of a room-1 node. (A map that fails to
 		# generate has already reported itself loudly; the run is then the straight run.)
-		var map: Dictionary = MapGenerator.generate(chosen)
+		var acts: int = acts_total()
+		var map: Dictionary = MapGenerator.generate(chosen, {}, {}, 1, acts)
 		if not map.is_empty():
 			current.map = map
+			current.acts_total = acts
 			RunNodes.open(current)
 	return current
 

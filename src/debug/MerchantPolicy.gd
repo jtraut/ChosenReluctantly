@@ -51,7 +51,7 @@ static func _shop(options: Array, state: RunState, route_policy: String) -> Stri
 static func _bought_this_visit(state: RunState, kind: String) -> int:
 	var count: int = 0
 	for entry: Dictionary in state.choice_log:
-		if String(entry["kind"]) == kind and int(entry["index"]) == state.room_index:
+		if String(entry["kind"]) == kind and int(entry["index"]) == state.stream_index():
 			count += 1
 	return count
 

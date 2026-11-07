@@ -27,8 +27,10 @@ const CHEST_SEED_SALT := 0x7C4E5
 
 ## The map for `seed_value`, or {} (after a push_error) when no valid map turned up in `max_attempts`.
 ## `cfg` defaults to data/map.json and `run_config` to data/run.json.
-static func generate(seed_value: int, cfg: Dictionary = {}, run_config: Dictionary = {}) -> Dictionary:
-	var result: Dictionary = build(seed_value, cfg, run_config)
+## MAP3-B: `act` and `acts_total` make act `act` of a run with that many acts (see MapConfig.for_act): its own seed (RunState.act_seed), the multi-act rules,
+## a mini-boss at the end of every act but the last, and wave lists that allow the act. The defaults (act 1 of 1) are exactly the MAP2 map.
+static func generate(seed_value: int, cfg: Dictionary = {}, run_config: Dictionary = {}, act: int = 1, acts_total: int = 1) -> Dictionary:
+	var result: Dictionary = build(seed_value, cfg, run_config, act, acts_total)
 	if not bool(result["ok"]):
 		push_error(String(result["error"]))
 		return {}
@@ -36,9 +38,12 @@ static func generate(seed_value: int, cfg: Dictionary = {}, run_config: Dictiona
 
 
 ## Like `generate` but never pushes an error: {ok, map, attempts, error}. `attempts` counts type draws (the unit `max_attempts` limits).
-static func build(seed_value: int, cfg: Dictionary = {}, run_config: Dictionary = {}) -> Dictionary:
+static func build(run_seed: int, cfg: Dictionary = {}, run_config: Dictionary = {}, act: int = 1, acts_total: int = 1) -> Dictionary:
+	var seed_value: int = RunState.act_seed(run_seed, act)
 	var config: Dictionary = cfg if not cfg.is_empty() else MapConfig.get_config()
 	var run: Dictionary = run_config if not run_config.is_empty() else RunConfig.get_config()
+	if not config.is_empty():
+		config = MapConfig.for_act(config, act, acts_total)
 	if config.is_empty():
 		return {"ok": false, "map": {}, "attempts": 0, "error": "MapGenerator: the map config is missing or invalid: " + "; ".join(MapConfig.load_problems())}
 	var rng := RandomNumberGenerator.new()
@@ -71,7 +76,7 @@ static func build(seed_value: int, cfg: Dictionary = {}, run_config: Dictionary 
 			map = _with_types(grid, types)
 			problems = MapRules.path_problems(map, config)
 		if problems.is_empty():
-			_assign_waves(map, rng, run)
+			_assign_waves(map, rng, run, act)
 			_assign_chests(map, seed_value, config)
 			return {"ok": true, "map": map, "attempts": attempts, "error": ""}
 		last_problem = problems[0]
@@ -254,7 +259,7 @@ static func _pick_type(rng: RandomNumberGenerator, types: Dictionary, type_ids: 
 
 ## Gives every fight node a wave id. `last_waves[id]` is the wave ids of the fights just before a node along its edges (a node with no
 ## fight passes its predecessors' on), so a node avoids repeating them when another list fits.
-static func _assign_waves(map: Dictionary, rng: RandomNumberGenerator, run_config: Dictionary) -> void:
+static func _assign_waves(map: Dictionary, rng: RandomNumberGenerator, run_config: Dictionary, act: int = 1) -> void:
 	var rooms_config: Dictionary = run_config.get("rooms", {})
 	var preds: Dictionary = {}
 	for edge: Variant in (map["edges"] as Array):
@@ -273,7 +278,7 @@ static func _assign_waves(map: Dictionary, rng: RandomNumberGenerator, run_confi
 		var type_id: String = String(node["type"])
 		var wave_id: String = ""
 		if MapConfig.FIGHT_TYPES.has(type_id):
-			var options: Array = RunConfig.variants_for(int(node["room"]) - 1, rooms_config.get(type_id, []))
+			var options: Array = RunConfig.variants_for(int(node["room"]) - 1, rooms_config.get(type_id, []), act)
 			var fresh: Array = options.filter(func(v: Dictionary) -> bool: return not before.has(String(v["id"])))
 			var pool: Array = fresh if not fresh.is_empty() else options
 			if not pool.is_empty():

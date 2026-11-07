@@ -8,6 +8,8 @@ extends RefCounted
 ## Seeds stay below 2^31 so they survive a JSON round-trip, where every number comes back as a float.
 
 const SEED_LIMIT := 2147483647
+## The most acts a run may have (data/map.json `acts` is checked against this).
+const MAX_ACTS := 9
 const FORMAT_VERSION := 2
 
 ## `pending` values: no choice open, a card reward, the rest room menu, the rest room card-removal list.
@@ -71,6 +73,18 @@ var gold_spent_merchant: int = 0
 ## MAP2-A: the open merchant visit (see Merchant): {node, relics, cards, sold_relics, sold_cards, rerolls_used}, or {} when none is open.
 ## It holds the stock, so restoring a save mid-visit gives the same shop.
 var merchant_visit: Dictionary = {}
+## MAP3-B: the act the run is in (1-based) and how many acts the run has. `map`, `path` and `room_index` always describe the CURRENT act (room_index
+## 0-9 inside it), so everything that reads them keeps working. A finished act's map and path move to `past_acts` ({map, path}, act 1 first), which
+## makes `act_map(n)` / `act_path(n)` answer for any act. A one-act run (and every straight run) is act 1 of 1 with no past acts.
+var act: int = 1
+var acts_total: int = 1
+var past_acts: Array[Dictionary] = []
+
+## Rooms of different acts must not share random streams (offers, spawns, gold): `stream_index` is `room_index` in act 1 (so a one-act run is
+## byte-identical to before) and counts on by ACT_STRIDE per act.
+const ACT_STRIDE := 100
+const ACT_SEED_MIX := 2654435
+const ACT_SEED_SALT := 0x5EED
 
 
 ## A fresh run: the reject allowance comes from data/run.json (RunConfig), the starter from the caller (the character's).
@@ -81,6 +95,61 @@ static func new_run(seed_value_in: int, starting_deck: Array[String], rejects: i
 	state.deck = starting_deck.duplicate()
 	state.rejects_remaining = rejects
 	return state
+
+
+## The room position that seeds this room's random streams (offers, spawns): `room_index` in act 1, `room_index + ACT_STRIDE * (act - 1)` later.
+func stream_index() -> int:
+	return room_index + ACT_STRIDE * (act - 1)
+
+
+## The run seed an act's map, gold and chests are drawn from: the run seed itself in act 1 (a one-act run is unchanged), a mix with the act later.
+static func act_seed(run_seed: int, act_number: int) -> int:
+	if act_number <= 1:
+		return run_seed & SEED_LIMIT
+	return ((run_seed & SEED_LIMIT) * ACT_SEED_MIX + act_number * 104729 + ACT_SEED_SALT) & SEED_LIMIT
+
+
+## This run's seed for the current act (see `act_seed`).
+func current_act_seed() -> int:
+	return act_seed(seed_value, act)
+
+
+## The map of act `n` (1-based), {} when there is none yet (a future act, or a straight run).
+func act_map(n: int) -> Dictionary:
+	if n == act:
+		return map
+	if n >= 1 and n <= past_acts.size():
+		return (past_acts[n - 1] as Dictionary)["map"]
+	return {}
+
+
+## The node ids taken in act `n` ([] when none yet).
+func act_path(n: int) -> Array[int]:
+	if n == act:
+		return path
+	var found: Array[int] = []
+	if n >= 1 and n <= past_acts.size():
+		for id: Variant in ((past_acts[n - 1] as Dictionary)["path"] as Array):
+			found.append(int(id))
+	return found
+
+
+## Rooms in one act of this run (the room number of the act's last node), 0 for a straight run with no map.
+func rooms_per_act() -> int:
+	var most: int = 0
+	for entry: Variant in (map.get("nodes", []) as Array):
+		most = maxi(most, int((entry as Dictionary)["room"]))
+	return most
+
+
+## 1-based room number over the whole run ("Room 14 of 30"): rooms of the finished acts plus this room.
+func run_room_number() -> int:
+	return (act - 1) * rooms_per_act() + room_index + 1 if not map.is_empty() else room_index + 1
+
+
+## Rooms in the whole run (acts_total acts of `rooms_per_act`); a straight run has no map, so this is 0 there.
+func run_room_total() -> int:
+	return acts_total * rooms_per_act()
 
 
 func has_hp() -> bool:
@@ -115,6 +184,13 @@ func jump_to_room(index: int) -> void:
 	room_index = maxi(index, 0)
 	if map.is_empty():
 		return
+	# MAP3-B: room numbers count over the whole run, so a jump past the first act walks the earlier acts' `first` routes (their maps are made now).
+	var per_act: int = rooms_per_act()
+	while room_index >= per_act and act < acts_total:
+		path = MapGraph.first_route(map)
+		if not RunNodes.advance_act(self):
+			break
+		room_index -= per_act
 	var route: Array[int] = MapGraph.first_route(map)
 	room_index = mini(room_index, route.size() - 1)
 	path = route.slice(0, room_index + 1)
@@ -155,7 +231,7 @@ func has_relic_choice() -> bool:
 
 
 func log_choice(kind: String, card_id: String = "", amount: float = 0.0) -> void:
-	choice_log.append({"index": room_index, "kind": kind, "card_id": card_id, "amount": amount})
+	choice_log.append({"index": stream_index(), "kind": kind, "card_id": card_id, "amount": amount})
 
 
 func to_dict() -> Dictionary:
@@ -183,6 +259,9 @@ func to_dict() -> Dictionary:
 		"merchant_removals": merchant_removals,
 		"gold_spent_merchant": gold_spent_merchant,
 		"merchant_visit": merchant_visit.duplicate(true),
+		"act": act,
+		"acts_total": acts_total,
+		"past_acts": past_acts.duplicate(true),
 	}
 
 
@@ -276,6 +355,8 @@ static func from_dict(data: Dictionary) -> RunState:
 		push_error("RunState.from_dict: %s" % relic_problem)
 		return null
 	_read_map_fields(state, data)
+	if not _read_act_fields(state, data):
+		return null
 	if state.map.is_empty() and state.pending == PENDING_NODE:
 		# The map was unreadable (dropped above): a node pick with no map to pick from would be a soft lock.
 		push_error("RunState.from_dict: pending 'node' but the map is unusable; no choice is open")
@@ -310,6 +391,9 @@ static func from_dict(data: Dictionary) -> RunState:
 		push_error("RunState.from_dict: the path (%d nodes) does not fit room index %d; the map is dropped and the run is straight" % [state.path.size(), state.room_index])
 		state.map = {}
 		state.path = []
+		state.act = 1
+		state.acts_total = 1
+		state.past_acts = []
 		if state.pending == PENDING_NODE:
 			state.pending = PENDING_NONE
 	elif dropped_choice and not state.map.is_empty():
@@ -354,6 +438,51 @@ static func _read_map_fields(state: RunState, data: Dictionary) -> void:
 			state.path = []
 			return
 		state.path.append(int(item))
+
+
+## The act fields of saved data (MAP3-B). Old dicts have none and load as act 1 of 1. False (with a push_error) when they are wrong: an act outside
+## 1..acts_total, or past acts that are not one well-formed {map, path} per finished act. A run whose map was dropped is a straight run: act 1 of 1.
+static func _read_act_fields(state: RunState, data: Dictionary) -> bool:
+	var act_value: Variant = data.get("act", 1)
+	var total_value: Variant = data.get("acts_total", 1)
+	if not _is_whole_number(act_value) or not _is_whole_number(total_value):
+		push_error("RunState.from_dict: 'act' and 'acts_total' must be whole numbers")
+		return false
+	var past: Variant = data.get("past_acts", [])
+	if typeof(past) != TYPE_ARRAY:
+		push_error("RunState.from_dict: 'past_acts' must be an array")
+		return false
+	if state.map.is_empty():
+		return true  # a straight run (or a damaged map, dropped above): act 1 of 1, nothing kept
+	var act_number: int = int(act_value)
+	var total: int = int(total_value)
+	if total < 1 or total > MAX_ACTS or act_number < 1 or act_number > total or (past as Array).size() != act_number - 1:
+		push_error("RunState.from_dict: act %d of %d with %d past acts does not fit" % [act_number, total, (past as Array).size()])
+		return false
+	for entry: Variant in (past as Array):
+		if typeof(entry) != TYPE_DICTIONARY:
+			push_error("RunState.from_dict: a past act must be an object {map, path}")
+			return false
+		var problems: Array[String] = []
+		var past_map: Dictionary = MapGraph.normalize((entry as Dictionary).get("map"), problems)
+		var past_path: Variant = (entry as Dictionary).get("path")
+		if past_map.is_empty() or typeof(past_path) != TYPE_ARRAY:
+			push_error("RunState.from_dict: a past act has a bad map or path (%s)" % "; ".join(problems))
+			return false
+		var ids: Array[int] = []
+		for item: Variant in (past_path as Array):
+			if not _is_whole_number(item) or MapGraph.node(past_map, int(item)).is_empty():
+				push_error("RunState.from_dict: a past act's path holds a value that is not a node of its map")
+				return false
+			ids.append(int(item))
+		state.past_acts.append({"map": past_map, "path": ids})
+	state.act = act_number
+	state.acts_total = total
+	return true
+
+
+static func _is_whole_number(value: Variant) -> bool:
+	return _is_number(value) and not is_nan(float(value)) and not is_inf(float(value)) and float(value) == floorf(float(value)) and absf(float(value)) < 1.0e9
 
 
 ## The merchant fields of saved data. Old dicts (before MAP2) have none and load with no removals, nothing spent and no open visit. A bad

@@ -8,7 +8,8 @@ extends RefCounted
 const PATH := "res://data/run.json"
 const ROOM_TYPES: Array[String] = ["combat", "elite", "rest", "boss"]
 ## Room types that fight (they need a wave list); `rest` has none.
-const FIGHT_TYPES: Array[String] = ["combat", "elite", "boss"]
+## MAP3-B: the act-end mini-boss is a fight with its own wave lists (`rooms.mini_boss`) and tier, but no `composition` entry: only a map makes one.
+const FIGHT_TYPES: Array[String] = ["combat", "elite", "boss", "mini_boss"]
 ## The relic room (BD2-B) is added by RunGenerator when relics are on; it is not a composition key. No fight, like rest.
 const RELIC_ROOM := "relic_room"
 ## The merchant node of a map run (MAP2-B): no fight either. Only the map makes one, so it is not in ALL_ROOM_TYPES.
@@ -16,6 +17,10 @@ const MERCHANT_ROOM := "merchant"
 ## Every room type a generated run can hold (ROOM_TYPES plus the relic room).
 const ALL_ROOM_TYPES: Array[String] = ["combat", "elite", "rest", "boss", "relic_room"]
 const TIER_IDS: Array[String] = ["elite", "boss"]
+## Tiers that may be left out of a config (fixtures from before MAP3-B): `mini_boss` is checked like the others when present.
+const OPTIONAL_TIER_IDS: Array[String] = ["mini_boss"]
+## data/run.json `acts`: per-act enemy HP and damage multipliers and a gold multiplier ({"1": {...}, "2": {...}}); absent = every act is x1.
+const ACT_SCALE_KEYS: Array[String] = ["hp", "damage", "gold"]
 
 static var _cache: Dictionary = {}
 static var _loaded: bool = false
@@ -54,6 +59,7 @@ static func validate(config: Dictionary, known_enemies: Array[String], _known_ca
 	errors.append_array(_validate_gold(config.get("gold")))
 	errors.append_array(MerchantConfig.validate_block(config.get("merchant")))
 	errors.append_array(_validate_tiers(config.get("tiers")))
+	errors.append_array(_validate_act_scale(config.get("acts")))
 	errors.append_array(_validate_rooms(config, known_enemies, total))
 	errors.append_array(_validate_ui(config.get("ui")))
 	errors.append_array(RelicConfig.validate_block(config.get("relics")))
@@ -174,7 +180,11 @@ static func _validate_tiers(tiers: Variant) -> Array[String]:
 	if typeof(tiers) != TYPE_DICTIONARY:
 		errors.append("'tiers' must be an object {elite, boss}")
 		return errors
-	for tier_id: String in TIER_IDS:
+	var checked: Array[String] = TIER_IDS.duplicate()
+	for optional_id: String in OPTIONAL_TIER_IDS:
+		if (tiers as Dictionary).has(optional_id):
+			checked.append(optional_id)
+	for tier_id: String in checked:
 		var tier_value: Variant = (tiers as Dictionary).get(tier_id)
 		if typeof(tier_value) != TYPE_DICTIONARY:
 			errors.append("tiers.%s must be an object" % tier_id)
@@ -203,6 +213,30 @@ static func _validate_tiers(tiers: Variant) -> Array[String]:
 			errors.append("tiers.%s.scale must be a number in [0.5, 4]" % tier_id)
 		if typeof(t.get("marker_color")) != TYPE_STRING or not String(t["marker_color"]).is_valid_html_color():
 			errors.append("tiers.%s.marker_color must be an html color" % tier_id)
+	return errors
+
+
+static func _validate_act_scale(value: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if value == null:
+		return errors
+	if typeof(value) != TYPE_DICTIONARY:
+		errors.append("'acts' must be an object {act number: {hp, damage, gold}}")
+		return errors
+	for key: Variant in (value as Dictionary).keys():
+		var entry: Variant = (value as Dictionary)[key]
+		if not String(key).is_valid_int() or str(String(key).to_int()) != String(key) or String(key).to_int() < 1 or String(key).to_int() > RunState.MAX_ACTS:
+			errors.append("acts: '%s' must be an act number from 1 to %d" % [str(key), RunState.MAX_ACTS])
+		elif typeof(entry) != TYPE_DICTIONARY:
+			errors.append("acts.%s must be an object {hp, damage, gold}" % str(key))
+		else:
+			for scale_key: Variant in (entry as Dictionary).keys():
+				if not ACT_SCALE_KEYS.has(String(scale_key)):
+					errors.append("acts.%s: unknown key '%s'" % [str(key), str(scale_key)])
+			for scale_key: String in ACT_SCALE_KEYS:
+				var multiplier: Variant = (entry as Dictionary).get(scale_key)
+				if not _is_number(multiplier) or float(multiplier) < 0.1 or float(multiplier) > 20.0:
+					errors.append("acts.%s.%s must be a number in [0.1, 20]" % [str(key), scale_key])
 	return errors
 
 
@@ -238,6 +272,15 @@ static func _validate_rooms(config: Dictionary, known_enemies: Array[String], to
 				errors.append("%s: duplicate room id '%s'" % [label, String(id_value)])
 			else:
 				seen_ids.append(String(id_value))
+			if v.has("acts"):
+				var act_list: Variant = v["acts"]
+				var acts_ok: bool = typeof(act_list) == TYPE_ARRAY and not (act_list as Array).is_empty()
+				if acts_ok:
+					for act_value: Variant in (act_list as Array):
+						if not _is_whole(act_value) or int(act_value) < 1 or int(act_value) > RunState.MAX_ACTS:
+							acts_ok = false
+				if not acts_ok:
+					errors.append("%s: 'acts' must be a non-empty list of act numbers from 1 to %d" % [label, RunState.MAX_ACTS])
 			for key: String in ["min_index", "max_index"]:
 				if v.has(key) and (not _is_whole(v[key]) or int(v[key]) < 0 or int(v[key]) >= maxi(total, 1)):
 					errors.append("%s: '%s' must be a room index in [0, %d]" % [label, key, total - 1])
@@ -255,7 +298,8 @@ static func _validate_wave_list(label: String, variant: Dictionary, base: Dictio
 	return errors
 
 
-## Every room position of a type must have at least one wave list that allows its index.
+## Every room position of a type must have at least one wave list that allows its index. MAP3-B: that holds in every act a type has lists for.
+## The mini-boss has no `composition` entry (only a map makes one), so its lists are checked for the last room of the act, like the boss.
 static func _validate_variant_coverage(config: Dictionary, total: int) -> Array[String]:
 	var errors: Array[String] = []
 	if total < 1 or typeof(config.get("rooms")) != TYPE_DICTIONARY or typeof(config.get("composition")) != TYPE_DICTIONARY:
@@ -263,13 +307,33 @@ static func _validate_variant_coverage(config: Dictionary, total: int) -> Array[
 	for room_type: String in FIGHT_TYPES:
 		var variants: Variant = (config["rooms"] as Dictionary).get(room_type)
 		var wanted: Variant = (config["composition"] as Dictionary).get(room_type, 0)
-		if typeof(variants) != TYPE_ARRAY or not _is_whole(wanted) or int(wanted) <= 0:
+		if typeof(variants) != TYPE_ARRAY or ((not _is_whole(wanted) or int(wanted) <= 0) and room_type != "mini_boss"):
 			continue
-		for index in range(total):
-			if variants_for(index, variants as Array).is_empty():
-				errors.append("rooms.%s: no wave list allows room index %d" % [room_type, index])
-				break
+		var only_last: bool = room_type == "mini_boss"
+		for act_number in lists_acts(variants as Array):
+			for index in range(total - 1 if only_last else 0, total):
+				if variants_for(index, variants as Array, act_number).is_empty():
+					errors.append("rooms.%s: no act %d wave list allows room index %d" % [room_type, act_number, index])
+					break
 	return errors
+
+
+## The acts that `variants` has at least one wave list for.
+static func lists_acts(variants: Array) -> Array[int]:
+	var found: Array[int] = []
+	for variant: Variant in variants:
+		if typeof(variant) == TYPE_DICTIONARY:
+			for act_value: Variant in _acts_of(variant as Dictionary):
+				if not found.has(int(act_value)):
+					found.append(int(act_value))
+	found.sort()
+	return found
+
+
+## The acts a wave list is for: its `acts` list, else [1] (a list without the field is an act 1 list, so today's lists keep their act).
+static func _acts_of(variant: Dictionary) -> Array:
+	var listed: Variant = variant.get("acts")
+	return listed as Array if typeof(listed) == TYPE_ARRAY else [1]
 
 
 static func _validate_ui(ui_value: Variant) -> Array[String]:
@@ -394,14 +458,16 @@ static func room_wave_config(variant: Dictionary, base: Dictionary) -> Dictionar
 	return table
 
 
-## The wave lists that allow room `index` (min_index/max_index are inclusive).
-static func variants_for(index: int, variants: Array) -> Array:
+## The wave lists that allow room `index` (min_index/max_index are inclusive) in act `act` (a list's `acts`, default [1]).
+static func variants_for(index: int, variants: Array, act: int = 1) -> Array:
 	var out: Array = []
 	for variant: Variant in variants:
 		if typeof(variant) != TYPE_DICTIONARY:
 			continue
 		var v: Dictionary = variant
 		if index < int(v.get("min_index", 0)) or index > int(v.get("max_index", 9999)):
+			continue
+		if not _acts_of(v).has(act):
 			continue
 		out.append(v)
 	return out
@@ -513,6 +579,14 @@ static func cards_in_pools(pool_ids: Array) -> Array[String]:
 				out.append(id)
 	out.sort()
 	return out
+
+
+## The enemy and gold multipliers of act `act` ({hp, damage, gold}); x1 for an act the file does not list (and for every act when it has no `acts`).
+static func act_scale(act: int) -> Dictionary:
+	var entry: Variant = (get_config().get("acts", {}) as Dictionary).get(str(act))
+	if typeof(entry) != TYPE_DICTIONARY:
+		return {"hp": 1.0, "damage": 1.0, "gold": 1.0}
+	return {"hp": float(entry["hp"]), "damage": float(entry["damage"]), "gold": float(entry["gold"])}
 
 
 static func tier(tier_id: String) -> Dictionary:

@@ -16,7 +16,8 @@ extends RefCounted
 ## flavor) on top of the usual option keys.
 
 ## Room types that offer a relic, and the relic `source` each one draws from.
-const SOURCE_BY_ROOM: Dictionary = {"elite": "elite", "relic_room": "relic_room"}
+## MAP3-B: the act-end mini-boss draws from the elite source until MAP3b adds the boss-tier offer (DECISIONS "MAP3 split").
+const SOURCE_BY_ROOM: Dictionary = {"elite": "elite", "relic_room": "relic_room", "mini_boss": "elite"}
 const OPTION_RELIC := "relic"
 const OPTION_SKIP := "relic_skip"
 const OPTION_GIVEUP := "giveup"
@@ -34,9 +35,19 @@ static func shipped_context() -> Dictionary:
 	var cap: int = RunSession.relic_cap if RunSession.relic_cap > 0 else RelicConfig.max_owned()
 	return {
 		"enabled": RelicConfig.enabled(), "max_owned": cap, "offer_count": RelicConfig.offer_count(), "act": STRAIGHT_RUN_ACT,
-		"catalog": catalog, "by_id": by_id, "weights": RelicConfig.tier_weights_for_act(STRAIGHT_RUN_ACT),
+		"catalog": catalog, "by_id": by_id, "weights": RelicConfig.tier_weights_for_act(STRAIGHT_RUN_ACT), "tier_weights": RelicConfig.block().get("tier_weights", {}),
 		"ui": (RunConfig.ui().get("relic", {}) as Dictionary),
 	}
+
+
+## The tier weights an offer in the run's current act draws from (MAP3-B): the context's own row in act 1 (and for a context with no per-act table), else the
+## act's row of `tier_weights`. `act_offset` 1 is the mini-boss's next-act odds.
+static func weights_for(state: RunState, relics: Dictionary, act_offset: int = 0) -> Dictionary:
+	var act_number: int = state.act + act_offset
+	if act_number <= STRAIGHT_RUN_ACT or not relics.has("tier_weights"):
+		return relics["weights"]
+	var row: Dictionary = RelicConfig.tier_weights_for_act(act_number, relics["tier_weights"])
+	return row if not row.is_empty() else relics["weights"]
 
 
 static func enabled(ctx: Dictionary) -> bool:
@@ -44,6 +55,7 @@ static func enabled(ctx: Dictionary) -> bool:
 
 
 ## The seeded stream of one room's relic offer: the same run seed and room always give the same offer.
+## `room_index` is the run's `stream_index` (the room index in act 1, so a one-act run is unchanged).
 static func offer_rng(run_seed: int, room_index: int) -> RandomNumberGenerator:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = (run_seed * 7919 + room_index * 104729 + 31) & RunState.SEED_LIMIT
@@ -65,11 +77,11 @@ static func open_for_room(state: RunState, room_type: String, is_last_room: bool
 		ids = RunSession.forced_relic_offer.duplicate()  # --relic-offer (capture tooling): used by this one offer only
 		RunSession.forced_relic_offer = []
 	else:
-		var weights: Dictionary = relics["weights"]
+		var weights: Dictionary = weights_for(state, relics, 1 if room_type == "mini_boss" else 0)
 		var chest_weights: Dictionary = RunNodes.weights_for_current_room(state, ctx)  # a map's relic stage: its chest size sets the tier odds
 		if not chest_weights.is_empty():
 			weights = chest_weights
-		ids = RelicOffer.offer(String(SOURCE_BY_ROOM[room_type]), int(relics["offer_count"]), offer_rng(state.seed_value, state.room_index),
+		ids = RelicOffer.offer(String(SOURCE_BY_ROOM[room_type]), int(relics["offer_count"]), offer_rng(state.seed_value, state.stream_index()),
 				weights, state.relics, state.relics_given_up, pools, relics["catalog"])
 	state.pending = RunState.PENDING_NONE
 	state.offer = []

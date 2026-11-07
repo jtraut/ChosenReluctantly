@@ -20,6 +20,7 @@ class Extremes:
 	var min_rest: int = 1000000
 	var best_relics: int = -1
 	var worst_relics: int = 1000000
+	var max_relic_rooms: int = 0
 
 
 ## Every problem with the map under `cfg` (empty = the map obeys every rule).
@@ -134,6 +135,8 @@ static func path_problems(map: Dictionary, cfg: Dictionary) -> Array[String]:
 		problems.append("a path has %d merchants (max_merchants %d)" % [stats.max_merchants, int(rules["max_merchants"])])
 	if rules.has("min_rest") and stats.min_rest < int(rules["min_rest"]):
 		problems.append("a path has only %d rest nodes (min_rest %d)" % [stats.min_rest, int(rules["min_rest"])])
+	if rules.has("max_relic_rooms") and stats.max_relic_rooms > int(rules["max_relic_rooms"]):
+		problems.append("a path has %d relic stages (max_relic_rooms %d)" % [stats.max_relic_rooms, int(rules["max_relic_rooms"])])
 	if stats.max_rest > int(rules["max_rest"]):
 		problems.append("a path has %d rest nodes (max_rest %d)" % [stats.max_rest, int(rules["max_rest"])])
 	var route: Array = rules["relic_route"]
@@ -177,19 +180,21 @@ static func evaluate(map: Dictionary, cfg: Dictionary) -> Extremes:
 	var next: Dictionary = MapGraph.adjacency(map)
 	var boss: int = MapGraph.boss_id(map)
 	for start: int in MapGraph.start_ids(map):
-		_descend(start, boss, type_of, next, cfg["estimate"], stats, 0, 0, 0, 0, 0, 0.0)
+		_descend(start, boss, type_of, next, cfg["estimate"], stats, 0, 0, 0, 0, 0, 0, 0.0)
 	return stats
 
 
 static func _descend(id: int, boss: int, type_of: Dictionary, next: Dictionary, estimate: Dictionary, stats: Extremes,
-		fights: int, elite_like: int, merchants: int, rest: int, relics: int, gold: float) -> void:
+		fights: int, elite_like: int, merchants: int, rest: int, relic_rooms: int, relics: int, gold: float) -> void:
 	var type_id: String = String(type_of[id])
 	if MapConfig.FIGHT_TYPES.has(type_id):
 		fights += 1
-	if MapConfig.ELITE_LIKE_TYPES.has(type_id):
-		elite_like += 1
+	if MapConfig.ELITE_LIKE_TYPES.has(type_id) and id != boss:
+		elite_like += 1  # the act-end mini-boss is fixed and cannot be avoided, so it does not use up the path's elite budget
 	if type_id == "rest":
 		rest += 1
+	if type_id == "relic_room":
+		relic_rooms += 1
 	if type_id == "merchant":
 		merchants += 1
 		relics += merchant_relics(gold, estimate)
@@ -202,12 +207,13 @@ static func _descend(id: int, boss: int, type_of: Dictionary, next: Dictionary, 
 		stats.max_elite_like = maxi(stats.max_elite_like, elite_like)
 		stats.max_merchants = maxi(stats.max_merchants, merchants)
 		stats.max_rest = maxi(stats.max_rest, rest)
+		stats.max_relic_rooms = maxi(stats.max_relic_rooms, relic_rooms)
 		stats.min_rest = mini(stats.min_rest, rest)
 		stats.best_relics = maxi(stats.best_relics, relics)
 		stats.worst_relics = mini(stats.worst_relics, relics)
 		return
 	for following: int in (next.get(id, []) as Array[int]):
-		_descend(following, boss, type_of, next, estimate, stats, fights, elite_like, merchants, rest, relics, gold)
+		_descend(following, boss, type_of, next, estimate, stats, fights, elite_like, merchants, rest, relic_rooms, relics, gold)
 
 
 ## Relics a merchant visit counts for on arrival with `gold` (MAP.md section 4.1, MAP2-A): the cheapest slots first, as many as `gold` pays

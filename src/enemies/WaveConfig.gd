@@ -13,7 +13,7 @@ extends RefCounted
 
 const PATH := "res://data/waves.json"
 ## GDD density principle / ROADMAP Slice 5 criterion 1: about 6 to 15 at once.
-const TIERS: Array[String] = ["elite", "boss"]
+const TIERS: Array[String] = ["elite", "boss", "mini_boss"]
 const MAX_ALIVE_MIN := 6
 const MAX_ALIVE_MAX := 15
 ## Inner face of the arena walls in scenes/main/Main.tscn (the ArenaWalls boxes). A test keeps this

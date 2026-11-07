@@ -13,7 +13,7 @@ extends RefCounted
 ## `node_id`) on top of the usual option keys.
 
 const OPTION_NODE := "node"
-## The straight run and MAP1 are one act. Chest rows count from this act (MAP3 passes the real one).
+## The act a straight run is in (chest rows and tier odds count from it); a map run reads `state.act`.
 const FIRST_ACT := 1
 
 
@@ -74,13 +74,15 @@ static func gold_range(node_type: String, gold_config: Dictionary) -> Array[int]
 
 
 ## The gold of one node, rolled from the run seed and the node id (the same seed and node always pay the same, whatever order the run took).
-static func roll_gold(run_seed: int, node_id: int, node_type: String, gold_config: Dictionary) -> int:
+## `run_seed` should be the act's seed (`RunState.current_act_seed`), so two acts' nodes with the same id pay differently; `scale` is the act's gold multiplier.
+static func roll_gold(run_seed: int, node_id: int, node_type: String, gold_config: Dictionary, scale: float = 1.0) -> int:
 	var bounds: Array[int] = gold_range(node_type, gold_config)
 	if bounds[1] <= 0:
 		return 0
 	var rng := RandomNumberGenerator.new()
 	rng.seed = ((run_seed & RunState.SEED_LIMIT) * 6151 + node_id * 104729 + 0x60D) & RunState.SEED_LIMIT
-	return rng.randi_range(bounds[0], bounds[1])
+	var rolled: int = rng.randi_range(bounds[0], bounds[1])
+	return rolled if is_equal_approx(scale, 1.0) else roundi(float(rolled) * scale)
 
 
 # --- chests -------------------------------------------------------------------------------------
@@ -116,7 +118,7 @@ static func weights_for_current_room(state: RunState, ctx: Dictionary) -> Dictio
 	if node.is_empty() or String(node["type"]) != RunConfig.RELIC_ROOM:
 		return {}
 	var nodes: Dictionary = ctx.get("nodes", {})
-	return chest_weights(chest_of(node), FIRST_ACT, nodes.get("chests", {}), nodes.get("tier_weights", {}))
+	return chest_weights(chest_of(node), state.act, nodes.get("chests", {}), nodes.get("tier_weights", {}))
 
 
 # --- display ------------------------------------------------------------------------------------
@@ -132,6 +134,9 @@ static func node_info(state: RunState, node_id: int, ctx: Dictionary) -> Diction
 	var type_id: String = String(node["type"])
 	var chest: String = chest_of(node) if type_id == RunConfig.RELIC_ROOM else ""
 	var gold: Array[int] = gold_range(type_id, nodes.get("gold", {}))
+	var gold_scale: float = float(RunConfig.act_scale(state.act)["gold"]) if RunConfig.is_valid() else 1.0
+	if not is_equal_approx(gold_scale, 1.0):
+		gold = [roundi(float(gold[0]) * gold_scale), roundi(float(gold[1]) * gold_scale)] as Array[int]
 	var gold_text: String = "0" if gold[1] <= 0 else (str(gold[0]) if gold[0] == gold[1] else "%d-%d" % [gold[0], gold[1]])
 	var chest_name: String = String((ui.get("chest_names", {}) as Dictionary).get(chest, chest)) if chest != "" else ""
 	var hover: String = String((ui.get("hover", {}) as Dictionary).get(type_id, ""))
@@ -158,6 +163,39 @@ static func open(state: RunState) -> String:
 	state.relic_incoming = ""
 	state.pending = RunState.PENDING_NODE
 	return state.pending
+
+
+# --- acts ---------------------------------------------------------------------------------------
+
+## True when the run is on a map and its current act is not the last: the act-end node is a mini-boss and clearing it moves the run to the next act.
+static func has_next_act(state: RunState) -> bool:
+	return active(state) and state.act < state.acts_total
+
+
+## True when `state` is standing on its act's last node (the mini-boss, or the boss in the last act).
+static func at_act_end(state: RunState) -> bool:
+	var node: Dictionary = current_node(state)
+	return not node.is_empty() and int(node["room"]) == state.rooms_per_act()
+
+
+## Moves a run to the next act: the finished act's map and path go to `past_acts`, the next act's map is generated (from the run seed and the act
+## number), and the run opens on the pick of a room-1 node. HP, gold, deck, relics and rejects stay as they are. False (nothing changes, a loud error)
+## when there is no next act or its map cannot be made. `cfg` and `run_config` default to the shipped data.
+static func advance_act(state: RunState, cfg: Dictionary = {}, run_config: Dictionary = {}) -> bool:
+	if not has_next_act(state):
+		push_error("RunNodes.advance_act: the run is not on a map with another act")
+		return false
+	var next_map: Dictionary = MapGenerator.generate(state.seed_value, cfg, run_config, state.act + 1, state.acts_total)
+	if next_map.is_empty():
+		return false  # MapGenerator has said why
+	state.past_acts.append({"map": state.map, "path": state.path.duplicate()})
+	state.act += 1
+	state.map = next_map
+	state.path = []
+	state.room_index = 0
+	state.merchant_visit = {}
+	open(state)
+	return true
 
 
 static func title_and_line(ctx: Dictionary) -> Dictionary:

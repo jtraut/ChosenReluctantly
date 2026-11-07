@@ -14,6 +14,8 @@ var target: Node3D = null
 var plan: WavePlan = null
 ## Elite/boss stats by tier id (data/run.json `tiers`); set by the run controller. Empty = tiers are ignored.
 var tier_configs: Dictionary = {}
+## MAP3-B act scaling {hp, damage} applied to every enemy this spawner makes (data/run.json `acts`); the default (x1) leaves enemies as they are.
+var act_scale: Dictionary = {"hp": 1.0, "damage": 1.0}
 
 var _rng := RandomNumberGenerator.new()
 ## The seed last given to set_seed / configure_room (a boss seeds its own attack picks from it, so it never draws from `_rng`).
@@ -108,6 +110,8 @@ func _spawn_one(queued: String) -> void:
 	instance.begin_spawn_grace(float(plan.config["spawn_attack_grace"]))
 	if tier_id != "" and tier_configs.has(tier_id):
 		instance.apply_tier(tier_id, tier_configs[tier_id])
+	if not (is_equal_approx(float(act_scale["hp"]), 1.0) and is_equal_approx(float(act_scale["damage"]), 1.0)):
+		instance.apply_act_scale(float(act_scale["hp"]), float(act_scale["damage"]))
 	_alive += 1
 	instance.tree_exited.connect(_on_enemy_gone, CONNECT_ONE_SHOT)
 	enemy_spawned.emit(instance, _alive)

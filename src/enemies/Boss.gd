@@ -383,6 +383,9 @@ func _next_scripted() -> String:
 func _begin_windup(attack_id: String) -> void:
 	_attack_id = attack_id
 	_attack = _attacks[attack_id]
+	if not is_equal_approx(damage_scale, 1.0):
+		_attack = _attack.duplicate()  # the config's own dictionary is shared by every boss: scale a copy
+		_attack["damage"] = float(_attack["damage"]) * damage_scale
 	_state = State.WINDUP
 	_state_time = 0.0
 	var to_target: Vector3 = _flat_to_target()

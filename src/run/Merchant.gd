@@ -33,6 +33,8 @@ const ROLL_MIX := 49979687
 const SEED_SALT := 0x5EC7
 ## Card stock reuses RewardOffer's seeded draw; its "room index" input is this base plus a per-node, per-reroll offset, far from real room indexes.
 const CARD_STREAM_BASE := 100000
+## Merchant node ids repeat in every act; acts are this far apart in the stock streams (act 1 is unchanged).
+const ACT_NODE_STEP := 1000
 
 
 # --- visit lifecycle -------------------------------------------------------------------------------
@@ -86,11 +88,11 @@ static func _draw_relics(state: RunState, node_id: int, reroll_index: int, ctx: 
 	var relics_ctx: Dictionary = ctx["relics"]
 	var catalog: Array = relics_ctx["catalog"]
 	var by_id: Dictionary = relics_ctx.get("by_id", {})
-	var weights: Dictionary = relics_ctx["weights"]
+	var weights: Dictionary = RunRelics.weights_for(state, relics_ctx)
 	var pools: Array[String] = []
 	for pool_id: Variant in (ctx.get("pools", []) as Array):
 		pools.append(String(pool_id))
-	var rng: RandomNumberGenerator = stock_rng(state.seed_value, node_id, reroll_index)
+	var rng: RandomNumberGenerator = stock_rng(state.seed_value, node_id + ACT_NODE_STEP * (state.act - 1), reroll_index)
 	var excluded: Array[String] = state.relics.duplicate()
 	excluded.append_array(kept)
 	var total: int = int(cfg.get("relic_stock", 3))
@@ -118,7 +120,7 @@ static func _draw_cards(state: RunState, node_id: int, reroll_index: int, ctx: D
 		return result
 	var rewards: Dictionary = (ctx["rewards"] as Dictionary).duplicate()
 	rewards["offer_size"] = needed + kept.size()  # asks for the kept ids too, then drops them, so a reroll never repeats one
-	var stream: int = CARD_STREAM_BASE + node_id * 64 + reroll_index
+	var stream: int = CARD_STREAM_BASE + (node_id + ACT_NODE_STEP * (state.act - 1)) * 64 + reroll_index
 	for card_id: String in RewardOffer.generate(state.seed_value, stream, state.deck, ctx["cards"], ctx["pools"], ctx["pool_defs"], rewards):
 		if not kept.has(card_id) and result.size() < needed:
 			result.append(card_id)

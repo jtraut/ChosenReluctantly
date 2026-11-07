@@ -53,11 +53,18 @@ static func start_ids(map: Dictionary) -> Array[int]:
 	return ids
 
 
-## The boss node id, or -1 when the map has none.
+## The boss node id, or -1 when the map has none. MAP3-B: an act before the last ends in a mini-boss instead; that single last-room node counts as the
+## map's end here, so routes, paths and the rules treat every act the same way.
 static func boss_id(map: Dictionary) -> int:
 	for entry: Variant in (map.get("nodes", []) as Array):
 		if String((entry as Dictionary)["type"]) == MapConfig.BOSS:
 			return int((entry as Dictionary)["id"])
+	var last_room: int = 0
+	for entry: Variant in (map.get("nodes", []) as Array):
+		last_room = maxi(last_room, int((entry as Dictionary)["room"]))
+	var ends: Array[Dictionary] = nodes_in_room(map, last_room)
+	if ends.size() == 1 and String(ends[0]["type"]) == "mini_boss":
+		return int(ends[0]["id"])
 	return -1
 
 

@@ -7,7 +7,8 @@ extends RefCounted
 ##
 ## What is saved: the RunState (`RunState.to_dict`) wrapped as {save_version, run}. A boundary is (a) the pick-next-node choice (the map screen) and
 ## (b) the start of a room, right after a node was picked. So quitting mid-fight and resuming restarts that room from its start and cannot re-pick
-## the node. A run is never saved before its first room (nothing to resume), and straight (no-map) runs are not saved.
+## the node. A run is never saved before its first room (nothing to resume), and straight (no-map) runs are not saved. The one exception is the
+## start of act 2 and later (MAP3-B): the act's map is made and no room is picked yet, and that map screen is a boundary too, so quitting right after an act ends resumes there.
 ##
 ## For the Continue button (ux): `has_save()` (true only when the file loads), `load_save()` (makes the saved run the live one, true on success; the
 ## caller then starts the run scene), `delete_save()`. A bad, old or unreadable file is ignored with a warning and left on disk; it never crashes.
@@ -56,7 +57,7 @@ static func reset() -> void:
 
 ## True when `state` is at a boundary worth saving: a live map run with at least one room picked, at the map screen or at a room's start.
 static func is_boundary(state: RunState) -> bool:
-	if state == null or state.is_over() or not RunNodes.active(state) or state.path.is_empty():
+	if state == null or state.is_over() or not RunNodes.active(state) or (state.path.is_empty() and state.act <= 1):
 		return false
 	return state.pending == RunState.PENDING_NODE or state.pending == RunState.PENDING_NONE
 
@@ -169,7 +170,7 @@ static func _state_problem(state: RunState) -> String:
 		return "the run is already over"
 	if not RunNodes.active(state):
 		return "the map did not load"
-	if state.path.is_empty() or not RunNodes.consistent(state):
+	if (state.path.is_empty() and state.act <= 1) or not RunNodes.consistent(state):
 		return "the path does not fit the room"
 	if state.pending != RunState.PENDING_NODE and state.pending != RunState.PENDING_NONE:
 		return "saved with a choice open"

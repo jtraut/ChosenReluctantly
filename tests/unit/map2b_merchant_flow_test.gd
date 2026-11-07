@@ -89,11 +89,13 @@ func test_the_switch_turns_the_merchant_on_for_the_process_only_and_the_shipped_
 	assert_array(MapConfig.get_config()["path_rules"]["relic_route"]).is_equal([6.0, 8.0])
 	MapConfig.reset_cache()  # the shipped file again
 	assert_float(float(MapConfig.get_config()["types"]["merchant"]["weight"])).is_equal(8.0 if shipped_on else 0.0)
-	# the patch's values are the ones in the file: prices and estimate move together
+	# the patch's values are the ones in the file. Prices and estimate move together: the one-act estimate in the patch is the MAP2 one, and the three-act
+	# estimate in map.json (`multi_act`, MAP3-B) follows the shipped three-act prices.
 	var patch: Dictionary = MerchantSwitch.patch()
 	var prices: Dictionary = patch["run"]["relics"]["prices"]
-	var estimate: Array = patch["map"]["estimate"]["merchant_prices"]
-	assert_array(estimate).is_equal([float(prices["tier1"]), float(prices["tier1"]), float(prices["tier2"])])
+	var multi: Array = MapConfig.get_config()["multi_act"]["estimate"]["merchant_prices"]
+	assert_array(multi).is_equal([float(prices["tier1"]), float(prices["tier1"]), float(prices["tier2"])])
+	assert_array(patch["map"]["estimate"]["merchant_prices"]).is_equal(MapConfig.get_config()["estimate"]["merchant_prices"])
 
 
 func test_a_broken_patch_changes_nothing_and_says_so() -> void:

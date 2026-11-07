@@ -150,7 +150,8 @@ func test_the_shop_fits_without_clipping_at_small_and_common_sizes() -> void:
 		# 65: every card shows its "Need N more gold" line and the dearer relics too. Below 60 gold (D41 = B, MAP3-A) every relic shows one as well, and
 		# the shop then overflows the 1280x720 panel by 4 px (a scroll bar for 4 px, probed: max 392 against a page of 388). That is a ux layout item, reported
 		# in the MAP3-A hand-back; the old poor case here was 35 gold.
-		for gold in [200, 65]:
+		# MAP3-B: the three-act prices are 80/120/170, so the poor case is 85 (one tier 1 relic is affordable); below 80 the 4 px overflow above shows.
+		for gold in [200, 85]:
 			await _check_shop_fits(size, gold)
 
 
@@ -231,8 +232,8 @@ func test_a_too_expensive_item_is_greyed_with_the_gold_it_lacks_and_a_sold_one_k
 			found_short = true
 	assert_bool(found_short).is_true()
 	# Buying a relic leaves the tile sold, in the grid, and the badge follows the gold. (35 gold above was for the card check; since D41 = B the cheapest
-	# relic costs 60, so top up to 70 first.)
-	state.gold = 70
+	# relic costs 80 with the MAP3-B prices, so top up to 90 first.)
+	state.gold = 90
 	model = _model(state)
 	var relic_option: Dictionary = {}
 	for option: Dictionary in (model["options"] as Array):

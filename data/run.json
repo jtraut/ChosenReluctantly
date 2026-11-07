@@ -207,7 +207,7 @@
                 "relic_room": "Relic stage: pick 1 of {relics} relics.",
                 "rest": "Rest: heal {heal}% or remove a card",
                 "merchant": "Merchant: spend gold on relics, cards or a card removal",
-                "mini_boss": "Mini-boss: a tough fight, {gold} gold",
+                "mini_boss": "Mini-boss: ends the act. A tough fight, a relic, {gold} gold",
                 "curse_room": "Curse room: a risky deal",
                 "buff_room": "Buff room: a free boost",
                 "boss": "Boss: the end of the run"

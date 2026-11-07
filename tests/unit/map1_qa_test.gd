@@ -846,14 +846,14 @@ func test_a_damaged_save_drops_the_map_loudly_not_the_run() -> void:
 			assert_bool(loaded.map.is_empty()).is_false()
 
 
-func test_carryover_a_negative_gold_in_a_save_is_refused(do_skip := true, skip_reason := "qa carry-over: RunState._whole_or_zero accepts -50 gold (gameplay-dev); unskip when fixed") -> void:
+func test_carryover_a_negative_gold_in_a_save_is_refused() -> void:
 	var state: RunState = RunSession.begin_new_run(9)
 	var d: Dictionary = (JSON.parse_string(JSON.stringify(state.to_dict())) as Dictionary)
 	d["gold"] = -50
 	assert_int(RunState.from_dict(d).gold).is_greater_equal(0)
 
 
-func test_carryover_a_damaged_map_with_an_open_node_pick_does_not_leave_a_straight_run_holding_the_pick(do_skip := true, skip_reason := "qa carry-over: from_dict keeps pending 'node' when a non-empty map fails normalize (soft lock when saves exist; gameplay-dev, before MAP3 save/resume); unskip when fixed") -> void:
+func test_carryover_a_damaged_map_with_an_open_node_pick_does_not_leave_a_straight_run_holding_the_pick() -> void:
 	RunSession.map_override = 1
 	var fresh: RunState = RunSession.begin_new_run(9)
 	assert_str(fresh.pending).is_equal(RunState.PENDING_NODE)

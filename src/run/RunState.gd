@@ -199,9 +199,16 @@ static func from_dict(data: Dictionary) -> RunState:
 	if typeof(data["deck"]) != TYPE_ARRAY or typeof(data["history"]) != TYPE_ARRAY:
 		push_error("RunState.from_dict: 'deck' and 'history' must be arrays")
 		return null
+	for key: String in ["seed", "room_index", "hp", "max_hp", "rejects_remaining"]:
+		if not _is_number(data[key]) or is_nan(float(data[key])) or is_inf(float(data[key])):
+			push_error("RunState.from_dict: '%s' must be a number" % key)
+			return null
+	if typeof(data.get("outcome", "")) != TYPE_STRING:
+		push_error("RunState.from_dict: 'outcome' must be a string")
+		return null
 	var state := RunState.new()
 	state.seed_value = int(data["seed"])
-	var saved_character: String = str(data.get("character", CharacterDatabase.DEFAULT_ID))
+	var saved_character: String = _string_of(data.get("character", CharacterDatabase.DEFAULT_ID))
 	if CharacterDatabase.has(saved_character):
 		state.character_id = saved_character
 	else:
@@ -215,12 +222,19 @@ static func from_dict(data: Dictionary) -> RunState:
 	var offered_ids: Variant = data.get("offer", [])
 	if typeof(offered_ids) == TYPE_ARRAY:
 		for offered: Variant in (offered_ids as Array):
-			state.offer.append(String(offered))
+			if typeof(offered) == TYPE_STRING and not String(offered).is_empty():
+				state.offer.append(String(offered))
+			else:
+				push_error("RunState.from_dict: 'offer' holds a value that is not an id; dropped")
+	elif data.has("offer"):
+		push_error("RunState.from_dict: 'offer' must be an array; using none")
 	var incoming: Variant = data.get("relic_incoming", "")
 	var incoming_id: String = String(incoming) if typeof(incoming) == TYPE_STRING else ""
 	var pending_value: Variant = data.get("pending", PENDING_NONE)
 	# A choice that cannot be shown (a reward or relic offer with nothing in it, a swap with no valid relic to take) is dropped.
 	var shows: bool = typeof(pending_value) == TYPE_STRING and PENDING_VALUES.has(String(pending_value))
+	if typeof(pending_value) == TYPE_STRING and String(pending_value) == PENDING_NONE:
+		state.offer = []  # a stale offer with no choice open would only confuse the next reward
 	if shows and [PENDING_REWARD, PENDING_RELIC, PENDING_RELIC_SWAP].has(String(pending_value)) and state.offer.is_empty():
 		shows = false
 	if shows and String(pending_value) == PENDING_RELIC_SWAP and (incoming_id.is_empty() or not state.offer.has(incoming_id)):
@@ -239,21 +253,33 @@ static func from_dict(data: Dictionary) -> RunState:
 		state.pending = PENDING_NONE
 		state.offer = []
 		dropped_choice = true
-	for entry: Variant in (data.get("choice_log", []) as Array):
+	var saved_log: Variant = data.get("choice_log", [])
+	if typeof(saved_log) != TYPE_ARRAY:
+		push_error("RunState.from_dict: 'choice_log' must be an array")
+		return null
+	for entry: Variant in (saved_log as Array):
 		if typeof(entry) != TYPE_DICTIONARY:
 			push_error("RunState.from_dict: choice_log entries must be objects")
 			return null
 		var c: Dictionary = entry
 		state.choice_log.append({
-			"index": int(c.get("index", 0)),
-			"kind": String(c.get("kind", "")),
-			"card_id": String(c.get("card_id", "")),
-			"amount": float(c.get("amount", 0.0)),
+			"index": _int_of(c.get("index", 0)),
+			"kind": _string_of(c.get("kind", "")),
+			"card_id": _string_of(c.get("card_id", "")),
+			"amount": _float_of(c.get("amount", 0.0)),
 		})
 	# Old dicts (before BD2) have no relic lists: they load as empty.
 	state.relics = _id_list(data.get("relics", []), "relics")
 	state.relics_given_up = _id_list(data.get("relics_given_up", []), "relics_given_up")
+	var relic_problem: String = _relic_problem(state)
+	if not relic_problem.is_empty():
+		push_error("RunState.from_dict: %s" % relic_problem)
+		return null
 	_read_map_fields(state, data)
+	if state.map.is_empty() and state.pending == PENDING_NODE:
+		# The map was unreadable (dropped above): a node pick with no map to pick from would be a soft lock.
+		push_error("RunState.from_dict: pending 'node' but the map is unusable; no choice is open")
+		state.pending = PENDING_NONE
 	_read_merchant_fields(state, data)
 	if MERCHANT_PENDING.has(state.pending) and not _merchant_choice_fits(state):
 		# A merchant screen with no visit behind it (or a swap for a relic that is not for sale) cannot be shown: drop the choice like any other.
@@ -263,6 +289,9 @@ static func from_dict(data: Dictionary) -> RunState:
 		state.merchant_visit = {}
 		dropped_choice = true
 	for card_id: Variant in (data["deck"] as Array):
+		if typeof(card_id) != TYPE_STRING or String(card_id).is_empty():
+			push_error("RunState.from_dict: 'deck' holds a value that is not a card id")
+			return null
 		state.deck.append(String(card_id))
 	for entry: Variant in (data["history"] as Array):
 		if typeof(entry) != TYPE_DICTIONARY:
@@ -270,11 +299,11 @@ static func from_dict(data: Dictionary) -> RunState:
 			return null
 		var e: Dictionary = entry
 		state.history.append({
-			"index": int(e.get("index", 0)),
-			"type": String(e.get("type", "")),
-			"wave_id": String(e.get("wave_id", "")),
-			"hp_end": float(e.get("hp_end", 0.0)),
-			"seconds": float(e.get("seconds", 0.0)),
+			"index": _int_of(e.get("index", 0)),
+			"type": _string_of(e.get("type", "")),
+			"wave_id": _string_of(e.get("wave_id", "")),
+			"hp_end": _float_of(e.get("hp_end", 0.0)),
+			"seconds": _float_of(e.get("seconds", 0.0)),
 		})
 	if not state.map.is_empty() and not RunNodes.consistent(state):
 		# A map run whose path and room index disagree cannot be followed: say so and fall back to the straight run (no map, no path).
@@ -310,7 +339,10 @@ static func _read_map_fields(state: RunState, data: Dictionary) -> void:
 		if not problems.is_empty():
 			push_error("RunState.from_dict: 'map' is malformed (%s); no map" % "; ".join(problems))
 	state.gold = _whole_or_zero(data.get("gold", 0), "gold")
-	state.xp_earned = _whole_or_zero(data.get("xp_earned", 0), "xp_earned")
+	if state.gold < 0:
+		push_error("RunState.from_dict: 'gold' cannot be negative; using 0")
+		state.gold = 0
+	state.xp_earned = maxi(_whole_or_zero(data.get("xp_earned", 0), "xp_earned"), 0)
 	var saved_path: Variant = data.get("path", [])
 	if typeof(saved_path) != TYPE_ARRAY:
 		push_error("RunState.from_dict: 'path' must be an array; using none")
@@ -369,6 +401,37 @@ static func _plain_ids(value: Variant) -> Array[String]:
 	for item: Variant in (value as Array):
 		ids.append(String(item))
 	return ids
+
+
+static func _is_number(value: Variant) -> bool:
+	return typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT
+
+
+static func _int_of(value: Variant) -> int:
+	return int(value) if _is_number(value) and not is_nan(float(value)) and not is_inf(float(value)) else 0
+
+
+static func _float_of(value: Variant) -> float:
+	return float(value) if _is_number(value) and not is_nan(float(value)) and not is_inf(float(value)) else 0.0
+
+
+static func _string_of(value: Variant) -> String:
+	return String(value) if typeof(value) == TYPE_STRING else ""
+
+
+## "" when the relic lists are sound, else the reason: every id must exist, none may be held and given up at once, and the held ones fit the cap.
+static func _relic_problem(state: RunState) -> String:
+	for relic_id: String in state.relics:
+		if not RelicDatabase.has_relic(relic_id):
+			return "relic '%s' does not exist" % relic_id
+		if state.relics_given_up.has(relic_id):
+			return "relic '%s' is both held and given up" % relic_id
+	for relic_id: String in state.relics_given_up:
+		if not RelicDatabase.has_relic(relic_id):
+			return "given-up relic '%s' does not exist" % relic_id
+	if state.relics.size() > RelicConfig.max_owned():
+		return "%d relics held, over the cap of %d" % [state.relics.size(), RelicConfig.max_owned()]
+	return ""
 
 
 static func _whole_or_zero(value: Variant, label: String) -> int:

@@ -223,6 +223,8 @@ static func _validate_phases(where: String, def: Dictionary, attack_ids: Array[S
 					errors.append("%s.attacks: unknown attack id '%s'" % [phase_where, String(e["id"])])
 					continue
 				_num(e, "weight", 0.0, 1000.0, phase_where + ".attacks." + String(e["id"]), errors)
+				if typeof(attacks[String(e["id"])]) != TYPE_DICTIONARY:
+					continue  # already reported above as "must be an object"
 				if _is_num(p.get("windup_scale")) and _is_num((attacks[String(e["id"])] as Dictionary).get("windup")):
 					var effective: float = float((attacks[String(e["id"])] as Dictionary)["windup"]) * float(p["windup_scale"])
 					if effective < min_telegraph - 0.0001:

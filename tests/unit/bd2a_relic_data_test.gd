@@ -307,19 +307,19 @@ func _state() -> RunState:
 
 func test_relics_and_given_up_survive_a_dict_and_a_json_round_trip_in_order() -> void:
 	var state := _state()
-	state.add_relic("c_relic")
-	state.add_relic("a_relic")
-	state.add_relic("b_relic")
-	assert_bool(state.give_up_relic("a_relic")).is_true()
-	assert_array(state.relics).is_equal(["c_relic", "b_relic"])
-	assert_array(state.relics_given_up).is_equal(["a_relic"])
+	state.add_relic("heavy_sigh")
+	state.add_relic("pyre_insurance")
+	state.add_relic("spite_knuckles")
+	assert_bool(state.give_up_relic("pyre_insurance")).is_true()
+	assert_array(state.relics).is_equal(["heavy_sigh", "spite_knuckles"])
+	assert_array(state.relics_given_up).is_equal(["pyre_insurance"])
 	var back: RunState = RunState.from_dict(state.to_dict())
-	assert_array(back.relics).is_equal(["c_relic", "b_relic"])
-	assert_array(back.relics_given_up).is_equal(["a_relic"])
+	assert_array(back.relics).is_equal(["heavy_sigh", "spite_knuckles"])
+	assert_array(back.relics_given_up).is_equal(["pyre_insurance"])
 	assert_bool(state.equals(back)).is_true()
 	var through_json: RunState = RunState.from_json(state.to_json())
-	assert_array(through_json.relics).is_equal(["c_relic", "b_relic"])
-	assert_array(through_json.relics_given_up).is_equal(["a_relic"])
+	assert_array(through_json.relics).is_equal(["heavy_sigh", "spite_knuckles"])
+	assert_array(through_json.relics_given_up).is_equal(["pyre_insurance"])
 	assert_bool(state.equals(through_json)).is_true()
 
 
@@ -356,10 +356,10 @@ func test_a_fresh_run_holds_no_relics_and_adding_twice_is_refused() -> void:
 
 func test_bad_relic_lists_in_a_saved_dict_are_dropped_not_trusted() -> void:
 	var data: Dictionary = _state().to_dict()
-	data["relics"] = ["ok", 5, "", "ok", "also_ok"]
+	data["relics"] = ["heavy_sigh", 5, "", "heavy_sigh", "pyre_insurance"]
 	data["relics_given_up"] = "not a list"
 	var loaded: RunState = RunState.from_dict(data)
-	assert_array(loaded.relics).is_equal(["ok", "also_ok"])
+	assert_array(loaded.relics).is_equal(["heavy_sigh", "pyre_insurance"])
 	assert_array(loaded.relics_given_up).is_empty()
 
 

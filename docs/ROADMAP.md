@@ -941,7 +941,7 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
       - Bot runs take 3-6.5 min, against the 30-45 min target. That target is for three acts (MAP3), and bot time isn't human time.
     - **Kept as built:** room 1's two start nodes are both combat. Rooms 1-2 are fixed combat in MAP.md §3, to ease the player in, and they differ by wave list.
     - **Proposal to the director: D40,** a rest on every route. Many routes have no rest at all; 3 of the 4 Rogue `first` routes the playtester saw had none. This also covers "safe" routes that equal `first`.
-- [ ] **MAP2, the merchant (right after MAP1). Full loop. Tag `playtest-YYYY-MM-DD-MAP2`.** Plan: `docs/MAP.md` §4.4.
+- [x] **MAP2, the merchant — DONE 2026-11-06. Tag `playtest-2026-11-06-MAP2`.** gameplay-dev 66ba317..9321820 (A), 5801fe7..6a3e780 (B); ux 8897701..accf46f (merchant on); qa PASS bbac2e0..38f20bd; playtest d503d36 (no blocker); docs 05b7999. (Original header: right after MAP1, full loop.) Plan: `docs/MAP.md` §4.4.
   - **Goal:** gold buys things. The merchant sells several relics at once (D22 = C), cards and card removal.
   - **gameplay-dev:** merchant node (`map.json` weight about 8, `max_merchants` 1); stock seeded from run seed and node id: 3 relics from source `merchant` (BD2 offer function; no owned or given-up relics; at the cap, buying uses BD2's give-one-up step), 3 cards at 40 (reward weights), removal 50 then +25 per removal (through `can_remove`); `run.json` `merchant` and `relics.prices` by tier (60/90/130; boss tier never sold); RunState `merchant_removals` + save; `relic_route` back to [6, 8]. Bots: the `relic` route buys relics first, `safe` buys a removal then a card.
   - **ux-designer:** merchant panel: prices, gold left, disabled items with the reason (too expensive, removal would break a slot minimum); at the relic cap a relic is buyable through the give-one-up step, buy several then leave; the removal list reuses the rest-room list. Captures.
@@ -1022,7 +1022,7 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
         - `estimate.merchant_prices` [60, 60, 90] -> [30, 30, 45];
         - `run.json` `relics.prices` 60/90/130 -> 30/45/65.
       - The data hook is `RunController.merchant_view()` and its calls (MAP2-B hand-back, quoted in the ux brief).
-      - Known gap: 8 or 9 shop items clip the option row at 1280x720 and at 1024x600.
+      - Known gap at MAP2-B, fixed by ux: 8 or 9 shop items clipped the option row at 1280x720 and 1024x600. ux's two-column panel fits both.
       - captures.
       - **ux done 2026-11-06** (8897701..accf46f; DECISIONS "MAP2 ux calls").
         - **The merchant is on** (8994863).
@@ -1080,6 +1080,17 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
 - [ ] **MAP3, three acts (right after MAP2; D33 = B, director 2026-11-04). Full loop. Tag `playtest-YYYY-MM-DD-MAP3`.** Plan: `docs/MAP.md` §1, §4.5, §8. Detailed brief at MAP2's close.
   - **Goal:** a run is three acts of 10 rooms (30 rooms). Acts 1 and 2 end in a mini-boss, act 3 in the final boss. 30-45 minutes per run, and you can save and come back later (GDD §9).
   - **Scope:** acts 2-3 as their own maps; 2 act-end mini-boss encounters (`run.json` `tiers.mini_boss`, existing enemies + adds); act scaling (data multipliers per act; values from the sim, not hand-picked); new wave lists for acts 2-3 (today's 4 combat + 1 elite list would repeat badly); act transition screen ("Act 2"); "Room N of 30"; relics, cards and gold per D34 = C as revised by the director 2026-11-04 (MAP.md §4.5): cap 20, relic tier odds per act, per-act path rules, merchant 80/120/170; act-end mini-bosses give gold, a boss-tier relic (pick 1 of 3, no skip, the only source) and 3 rare (act 1) or 3 legendary (act 2) cards; card `rarity` (common/rare/legendary) with rare from act 2 and legendary from act 3; rejects stay 3 per run (D35 = A). **Content:** about 5+ rare and 4+ legendary cards per class pool, about 6 boss-tier relics per class (a game-lead design pass in BUILD_DEPTH first; they may need new effect code), about 22 tier 1-3 relics per class (15 sketched today). **At MAP2's close, split the rarity and boss-relic content into its own slice (MAP3b) if MAP3 is too big for one sitting.** **Save and resume:** autosave at every room boundary, one slot, `user://` with an injectable path, versioned and validated, built on RunState `to_json`/`equals`; Continue on the start screen; deleted on win or loss; quitting mid-fight restarts the room. Must ship in this slice, not later. **Restore the large chest's `min_tier` 2 in `data/map.json` once tier 3 relics exist (DECISIONS "Large chest", 2026-11-05).** **Save robustness first (moved from 3d item 6a at BD2's qa, game-lead 2026-11-04):** `from_dict` must not crash on wrongly-typed `offer`, `deck` or `choice_log` entries. It must also check that relics and given-up relics don't overlap, that relics fit the cap, and that relic ids exist.
+  - **Folded in at MAP2's close (game-lead, 2026-11-06):**
+    - **gameplay-dev housekeeping:**
+      - `--run-node`/`--run-gold` refuse bad values with exit 2, through a pure `resolve(args)` plus tests (and tests for `--merchant`);
+      - stale "merchant ships off" comments in `RunController.gd` (~242-243) and the `MerchantSwitch.gd` header;
+      - the `tools/run_wave_sim.ps1` line 16 bot-policy comment (it should say a removal, then a card);
+      - the Liquidate Assets stat should refresh on every purchase;
+      - `Merchant.items()` should show a relic as not buyable at the cap when nothing can be given up (boss relics make this reachable).
+    - **ux:**
+      - "No card can go: deck minimums" needs a next step;
+      - the legend's merchant icon should match the coin node.
+    - **D42** (a merchant on every route): build the director's answer.
   - **Acceptance (headline):** median bot run time 30-45 min (both classes); `relic` route median relics 14-17 and `safe` 6-8, exactly 2 boss relics per finished run (MAP.md §4.5); no-card gate holds; save, quit, resume gives the same run (tested).
 - [ ] **MAP4, events (after MAP3, before 3d; D33 = B; widened by the director 2026-11-04). Full loop.** Plan: BUILD_DEPTH §4.7, `docs/MAP.md` §2.
   - **Events:** an `event` ("?") node with data-driven events (`data/events/*.json`; closed outcome list; costs shown plainly; placeholder text). The curse room, buff room and altar (sacrifice) are event kinds.

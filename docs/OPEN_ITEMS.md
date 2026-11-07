@@ -1,13 +1,13 @@
 # Director open items
 
-Last updated: 2026-11-06 (MAP2 merchant built, ux next; D41 new; latest tag `playtest-2026-11-05-MAP1`)
-**Status: 2 decisions (D41 relic prices, D42 a merchant on every route); 6 things to look at (50 new, 49, 48, 47, 35), plus the round 2 vision check, which is now due. Next: MAP2 (merchant, shop-only relics) -> MAP3 (three acts, save and resume, rare/legendary cards, boss relics) -> MAP4 (events, curse cards, sacrifices, rest dig; probably two sittings) -> 3d (loadouts, starter relic).**
+Last updated: 2026-11-06 (MAP2 closed; latest tag `playtest-2026-11-06-MAP2`)
+**Status: 2 decisions (D41 relic prices, D42 a merchant on every route); 6 things to look at (51 new, 50, 49, 48, 47, 35), plus the round 2 vision check, which is now due. Next: MAP3 (three acts, save and resume, rare/legendary cards, boss relics) -> MAP4 (events, curse cards, sacrifices, rest dig; probably two sittings) -> 3d (loadouts, starter relic).**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
 ## How to playtest
 
-- **Latest known-good build:** `git checkout playtest-2026-11-05-MAP1`, play, then `git checkout main`. The one before it is `playtest-2026-11-05-BD2`. Older tags are in `docs/RESOLVED.md`.
+- **Latest known-good build:** `git checkout playtest-2026-11-06-MAP2`, play, then `git checkout main`. The one before it is `playtest-2026-11-05-MAP1`. Older tags are in `docs/RESOLVED.md`.
 - **Relics:** `-- --relics=pyre_insurance+heavy_sigh` starts with relics; `-- --relic-cap=1` tries the give-one-up step.
 - **Normal run:** `godot --path .` (a branching map of 10 rooms; `-- --no-map` gives the old straight run). Extras: `-- --run-seed=5`, `-- --run-room=10` (boss), `-- --class=wizard`.
 - **Preset decks:** `godot --path . -- --list-decks`, then for example `-- --deck=fire-heavy-rogue --full-deck --run-room=10`.
@@ -38,7 +38,7 @@ Without an answer, I keep A. Next new number: D43.
 
 Reply with the number and a word or two.
 
-51. **Visit the merchant (MAP2), once it's tagged.** `godot --path .`, and pick a route through the coin square.
+51. **Visit the merchant (MAP2).** `godot --path .`, and pick a route through the coin square.
     - Buy two things, then leave. Is it clear what you can afford, and why something is greyed out?
     - **The shop opens with the first relic highlighted**, so Enter buys it. There's a short delay that stops a held Enter from the map. Is that fine, or should Leave be highlighted first?
     - Try the free reroll: `-- --relics=request_for_quotation`.

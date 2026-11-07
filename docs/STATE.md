@@ -3,9 +3,26 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-06 (MAP2 built, merchant on, qa PASS, playtest no blocker; **tech-writer next**). MAP1 closed with tag `playtest-2026-11-05-MAP1`. **Run order:** MAP1 (done) -> **MAP2 (merchant, next)** -> MAP3 (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1.
+Last updated: 2026-11-06 (MAP2 closed, tag `playtest-2026-11-06-MAP2`). **Run order:** MAP1, MAP2 (done) -> **MAP3 (next)** (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2.
 
 ## What's done
+- **MAP2 closed 2026-11-06:** split into MAP2-A and MAP2-B (DECISIONS "MAP2 split").
+  - **Commits:**
+    - gameplay-dev 66ba317..9321820 (A), 5801fe7..6a3e780 (B);
+    - ux 8897701..accf46f (shop panel; turned the merchant on in 8994863);
+    - qa PASS with carry-overs bbac2e0..38f20bd;
+    - playtest d503d36 (no blocker);
+    - docs 05b7999.
+  - Tag `playtest-2026-11-06-MAP2`.
+  - **Shipped:** the merchant (3 relics with a shop-only slot, cards at 40, removal 50 +25), 7 new relics (13 total), and D40 = A (`min_rest` 1).
+  - **Baselines now:**
+    - suite 1843 (143 suites, 2 skipped MAP3 carry-overs);
+    - arena 1897787086 / 4207041509 / `-Plan` 1160207333;
+    - bot sim 846850403;
+    - `-NoMap` 12/12 57.5 s / 12/12 63.3 s;
+    - map-on route table (relic median 6, at the floor): ROADMAP MAP2 qa note.
+  - **Carry-overs:** MAP3 (housekeeping list, ux polish, D42); BD3 (Request for Quotation dominance, Liquidate Assets weak/hidden, Paperwork Fire rarely fires, Severance chains, Rogue safe 10/12).
+  - **Open:** D41 (relic prices, default A 30/45/65), D42 (a merchant on every route, default A no).
 - **MAP1 closed 2026-11-05:** split into MAP1-A and MAP1-B (DECISIONS "MAP1 split").
   - **Commits:**
     - gameplay-dev afdf30d..ed4e2aa (MAP1-A), 2181b9b..3a2d9d8 (MAP1-B) and 3841b41..0226ec9 (post-flip test fixes);
@@ -96,23 +113,15 @@ Last updated: 2026-11-06 (MAP2 built, merchant on, qa PASS, playtest no blocker;
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **MAP2, the merchant. Scoped and split 2026-11-06** (ROADMAP MAP2, "Split and scope"; DECISIONS "MAP2 split").
-  - **Order:** MAP2-A (the merchant engine, D40 `min_rest`, MAP1 carry-overs) -> MAP2-B (7 relics, the run flow, the sim override, bots, getting the suite ready for the switch) -> ux (panel, carry-overs, switches the merchant on) -> qa -> playtester -> tech-writer -> close.
-  - **Found while scoping:** the relic pool was too small for the 6-8 hunter target (Rogue 6 eligible, Wizard 5). MAP2-B adds 4 pool relics and 3 shop-only relics (BUILD_DEPTH §4.7, "MAP2 relic picks").
-  - **D40 = A (director, 2026-11-06):** a rest on every route, recorded in GDD §9 and MAP.md §3. MAP2-A builds it.
-  - **Pending for tech-writer (MAP2 docs pass):** archive D40 with his answer in RESOLVED (the OPEN_ITEMS text is in commit 4145235), and add a CHANGELOG `[Director decision]` entry: every route has at least 1 rest (`min_rest` 0 -> 1).
+- Nothing in progress. Working tree clean.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
 
 ## Exact next step
-1. **tech-writer: MAP2 docs pass**, then close.
-   - qa: PASS with carry-overs (bbac2e0..38f20bd; suite 1843).
-   - Playtest: no blocker (d503d36).
-   - New: D42 (a merchant on every route), D41 option D, and eyes item 51.
-   - **Done:** MAP2-A (66ba317..9321820), MAP2-B (5801fe7..6a3e780), and ux (8897701..accf46f), which turned the merchant on.
-   - **Numbers:** suite 1821 with 2 skipped; `-NoMap` 57.5 s / 63.3 s.
-   - **D41** (relic prices) is open, with default A as built.
-   - **After tech-writer:** close with tag `playtest-YYYY-MM-DD-MAP2`. The merchant is on in shipped data.
-2. Then **MAP3**, **MAP4**, **3d**, **BD3**.
+1. **MAP3, three acts** (ROADMAP MAP3, including MAP1's and MAP2's fold-ins; `docs/MAP.md` §1, §4.5, §8).
+   - game-lead writes the detailed brief first (MAP2's close was meant to produce it) and decides whether rarity and boss-relic content split into MAP3b. The boss-relic design pass in BUILD_DEPTH comes before the build.
+   - Save robustness goes first in the gameplay-dev step.
+   - Full loop, tag `playtest-YYYY-MM-DD-MAP3`.
+2. Then **MAP4**, **3d**, **BD3**.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change (K1 does).
 

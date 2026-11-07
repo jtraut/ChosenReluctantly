@@ -1893,7 +1893,7 @@ gameplay-dev's commits are 66ba317, bf80b35 and 9321820. The merchant ships off 
 **Gates:**
 - **Suite:** 1770, with 2 skipped (the MAP3 save carry-overs) and 0 failures, in 139 suites. The `:59` test is un-skipped.
 - **Unchanged:** the arena hashes, bot sim 846850403, and `-NoMap` 57.3 s / 62.5 s.
-- **Sweep:** 0 failures on seeds 1-1000 (worst 593 of 1000 attempts) and on 5000-5999 (worst 676).
+- **Sweep:** 0 failures on seeds 1-1000 (worst 593 of 1000 attempts) and on 5000-5999 (worst 676). These are interim MAP2-A numbers. With MAP2-B's final data and the merchant on, the worst is 479 (qa, tech-writer).
 
 - **`min_rest` 1 couldn't be met with the old data.** At 200 attempts, 351 of 1000 seeds failed, and some still failed at 1000. Accepted by game-lead:
   - **`types.rest.weight` 10 -> 25.**

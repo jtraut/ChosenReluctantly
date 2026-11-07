@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-06 (D41 and D42 answered; MAP2 closed; latest tag `playtest-2026-11-06-MAP2`)
-**Status: no decisions waiting (D41 = B and D42 = A recorded 2026-11-06, built in MAP3); 6 things to look at (51 new, 50, 49, 48, 47, 35), plus the round 2 vision check, which is now due. Next: MAP3 (three acts, save and resume, rare/legendary cards, boss relics) -> MAP4 (events, curse cards, sacrifices, rest dig; probably two sittings) -> 3d (loadouts, starter relic).**
+Last updated: 2026-11-07 (MAP3 brief written and split into MAP3 + MAP3b; latest tag `playtest-2026-11-06-MAP2`)
+**Status: no decisions waiting (D41 = B and D42 = A recorded 2026-11-06, built in MAP3); 6 things to look at (51 new, 50, 49, 48, 47, 35), plus the round 2 vision check, which is now due. Next: MAP3 (three acts, mini-bosses, save and resume) -> MAP3b (rare/legendary cards, tier 3 and boss relics) -> MAP4 (events, curse cards, sacrifices, rest dig; probably two sittings) -> 3d (loadouts, starter relic).**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -27,7 +27,7 @@ Reply with the number and a word or two.
     - Buy two things, then leave. Is it clear what you can afford, and why something is greyed out?
     - **The shop opens with the first relic highlighted**, so Enter buys it. There's a short delay that stops a held Enter from the map. Is that fine, or should Leave be highlighted first?
     - Try the free reroll: `-- --relics=request_for_quotation`.
-    - Relics in this build still cost 30/45/65. Your D41 = B brings back 60/90/130 with more gold, and prices cards by rarity, in MAP3.
+    - Relics in this build still cost 30/45/65. Your D41 = B brings back 60/90/130 with more gold in MAP3. Cards priced by rarity come in MAP3b, when cards get a rarity.
 
 50. **Play a run on the map (MAP1).** `godot --path .`, one run per class if you can.
     - **Does picking a route feel like a decision?** About 40% of nodes branch (the plan was 60%, which the generator can't reach). If it feels too linear, a generator that forks and merges more is the fix.
@@ -55,7 +55,7 @@ Reply with the number and a word or two.
     - The boss-relic pick can't be skipped, and you can't give up a boss relic at the cap, so you always end with 2.
     - Mini-bosses still give gold, and their rare/legendary card offer can be rejected with a reject token.
     - Ballpark: a relic hunter ends with about 14-17 relics, a route that ignores relics with about 6-8 (both include the 2 boss relics).
-    - Cost to know about: this needs about 6 boss relics, 5 rare and 4 legendary cards per class, so MAP3 may split in two.
+    - Cost to know about: this needs about 6 boss relics, 5 rare and 4 legendary cards per class. So MAP3 is split (2026-11-07): MAP3 builds the three acts and save/resume, and MAP3b adds this content. Until MAP3b, a mini-boss gives gold and a normal relic offer and card offer.
 35. **Builds (BD2 is in, so this can be played now; whenever you have time).** Build the same class and element twice with different plans. Do the two runs feel different? Does removing a keystone card hurt?
 
 ## Later, optional

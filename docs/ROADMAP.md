@@ -1097,7 +1097,96 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
       - **Keep the generator in step:** update `map.json` `estimate` (`gold_mean`, `merchant_price`) to the new income and prices, so seeds still generate (MAP2-B saw 284 of 1000 fail at 60/90 with today's income). The 1000-seed sweep must stay at 0 failures.
       - **Cards by rarity, in whichever slice adds card `rarity` (MAP3 or MAP3b):** `merchant.card_prices` per rarity, replacing `card_price`. Proposed common 40, rare 65, legendary 95 at the 60/90/130 scale, scaled with the relic prices. Removal stays at 50 +25.
       - **qa:** a data-validation test that each card rarity price is below its matching relic tier price (common < tier 1, rare < tier 2, legendary < tier 3).
-  - **Acceptance (headline):** median bot run time 30-45 min (both classes); `relic` route median relics 14-17 and `safe` 6-8, exactly 2 boss relics per finished run (MAP.md §4.5); no-card gate holds; save, quit, resume gives the same run (tested).
+  - **Acceptance (headline):** median bot run time 30-45 min (both classes); `relic` route median relics 14-17 and `safe` 6-8, exactly 2 boss relics per finished run (MAP.md §4.5); no-card gate holds; save, quit, resume gives the same run (tested). **Superseded by the detailed brief below (game-lead, 2026-11-07):** relic counts and boss relics move to MAP3b, and the 30-45 min goes to the playtest.
+  - **Detailed brief (game-lead, 2026-11-07; DECISIONS "MAP3 split").** MAP3 is the **structure**: three acts, mini-bosses, scaling and save/resume. **MAP3b** (below) is the **content**: card rarity, rare and legendary cards, tier 3 and boss-tier relics, and the final gold tuning. The reason: today there are 13 relics (tier 1 and 2 only; 3 of them merchant-only), no tier 3 or boss relics, and no card `rarity`. So the 14-17 relic target, "2 boss relics per run", the mini-boss reward and act 3's tier 3 odds can't be built or tested yet. One tag for MAP3, like MAP1 and MAP2: gameplay-dev sittings A and B -> ux -> qa -> playtest -> docs.
+    - **gameplay-dev, sitting A (save first, still a one-act run):**
+      1. **Save robustness** (the list in the scope line above, plus MAP1's two skipped tests in `map1_qa_test.gd`):
+         - `from_dict` must not crash on wrongly-typed `offer`, `deck` or `choice_log` entries, or on a null, array or object `offer` entry (RunState.gd:151);
+         - clear a stale `offer` when `pending` is empty;
+         - drop `pending: "node"` along with a damaged map (the soft lock);
+         - refuse negative gold;
+         - relics and given-up relics don't overlap, relics fit the cap, and relic ids exist;
+         - `BossConfig.validate` doesn't script-error on a non-object attack (`attacks.smash = "hit"`);
+         - remove the unused `tiers.boss` from `run.json` if it's still unused. Check first: `tiers.boss` is used by the boss today, so this may be the old 3c key only.
+      2. **The save file (MAP.md §8):**
+         - one slot in `user://`, with an injectable path so tests never touch the real folder (3d's profile pattern);
+         - a `version` field; validated on load, and a bad or old file is ignored with a warning, never a crash;
+         - written at every room boundary (when the map screen shows) and deleted on a win or a loss;
+         - resuming mid-fight restarts that room from its start;
+         - built on `RunState.to_json`/`equals`.
+
+         Expose `has_save()`, `load_save()` and `delete_save()` for ux's Continue button. Headless test: save, quit, resume gives an equal RunState and the same next room.
+      3. **D41 = B:**
+         - `relics.prices` back to 60/90/130;
+         - `map.json` `estimate.merchant_price` 60 (no change);
+         - raise `run.json` `gold` income only as far as needed for the 1000-seed sweep to pass with 0 failures and for the `relic` route to stay at or above its MAP2 median of 6.
+
+         Record the before and after values in the hand-back. Card price stays 40 flat until MAP3b.
+      4. **Housekeeping:** the MAP2 fold-ins above (`resolve(args)` with exit 2 and tests, stale comments, the `run_wave_sim.ps1` line 16 comment, Liquidate Assets refreshing on every purchase, `Merchant.items()` at the cap).
+
+      Main must still run as a one-act game at the end of sitting A. `-NoMap`, the arena and bot-sim hashes must not move. The map-on `-Route` numbers can move because of the price change; record them.
+    - **gameplay-dev, sitting B (three acts):**
+      1. **Acts:**
+         - `map.json` gains `acts` (3; with 1 it plays as MAP2);
+         - each act is its own generated map, seeded from the run seed and the act number, with MAP0's rules per act and two changes: `relic_route` per act [4, 6], and at most 2 relic stages per path per act (MAP.md §4.5);
+         - RunState gains `act` and keeps every act's map and path, and both go into the save round trip;
+         - rooms are counted 1-30 overall, and `--run-room=N` accepts 1-30 along the `first` route;
+         - gold, HP, deck, relics and rejects carry between acts. There's no free heal between acts (DECISIONS "MAP3 split").
+      2. **Act-end mini-boss:**
+         - `tiers.mini_boss` (starting values: HP x3.5, armor 22, resistance floor 0.3, cap 0.5, its own marker colour);
+         - `rooms.mini_boss` with 2 encounters (`mini_boss_act1`, `mini_boss_act2`), made of existing enemies plus adds; no new AI;
+         - room 10 of acts 1-2 is the mini-boss and room 10 of act 3 is today's boss.
+         - **Interim reward until MAP3b:**
+           - gold from `run.json` `gold.mini_boss`;
+           - a normal relic offer (pick 1 of 3 or skip) using the **next** act's tier odds;
+           - then a normal card offer.
+
+           MAP3b replaces the relic offer with the boss-tier offer and the cards with rare or legendary ones.
+      3. **Act scaling:** `run.json` `acts` per-act multipliers (enemy HP and damage, and gold income). Starting values: act 2 HP x1.35, damage x1.15; act 3 HP x1.7, damage x1.3; gold x1.0. These are tuned by the run sim against the acceptance below, not by hand.
+      4. **Wave lists for acts 2-3:** at least 4 combat lists and 2 elite lists per act, from existing enemies (larger mixes, more golems and shooters). Lists carry an `acts` field, and act 1 keeps today's lists unchanged.
+      5. **Tier odds per act:** `relics.tier_weights` per act already exists; use the current act.
+         - Act 3 has no tier 3 relics yet, so its offers draw tier 1 and 2 at 5:25 until MAP3b.
+         - **An exhausted pool keeps the shipped BD2 fallback:** an elite or relic room with no eligible relic gives a card offer instead. MAP3b's content makes this rare again. qa tests the path, because act 2-3 elites will reach it now.
+      6. **Prices:** with three acts on, `relics.prices` starts at 80/120/170 (MAP.md §4.5). `estimate` is updated so the per-act sweep stays at 0 failures.
+      7. **Run sim:** `-Run` plays all 3 acts by default, and an `-Acts 1` switch keeps the old one-act numbers. Report per act: clear, time, HP at the act's end, relics and gold.
+    - **ux (after sitting B; gameplay-dev exposes the data first):**
+      - "Room N of 30" plus "Act N" on the HUD and the map;
+      - an act transition screen ("Act 2", a one-line summary: HP, gold, relics; Enter to continue);
+      - **Continue** on the start screen when a save exists (with what it resumes: class, act, room);
+      - the mini-boss node icon and hover text;
+      - the MAP2 polish fold-ins ("No card can go: deck minimums" gets a next step; the legend's merchant icon matches the coin).
+    - **qa:**
+      - the save round trip and every robustness case;
+      - a 1000-seed sweep **per act**, 0 failures;
+      - the no-card gate on 3-act runs;
+      - the exhausted-pool fallback;
+      - determinism (the same seed gives the same 3 maps and rolls);
+      - the reload soak (Main and the autoloads change);
+      - re-baselines.
+    - **Acceptance (MAP3):**
+      - a run is 30 rooms in 3 acts; acts 1-2 end in a mini-boss and act 3 in the boss;
+      - save, quit and resume gives the same run (tested, headless);
+      - the per-act 1000-seed sweep has 0 failures;
+      - the no-card gate holds;
+      - `-NoMap`, the arena and bot-sim hashes are unchanged;
+      - with `-Run -Seed 1 -Runs 12 -Route first`, both classes win at least 8/12 three-act runs, and the bot's time per act stays within about ±30% of act 1's.
+      - **Run length:** a human 30-45 min (GDD §9) is checked by the playtester and the director, not the bot. Bot time isn't human time (MAP1 triage). The bot's 3-act median is reported as information.
+      - Relic counts are reported but not gated until MAP3b.
+- [ ] **MAP3b, rarity and boss relics (after MAP3, before MAP4). Full loop. Tag `playtest-YYYY-MM-DD-MAP3b`.** Plan: MAP.md §4.5, BUILD_DEPTH §4.
+  - **First, game-lead, docs only:**
+    - a BUILD_DEPTH design pass: about 6 boss-tier relics per class, tier 3 relics, and the rare and legendary card list per pool;
+    - decide whether any new effect code is needed;
+    - **rare and legendary: retag or new cards?** Default: legendary cards are all new, and rare may retag up to 2 existing cards per pool. Decided and logged in the design pass.
+  - **Build:**
+    - card `rarity` (common by default) and `cards.rarity_weights` per act;
+    - the content (about 5+ rare and 4+ legendary cards per class pool, about 6 boss-tier relics per class, enough tier 1-3 relics for about 22 eligible per class);
+    - the mini-boss boss-tier offer (pick 1 of 3, no skip, can't be given up) and the rare (act 1) or legendary (act 2) card offer;
+    - `merchant.card_prices` by rarity (proposed 40/65/95 at the 60/90/130 scale, scaled with the 3-act prices, always below the matching relic tier);
+    - restore the large chest's `min_tier` 2;
+    - the final gold tuning (D41 = B: income first, then prices).
+  - **ux:** the gold frame for legendary cards, the rarity on card tiles, and the boss-relic offer screen.
+  - **qa:** the price-below-tier test, "exactly 2 boss relics" on every finished 3-act run, and pool sizes.
+  - **Acceptance:** the original MAP3 relic targets (MAP.md §4.5): `relic` median 14-17, `safe` 6-8, exactly 2 boss relics, and nobody at the cap in the median run.
 - [ ] **MAP4, events (after MAP3, before 3d; D33 = B; widened by the director 2026-11-04). Full loop.** Plan: BUILD_DEPTH §4.7, `docs/MAP.md` §2.
   - **Events:** an `event` ("?") node with data-driven events (`data/events/*.json`; closed outcome list; costs shown plainly; placeholder text). The curse room, buff room and altar (sacrifice) are event kinds.
   - **Curse cards (D38 = A, director 2026-11-04):** card `curse` flag; event outcome `curse_card` shuffles one into a slot; curse cards don't count toward slot minimums, never appear in offers, and are removable at rest, the merchant or by events. Tests: deck rules ignore curses, the swap skips past them.

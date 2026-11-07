@@ -2016,3 +2016,33 @@ All accepted:
 - **Card removal stays at 50, +25 each time.** He didn't mention it. Removal is a service, not a card tier.
 - **The sim's lever order (D41 = B):** too few relics for a hunter means gold income goes up, never prices down. Too many means prices go up first, as MAP.md §4.5 already said.
 - **D42 = A:** nothing to build. MAP3's fold-in list says so.
+
+## 2026-11-07 - MAP3 split and the detailed brief (game-lead)
+- **MAP3 is split into MAP3 (structure) and MAP3b (content). Each is its own slice with its own tag.** MAP2's close said to decide this.
+  - **MAP3:** three acts, mini-bosses, act scaling, wave lists for acts 2-3, save and resume. Two gameplay-dev sittings (A: save robustness, the save file, D41 prices, housekeeping; B: the acts).
+  - **MAP3b:** card rarity, rare and legendary cards, tier 3 and boss-tier relics, and the final gold tuning.
+  - **Reason:** the content isn't there. 13 relics, tier 1-2 only, 3 of them merchant-only; no tier 3, no boss tier; no card `rarity`. Gold tuned against the 14-17 relic target now would hit the pool limit, not a gold limit, and would be wrong after MAP3b. Save still ships with 30-room runs (MAP.md §8).
+  - **Rejected:** one MAP3 slice with everything (several sittings, and nothing to playtest for a long time). Also rejected: content first (nothing to test boss relics on without acts).
+- **Interim mini-boss reward (MAP3 only):**
+  - gold from `gold.mini_boss`;
+  - a normal relic offer with skip, at the next act's tier odds;
+  - then a normal card offer.
+
+  MAP3b replaces it with the director's reward (a boss-tier relic with no skip, then 3 rare or 3 legendary cards). Rejected: no relic until MAP3b, because mini-bosses would then pay less than elites.
+- **An exhausted relic pool keeps BD2's shipped fallback (a card offer).** This bends "elites never give cards" only when nothing is left to offer, and MAP3 will reach that point in acts 2-3 until MAP3b adds relics. Rejected: gold only. It's a new rule for a temporary state. Cheap to reverse.
+- **Act 3 offers draw tier 1 and 2 at 5:25 until tier 3 relics exist.** That's the existing weights with nothing in tier 3.
+- **No free heal between acts.** HP, gold, deck, relics and rejects carry over, and every act has rests (`min_rest` 1). Rejected: a full heal at each act start. It's an easy data switch if the playtest says act 2 starts too low.
+- **The run-length acceptance is restated.**
+  - The bot no longer has to hit 30-45 min. One act of bot play takes 3-6.5 min, and the MAP1 triage already ruled that bot time isn't human time.
+  - Instead: 30 rooms in 3 acts; both classes win 8/12 or more 3-act bot runs on the `first` route; each act's bot time stays within about ±30% of act 1's.
+  - Human run length is checked by the playtester and the director.
+  - Rejected: keeping the bot gate. It would push tuning toward slower fights, not longer runs.
+- **Relic count targets and "2 boss relics" move to MAP3b's acceptance.**
+- **D41 prices are staged:**
+  - sitting A: 60/90/130, still one act, with gold raised only as far as the 1000-seed sweep and the MAP2 `relic` median of 6 need;
+  - sitting B: 80/120/170 for three acts.
+
+  Card prices stay at 40 flat until rarity exists (MAP3b).
+- **Starting act scaling:** act 2 HP x1.35, damage x1.15; act 3 HP x1.7, damage x1.3. These are proposals the sim tunes, not final values.
+- **`map.json` `acts` (3, with 1 = MAP2's behaviour) and the sim's `-Acts 1`** keep one-act tests, scenarios and baselines working. That's the same idea as `--no-map`.
+- **Rare and legendary cards, retag or new:** decided in MAP3b's design pass. Default: legendary cards all new; rare may retag up to 2 existing cards per pool.

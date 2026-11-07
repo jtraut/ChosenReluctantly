@@ -3,9 +3,20 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-06 (MAP2 closed, tag `playtest-2026-11-06-MAP2`). **Run order:** MAP1, MAP2 (done) -> **MAP3 (next)** (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2.
+Last updated: 2026-11-06 (MAP2 closed, tag `playtest-2026-11-06-MAP2`; D41 = B and D42 = A recorded after). **Run order:** MAP1, MAP2 (done) -> **MAP3 (next)** (three acts, mini-bosses, save/resume) -> MAP4 (curse/buff rooms) -> 3d -> BD3. All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2.
 
 ## What's done
+- **D41 = B, D42 = A recorded 2026-11-06 (game-lead, docs only):**
+  - **His answers:**
+    - D41 = B: keep relic prices 60/90/130 and raise gold income instead. Cards are tiered by rarity too, and a card is always cheaper than the equivalent relic tier.
+    - D42 = A: no merchant guarantee on a route.
+  - **Where recorded:** GDD §4a and §9, MAP.md §3/§4.4/§4.5, ROADMAP MAP3 fold-ins, DECISIONS "Applying D41 = B and D42 = A".
+  - **Built in MAP3,** as gameplay-dev's first step. Until then main and the MAP2 tag still sell relics at 30/45/65.
+  - **Pending for tech-writer (MAP3 docs pass):**
+    - Archive D41 and D42 in RESOLVED with his answers and where they're recorded. The old OPEN_ITEMS text is in commit e6908f2.
+    - Add CHANGELOG `[Director decision]` entries:
+      - D41: relic prices, shipped 30/45/65 -> 60/90/130 with more gold income (values from the MAP3 sim); card price 40 flat -> tiered by rarity, always below the matching relic tier.
+      - D42: no merchant guarantee, unchanged from the shipped default.
 - **MAP2 closed 2026-11-06:** split into MAP2-A and MAP2-B (DECISIONS "MAP2 split").
   - **Commits:**
     - gameplay-dev 66ba317..9321820 (A), 5801fe7..6a3e780 (B);
@@ -22,7 +33,7 @@ Last updated: 2026-11-06 (MAP2 closed, tag `playtest-2026-11-06-MAP2`). **Run or
     - `-NoMap` 12/12 57.5 s / 12/12 63.3 s;
     - map-on route table (relic median 6, at the floor): ROADMAP MAP2 qa note.
   - **Carry-overs:** MAP3 (housekeeping list, ux polish, D42); BD3 (Request for Quotation dominance, Liquidate Assets weak/hidden, Paperwork Fire rarely fires, Severance chains, Rogue safe 10/12).
-  - **Open:** D41 (relic prices, default A 30/45/65), D42 (a merchant on every route, default A no).
+  - **Answered 2026-11-06:** D41 = B and D42 = A (see the entry above).
 - **MAP1 closed 2026-11-05:** split into MAP1-A and MAP1-B (DECISIONS "MAP1 split").
   - **Commits:**
     - gameplay-dev afdf30d..ed4e2aa (MAP1-A), 2181b9b..3a2d9d8 (MAP1-B) and 3841b41..0226ec9 (post-flip test fixes);

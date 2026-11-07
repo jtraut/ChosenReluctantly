@@ -1946,6 +1946,7 @@ gameplay-dev did this in 5801fe7..6a3e780. The merchant still ships off.
   - Wizard: 12/12, 62.5 s -> 12/12, 63.3 s.
 - **Sweep with the merchant on:** 0 failures, worst 479 of 1000 attempts.
 
+- **Update 2026-11-06: the director answered D41 = B** (keep 60/90/130, raise gold income, cards priced by rarity; GDD §4a). The halving below is superseded and is rebuilt in MAP3.
 - **Relic prices go from 60/90/130 to 30/45/65 (tier 1/2/3). They take effect when ux switches the merchant on. The estimate goes from [60, 60, 90] to [30, 30, 45].** Accepted by game-lead and put to the director as D41, default A (as built).
   - **Evidence** (relic-route median, 12 runs):
     - 60/90: 5;
@@ -2003,3 +2004,15 @@ All accepted:
   - The director is asked to check it (eyes item 51).
 - **A merchant on every route is a director question (D42, default A: no guarantee).** It changes the map design.
 - **D41 gets the playtester's 45/65/90 as option D.** The default stays A, because the bot evidence says D drops the relic route below the director's 6-8.
+
+## 2026-11-06 - Applying D41 = B and D42 = A (game-lead)
+- **The director's answers are recorded in GDD §4a and §9, MAP.md §3, §4.4 and §4.5, and the ROADMAP MAP3 brief.** The calls below are mine.
+- **When to build D41: as MAP3's first gameplay-dev step, not as a fix now.**
+  - Reason: a plain price revert isn't safe. At 60/90/130 with today's gold, hunters end with about 5 relics, and the generator's estimate fails 284 of 1000 seeds (MAP2-B). B needs a gold retune plus a sim, and MAP3 redoes both for three acts right after.
+  - Cost: main and the `playtest-2026-11-06-MAP2` tag still sell 30-gold relics until MAP3 ships. The director has been told.
+  - Rejected: a one-act retune slice now. It would be tuned twice in a row.
+- **How "equivalent tiers" map:** common card ↔ tier 1 relic, rare ↔ tier 2, legendary ↔ tier 3. Boss relics are never sold, so they have no card match. Rejected: comparing every card price to the tier 1 price only. That's stricter than he asked and would squeeze legendary card prices under 60.
+- **Proposed card prices:** common 40 (as today), rare 65, legendary 95 at the 60/90/130 scale, each about 70% of its relic tier. They scale with MAP3's relic prices and are set by the sim, with the "always cheaper" rule checked by a data-validation test.
+- **Card removal stays at 50, +25 each time.** He didn't mention it. Removal is a service, not a card tier.
+- **The sim's lever order (D41 = B):** too few relics for a hunter means gold income goes up, never prices down. Too many means prices go up first, as MAP.md §4.5 already said.
+- **D42 = A:** nothing to build. MAP3's fold-in list says so.

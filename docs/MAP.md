@@ -62,6 +62,7 @@ The generator is seeded from the run seed, like `RunGenerator` today: **the same
    - `max_elite_like` 3: elites plus mini-bosses on one path.
    - `max_merchants` 1 and `max_rest` 2 per path.
    - `min_rest` 1: every path has at least one rest (D40 = A, director 2026-11-06; built in MAP2-A).
+   - **No `min_merchant`:** a path may pass no merchant (D42 = A, director 2026-11-06). `max_merchants` 1 stays.
    - **Relic estimate** (§4.1): the best path scores in `relic_route` [6, 8], and the worst path scores at most `ignore_route_max` 3.
 4. **Shape rules:** rooms 2-9 each have 2-4 nodes. Every node has an outgoing edge, except the boss. At least `min_branching` (40%; was 60%, which 4 walks can't reach, MAP1-A 2026-11-05) of the nodes in rooms 1-8 have 2 or more next choices.
 5. **If a rule fails,** the generator redraws the types; after every 10 failed type draws it redraws the grid. The same rng keeps running, so the result stays deterministic. It gives up after `max_attempts` (200) with a loud error. A test sweeps 1000 seeds and requires zero failures.
@@ -124,8 +125,8 @@ Expected gold uses the mean income: combat 15, elite 35, mini-boss 50. The start
   - Non-fight rooms give 0.
   - Unspent gold is lost when the run ends, because there's no meta-progression yet.
 - **Merchant stock (run.json `merchant`):**
-  - **3 relics**, rarity-weighted from source `merchant`. Prices come from the relic's tier (run.json `relics.prices`): ~~tier 1 60, tier 2 90, tier 3 130~~ **tier 1 30, tier 2 45, tier 3 65** (MAP2-B sim, 2026-11-06, D41 default A; at 60/90 a relic hunter ends with 5, short of 6-8). Boss-tier relics are never sold.
-  - **3 cards** at 40 each, picked with the reward weights, including the "On your plan" highlight from 3d.
+  - **3 relics**, rarity-weighted from source `merchant`. Prices come from the relic's tier (run.json `relics.prices`): ~~tier 1 30, tier 2 45, tier 3 65~~ (shipped in MAP2 as the D41 default) **tier 1 60, tier 2 90, tier 3 130** (D41 = B, director 2026-11-06: keep the prices and raise gold income instead; rebuilt in MAP3). Old note: (MAP2-B sim, 2026-11-06, D41 default A; at 60/90 a relic hunter ends with 5, short of 6-8). Boss-tier relics are never sold.
+  - **3 cards**, priced by rarity (D41 = B, director 2026-11-06): a card always costs less than the equivalent relic tier (common < tier 1, rare < tier 2, legendary < tier 3). Proposed from MAP3, when cards get `rarity`: common 40, rare 65, legendary 95 at the 60/90/130 scale (`run.json` `merchant.card_prices`). Until then every card is 40. Picked with the reward weights, including the "On your plan" highlight from 3d.
   - **Card removal** at 50, then +25 for each further removal in the run. It goes through the existing `can_remove` guard, so cards that would break a slot minimum are shown disabled with the reason, as at rest.
   - **Buy as many as you can afford, in any order** (the director: "several relics at once"). The panel stays open until you leave. At the relic cap (20 from MAP3, D34 = C), buying a relic first asks which owned relic to give up; the player can cancel.
 - **A route that skips fights can't buy much:** with 4 non-fight rooms, gold on arrival at a room-9 merchant is at most about 135, while the hunter route above arrives with 150.
@@ -168,8 +169,9 @@ Starting values below are game-lead proposals (DECISIONS 2026-11-04), all data, 
 
   Gold carries across acts, so the per-act checks can't see the run total; the bot sim checks it.
 - **Merchant prices by tier:**
-  - MAP2 ships 60 / 90 / 130 for one act.
-  - MAP3 raises them to 80 / 120 / 170, because gold adds up over three acts.
+  - 60 / 90 / 130 is the one-act base (D41 = B). MAP2 actually shipped 30 / 45 / 65 as the D41 default; that line was corrected 2026-11-06.
+  - MAP3 starts from 80 / 120 / 170, because gold adds up over three acts. Card prices by rarity scale with them and stay below the matching relic tier.
+  - **Which lever the sim pulls (D41 = B):** too few relics for a hunter means gold income goes up, never prices down. Too many means prices go up first.
   - The merchant never sells boss-tier relics.
 - **Feasibility, hunter:**
   - Per act, about 2 elites + 2 relic stages = 4, so 12 over the run, plus 2 boss relics.

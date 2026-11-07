@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-06 (MAP2 closed; latest tag `playtest-2026-11-06-MAP2`)
-**Status: 2 decisions (D41 relic prices, D42 a merchant on every route); 6 things to look at (51 new, 50, 49, 48, 47, 35), plus the round 2 vision check, which is now due. Next: MAP3 (three acts, save and resume, rare/legendary cards, boss relics) -> MAP4 (events, curse cards, sacrifices, rest dig; probably two sittings) -> 3d (loadouts, starter relic).**
+Last updated: 2026-11-06 (D41 and D42 answered; MAP2 closed; latest tag `playtest-2026-11-06-MAP2`)
+**Status: no decisions waiting (D41 = B and D42 = A recorded 2026-11-06, built in MAP3); 6 things to look at (51 new, 50, 49, 48, 47, 35), plus the round 2 vision check, which is now due. Next: MAP3 (three acts, save and resume, rare/legendary cards, boss relics) -> MAP4 (events, curse cards, sacrifices, rest dig; probably two sittings) -> 3d (loadouts, starter relic).**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -17,22 +17,7 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## Needs your decision
 
-**D41. Merchant relic prices.** (from the MAP2 bot runs)
-- **The problem:** at the planned prices (tier 1 60, tier 2 90, tier 3 130), a relic-hunting route ends a run with about 5 relics. Your rule is 6-8. Gold income is about 15 a fight and 35 an elite.
-- **A (my default, as built):** halve the prices to 30 / 45 / 65. Relic hunters then end with 6. The catch: a tier 1 relic costs less than a card (40) or a card removal (50).
-- **B:** keep 60 / 90 / 130 and give more gold for fights. Hunters reach 6-8, but cards and removals get relatively cheaper too.
-- **C:** keep 60 / 90 / 130 and accept about 5 relics in a one-act run. Three acts (MAP3) add more sources anyway.
-
-- **D (the playtester's idea):** 45 / 65 / 90. A relic is a bigger choice next to a card, but the bots say a relic hunter drops to about 5.
-
-All of these are data and easy to change. Without an answer, MAP2 ships A.
-
-**D42. Should every route pass a merchant?** (from the MAP2 playtest)
-- **The problem:** in 3 of 8 bot runs on the plain and careful routes, there was no merchant on the way, so the gold was never spent.
-- **A (my default):** no guarantee. Skipping the merchant is part of the route choice, and from MAP3 your gold carries over to the next act's map.
-- **B:** a merchant on every route, somewhere in rooms 4-8, like D40's rest rule. More predictable, but every map has one more fixed stop.
-
-Without an answer, I keep A. Next new number: D43.
+Nothing right now. Next new number: D43.
 
 ## Needs your eyes
 
@@ -42,7 +27,7 @@ Reply with the number and a word or two.
     - Buy two things, then leave. Is it clear what you can afford, and why something is greyed out?
     - **The shop opens with the first relic highlighted**, so Enter buys it. There's a short delay that stops a held Enter from the map. Is that fine, or should Leave be highlighted first?
     - Try the free reroll: `-- --relics=request_for_quotation`.
-    - Does a 30-gold relic next to a 40-gold card feel right? That's D41.
+    - Relics in this build still cost 30/45/65. Your D41 = B brings back 60/90/130 with more gold, and prices cards by rarity, in MAP3.
 
 50. **Play a run on the map (MAP1).** `godot --path .`, one run per class if you can.
     - **Does picking a route feel like a decision?** About 40% of nodes branch (the plan was 60%, which the generator can't reach). If it feels too linear, a generator that forks and merges more is the fix.

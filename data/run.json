@@ -17,7 +17,7 @@
         "enabled": true,
         "max_owned": 20,
         "offer_count": 3,
-        "prices": { "tier1": 30, "tier2": 45, "tier3": 65 },
+        "prices": { "tier1": 60, "tier2": 90, "tier3": 130 },
         "relic_room": { "count": 1, "first": 2, "last": 8 },
         "tier_weights": {
             "1": { "tier1": 80, "tier2": 20, "tier3": 0 },
@@ -26,7 +26,7 @@
         }
     },
     "merchant": { "card_price": 40, "removal_base": 50, "removal_step": 25, "relic_stock": 3, "shop_only_slots": 1, "card_stock": 3 },
-    "gold": { "combat": [12, 18], "elite": [30, 40], "mini_boss": [45, 55] },
+    "gold": { "combat": [24, 36], "elite": [60, 80], "mini_boss": [90, 110] },
     "tiers": {
         "elite": { "hp_multiplier": 2.0, "armor": 17.0, "resistance_floor": 0.25, "resistance_cap": 0.5, "rank": "elite", "scale": 1.0, "marker_color": "#ffd23f", "marker_size": 0.26, "marker_height": 2.85 },
         "boss":  { "hp_multiplier": 7.0, "armor": 27.0, "resistance_floor": 0.35, "resistance_cap": 0.5, "rank": "boss",  "scale": 1.0,  "marker_color": "#ff3f6c", "marker_size": 0.34, "marker_height": 2.85 }

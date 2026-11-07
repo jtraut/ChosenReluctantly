@@ -2,9 +2,9 @@
     "map": {
         "types": { "merchant": { "weight": 8 } },
         "path_rules": { "max_merchants": 1, "relic_route": [6, 8] },
-        "estimate": { "merchant_prices": [30, 30, 45] }
+        "estimate": { "merchant_prices": [60, 60, 90] }
     },
     "run": {
-        "relics": { "prices": { "tier1": 30, "tier2": 45, "tier3": 65 } }
+        "relics": { "prices": { "tier1": 60, "tier2": 90, "tier3": 130 } }
     }
 }

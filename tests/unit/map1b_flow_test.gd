@@ -55,7 +55,7 @@ func test_a_combat_node_offers_cards_and_pays_gold() -> void:
 	assert_str(RunRelics.open_for_room(state, "combat", false, _ctx())).is_equal(RunState.PENDING_REWARD)
 	assert_int(state.offer.size()).is_equal(RunConfig.offer_size())
 	var gold: int = RunNodes.roll_gold(state.seed_value, int(node["id"]), "combat", RunConfig.gold())
-	assert_int(gold).is_between(12, 18)
+	assert_int(gold).is_between(24, 36)
 
 
 func test_an_elite_node_offers_relics_and_pays_gold_and_falls_back_to_cards_with_none_eligible() -> void:
@@ -63,7 +63,7 @@ func test_an_elite_node_offers_relics_and_pays_gold_and_falls_back_to_cards_with
 	var ctx: Dictionary = _ctx()
 	assert_str(RunRelics.open_for_room(state, "elite", false, ctx)).is_equal(RunState.PENDING_RELIC)
 	assert_int(state.offer.size()).is_equal(3)
-	assert_int(RunNodes.roll_gold(state.seed_value, int(RunNodes.current_node(state)["id"]), "elite", RunConfig.gold())).is_between(30, 40)
+	assert_int(RunNodes.roll_gold(state.seed_value, int(RunNodes.current_node(state)["id"]), "elite", RunConfig.gold())).is_between(60, 80)
 	var empty: RunState = _state_on("elite", 1)
 	empty.relics_given_up = RelicDatabase.ids()  # every relic there is (13 since MAP2-B), so none is left to offer
 	assert_str(RunRelics.open_for_room(empty, "elite", false, ctx)).is_equal(RunState.PENDING_REWARD)
@@ -151,17 +151,17 @@ func test_the_start_of_a_map_run_lists_the_room_one_nodes() -> void:
 
 func test_gold_is_seeded_from_the_run_seed_and_the_node_and_stays_in_range() -> void:
 	var gold: Dictionary = RunConfig.gold()
-	assert_array(RunNodes.gold_range("combat", gold)).is_equal([12, 18])
-	assert_array(RunNodes.gold_range("elite", gold)).is_equal([30, 40])
+	assert_array(RunNodes.gold_range("combat", gold)).is_equal([24, 36])
+	assert_array(RunNodes.gold_range("elite", gold)).is_equal([60, 80])
 	var seen_low: bool = false
 	var seen_high: bool = false
 	for seed_value in range(1, 200):
 		var a: int = RunNodes.roll_gold(seed_value, 13, "combat", gold)
 		assert_int(a).is_equal(RunNodes.roll_gold(seed_value, 13, "combat", gold))
-		assert_int(a).is_between(12, 18)
-		seen_low = seen_low or a == 12
-		seen_high = seen_high or a == 18
-		assert_int(RunNodes.roll_gold(seed_value, 20, "elite", gold)).is_between(30, 40)
+		assert_int(a).is_between(24, 36)
+		seen_low = seen_low or a == 24
+		seen_high = seen_high or a == 36
+		assert_int(RunNodes.roll_gold(seed_value, 20, "elite", gold)).is_between(60, 80)
 	assert_bool(seen_low and seen_high).is_true()
 	var other_node: bool = false
 	for node_id in range(0, 40):

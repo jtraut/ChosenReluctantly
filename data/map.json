@@ -31,7 +31,7 @@
     "large":  { "weight": 15, "act": 3,        "min_tier": 1 }
   },
   "estimate": {
-    "gold_mean": { "combat": 15, "elite": 35, "mini_boss": 50 },
-    "merchant_prices": [30, 30, 45]
+    "gold_mean": { "combat": 30, "elite": 70, "mini_boss": 100 },
+    "merchant_prices": [60, 60, 90]
   }
 }

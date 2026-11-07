@@ -387,7 +387,7 @@ func test_every_price_is_read_from_data_not_hardcoded() -> void:
 	var st: RunState = _state(1, 0)
 	st.merchant_removals = 3
 	assert_int(Merchant.removal_price(st, shipped)).is_equal(125)
-	for pair: Array in [["asap_notice", 30], ["severance_package", 45], ["paperwork_fire", 30], ["grading_curve", 45], ["liquidate_assets", 45], ["request_for_quotation", 30], ["as_per_the_attached_document", 45]]:
+	for pair: Array in [["asap_notice", 60], ["severance_package", 90], ["paperwork_fire", 60], ["grading_curve", 90], ["liquidate_assets", 90], ["request_for_quotation", 60], ["as_per_the_attached_document", 90]]:
 		assert_int(Merchant.relic_price(String(pair[0]), shipped)).override_failure_message(String(pair[0])).is_equal(int(pair[1]))
 
 
@@ -898,13 +898,13 @@ func test_buying_liquidate_assets_makes_the_next_room_hit_harder_after_the_spend
 	var price: int = Merchant.relic_price("liquidate_assets", controller._ctx)
 	assert_bool(bool(controller.buy_relic("liquidate_assets")["ok"])).is_true()
 	assert_int(state.gold_spent_merchant).is_equal(price)
-	# 45 gold spent: not yet 50, so no bonus; buying a card (40) crosses 50 and the live room sees it at once
-	assert_float(main.player.stat_modifiers.apply("damage_mult", 1.0)).is_equal_approx(1.0, 0.00001)
+	# 90 gold spent (tier 2 at the D41 prices): one full 50, so +1% at once; buying a card (40) takes the total to 130 and the live room sees +2% at once
+	# (MAP3-A: a card or removal purchase now refreshes the run stats too, it used to take a relic purchase)
+	assert_float(main.player.stat_modifiers.apply("damage_mult", 1.0)).is_equal_approx(1.01, 0.00001)
 	var card_id: String = String(state.merchant_visit["cards"][0])
 	assert_bool(bool(controller.buy_card(card_id)["ok"])).is_true()
 	assert_int(state.gold_spent_merchant).is_equal(price + 40)
-	# Observation: the live room is not refreshed by a card or removal purchase (only a relic purchase calls _sync_relics), so the stat here is still 1.0.
-	# Nobody can notice: the merchant room has no combat and the next room is rebuilt from the state, which is what is asserted after the reload below.
+	assert_float(main.player.stat_modifiers.apply("damage_mult", 1.0)).is_equal_approx(1.02, 0.00001)
 	# and a reload rebuilds it from the state
 	var saved: String = state.to_json()
 	main.queue_free()
@@ -913,7 +913,7 @@ func test_buying_liquidate_assets_makes_the_next_room_hit_harder_after_the_spend
 	RunSession.current = restored
 	var again := _spawn()
 	await _frames()
-	assert_float(again.player.stat_modifiers.apply("damage_mult", 1.0)).is_equal_approx(1.01, 0.00001)
+	assert_float(again.player.stat_modifiers.apply("damage_mult", 1.0)).is_equal_approx(1.02, 0.00001)
 
 
 func test_the_shipped_data_has_the_merchant_fully_on() -> void:
@@ -921,13 +921,13 @@ func test_the_shipped_data_has_the_merchant_fully_on() -> void:
 	var map: Dictionary = MapConfig.get_config()
 	assert_float(float(map["types"]["merchant"]["weight"])).is_equal(8.0)
 	assert_array(map["path_rules"]["relic_route"]).contains_exactly([6.0, 8.0])
-	assert_array(map["estimate"]["merchant_prices"]).contains_exactly([30.0, 30.0, 45.0])
+	assert_array(map["estimate"]["merchant_prices"]).contains_exactly([60.0, 60.0, 90.0])
 	assert_int(int(map["path_rules"]["max_merchants"])).is_equal(1)
 	assert_int(int(map["path_rules"]["min_rest"])).is_equal(1)
 	var prices: Dictionary = RunConfig.get_config()["relics"]["prices"]
-	assert_int(int(prices["tier1"])).is_equal(30)
-	assert_int(int(prices["tier2"])).is_equal(45)
-	assert_int(int(prices["tier3"])).is_equal(65)
+	assert_int(int(prices["tier1"])).is_equal(60)
+	assert_int(int(prices["tier2"])).is_equal(90)
+	assert_int(int(prices["tier3"])).is_equal(130)
 	assert_bool(prices.has("boss")).is_false()
 	assert_bool(MerchantSwitch.shipped_is_on()).is_true()
 	assert_array(MerchantSwitch.shipped_problems()).is_empty()

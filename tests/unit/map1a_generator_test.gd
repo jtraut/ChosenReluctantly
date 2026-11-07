@@ -196,11 +196,12 @@ func test_to_text_prints_every_room() -> void:
 
 # --- the relic estimate (MAP.md section 4.1 / 4.2 worked routes) ---------------------------------
 
-## The shipped config with the estimate's merchant prices pinned to the MAP2-A tier prices (60, 60, 90), so the worked routes below mean the same
-## the merchant is off (those prices) or on (cheaper ones, MAP2-B; it ships on since the MAP2 ux step).
+## The shipped config with the estimate's merchant prices and gold means pinned to the numbers the worked routes below were written for (prices 60, 60, 90;
+## income 15 / 35 / 50), so they mean the same whatever the shipped economy is (D41 = B doubled the shipped income to 30 / 70 / 100 in MAP3-A).
 func _priced_config() -> Dictionary:
 	var config: Dictionary = MapConfig.get_config().duplicate(true)
 	(config["estimate"] as Dictionary)["merchant_prices"] = [60, 60, 90]
+	(config["estimate"] as Dictionary)["gold_mean"] = {"combat": 15, "elite": 35, "mini_boss": 50}
 	return config
 
 

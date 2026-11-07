@@ -495,8 +495,8 @@ func test_the_shipped_data_matches_the_accepted_changes() -> void:
 	assert_int(int(c["rooms"])).is_equal(10)
 	# run.json: the relic-room stopgap is gone, gold ranges as documented
 	var run: Dictionary = RunConfig.get_config()
-	assert_array(((run["gold"] as Dictionary)["combat"] as Array).map(func(v: Variant) -> int: return int(v))).is_equal([12, 18])
-	assert_array(((run["gold"] as Dictionary)["elite"] as Array).map(func(v: Variant) -> int: return int(v))).is_equal([30, 40])
+	assert_array(((run["gold"] as Dictionary)["combat"] as Array).map(func(v: Variant) -> int: return int(v))).is_equal([24, 36])
+	assert_array(((run["gold"] as Dictionary)["elite"] as Array).map(func(v: Variant) -> int: return int(v))).is_equal([60, 80])
 	assert_bool((run["rooms"] as Dictionary).has("relic_room")).override_failure_message("the rooms.relic_room stopgap is still in run.json").is_false()
 
 
@@ -530,8 +530,8 @@ func test_gold_is_deterministic_in_range_order_free_and_zero_for_non_paying_type
 		for id in [0, 5, 9, 33]:
 			var a: int = RunNodes.roll_gold(s, id, "combat", g)
 			assert_int(a).is_equal(RunNodes.roll_gold(s, id, "combat", g))
-			assert_int(a).is_between(12, 18)
-			assert_int(RunNodes.roll_gold(s, id, "elite", g)).is_between(30, 40)
+			assert_int(a).is_between(24, 36)
+			assert_int(RunNodes.roll_gold(s, id, "elite", g)).is_between(60, 80)
 			for zero: String in ["boss", "rest", "relic_room", "merchant", "nonsense", ""]:
 				assert_int(RunNodes.roll_gold(s, id, zero, g)).is_equal(0)
 	# the spread covers the range (not a constant)
@@ -544,8 +544,8 @@ func test_gold_is_deterministic_in_range_order_free_and_zero_for_non_paying_type
 	assert_int(RunNodes.roll_gold(1, 1, "combat", {"combat": [5]})).is_equal(0)
 	assert_int(RunNodes.roll_gold(1, 1, "combat", {})).is_equal(0)
 	# negative seed and huge seed stay in range
-	assert_int(RunNodes.roll_gold(-5, 1, "combat", g)).is_between(12, 18)
-	assert_int(RunNodes.roll_gold(RunState.SEED_LIMIT * 3, 1, "combat", g)).is_between(12, 18)
+	assert_int(RunNodes.roll_gold(-5, 1, "combat", g)).is_between(24, 36)
+	assert_int(RunNodes.roll_gold(RunState.SEED_LIMIT * 3, 1, "combat", g)).is_between(24, 36)
 
 
 func _spawn() -> Main:

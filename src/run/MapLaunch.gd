@@ -33,3 +33,36 @@ static func resolve(args: PackedStringArray) -> Dictionary:
 		elif off_count == 1:
 			override = OVERRIDE_OFF
 	return {"override": override, "errors": errors}
+
+
+## `--run-node=N`, `--run-gold=N` and `--merchant` (MAP2-B debug flags): {node: int, gold: int, errors: Array[String]}; node and gold are -1 when not given.
+## Each of the two numbers needs a whole number from 0 (`--run-node=33`) and may be given once; `--merchant` takes no value and may be given once.
+## Any error means the launch is refused (exit 2) instead of a silently ignored flag.
+static func resolve_run_args(args: PackedStringArray) -> Dictionary:
+	var errors: Array[String] = []
+	var node: int = -1
+	var gold: int = -1
+	var counts: Dictionary = {"--run-node": 0, "--run-gold": 0, "--merchant": 0}
+	for arg: String in args:
+		var flag: String = arg.get_slice("=", 0)
+		if not counts.has(flag):
+			continue
+		counts[flag] = int(counts[flag]) + 1
+		if flag == "--merchant":
+			if arg != "--merchant":
+				errors.append("--merchant takes no value; give it as --merchant")
+			continue
+		var value: String = arg.substr(flag.length() + 1) if arg.contains("=") else ""
+		if not value.is_valid_int() or value.to_int() < 0:
+			errors.append("%s needs a whole number from 0, as %s=33 (got '%s')" % [flag, flag, value])
+		elif flag == "--run-node":
+			node = value.to_int()
+		else:
+			gold = value.to_int()
+	for flag: String in counts.keys():
+		if int(counts[flag]) > 1:
+			errors.append("%s was given %d times; give it once" % [flag, int(counts[flag])])
+	if not errors.is_empty():
+		node = -1
+		gold = -1
+	return {"node": node, "gold": gold, "errors": errors}

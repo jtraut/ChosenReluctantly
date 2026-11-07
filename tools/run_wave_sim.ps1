@@ -13,7 +13,7 @@
 #   first = the lowest column, relic = the most relics by MapRules.relic_estimate, safe = the fewest elite-like nodes and the most rests, random = seeded. -Map alone = the map with the first route (--sim-map).
 #   Prints a route line per run (nodes, fights, elites, relic stages and their chest sizes, gold, relics) and a ROUTE SUMMARY (wins, relics and gold per run, chest sizes seen). data/map.json now ships the map on, so a plain -Run follows the map too (the first route); -NoMap (--sim-no-map) pins the straight run (the pre-MAP1 numbers).
 # -Merchant (needs the map: -Route or -Map; --sim-merchant, MAP2-B): turn the merchant on for this process (data/merchant_on.json is merged into data/map.json and run.json: weight 8, relic_route [6, 8]).
-#   The bots then visit merchant nodes on their route: the `relic` route buys relics first, `safe` buys a removal then a card, `first` and `random` buy the cheapest relic then a card.
+#   The bots then visit merchant nodes on their route: the `relic` route buys relics first (cheapest first), then a removal, then a card; `safe`, `first` and `random` buy a removal, then a card, and no relics (MerchantPolicy).
 #   The run line and the ROUTE SUMMARY add gold spent, relics bought and removals.
 # -Run also prints the damage the player's side dealt by source (light, heavy, each slot type, each status, each relic) per run and over all runs with the fingerprint spread, relic pick/skip/swap counts, and BOSS TIMES with timed-out boss fights listed apart.
 # -StartRoom N (needs -Run): start every run at room N (10 = the boss) with the starter deck and full HP (--start-room).

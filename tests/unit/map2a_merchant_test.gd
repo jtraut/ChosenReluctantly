@@ -63,10 +63,10 @@ func test_shipped_data_has_the_merchant_block_and_the_relic_prices() -> void:
 	assert_int(int(merchant["relic_stock"])).is_equal(3)
 	assert_int(int(merchant["card_stock"])).is_equal(3)
 	assert_array(MerchantConfig.validate_block(merchant)).is_empty()
-	var on: bool = MerchantSwitch.shipped_is_on()  # MAP2-B: the relic prices change with the merchant switch (data/merchant_on.json)
-	assert_int(RelicConfig.price_for_tier("tier1")).is_equal(30 if on else 60)
-	assert_int(RelicConfig.price_for_tier("tier2")).is_equal(45 if on else 90)
-	assert_int(RelicConfig.price_for_tier("tier3")).is_equal(65 if on else 130)
+	# D41 = B (MAP3-A): the relic prices are 60/90/130 with the merchant on or off (data/merchant_on.json carries the same values)
+	assert_int(RelicConfig.price_for_tier("tier1")).is_equal(60)
+	assert_int(RelicConfig.price_for_tier("tier2")).is_equal(90)
+	assert_int(RelicConfig.price_for_tier("tier3")).is_equal(130)
 	assert_int(RelicConfig.price_for_tier("boss")).is_equal(-1)
 
 

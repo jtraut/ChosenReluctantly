@@ -318,8 +318,11 @@ static func items(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 			reason = "not_for_sale"
 		elif price > state.gold:
 			reason = "too_expensive"
+		var at_cap: bool = RelicOffer.needs_swap(state.relics.size(), RunRelics.max_owned(ctx))
+		if reason.is_empty() and at_cap and RunRelics.giveable_ids(state, ctx).is_empty():
+			reason = "none_giveable"  # at the cap with nothing that can be given up (boss relics can't): the same refusal buy_relic gives
 		out.append({"kind": KIND_RELIC, "id": relic_id, "name": String(RunRelics.display(relic_id, ctx)["name"]), "price": price, "sold": sold,
-				"can_buy": reason.is_empty(), "reason": reason, "needs_giveup": reason.is_empty() and RelicOffer.needs_swap(state.relics.size(), RunRelics.max_owned(ctx))})
+				"can_buy": reason.is_empty(), "reason": reason, "needs_giveup": reason.is_empty() and at_cap})
 	for card_id: String in _ids(visit["cards"]):
 		var card_cost: int = card_price(ctx)
 		var card_sold: bool = (visit["sold_cards"] as Array).has(card_id)

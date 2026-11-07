@@ -242,7 +242,7 @@ func confirm_class_pick(character: String) -> bool:
 ## preset deck from data/debug_decks (its `starter`, or its `full` with `--full-deck`) and `--list-decks` prints them and quits.
 ## `--run-node=N` (map runs, MAP2-B): start in map node N (the path runs back to room 1 along first predecessors); `--run-gold=N` starts with N gold. Both are for captures
 ## (for example the merchant: `--merchant --run-seed=54 --run-node=<its id> --run-gold=200`; the map print tool with -Merchant lists the ids).
-## `--merchant` turns the merchant on for this launch (MerchantSwitch: data/merchant_on.json merged into the map and run config; the shipped data has it off).
+## `--merchant` turns the merchant on for this launch (MerchantSwitch: data/merchant_on.json merged into the map and run config; the shipped data already has it on, so this is redundant).
 ## `--class=<rogue|wizard>` plays the run as that character (a `--deck` preset names its class, and a `--class` that disagrees is refused).
 ## Returns false when the launch must not go on: it has asked the tree to quit (exit 0 for --list-decks, 2 for bad args).
 func _apply_launch_args(tree: SceneTree) -> bool:
@@ -280,6 +280,14 @@ func _apply_launch_args(tree: SceneTree) -> bool:
 			printerr("Launch refused: " + problem)
 		tree.quit(2)
 		return false
+	var run_launch: Dictionary = MapLaunch.resolve_run_args(args)
+	if not (run_launch["errors"] as Array[String]).is_empty():
+		for problem: String in (run_launch["errors"] as Array[String]):
+			printerr("Launch refused: " + problem)
+		tree.quit(2)
+		return false
+	_launch_node = int(run_launch["node"])
+	_launch_gold = int(run_launch["gold"])
 	if int(map_launch["override"]) != MapLaunch.OVERRIDE_NONE:
 		RunSession.map_override = int(map_launch["override"])
 	if not _apply_relic_args(args, tree):
@@ -297,10 +305,6 @@ func _apply_launch_args(tree: SceneTree) -> bool:
 		elif arg.begins_with("--run-room=") and arg.substr(11).is_valid_int():
 			_launch_room = maxi(arg.substr(11).to_int() - 1, 0)
 			_launch_room_set = true
-		elif arg.begins_with("--run-node=") and arg.substr(11).is_valid_int():
-			_launch_node = maxi(arg.substr(11).to_int(), 0)
-		elif arg.begins_with("--run-gold=") and arg.substr(11).is_valid_int():
-			_launch_gold = maxi(arg.substr(11).to_int(), 0)
 		elif arg.begins_with("--run-clear-after=") and arg.substr(18).is_valid_float():
 			_launch_clear_after = maxf(arg.substr(18).to_float(), 0.0)
 	return true
@@ -419,11 +423,14 @@ func choose(option_id: String) -> Dictionary:
 	if not _active or not _cleared or not _state.has_pending():
 		return {"ok": false, "kind": "", "card_id": "", "amount": 0.0, "finished": false, "reason": "no choice is open"}
 	var gold_before: int = _state.gold
+	var spent_before: int = _state.gold_spent_merchant
 	var result: Dictionary = RunChoices.apply(_state, option_id, _ctx)
 	if not bool(result["ok"]):
 		return result
 	if ["relic_pick", "relic_swap", "merchant_relic"].has(String(result["kind"])):
 		_sync_relics()
+	elif _state.gold_spent_merchant != spent_before and _relics != null:
+		_relics.set_run_stats(_run_stats())  # any merchant purchase (a card, a removal) moves the run stats a relic scales by (Liquidate Assets)
 	if _state.gold != gold_before:
 		gold_changed.emit(_state.gold, _state.gold - gold_before)  # a merchant purchase: a negative delta
 	var health: Health = _main.player.health

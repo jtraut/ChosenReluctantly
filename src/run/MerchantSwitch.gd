@@ -1,9 +1,10 @@
 class_name MerchantSwitch
 extends RefCounted
-## The merchant's on switch (MAP2-B). The shipped data has the merchant OFF (data/map.json `types.merchant.weight` 0, `path_rules.relic_route` [5, 7]) until
-## ux ships the panel. data/merchant_on.json holds exactly what changes when it is ON, as a patch: `map` is merged into data/map.json and `run` into
-## data/run.json (objects merge key by key, anything else replaces). `apply()` patches the loaded configs for this process only, so a sim, a tool, a
-## test or a `--merchant` launch can play the merchant before the data is flipped. Flipping it for good means copying these values into the data files.
+## The merchant's on switch (MAP2-B). The shipped data now has the merchant ON (data/map.json `types.merchant.weight` above 0, `path_rules.relic_route` [6, 8]; ux
+## switched it on in MAP2). data/merchant_on.json holds exactly what changes when it is ON, as a patch: `map` is merged into data/map.json and `run` into
+## data/run.json (objects merge key by key, anything else replaces). With the data already on, `apply()` changes nothing (a `--merchant` launch is redundant); it
+## is kept so a test or a tool can re-apply the patch, and because shipped_problems() checks that a half flip never ships: every patch value must equal the data.
+## `apply()` patches the loaded configs for this process only. If the data is ever switched off again, the patch plays the merchant before a flip.
 ##
 ## The patched config is validated first, so a patch that breaks a rule fails loudly and changes nothing.
 

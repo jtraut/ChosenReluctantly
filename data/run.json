@@ -29,7 +29,13 @@
     "gold": { "combat": [24, 36], "elite": [60, 80], "mini_boss": [90, 110] },
     "tiers": {
         "elite": { "hp_multiplier": 2.0, "armor": 17.0, "resistance_floor": 0.25, "resistance_cap": 0.5, "rank": "elite", "scale": 1.0, "marker_color": "#ffd23f", "marker_size": 0.26, "marker_height": 2.85 },
-        "boss":  { "hp_multiplier": 7.0, "armor": 27.0, "resistance_floor": 0.35, "resistance_cap": 0.5, "rank": "boss",  "scale": 1.0,  "marker_color": "#ff3f6c", "marker_size": 0.34, "marker_height": 2.85 }
+        "boss":  { "hp_multiplier": 7.0, "armor": 27.0, "resistance_floor": 0.35, "resistance_cap": 0.5, "rank": "boss",  "scale": 1.0,  "marker_color": "#ff3f6c", "marker_size": 0.34, "marker_height": 2.85 },
+        "mini_boss": { "hp_multiplier": 3.5, "armor": 22.0, "resistance_floor": 0.3, "resistance_cap": 0.5, "rank": "elite", "scale": 1.2, "marker_color": "#ff7f50", "marker_size": 0.3, "marker_height": 2.85 }
+    },
+    "acts": {
+        "1": { "hp": 1.0, "damage": 1.0, "gold": 1.0 },
+        "2": { "hp": 1.35, "damage": 1.15, "gold": 1.0 },
+        "3": { "hp": 1.7, "damage": 1.3, "gold": 1.0 }
     },
     "rooms": {
         "combat": [
@@ -48,16 +54,74 @@
             { "id": "combat_stonewall", "min_index": 3, "first_wave_delay": 2.0, "stages": [
                 { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 3 }, { "enemy": "ranged_shooter", "count": 2 } ] },
                 { "delay": 8.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "fire_resistant_golem", "count": 1 }, { "enemy": "melee_chaser", "count": 3 } ] }
+            ] },
+            { "id": "a2_warmup", "acts": [2], "max_index": 2, "first_wave_delay": 2.0, "stages": [
+                { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 4 }, { "enemy": "ranged_shooter", "count": 2 } ] },
+                { "delay": 7.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "melee_chaser", "count": 3 }, { "enemy": "ranged_shooter", "count": 2 } ] }
+            ] },
+            { "id": "a2_crossfire", "acts": [2], "min_index": 1, "first_wave_delay": 2.0, "stages": [
+                { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 3 }, { "enemy": "ranged_shooter", "count": 4 } ] },
+                { "delay": 7.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "fire_resistant_golem", "count": 1 }, { "enemy": "ranged_shooter", "count": 2 } ] }
+            ] },
+            { "id": "a2_horde", "acts": [2], "min_index": 2, "first_wave_delay": 2.0, "stages": [
+                { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 8 } ] },
+                { "delay": 7.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "melee_chaser", "count": 4 }, { "enemy": "ranged_shooter", "count": 3 } ] }
+            ] },
+            { "id": "a2_golems", "acts": [2], "min_index": 3, "first_wave_delay": 2.0, "stages": [
+                { "delay": 0.0, "spawns": [ { "enemy": "fire_resistant_golem", "count": 2 }, { "enemy": "melee_chaser", "count": 3 } ] },
+                { "delay": 7.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "fire_resistant_golem", "count": 1 }, { "enemy": "melee_chaser", "count": 4 }, { "enemy": "ranged_shooter", "count": 2 } ] }
+            ] },
+            { "id": "a3_warmup", "acts": [3], "max_index": 2, "first_wave_delay": 2.0, "stages": [
+                { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 5 }, { "enemy": "ranged_shooter", "count": 3 } ] },
+                { "delay": 7.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "melee_chaser", "count": 3 }, { "enemy": "ranged_shooter", "count": 2 } ] }
+            ] },
+            { "id": "a3_crossfire", "acts": [3], "min_index": 1, "first_wave_delay": 2.0, "stages": [
+                { "delay": 0.0, "spawns": [ { "enemy": "ranged_shooter", "count": 5 }, { "enemy": "melee_chaser", "count": 3 } ] },
+                { "delay": 7.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "fire_resistant_golem", "count": 1 }, { "enemy": "ranged_shooter", "count": 3 } ] }
+            ] },
+            { "id": "a3_horde", "acts": [3], "min_index": 2, "first_wave_delay": 2.0, "stages": [
+                { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 8 }, { "enemy": "ranged_shooter", "count": 2 } ] },
+                { "delay": 7.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "melee_chaser", "count": 5 }, { "enemy": "ranged_shooter", "count": 3 } ] }
+            ] },
+            { "id": "a3_golems", "acts": [3], "min_index": 3, "first_wave_delay": 2.0, "stages": [
+                { "delay": 0.0, "spawns": [ { "enemy": "fire_resistant_golem", "count": 2 }, { "enemy": "ranged_shooter", "count": 2 } ] },
+                { "delay": 7.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "fire_resistant_golem", "count": 2 }, { "enemy": "melee_chaser", "count": 4 } ] }
             ] }
         ],
         "elite": [
             { "id": "elite_brutes", "first_wave_delay": 2.0, "stages": [
                 { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 3 } ] },
                 { "delay": 5.0, "until_alive_at_most": 2, "spawns": [ { "enemy": "melee_chaser", "count": 1, "tier": "elite" }, { "enemy": "fire_resistant_golem", "count": 1, "tier": "elite" }, { "enemy": "ranged_shooter", "count": 2 } ] }
+            ] },
+            { "id": "a2_elite_brutes", "acts": [2], "first_wave_delay": 2.0, "stages": [
+                { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 4 } ] },
+                { "delay": 7.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "melee_chaser", "count": 2, "tier": "elite" }, { "enemy": "fire_resistant_golem", "count": 1, "tier": "elite" }, { "enemy": "ranged_shooter", "count": 2 } ] }
+            ] },
+            { "id": "a2_elite_wall", "acts": [2], "first_wave_delay": 2.0, "stages": [
+                { "delay": 0.0, "spawns": [ { "enemy": "ranged_shooter", "count": 3 }, { "enemy": "melee_chaser", "count": 2 } ] },
+                { "delay": 7.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "fire_resistant_golem", "count": 2, "tier": "elite" }, { "enemy": "melee_chaser", "count": 3 } ] }
+            ] },
+            { "id": "a3_elite_brutes", "acts": [3], "first_wave_delay": 2.0, "stages": [
+                { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 4 }, { "enemy": "ranged_shooter", "count": 2 } ] },
+                { "delay": 7.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "melee_chaser", "count": 2, "tier": "elite" }, { "enemy": "fire_resistant_golem", "count": 1, "tier": "elite" }, { "enemy": "ranged_shooter", "count": 3 } ] }
+            ] },
+            { "id": "a3_elite_wall", "acts": [3], "first_wave_delay": 2.0, "stages": [
+                { "delay": 0.0, "spawns": [ { "enemy": "fire_resistant_golem", "count": 1 }, { "enemy": "melee_chaser", "count": 3 } ] },
+                { "delay": 7.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "fire_resistant_golem", "count": 2, "tier": "elite" }, { "enemy": "ranged_shooter", "count": 1, "tier": "elite" }, { "enemy": "melee_chaser", "count": 3 } ] }
+            ] }
+        ],
+        "mini_boss": [
+            { "id": "mini_boss_act1", "acts": [1], "first_wave_delay": 2.0, "stages": [
+                { "delay": 0.0, "spawns": [ { "enemy": "fire_resistant_golem", "count": 1, "tier": "mini_boss" }, { "enemy": "melee_chaser", "count": 2 } ] },
+                { "delay": 6.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "ranged_shooter", "count": 2 }, { "enemy": "melee_chaser", "count": 3 } ] }
+            ] },
+            { "id": "mini_boss_act2", "acts": [2], "first_wave_delay": 2.0, "stages": [
+                { "delay": 0.0, "spawns": [ { "enemy": "fire_resistant_golem", "count": 1, "tier": "mini_boss" }, { "enemy": "ranged_shooter", "count": 2 } ] },
+                { "delay": 6.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "melee_chaser", "count": 1, "tier": "mini_boss" }, { "enemy": "melee_chaser", "count": 3 }, { "enemy": "ranged_shooter", "count": 2 } ] }
             ] }
         ],
         "boss": [
-            { "id": "boss_guardian", "first_wave_delay": 2.0, "stages": [
+            { "id": "boss_guardian", "acts": [1, 3], "first_wave_delay": 2.0, "stages": [
                 { "delay": 0.0, "spawns": [ { "enemy": "boss_guardian", "count": 1 } ] }
             ] }
         ]

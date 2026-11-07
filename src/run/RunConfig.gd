@@ -309,7 +309,7 @@ static func _validate_variant_coverage(config: Dictionary, total: int) -> Array[
 		var wanted: Variant = (config["composition"] as Dictionary).get(room_type, 0)
 		if typeof(variants) != TYPE_ARRAY or ((not _is_whole(wanted) or int(wanted) <= 0) and room_type != "mini_boss"):
 			continue
-		var only_last: bool = room_type == "mini_boss"
+		var only_last: bool = room_type == "mini_boss" or room_type == "boss"
 		for act_number in lists_acts(variants as Array):
 			for index in range(total - 1 if only_last else 0, total):
 				if variants_for(index, variants as Array, act_number).is_empty():
@@ -331,9 +331,15 @@ static func lists_acts(variants: Array) -> Array[int]:
 
 
 ## The acts a wave list is for: its `acts` list, else [1] (a list without the field is an act 1 list, so today's lists keep their act).
-static func _acts_of(variant: Dictionary) -> Array:
+static func _acts_of(variant: Dictionary) -> Array[int]:
+	var found: Array[int] = []
 	var listed: Variant = variant.get("acts")
-	return listed as Array if typeof(listed) == TYPE_ARRAY else [1]
+	if typeof(listed) != TYPE_ARRAY:
+		found.append(1)
+		return found
+	for act_value: Variant in (listed as Array):  # JSON numbers are floats: compare as whole numbers
+		found.append(int(act_value))
+	return found
 
 
 static func _validate_ui(ui_value: Variant) -> Array[String]:

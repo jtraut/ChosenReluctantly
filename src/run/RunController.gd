@@ -105,6 +105,8 @@ func begin(main: Main) -> void:
 		spawner.configure_room(RunConfig.room_wave_config(variant, WaveConfig.get_config()), room_spawn_seed(_state.seed_value, _state.room_index))
 		set_process(true)
 	room_started.emit(_state.room_index, _rooms.size(), String(room["type"]))
+	if not _fresh_launch:
+		RunSave.autosave(_state)  # MAP3-A: a room's start is a save point (resuming restarts the room; the first scene of a launch never overwrites a save)
 	var relay := CombatLink.events()
 	if relay != null:
 		relay.notify_room_started(_state.room_index, String(room["type"]))
@@ -251,6 +253,7 @@ func _apply_launch_args(tree: SceneTree) -> bool:
 		print(line)
 	for message: String in (launch["errors"] as Array[String]):
 		printerr("Launch refused: " + message)  # plain stderr: a bad launch arg is the caller's error, not an engine error with a stack trace
+	RunSave.suppressed = RunSave.args_suppress(args)  # a debug launch never reads, writes or deletes the player's save
 	var exit_code: int = int(launch["exit"])
 	if exit_code != DebugDecks.EXIT_CONTINUE:
 		tree.quit(exit_code)
@@ -401,6 +404,7 @@ func _finish_room(healed: float) -> void:
 		relay.notify_room_cleared(int(room["index"]), String(room["type"]))
 	if _state.room_index >= _rooms.size() - 1:
 		_state.outcome = "won"
+		RunSave.delete_save()
 		run_won.emit()
 		return
 	if RunRelics.open_for_room(_state, String(room["type"]), false, _ctx) != RunState.PENDING_NONE:
@@ -452,6 +456,7 @@ func continue_to_next_room(force: bool = false) -> void:
 		_state.offer = []
 	if RunNodes.active(_state):
 		RunNodes.open(_state)  # a map run never walks on by itself: the player picks the next node (`pick_node`)
+		RunSave.autosave(_state)  # MAP3-A: the map screen is a save point
 		choice_requested.emit(current_choice())
 		return
 	_active = false
@@ -465,6 +470,7 @@ func _on_player_died() -> void:
 	_active = false
 	set_process(false)
 	_state.outcome = "lost"
+	RunSave.delete_save()
 	run_lost.emit()
 
 

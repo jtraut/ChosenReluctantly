@@ -59,7 +59,8 @@ static func validate(config: Dictionary, known_enemies: Array[String], _known_ca
 	errors.append_array(_validate_gold(config.get("gold")))
 	errors.append_array(MerchantConfig.validate_block(config.get("merchant")))
 	errors.append_array(_validate_tiers(config.get("tiers")))
-	errors.append_array(_validate_act_scale(config.get("acts")))
+	if config.has("acts"):
+		errors.append_array(_validate_act_scale(config["acts"]))
 	errors.append_array(_validate_rooms(config, known_enemies, total))
 	errors.append_array(_validate_ui(config.get("ui")))
 	errors.append_array(RelicConfig.validate_block(config.get("relics")))
@@ -218,8 +219,6 @@ static func _validate_tiers(tiers: Variant) -> Array[String]:
 
 static func _validate_act_scale(value: Variant) -> Array[String]:
 	var errors: Array[String] = []
-	if value == null:
-		return errors
 	if typeof(value) != TYPE_DICTIONARY:
 		errors.append("'acts' must be an object {act number: {hp, damage, gold}}")
 		return errors

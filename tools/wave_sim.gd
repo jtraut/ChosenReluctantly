@@ -144,6 +144,9 @@ var _no_map: bool = false
 ## `--sim-merchant` (-Merchant, MAP2-B): the merchant is on for this process (MerchantSwitch: data/merchant_on.json). Implies the map (the `first` route when no -Route is given).
 var _merchant: bool = false
 var _route: Array[int] = []
+## MAP3-B: one RouteBot.summary per act of the current run, and one record per act played ({act, cleared, seconds, hp, max_hp, relics, gold}).
+var _route_summaries: Array[Dictionary] = []
+var _act_records: Array[Dictionary] = []
 ## Damage the player's side dealt to enemies, by origin, for the current run and for all runs (BD2-B; run mode). Fed by CombatEvents.hit_landed.
 var _damage_run: Dictionary = {}
 ## qa MAP2: relic id -> how many times its triggers fired this run (counted from the controller's relic_triggered signal; output only).
@@ -222,6 +225,12 @@ func _ready() -> void:
 			_no_relics = true
 		elif arg == "--sim-no-map":
 			_no_map = true
+		elif arg.begins_with("--sim-acts="):
+			if not arg.substr(11).is_valid_int() or arg.substr(11).to_int() < 1 or arg.substr(11).to_int() > RunState.MAX_ACTS:
+				push_error("wave sim: -Acts needs a whole number from 1 to %d" % RunState.MAX_ACTS)
+				get_tree().quit(2)
+				return
+			RunSession.acts_override = arg.substr(11).to_int()
 		elif arg == "--sim-merchant":
 			_merchant = true
 		elif arg == "--sim-map":
@@ -874,12 +883,17 @@ func _run_whole(run_seed: int) -> void:
 	var tally := _on_hit_for_tally
 	if relay != null:
 		relay.hit_landed.connect(tally)
+	_route_summaries = []
+	_act_records = []
 	var rooms: Array[Dictionary] = _setup_route(run_seed)
+	var run_state_at_start: RunState = RunSession.current
+	var acts_in_run: int = run_state_at_start.acts_total if run_state_at_start != null and not run_state_at_start.map.is_empty() else 1
+	var rooms_in_run: int = run_state_at_start.run_room_total() if acts_in_run > 1 or (run_state_at_start != null and not run_state_at_start.map.is_empty()) else rooms.size()
 	if _god:
 		RunSession.current.max_hp = 9999.0
 		RunSession.current.hp = 9999.0
 	_policy_rng.seed = run_seed * 977 + 13
-	var result: Dictionary = {"seed": run_seed, "rooms_total": rooms.size(), "rooms_reached": 0, "outcome": "unfinished", "types": [], "wall_ms": 0, "sim_s": 0.0, "room_s": [], "room_min_hp": []}
+	var result: Dictionary = {"seed": run_seed, "rooms_total": rooms_in_run, "rooms_reached": 0, "outcome": "unfinished", "types": [], "wall_ms": 0, "sim_s": 0.0, "room_s": [], "room_min_hp": []}
 	for room: Dictionary in rooms:
 		(result["types"] as Array).append(String(room["type"]))
 	var wall_start := Time.get_ticks_msec()
@@ -887,6 +901,8 @@ func _run_whole(run_seed: int) -> void:
 	get_tree().change_scene_to_packed(load(RUN_MAIN_PATH) as PackedScene)
 	var previous: Node = null
 	var room_index: int = clampi(_start_room - 1, 0, rooms.size() - 1) if _start_room > 0 else 0
+	var rooms_played: int = room_index  # rooms of the whole run played so far (acts after the first add their own)
+	var act_seconds: float = 0.0
 	if _start_room > rooms.size():
 		# Said out loud, not silently clamped. (A plain note, not an engine warning: the wrapper fails a sim on any WARNING line.)
 		print("note: -StartRoom %d is past the last room; every run starts at room %d (the boss) instead" % [_start_room, rooms.size()])
@@ -903,7 +919,7 @@ func _run_whole(run_seed: int) -> void:
 		_main = main_node as Main
 		_player = _main.player
 		previous = _main
-		result["rooms_reached"] = room_index + 1
+		result["rooms_reached"] = rooms_played + 1
 		var controller: RunController = _main.run_controller
 		controller.relic_triggered.connect(func(relic_id: String, _index: int, _event: String) -> void: _trigger_run[relic_id] = int(_trigger_run.get(relic_id, 0)) + 1)
 		_begin_run_room(run_seed, rooms[room_index])
@@ -918,27 +934,43 @@ func _run_whole(run_seed: int) -> void:
 		if _boss_log:
 			_boss_room_done(run_seed, room_result)
 		run_sim_total += _sim_time
-		if room_result == "lost":
-			result["outcome"] = "lost"
-			break
+		act_seconds += _sim_time
+		var run_state: RunState = controller.state()
 		if room_result != "cleared":
-			result["outcome"] = room_result
+			result["outcome"] = "lost" if room_result == "lost" else room_result
+			_record_act(run_state, false, act_seconds, run_state.act)
 			break
-		if controller.is_last_room():
+		if controller.is_last_room() and not RunNodes.has_next_act(run_state):
 			result["outcome"] = "won"
+			_record_act(run_state, true, act_seconds, run_state.act)
 			break
+		var act_ended: bool = controller.is_last_room()  # a mini-boss cleared in an act before the last
+		var act_before: int = run_state.act
 		if not controller.has_choice():
 			controller.continue_to_next_room()  # a straight run swaps scenes here; a map run opens its pick-next-node choice
+		var next_room_index: int = room_index + 1
 		if controller.has_choice():
 			var guard: int = 0
 			while controller.has_choice() and guard < 60:  # a merchant visit is many choices
 				guard += 1
+				if run_state.act != act_before:
+					# The mini-boss rewards are done and the next act's map is open: record the act, plan its route, and the next choice is the first pick.
+					_record_act(run_state, true, act_seconds, act_before)
+					act_seconds = 0.0
+					act_before = run_state.act
+					rooms = _plan_route(run_seed, false)
+					for room_entry: Dictionary in rooms:
+						(result["types"] as Array).append(String(room_entry["type"]) if not String(room_entry["type"]).is_empty() else "?")
+					next_room_index = 0
 				var choice_id: String = _policy_choose(controller)
 				var outcome: Dictionary = controller.choose(choice_id)
 				if not bool(outcome["ok"]):
 					_fail("run %d room %d: the bot choice '%s' was refused: %s" % [run_seed, room_index + 1, choice_id, str(outcome.get("reason", ""))])
 					break
-		room_index += 1
+		if act_ended and next_room_index != 0:
+			_fail("run %d: the act ended but the bot did not move on to the next one" % run_seed)
+		room_index = next_room_index
+		rooms_played += 1
 	if relay != null and relay.hit_landed.is_connected(tally):
 		relay.hit_landed.disconnect(tally)
 	_damage_by_run.append(_damage_run)
@@ -957,7 +989,7 @@ func _run_whole(run_seed: int) -> void:
 	for t: String in (result["types"] as Array):
 		type_letters.append("R" if t == RunConfig.RELIC_ROOM else t.substr(0, 1))  # "r" is the rest room
 	print("  run seed %d: %s | rooms reached %d of %d | sim %.0f s in %.1f s wall | types %s | room seconds %s | lowest HP in each room %s | HP at last room clear %s" % [
-		run_seed, String(result["outcome"]).to_upper(), int(result["rooms_reached"]), rooms.size(), float(result["sim_s"]), float(result["wall_ms"]) / 1000.0, ",".join(type_letters), str(result["room_s"]), str(result["room_min_hp"]), str(result["hp_end"])])
+		run_seed, String(result["outcome"]).to_upper(), int(result["rooms_reached"]), int(result["rooms_total"]), float(result["sim_s"]), float(result["wall_ms"]) / 1000.0, ",".join(type_letters), str(result["room_s"]), str(result["room_min_hp"]), str(result["hp_end"])])
 	print("    HP at each room end %s (max %s) | deck %d cards %s | picks %d, rejects used %d, removals %d, rest heals %d" % [
 		str(result["room_hp_end"]), str(result["max_hp"]), int(result["deck_size"]), str(result["deck_slots"]), int(result["picks"]), int(result["rejects_used"]), int(result["removals"]), int(result["heals"])])
 	print("    run stat: seed %d outcome %s rooms_reached %d damage_taken %.1f" % [run_seed, String(result["outcome"]), int(result["rooms_reached"]), _damage_taken])
@@ -1008,7 +1040,7 @@ func _policy_choose(controller: RunController) -> String:
 		RunState.PENDING_RELIC_SWAP:
 			return RelicPolicy.giveup_choice(options)
 		RunState.PENDING_NODE:
-			return "node:%d" % _route[state.room_index + 1]  # the route bot follows its planned route (RouteBot)
+			return "node:%d" % _route[state.path.size()]  # the route bot follows its planned route (RouteBot); a new act's path is empty, so its first pick is route[0]
 		RunState.PENDING_MERCHANT, RunState.PENDING_MERCHANT_REMOVE, RunState.PENDING_MERCHANT_SWAP:
 			return MerchantPolicy.choose(String(model["choice"]), options, state, _route_policy)  # no random draws: the other seeded choices do not shift
 		RunState.PENDING_REST:
@@ -1094,7 +1126,8 @@ func _record_deck_and_hp(result: Dictionary) -> void:
 	if state != null and not _route.is_empty():
 		result["gold"] = state.gold
 		result["relics_held"] = state.relics.size()
-		result["route_summary"] = RouteBot.summary(state.map, _route)
+		result["route_summary"] = _combined_route_summary()
+		result["acts"] = _act_records.duplicate(true)
 	if state != null and state.deck.is_empty():
 		_fail("run %d: the deck ended empty" % int(result["seed"]))
 
@@ -1369,6 +1402,7 @@ func _run_summary() -> void:
 	_print_damage_summary()
 	if _route_policy != "":
 		_print_route_summary()
+	_print_act_summary()
 	# Distribution of the generator alone over many seeds (cheap and pure).
 	var counts: Dictionary = {}
 	var index_counts: Dictionary = {}
@@ -1466,15 +1500,89 @@ func _setup_route(run_seed: int) -> Array[Dictionary]:
 	var state: RunState = RunSession.current
 	if state == null or state.map.is_empty():
 		return RunGenerator.generate(run_seed, RunConfig.get_config())
-	_route = RouteBot.plan(state.map, _route_policy if _route_policy != "" else "first", MapConfig.get_config(), run_seed)
-	state.path = [_route[0]] as Array[int]
-	state.pending = RunState.PENDING_NONE
-	state.room_index = 0
+	return _plan_route(run_seed, true)
+
+
+## The route through the current act's map (MAP3-B: called again at every act start). `skip_pick` puts the run on the route's first node (the bot skips the
+## start pick of the first act); a later act leaves its pick open and the bot's first choice takes route[0].
+func _plan_route(run_seed: int, skip_pick: bool) -> Array[Dictionary]:
+	var state: RunState = RunSession.current
+	var act_config: Dictionary = MapConfig.for_act(MapConfig.get_config(), state.act, state.acts_total)
+	_route = RouteBot.plan(state.map, _route_policy if _route_policy != "" else "first", act_config, run_seed + state.act - 1)
+	_route_summaries.append(RouteBot.summary(state.map, _route))
+	if skip_pick:
+		state.path = [_route[0]] as Array[int]
+		state.pending = RunState.PENDING_NONE
+		state.room_index = 0
 	var rooms: Array[Dictionary] = []
 	for index in range(_route.size()):
 		var node: Dictionary = MapGraph.node(state.map, _route[index])
 		rooms.append({"index": index, "type": String(node["type"]), "wave_id": String(node["wave_id"]), "node_id": int(node["id"]), "chest": RunNodes.chest_of(node) if String(node["type"]) == RunConfig.RELIC_ROOM else ""})
 	return rooms
+
+
+## The route reports of every act of this run added up ({fights, elites, relic_nodes, rest, chests}).
+func _combined_route_summary() -> Dictionary:
+	var total: Dictionary = {"fights": 0, "elites": 0, "relic_nodes": 0, "rest": 0, "chests": [] as Array[String]}
+	for part: Dictionary in _route_summaries:
+		for key: String in ["fights", "elites", "relic_nodes", "rest"]:
+			total[key] = int(total[key]) + int(part[key])
+		(total["chests"] as Array[String]).append_array(part["chests"] as Array[String])
+	return total
+
+
+## One act's end for the report: whether the act was cleared, the sim seconds its rooms took, and HP, relics and gold at its end.
+func _record_act(state: RunState, cleared: bool, seconds: float, act_number: int) -> void:
+	_act_records.append({
+		"act": act_number, "cleared": cleared, "seconds": snappedf(seconds, 0.1), "hp": snappedf(state.hp, 0.1), "max_hp": snappedf(state.max_hp, 0.1),
+		"relics": state.relics.size(), "gold": state.gold,
+	})
+
+
+## MAP3-B: the per-act report of the whole-run sim: clear rate, time, HP, relics and gold at each act's end, the time of each act against act 1, and the run totals.
+func _print_act_summary() -> void:
+	var by_act: Dictionary = {}
+	var totals: Array[float] = []
+	var finals: Array[float] = []
+	var unspent: Array[float] = []
+	var wins: int = 0
+	for result: Dictionary in _run_results:
+		if not result.has("acts"):
+			continue
+		var run_seconds: float = 0.0
+		for record: Dictionary in (result["acts"] as Array):
+			var key: int = int(record["act"])
+			if not by_act.has(key):
+				by_act[key] = {"reached": 0, "cleared": 0, "seconds": [] as Array[float], "hp": [] as Array[float], "hp_share": [] as Array[float], "relics": [] as Array[float], "gold": [] as Array[float]}
+			var entry: Dictionary = by_act[key]
+			entry["reached"] = int(entry["reached"]) + 1
+			run_seconds += float(record["seconds"])
+			if bool(record["cleared"]):
+				entry["cleared"] = int(entry["cleared"]) + 1
+				(entry["seconds"] as Array[float]).append(float(record["seconds"]))
+				(entry["hp"] as Array[float]).append(float(record["hp"]))
+				(entry["hp_share"] as Array[float]).append(float(record["hp"]) / maxf(float(record["max_hp"]), 1.0))
+				(entry["relics"] as Array[float]).append(float(record["relics"]))
+				(entry["gold"] as Array[float]).append(float(record["gold"]))
+		if String(result["outcome"]) == "won":
+			wins += 1
+			totals.append(run_seconds)
+			finals.append(float(result.get("relics_held", 0)))
+			unspent.append(float(result.get("gold", 0)))
+	if by_act.is_empty():
+		return
+	var keys: Array = by_act.keys()
+	keys.sort()
+	var act1_time: float = _median((by_act[keys[0]] as Dictionary)["seconds"] as Array[float])
+	for key: Variant in keys:
+		var entry: Dictionary = by_act[key]
+		var median_time: float = _median(entry["seconds"] as Array[float])
+		var versus: String = "" if int(key) == int(keys[0]) or act1_time <= 0.0 else " (%+.0f%% vs act 1)" % (100.0 * (median_time / act1_time - 1.0))
+		print("  ACT %d: reached by %d run(s), cleared by %d | time median %.0f s mean %.0f s%s | HP at the act's end median %.1f (%.0f%% of max) | relics median %.1f | gold median %.0f" % [
+			int(key), int(entry["reached"]), int(entry["cleared"]), median_time, _mean(entry["seconds"] as Array[float]), versus, _median(entry["hp"] as Array[float]),
+			100.0 * _median(entry["hp_share"] as Array[float]), _median(entry["relics"] as Array[float]), _median(entry["gold"] as Array[float])])
+	print("  ACTS TOTAL: %d of %d run(s) won every act | total sim time of the won runs median %.0f s mean %.0f s | relics at the end median %.1f | unspent gold median %.0f" % [
+		wins, _run_results.size(), _median(totals), _mean(totals), _median(finals), _median(unspent)])
 
 
 ## Boss fight times (spawn to death) over the runs that reached the boss. A fight the boss survived to the room timeout is not a time: it is

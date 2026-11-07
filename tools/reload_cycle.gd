@@ -556,6 +556,7 @@ func _map_soak(snaps: Array[Dictionary]) -> void:
 	print("Map soak: first route, reload at the pick / in a room / mid-choice, Try again, boss room")
 	RunSession.clear()
 	RunSession.map_override = 1
+	RunSession.acts_override = 1  # MAP3-B: this soak is about one act (its last room is the boss); the act boundary has its own test (map3b_acts_test)
 	var state := RunSession.begin_new_run(31)
 	_check(RunNodes.active(state) and state.pending == RunState.PENDING_NODE, "map start: the run has no map or no open pick")
 	var main := await _enter_run_main()
@@ -646,3 +647,4 @@ func _map_soak(snaps: Array[Dictionary]) -> void:
 		snaps.append(_snapshot("after map boss reload"))
 	RunSession.clear()
 	RunSession.map_override = -1
+	RunSession.acts_override = 0

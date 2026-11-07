@@ -11,12 +11,14 @@ const FIGHTS: Array[String] = ["combat", "elite", "mini_boss", "boss"]
 
 
 func before_test() -> void:
+	RunSession.acts_override = 1  # MAP3-B: these tests pin the one-act run (it ends in the boss); the three-act flow is map3b_acts_test
 	RunSession.clear()
 	RunSession.map_override = -1
 	RelicDatabase.load_all()
 
 
 func after_test() -> void:
+	RunSession.acts_override = 0
 	RunSession.clear()
 	RunSession.map_override = -1
 	MapConfig.reset_cache()
@@ -307,7 +309,7 @@ func test_a_separate_process_prints_the_same_maps() -> void:
 	var project: String = ProjectSettings.globalize_path("res://")
 	for s in [3, 11, 777]:
 		var output: Array = []
-		var code: int = OS.execute(exe, ["--headless", "--path", project, "-s", "res://tools/map_print.gd", "--", "--seed=%d" % s], output, true)
+		var code: int = OS.execute(exe, ["--headless", "--path", project, "-s", "res://tools/map_print.gd", "--", "--seed=%d" % s, "--acts=1"], output, true)
 		assert_int(code).is_equal(0)
 		var printed: String = "\n".join(output)
 		var map: Dictionary = MapGenerator.generate(s)

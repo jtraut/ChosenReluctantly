@@ -101,7 +101,8 @@ func test_validate_survives_every_top_level_key_missing_or_wrongly_typed() -> vo
 	for key: String in keys:
 		var removed := _shipped()
 		removed.erase(key)
-		assert_array(_problems(removed)).override_failure_message("removing '%s' was not reported" % key).is_not_empty()
+		if key != "acts":  # MAP3-B: `acts` (per-act scaling) is optional; a config without it scales nothing
+			assert_array(_problems(removed)).override_failure_message("removing '%s' was not reported" % key).is_not_empty()
 		for bad: Variant in ["text", 7, null, [], {}, true]:
 			var swapped := _shipped()
 			swapped[key] = bad

@@ -8,6 +8,7 @@ const PATH := "user://tests/map3a_run_save.json"
 
 
 func before_test() -> void:
+	RunSession.acts_override = 1  # MAP3-B: these tests pin the one-act run (it ends in the boss); the three-act flow is map3b_acts_test
 	DirAccess.make_dir_recursive_absolute("user://tests")
 	RunSave.reset()
 	RunSave.path = PATH
@@ -19,6 +20,7 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	RunSession.acts_override = 0
 	RunSave.delete_save()
 	RunSave.reset()
 	RunSession.clear()

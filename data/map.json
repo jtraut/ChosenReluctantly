@@ -1,5 +1,6 @@
 {
   "enabled": true,
+  "acts": 3,
   "rooms": 10,
   "columns": 4,
   "walks": 4,
@@ -33,5 +34,9 @@
   "estimate": {
     "gold_mean": { "combat": 30, "elite": 70, "mini_boss": 100 },
     "merchant_prices": [60, 60, 90]
+  },
+  "multi_act": {
+    "path_rules": { "relic_route": [4, 6], "max_relic_rooms": 2 },
+    "estimate": { "merchant_prices": [80, 80, 120] }
   }
 }

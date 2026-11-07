@@ -63,10 +63,10 @@ func test_shipped_data_has_the_merchant_block_and_the_relic_prices() -> void:
 	assert_int(int(merchant["relic_stock"])).is_equal(3)
 	assert_int(int(merchant["card_stock"])).is_equal(3)
 	assert_array(MerchantConfig.validate_block(merchant)).is_empty()
-	# D41 = B (MAP3-A): the relic prices are 60/90/130 with the merchant on or off (data/merchant_on.json carries the same values)
-	assert_int(RelicConfig.price_for_tier("tier1")).is_equal(60)
-	assert_int(RelicConfig.price_for_tier("tier2")).is_equal(90)
-	assert_int(RelicConfig.price_for_tier("tier3")).is_equal(130)
+	# D41 = B (MAP3-A) set 60/90/130; MAP3-B's three acts raise them to 80/120/170 with the merchant on or off (data/merchant_on.json carries the same values)
+	assert_int(RelicConfig.price_for_tier("tier1")).is_equal(80)
+	assert_int(RelicConfig.price_for_tier("tier2")).is_equal(120)
+	assert_int(RelicConfig.price_for_tier("tier3")).is_equal(170)
 	assert_int(RelicConfig.price_for_tier("boss")).is_equal(-1)
 
 
@@ -95,7 +95,8 @@ func test_relic_prices_are_validated_and_the_boss_tier_is_never_priced() -> void
 
 
 func test_the_estimate_prices_match_the_relic_prices_and_the_stock_size() -> void:
-	var prices: Array = MapConfig.get_config()["estimate"]["merchant_prices"]
+	# MAP3-B: the estimate a run's maps are made with (the three-act one when the data has several acts)
+	var prices: Array = MapConfig.for_act(MapConfig.get_config(), 1, MapConfig.acts())["estimate"]["merchant_prices"]
 	var relic_prices: Array[int] = []
 	for value: Variant in (RelicConfig.block()["prices"] as Dictionary).values():
 		relic_prices.append(int(value))

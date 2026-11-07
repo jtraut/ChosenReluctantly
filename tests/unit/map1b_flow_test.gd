@@ -7,12 +7,14 @@ const RUN_MAIN_PATH := "res://scenes/main/RunMain.tscn"
 
 
 func before_test() -> void:
+	RunSession.acts_override = 1  # MAP3-B: these tests pin the one-act run (it ends in the boss); the three-act flow is map3b_acts_test
 	RunSession.clear()
 	RunSession.map_override = -1
 	RelicDatabase.load_all()
 
 
 func after_test() -> void:
+	RunSession.acts_override = 0
 	RunSession.clear()
 	RunSession.map_override = -1
 	RunSession.start_relics = []

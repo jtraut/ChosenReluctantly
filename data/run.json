@@ -17,7 +17,7 @@
         "enabled": true,
         "max_owned": 20,
         "offer_count": 3,
-        "prices": { "tier1": 60, "tier2": 90, "tier3": 130 },
+        "prices": { "tier1": 80, "tier2": 120, "tier3": 170 },
         "relic_room": { "count": 1, "first": 2, "last": 8 },
         "tier_weights": {
             "1": { "tier1": 80, "tier2": 20, "tier3": 0 },
@@ -34,8 +34,8 @@
     },
     "acts": {
         "1": { "hp": 1.0, "damage": 1.0, "gold": 1.0 },
-        "2": { "hp": 1.35, "damage": 1.15, "gold": 1.0 },
-        "3": { "hp": 1.7, "damage": 1.3, "gold": 1.0 }
+        "2": { "hp": 1.1, "damage": 1.0, "gold": 1.0 },
+        "3": { "hp": 1.2, "damage": 1.0, "gold": 1.0 }
     },
     "rooms": {
         "combat": [
@@ -56,11 +56,11 @@
                 { "delay": 8.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "fire_resistant_golem", "count": 1 }, { "enemy": "melee_chaser", "count": 3 } ] }
             ] },
             { "id": "a2_warmup", "acts": [2], "max_index": 2, "first_wave_delay": 2.0, "stages": [
-                { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 4 }, { "enemy": "ranged_shooter", "count": 2 } ] },
+                { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 4 }, { "enemy": "ranged_shooter", "count": 1 } ] },
                 { "delay": 7.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "melee_chaser", "count": 3 }, { "enemy": "ranged_shooter", "count": 2 } ] }
             ] },
             { "id": "a2_crossfire", "acts": [2], "min_index": 1, "first_wave_delay": 2.0, "stages": [
-                { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 3 }, { "enemy": "ranged_shooter", "count": 4 } ] },
+                { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 3 }, { "enemy": "ranged_shooter", "count": 3 } ] },
                 { "delay": 7.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "fire_resistant_golem", "count": 1 }, { "enemy": "ranged_shooter", "count": 2 } ] }
             ] },
             { "id": "a2_horde", "acts": [2], "min_index": 2, "first_wave_delay": 2.0, "stages": [
@@ -72,11 +72,11 @@
                 { "delay": 7.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "fire_resistant_golem", "count": 1 }, { "enemy": "melee_chaser", "count": 4 }, { "enemy": "ranged_shooter", "count": 2 } ] }
             ] },
             { "id": "a3_warmup", "acts": [3], "max_index": 2, "first_wave_delay": 2.0, "stages": [
-                { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 5 }, { "enemy": "ranged_shooter", "count": 3 } ] },
+                { "delay": 0.0, "spawns": [ { "enemy": "melee_chaser", "count": 5 }, { "enemy": "ranged_shooter", "count": 2 } ] },
                 { "delay": 7.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "melee_chaser", "count": 3 }, { "enemy": "ranged_shooter", "count": 2 } ] }
             ] },
             { "id": "a3_crossfire", "acts": [3], "min_index": 1, "first_wave_delay": 2.0, "stages": [
-                { "delay": 0.0, "spawns": [ { "enemy": "ranged_shooter", "count": 5 }, { "enemy": "melee_chaser", "count": 3 } ] },
+                { "delay": 0.0, "spawns": [ { "enemy": "ranged_shooter", "count": 4 }, { "enemy": "melee_chaser", "count": 3 } ] },
                 { "delay": 7.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "fire_resistant_golem", "count": 1 }, { "enemy": "ranged_shooter", "count": 3 } ] }
             ] },
             { "id": "a3_horde", "acts": [3], "min_index": 2, "first_wave_delay": 2.0, "stages": [

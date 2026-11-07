@@ -186,11 +186,13 @@ func jump_to_room(index: int) -> void:
 		return
 	# MAP3-B: room numbers count over the whole run, so a jump past the first act walks the earlier acts' `first` routes (their maps are made now).
 	var per_act: int = rooms_per_act()
-	while room_index >= per_act and act < acts_total:
+	var target: int = room_index
+	while target >= per_act and act < acts_total:
 		path = MapGraph.first_route(map)
 		if not RunNodes.advance_act(self):
 			break
-		room_index -= per_act
+		target -= per_act
+	room_index = target
 	var route: Array[int] = MapGraph.first_route(map)
 	room_index = mini(room_index, route.size() - 1)
 	path = route.slice(0, room_index + 1)

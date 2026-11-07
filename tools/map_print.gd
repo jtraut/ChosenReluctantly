@@ -9,6 +9,8 @@ extends SceneTree
 ##   --merchant      turn the merchant on first (data/merchant_on.json merged into the map config, MAP2-B); --set values are applied on top
 ##   --routes        with --sweep: also print, per route policy (first, relic, safe), the median of the relic estimate and the mean nodes of each kind over the
 ##                   seeds (a fast stand-in for the bot sim when tuning weights; the real numbers come from `wave_sim -Run -Route`)
+##   --act=N         (MAP3-B) generate act N of the run (default 1); --acts=M says the run has M acts (default: data/map.json `acts`). Acts before the last end in a mini-boss.
+##                   --sweep with --act checks that act's rules. Use --acts=1 for the one-act (MAP2) map.
 ##   --route=first   also print the `first` route's node ids
 ## Output: one line per room (cells by column: C combat, E elite, R* relic stage, Rs rest, M merchant, MB mini-boss, BOSS), the edges
 ## as column pairs, the wave ids, then the path-rule scores (paths, min fights, max elite-like, rests, merchants, relic estimate best and worst).
@@ -21,6 +23,8 @@ func _initialize() -> void:
 	var show_route: bool = false
 	var route_stats: bool = false
 	var merchant_on: bool = false
+	var act_number: int = 1
+	var acts_number: int = -1
 	var overrides: Array[String] = []
 	for arg: String in OS.get_cmdline_user_args():
 		if arg.begins_with("--seed="):
@@ -35,6 +39,10 @@ func _initialize() -> void:
 			route_stats = true
 		elif arg == "--merchant":
 			merchant_on = true
+		elif arg.begins_with("--act="):
+			act_number = maxi(int(arg.substr(6)), 1)
+		elif arg.begins_with("--acts="):
+			acts_number = maxi(int(arg.substr(7)), 1)
 		elif arg.begins_with("--set="):
 			overrides.append(arg.substr(6))
 	var cfg: Dictionary = MapConfig.get_config()
@@ -68,10 +76,14 @@ func _initialize() -> void:
 			printerr("map_print: the overridden config is invalid: ", "; ".join(problems))
 			quit(2)
 			return
+	if acts_number < 1:
+		acts_number = MapConfig.acts(cfg)
+	act_number = mini(act_number, acts_number)
 	if sweep > 0:
-		quit(_sweep(sweep, cfg, first_seed, route_stats))
+		quit(_sweep(sweep, cfg, first_seed, route_stats, act_number, acts_number))
 		return
-	var result: Dictionary = MapGenerator.build(seed_value, cfg)
+	var result: Dictionary = MapGenerator.build(seed_value, cfg, {}, act_number, acts_number)
+	cfg = MapConfig.for_act(cfg, act_number, acts_number)  # the rules of this act (the generator derived the same)
 	if not bool(result["ok"]):
 		printerr(String(result["error"]))
 		quit(1)
@@ -105,14 +117,15 @@ func _initialize() -> void:
 	quit(0 if problems.is_empty() else 1)
 
 
-func _sweep(count: int, cfg: Dictionary, first_seed: int = 1, route_stats: bool = false) -> int:
+func _sweep(count: int, base_cfg: Dictionary, first_seed: int = 1, route_stats: bool = false, act_number: int = 1, acts_number: int = 1) -> int:
+	var cfg: Dictionary = MapConfig.for_act(base_cfg, act_number, acts_number)
 	var started: int = Time.get_ticks_msec()
 	var per_policy: Dictionary = {}
 	var failures: int = 0
 	var histogram: Dictionary = {}
 	var worst: int = 0
 	for seed_value in range(first_seed, first_seed + count):
-		var result: Dictionary = MapGenerator.build(seed_value, cfg)
+		var result: Dictionary = MapGenerator.build(seed_value, base_cfg, {}, act_number, acts_number)
 		if not bool(result["ok"]):
 			failures += 1
 			printerr("seed %d: %s" % [seed_value, String(result["error"])])

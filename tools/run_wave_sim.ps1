@@ -12,6 +12,7 @@
 # -Route first|relic|safe|random (needs -Run; --sim-route=, MAP1-B): the runs walk the branching map (forced on for this process) and the bot follows that route:
 #   first = the lowest column, relic = the most relics by MapRules.relic_estimate, safe = the fewest elite-like nodes and the most rests, random = seeded. -Map alone = the map with the first route (--sim-map).
 #   Prints a route line per run (nodes, fights, elites, relic stages and their chest sizes, gold, relics) and a ROUTE SUMMARY (wins, relics and gold per run, chest sizes seen). data/map.json now ships the map on, so a plain -Run follows the map too (the first route); -NoMap (--sim-no-map) pins the straight run (the pre-MAP1 numbers).
+# -Acts N (needs the map, --sim-acts=, MAP3-B): the runs have N acts (data/map.json `acts`, 3, when absent). -Acts 1 is the MAP2 one-act run (the mini-boss-free numbers); more acts report each act's clear rate, time, HP, relics and gold (ACT lines and ACTS TOTAL).
 # -Merchant (needs the map: -Route or -Map; --sim-merchant, MAP2-B): turn the merchant on for this process (data/merchant_on.json is merged into data/map.json and run.json: weight 8, relic_route [6, 8]).
 #   The bots then visit merchant nodes on their route: the `relic` route buys relics first (cheapest first), then a removal, then a card; `safe`, `first` and `random` buy a removal, then a card, and no relics (MerchantPolicy).
 #   The run line and the ROUTE SUMMARY add gold spent, relics bought and removals.
@@ -19,7 +20,7 @@
 # -StartRoom N (needs -Run): start every run at room N (10 = the boss) with the starter deck and full HP (--start-room).
 # -Run plays whole seeded runs (Milestone 3a): -Seed is the first run seed, -Runs the number of runs, -RoomTimeout sim seconds before a room counts as a soft lock.
 # Fails on a failed check OR any ERROR / SCRIPT ERROR / WARNING line in the engine output.
-param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets, [int]$StartRoom = 0, [switch]$Plan, [string]$Relics = "", [int]$RelicCap = 0, [string]$Swap = "", [switch]$NoRelics, [string]$Route = "", [switch]$Map, [switch]$NoMap, [switch]$Merchant)
+param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets, [int]$StartRoom = 0, [switch]$Plan, [string]$Relics = "", [int]$RelicCap = 0, [string]$Swap = "", [switch]$NoRelics, [string]$Route = "", [switch]$Map, [switch]$NoMap, [switch]$Merchant, [int]$Acts = 0)
 
 $root = Split-Path -Parent $PSScriptRoot
 $godot = $env:GODOT_BIN
@@ -60,6 +61,7 @@ if ($Route) { $extra += "--sim-route=$Route" }
 if ($Map) { $extra += "--sim-map" }
 if ($NoMap) { $extra += "--sim-no-map" }
 if ($Merchant) { $extra += "--sim-merchant" }
+if ($Acts -gt 0) { $extra += "--sim-acts=$Acts" }
 if ($StartRoom -gt 0) { $extra += "--start-room=$StartRoom" }
 if ($Run) { $extra += "--run"; $extra += "--room-timeout=$RoomTimeout" }
 Push-Location $root

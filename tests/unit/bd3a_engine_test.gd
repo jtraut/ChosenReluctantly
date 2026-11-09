@@ -387,3 +387,48 @@ func test_a_detonate_is_not_a_status_source() -> void:
 	# Open a Vein detonates Bleed, it does not apply it: it must not count for requires.status_sources or the D43 lean.
 	assert_array(CardSummary.status_ids(CardDatabase.get_card("rogue_open_a_vein"))).is_empty()
 	assert_array(CardSummary.status_ids(CardDatabase.get_card("rogue_paper_cuts"))).is_equal(["bleed"])
+
+
+# --- the cards through the real effect path -------------------------------------------------------------
+
+func _cast(card_id: String, caster: StatSource) -> void:
+	var context := EffectContext.new(caster, self, "player")
+	context.origin = "card:" + card_id
+	for effect: Dictionary in CardDatabase.get_card(card_id)["effects"]:
+		EffectTemplates.execute(String(effect["template"]), effect["params"], context)
+
+
+func test_open_a_vein_hits_then_detonates_the_bleed_it_finds() -> void:
+	var caster := _source()
+	var target := _target(200.0)
+	target.global_position = Vector3(0, 0, -1.0)  # in front of the caster (facing -Z)
+	var bystander := _target(200.0)
+	bystander.global_position = Vector3(0, 0, -1.2)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	target.status_manager.apply_status("bleed", _bleed(), 4.0, caster, "card:test")  # the bystander does not bleed
+	_cast("rogue_open_a_vein", caster)
+	# 6 physical from the cone, then 8 remaining ticks x 1 x 2 = 16 from the detonation
+	assert_float(200.0 - target.health.current_health).is_equal_approx(22.0, 0.01)
+	assert_float(200.0 - bystander.health.current_health).is_equal_approx(6.0, 0.01)
+	assert_bool(target.status_manager.has_status("bleed")).is_false()
+
+
+func test_paper_cuts_applies_bleed_on_the_first_hit_and_stacks_only_with_a_keystone() -> void:
+	var caster := _source()
+	var target := _target(500.0)
+	target.global_position = Vector3(0, 0, -1.0)
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	_cast("rogue_paper_cuts", caster)
+	assert_int(target.status_manager.stacks_of("bleed")).is_equal(1)  # D25 = A: no keystone, no stack
+	await get_tree().create_timer(0.6, true, true).timeout  # the other three hits (0.12 s apart) have landed
+	assert_int(target.status_manager.stacks_of("bleed")).is_equal(1)
+	var stacker := _source()
+	stacker.stat_modifiers.add_modifier("status_max_stacks.bleed", "k", StatModifiers.ADDITIVE, 4.0)
+	var second := _target(500.0)
+	second.global_position = Vector3(0, 0, -1.0)
+	await get_tree().physics_frame
+	_cast("rogue_paper_cuts", stacker)
+	await get_tree().create_timer(0.6, true, true).timeout
+	assert_int(second.status_manager.stacks_of("bleed")).is_equal(4)  # one stack per hit

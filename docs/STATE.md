@@ -3,9 +3,15 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-09 (MAP3 built, qa PASS, playtest no blocker; docs pass next). **Run order:** MAP1, MAP2 (done) -> **MAP3 (in progress: qa PASS, playtest done, docs pass next)** -> **BD3a, physical Rogue** (new, director priority 2026-11-09) -> MAP3b -> MAP4 -> 3d -> BD3b (Wizard depth). All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2.
+Last updated: 2026-11-09 (MAP3 closed; BD3a next). **Run order:** MAP1, MAP2, MAP3 (done) -> **BD3a, physical Rogue** (new, director priority 2026-11-09) -> MAP3b -> MAP4 -> 3d -> BD3b (Wizard depth). All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2.
 
 ## What's done
+- **MAP3 closed 2026-11-09:** three acts of 10 rooms, act-end mini-bosses, act scaling, save and Continue.
+  - **Commits:** gameplay-dev 239c856..da739de (A), 5d85ee4..cd17992 (B); ux 5a75570..96bbdeb; qa PASS with carry-overs 890c9eb; playtest 02a8c5f (no blocker), triage 40d64ee; docs 969f3b1. Tag `playtest-2026-11-09-MAP3`.
+  - **Baselines now:** suite 1954 (149 suites, 1 skipped bug probe); arena 1897787086 / 4207041509 / `-Plan` 1160207333; bot sim 846850403; `-NoMap` 12/12 57.5 s / 12/12 63.3 s; three acts `-Route first` Rogue 9/12, Wizard 10/12 (relic and safe in ROADMAP's MAP3 qa note).
+  - **New director items:** D44 (act identity), D45 (heal between acts), eyes 52 (a timed three-act run, Continue, the Act 2 screen).
+  - **Carry-overs:** BD3a sitting A items 7-9 and its ux list; MAP3b (relic counts 11/5 against 14-17/6-8, gold hoarding, a log of which room kills the bot).
+  - The "pending for tech-writer (MAP3 docs pass)" notes below were done in 969f3b1.
 - **Director feedback 2026-11-09, planned (game-lead, docs only):**
   - **His report:** he played a three-act physical/Bleed Rogue run. "It felt good mostly." The problems:
     - far too few physical and Bleed cards;
@@ -149,19 +155,14 @@ Last updated: 2026-11-09 (MAP3 built, qa PASS, playtest no blocker; docs pass ne
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **MAP3: sitting B done 2026-11-09** (gameplay-dev 5d85ee4..cd17992; hand-back recorded under the MAP3 brief in ROADMAP, calls in DECISIONS "MAP3 sitting B calls"). Suite 1916 (147 suites), 0 skipped; all hashes unchanged; `-Route first` 3 acts: Rogue 9/12, Wizard 10/12, acts within +13% of act 1.
-  - **ux done 2026-11-09** (5a75570..96bbdeb; ROADMAP MAP3 "ux: done"). Suite 1945 (148 suites).
-  - **qa PASS with carry-overs 2026-11-09** (890c9eb). Suite 1954 (149 suites, 1 skipped probe); all hashes unchanged.
-  - **Playtest no blocker 2026-11-09** (02a8c5f); triaged in 40d64ee (D44, D45, eyes 52; carry-overs to BD3a ux and sitting A, MAP3b).
-  - **Now: tech-writer** MAP3 docs pass (commit range 05b7999..40d64ee), started 2026-11-09. If cut off, check `git log` for a tech-writer commit touching CHANGELOG after 40d64ee.
-  - **For OPEN_ITEMS at close (needs your eyes):** try Continue in a real launch (quit mid-run, relaunch, Enter); click through the Act 2 screen in a live three-act run.
-- Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes; they did not flake in sitting B).
+- Nothing in progress. MAP3 closed 2026-11-09 (tag `playtest-2026-11-09-MAP3`). BD3a is next and hasn't started.
+- Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes; they didn't flake in MAP3).
 
 ## Exact next step
-1. **tech-writer** MAP3 docs pass (include the 2026-11-09 pending items above).
-2. Then -> **tech-writer** (commit range 5d85ee4..; include the 2026-11-09 pending items above) -> close, tag `playtest-YYYY-MM-DD-MAP3`.
-3. Then **BD3a** (ROADMAP brief; gameplay-dev sitting A = engine plus 4 cards; sitting B builds D43 = B).
-4. Then MAP3b (its design pass must cover Bleed and basic attacks too), MAP4, 3d, BD3b.
+1. **gameplay-dev: BD3a sitting A** (ROADMAP BD3a brief: stacking, `detonate_status`, `status_tick_rate`, attack speed stats, 4 Rogue cards, tests; plus housekeeping items 7-9: the save hp/rejects probe, `GamePause.reset()`, the Wizard 3-act sim check, `--no-map` save deletion, silent launch-flag values).
+2. Then BD3a sitting B (content, D43 = B offer lean) -> ux (stack counts, detonate read, mini-boss named bar, act screen HP line) -> qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-BD3a`.
+3. Then MAP3b (its design pass covers Bleed and basic attacks, gold sinks, the playtester's gold ideas), MAP4, 3d, BD3b.
+4. If the director answers D44 or D45: record it, then fold it into BD3a's ux step or MAP3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 

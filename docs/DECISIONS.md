@@ -2092,3 +2092,6 @@ Context: director feedback 2026-11-09. He played a three-act physical/Bleed Rogu
 - **Act identity (D44) and healing between acts (D45) go to the director.** Both are design. "No free heal between acts" was my interim call in "MAP3 split", not a GDD rule, so it stays only as the default until he answers.
 - **The playtester's gold ideas go into MAP3b's design pass.** A guaranteed merchant per act would reverse D42 = A, so it would need the director.
 - **MAP3 closes on a capture-and-sim playtest with no hand play.** qa's tests cover Continue, save/resume and the act screen's input. The director's three-act run (2026-11-09, "felt good mostly") was played on the sitting B build, and OPEN_ITEMS 52 asks for a timed run. Rejected: another playtest pass, which wouldn't add hand play either.
+
+## 2026-11-09 - MAP3 close (game-lead)
+- **MAP3 closes with the `--no-map` save-deletion finding open.** tech-writer found by code reading that a `--no-map` win or loss deletes the player's saved map run. `--no-map` is a test launch the player has to type, the normal launch can't reach it, and it costs at most one saved run. It goes to BD3a sitting A housekeeping with a test. Rejected: reopening MAP3 for it.

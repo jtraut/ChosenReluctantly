@@ -17,17 +17,33 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## Needs your decision
 
-Nothing right now. Next new number: D44.
+Next new number: D46.
+
+D44. **Should each act look and play a little differently?** The playtester found acts 2-3 feel like "act 1 with more": bigger enemy mixes and a bit more HP (x1.1, x1.2), the same damage, the same look. The act 1 mini-boss is a slightly bigger golem with two chasers, so it doesn't feel like an act ender. Giving the mini-boss a named HP bar and a bigger marker is a readability fix, and I've scheduled it for BD3a either way.
+   - **A (default): leave the acts as they are.** MAP3b adds boss relics and rare and legendary cards, which may be enough on their own.
+   - **B (recommended): one cheap visible change per act**, with no new enemy behaviour: a floor and light tint per act, act 3 enemy damage raised a little (the run sim picks the value), and a mini-boss with more adds.
+   - **C: real new threats:** new mini-boss attacks or a new enemy type per act. This needs new enemy behaviour, which MAP3 ruled out, so it would be its own slice and push MAP3b, MAP4 and 3d back.
+
+D45. **Do you heal between acts?** Right now you don't: your HP carries into the next act, and rests on the map are the way to heal. That was my stopgap call, not something in the GDD. The playtester found nothing tells you, so BD3a's act screen will say "Your HP carries over. Rests are on the map." and show low HP in red.
+   - **A (default): no heal between acts** (as it is now).
+   - **B: a partial heal at each act's start** (for example 30% of max HP).
+   - **C: a full heal at each act's start.**
 
 ## Needs your eyes
 
 Reply with the number and a word or two.
 
+52. **Play a three-act run (MAP3), with a clock running.** `godot --path .` (a run is now 30 rooms in 3 acts).
+    - **How long did it take on the clock?** The target is 30-45 min. The bots take about 13.5 min of sim time, and the playtester guesses 20-30 min for a person.
+    - **Quit mid-run, relaunch and press Enter.** Continue should be highlighted on the class pick and resume your run. Quitting during a fight restarts that room.
+    - **Click through the Act 2 screen** after the act 1 mini-boss.
+    - Relics now cost 80/120/170 in a three-act run (60/90/130 with `-- --acts=1`).
+
 51. **Visit the merchant (MAP2).** `godot --path .`, and pick a route through the coin square.
     - Buy two things, then leave. Is it clear what you can afford, and why something is greyed out?
     - **The shop opens with the first relic highlighted**, so Enter buys it. There's a short delay that stops a held Enter from the map. Is that fine, or should Leave be highlighted first?
     - Try the free reroll: `-- --relics=request_for_quotation`.
-    - Relics in this build still cost 30/45/65. Your D41 = B brings back 60/90/130 with more gold in MAP3. Cards priced by rarity come in MAP3b, when cards get a rarity.
+    - Relics on main now cost 80/120/170 over three acts (your D41 = B, with more gold). Cards priced by rarity come in MAP3b, when cards get a rarity.
 
 50. **Play a run on the map (MAP1).** `godot --path .`, one run per class if you can.
     - **Does picking a route feel like a decision?** About 40% of nodes branch (the plan was 60%, which the generator can't reach). If it feels too linear, a generator that forks and merges more is the fix.

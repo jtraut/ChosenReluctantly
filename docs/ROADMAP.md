@@ -1194,6 +1194,16 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
       - **3-act baselines (not gated):** `relic` Rogue 10/12 43.3 s, 11 relics, 444 gold; Wizard 10/12 52.4 s, 11 relics, 458 gold. `safe` Rogue 8/12 54.4 s, 5 relics, 680 gold; Wizard 10/12 63.5 s, 5 relics, 680 gold. Act times within +7% of act 1.
       - **New suite `map3_qa_test.gd`:** act-boundary resume, 364 hostile save files, truncated files, determinism over 3 acts, exhausted pool in acts 2-3 through real nodes.
       - **Carry-overs:** BD3a sitting A housekeeping (below). MAP3b: `relic` median 11 (target 14-17), `safe` 5 (target 6-8), gold hoarding. Info: bots end every act at full HP, so "no free heal between acts" isn't tested by the bot; `Boss._begin_windup` duplicates the attack dict when `damage_scale` isn't 1 (inert today).
+    - **Playtest: no blocker 2026-11-09** (02a8c5f, `docs/playtests/2026-11-09-map3-short.md`). Smoke PASS; capture and sim only, no hand play.
+      - Works: the structure reads clearly (HUD, map titles, columns 11-30, mini-boss node text); the Act 2 screen's tone and single button; act times 246/288/251 s (Rogue, seed 300).
+      - **Triage (game-lead):**
+        1. Acts 2-3 feel like "act 1 with more", and the mini-boss doesn't look like an act-ender -> director question **D44**. The readability half (a named bar and a bigger marker for the mini-boss) is mine to schedule: BD3a ux.
+        2. "No free heal between acts" is invisible, and it was my interim call, not the GDD -> director question **D45**. The act screen line ("Your HP carries over. Rests are on the map.") and low HP shown in red: BD3a ux.
+        3. Gold has no job in acts 2-3 (259/629/960 median): already MAP3b's gold tuning; the playtester's ideas (rising prices, heal for gold, a merchant per act) go into MAP3b's design pass. A guaranteed merchant would reverse D42 = A, so it would go back to the director.
+        4. Run length: the bot's won runs take about 13.5 min of sim time; the playtester guesses 20-30 min for a human, under the 30-45 target. The director's clock time settles it (OPEN_ITEMS 52).
+        5. Win rate swings by seed (seed 300 Rogue 2/6 against seed 1's 9/12): MAP3b sim work logs the room that kills the bot in acts 2-3.
+        6. The Wizard `-Run` sim gave no output after 15 min in the playtester's session (qa's Wizard runs were fine): BD3a sitting A checks it.
+        7. Minor: the HUD reads "Act 1 of 3" behind the Act 2 screen (accepted at ux); `merchant_shop_poor` is a one-act preset, so the 170 price wasn't seen (qa covered prices in tests).
     - **qa:**
       - the save round trip and every robustness case;
       - a 1000-seed sweep **per act**, 0 failures;
@@ -1224,6 +1234,7 @@ MAP3 (finish: sitting B hand-back -> ux -> qa -> playtest -> docs -> close) -> *
     5. Cards: `rogue_open_a_vein`, `rogue_paper_cuts`, `rogue_bad_influence`, `rogue_warm_up` (BUILD_DEPTH §9a). Each new Attack card passes `CardDamageRule` on unconditional damage.
     6. Tests for every engine piece, including "Burn and Bleed don't stack without a source".
     7. **MAP3 qa carry-overs (housekeeping):** `RunSave._state_problem` refuses or clamps `hp` <= 0 or above max and negative or huge `rejects_remaining`, then un-skip `test_hp_and_reject_values_in_a_loaded_save_are_sane` (map3_qa_test). `GamePause.reset()` also unpauses the tree.
+    8. **MAP3 playtest carry-over:** check why the Wizard `-Run` three-act sim gave no output for 15 min in the playtester's session (slow or stuck).
     - At the end of sitting A, main runs, and the arena and bot-sim hashes are unchanged or rebaselined with the reason logged (new pool cards fill sim slots, as at BD1-B).
   - **gameplay-dev, sitting B (content and measurement):**
     1. Cards: `rogue_cut_corners`, `rogue_knife_drawer`, `rogue_excuse_me`, `rogue_blood_money`.
@@ -1241,7 +1252,7 @@ MAP3 (finish: sitting B hand-back -> ux -> qa -> playtest -> docs -> close) -> *
     - the detonate hit reads at a glance (a burst plus a larger damage number);
     - tag chips and the condition line for the new cards;
     - hover text for the new relics;
-    - the MAP3 carry-over: the shop overflows 4 px at 1280x720 when poor.
+    - the MAP3 playtest carry-overs: the mini-boss gets a named bar and a bigger marker, like the boss; the act screen says HP carries over ("Your HP carries over. Rests are on the map.") and shows low HP in red. (D44 or D45 answers may add to this.) The shop's 4 px overflow was fixed in MAP3.
   - **qa:**
     - unit tests for stacking, detonate and tick rate;
     - D25 regression (no default stacking);

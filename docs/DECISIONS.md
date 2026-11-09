@@ -2086,3 +2086,9 @@ Context: director feedback 2026-11-09. He played a three-act physical/Bleed Rogu
 - **The hand-edited-save bug (hp 0 or over max, bad `rejects_remaining` load) is committed as a skipped probe**, so the suite gate stays green and meaningful. It's low severity (the game never writes these values) and goes to BD3a sitting A housekeeping. Rejected: a failing test on main, or holding MAP3's close for it.
 - **A paused-tree guard went into 11 suites' `after_test` even though no leak reproduced.** Cheap and test-only. The root cause (`GamePause.reset()` doesn't unpause the tree) goes to BD3a sitting A.
 - **Test `.uid` files are tracked** (153 already were), so the stray ones were committed.
+
+## 2026-11-09 - MAP3 playtest triage (game-lead)
+- **The mini-boss's named bar and bigger marker, and the act screen's "HP carries over" line with low HP in red, are readability fixes scheduled for BD3a's ux step** without waiting for D44 or D45. They don't change design. Rejected: holding MAP3's close for them, since there's no blocker and BD3a has a ux step anyway.
+- **Act identity (D44) and healing between acts (D45) go to the director.** Both are design. "No free heal between acts" was my interim call in "MAP3 split", not a GDD rule, so it stays only as the default until he answers.
+- **The playtester's gold ideas go into MAP3b's design pass.** A guaranteed merchant per act would reverse D42 = A, so it would need the director.
+- **MAP3 closes on a capture-and-sim playtest with no hand play.** qa's tests cover Continue, save/resume and the act screen's input. The director's three-act run (2026-11-09, "felt good mostly") was played on the sitting B build, and OPEN_ITEMS 52 asks for a timed run. Rejected: another playtest pass, which wouldn't add hand play either.

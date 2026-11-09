@@ -79,6 +79,10 @@ const DEFAULT_TEXT: Dictionary = {
 	"dash_damage": "%s %s damage",
 	"pass_through": "Walk through enemies for %s s",
 	"detonate": "Detonate %s: its remaining damage x%s at once",
+	"stack_cap": "%s stacks %s higher",
+	"tick_rate": "%s ticks %s faster",
+	"attack_interval": "%s attack delay %s",
+	"attack_cooldown": "%s attack cooldown %s",
 	"status_plain": "%s for %s s",
 	"status_lifesteal": "%s %d%% for %s s",
 	"status_damage_over_time": "%s %s damage/s for %s s",
@@ -181,6 +185,13 @@ static func buff_text(params: Dictionary, text: Dictionary = {}) -> String:
 		head = String(buff_stats["slot_cooldown_skip"]) % _slot_name(stat.get_slice(".", 1), text)
 	elif stat.begins_with("status_damage_mult.") and multiplicative:
 		head = String(buff_stats["status_damage_mult"]) % [_status_name(stat.get_slice(".", 1), text), _percent(value)]
+	elif stat.begins_with("status_max_stacks.") and not multiplicative:
+		head = String(_word(text, "stack_cap")) % [_status_name(stat.get_slice(".", 1), text), _num(value)]
+	elif stat.begins_with("status_tick_rate.") and multiplicative:
+		head = String(_word(text, "tick_rate")) % [_status_name(stat.get_slice(".", 1), text), _percent(value).trim_prefix("+")]
+	elif (stat.begins_with("attack_interval.") or stat.begins_with("attack_cooldown.")) and multiplicative:
+		# "Light attack delay -30%": the time between swings (or the heavy's cooldown) shrinks by that share.
+		head = String(_word(text, "attack_interval" if stat.begins_with("attack_interval.") else "attack_cooldown")) % [stat.get_slice(".", 1).capitalize(), _percent(value)]
 	elif stat.begins_with("slot_cooldown.") and not multiplicative:
 		head = String(_word(text, "slot_cooldown")) % [_slot_name(stat.get_slice(".", 1), text), amount]
 	elif stat == "armor" and not multiplicative:

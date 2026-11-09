@@ -23,7 +23,11 @@ D43. **Should card offers lean toward the build you're making?** (Your 2026-11-0
    - Today an offer draws evenly from your class, element and Neutral pools. For a Fire Rogue that's about 37% Fire cards, whatever you've picked so far.
    - BD3a adds 8 physical Rogue cards, which only takes that to about 29%. More content alone won't stop the Fire offers.
    - **A (default): no change.** Content only, about 29% Fire.
-   - **B: offers lean toward your deck.** An unpicked card that shares a tag with cards you already own (Bleed, Burn, Melee, Dash and so on) is twice as likely to be offered. Once you've gone physical, Fire offers thin out. Early offers stay mixed. The risk is that runs settle into a groove sooner.
+   - **B: offers lean toward the statuses your deck applies.** Each unpicked card that applies Bleed (or Burn) gets a bonus to its offer weight, and the bonus grows with how many cards you own that apply it. Cards without a status aren't affected.
+     - Picking Bleed cards brings more Bleed. Pruning Burn cards shrinks the Burn lean.
+     - Your starting Rogue deck has 2 Burn cards and no Bleed, so the first offers lean slightly toward Burn until you pick or prune.
+     - The risk: runs settle into a groove sooner.
+     - BD3a's offer report would show how much B actually moves the Fire share.
    - **C: offers lean toward your class.** Class cards are offered 1.5x as often as element cards, for everyone. That's about 23% Fire, but it doesn't follow your plan.
    - My recommendation is **B**: it answers your complaint directly, and its weight is one number in data. B or C would be built in BD3a. Without an answer I build A.
 
@@ -46,7 +50,7 @@ Reply with the number and a word or two.
 
 49. **Two relic details, when you next play** (you said 2026-11-05 that relics feel fun and builds are getting more exciting; recorded). No rush. Without an answer I keep both as they are.
     - **The relic room can land on room 9, just before the boss** (about 1 run in 3). Too late? The playtester would say "by room 7". MAP1 replaces this room with map nodes. I've set those nodes to rooms 3-8 (was 3-9), so room 9 never has one. Say if you'd rather have room 9 back.
-    - **Spite Knuckles' "every 4th light hit" restarts each room.** OK, or should it carry over?
+    - **Spite Knuckles' "every 4th light hit" restarts each room.** OK, or should it carry over? (In BD3a it changes from Burn to Bleed; the counter question is the same.)
 
 48. **Try the BD1 archetype decks** (new cards and combo cues). Launch with `godot --path . -- --deck=<id>`, adding `--run-room=10` for the boss.
     - **rogue-hit-and-run:** dash with Ctrl, watch Drive-By light up yellow ("LIVE"), and cast it. Then press Space instead and see how long it takes to work out why it stays dark. The dodge doesn't count, per your D39 = A.

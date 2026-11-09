@@ -1194,7 +1194,7 @@ MAP3 (finish: sitting B hand-back -> ux -> qa -> playtest -> docs -> close) -> *
   - **Goal:** a Fire Rogue can build a physical/Bleed deck, or a light-and-heavy deck, from what the run offers. Fire stops being the default.
   - **gameplay-dev, sitting A (engine plus 4 cards):**
     1. Stacking statuses: `stacking.max_stacks` on a status (default 1); `status_max_stacks.<id>` through `StatModifiers`; damage-over-time ticks x stacks; reapplying adds a stack up to the max and refreshes the duration. **D25 = A:** Burn and Bleed data stay at max 1, so with no keystone or relic nothing changes.
-    2. `detonate_status`, a card effect: deal the target's remaining ticks of a status x `multiplier` at once (respecting stacks and mitigation: Bleed through armor, Burn through resistance), then remove it. Fires `status_ended` with a new reason, `detonated`, so Pyre Insurance and Severance Package behave sensibly. Document which one you chose and why.
+    2. `detonate_status`, a card effect: deal the target's remaining ticks of a status x `multiplier` at once (respecting stacks and mitigation: Bleed through armor, Burn through resistance), then remove it. **Order (game-lead rule):** the burst damage lands while the status is still on, and only then is the status removed. So a kill by detonate counts as a Bleeding (or Burning) enemy dying for `target_has_status` filters (Severance Package, Second Wind). Removal fires `status_ended` with a new reason, `detonated`. Pyre Insurance does **not** trigger on `detonated` (it triggers only on a natural expiry or `owner_died`), so a Burn detonate can't chain into a second explosion.
     3. `status_tick_rate.<id>` stat (the tick interval is divided by it, base 1.0).
     4. Check that a light attack speed stat and a heavy cooldown stat exist (`attack_interval.light` or whatever AttackController reads); add them if not.
     5. Cards: `rogue_open_a_vein`, `rogue_paper_cuts`, `rogue_bad_influence`, `rogue_warm_up` (BUILD_DEPTH §9a). Each new Attack card passes `CardDamageRule` on unconditional damage.
@@ -1203,7 +1203,7 @@ MAP3 (finish: sitting B hand-back -> ux -> qa -> playtest -> docs -> close) -> *
   - **gameplay-dev, sitting B (content and measurement):**
     1. Cards: `rogue_cut_corners`, `rogue_knife_drawer`, `rogue_excuse_me`, `rogue_blood_money`.
     2. Relics: Serrated Excuse, Salt in the Wound, Per My Last Email, Chasing Paper, Muscle Memory, Overtime (Unpaid), with tiers as in §9a and sources elite, relic room and merchant.
-    3. **Spite Knuckles retheme:** Burn -> Bleed (old: every 4th light hit sets the target Burning; new: Bleeding). Record old and new in the hand-back for the CHANGELOG.
+    3. **Spite Knuckles retheme:** Burn -> Bleed (old: every 4th light hit sets the target Burning; new: Bleeding). Record old and new in the hand-back for the CHANGELOG. Update the tests and bot-plan relic picks that assume it applies Burn, and include it in the rebaseline reason.
     4. Debug decks `rogue-bleed-out` and `rogue-grudge-brawler`.
     5. Bot sim: the plan-aware bot picks Bleed and basic-attack relics for those plans.
     6. **Offer report:** the share of Fire cards in a Fire Rogue's card offers and the share of Burn-dependent relics in its relic offers, before and after (a tools script or a sim line; 1000 seeds).

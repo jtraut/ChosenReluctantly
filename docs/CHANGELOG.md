@@ -2,7 +2,70 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
+## 2026-11-09 (Slice MAP3: three acts, mini-bosses, scaling, save and resume; D41 = B built; director decisions D43 and dual-class)
+
+### Slice MAP3: three acts, mini-bosses, scaling, save and resume
+
+Commit range 05b7999..602210a. gameplay-dev sitting A 239c856..da739de (2026-11-07) and sitting B 5d85ee4..cd17992; ux 5a75570..96bbdeb; qa 890c9eb (PASS with carry-overs, `docs/reviews/2026-11-09-map3-qa.md`); playtest 02a8c5f (no blocker, `docs/playtests/2026-11-09-map3-short.md`); game-lead triage 40d64ee. Plan: `docs/MAP.md` sections 4.5 and 8; calls: `docs/DECISIONS.md`, the "MAP3 split", "MAP3 sitting A calls", "MAP3 sitting B calls", "MAP3 ux calls", "MAP3 qa calls" and "MAP3 playtest triage" entries. **A normal run is now 30 rooms in 3 acts.** The playtest used captures and bot runs, no hand play; a human run's length is not measured yet (OPEN_ITEMS 52).
+
+#### Added
+- **Three acts of 10 rooms** (30 in all). Each act is its own generated map, seeded from the run seed and the act number, with the same path rules per act plus two multi-act changes (`data/map.json` `multi_act`: relic route [4, 6] per act and at most 2 relic stages per path per act). Gold, HP, deck, relics and rejects carry from act to act. **There is no free heal between acts** (a game-lead interim call, now a director question, D45). `data/map.json` `acts` is the count (1 plays as MAP2).
+- **Act-end mini-bosses** in acts 1 and 2 (room 10); act 3 ends in the existing boss. A mini-boss is a golem with its own tier entry plus adds (`data/run.json` `rooms.mini_boss`: `mini_boss_act1`, `mini_boss_act2`; no new AI; tier `tiers.mini_boss`; gold `gold.mini_boss`). **Interim reward (until MAP3b):** gold, a normal relic offer (pick 1 of 3 or skip) at the next act's tier odds, then a normal card offer. MAP3b replaces it with a boss-tier relic and rare or legendary cards.
+- **Act scaling** (`data/run.json` `acts`, new: before this every room was x1): per-act multipliers for enemy HP, damage and gold. **Act 1 x1 / x1 / x1; act 2 HP x1.1, act 3 HP x1.2; damage x1 and gold x1 in every act.** The brief's starting values were act 2 HP x1.35 / damage x1.15 and act 3 HP x1.7 / damage x1.3; the run sim met its gates with the lighter ones (the new wave lists already add difficulty).
+- **Wave lists for acts 2 and 3:** 4 combat and 2 elite lists per act from existing enemies (bigger mixes, more golems and shooters). Lists carry an `acts` field; act 1 keeps its lists.
+- **Save and resume** (`RunSave`, `src/run/RunSave.gd`): one slot, `user://run_save.json`, versioned and validated. It is written at the map screen and at each room start, and deleted on a win or a loss. Quitting mid-fight and resuming restarts that room. A bad or old file is ignored with a warning, never a crash. Runs with a debug launch flag (including `--acts`) and headless runs never read, write or delete it. Straight (`--no-map`) runs are never saved, but by code reading a windowed one that ends in a win or loss still deletes an existing save (reported to game-lead). API: `RunSave.has_save()`, `load_save()`, `delete_save()`, `summary()`.
+- **Continue** on the class pick screen when a save exists (it shows class, act and room, starts focused, and the class cards then say "(replaces your saved run)"). **The act transition screen** (`ActScreen`: "Act 2", a one-line summary of HP, gold and relics, a dry line and Continue; the map pick waits behind it).
+- **UI wording and look:** a two-line HUD plate on multi-act runs ("Act 2 of 3" and "Room 14 of 30 - Type"; one-act runs are unchanged); whole-run room numbers on the reward, merchant, cleared, Game Over and win screens (`ActText`); the map shows act titles, rooms 11-20 and 21-30 in acts 2 and 3, and mini-boss node and "only way on" text; the merchant's coin on the map legend, the HUD plate and the shop title (`RunTypeIcon.coin`).
+- **Launch and tools:**
+  - `--acts=N` (debug: the run has N acts, 1 to 9; `--acts=1` is the MAP2 run; refused with exit 2 on a bad or repeated value; never saves). `--run-room=N` now takes 1 to 30 on a three-act run (31 exits 2).
+  - `tools\run_wave_sim.ps1 -Acts N` (the run sim plays N acts; the report adds ACT lines and an ACTS TOTAL line), `tools\run_map_print.ps1 -Act N [-Acts M]` (print or sweep one act's map).
+  - Capture presets `mini_boss_act1`, `final_boss_act3`, `act_transition`, `map_mini_boss`, `map_act2`; the one-act presets are pinned with `--acts=1`. `UxCapture` mode `continue_pick`.
+- Tests: 1843 -> 1954 test cases (1 skipped: a deliberate bug probe for a hand-edited save), 143 -> 149 suites. New suite `map3_qa_test.gd` (act-boundary resume, 364 hostile save files, truncated files, determinism over 3 acts, exhausted pool in acts 2 and 3). Test `.uid` files are now tracked.
+
+#### Changed
+- **[Director decision] D41 = B, built here: relic prices and gold income, old -> new.**
+  - Relic prices (tier 1 / 2 / 3, `data/run.json` `relics.prices`): 30 / 45 / 65 (MAP2) -> **60 / 90 / 130** on a one-act run (sitting A) -> **80 / 120 / 170** with three acts (sitting B).
+  - Gold income doubled (`data/run.json` `gold`, combat / elite / mini-boss): combat 12-18 -> **24-36**, elite 30-40 -> **60-80**, mini-boss 45-55 -> **90-110**. `map.json` `estimate.gold_mean` 15 / 35 / 50 -> **30 / 70 / 100**; `estimate.merchant_prices` [30, 30, 45] -> **[60, 60, 90]** (one act) and **[80, 80, 120]** with three acts (`multi_act`). Every generated map, the golden-map hash and the capture presets stayed valid. Gold went up more than the brief's "only as far as needed" (25/55/80 would have failed the sweep's headroom); MAP3b does the final gold tuning.
+  - Card price stays 40 flat until MAP3b adds rarity.
+- **Strings, old -> new** (`data/run.json` `ui`):
+  - merchant tile reason "No card can go: deck minimums" -> "No card can go. Add a card first.";
+  - removal-screen text "Every card is needed to meet the deck minimums" -> "Every card is needed to meet the deck minimums. Add a card first, then come back.";
+  - map line "Spend your gold at the merchant (the square)." -> "Spend your gold at the merchant (the square with the coin).";
+  - act summary "HP %d of %d, %d gold, %d relics" -> "HP %d of %d, %d gold, relics: %d" (so it never says "1 relics").
+  - New: the act screen's flavor line, button and hint; the map's per-act title and "Pick the next room. Every route ends at the mini-boss."; the mini-boss "only way on" lines; the class pick's Continue lines.
+- The shop shrinks instead of scrolling when it is up to 4% too tall (`data/ui.json` `run_ui.shop_scroll_slack` 0.04). This fixes the 4 px overflow at 1280x720 when every tile says "Need N more gold".
+- Relic offers in act 3 draw tier 1 and 2 at 5:25 for now (there are no tier 3 relics yet). An exhausted pool keeps the BD2 fallback: an elite or relic room with nothing left to offer gives a card offer.
+- **`--run-node` now refuses a non-integer value with exit 2** (it was silently ignored; a MAP2 qa carry-over). `--run-node=999` still only logs an error.
+- Save robustness (sitting A): `RunState.from_dict` no longer crashes on wrongly-typed `offer`, `deck` or `choice_log` entries or a null, array or object offer entry; a stale `offer` is cleared when nothing is pending; a damaged map drops `pending: "node"` (a soft lock); negative gold is clamped to 0; overlapping, over-cap and unknown relic ids are refused; `BossConfig.validate` no longer script-errors on a non-object attack. MAP1's two skipped save tests were un-skipped.
+- Other MAP2 housekeeping (sitting A): run-arg refusals with tests, Liquidate Assets refreshing on every purchase, `Merchant.items()` at the relic cap, stale comments.
+
+#### Verification (qa, 890c9eb)
+- PASS with carry-overs. Per-act 1000-seed sweeps: 0 failures (worst 79 / 86 / 126 of 1000 attempts). Reload soak OK four ways. No-card gate 0/12 for both classes.
+- **Unchanged:** arena `state_hash` 1897787086 (30 s) and 4207041509 (90 s), `-Plan` 1160207333, bot sim 846850403, `-NoMap` Rogue 12/12 at 57.5 s and Wizard 12/12 at 63.3 s.
+- **Acceptance** (`-Run -Seed 1 -Runs 12 -Route first`, three acts): Rogue 9/12 and Wizard 10/12 wins (gate: 8/12); every act within +13% of act 1's bot time. Final boss median 47.0 s (Rogue) and 56.9 s (Wizard). Median relics at the end of acts 1 / 2 / 3: 3.0 / 5.5 / 7.0 (Rogue), 3.5 / 6.0 / 7.5 (Wizard). Median gold at the end of each act: 328 / 611 / 902 (Rogue), 333 / 611 / 835 (Wizard).
+- **Other baselines (not gated):** `relic` route Rogue 10/12 at 43.3 s with 11 relics, Wizard 10/12 at 52.4 s with 11; `safe` Rogue 8/12 at 54.4 s with 5 relics, Wizard 10/12 at 63.5 s with 5. The old relic targets (`relic` 14 to 17, `safe` 6 to 8) are not met; they moved to MAP3b.
+- Carry-overs: BD3a sitting A housekeeping (a hand-edited save with `hp` 0 or above max, or a bad `rejects_remaining`, still loads: a skipped probe; `GamePause.reset()` does not unpause the tree; the Wizard `-Run` sim that gave the playtester no output after 15 min); MAP3b (bots hoard 835 to 902 gold by the end of act 3; no tier 3 relics).
+
+#### Playtest (02a8c5f, no blocker; captures and sim only)
+- Smoke pass. The structure reads clearly (HUD, map titles, rooms 11-30, mini-boss node text) and the Act 2 screen's tone and single button work. Bot act times 246 / 288 / 251 s (Rogue, seed 300).
+- Findings routed by game-lead (40d64ee): acts 2 and 3 feel like "act 1 with more" and the mini-boss does not look like an act-ender (director question D44, plus a named bar and a bigger marker for BD3a ux); the missing heal between acts is invisible (D45, plus an act-screen line "Your HP carries over. Rests are on the map." and low HP in red for BD3a ux); gold has no job in acts 2 and 3 (259 / 629 / 960 median) and goes to MAP3b's design pass; the win rate swings by seed (Rogue seed 300 won 2 of 6, against seed 1's 9 of 12). Human run length is unmeasured (the playtester guesses 20 to 30 min against the 30 to 45 target).
+
+### Director decisions and feedback (2026-11-09)
+- **[Director decision] D43 = B: card offers lean toward the statuses your deck applies.** It replaces the even draw across pools (GDD section 9). Built in BD3a. The starting rule is a game-lead default in `docs/DECISIONS.md`: weight x (1 + 0.25 per owned card that applies the status), capped at x3, tuned by data. Archived in `docs/RESOLVED.md`.
+- **[Director decision] Class and element are a dual-class system; there is no "no element" option.** A player leans toward either side or stays hybrid. Recorded in GDD section 5 "Character creation".
+- **[Director decision] Reprioritisation: non-Fire build variety is a priority.** BD3 is split: **BD3a** (physical Rogue: stacking, `detonate_status`, Bleed Out and Grudge Brawler cards, non-Fire relics) runs after MAP3 and before MAP3b; **BD3b** (Wizard depth) stays after 3d. MAP3b's relics and rare and legendary cards must cover Bleed and basic attacks as well as Burn.
+- **Director feedback (his three-act physical/Bleed Rogue run, on the sitting B build):** "It felt good mostly." Problems: far too few physical and Bleed cards (1 card applies Bleed); about half his relics were Fire or Burn and no use to his build; he kept rejecting and pruning Fire offers; he felt trapped into Fire. game-lead's data: about 37% of a Fire Rogue's card offers are Fire, and 5 of the 8 elite and relic-room relics the Rogue can see need Burn, including Spite Knuckles. This is the only hand-play input on MAP3 so far.
+
+### Docs and process
+- **MAP3 split (2026-11-07):** MAP3 (structure: acts, mini-bosses, scaling, save and resume) and **MAP3b** (content: card rarity, rare and legendary cards, tier 3 and boss-tier relics, final gold tuning), each with its own tag. Reason: there were 13 relics (tier 1 and 2 only), no boss relics and no card `rarity`, so the 14 to 17 relic target and the mini-boss reward could not be built or tested.
+- **MAP3 acceptance restated:** the bot's 30 to 45 min gate is replaced by 8 of 12 three-act wins per class on the `first` route and bot time per act within about 30% of act 1's. A human run of 30 to 45 min (GDD section 9) goes to the playtest and the director. Relic counts and "2 boss relics per run" moved to MAP3b.
+- BD3 split into BD3a and BD3b on 2026-11-09 (see above). The README, ARCHITECTURE, CHANGELOG and RESOLVED updates are the MAP3 docs pass.
+
 ## 2026-11-06 (Slice MAP2: the merchant; D40 = A)
+
+### Director answers on relic prices and merchants (D41, D42; answered 2026-11-06 after the MAP2 playtest)
+- **[Director decision] D41 = B: keep the relic prices at 60 / 90 / 130 and raise gold income instead.** The shipped 30 / 45 / 65 was a game-lead default. Cards are tiered by rarity too, and a card is always cheaper than the equivalent relic tier (card price 40 flat -> by rarity in MAP3b). Built in MAP3 (see 2026-11-09). Recorded in GDD sections 4a and 9 and `docs/MAP.md` sections 3, 4.4 and 4.5; archived in `docs/RESOLVED.md`.
+- **[Director decision] D42 = A: no merchant guarantee on a route** (the shipped behaviour, unchanged). A skipped merchant costs less from MAP3 on, because gold carries between acts.
 
 ### Slice MAP2: the merchant
 

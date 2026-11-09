@@ -2,7 +2,27 @@
 
 The archive of the director's answered, received and acknowledged items, moved here from `docs/OPEN_ITEMS.md`. Owned by tech-writer (director, 2026-11-02). Newest dated section first; IDs (D19, call 16, checklist item 33) are kept so they can be searched. Old entries change only to fix a factual error.
 
+## 2026-11-09
+
+### Answers recorded in f007e83 (D43 and the dual-class rule)
+
+Removed from OPEN_ITEMS in f007e83. The D43 question text (as first worded) is in `git show 2802791:docs/OPEN_ITEMS.md`; its final wording, with B reworded as a status lean, is in `git show 962fe50:docs/OPEN_ITEMS.md`.
+
+| ID | Question | Your answer | Where it went |
+|---|---|---|---|
+| D43 | Should card offers lean toward the build you are making? (From your 2026-11-09 run: "constantly rejecting (and pruning) fire/burn options".) Today an offer draws evenly from your class, element and Neutral pools: about 37% Fire for a Fire Rogue, about 29% with BD3a's 8 new cards. **A** (default): no change, content only. **B**: offers lean toward the statuses your deck applies (Bleed, Burn): an unowned card that applies a status gets a weight bonus that grows with the owned cards applying it. **C**: class cards offered 1.5x as often as element cards for everyone (about 23% Fire). Recommended: B. | **B** (2026-11-09). | GDD section 9 (f007e83); ROADMAP BD3a sitting B step 7; DECISIONS "BD3a placement and scope" (starting numbers: weight x (1 + 0.25 per owned card that applies the status), capped at x3; values are to be data, per GDD: `run.json` `rewards`; not built yet). Built in BD3a. |
+| (dual-class) | Not an open item: part of the same 2026-11-09 feedback. Should a build be allowed to have "no element"? | **No.** Class + element is a dual-class system: a build leans toward the class side (for example physical and Bleed for the Rogue), the element side (for example Burn), or stays hybrid. Both sides must offer enough cards and relics to lean into. | GDD section 5 "Character creation" (f007e83); BD3a (BUILD_DEPTH section 9a). |
+
 ## 2026-11-06
+
+### Answers recorded in 7fb31a9 (D41, D42)
+
+Removed from OPEN_ITEMS in 7fb31a9; the full question text is in `git show e6908f2:docs/OPEN_ITEMS.md`.
+
+| ID | Question | Your answer | Where it went |
+|---|---|---|---|
+| D41 | Merchant relic prices. At the planned 60 / 90 / 130 a relic-hunting route ends with about 5 relics against your 6 to 8 target (gold income was about 15 a fight and 35 an elite). **A** (default, as built in MAP2): halve to 30 / 45 / 65, so hunters end with 6, but a tier 1 relic costs less than a card (40) or a removal (50). **B**: keep 60 / 90 / 130 and give more gold for fights. **C**: keep 60 / 90 / 130 and accept about 5 relics in a one-act run. **D** (the playtester's idea): 45 / 65 / 90, but bots say a hunter drops to about 5. | **B** (2026-11-06): keep 60 / 90 / 130 and raise gold income. Cards are tiered by rarity too, and a card is always cheaper than the equivalent relic tier. | GDD sections 4a and 9, `docs/MAP.md` sections 3, 4.4 and 4.5, DECISIONS "Applying D41 = B and D42 = A" (7fb31a9). Built in MAP3 sitting A (da739de): prices 60 / 90 / 130, gold doubled; sitting B set 80 / 120 / 170 for three acts. Cards by rarity come in MAP3b. See `docs/CHANGELOG.md` 2026-11-09. |
+| D42 | Should every route pass a merchant? (3 of 8 bot runs on the plain and careful routes met none, so their gold was never spent.) **A** (default): no guarantee; skipping the merchant is part of the route choice, and from MAP3 gold carries to the next act's map. **B**: a merchant on every route, somewhere in rooms 4 to 8, like D40's rest rule. | **A** (2026-11-06): no guarantee. | Same entries as D41. No code change: it is the shipped behaviour. |
 
 ### Answer recorded in b050aab (D40)
 

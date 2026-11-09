@@ -10,6 +10,7 @@ extends RefCounted
 ## BD3a: a second plan, the basic-attack one. A deck "plays basic attacks" when one of its cards buffs the light or heavy attack (a buff on an
 ## attack_interval.* or attack_cooldown.* stat). A relic is a "basic-attack relic" when a modifier changes those stats or a trigger reacts to a
 ## light or heavy hit. Both are read from data, never from ids. With the plan, such a relic is taken when no keyword match comes first.
+## Order: a keyword match, then (with the basic-attack plan) a basic-attack relic, then a relic with no keywords (it works in any deck), then the first offered.
 
 const MATCH_MIN_CARDS := 3
 const BASIC_ATTACK_STAT_PREFIXES: Array[String] = ["attack_interval.", "attack_cooldown."]
@@ -71,6 +72,7 @@ static func offer_choice(options: Array, deck: Array[String]) -> String:
 	var basic_plan: bool = plays_basic_attacks(deck)
 	var first: String = ""
 	var basic: String = ""
+	var generic: String = ""
 	var skip: String = ""
 	for option: Variant in options:
 		var entry: Dictionary = option
@@ -81,10 +83,16 @@ static func offer_choice(options: Array, deck: Array[String]) -> String:
 				return String(entry["id"])
 			if basic == "" and basic_plan and is_basic_attack_relic(RelicDatabase.get_relic(String(entry["id"]))):
 				basic = String(entry["id"])
+			if generic == "" and (entry.get("keywords", []) as Array).is_empty():
+				generic = String(entry["id"])
 		elif String(entry.get("kind", "")) == "relic_skip":
 			skip = String(entry["id"])
 	if basic != "":
 		return basic
+	# BD3a: nothing fits the deck's plan. A relic with no plan of its own (ASAP Notice, Muscle Memory, Overtime) works in any deck, so it beats the first
+	# one offered, which is now often a Bleed or Dash relic that does nothing for a Burn deck (the Fire Rogue's relic offers are only 29% Burn).
+	if generic != "":
+		return generic
 	return first if first != "" else skip
 
 

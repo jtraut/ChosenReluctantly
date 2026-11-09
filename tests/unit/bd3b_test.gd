@@ -579,3 +579,11 @@ func test_open_a_vein_and_bad_influence_are_only_offered_to_a_deck_with_a_bleed_
 		seen_bleeding = seen_bleeding or offered_bleeding.has("rogue_open_a_vein") or offered_bleeding.has("rogue_bad_influence")
 	assert_bool(seen_plain).is_false()
 	assert_bool(seen_bleeding).is_true()
+
+
+func test_with_no_plan_match_the_bot_prefers_a_relic_that_works_in_any_deck() -> void:
+	var burn_deck: Array[String] = ["fire_ember_whatever", "fire_fine_burn_then", "rogue_quick_slash"]  # fewer than 3 Burn cards: no keyword plan
+	var options: Array = _relic_options(["serrated_excuse", "chasing_paper", "asap_notice"] as Array[String])
+	assert_str(RelicPolicy.offer_choice(options, burn_deck)).is_equal("asap_notice")  # the Bleed and Dash relics do nothing here
+	var only_off_plan: Array = _relic_options(["serrated_excuse", "chasing_paper"] as Array[String])
+	assert_str(RelicPolicy.offer_choice(only_off_plan, burn_deck)).is_equal("serrated_excuse")  # nothing generic: the first offered, as before

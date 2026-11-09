@@ -1,0 +1,13 @@
+{
+    "id": "rogue_bad_influence",
+    "name": "Bad Influence",
+    "slot_type": "utility",
+    "pool": "rogue",
+    "cooldown_modifier": 0.0,
+    "keywords": ["Keystone", "Primer"],
+    "flavor_text": "Teaches your cuts to multiply and hurry up. HR has been notified.",
+    "effects": [
+        { "template": "buff", "params": { "stat": "status_max_stacks.bleed", "modifier_type": "additive", "value": 4, "duration": 6.0 } },
+        { "template": "buff", "params": { "stat": "status_tick_rate.bleed", "modifier_type": "multiplicative", "value": 0.5, "duration": 6.0 } }
+    ]
+}

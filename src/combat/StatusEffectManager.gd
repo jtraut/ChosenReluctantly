@@ -9,6 +9,12 @@ class_name StatusEffectManager
 
 ## Stat prefix: "status_damage_mult.burn" scales the damage-over-time ticks the caster's burns deal (base 1.0).
 const STATUS_DAMAGE_MULT_PREFIX := "status_damage_mult."
+## BD3a stacking: a status's `stacking.max_stacks` (default 1) is read through the applier's `status_max_stacks.<id>` stat
+## (additive: +4 on Bleed lets it reach 5 stacks), so a keystone buff or a relic can raise it. Burn and Bleed ship at 1 (D25 = A).
+const STATUS_MAX_STACKS_PREFIX := "status_max_stacks."
+## BD3a: the applier's `status_tick_rate.<id>` stat (base 1.0) divides the tick interval (1.5 = ticks 50% faster).
+const STATUS_TICK_RATE_PREFIX := "status_tick_rate."
+const MIN_TICK_RATE := 0.1
 
 signal status_applied(status_id: String)
 signal status_expired(status_id: String)
@@ -18,6 +24,11 @@ signal status_refreshed(status_id: String)
 ## A stun landed on an immune target (boss, or diminishing returns): nothing was applied.
 ## ux can show an "immune" popup from this.
 signal status_resisted(status_id: String)
+## The stack count of an active damage-over-time status changed (a reapply added a stack). ux shows "Bleed x3" from this
+## and from stacks_of().
+signal status_stacks_changed(status_id: String, stacks: int)
+## A detonate_status effect burst the status: `amount` is the damage dealt before mitigation, `stacks` the stacks it had.
+signal status_detonated(status_id: String, amount: float, stacks: int)
 ## Lifesteal returned HP to the owner (amount actually healed). ux can show a heal cue.
 signal lifesteal_healed(amount: float)
 
@@ -45,6 +56,8 @@ var _flames: Dictionary = {}
 var _flame_generations: Dictionary = {}
 ## status_id -> extra [PooledEffect, generation] pairs of a multi-part cue (stun stars).
 var _extra_effects: Dictionary = {}
+## The status a detonate_status burst is dealing damage for right now ("" = none); see _on_owner_died.
+var _detonating_id: String = ""
 
 
 class ActiveStatus:
@@ -68,6 +81,9 @@ class ActiveStatus:
 	## Where the status came from ("card:<id>", "relic:<id>", "light", ...), latest applier wins on refresh. It rides on the
 	## CombatEvents status events, so a relic can tell a status its own effects applied (the recursion guard).
 	var origin: String = ""
+	## BD3a: how many stacks are on (1 for everything that does not stack), and the status's own max before stat modifiers.
+	var stacks: int = 1
+	var base_max_stacks: int = 1
 
 	func source_node() -> Node:
 		return instance_from_id(source_id) as Node if source_id != 0 else null
@@ -84,6 +100,9 @@ class ActiveStatus:
 		lifesteal_fraction = status_def.get("fraction", 0.0)
 		lifesteal_cap = status_def.get("max_heal_per_hit", 0.0)
 		source_id = p_source.get_instance_id() if p_source != null else 0
+		var stacking: Variant = status_def.get("stacking")
+		if typeof(stacking) == TYPE_DICTIONARY:
+			base_max_stacks = maxi(int((stacking as Dictionary).get("max_stacks", 1)), 1)
 		var visual: Variant = status_def.get("visual")
 		if typeof(visual) == TYPE_DICTIONARY:
 			cue = visual
@@ -122,7 +141,10 @@ func _on_owner_died() -> void:
 		return
 	for status_id: String in _active.keys():
 		var active: ActiveStatus = _active[status_id]
-		relay.notify_status_ended(get_parent(), status_id, CombatEventsRelay.STATUS_END_OWNER_DIED, active.source_node(), active.origin)
+		# The status a detonate_status burst just killed the owner with ends as "detonated", not "owner_died", so a death
+		# trigger (Pyre Insurance) does not fire on top of the burst.
+		var reason: String = CombatEventsRelay.STATUS_END_DETONATED if status_id == _detonating_id else CombatEventsRelay.STATUS_END_OWNER_DIED
+		relay.notify_status_ended(get_parent(), status_id, reason, active.source_node(), active.origin)
 
 
 ## Ends an active status early (a relic or effect that uses it up). Emits status_ended with reason "consumed" and the
@@ -166,12 +188,19 @@ func apply_status(status_id: String, status_def: Dictionary, duration: float, so
 	if was_active:
 		# A refresh keeps the tick phase (time_to_next_tick) and takes the longer duration,
 		# so recasting before expiry never restarts the tick timer or shortens the status.
-		(_active[status_id] as ActiveStatus).refresh(status_def, duration, source)
+		var refreshed: ActiveStatus = _active[status_id]
+		refreshed.refresh(status_def, duration, source)
 		if origin != "":
-			(_active[status_id] as ActiveStatus).origin = origin
+			refreshed.origin = origin
+		# BD3a: a reapply adds a stack up to the max (1 by default, so nothing stacks unless data or a stat says so).
+		if refreshed.effect_type == "damage_over_time" and refreshed.stacks < _max_stacks(refreshed, source):
+			refreshed.stacks += 1
+			status_stacks_changed.emit(status_id, refreshed.stacks)
 	else:
 		var created := ActiveStatus.new(status_id, status_def, duration, source)
 		created.origin = origin
+		if created.effect_type == "damage_over_time":
+			created.time_to_next_tick = created.tick_interval / _tick_rate(created, source)
 		_active[status_id] = created
 		if created.effect_type == "stun":
 			_stun_count += 1
@@ -190,6 +219,70 @@ func apply_status(status_id: String, status_def: Dictionary, duration: float, so
 
 func has_status(status_id: String) -> bool:
 	return _active.has(status_id)
+
+
+## Stacks on an active status (0 when it is not active, 1 for a status that does not stack).
+func stacks_of(status_id: String) -> int:
+	if not _active.has(status_id):
+		return 0
+	return (_active[status_id] as ActiveStatus).stacks
+
+
+## The most stacks the status can reach for its current applier right now (data `stacking.max_stacks` through the
+## applier's `status_max_stacks.<id>` stat; at least 1). 0 when the status is not active.
+func max_stacks_of(status_id: String) -> int:
+	if not _active.has(status_id):
+		return 0
+	var active: ActiveStatus = _active[status_id]
+	return _max_stacks(active, active.source_node())
+
+
+## How many more damage ticks an active status will deal if left alone (0 when inactive or not a damage_over_time).
+func remaining_ticks(status_id: String) -> int:
+	if not _active.has(status_id):
+		return 0
+	var active: ActiveStatus = _active[status_id]
+	if active.effect_type != "damage_over_time":
+		return 0
+	var interval: float = active.tick_interval / _tick_rate(active, active.source_node())
+	if active.time_remaining < active.time_to_next_tick - 0.000001:
+		return 0
+	return int(floorf((active.time_remaining - maxf(active.time_to_next_tick, 0.0)) / interval + 0.000001)) + 1
+
+
+## The `detonate_status` effect on this owner: deals remaining ticks x damage per tick x stacks x `multiplier` at once (through the
+## same damage path as a tick, so Bleed meets armor and Burn meets resistance), credited to `source`. The burst lands while the
+## status is still on, so a kill by it counts as an enemy dying with the status; only then is the status removed, ending with
+## reason "detonated" (not "expired", so Pyre Insurance does not chain). Returns the damage dealt before mitigation (0 when
+## the status is not an active damage_over_time with ticks left; nothing is removed then).
+func detonate_status(status_id: String, multiplier: float, source: Node = null, origin: String = "") -> float:
+	if health == null or health.is_dead() or not _active.has(status_id):
+		return 0.0
+	var active: ActiveStatus = _active[status_id]
+	var ticks: int = remaining_ticks(status_id)
+	if ticks <= 0:
+		return 0.0
+	var stacks: int = active.stacks
+	var amount: float = float(ticks) * active.damage_per_tick * float(stacks) * _status_damage_mult(active, active.source_node()) * multiplier
+	var look: Dictionary = ElementVisuals.visual_for_damage_type(active.damage_type)
+	_detonating_id = status_id
+	health.take_damage(amount, active.damage_type, Vector3.ZERO, source, Health.KIND_HIT, origin)
+	_detonating_id = ""
+	status_detonated.emit(status_id, amount, stacks)
+	var owner_node := get_parent() as Node3D
+	var pool := _vfx_pool()
+	if pool != null and owner_node != null and owner_node.is_inside_tree():
+		TemplateVfx.projectile_impact(pool, owner_node.global_position + Vector3(0.0, TemplateVfx.body_top(owner_node) * 0.6, 0.0), look)
+	if _active.has(status_id):
+		var ended: ActiveStatus = _active[status_id]
+		_erase_status(status_id)
+		# A kill already reported the end (owner_died's turn, as "detonated"); a survivor reports it here.
+		if not health.is_dead():
+			var relay := CombatLink.events()
+			if relay != null:
+				relay.notify_status_ended(get_parent(), status_id, CombatEventsRelay.STATUS_END_DETONATED, ended.source_node(), ended.origin)
+			status_expired.emit(status_id)
+	return amount
 
 
 ## True while any "stun" effect_type status is active (by effect, not by id).
@@ -230,7 +323,7 @@ func _process(delta: float) -> void:
 		active.time_remaining -= delta
 		active.time_to_next_tick -= delta
 		if active.time_to_next_tick <= 0.0:
-			active.time_to_next_tick += active.tick_interval
+			active.time_to_next_tick += active.tick_interval / _tick_rate(active, active.source_node())
 			_tick(active)
 		if active.time_remaining <= 0.0:
 			_expired.append(status_id)
@@ -248,7 +341,7 @@ func _tick(active: ActiveStatus) -> void:
 		return
 	if active.effect_type == "damage_over_time":
 		var source: Node = active.source_node()
-		health.take_damage(active.damage_per_tick * _status_damage_mult(active, source), active.damage_type, Vector3.ZERO, source, Health.KIND_DOT, "status:" + active.status_id)
+		health.take_damage(active.damage_per_tick * float(active.stacks) * _status_damage_mult(active, source), active.damage_type, Vector3.ZERO, source, Health.KIND_DOT, "status:" + active.status_id)
 		if String(active.cue.get("kind", "")) == "drips":
 			_tick_cue_drop(active.cue)
 	elif active.effect_type == "heal_over_time":
@@ -270,6 +363,26 @@ func _status_damage_mult(active: ActiveStatus, source: Node) -> float:
 	if not (mods is StatModifiers):
 		return 1.0
 	return (mods as StatModifiers).apply(STATUS_DAMAGE_MULT_PREFIX + active.status_id, 1.0)
+
+
+## The status's current stack cap: its data cap through the applier's `status_max_stacks.<id>` stat. At least 1.
+func _max_stacks(active: ActiveStatus, source: Node) -> int:
+	var base: float = float(active.base_max_stacks)
+	if source != null and is_instance_valid(source):
+		var mods: Variant = source.get(&"stat_modifiers")
+		if mods is StatModifiers:
+			base = (mods as StatModifiers).apply(STATUS_MAX_STACKS_PREFIX + active.status_id, base)
+	return maxi(roundi(base), 1)
+
+
+## The applier's `status_tick_rate.<id>` stat (base 1.0, never below MIN_TICK_RATE); the tick interval is divided by it.
+func _tick_rate(active: ActiveStatus, source: Node) -> float:
+	if source == null or not is_instance_valid(source):
+		return 1.0
+	var mods: Variant = source.get(&"stat_modifiers")
+	if not (mods is StatModifiers):
+		return 1.0
+	return maxf((mods as StatModifiers).apply(STATUS_TICK_RATE_PREFIX + active.status_id, 1.0), MIN_TICK_RATE)
 
 
 ## Bleed's tick look: a drop falls off the body, on the same beat as the damage number.

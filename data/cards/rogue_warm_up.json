@@ -1,0 +1,13 @@
+{
+    "id": "rogue_warm_up",
+    "name": "Warm-Up, Reluctantly",
+    "slot_type": "utility",
+    "pool": "rogue",
+    "cooldown_modifier": 0.0,
+    "keywords": ["Keystone"],
+    "flavor_text": "Stretches, sighs, then hits things faster. In that order.",
+    "effects": [
+        { "template": "buff", "params": { "stat": "attack_interval.light", "modifier_type": "multiplicative", "value": -0.3, "duration": 6.0 } },
+        { "template": "buff", "params": { "stat": "attack_cooldown.heavy", "modifier_type": "multiplicative", "value": -0.3, "duration": 6.0 } }
+    ]
+}

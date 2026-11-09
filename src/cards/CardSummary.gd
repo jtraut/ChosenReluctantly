@@ -78,6 +78,7 @@ const DEFAULT_TEXT: Dictionary = {
 	"dash_modes": {"away_from_aim": " away from your aim"},
 	"dash_damage": "%s %s damage",
 	"pass_through": "Walk through enemies for %s s",
+	"detonate": "Detonate %s: its remaining damage x%s at once",
 	"status_plain": "%s for %s s",
 	"status_lifesteal": "%s %d%% for %s s",
 	"status_damage_over_time": "%s %s damage/s for %s s",
@@ -132,6 +133,8 @@ static func _effect_part(template: String, params: Dictionary, text: Dictionary 
 			return buff_text(params, text)
 		"pass_through":
 			return String(_word(text, "pass_through")) % _num(float(params.get("duration", 0.0)))
+		"detonate_status":
+			return String(_word(text, "detonate")) % [_status_name(String(params.get("status_id", "")), text), _num(float(params.get("multiplier", 1.0)))]
 	return template.replace("_", " ").capitalize()
 
 
@@ -217,6 +220,6 @@ static func status_ids(card: Dictionary) -> Array[String]:
 		if typeof(effect) != TYPE_DICTIONARY:
 			continue
 		var params: Variant = (effect as Dictionary).get("params", {})
-		if typeof(params) == TYPE_DICTIONARY and (params as Dictionary).has("status_id"):
+		if typeof(params) == TYPE_DICTIONARY and (params as Dictionary).has("status_id") and String((effect as Dictionary).get("template", "")) != "detonate_status":
 			out.append(String((params as Dictionary)["status_id"]))
 	return out

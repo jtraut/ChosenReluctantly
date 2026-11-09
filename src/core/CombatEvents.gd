@@ -39,7 +39,10 @@ signal room_cleared(index: int, room_type: String)
 const STATUS_END_EXPIRED := "expired"
 const STATUS_END_OWNER_DIED := "owner_died"
 const STATUS_END_CONSUMED := "consumed"
-const STATUS_END_REASONS: Array[String] = [STATUS_END_EXPIRED, STATUS_END_OWNER_DIED, STATUS_END_CONSUMED]
+## BD3a: a detonate_status effect burst the status and removed it. A death trigger (Pyre Insurance) filters on expired and
+## owner_died only, so a detonate cannot chain into a second explosion.
+const STATUS_END_DETONATED := "detonated"
+const STATUS_END_REASONS: Array[String] = [STATUS_END_EXPIRED, STATUS_END_OWNER_DIED, STATUS_END_CONSUMED, STATUS_END_DETONATED]
 
 var history := CastHistory.new()
 var _now: float = 0.0

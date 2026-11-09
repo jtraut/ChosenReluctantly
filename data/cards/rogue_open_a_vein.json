@@ -1,0 +1,13 @@
+{
+    "id": "rogue_open_a_vein",
+    "name": "Open a Vein",
+    "slot_type": "attack_single",
+    "pool": "rogue",
+    "cooldown_modifier": 0.1,
+    "keywords": ["Keystone", "Payoff"],
+    "flavor_text": "Cashes in every little cut at once. Nobody asked, but here we are.",
+    "effects": [
+        { "template": "cone", "params": { "damage": 6, "damage_type": "physical", "range": 1.8, "half_angle_degrees": 45, "knockback_strength": 1.5 } },
+        { "template": "detonate_status", "params": { "status_id": "bleed", "multiplier": 2.0 } }
+    ]
+}

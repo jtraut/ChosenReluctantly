@@ -108,7 +108,7 @@ static func _add_effect_tags(effect: Dictionary, found: Dictionary) -> void:
 			found[DASH] = true
 		"heal":
 			found[HEAL] = true
-		"apply_status":
+		"apply_status", "detonate_status":
 			_add_status_tags(String(params.get("status_id", "")), found)
 		"buff":
 			found[BUFF] = true

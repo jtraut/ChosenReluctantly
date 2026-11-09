@@ -18,6 +18,8 @@ const VISUAL_KINDS: Array[String] = ["flame", "stars", "drips", "ring", "orbs"]
 ## Kinds that circle their owner, so they share STARS_RULES.
 const ORBITING_KINDS: Array[String] = ["stars", "orbs"]
 const MAX_VISUAL_SIZE := 5.0
+## Sanity limit on a status's data `stacking.max_stacks`.
+const MAX_STACKS := 99
 ## "stars" visual: how many, how wide they circle, how fast. field -> [min, max, min_inclusive].
 const STARS_RULES: Dictionary = {
 	"count": [1.0, 8.0, true],
@@ -95,6 +97,26 @@ static func validate_entry(entry: Dictionary) -> Array[String]:
 		errors.append_array(_validate_stun(entry))
 	if entry.has("visual"):
 		errors.append_array(_validate_visual(entry["visual"]))
+	if entry.has("stacking"):
+		errors.append_array(_validate_stacking(entry["stacking"], type_ok and String(effect_type) == "damage_over_time"))
+	return errors
+
+
+## BD3a: the optional `stacking` block, {max_stacks: whole number 1..MAX_STACKS}. Only damage_over_time statuses stack.
+static func _validate_stacking(stacking: Variant, stackable: bool) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(stacking) != TYPE_DICTIONARY:
+		errors.append("'stacking' must be an object")
+		return errors
+	if not stackable:
+		errors.append("'stacking' is only supported by damage_over_time statuses")
+	var block: Dictionary = stacking
+	for key: Variant in block.keys():
+		if String(key) != "max_stacks":
+			errors.append("'stacking.%s' is not a known key (only max_stacks)" % str(key))
+	var value: Variant = block.get("max_stacks")
+	if (typeof(value) != TYPE_FLOAT and typeof(value) != TYPE_INT) or float(value) != floorf(float(value)) or float(value) < 1.0 or float(value) > float(MAX_STACKS):
+		errors.append("'stacking.max_stacks' must be a whole number from 1 to %d" % MAX_STACKS)
 	return errors
 
 

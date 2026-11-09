@@ -16,7 +16,7 @@ const CAST_WITHIN := "cast_within"
 const ZONE_ACTIVE := "zone_active"
 const TYPES: Array[String] = [TARGET_HAS_STATUS, CAST_WITHIN, ZONE_ACTIVE]
 ## Templates that have a target hit path, so a target condition means something there.
-const TARGET_TEMPLATES: Array[String] = ["cone", "aoe", "projectile", "zone", "apply_status"]
+const TARGET_TEMPLATES: Array[String] = ["cone", "aoe", "projectile", "zone", "apply_status", "detonate_status"]
 ## Internal params key under which execute() hands a target condition to the hit path (never written in data).
 const PARAM_KEY := "_target_condition"
 

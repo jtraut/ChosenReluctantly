@@ -19,6 +19,7 @@ const REQUIRED_PARAMS: Dictionary = {
 	"zone": ["shape", "duration", "tick_interval", "damage", "damage_type", "max_range"],
 	"pass_through": ["duration"],
 	"reduce_cooldown": ["slot_type", "seconds"],
+	"detonate_status": ["status_id", "multiplier"],
 }
 
 ## Optional params, validated by validate_params (CardSchema calls it). Absent = old behaviour.
@@ -85,6 +86,9 @@ const DAMAGE_MULT_STAT := "damage_mult"
 const ZONE_STATUS_CHANCE_STAT := "zone_status_chance"
 ## reduce_cooldown (BD2-B, a new effect type): takes `seconds` off the running cooldown of the caster's `slot_type` slot (never below ready).
 const MAX_REDUCE_COOLDOWN := 60.0
+## detonate_status (BD3a, a new effect type): every target in last_hits that holds `status_id` (a damage_over_time status) takes its
+## remaining ticks x damage per tick x stacks x `multiplier` at once, then loses the status (see StatusEffectManager.detonate_status).
+const MAX_DETONATE_MULTIPLIER := 20.0
 
 const PROJECTILE_SCENE_PATH := "res://scenes/effects/Projectile.tscn"
 ## A shot leaves this far in front of the caster (the cast preview lane starts here too).
@@ -154,6 +158,8 @@ static func validate_params(template_id: String, params: Dictionary) -> Array[St
 			_validate_buff(params, errors)
 		"reduce_cooldown":
 			_validate_reduce_cooldown(params, errors)
+		"detonate_status":
+			_validate_detonate_status(params, errors)
 	return errors
 
 
@@ -173,7 +179,7 @@ static func _number_in(value: Variant, minimum: float, maximum: float, inclusive
 
 ## True for a stat whose base is 1.0 and which must stay above zero (a "factor" stat).
 static func is_factor_stat(stat: String) -> bool:
-	return stat.begins_with(StatusEffectManager.STATUS_DAMAGE_MULT_PREFIX) or stat.begins_with(CARD_DAMAGE_VS_STATUS_PREFIX) or stat == ZONE_DURATION_MULT_STAT or stat == DAMAGE_MULT_STAT
+	return stat.begins_with(StatusEffectManager.STATUS_DAMAGE_MULT_PREFIX) or stat.begins_with(StatusEffectManager.STATUS_TICK_RATE_PREFIX) or stat.begins_with(CARD_DAMAGE_VS_STATUS_PREFIX) or stat == ZONE_DURATION_MULT_STAT or stat == DAMAGE_MULT_STAT
 
 
 static func _validate_buff(params: Dictionary, errors: Array[String]) -> void:
@@ -257,6 +263,20 @@ static func _validate_zone(params: Dictionary, errors: Array[String]) -> void:
 		errors.append("'status_chance' must be a number from 0 to 1")
 	if _is_number(params.get("damage")) and float(params["damage"]) == 0.0 and not has_status:
 		errors.append("a zone with damage 0 needs a status")
+
+
+static func _validate_detonate_status(params: Dictionary, errors: Array[String]) -> void:
+	for key: Variant in params.keys():
+		if not ["status_id", "multiplier"].has(String(key)):
+			errors.append("'%s' is not a known detonate_status param" % str(key))
+	if typeof(params.get("status_id")) == TYPE_STRING:
+		var status_id: String = String(params["status_id"])
+		if not StatusDatabase.has_status(status_id):
+			errors.append("unknown status_id '%s'" % status_id)
+		elif String(StatusDatabase.get_status(status_id).get("effect_type", "")) != "damage_over_time":
+			errors.append("detonate_status needs a damage_over_time status, '%s' is not one" % status_id)
+	if params.has("multiplier") and not _number_in(params["multiplier"], 0.0, MAX_DETONATE_MULTIPLIER, false):
+		errors.append("'multiplier' must be a number above 0 and at most %s" % str(MAX_DETONATE_MULTIPLIER))
 
 
 static func _validate_reduce_cooldown(params: Dictionary, errors: Array[String]) -> void:
@@ -368,6 +388,8 @@ static func execute(template_id: String, params: Dictionary, context: EffectCont
 			_execute_pass_through(params, context)
 		"reduce_cooldown":
 			_execute_reduce_cooldown(params, context)
+		"detonate_status":
+			_execute_detonate_status(params, context)
 		_:
 			push_error("EffectTemplates: unknown template '%s'" % template_id)
 
@@ -642,6 +664,17 @@ static func _apply_status_once(params: Dictionary, context: EffectContext) -> vo
 		# roll() draws nothing at chance 0 or 1, so chance-less cards leave seeded sequences untouched.
 		if AttackStatuses.roll(context.rng, chance):
 			hurtbox.status_manager.apply_status(status_id, status_def, duration, context.caster, context.origin)
+
+
+## BD3a: detonates `status_id` on every living target of the effect (the hits of the effects before it, after a condition filter).
+## The damage is credited to the caster with the card's origin, so card bonuses and relics see it as a card hit.
+static func _execute_detonate_status(params: Dictionary, context: EffectContext) -> void:
+	var status_id: String = String(params["status_id"])
+	var multiplier: float = float(params["multiplier"])
+	for hurtbox: Hurtbox in EffectCondition.filter_hits(params, context.last_hits):
+		if not is_instance_valid(hurtbox) or hurtbox.status_manager == null:
+			continue
+		hurtbox.status_manager.detonate_status(status_id, multiplier, context.caster, context.origin)
 
 
 ## Counter for unique buff modifier ids (not the clock, so seeded sim runs repeat).

@@ -749,7 +749,7 @@ func test_clearing_the_mini_boss_pays_relic_then_card_then_opens_act_two_and_sav
 	assert_int(int(summary["relic_count"])).is_equal(1)
 	assert_int(int(summary["gold"])).is_equal(gold_after)
 	assert_str(String(summary["title"])).is_equal("Act 2")
-	assert_str(String(summary["line"])).contains("22 of 30").contains("%d gold" % gold_after).contains("1 relics")
+	assert_str(String(summary["line"])).contains("22 of 30").contains("%d gold" % gold_after).contains("relics: 1")
 	var model: Dictionary = controller.current_choice()
 	assert_int(int(model["act"])).is_equal(2)
 	assert_int(int(model["run_room_total"])).is_equal(30)

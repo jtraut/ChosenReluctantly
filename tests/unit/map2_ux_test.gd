@@ -112,7 +112,7 @@ func test_price_tags_say_price_short_sold_or_free_in_words_and_numbers() -> void
 	assert_dict(RunOptionCard.shop_price_state(sold, 200, texts)).is_equal({"text": "Sold", "mode": "sold"})
 	assert_str(RunOptionCard.shop_reason_line(sold, 200, texts)).is_empty()  # the tag says it
 	var none: Dictionary = {"kind": "buy_removal", "price": 50, "sold": false, "enabled": false, "reason_code": "none_removable", "reason": "Every card is needed to meet the deck minimums"}
-	assert_str(RunOptionCard.shop_reason_line(none, 200, texts)).is_equal("No card can go: deck minimums")
+	assert_str(RunOptionCard.shop_reason_line(none, 200, texts)).is_equal("No card can go. Add a card first.")
 	assert_str(RunOptionCard.shop_reason_line(buyable, 200, texts)).is_empty()
 	var reroll: Dictionary = {"kind": "reroll", "price": 0, "sold": false, "enabled": true, "reason_code": ""}
 	assert_dict(RunOptionCard.shop_price_state(reroll, 0, texts)).is_equal({"text": "Free", "mode": "free"})

@@ -159,12 +159,12 @@ Last updated: 2026-11-09 (MAP3 closed; D44 = C, D45 = B recorded; BD3a next). **
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **BD3a sitting A handed to gameplay-dev 2026-11-09** (ROADMAP BD3a brief, items 1-10). If the session cuts off, check `git log` for gameplay-dev commits after 947ee9f: if sitting A is partial, re-hand gameplay-dev the remaining items; main must still run.
+- **BD3a sitting A done 2026-11-09** (gameplay-dev 7625eee..6f57756; DECISIONS "BD3a sitting A"; hashes rebaselined there). **Sitting B handed to gameplay-dev** (ROADMAP BD3a sitting B, items 0-7). If cut off, check `git log` after the STATE commit for sitting B work and re-hand the remaining items.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes; they didn't flake in MAP3).
 
 ## Exact next step
-1. **gameplay-dev: BD3a sitting A** (ROADMAP BD3a brief: stacking, `detonate_status`, `status_tick_rate`, attack speed stats, 4 Rogue cards, tests; plus housekeeping items 7-10 (the D45 30% act-start heal included): the save hp/rejects probe, `GamePause.reset()`, the Wizard 3-act sim check, `--no-map` save deletion, silent launch-flag values).
-2. Then BD3a sitting B (content, D43 = B offer lean) -> ux (stack counts, detonate read, mini-boss named bar, act screen HP line) -> qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-BD3a`.
+1. **gameplay-dev: BD3a sitting B** (content, Spite Knuckles retheme, debug decks, plan-aware bot, offer report, D43 = B lean, Rogue floor re-check).
+2. Then ux (stack counts, detonate read, mini-boss named bar, act screen HP line) -> qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-BD3a`.
 3. Then **MB1** (game-lead design note in MAP.md first), then MAP3b (its design pass covers Bleed and basic attacks, gold sinks, the playtester's gold ideas), MAP4, 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.

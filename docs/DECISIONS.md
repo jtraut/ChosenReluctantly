@@ -2101,3 +2101,26 @@ Context: director feedback 2026-11-09. He played a three-act physical/Bleed Rogu
 - **The mini-boss starting sketch** (an act 1 brute and an act 2 rogue-style duelist) is mine, built from his example. It's confirmed in a short MAP.md design note before the build, not invented in code.
 - **D45's heal is 30% of max HP at the start of acts 2 and 3**, the example value in his option B, stored as `acts.start_heal` so 0 turns it off. It's built as BD3a sitting A housekeeping because it's one data value and a small code path. Rejected: waiting for MB1.
 - **The act 3 damage bump from D44's option B waits for the sim after the heal.** The heal makes runs easier, and per-act scaling is data, so tuning both at once in MB1 is cleaner.
+
+## 2026-11-09 - BD3a sitting A (gameplay-dev, logged by game-lead)
+Commits 7625eee..6f57756. Rejected alternatives in brackets.
+- **Stacks:** a reapply adds a stack only below the current cap. If the cap drops (the buff ends), existing stacks stay until the status ends. The cap and tick rate come from the latest applier; the tick rate is re-read every tick and floored at 0.1 s. [Trimming stacks when the cap drops.]
+- **Detonate** is a `KIND_HIT` with the card's origin, so it gets hit-stop, and `damage_mult` and `card_damage_mult_vs_status` apply. A killing detonate ends the status as `detonated`, not `owner_died`, so a Burn detonate never triggers Pyre Insurance; `enemy_killed` still lists the status. A detonate is not a status source (`CardSummary.status_ids` skips it), so it doesn't count for `requires.status_sources` or the D43 lean.
+- **"Faster" convention:** tick rate x1.5 divides the interval by 1.5; Warm-Up's light interval x0.7 is shown as "Light attack delay -30%".
+- **Paper Cuts' Bleed lasts 2.0 s** (BUILD_DEPTH §9a implied about 1 s): same `CardDamageRule` cast value, and stacking has something to work with.
+- **`status_applied` doesn't fire on a stack gain;** `status_stacks_changed` does.
+- **RunSave refuses** (doesn't clamp) hp <= 0, hp above max, and `rejects_remaining` outside 0..`rejects_per_run`. [Clamping, which would hide a corrupt save.]
+- **`act_summary()` reports `healed` 0 for an act resumed from a save** (the heal is already in the saved HP).
+- **`--run-room`** must be a whole number 1..(acts x `map.json` `rooms`); `abc`, bare, `0`, `1.5` and past the end exit 2. A straight-run win or loss deletes the save only when it owns a map run.
+- **Presets:** `physical-rogue` swaps Hot Head for Bad Influence (1 Fire card left); `mixed-rogue` `full` includes the 4 new cards.
+- **Balance table rows** (pinned in `slice3b_qa_test`; light 5.00 DPS):
+
+| Card | Slot | Cooldown | Cast damage | DPS (rule) | vs light |
+|---|---|---|---|---|---|
+| Open a Vein | single | 1.1 (1.0+0.1) | cone 6 physical, then detonate Bleed x2 (not credited) | 6.0/1.1 = 5.45 | 109% |
+| Paper Cuts | single | 1.3 (1.0+0.3) | 4 x 1.5 physical + Bleed 2 s per hit | 8.0/1.3 = 6.15 | 123% |
+
+- **Rebaseline (new Rogue pool cards fill sim slots; removing the 4 card files restores every old value exactly):** arena 30 s seed 1 1897787086 -> 1263206438, 90 s 4207041509 -> 2593159768, `-Plan` 1160207333 -> 1047806691; bot sim `-Rooms 20 -Seed 3` 846850403 -> 1440092910. `-Plan -Deck rogue-kindling` bot sim checksum 3805463225 (first recorded).
+- **The Rogue three-act floor is read at the slice's end, not after sitting A (game-lead).** `-Route first` seed 1 Rogue went 9/12 -> 7/12 (seed 13: 10/12 -> 7/12); the Wizard is unchanged at 10/12. The cause is the random-pick sim bot diluting its deck with Utility buffs it can't use. The 8/12 floor is a BD3a acceptance line, and sitting B brings the plan-aware bot picks and the D43 lean, so qa checks it after sitting B. If the Rogue is still under 8/12 with the random bot then, sitting B's hand-back must say whether that bot or the cards are the cause, and a card tweak or bot fix goes in before qa. [Tuning the cards now, against a bot that's about to change.]
+- **D45's heal can't be measured by the bot** (it ends every act at full HP; the 0 and 0.3 runs are identical). It's covered by unit tests; the playtester checks it in a human run.
+- **Wizard `-Run` "hang" was buffering:** `run_wave_sim.ps1` piped through `Out-String`; a 12-run three-act sim takes 12-15 min. It now streams (4f87d06).

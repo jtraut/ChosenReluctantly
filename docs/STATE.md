@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-09 (director's physical Rogue feedback -> new slice BD3a; D43 = B and dual-class recorded). **Run order:** MAP1, MAP2 (done) -> **MAP3 (in progress: sitting B built, its hand-back and commit of the last changes pending)** -> **BD3a, physical Rogue** (new, director priority 2026-11-09) -> MAP3b -> MAP4 -> 3d -> BD3b (Wizard depth). All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2.
+Last updated: 2026-11-09 (MAP3 sitting B done; ux next). **Run order:** MAP1, MAP2 (done) -> **MAP3 (in progress: sitting B done, ux next)** -> **BD3a, physical Rogue** (new, director priority 2026-11-09) -> MAP3b -> MAP4 -> 3d -> BD3b (Wizard depth). All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2.
 
 ## What's done
 - **Director feedback 2026-11-09, planned (game-lead, docs only):**
@@ -149,21 +149,13 @@ Last updated: 2026-11-09 (director's physical Rogue feedback -> new slice BD3a; 
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **MAP3: sitting B built and committed in steps** (5d85ee4, b9e1e22, fd3f814, e20df08). The director has already played a three-act run on it.
-  - **Uncommitted in the tree (gameplay-dev's, not finished):**
-    - a `--acts=N` launch flag (`MapLaunch.resolve_acts`, `RunController`);
-    - `--acts` added to RunSave's debug flags;
-    - tests in `map3b_acts_test.gd`;
-    - capture preset edits.
-  - No sitting B hand-back yet. ROADMAP has no "Sitting B: done" note.
-- Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes).
+- **MAP3: sitting B done 2026-11-09** (gameplay-dev 5d85ee4..cd17992; hand-back recorded under the MAP3 brief in ROADMAP, calls in DECISIONS "MAP3 sitting B calls"). Suite 1916 (147 suites), 0 skipped; all hashes unchanged; `-Route first` 3 acts: Rogue 9/12, Wizard 10/12, acts within +13% of act 1.
+  - **Now: ux** (MAP3 ux step), started 2026-11-09. If it was cut off, check `git log` for ux commits after cd17992 and resume from its brief.
+- Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes; they did not flake in sitting B).
 
 ## Exact next step
-1. **gameplay-dev:** finish MAP3 sitting B.
-   - Finish and test the uncommitted `--acts` work, run the full suite, commit.
-   - Write the sitting B hand-back: steps 1-7 done or not; the act scaling actually chosen (act 2 HP x1.1, act 3 HP x1.2, damage x1, against the brief's starting 1.35/1.7); `-Route first` 3-act wins per class; per-act times; hashes.
-   - game-lead records it under the MAP3 brief.
-2. Then the MAP3 loop: **ux** (Act N and Room N of 30, act transition screen, Continue button, mini-boss icon, MAP2 polish) -> **qa** -> **playtester** -> **tech-writer** (include the 2026-11-09 pending items above) -> close, tag `playtest-YYYY-MM-DD-MAP3`.
+1. **ux:** the MAP3 ux list in ROADMAP (Act N and "Room N of 30" via `run_room_label()`, act transition screen on `act_started`, Continue on the start screen, mini-boss icon and hover, MAP2 polish fold-ins, shop 4 px overflow).
+2. Then **qa** (MAP3 qa list plus sitting B carry-overs) -> **playtester** -> **tech-writer** (commit range 5d85ee4..; include the 2026-11-09 pending items above) -> close, tag `playtest-YYYY-MM-DD-MAP3`.
 3. Then **BD3a** (ROADMAP brief; gameplay-dev sitting A = engine plus 4 cards; sitting B builds D43 = B).
 4. Then MAP3b (its design pass must cover Bleed and basic attacks too), MAP4, 3d, BD3b.
 

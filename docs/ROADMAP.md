@@ -1164,6 +1164,22 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
          - **An exhausted pool keeps the shipped BD2 fallback:** an elite or relic room with no eligible relic gives a card offer instead. MAP3b's content makes this rare again. qa tests the path, because act 2-3 elites will reach it now.
       6. **Prices:** with three acts on, `relics.prices` starts at 80/120/170 (MAP.md §4.5). `estimate` is updated so the per-act sweep stays at 0 failures.
       7. **Run sim:** `-Run` plays all 3 acts by default, and an `-Acts 1` switch keeps the old one-act numbers. Report per act: clear, time, HP at the act's end, relics and gold.
+    - **Sitting B: done 2026-11-09** (gameplay-dev 5d85ee4..cd17992). Steps 1-7 all done; the only deviation from the brief is the scaling values.
+      - **Suite:** 1916 (147 suites), 0 skipped, 0 failures. Arena 1897787086 / 4207041509 / `-Plan` 1160207333, bot sim 846850403 and `-NoMap` (12/12 57.5 s / 12/12 63.3 s) are all unchanged.
+      - **Act scaling chosen by the sim:** act 2 HP x1.1, act 3 HP x1.2, damage x1, gold x1 (brief's starting values 1.35/1.15 and 1.7/1.3). The act 2-3 wave lists already add difficulty, and the bot ends acts at full HP on median. DECISIONS "MAP3 sitting B calls".
+      - **`-Run -Seed 1 -Runs 12 -Route first` (3 acts):**
+
+        | | Rogue | Wizard |
+        |---|---|---|
+        | 3-act wins | 9/12 | 10/12 |
+        | Final boss median | 47.0 s | 56.9 s |
+        | Act 1 / 2 / 3 time | 232 / 262 (+13%) / 263 s (+13%) | 222 / 236 (+6%) / 234 s (+5%) |
+        | Won-run total | 777 s | 687 s |
+        | Relics at act end 1/2/3 | 3.0 / 5.5 / 7.0 | 3.5 / 6.0 / 7.5 |
+        | Gold at act end 1/2/3 | 328 / 611 / 902 | 333 / 611 / 835 |
+      - **New:** `--acts=N` launch flag (debug, never saves; exit 2 on a bad value). One-act capture presets are pinned with `--acts=1`; new presets `mini_boss_act1`, `final_boss_act3`.
+      - **Data for ux:** `RunController.current_act()`, `act_count()`, `act_label()`, `run_room_number()`, `run_room_total()`, `run_room_label()` (use it instead of `room_label()`: the HUD shows "Room 10 of 10" on a three-act run today), `act_summary()`, signal `act_started(act, summary)`; strings in `run.json` `ui.act`. Map node type `"mini_boss"` ("MB" in `MapGraph`, "Mini-boss" in `ui.type_names`). Continue: `RunSave.has_save()`/`load_save()` returns the RunState (character, `act`, `acts_total`, `run_room_number()`); no summary helper yet.
+      - **Carry-overs:** qa: the per-act sweep, the exhausted-pool fallback, the save round trip across an act boundary, the reload soak, capture `final_boss_act3`, re-baseline `-Route`. MAP3b: bots hoard 835-902 gold by the end of act 3; act 3 has no tier 3 relics.
     - **ux (after sitting B; gameplay-dev exposes the data first):**
       - "Room N of 30" plus "Act N" on the HUD and the map;
       - an act transition screen ("Act 2", a one-line summary: HP, gold, relics; Enter to continue);

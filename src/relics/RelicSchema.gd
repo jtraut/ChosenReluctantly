@@ -39,13 +39,14 @@ const FILTER_KINDS: Dictionary = {
 ## Per event: `filter` (accepted filter keys), `position` (it has a place an effect can happen at) and `target` (it names a
 ## combatant the effect can be aimed at). `allow_relic_origin` and `every_nth` are accepted by every event.
 const EVENTS: Dictionary = {
-	"hit_landed": {"filter": ["origin", "damage_type", "kind", "target_team", "target_has_status", "min_amount", "tag"], "position": true, "target": true, "origin": true},
+	"hit_landed": {"filter": ["origin", "damage_type", "kind", "target_team", "target_has_status", "min_amount", "tag", "slot_type"], "position": true, "target": true, "origin": true},
 	"enemy_killed": {"filter": ["origin", "target_has_status"], "position": true, "target": true, "origin": true},
 	"status_applied": {"filter": ["origin", "status_id", "target_team"], "position": true, "target": true, "origin": true},
 	"status_ended": {"filter": ["origin", "status_id", "reason", "target_team"], "position": true, "target": true, "origin": true},
 	"card_cast": {"filter": ["slot_type", "card_id", "tag"], "position": false, "target": false, "origin": false},
 	"attack_fired": {"filter": ["attack_id"], "position": true, "target": false, "origin": false},
 	"dash_ended": {"filter": ["card_id"], "position": true, "target": false, "origin": false},
+	"dash_passed_through": {"filter": ["card_id"], "position": true, "target": false, "origin": false},
 	"player_damaged": {"filter": ["origin", "min_amount"], "position": false, "target": false, "origin": true},
 	"zone_started": {"filter": ["shape"], "position": true, "target": false, "origin": false},
 	"zone_ended": {"filter": ["shape"], "position": true, "target": false, "origin": false},

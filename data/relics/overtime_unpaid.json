@@ -1,0 +1,47 @@
+{
+    "id": "overtime_unpaid",
+    "name": "Overtime (Unpaid)",
+    "pool": "neutral",
+    "rarity": "tier2",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [],
+    "modifiers": [
+        {
+            "stat": "attack_interval.light",
+            "modifier_type": "multiplicative",
+            "value": -0.25
+        },
+        {
+            "stat": "slot_cooldown.attack_single",
+            "modifier_type": "multiplicative",
+            "value": 0.1
+        },
+        {
+            "stat": "slot_cooldown.attack_aoe",
+            "modifier_type": "multiplicative",
+            "value": 0.1
+        },
+        {
+            "stat": "slot_cooldown.utility",
+            "modifier_type": "multiplicative",
+            "value": 0.1
+        },
+        {
+            "stat": "slot_cooldown.movement",
+            "modifier_type": "multiplicative",
+            "value": 0.1
+        },
+        {
+            "stat": "slot_cooldown.recovery",
+            "modifier_type": "multiplicative",
+            "value": 0.1
+        }
+    ],
+    "triggers": [],
+    "rule_text": "Light attack delay -25%; every card slot's cooldown +10%.",
+    "flavor_text": "Faster hands. Longer hours. No extra pay."
+}

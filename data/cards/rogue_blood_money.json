@@ -1,0 +1,24 @@
+{
+    "id": "rogue_blood_money",
+    "name": "Blood Money",
+    "slot_type": "recovery",
+    "pool": "rogue",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "Payment up front, the rest in installments from whoever's nearby.",
+    "effects": [
+        {
+            "template": "heal",
+            "params": {
+                "amount": 6
+            }
+        },
+        {
+            "template": "apply_status",
+            "params": {
+                "status_id": "leech",
+                "duration": 5.0,
+                "target": "self"
+            }
+        }
+    ]
+}

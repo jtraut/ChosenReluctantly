@@ -29,6 +29,8 @@ signal status_ended(target: Node, status_id: String, reason: String, source: Nod
 signal attack_fired(attack_id: String, aim_point: Vector3)
 ## A Movement card's dash finished (the dodge roll is not a card and does not fire this).
 signal dash_ended(start: Vector3, end: Vector3, card_id: String)
+## BD3a: a Movement card's pass-through dash finished having passed through `count` (at least 1) enemies; `position` is where it ended.
+signal dash_passed_through(card_id: String, count: int, position: Vector3)
 ## The player lost HP.
 signal player_damaged(amount: float, origin: String)
 signal zone_started(zone_id: int, shape: String, position: Vector3)
@@ -117,6 +119,10 @@ func notify_attack_fired(attack_id: String, aim_point: Vector3) -> void:
 
 func notify_dash_ended(start: Vector3, end: Vector3, card_id: String) -> void:
 	dash_ended.emit(start, end, card_id)
+
+
+func notify_dash_passed_through(card_id: String, count: int, at: Vector3) -> void:
+	dash_passed_through.emit(card_id, count, at)
 
 
 func notify_player_damaged(amount: float, origin: String) -> void:

@@ -77,6 +77,8 @@ const DEFAULT_TEXT: Dictionary = {
 	"dash": "Dash %s m",
 	"dash_modes": {"away_from_aim": " away from your aim"},
 	"dash_damage": "%s %s damage",
+	"dash_status": "enemies you pass through get %s",
+	"shot_status": "each hit applies %s",
 	"pass_through": "Walk through enemies for %s s",
 	"detonate": "Detonate %s: %s%% of its remaining damage at once",
 	"stack_cap": "%s can stack %s more",
@@ -117,7 +119,10 @@ static func _effect_part(template: String, params: Dictionary, text: Dictionary 
 			damage = String(_word(text, "damage")) % [_num(float(params["damage"])), String(params.get("damage_type", ""))]
 	match template:
 		"cone", "aoe", "projectile":
-			return String(_word(text, "shape")) % [damage, _shape_name(template, text)]
+			var shape_line: String = String(_word(text, "shape")) % [damage, _shape_name(template, text)]
+			if template == "projectile" and params.has("status_id"):
+				shape_line += ", " + String(_word(text, "shot_status")) % status_text(String(params["status_id"]), float(params.get("status_duration", 0.0)), text)
+			return shape_line
 		"zone":
 			var zone: String = String(_word(text, "zone")) % [damage, _num(float(params.get("tick_interval", 0.0))), _num(float(params.get("duration", 0.0))), _shape_name(template, text)]
 			if params.has("status_id"):
@@ -132,6 +137,8 @@ static func _effect_part(template: String, params: Dictionary, text: Dictionary 
 			dash += String((_word(text, "dash_modes") as Dictionary).get(String(params.get("direction_mode", "")), ""))
 			if params.has("damage"):
 				dash += ", " + String(_word(text, "dash_damage")) % [_num(float(params["damage"])), String(params.get("damage_type", ""))]
+			if params.has("status_id"):
+				dash += ", " + String(_word(text, "dash_status")) % status_text(String(params["status_id"]), float(params.get("status_duration", 0.0)), text)
 			return dash
 		"buff":
 			return buff_text(params, text)

@@ -100,6 +100,18 @@ func get_manual_min_gap(attack_id: StringName) -> float:
 	return interval / ratio
 
 
+## Takes `seconds` off an attack's running cooldown (BD3a). A ready attack is left alone; reaching zero emits attack_ready like a normal finish.
+func reduce_remaining(attack_id: StringName, seconds: float) -> void:
+	if not _states.has(attack_id) or seconds <= 0.0:
+		return
+	var state: State = _states[attack_id]
+	if state.remaining <= 0.0:
+		return
+	state.remaining = maxf(state.remaining - seconds, 0.0)
+	if state.remaining <= 0.0:
+		attack_ready.emit(attack_id)
+
+
 ## 0..1 fraction of the cooldown elapsed; 1.0 means ready.
 func get_progress(attack_id: StringName) -> float:
 	if not _states.has(attack_id):

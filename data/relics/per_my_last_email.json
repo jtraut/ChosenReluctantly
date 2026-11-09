@@ -1,0 +1,43 @@
+{
+    "id": "per_my_last_email",
+    "name": "Per My Last Email",
+    "pool": "rogue",
+    "rarity": "tier2",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [
+        "Bleed"
+    ],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "hit_landed",
+            "filter": {
+                "origin": "card:*",
+                "slot_type": "attack_single",
+                "target_team": "enemy"
+            },
+            "at": "event_target",
+            "internal_cooldown": 0.0,
+            "effects": [
+                {
+                    "template": "apply_status",
+                    "params": {
+                        "status_id": "bleed",
+                        "duration": 3.0
+                    },
+                    "condition": {
+                        "type": "cast_within",
+                        "tag": "Primer",
+                        "seconds": 6.0
+                    }
+                }
+            ]
+        }
+    ],
+    "rule_text": "Attack: Single hits start Bleeding for 3 s if you cast a Primer in the last 6 s.",
+    "flavor_text": "As previously stated. In writing. With a cut."
+}

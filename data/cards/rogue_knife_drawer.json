@@ -1,0 +1,75 @@
+{
+    "id": "rogue_knife_drawer",
+    "name": "The Knife Drawer",
+    "slot_type": "attack_aoe",
+    "pool": "rogue",
+    "cooldown_modifier": 0.3,
+    "flavor_text": "Everyone has one. Nobody admits what it's for.",
+    "effects": [
+        {
+            "template": "projectile",
+            "params": {
+                "damage": 3,
+                "damage_type": "physical",
+                "speed": 18.0,
+                "max_range": 9.0,
+                "hit_radius": 0.2,
+                "yaw_degrees": -24,
+                "status_id": "bleed",
+                "status_duration": 3.0
+            }
+        },
+        {
+            "template": "projectile",
+            "params": {
+                "damage": 3,
+                "damage_type": "physical",
+                "speed": 18.0,
+                "max_range": 9.0,
+                "hit_radius": 0.2,
+                "yaw_degrees": -12,
+                "status_id": "bleed",
+                "status_duration": 3.0
+            }
+        },
+        {
+            "template": "projectile",
+            "params": {
+                "damage": 3,
+                "damage_type": "physical",
+                "speed": 18.0,
+                "max_range": 9.0,
+                "hit_radius": 0.2,
+                "yaw_degrees": 0,
+                "status_id": "bleed",
+                "status_duration": 3.0
+            }
+        },
+        {
+            "template": "projectile",
+            "params": {
+                "damage": 3,
+                "damage_type": "physical",
+                "speed": 18.0,
+                "max_range": 9.0,
+                "hit_radius": 0.2,
+                "yaw_degrees": 12,
+                "status_id": "bleed",
+                "status_duration": 3.0
+            }
+        },
+        {
+            "template": "projectile",
+            "params": {
+                "damage": 3,
+                "damage_type": "physical",
+                "speed": 18.0,
+                "max_range": 9.0,
+                "hit_radius": 0.2,
+                "yaw_degrees": 24,
+                "status_id": "bleed",
+                "status_duration": 3.0
+            }
+        }
+    ]
+}

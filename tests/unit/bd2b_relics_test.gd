@@ -6,7 +6,7 @@ extends GdUnitTestSuite
 const MAIN_SCENE_PATH := "res://scenes/main/Main.tscn"
 ## The original six (BD2-B). MAP2-B adds seven more (map2b_relics_test); every relic of both sets is listed here, sorted as the loader sorts them.
 const SHIPPED: Array[String] = ["heavy_sigh", "lingering_embers", "pyre_insurance", "second_wind_unwillingly", "smoldering_grudge", "spite_knuckles"]
-const ALL_SHIPPED: Array[String] = ["as_per_the_attached_document", "asap_notice", "grading_curve", "heavy_sigh", "lingering_embers", "liquidate_assets", "paperwork_fire", "pyre_insurance", "request_for_quotation", "second_wind_unwillingly", "severance_package", "smoldering_grudge", "spite_knuckles"]
+const ALL_SHIPPED: Array[String] = ["as_per_the_attached_document", "asap_notice", "chasing_paper", "grading_curve", "heavy_sigh", "lingering_embers", "liquidate_assets", "muscle_memory", "overtime_unpaid", "paperwork_fire", "per_my_last_email", "pyre_insurance", "request_for_quotation", "salt_in_the_wound", "second_wind_unwillingly", "serrated_excuse", "severance_package", "smoldering_grudge", "spite_knuckles"]
 
 
 func before_test() -> void:
@@ -86,9 +86,9 @@ func test_the_wizard_cannot_find_the_rogue_relic_and_both_classes_see_the_rest()
 	var tiers: Array[String] = ["tier1", "tier2"]
 	var rogue_all: Array[String] = RelicOffer.offer("elite", 20, rng, weights, empty, empty, rogue, RelicDatabase.all_relics(), tiers)
 	var wizard_all: Array[String] = RelicOffer.offer("elite", 20, rng, weights, empty, empty, wizard, RelicDatabase.all_relics(), tiers)
-	assert_int(rogue_all.size()).is_equal(8)  # the original six, ASAP Notice and Severance Package
+	assert_int(rogue_all.size()).is_equal(14)  # the original six, ASAP Notice and Severance Package, and BD3a's six (Serrated Excuse, Salt in the Wound, Per My Last Email, Chasing Paper, Muscle Memory, Overtime)
 	assert_bool(rogue_all.has("spite_knuckles")).is_true()
-	assert_int(wizard_all.size()).is_equal(8)  # five of the six, ASAP Notice, Paperwork Fire and Grading Curve
+	assert_int(wizard_all.size()).is_equal(10)  # five of the six, ASAP Notice, Paperwork Fire and Grading Curve, and BD3a's two neutral ones (Muscle Memory, Overtime)
 	assert_bool(wizard_all.has("spite_knuckles")).is_false()
 
 
@@ -264,12 +264,12 @@ func test_reduce_cooldown_validates_like_any_template() -> void:
 	assert_array(EffectTemplates.validate_params("reduce_cooldown", {"slot_type": "movement", "seconds": 0.0})).is_not_empty()
 	assert_array(EffectTemplates.validate_params("reduce_cooldown", {"slot_type": "movement", "seconds": 1.0, "extra": 1})).is_not_empty()
 	assert_bool(EffectTemplates.is_known_template("reduce_cooldown")).is_true()
-	assert_array(EffectTemplates.required_params("reduce_cooldown")).is_equal(["slot_type", "seconds"])
+	assert_array(EffectTemplates.required_params("reduce_cooldown")).is_equal(["seconds"])  # BD3a: plus exactly one of slot_type and attack_id
 
 
 # --- Spite Knuckles ----------------------------------------------------------------------------
 
-func test_spite_knuckles_burns_the_target_on_every_fourth_light_hit() -> void:
+func test_spite_knuckles_makes_the_target_bleed_on_every_fourth_light_hit() -> void:  # BD3a: was Burn
 	var main := _spawn_main()
 	var manager := _manager(main, ["spite_knuckles"] as Array[String])
 	var victim := _target(main, 1000.0)
@@ -277,18 +277,18 @@ func test_spite_knuckles_burns_the_target_on_every_fourth_light_hit() -> void:
 	for i in range(1, 9):
 		_hit(victim, main, "light")
 		manager.flush()
-		assert_bool(victim.status_manager.has_status("burn")).override_failure_message("after light hit %d" % i).is_equal(i == 4 or i == 8)
+		assert_bool(victim.status_manager.has_status("bleed")).override_failure_message("after light hit %d" % i).is_equal(i == 4 or i == 8)
 		if i == 4:
-			victim.status_manager.consume_status("burn")  # put it out, so the 8th must light it again
-	assert_bool(victim.status_manager.has_status("burn")).is_true()  # the 8th lit it again
+			victim.status_manager.consume_status("bleed")  # put it out, so the 8th must light it again
+	assert_bool(victim.status_manager.has_status("bleed")).is_true()  # the 8th cut it again
 	# heavy attacks and card hits do not count toward the four
 	for i in range(6):
 		_hit(other, main, "heavy" if i % 2 == 0 else "card:x")
 		manager.flush()
-	assert_bool(other.status_manager.has_status("burn")).is_false()
+	assert_bool(other.status_manager.has_status("bleed")).is_false()
 
 
-func test_a_burn_spite_knuckles_lit_is_popped_by_pyre_insurance() -> void:
+func test_spite_knuckles_no_longer_lights_burn_and_pyre_insurance_ignores_its_bleed() -> void:
 	var main := _spawn_main()
 	var manager := _manager(main, ["spite_knuckles", "pyre_insurance"] as Array[String])
 	var victim := _target(main, 1000.0, Vector3(0, 0, -5))
@@ -297,10 +297,11 @@ func test_a_burn_spite_knuckles_lit_is_popped_by_pyre_insurance() -> void:
 	for i in range(4):
 		_hit(victim, main, "light")
 		manager.flush()
-	assert_bool(victim.status_manager.has_status("burn")).is_true()
+	assert_bool(victim.status_manager.has_status("bleed")).is_true()
+	assert_bool(victim.status_manager.has_status("burn")).is_false()
 	victim.status_manager._process(10.0)
 	manager.flush()
-	assert_float(neighbour.health.current_health).is_equal_approx(996.0, 0.001)
+	assert_float(neighbour.health.current_health).is_equal(1000.0)  # a Bleed ending is not a Burn ending: no Pyre explosion
 
 
 # --- Heavy Sigh --------------------------------------------------------------------------------

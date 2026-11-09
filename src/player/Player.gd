@@ -133,6 +133,11 @@ var _mask_before_pass_through: int = 0
 var _path_hit: Dictionary = {}
 var _path_hit_ids: Dictionary = {}
 var _path_prev: Vector3 = Vector3.ZERO
+## BD3a: the card behind a pass-through dash while it is tracked for the "passed through an enemy" count ("" = not tracked), and the enemies passed
+## (instance ids). The count goes out on the relay as dash_passed_through when the move ends (Chasing Paper).
+var _dash_track_card: String = ""
+var _dash_pass_ids: Dictionary = {}
+const PASS_COUNT_RADIUS := 0.9
 var _dead: bool = false
 var _flash_tween: Tween = null
 
@@ -248,9 +253,10 @@ func _physics_process(delta: float) -> void:
 	_handle_attack(delta)
 	_handle_card_slot_input()
 	move_and_slide()
-	if forced_this_tick and not _path_hit.is_empty():
+	if forced_this_tick and (not _path_hit.is_empty() or _dash_track_card != ""):
 		_tick_path_hits()
 	if forced_this_tick and _forced_move_time_remaining <= 0.0:
+		_finish_dash_tracking()
 		# The forced move is over: stop dead and hand back to normal movement, so it never
 		# coasts past its data distance (friction would carry it about twice as far).
 		_applied_knockback = Vector3.ZERO
@@ -331,6 +337,12 @@ func get_attack_interval(attack_id: StringName) -> float:
 	return attacks.get_interval(attack_id)
 
 
+## BD3a (Muscle Memory): takes `seconds` off the running cooldown of the light or heavy attack (never below ready).
+func reduce_attack_cooldown(attack_id: StringName, seconds: float) -> void:
+	if attacks != null:
+		attacks.reduce_remaining(attack_id, seconds)
+
+
 func _on_died() -> void:
 	if _dead:
 		return
@@ -340,6 +352,7 @@ func _on_died() -> void:
 	_forced_move_pass = false
 	_forced_move_look = {}
 	_path_hit = {}
+	_dash_track_card = ""
 	_end_all_pass_through()
 	attacks.cancel_all()
 	cancel_cast_preview()
@@ -500,6 +513,8 @@ func start_forced_move(direction: Vector3, speed: float, duration: float, invuln
 		_acquire_pass_through()
 	_path_hit = path_hit
 	_path_hit_ids.clear()
+	_dash_pass_ids.clear()
+	_dash_track_card = _forced_move_card_id if pass_through and duration > 0.0 and _forced_move_card_id != "" else ""
 	_path_prev = global_position if is_inside_tree() else Vector3.ZERO
 	_forced_move_look = vfx_look
 	_forced_move_trail_timer = 0.0
@@ -550,7 +565,8 @@ func _apply_forced_move(delta: float) -> void:
 ## is sampled every hit_radius so a fast dash cannot skip an enemy; the query is the shared sphere query,
 ## so the hit area is the lane the dash drew (VfxSizing.dash_path_*). A direct hit: hit-stop and shake.
 func _tick_path_hits() -> void:
-	var radius: float = float(_path_hit["hit_radius"])
+	var has_hit: bool = not _path_hit.is_empty()
+	var radius: float = float(_path_hit["hit_radius"]) if has_hit else PASS_COUNT_RADIUS
 	var from: Vector3 = _path_prev
 	var to: Vector3 = global_position
 	_path_prev = to
@@ -561,11 +577,33 @@ func _tick_path_hits() -> void:
 		var point: Vector3 = from.lerp(to, float(step) / float(steps))
 		for target: Hurtbox in MeleeQuery.find_hurtboxes_in_sphere(space, point, radius, team, CollisionLayers.HURTBOX):
 			var id: int = target.get_instance_id()
-			if _path_hit_ids.has(id):
+			if _dash_track_card != "":
+				_dash_pass_ids[id] = true
+			if not has_hit or _path_hit_ids.has(id):
 				continue
 			_path_hit_ids[id] = true
-			target.receive_damage(float(_path_hit["damage"]), String(_path_hit["damage_type"]),
-					EffectTemplates.knockback_from(global_position, target.global_position, float(_path_hit["knockback_strength"])), self, Health.KIND_HIT, String(_path_hit.get("origin", "")))
+			_apply_path_hit(target)
+
+
+## One enemy swept by a dash with a path effect: its damage (when it has any) and its status (BD3a, a dash that leaves a cut).
+func _apply_path_hit(target: Hurtbox) -> void:
+	var origin: String = String(_path_hit.get("origin", ""))
+	if float(_path_hit["damage"]) > 0.0:
+		target.receive_damage(float(_path_hit["damage"]), String(_path_hit["damage_type"]),
+				EffectTemplates.knockback_from(global_position, target.global_position, float(_path_hit["knockback_strength"])), self, Health.KIND_HIT, origin)
+	if _path_hit.has("status_id") and target.status_manager != null and (target.health == null or not target.health.is_dead()):
+		var status_id: String = String(_path_hit["status_id"])
+		target.status_manager.apply_status(status_id, StatusDatabase.get_status(status_id), float(_path_hit["status_duration"]), self, origin)
+
+
+## The move is over: when a tracked card dash passed through at least one enemy, say so on the relay (dash_passed_through).
+func _finish_dash_tracking() -> void:
+	if _dash_track_card != "" and not _dash_pass_ids.is_empty():
+		var relay := CombatLink.events()
+		if relay != null:
+			relay.notify_dash_passed_through(_dash_track_card, _dash_pass_ids.size(), global_position)
+	_dash_track_card = ""
+	_dash_pass_ids.clear()
 
 
 ## Walk through enemies for `duration` seconds: the body stops colliding with enemy bodies (both ways)

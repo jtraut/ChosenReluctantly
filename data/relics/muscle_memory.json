@@ -1,0 +1,35 @@
+{
+    "id": "muscle_memory",
+    "name": "Muscle Memory",
+    "pool": "neutral",
+    "rarity": "tier1",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "hit_landed",
+            "filter": {
+                "origin": "light",
+                "target_team": "enemy"
+            },
+            "at": "player",
+            "internal_cooldown": 0.1,
+            "effects": [
+                {
+                    "template": "reduce_cooldown",
+                    "params": {
+                        "attack_id": "heavy",
+                        "seconds": 0.15
+                    }
+                }
+            ]
+        }
+    ],
+    "rule_text": "Each light attack that hits takes 0.15 s off the heavy attack's cooldown.",
+    "flavor_text": "Your hands remember. Your brain would like a word."
+}

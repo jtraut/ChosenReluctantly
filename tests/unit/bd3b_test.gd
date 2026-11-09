@@ -1,0 +1,407 @@
+class_name Bd3bTest
+extends GdUnitTestSuite
+## BD3a sitting B: the four new Rogue cards, the six new relics and the Spite Knuckles retheme, each through the real effect path,
+## the real relay and the real RelicManager (never by reading the JSON), plus the small engine pieces they needed: an on-hit status for
+## projectiles and dashes, the dash_passed_through relay event, reduce_cooldown on the light and heavy attacks, and the slot_type filter on hit_landed.
+
+const MAIN_SCENE_PATH := "res://scenes/main/Main.tscn"
+const NEW_CARDS: Array[String] = ["rogue_cut_corners", "rogue_knife_drawer", "rogue_excuse_me", "rogue_blood_money"]
+const NEW_RELICS: Array[String] = ["serrated_excuse", "salt_in_the_wound", "per_my_last_email", "chasing_paper", "muscle_memory", "overtime_unpaid"]
+
+
+func before_test() -> void:
+	BodyFlag.set_collide(false)
+	CombatEvents.reset()
+	RelicDatabase.load_all()
+
+
+func after_test() -> void:
+	BodyFlag.reset()
+	CombatEvents.reset()
+	Juice.reset()
+	GamePause.reset()
+	Engine.time_scale = 1.0
+
+
+func _spawn_main() -> Main:
+	var main: Main = (load(MAIN_SCENE_PATH) as PackedScene).instantiate()
+	(main.get_node("EnemySpawner") as Node).process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(main)
+	auto_free(main)
+	main.player.camera = null
+	main.player.attacks.set_auto(&"light", false)
+	main.player.attacks.set_auto(&"heavy", false)
+	return main
+
+
+func _manager(main: Main, ids: Array[String]) -> RelicManager:
+	var manager := RelicManager.new()
+	main.add_child(manager)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 5
+	manager.configure(main.player, main, rng, CombatEvents)
+	manager.load_relics(ids)
+	return manager
+
+
+func _target(main: Node, hp: float = 100.0, at: Vector3 = Vector3.ZERO) -> RelayTarget:
+	var target := RelayTarget.new("enemy", hp)
+	main.add_child(target)
+	target.global_position = at
+	return target
+
+
+func _frames(count: int) -> void:
+	for i in range(count):
+		await get_tree().physics_frame
+
+
+func _hit(target: RelayTarget, main: Main, origin: String, kind: StringName = Health.KIND_HIT, amount: float = 1.0) -> void:
+	target.hurtbox.receive_damage(amount, "physical", Vector3.ZERO, main.player, kind, origin)
+
+
+func _cast(card_id: String, caster: Node3D, host: Node) -> void:
+	var context := EffectContext.new(caster, host, "player")
+	context.origin = "card:" + card_id
+	for effect: Dictionary in CardDatabase.get_card(card_id)["effects"]:
+		EffectTemplates.execute(String(effect["template"]), effect["params"], context, effect.get("condition", {}))
+
+
+# --- data ---------------------------------------------------------------------------------------
+
+func test_the_four_cards_and_six_relics_load_clean_with_the_planned_slots_and_tiers() -> void:
+	var slots: Dictionary = {"rogue_cut_corners": "attack_aoe", "rogue_knife_drawer": "attack_aoe", "rogue_excuse_me": "movement", "rogue_blood_money": "recovery"}
+	for id: String in NEW_CARDS:
+		assert_bool(CardDatabase.has_card(id)).is_true()
+		assert_str(String(CardDatabase.get_card(id)["slot_type"])).is_equal(String(slots[id]))
+		assert_str(String(CardDatabase.get_card(id)["pool"])).is_equal("rogue")
+	assert_array(RelicDatabase.problems()).is_empty()
+	var tiers: Dictionary = {"serrated_excuse": "tier2", "salt_in_the_wound": "tier1", "per_my_last_email": "tier2", "chasing_paper": "tier1", "muscle_memory": "tier1", "overtime_unpaid": "tier2"}
+	var pools: Dictionary = {"serrated_excuse": "rogue", "salt_in_the_wound": "rogue", "per_my_last_email": "rogue", "chasing_paper": "rogue", "muscle_memory": "neutral", "overtime_unpaid": "neutral"}
+	for id: String in NEW_RELICS:
+		var relic: Dictionary = RelicDatabase.get_relic(id)
+		assert_str(String(relic["rarity"])).is_equal(String(tiers[id]))
+		assert_str(String(relic["pool"])).is_equal(String(pools[id]))
+		assert_array(relic["sources"]).is_equal(["elite", "relic_room", "merchant"])
+
+
+func test_the_new_attack_cards_pass_the_damage_rule_on_unconditional_damage() -> void:
+	assert_array(CardDamageRule.check_shipped()).is_empty()
+	var slot_table := JsonDataTable.new("res://data/slot_types.json")
+	var statuses: Dictionary = {"bleed": StatusDatabase.get_status("bleed")}
+	var light: Dictionary = AttackDatabase.get_attack("light")
+	var base: float = float(slot_table.get_raw("attack_aoe")["base_cooldown"])
+	for id: String in ["rogue_cut_corners", "rogue_knife_drawer"]:
+		assert_array(CardDamageRule.check_card(CardDatabase.get_card(id), base, light, statuses)).is_empty()
+
+
+func test_the_new_cards_carry_the_bleed_tag_and_count_as_status_sources() -> void:
+	for id: String in ["rogue_cut_corners", "rogue_knife_drawer", "rogue_excuse_me"]:
+		assert_bool(CardTags.all_tags(CardDatabase.get_card(id)).has("Bleed")).override_failure_message(id).is_true()
+		assert_array(CardSummary.status_ids(CardDatabase.get_card(id))).override_failure_message(id).contains(["bleed"])
+	assert_bool(CardTags.all_tags(CardDatabase.get_card("rogue_knife_drawer")).has("Projectile")).is_true()
+	assert_bool(CardTags.all_tags(CardDatabase.get_card("rogue_excuse_me")).has("Dash")).is_true()
+	assert_bool(CardTags.all_tags(CardDatabase.get_card("rogue_cut_corners")).has("Area")).is_true()
+	assert_bool(CardTags.all_tags(CardDatabase.get_card("rogue_blood_money")).has("Heal")).is_true()
+	assert_bool(CardTags.all_tags(CardDatabase.get_card("rogue_blood_money")).has("Bleed")).is_false()
+
+
+func test_the_new_cards_read_in_plain_words() -> void:
+	assert_str(CardSummary.effect_line(CardDatabase.get_card("rogue_knife_drawer"))).contains("each hit applies Bleed")
+	assert_str(CardSummary.effect_line(CardDatabase.get_card("rogue_excuse_me"))).contains("enemies you pass through get Bleed")
+
+
+func test_projectile_and_dash_status_validation() -> void:
+	var shot: Dictionary = {"damage": 3, "damage_type": "physical", "speed": 18.0, "max_range": 9.0, "hit_radius": 0.2}
+	assert_array(EffectTemplates.validate_params("projectile", shot)).is_empty()
+	shot["status_id"] = "bleed"
+	assert_array(EffectTemplates.validate_params("projectile", shot)).is_not_empty()  # a status without a duration
+	shot["status_duration"] = 3.0
+	assert_array(EffectTemplates.validate_params("projectile", shot)).is_empty()
+	shot["status_id"] = "nope"
+	assert_array(EffectTemplates.validate_params("projectile", shot)).is_not_empty()
+	var dash: Dictionary = {"distance": 4.0, "speed": 16.0, "status_id": "bleed", "status_duration": 4.0}
+	assert_array(EffectTemplates.validate_params("dash", dash)).is_not_empty()  # no hit_radius
+	dash["hit_radius"] = 0.9
+	assert_array(EffectTemplates.validate_params("dash", dash)).is_empty()  # a dash may cut without dealing damage
+	assert_array(EffectTemplates.validate_params("dash", {"distance": 4.0, "speed": 16.0, "hit_radius": 0.9})).is_not_empty()  # a radius with nothing to apply still needs damage
+
+
+func test_reduce_cooldown_takes_exactly_one_of_slot_type_and_attack_id() -> void:
+	assert_array(EffectTemplates.validate_params("reduce_cooldown", {"attack_id": "heavy", "seconds": 0.15})).is_empty()
+	assert_array(EffectTemplates.validate_params("reduce_cooldown", {"slot_type": "movement", "seconds": 1.0})).is_empty()
+	assert_array(EffectTemplates.validate_params("reduce_cooldown", {"slot_type": "movement", "attack_id": "heavy", "seconds": 1.0})).is_not_empty()
+	assert_array(EffectTemplates.validate_params("reduce_cooldown", {"seconds": 1.0})).is_not_empty()
+	assert_array(EffectTemplates.validate_params("reduce_cooldown", {"attack_id": "dodge", "seconds": 1.0})).is_not_empty()
+
+
+func test_the_relay_and_schema_know_the_new_event_and_filter() -> void:
+	assert_bool(RelicSchema.is_known_event("dash_passed_through")).is_true()
+	var relic: Dictionary = RelicDatabase.get_relic("per_my_last_email").duplicate(true)
+	assert_array(RelicSchema.validate(relic, "per_my_last_email")).is_empty()
+	((relic["triggers"] as Array)[0] as Dictionary)["filter"] = {"slot_type": "not_a_slot"}
+	assert_array(RelicSchema.validate(relic, "per_my_last_email")).is_not_empty()
+
+
+# --- the attack controller ------------------------------------------------------------------------
+
+func test_the_attack_controller_can_shorten_a_running_cooldown_but_not_a_ready_one() -> void:
+	var defs: Dictionary = {&"heavy": AttackDatabase.get_heavy("rogue")}
+	var controller := AttackController.new(defs, StatModifiers.new())
+	controller.reduce_remaining(&"heavy", 1.0)
+	assert_bool(controller.is_ready(&"heavy")).is_true()
+	controller.tick(0.016, true, {&"heavy": true}, func(_id: StringName) -> bool: return false)
+	var started: float = controller.get_progress(&"heavy")
+	assert_bool(controller.is_ready(&"heavy")).is_false()
+	controller.reduce_remaining(&"heavy", 0.5)
+	assert_float(controller.get_progress(&"heavy")).is_greater(started)
+	controller.reduce_remaining(&"heavy", 60.0)
+	assert_bool(controller.is_ready(&"heavy")).is_true()
+
+
+# --- cards through the real effect path -------------------------------------------------------------
+
+func test_cutting_corners_hits_everything_around_you_and_makes_it_bleed() -> void:
+	var main := _spawn_main()
+	var near := _target(main, 100.0, Vector3(1.5, 0, 0.5))
+	var behind := _target(main, 100.0, Vector3(-1.5, 0, 1.0))
+	var far := _target(main, 100.0, Vector3(6, 0, 0))
+	await _frames(2)
+	_cast("rogue_cut_corners", main.player, main)
+	for hit: RelayTarget in [near, behind]:
+		assert_float(hit.health.current_health).is_less(100.0)
+		assert_bool(hit.status_manager.has_status("bleed")).is_true()
+	assert_float(far.health.current_health).is_equal(100.0)
+	assert_bool(far.status_manager.has_status("bleed")).is_false()
+
+
+func test_the_knife_drawer_fans_five_knives_and_each_hit_makes_the_target_bleed() -> void:
+	var main := _spawn_main()
+	var ahead := _target(main, 100.0, Vector3(0, 0, -5))  # on the centre knife's line
+	var wide := _target(main, 100.0, Vector3(-3.0, 0, -7.0))  # about 23 degrees off the line, on the outer knife's
+	var behind := _target(main, 100.0, Vector3(0, 0, 5))
+	await _frames(2)
+	var launched: Array[Node] = []
+	main.child_entered_tree.connect(func(node: Node) -> void: if node is Projectile: launched.append(node))
+	_cast("rogue_knife_drawer", main.player, main)
+	assert_int(launched.size()).is_equal(5)
+	await _frames(40)
+	assert_bool(ahead.status_manager.has_status("bleed")).is_true()
+	assert_bool(wide.status_manager.has_status("bleed")).is_true()
+	assert_float(100.0 - ahead.health.current_health).is_greater_equal(3.0)
+	assert_bool(behind.status_manager.has_status("bleed")).is_false()
+	assert_float(behind.health.current_health).is_equal(100.0)
+
+
+func test_excuse_me_makes_everything_it_passes_through_bleed_and_deals_no_damage() -> void:
+	var main := _spawn_main()
+	main.player.global_position = Vector3.ZERO
+	var passed := _target(main, 100.0, Vector3(0, 0, -2))
+	var off_line := _target(main, 100.0, Vector3(4, 0, -2))
+	var beyond := _target(main, 100.0, Vector3(0, 0, -9))
+	await _frames(2)
+	var log := RelayLog.new(CombatEvents)
+	_cast("rogue_excuse_me", main.player, main)
+	await _frames(30)  # 4 m at 16 m/s is 0.25 s
+	assert_bool(passed.status_manager.has_status("bleed")).is_true()
+	for hit: Dictionary in log.named("hit_landed"):
+		assert_str(String(hit["kind"])).is_equal(String(Health.KIND_DOT))  # the dash itself deals nothing; only Bleed ticks land
+	assert_bool(off_line.status_manager.has_status("bleed")).is_false()
+	assert_bool(beyond.status_manager.has_status("bleed")).is_false()
+	assert_int(log.named("dash_ended").size()).is_equal(1)
+	log.stop()
+
+
+func test_blood_money_heals_and_starts_leech() -> void:
+	var main := _spawn_main()
+	var health: Health = main.player.get_node("Health")
+	health.current_health = 10.0
+	_cast("rogue_blood_money", main.player, main)
+	assert_float(health.current_health).is_equal_approx(16.0, 0.001)
+	assert_bool((main.player.get_node("StatusEffectManager") as StatusEffectManager).has_status("leech")).is_true()
+
+
+# --- the dash_passed_through event ------------------------------------------------------------------
+
+func test_a_card_dash_reports_the_enemies_it_passed_and_a_clear_dash_reports_nothing() -> void:
+	var main := _spawn_main()
+	main.player.global_position = Vector3.ZERO
+	var in_the_way := _target(main, 100.0, Vector3(0, 0, -2))
+	await _frames(2)
+	var log := RelayLog.new(CombatEvents)
+	var seen: Array[Dictionary] = []
+	CombatEvents.dash_passed_through.connect(func(card_id: String, count: int, _at: Vector3) -> void: seen.append({"card": card_id, "count": count}))
+	_cast("rogue_ugh_fine_moving", main.player, main)
+	await _frames(40)
+	assert_int(seen.size()).is_equal(1)
+	assert_str(String(seen[0]["card"])).is_equal("rogue_ugh_fine_moving")
+	assert_int(int(seen[0]["count"])).is_equal(1)
+	# a second dash toward a clear lane: nothing to report
+	in_the_way.queue_free()
+	await _frames(2)
+	main.player.global_position = Vector3(20, 0, 20)
+	await _frames(2)
+	seen.clear()
+	_cast("rogue_ugh_fine_moving", main.player, main)
+	await _frames(40)
+	assert_int(seen.size()).is_equal(0)
+	log.stop()
+
+
+func test_the_dodge_roll_never_reports_a_pass_through() -> void:
+	var main := _spawn_main()
+	main.player.global_position = Vector3.ZERO
+	_target(main, 100.0, Vector3(0, 0, -1.5))
+	await _frames(2)
+	var seen: Array[int] = []
+	CombatEvents.dash_passed_through.connect(func(_card_id: String, count: int, _at: Vector3) -> void: seen.append(count))
+	main.player.start_forced_move(Vector3(0, 0, -1), 14.0, 0.3, true)  # what the dodge calls: no card, no pass-through
+	await _frames(30)
+	assert_int(seen.size()).is_equal(0)
+
+
+# --- relics ---------------------------------------------------------------------------------------------
+
+func test_serrated_excuse_lets_the_players_bleed_stack_to_five() -> void:
+	var main := _spawn_main()
+	var target := _target(main, 1000.0)
+	for i in range(7):
+		target.status_manager.apply_status("bleed", StatusDatabase.get_status("bleed"), 4.0, main.player, "card:x")
+	assert_int(target.status_manager.stacks_of("bleed")).is_equal(1)  # D25 = A: nothing stacks without a source
+	var manager := _manager(main, ["serrated_excuse"] as Array[String])
+	var second := _target(main, 1000.0)
+	for i in range(7):
+		second.status_manager.apply_status("bleed", StatusDatabase.get_status("bleed"), 4.0, main.player, "card:x")
+	assert_int(second.status_manager.stacks_of("bleed")).is_equal(5)
+	var burning := _target(main, 1000.0)
+	for i in range(3):
+		burning.status_manager.apply_status("burn", StatusDatabase.get_status("burn"), 4.0, main.player, "card:x")
+	assert_int(burning.status_manager.stacks_of("burn")).is_equal(1)  # Burn is untouched
+	manager.remove_relic("serrated_excuse")
+	var third := _target(main, 1000.0)
+	for i in range(3):
+		third.status_manager.apply_status("bleed", StatusDatabase.get_status("bleed"), 4.0, main.player, "card:x")
+	assert_int(third.status_manager.stacks_of("bleed")).is_equal(1)
+
+
+func test_salt_in_the_wound_adds_a_quarter_to_card_hits_on_bleeding_enemies_only() -> void:
+	var main := _spawn_main()
+	var manager := _manager(main, ["salt_in_the_wound"] as Array[String])
+	var bleeding := _target(main, 1000.0, Vector3(0, 0, -5))
+	var plain := _target(main, 1000.0, Vector3(3, 0, -5))
+	var burning := _target(main, 1000.0, Vector3(-3, 0, -5))
+	bleeding.status_manager.apply_status("bleed", StatusDatabase.get_status("bleed"), 30.0, null, "card:x")
+	burning.status_manager.apply_status("burn", StatusDatabase.get_status("burn"), 30.0, null, "card:x")
+	for target: RelayTarget in [bleeding, plain, burning]:
+		_hit(target, main, "card:x", Health.KIND_HIT, 10.0)
+	assert_float(1000.0 - bleeding.health.current_health).is_equal_approx(12.5, 0.001)
+	assert_float(1000.0 - plain.health.current_health).is_equal_approx(10.0, 0.001)
+	assert_float(1000.0 - burning.health.current_health).is_equal_approx(10.0, 0.001)
+	var before: float = bleeding.health.current_health
+	_hit(bleeding, main, "light", Health.KIND_HIT, 10.0)  # a light attack is not a card hit
+	assert_float(before - bleeding.health.current_health).is_equal_approx(10.0, 0.001)
+	manager.remove_relic("salt_in_the_wound")
+
+
+func test_per_my_last_email_makes_attack_single_hits_bleed_only_after_a_primer() -> void:
+	var main := _spawn_main()
+	var manager := _manager(main, ["per_my_last_email"] as Array[String])
+	var target := _target(main, 1000.0, Vector3(0, 0, -5))
+	_hit(target, main, "card:rogue_quick_slash")
+	manager.flush()
+	assert_bool(target.status_manager.has_status("bleed")).is_false()  # no Primer cast yet
+	CombatEvents.notify_card_cast("utility", "rogue_bad_influence")  # a Primer (Keystone, Primer)
+	var other_slot := _target(main, 1000.0, Vector3(3, 0, -5))
+	_hit(other_slot, main, "card:rogue_everyone_calm_down")
+	_hit(other_slot, main, "light")
+	manager.flush()
+	assert_bool(other_slot.status_manager.has_status("bleed")).is_false()  # an AoE card and a light attack are not Attack: Single
+	_hit(target, main, "card:rogue_quick_slash")
+	manager.flush()
+	assert_bool(target.status_manager.has_status("bleed")).is_true()
+	# the Primer is old news after its 6 s
+	CombatEvents.step(7.0)
+	var late := _target(main, 1000.0, Vector3(-3, 0, -5))
+	_hit(late, main, "card:rogue_quick_slash")
+	manager.flush()
+	assert_bool(late.status_manager.has_status("bleed")).is_false()
+
+
+func test_chasing_paper_gives_move_speed_only_after_a_dash_that_passed_an_enemy() -> void:
+	var main := _spawn_main()
+	var manager := _manager(main, ["chasing_paper"] as Array[String])
+	main.player.global_position = Vector3.ZERO
+	var base: float = main.player.stat_modifiers.apply("move_speed", 1.0)
+	_target(main, 100.0, Vector3(0, 0, -2))
+	await _frames(2)
+	_cast("rogue_ugh_fine_moving", main.player, main)
+	await _frames(40)
+	manager.flush()
+	assert_float(main.player.stat_modifiers.apply("move_speed", 1.0)).is_equal_approx(base * 1.3, 0.0001)
+	await get_tree().create_timer(2.3, true, true).timeout
+	assert_float(main.player.stat_modifiers.apply("move_speed", 1.0)).is_equal_approx(base, 0.0001)
+	# a dash down a clear lane gives nothing
+	main.player.global_position = Vector3(30, 0, 30)
+	await _frames(2)
+	_cast("rogue_ugh_fine_moving", main.player, main)
+	await _frames(40)
+	manager.flush()
+	assert_float(main.player.stat_modifiers.apply("move_speed", 1.0)).is_equal_approx(base, 0.0001)
+
+
+func test_muscle_memory_takes_a_sliver_off_the_heavy_cooldown_per_light_swing() -> void:
+	var main := _spawn_main()
+	var manager := _manager(main, ["muscle_memory"] as Array[String])
+	var target := _target(main, 1000.0, Vector3(0, 0, -5))
+	main.player.attacks.tick(0.016, true, {&"heavy": true}, func(_id: StringName) -> bool: return false)
+	var interval: float = main.player.attacks.get_interval(&"heavy")
+	var start: float = main.player.attacks.get_progress(&"heavy")
+	_hit(target, main, "light")
+	manager.flush()
+	assert_float(main.player.attacks.get_progress(&"heavy") - start).is_equal_approx(0.15 / interval, 0.002)
+	_hit(target, main, "heavy")  # only light hits count
+	manager.flush()
+	assert_float(main.player.attacks.get_progress(&"heavy") - start).is_equal_approx(0.15 / interval, 0.002)
+
+
+func test_overtime_speeds_the_light_attack_and_slows_every_card_slot() -> void:
+	var main := _spawn_main()
+	var light_before: float = main.player.attacks.get_interval(&"light")
+	var cooldowns: Dictionary = {}
+	for slot_type: String in CardSlotController.SLOT_TYPE_ORDER:
+		cooldowns[slot_type] = main.player.stat_modifiers.apply("slot_cooldown." + slot_type, 10.0)
+	var manager := _manager(main, ["overtime_unpaid"] as Array[String])
+	assert_float(main.player.attacks.get_interval(&"light")).is_equal_approx(light_before * 0.75, 0.0001)
+	for slot_type: String in CardSlotController.SLOT_TYPE_ORDER:
+		assert_float(main.player.stat_modifiers.apply("slot_cooldown." + slot_type, 10.0)).is_equal_approx(float(cooldowns[slot_type]) * 1.1, 0.0001)
+	manager.remove_relic("overtime_unpaid")
+	assert_float(main.player.attacks.get_interval(&"light")).is_equal_approx(light_before, 0.0001)
+
+
+func test_the_new_relics_state_their_rule_in_one_line() -> void:
+	for id: String in NEW_RELICS:
+		var rule: String = String(RelicDatabase.get_relic(id)["rule_text"])
+		assert_bool(rule.length() > 10 and rule.length() <= RelicSchema.MAX_RULE_TEXT_LENGTH).override_failure_message(id).is_true()
+
+
+# --- the debug decks --------------------------------------------------------------------------------------
+
+func test_the_two_bd3a_decks_are_legal_and_hold_their_core() -> void:
+	var directory: Dictionary = DebugDecks.read_dir()
+	assert_array((directory["load_problems"] as Array)).is_empty()
+	assert_array((directory["problems"] as Dictionary).keys()).is_empty()
+	var presets: Dictionary = directory["presets"]
+	var bleed_out: Dictionary = presets["rogue-bleed-out"]
+	var brawler: Dictionary = presets["rogue-grudge-brawler"]
+	assert_str(String(bleed_out["class"])).is_equal("rogue")
+	assert_str(String(brawler["class"])).is_equal("rogue")
+	for id: String in ["rogue_open_a_vein", "rogue_paper_cuts", "rogue_bad_influence", "rogue_cut_corners", "rogue_knife_drawer", "rogue_excuse_me", "rogue_blood_money"]:
+		assert_array(bleed_out["starter"]).contains([id])
+	for id: String in ["rogue_warm_up", "rogue_quick_slash", "rogue_overhand_whatever"]:
+		assert_array(brawler["starter"]).contains([id])
+	var fire: int = 0
+	for id: String in bleed_out["starter"]:
+		if String(CardDatabase.get_card(id)["pool"]) == "fire":
+			fire += 1
+	assert_int(fire).is_less_equal(2)  # BUILD_DEPTH 9a: the Bleed Out deck needs no more than 2 Fire cards (it has none)
+	assert_int(DebugDecks.pool_counts(bleed_out["starter"]).get("fire", 0)).is_equal(0)

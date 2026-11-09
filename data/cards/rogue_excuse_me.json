@@ -1,0 +1,21 @@
+{
+    "id": "rogue_excuse_me",
+    "name": "Excuse Me",
+    "slot_type": "movement",
+    "pool": "rogue",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "Said politely, on the way through. They'll feel it later.",
+    "effects": [
+        {
+            "template": "dash",
+            "params": {
+                "distance": 4.0,
+                "speed": 16.0,
+                "pass_through": true,
+                "hit_radius": 0.9,
+                "status_id": "bleed",
+                "status_duration": 4.0
+            }
+        }
+    ]
+}

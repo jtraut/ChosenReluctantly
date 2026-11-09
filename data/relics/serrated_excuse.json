@@ -1,0 +1,24 @@
+{
+    "id": "serrated_excuse",
+    "name": "Serrated Excuse",
+    "pool": "rogue",
+    "rarity": "tier2",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [
+        "Bleed"
+    ],
+    "modifiers": [
+        {
+            "stat": "status_max_stacks.bleed",
+            "modifier_type": "additive",
+            "value": 4
+        }
+    ],
+    "triggers": [],
+    "rule_text": "Your Bleed can stack up to 5 times.",
+    "flavor_text": "It was never about the cut. It was about the follow-through."
+}

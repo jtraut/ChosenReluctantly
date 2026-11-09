@@ -238,7 +238,7 @@ func _handler_for(event_id: String) -> Callable:
 	match event_id:
 		"hit_landed":
 			return func(target: Node, amount: float, damage_type: String, kind: StringName, origin: String, position: Vector3) -> void:
-				handle_event({"event": event_id, "target": target, "amount": amount, "damage_type": damage_type, "kind": String(kind), "origin": origin, "position": position, "tags": _origin_tags(origin)})
+				handle_event({"event": event_id, "target": target, "amount": amount, "damage_type": damage_type, "kind": String(kind), "origin": origin, "position": position, "tags": _origin_tags(origin), "slot_type": _origin_slot_type(origin)})
 		"enemy_killed":
 			return func(target: Node, position: Vector3, origin: String, statuses: Array[String]) -> void:
 				handle_event({"event": event_id, "target": target, "position": position, "origin": origin, "statuses": statuses})
@@ -257,6 +257,9 @@ func _handler_for(event_id: String) -> Callable:
 		"dash_ended":
 			return func(_start: Vector3, end: Vector3, card_id: String) -> void:
 				handle_event({"event": event_id, "card_id": card_id, "position": end, "origin": ""})
+		"dash_passed_through":
+			return func(card_id: String, _count: int, position: Vector3) -> void:
+				handle_event({"event": event_id, "card_id": card_id, "position": position, "origin": ""})
 		"player_damaged":
 			return func(amount: float, origin: String) -> void:
 				handle_event({"event": event_id, "amount": amount, "origin": origin})
@@ -275,6 +278,13 @@ static func _origin_tags(origin: String) -> Array[String]:
 	if origin.begins_with("card:"):
 		return CardDatabase.tags_for(origin.substr(5))
 	return [] as Array[String]
+
+
+## The slot type of the card behind a "card:<id>" origin (the `slot_type` filter of hit_landed), else "".
+static func _origin_slot_type(origin: String) -> String:
+	if origin.begins_with("card:"):
+		return String(CardDatabase.get_card(origin.substr(5)).get("slot_type", ""))
+	return ""
 
 
 # --- matching and firing -----------------------------------------------------------------------

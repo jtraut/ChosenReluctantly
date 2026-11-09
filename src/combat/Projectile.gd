@@ -32,6 +32,9 @@ var _spent: bool = false
 var condition: Dictionary = {}
 ## Who fired it (EffectContext.origin), stamped on the hit it deals. Set by the template before launch; "" when not set.
 var origin: String = ""
+## BD3a: a status the shot puts on the target it hits (a knife that cuts); "" = none. Set by the projectile template from the card's params.
+var status_id: String = ""
+var status_duration: float = 0.0
 
 ## Seconds between trail puffs (not every frame, so a few shots cannot flood the pool).
 const TRAIL_INTERVAL := 0.04
@@ -144,9 +147,19 @@ func _on_area_entered(area: Area3D) -> void:
 		_burst()
 		queue_free()
 		return
-	hurtbox.receive_damage(_damage, _damage_type, knockback, instance_from_id(_source_id) as Node if _source_id != 0 else null, _hit_kind, origin)
+	var source: Node = instance_from_id(_source_id) as Node if _source_id != 0 else null
+	hurtbox.receive_damage(_damage, _damage_type, knockback, source, _hit_kind, origin)
+	_apply_status(hurtbox, source)
 	_burst()
 	queue_free()
+
+
+func _apply_status(hurtbox: Hurtbox, source: Node) -> void:
+	if status_id == "" or hurtbox.status_manager == null:
+		return
+	if hurtbox.health != null and hurtbox.health.is_dead():
+		return
+	hurtbox.status_manager.apply_status(status_id, StatusDatabase.get_status(status_id), status_duration, source, origin)
 
 
 func _end_ball() -> void:

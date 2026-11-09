@@ -1,0 +1,26 @@
+{
+    "id": "rogue_cut_corners",
+    "name": "Cutting Corners",
+    "slot_type": "attack_aoe",
+    "pool": "rogue",
+    "cooldown_modifier": 0.2,
+    "flavor_text": "A quick spin that saves everyone time. Mostly you.",
+    "effects": [
+        {
+            "template": "aoe",
+            "params": {
+                "damage": 10,
+                "damage_type": "physical",
+                "radius": 2.5,
+                "knockback_strength": 1.5
+            }
+        },
+        {
+            "template": "apply_status",
+            "params": {
+                "status_id": "bleed",
+                "duration": 3.0
+            }
+        }
+    ]
+}

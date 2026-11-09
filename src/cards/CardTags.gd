@@ -91,8 +91,6 @@ static func validate_keywords(card: Dictionary) -> Array[String]:
 static func _add_effect_tags(effect: Dictionary, found: Dictionary) -> void:
 	var params: Dictionary = effect["params"] if typeof(effect.get("params")) == TYPE_DICTIONARY else {}
 	match String(effect.get("template", "")):
-		"projectile":
-			found[PROJECTILE] = true
 		"cone":
 			found[MELEE] = true
 		"aoe":
@@ -100,10 +98,14 @@ static func _add_effect_tags(effect: Dictionary, found: Dictionary) -> void:
 		"zone":
 			found[ZONE] = true
 			_add_status_tags(String(params.get("status_id", "")), found)
+		"projectile":
+			found[PROJECTILE] = true
+			_add_status_tags(String(params.get("status_id", "")), found)
 		"dash":
 			found[DASH] = true
 			if params.has("damage"):
 				found[MELEE] = true
+			_add_status_tags(String(params.get("status_id", "")), found)
 		"pass_through":
 			found[DASH] = true
 		"heal":

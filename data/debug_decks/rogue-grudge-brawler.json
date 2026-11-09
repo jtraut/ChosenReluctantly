@@ -1,0 +1,39 @@
+{
+    "name": "rogue-grudge-brawler",
+    "class": "rogue",
+    "description": "BD3a archetype R-D, Grudge Brawler (basic-attack Rogue): the light and heavy attacks do the work, cards keep you alive. Only viable with its relics (Spite Knuckles, Heavy Sigh, Muscle Memory, Overtime). Legal 15-card deck; starter and full are the same list.",
+    "starter": [
+        "rogue_quick_slash",
+        "rogue_overhand_whatever",
+        "fire_ember_whatever",
+        "rogue_everyone_calm_down",
+        "neutral_shrug_bomb",
+        "fire_fine_burn_then",
+        "rogue_warm_up",
+        "rogue_not_my_problem",
+        "neutral_deep_sigh",
+        "rogue_shadow_step",
+        "rogue_ugh_fine_moving",
+        "neutral_backward_leap",
+        "neutral_healing_potion",
+        "rogue_nap_time",
+        "neutral_regeneration"
+    ],
+    "full": [
+        "rogue_quick_slash",
+        "rogue_overhand_whatever",
+        "fire_ember_whatever",
+        "rogue_everyone_calm_down",
+        "neutral_shrug_bomb",
+        "fire_fine_burn_then",
+        "rogue_warm_up",
+        "rogue_not_my_problem",
+        "neutral_deep_sigh",
+        "rogue_shadow_step",
+        "rogue_ugh_fine_moving",
+        "neutral_backward_leap",
+        "neutral_healing_potion",
+        "rogue_nap_time",
+        "neutral_regeneration"
+    ]
+}

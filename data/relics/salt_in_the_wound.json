@@ -1,0 +1,24 @@
+{
+    "id": "salt_in_the_wound",
+    "name": "Salt in the Wound",
+    "pool": "rogue",
+    "rarity": "tier1",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [
+        "Bleed"
+    ],
+    "modifiers": [
+        {
+            "stat": "card_damage_mult_vs_status.bleed",
+            "modifier_type": "multiplicative",
+            "value": 0.25
+        }
+    ],
+    "triggers": [],
+    "rule_text": "Your cards deal 25% more damage to Bleeding enemies.",
+    "flavor_text": "Unprofessional. Effective."
+}

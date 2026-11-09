@@ -186,6 +186,9 @@ func test_decisions_balance_table_matches_the_data_files() -> void:
 		# BD3a (BUILD_DEPTH 9a): Open a Vein 6 + its detonate (conditional, not counted); Paper Cuts 4 x 1.5 + Bleed 2 ticks
 		"rogue_open_a_vein": [6.0, 1.1, 5.45],
 		"rogue_paper_cuts": [8.0, 1.3, 6.15],
+		# BD3a sitting B: Cutting Corners 10 + Bleed 3 s capped to the 2.7 s cycle (5 ticks); The Knife Drawer 5 knives x 3 (the knives' own Bleed is not credited)
+		"rogue_cut_corners": [15.0, 2.7, 5.56],
+		"rogue_knife_drawer": [15.0, 2.8, 5.36],
 	}
 	var statuses: Dictionary = {}
 	for status_id: String in ["burn", "bleed"]:

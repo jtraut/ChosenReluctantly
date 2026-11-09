@@ -1,0 +1,41 @@
+{
+    "name": "rogue-bleed-out",
+    "class": "rogue",
+    "description": "BD3a archetype R-C, Bleed Out (physical Rogue): stack Bleed with cheap cuts, then cash it in with Open a Vein. Legal 16-card deck with no Fire card at all; starter and full are the same list.",
+    "starter": [
+        "rogue_open_a_vein",
+        "rogue_paper_cuts",
+        "rogue_bleed_slash",
+        "rogue_flurry",
+        "rogue_everyone_calm_down",
+        "rogue_cut_corners",
+        "rogue_knife_drawer",
+        "rogue_bad_influence",
+        "rogue_not_my_problem",
+        "neutral_deep_sigh",
+        "rogue_lunge_strike",
+        "rogue_excuse_me",
+        "rogue_ugh_fine_moving",
+        "rogue_blood_money",
+        "neutral_healing_potion",
+        "neutral_regeneration"
+    ],
+    "full": [
+        "rogue_open_a_vein",
+        "rogue_paper_cuts",
+        "rogue_bleed_slash",
+        "rogue_flurry",
+        "rogue_everyone_calm_down",
+        "rogue_cut_corners",
+        "rogue_knife_drawer",
+        "rogue_bad_influence",
+        "rogue_not_my_problem",
+        "neutral_deep_sigh",
+        "rogue_lunge_strike",
+        "rogue_excuse_me",
+        "rogue_ugh_fine_moving",
+        "rogue_blood_money",
+        "neutral_healing_potion",
+        "neutral_regeneration"
+    ]
+}

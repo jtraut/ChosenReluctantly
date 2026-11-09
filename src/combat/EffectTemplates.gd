@@ -18,7 +18,7 @@ const REQUIRED_PARAMS: Dictionary = {
 	"buff": ["stat", "modifier_type", "value", "duration"],
 	"zone": ["shape", "duration", "tick_interval", "damage", "damage_type", "max_range"],
 	"pass_through": ["duration"],
-	"reduce_cooldown": ["slot_type", "seconds"],
+	"reduce_cooldown": ["seconds"],
 	"detonate_status": ["status_id", "multiplier"],
 }
 
@@ -46,6 +46,9 @@ const STATUS_TARGETS: Array[String] = ["last_hits", "self"]
 ##   aoe (optional): max_range places the disc at the aim point clamped to that range (a card version of
 ##     the targeted_aoe heavy); without it the disc is centred on the caster.
 ##   projectile (optional, 3c): yaw_degrees turns the shot's direction about the vertical axis (a fan of shots).
+##   projectile (optional, BD3a): status_id + status_duration apply that status to the target the shot hits (a knife that cuts); the card's origin
+##     is stamped on it, like a card status. Both or neither.
+##   dash (optional, BD3a): status_id + status_duration apply that status to every enemy the dash passes through (needs hit_radius, no damage needed).
 ##   projectile (optional, W1a, code-only): direction (a Vector3, flattened by the caller) replaces the caster's facing; lane false
 ##     skips the player's hit-area strip (the auto-firing Wizard bolt would flood the effect pool with one per shot).
 ##   projectile (optional, W1a ux, code-only): look ({"color": Color, "scale": float}) replaces the element look, so one caster's shots
@@ -55,7 +58,7 @@ const STATUS_TARGETS: Array[String] = ["last_hits", "self"]
 ##     ground telegraph growing for `delay`, then hits. A caster that dies or is freed in that time cancels the hit.
 const ZONE_KEYS: Array[String] = ["shape", "duration", "tick_interval", "damage", "damage_type", "max_range", "radius", "length", "width",
 		"knockback_strength", "status_id", "status_duration", "status_chance"]
-const DASH_KEYS: Array[String] = ["distance", "speed", "invulnerable", "damage_type", "direction_mode", "damage", "hit_radius", "knockback_strength", "pass_through"]
+const DASH_KEYS: Array[String] = ["distance", "speed", "invulnerable", "damage_type", "direction_mode", "damage", "hit_radius", "knockback_strength", "pass_through", "status_id", "status_duration"]
 const DASH_DIRECTION_MODES: Array[String] = ["forward", "away_from_aim"]
 const DIRECTION_FORWARD := "forward"
 const DIRECTION_AWAY := "away_from_aim"
@@ -135,6 +138,8 @@ static func validate_params(template_id: String, params: Dictionary) -> Array[St
 			errors.append("'target' must be one of %s" % str(STATUS_TARGETS))
 		if typeof(params.get("status_id")) == TYPE_STRING and not StatusDatabase.has_status(String(params["status_id"])):
 			errors.append("unknown status_id '%s'" % String(params["status_id"]))
+	if template_id == "projectile" or template_id == "dash":
+		_validate_on_hit_status(template_id, params, errors)
 	if params.has("look") and template_id == "projectile" and params["look"] is Dictionary and not (params["look"] as Dictionary).is_empty():
 		errors.append_array(validate_look(params["look"]))
 	match template_id:
@@ -265,6 +270,19 @@ static func _validate_zone(params: Dictionary, errors: Array[String]) -> void:
 		errors.append("a zone with damage 0 needs a status")
 
 
+## BD3a: the optional on-hit status of a projectile or a dash (`status_id` with `status_duration`, both or neither).
+static func _validate_on_hit_status(template_id: String, params: Dictionary, errors: Array[String]) -> void:
+	if params.has("status_id") != params.has("status_duration"):
+		errors.append("%s: 'status_id' and 'status_duration' go together" % template_id)
+		return
+	if not params.has("status_id"):
+		return
+	if typeof(params["status_id"]) != TYPE_STRING or not StatusDatabase.has_status(String(params["status_id"])):
+		errors.append("unknown status_id '%s'" % str(params["status_id"]))
+	if not _number_in(params["status_duration"], 0.0, 60.0, false):
+		errors.append("'status_duration' must be a number above 0 and at most 60")
+
+
 static func _validate_detonate_status(params: Dictionary, errors: Array[String]) -> void:
 	for key: Variant in params.keys():
 		if not ["status_id", "multiplier"].has(String(key)):
@@ -279,11 +297,20 @@ static func _validate_detonate_status(params: Dictionary, errors: Array[String])
 		errors.append("'multiplier' must be a number above 0 and at most %s" % str(MAX_DETONATE_MULTIPLIER))
 
 
+## BD3a: exactly one of `slot_type` (a card slot) or `attack_id` ("light" or "heavy", the basic attack's own cooldown; Muscle Memory).
+const REDUCE_COOLDOWN_ATTACKS: Array[String] = ["light", "heavy"]
+
+
 static func _validate_reduce_cooldown(params: Dictionary, errors: Array[String]) -> void:
 	for key: Variant in params.keys():
-		if not ["slot_type", "seconds"].has(String(key)):
+		if not ["slot_type", "attack_id", "seconds"].has(String(key)):
 			errors.append("'%s' is not a known reduce_cooldown param" % str(key))
-	if typeof(params.get("slot_type")) != TYPE_STRING or not SlotTypeDatabase.has(String(params["slot_type"])):
+	if params.has("slot_type") == params.has("attack_id"):
+		errors.append("reduce_cooldown needs exactly one of 'slot_type' and 'attack_id'")
+	elif params.has("attack_id"):
+		if typeof(params["attack_id"]) != TYPE_STRING or not REDUCE_COOLDOWN_ATTACKS.has(String(params["attack_id"])):
+			errors.append("'attack_id' must be one of %s" % str(REDUCE_COOLDOWN_ATTACKS))
+	elif typeof(params["slot_type"]) != TYPE_STRING or not SlotTypeDatabase.has(String(params["slot_type"])):
 		errors.append("'slot_type' must be one of %s" % str(SlotTypeDatabase.known_ids()))
 	if params.has("seconds") and not _number_in(params["seconds"], 0.0, MAX_REDUCE_COOLDOWN, false):
 		errors.append("'seconds' must be a number above 0 and at most %s" % str(MAX_REDUCE_COOLDOWN))
@@ -314,8 +341,10 @@ static func _validate_dash(params: Dictionary, errors: Array[String]) -> void:
 			errors.append("a dash with 'damage' needs a 'damage_type'")
 	else:
 		for key: String in ["hit_radius", "knockback_strength"]:
-			if params.has(key):
+			if params.has(key) and not (key == "hit_radius" and params.has("status_id")):
 				errors.append("'%s' needs 'damage'" % key)
+		if params.has("status_id") and not params.has("hit_radius"):
+			errors.append("a dash with 'status_id' needs 'hit_radius'")
 	if params.has("hit_radius") and not _number_in(params["hit_radius"], 0.0, 5.0, false):
 		errors.append("'hit_radius' must be a number above 0 and at most 5")
 	if params.has("knockback_strength") and not _number_in(params["knockback_strength"], 0.0, 100.0, true):
@@ -587,6 +616,9 @@ static func _projectile_shot(params: Dictionary, context: EffectContext, index: 
 		instance.condition = params[EffectCondition.PARAM_KEY]
 	instance.set_source(context.caster, _kind_for(index))
 	instance.origin = context.origin
+	if params.has("status_id"):
+		instance.status_id = String(params["status_id"])
+		instance.status_duration = float(params["status_duration"])
 	# Player shots only: an enemy shot's lane would look like a telegraph it is not.
 	if context.caster_team == "player" and bool(params.get("lane", true)):
 		TemplateVfx.projectile_lane(_vfx_pool(context), origin, forward, float(params["max_range"]), float(params["hit_radius"]),
@@ -619,9 +651,12 @@ static func _execute_dash(params: Dictionary, context: EffectContext) -> void:
 	var duration: float = distance / speed if speed > 0.0 else 0.0
 	var look := ElementVisuals.visual_for_damage_type(String(params.get("damage_type", "physical")))
 	var path_hit: Dictionary = {}
-	if params.has("damage"):
-		path_hit = {"damage": float(params["damage"]), "damage_type": String(params["damage_type"]),
+	if params.has("damage") or params.has("status_id"):
+		path_hit = {"damage": float(params.get("damage", 0.0)), "damage_type": String(params.get("damage_type", "physical")),
 				"hit_radius": float(params["hit_radius"]), "knockback_strength": float(params.get("knockback_strength", 0.0)), "origin": context.origin}
+		if params.has("status_id"):
+			path_hit["status_id"] = String(params["status_id"])
+			path_hit["status_duration"] = float(params["status_duration"])
 	TemplateVfx.dash_start(_vfx_pool(context), _caster_pos(context), look)
 	TemplateVfx.dash_path(_vfx_pool(context), _caster_pos(context), forward, distance, look, float(path_hit["hit_radius"]) if not path_hit.is_empty() else -1.0)
 	context.caster.start_forced_move(forward, speed, duration, params.get("invulnerable", false), look, path_hit, bool(params.get("pass_through", false)), context.origin)
@@ -732,6 +767,10 @@ static func _execute_pass_through(params: Dictionary, context: EffectContext) ->
 
 ## Takes `seconds` off the running cooldown of the caster's `slot_type` slot. A slot that is ready, or a caster with no card slots, is left alone.
 static func _execute_reduce_cooldown(params: Dictionary, context: EffectContext) -> void:
+	if params.has("attack_id"):
+		if context.caster.has_method("reduce_attack_cooldown"):
+			context.caster.reduce_attack_cooldown(StringName(String(params["attack_id"])), float(params["seconds"]))
+		return
 	var controller: Variant = context.caster.get(&"card_slots")
 	if not (controller is CardSlotController):
 		return

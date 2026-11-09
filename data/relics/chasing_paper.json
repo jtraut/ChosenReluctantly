@@ -1,0 +1,36 @@
+{
+    "id": "chasing_paper",
+    "name": "Chasing Paper",
+    "pool": "rogue",
+    "rarity": "tier1",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [
+        "Dash"
+    ],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "dash_passed_through",
+            "filter": {},
+            "at": "player",
+            "internal_cooldown": 0.0,
+            "effects": [
+                {
+                    "template": "buff",
+                    "params": {
+                        "stat": "move_speed",
+                        "modifier_type": "multiplicative",
+                        "value": 0.3,
+                        "duration": 2.0
+                    }
+                }
+            ]
+        }
+    ],
+    "rule_text": "A Movement card that passes through an enemy gives +30% move speed for 2 s.",
+    "flavor_text": "The paperwork follows you. Now you follow it faster."
+}

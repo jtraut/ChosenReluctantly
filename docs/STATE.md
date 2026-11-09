@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-09 (MAP3 built, qa PASS; playtester next). **Run order:** MAP1, MAP2 (done) -> **MAP3 (in progress: qa PASS, playtester next)** -> **BD3a, physical Rogue** (new, director priority 2026-11-09) -> MAP3b -> MAP4 -> 3d -> BD3b (Wizard depth). All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2.
+Last updated: 2026-11-09 (MAP3 built, qa PASS, playtest no blocker; docs pass next). **Run order:** MAP1, MAP2 (done) -> **MAP3 (in progress: qa PASS, playtest done, docs pass next)** -> **BD3a, physical Rogue** (new, director priority 2026-11-09) -> MAP3b -> MAP4 -> 3d -> BD3b (Wizard depth). All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2.
 
 ## What's done
 - **Director feedback 2026-11-09, planned (game-lead, docs only):**
@@ -152,19 +152,20 @@ Last updated: 2026-11-09 (MAP3 built, qa PASS; playtester next). **Run order:** 
 - **MAP3: sitting B done 2026-11-09** (gameplay-dev 5d85ee4..cd17992; hand-back recorded under the MAP3 brief in ROADMAP, calls in DECISIONS "MAP3 sitting B calls"). Suite 1916 (147 suites), 0 skipped; all hashes unchanged; `-Route first` 3 acts: Rogue 9/12, Wizard 10/12, acts within +13% of act 1.
   - **ux done 2026-11-09** (5a75570..96bbdeb; ROADMAP MAP3 "ux: done"). Suite 1945 (148 suites).
   - **qa PASS with carry-overs 2026-11-09** (890c9eb). Suite 1954 (149 suites, 1 skipped probe); all hashes unchanged.
-  - **Now: playtester** (MAP3), started 2026-11-09. If cut off, check `docs/playtests/` for a 2026-11-09 MAP3 report.
+  - **Playtest no blocker 2026-11-09** (02a8c5f); triaged in 40d64ee (D44, D45, eyes 52; carry-overs to BD3a ux and sitting A, MAP3b).
+  - **Now: tech-writer** MAP3 docs pass (commit range 05b7999..40d64ee), started 2026-11-09. If cut off, check `git log` for a tech-writer commit touching CHANGELOG after 40d64ee.
   - **For OPEN_ITEMS at close (needs your eyes):** try Continue in a real launch (quit mid-run, relaunch, Enter); click through the Act 2 screen in a live three-act run.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes; they did not flake in sitting B).
 
 ## Exact next step
-1. **playtester** (MAP3).
+1. **tech-writer** MAP3 docs pass (include the 2026-11-09 pending items above).
 2. Then -> **tech-writer** (commit range 5d85ee4..; include the 2026-11-09 pending items above) -> close, tag `playtest-YYYY-MM-DD-MAP3`.
 3. Then **BD3a** (ROADMAP brief; gameplay-dev sitting A = engine plus 4 cards; sitting B builds D43 = B).
 4. Then MAP3b (its design pass must cover Bleed and basic attacks too), MAP4, 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D42 answered (see RESOLVED). D43 = B answered 2026-11-09. Next free: D44.
+**D-numbers:** D21-D43 answered (see RESOLVED). D44 and D45 open (2026-11-09). Next free: D46.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 

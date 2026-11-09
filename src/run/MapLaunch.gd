@@ -35,6 +35,27 @@ static func resolve(args: PackedStringArray) -> Dictionary:
 	return {"override": override, "errors": errors}
 
 
+## `--acts=N` (MAP3-B, debug and capture): the run has N acts, 1 to RunState.MAX_ACTS (`--acts=1` is the MAP2 one-act run, whose last room is the boss). {acts: int, errors}; acts is 0 when
+## the flag is absent. A value that is not a whole number in range, or a flag given twice, is refused (exit 2) instead of silently ignored.
+static func resolve_acts(args: PackedStringArray) -> Dictionary:
+	var errors: Array[String] = []
+	var acts: int = 0
+	var count: int = 0
+	for arg: String in args:
+		if arg == "--acts" or arg.begins_with("--acts="):
+			count += 1
+			var value: String = arg.substr(7) if arg.begins_with("--acts=") else ""
+			if not value.is_valid_int() or value.to_int() < 1 or value.to_int() > RunState.MAX_ACTS:
+				errors.append("--acts needs a whole number from 1 to %d, as --acts=1 (got '%s')" % [RunState.MAX_ACTS, value])
+			else:
+				acts = value.to_int()
+	if count > 1:
+		errors.append("--acts was given %d times; give it once" % count)
+	if not errors.is_empty():
+		acts = 0
+	return {"acts": acts, "errors": errors}
+
+
 ## `--run-room=N` counts rooms over the whole run (MAP3-B: 1 to `limit`, 30 for three acts of 10). "" when it is fine or absent, else why the launch is refused (exit 2).
 ## Only a value that is a whole number above `limit` is a problem here; the other malformed values keep their old behaviour (the flag is ignored).
 static func run_room_problem(args: PackedStringArray, limit: int) -> String:

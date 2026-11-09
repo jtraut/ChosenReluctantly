@@ -810,3 +810,37 @@ func test_a_one_act_run_still_ends_at_the_boss() -> void:
 	controller.run_won.connect(func() -> void: won[0] = true)
 	controller._finish_room(0.0)
 	assert_bool(won[0]).is_true()
+
+
+# ---- the launch flags and the capture presets ----
+
+func test_the_acts_launch_flag_parses_and_refuses_bad_values() -> void:
+	assert_int(int(MapLaunch.resolve_acts(PackedStringArray())["acts"])).is_equal(0)
+	assert_int(int(MapLaunch.resolve_acts(PackedStringArray(["--acts=1"]))["acts"])).is_equal(1)
+	assert_int(int(MapLaunch.resolve_acts(PackedStringArray(["--run-seed=3", "--acts=3"]))["acts"])).is_equal(3)
+	for bad: String in ["--acts", "--acts=", "--acts=0", "--acts=-1", "--acts=10", "--acts=two", "--acts=1.5"]:
+		var result: Dictionary = MapLaunch.resolve_acts(PackedStringArray([bad]))
+		assert_array(result["errors"] as Array).override_failure_message(bad + " was accepted").is_not_empty()
+		assert_int(int(result["acts"])).is_equal(0)
+	assert_array(MapLaunch.resolve_acts(PackedStringArray(["--acts=1", "--acts=2"]))["errors"] as Array).is_not_empty()
+	# a debug run never touches the player's save
+	assert_bool(RunSave.args_suppress(PackedStringArray(["--acts=1"]))).is_true()
+
+
+func test_map_run_capture_presets_pin_one_act_and_the_act_presets_do_not() -> void:
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://tools/capture_presets.json"))
+	assert_int(typeof(parsed)).is_equal(TYPE_DICTIONARY)
+	var presets: Dictionary = parsed
+	for name: String in ["reward_screen", "boss_smash", "map_start", "map_mid", "map_room9", "map_chest_large", "map_chest_medium", "merchant_shop", "merchant_shop_poor", "merchant_removal"]:
+		assert_bool((presets[name]["extra"] as Array).has("--acts=1")).override_failure_message(name + " lacks --acts=1").is_true()
+	for name: String in ["mini_boss_act1", "final_boss_act3"]:
+		assert_bool(presets.has(name)).is_true()
+		assert_bool((presets[name]["extra"] as Array).has("--acts=1")).is_false()
+	# the pinned one-act presets still put the boss at room 10; the act presets reach the mini-boss and the final boss
+	assert_str(String(MapGraph.node(MapGenerator.generate(1, {}, {}, 1, 1), MapGraph.boss_id(MapGenerator.generate(1, {}, {}, 1, 1)))["type"])).is_equal("boss")
+	RunSession.map_override = 1  # restored to -1 by after_test
+	var run: RunState = RunSession.begin_new_run(1)
+	run.jump_to_room(9)
+	assert_str(String(RunNodes.current_node(run)["type"])).is_equal("mini_boss")
+	run.jump_to_room(29)
+	assert_str(String(RunNodes.current_node(run)["type"])).is_equal("boss")

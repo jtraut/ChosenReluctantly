@@ -285,6 +285,14 @@ func _apply_launch_args(tree: SceneTree) -> bool:
 			printerr("Launch refused: " + problem)
 		tree.quit(2)
 		return false
+	var acts_launch: Dictionary = MapLaunch.resolve_acts(args)
+	if not (acts_launch["errors"] as Array[String]).is_empty():
+		for problem: String in (acts_launch["errors"] as Array[String]):
+			printerr("Launch refused: " + problem)
+		tree.quit(2)
+		return false
+	if int(acts_launch["acts"]) > 0:
+		RunSession.acts_override = int(acts_launch["acts"])
 	var run_launch: Dictionary = MapLaunch.resolve_run_args(args)
 	if not (run_launch["errors"] as Array[String]).is_empty():
 		for problem: String in (run_launch["errors"] as Array[String]):

@@ -2,7 +2,7 @@
     "reward_screen": {
         "description": "The card reward screen after room 1 (3 seeded offers). Run mode.",
         "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--run-seed=3", "--run-room=1", "--run-clear-after=1"]
+        "extra": ["--acts=1", "--run-seed=3", "--run-room=1", "--run-clear-after=1"]
     },
     "removal_screen": {
         "description": "The rest-room removal grid (the full deck, so removal is allowed). Run mode; seed 1 has its rest room at room 6.",
@@ -12,17 +12,17 @@
     "boss_smash": {
         "description": "The boss winding up its smash (cone) and landing it: shots 0.3 s and 0.6 s after the wind-up starts. Run mode, boss room.",
         "class": "rogue", "scenario": "", "after": "0.3,0.6", "at_boss_attack": "smash",
-        "extra": ["--run-seed=1", "--run-room=10"]
+        "extra": ["--acts=1", "--run-seed=1", "--run-room=10"]
     },
     "bd1_reward_keystone": {
         "description": "BD1: a Rogue reward screen offering Fan the Flames and Drive-By (Keystones) and Kindling (Primer).",
         "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--run-seed=3", "--run-room=1", "--run-clear-after=1", "--run-offer=fire_fan_the_flames+rogue_drive_by+fire_kindling"]
+        "extra": ["--acts=1", "--run-seed=3", "--run-room=1", "--run-clear-after=1", "--run-offer=fire_fan_the_flames+rogue_drive_by+fire_kindling"]
     },
     "bd1_reward_keystone_wizard": {
         "description": "BD1: a Wizard reward screen offering Heat Sink and Parting Gift (Keystones) and Well, Actually (Payoff).",
         "class": "wizard", "scenario": "", "after": "3.0",
-        "extra": ["--run-seed=3", "--run-room=1", "--run-clear-after=1", "--run-offer=fire_heat_sink+wizard_parting_gift+wizard_well_actually"]
+        "extra": ["--acts=1", "--run-seed=3", "--run-room=1", "--run-clear-after=1", "--run-offer=fire_heat_sink+wizard_parting_gift+wizard_well_actually"]
     },
     "bd1_glow_target": {
         "description": "BD1: a lit condition. Fan the Flames in the Attack: AoE slot with Burning enemies in its area (arena scenario, fixed deck).",
@@ -54,42 +54,52 @@
     "map_start": {
         "description": "MAP1-B: the map at run start. The map screen with the room-1 nodes pickable and the legend, with the branching map forced on (--map; data/map.json now ships it on, so the flag is explicit rather than needed). Run mode, seed 1.",
         "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--map", "--run-seed=1"]
+        "extra": ["--map", "--acts=1", "--run-seed=1"]
     },
     "map_mid": {
         "description": "MAP1-B: mid-run. Seed 54 along the first route, room 7 cleared (gold paid), its card offer rejected, so the map screen is open to pick the next node with 6 nodes already walked (a medium chest relic stage sits at room 6).",
         "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--map", "--run-seed=54", "--run-room=7", "--run-clear-after=1", "--run-auto-choose=skip"]
+        "extra": ["--map", "--acts=1", "--run-seed=54", "--run-room=7", "--run-clear-after=1", "--run-auto-choose=skip"]
     },
     "map_room9": {
         "description": "MAP1-B: room 9. Seed 54, room 9 cleared and its card offer rejected; the only way on is the boss.",
         "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--map", "--run-seed=54", "--run-room=9", "--run-clear-after=1", "--run-auto-choose=skip"]
+        "extra": ["--map", "--acts=1", "--run-seed=54", "--run-room=9", "--run-clear-after=1", "--run-auto-choose=skip"]
     },
     "map_chest_large": {
         "description": "MAP1-B: a large chest relic stage (seed 157, room 5, first route). No fight, the offer opens at once. A large chest draws from the act 3 row (tier 1 5, tier 2 25, tier 3 70 as shipped, min_tier 1).",
         "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--map", "--run-seed=157", "--run-room=5"]
+        "extra": ["--map", "--acts=1", "--run-seed=157", "--run-room=5"]
     },
     "map_chest_medium": {
         "description": "MAP1-B: a medium chest relic stage (seed 54, room 6, first route).",
         "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--map", "--run-seed=54", "--run-room=6"]
+        "extra": ["--map", "--acts=1", "--run-seed=54", "--run-room=6"]
     },
     "merchant_shop": {
         "description": "MAP2 (qa): the merchant's shop. Seed 54, map node 33 (the room 9 merchant), 200 gold, starter deck (the removal entry is greyed with its reason). Re-check the node id with tools\\run_map_print.ps1 -Seed 54 if the generator changes.",
         "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--map", "--run-seed=54", "--run-node=33", "--run-gold=200"]
+        "extra": ["--map", "--acts=1", "--run-seed=54", "--run-node=33", "--run-gold=200"]
     },
     "merchant_shop_poor": {
         "description": "MAP2 (qa): the same shop with 20 gold, so every item shows its 'Need N more gold' reason.",
         "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--map", "--run-seed=54", "--run-node=33", "--run-gold=20"]
+        "extra": ["--map", "--acts=1", "--run-seed=54", "--run-node=33", "--run-gold=20"]
     },
     "merchant_removal": {
         "description": "MAP2 (qa): the merchant's card removal list with a full deck and 200 gold (the opening option id is merchant_remove_menu).",
         "class": "rogue", "scenario": "", "after": "4.0",
-        "extra": ["--map", "--run-seed=54", "--run-node=33", "--run-gold=200", "--full-deck", "--run-auto-choose=merchant_remove_menu"]
+        "extra": ["--map", "--acts=1", "--run-seed=54", "--run-node=33", "--run-gold=200", "--full-deck", "--run-auto-choose=merchant_remove_menu"]
+    },
+    "mini_boss_act1": {
+        "description": "MAP3-B: the act 1 mini-boss (room 10 of a three-act run): a golem with the mini-boss tier plus chasers, then shooters and more chasers. Run mode, seed 1.",
+        "class": "rogue", "scenario": "", "after": "4.0",
+        "extra": ["--run-seed=1", "--run-room=10"]
+    },
+    "final_boss_act3": {
+        "description": "MAP3-B: the final boss (room 30 of a three-act run), with act 3's enemy scaling. Run mode, seed 1.",
+        "class": "rogue", "scenario": "", "after": "4.0",
+        "extra": ["--run-seed=1", "--run-room=30"]
     },
     "bd2_pyre_explosion": {
         "description": "BD2: a Pyre Insurance explosion. Arena scenario, fixed deck: a Burning enemy dies at 0.6 s and its Burn bursts over the three beside it.",

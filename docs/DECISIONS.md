@@ -2081,3 +2081,8 @@ Context: director feedback 2026-11-09. He played a three-act physical/Bleed Rogu
 - **The HUD plate grows to two lines only on multi-act runs**, so one-act runs and their captures don't change.
 - **The shop shrinks instead of scrolling when up to 4% too tall** (`run_ui.shop_scroll_slack` 0.04). Rejected: a smaller font for every shop.
 - **Act summary reads "relics: N"** instead of "N relics", so it never says "1 relics".
+
+## 2026-11-09 - MAP3 qa calls (qa, decided by game-lead)
+- **The hand-edited-save bug (hp 0 or over max, bad `rejects_remaining` load) is committed as a skipped probe**, so the suite gate stays green and meaningful. It's low severity (the game never writes these values) and goes to BD3a sitting A housekeeping. Rejected: a failing test on main, or holding MAP3's close for it.
+- **A paused-tree guard went into 11 suites' `after_test` even though no leak reproduced.** Cheap and test-only. The root cause (`GamePause.reset()` doesn't unpause the tree) goes to BD3a sitting A.
+- **Test `.uid` files are tracked** (153 already were), so the stray ones were committed.

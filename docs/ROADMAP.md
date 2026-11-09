@@ -1190,6 +1190,10 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
       - Built: two-line HUD plate on multi-act runs ("Act 2 of 3" / "Room 14 of 30 - Type"; one-act runs unchanged), whole-run numbers on the reward, merchant, cleared, lose and win screens; `ActScreen` on `act_started` (holds the map pick, survives pause/resume); Continue on the class-pick screen with `RunSave.summary()`; map title, act columns 11-20/21-30 and mini-boss lines; merchant coin on the legend, HUD plate and shop title; the shop's 4 px overflow (new `ui.json` `run_ui.shop_scroll_slack` 0.04); deck-minimum strings now say "Add a card first."
       - New presets `act_transition`, `map_mini_boss`, `map_act2`; `ux_capture.gd --mode=continue_pick`.
       - Carry-overs for qa: tests that open ClassPickScreen can leak a paused tree into later suites (map3_ux resets it; check the others). The HUD plate reads "Act 1 of 3" behind the Act 2 screen until the next room (accepted). Resuming at an act's first map shows no act screen.
+    - **qa: PASS with carry-overs 2026-11-09** (890c9eb, `docs/reviews/2026-11-09-map3-qa.md`). Suite 1954 (149 suites), 1 skipped (the bug probe below), 0 failures. All hashes and `-NoMap` unchanged; per-act 1000-seed sweeps 0 failures (worst 79/86/126); reload soak OK x4; `-Route first` reproduced exactly; no-card gate 0/12 both classes.
+      - **3-act baselines (not gated):** `relic` Rogue 10/12 43.3 s, 11 relics, 444 gold; Wizard 10/12 52.4 s, 11 relics, 458 gold. `safe` Rogue 8/12 54.4 s, 5 relics, 680 gold; Wizard 10/12 63.5 s, 5 relics, 680 gold. Act times within +7% of act 1.
+      - **New suite `map3_qa_test.gd`:** act-boundary resume, 364 hostile save files, truncated files, determinism over 3 acts, exhausted pool in acts 2-3 through real nodes.
+      - **Carry-overs:** BD3a sitting A housekeeping (below). MAP3b: `relic` median 11 (target 14-17), `safe` 5 (target 6-8), gold hoarding. Info: bots end every act at full HP, so "no free heal between acts" isn't tested by the bot; `Boss._begin_windup` duplicates the attack dict when `damage_scale` isn't 1 (inert today).
     - **qa:**
       - the save round trip and every robustness case;
       - a 1000-seed sweep **per act**, 0 failures;
@@ -1219,6 +1223,7 @@ MAP3 (finish: sitting B hand-back -> ux -> qa -> playtest -> docs -> close) -> *
     4. Check that a light attack speed stat and a heavy cooldown stat exist (`attack_interval.light` or whatever AttackController reads); add them if not.
     5. Cards: `rogue_open_a_vein`, `rogue_paper_cuts`, `rogue_bad_influence`, `rogue_warm_up` (BUILD_DEPTH §9a). Each new Attack card passes `CardDamageRule` on unconditional damage.
     6. Tests for every engine piece, including "Burn and Bleed don't stack without a source".
+    7. **MAP3 qa carry-overs (housekeeping):** `RunSave._state_problem` refuses or clamps `hp` <= 0 or above max and negative or huge `rejects_remaining`, then un-skip `test_hp_and_reject_values_in_a_loaded_save_are_sane` (map3_qa_test). `GamePause.reset()` also unpauses the tree.
     - At the end of sitting A, main runs, and the arena and bot-sim hashes are unchanged or rebaselined with the reason logged (new pool cards fill sim slots, as at BD1-B).
   - **gameplay-dev, sitting B (content and measurement):**
     1. Cards: `rogue_cut_corners`, `rogue_knife_drawer`, `rogue_excuse_me`, `rogue_blood_money`.

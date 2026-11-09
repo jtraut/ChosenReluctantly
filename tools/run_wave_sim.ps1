@@ -17,11 +17,10 @@
 #   The bots then visit merchant nodes on their route: the `relic` route buys relics first (cheapest first), then a removal, then a card; `safe`, `first` and `random` buy a removal, then a card, and no relics (MerchantPolicy).
 #   The run line and the ROUTE SUMMARY add gold spent, relics bought and removals.
 # -Run also prints the damage the player's side dealt by source (light, heavy, each slot type, each status, each relic) per run and over all runs with the fingerprint spread, relic pick/skip/swap counts, and BOSS TIMES with timed-out boss fights listed apart.
-# -RandomPicks (--sim-random-picks, BD3a): the reward bot takes any not-yet-owned card at random, as before the dilution guard (the old -Run baselines). Default: it skips an attack card whose DPS is below its slot's average in the deck.
 # -StartRoom N (needs -Run): start every run at room N (10 = the boss) with the starter deck and full HP (--start-room).
 # -Run plays whole seeded runs (Milestone 3a): -Seed is the first run seed, -Runs the number of runs, -RoomTimeout sim seconds before a room counts as a soft lock.
 # Fails on a failed check OR any ERROR / SCRIPT ERROR / WARNING line in the engine output.
-param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets, [int]$StartRoom = 0, [switch]$Plan, [string]$Relics = "", [int]$RelicCap = 0, [string]$Swap = "", [switch]$NoRelics, [string]$Route = "", [switch]$Map, [switch]$NoMap, [switch]$Merchant, [int]$Acts = 0, [switch]$RandomPicks)
+param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets, [int]$StartRoom = 0, [switch]$Plan, [string]$Relics = "", [int]$RelicCap = 0, [string]$Swap = "", [switch]$NoRelics, [string]$Route = "", [switch]$Map, [switch]$NoMap, [switch]$Merchant, [int]$Acts = 0)
 
 $root = Split-Path -Parent $PSScriptRoot
 $godot = $env:GODOT_BIN
@@ -61,7 +60,6 @@ if ($Swap) { $extra += "--sim-swap=$Swap" }
 if ($Route) { $extra += "--sim-route=$Route" }
 if ($Map) { $extra += "--sim-map" }
 if ($NoMap) { $extra += "--sim-no-map" }
-if ($RandomPicks) { $extra += "--sim-random-picks" }
 if ($Merchant) { $extra += "--sim-merchant" }
 if ($Acts -gt 0) { $extra += "--sim-acts=$Acts" }
 if ($StartRoom -gt 0) { $extra += "--start-room=$StartRoom" }

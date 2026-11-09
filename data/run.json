@@ -188,7 +188,7 @@
             "pause_given_up": "Given up this run", "pause_empty": "No relics yet. Elite rooms and the relic room offer them.", "pause_count": "%d of %d held",
             "tier_names": { "tier1": "Tier 1", "tier2": "Tier 2", "tier3": "Tier 3", "boss": "Boss" }
         },
-        "act": { "label": "Act %d of %d", "title": "Act %d", "run_room_label": "Room %d of %d", "summary": "HP %d of %d, %d gold, %d relics" },
+        "act": { "label": "Act %d of %d", "title": "Act %d", "run_room_label": "Room %d of %d", "summary": "HP %d of %d, %d gold, %d relics", "flavor": "Another act. Same hero, same reluctance.", "button": "Continue", "hint": "Enter to continue" },
         "win": { "title": "Run complete", "line": "Somehow, you finished. Nobody is more surprised than you.", "button": "New run", "hint": "Enter to start over", "stat_rooms": "Rooms cleared", "stat_time": "Total time", "stat_hp": "HP left" },
         "lose": { "run_line": "Reached room %d of %d." },
         "map": {
@@ -198,7 +198,7 @@
             "pick_hint": "Arrow keys move, Enter or click picks the room", "view_title": "Your route", "view_line": "Where you have been, and where you could still go.",
             "view_hint": "Arrow keys look around. Esc, Enter or Back closes", "back_label": "Back", "button_label": "Map",
             "legend_chest": "Dots show a relic stage's size: 1 small, 2 medium, 3 large.", "legend_states": "Gold ring: you are here.  White ring: you can pick it.  Dim: later.",
-            "legend_title": "Key", "boss_title": "Face the boss", "boss_line": "Nothing else is left. Pick the boss when you are ready.", "spend_line": "Spend your gold at the merchant (the square with the coin).",
+            "legend_title": "Key", "title_with_act": "%s  -  %s", "line_act": "Pick the next room. Every route ends at the mini-boss.", "mini_boss_title": "Face the mini-boss", "mini_boss_line": "Nothing else is left. Pick the mini-boss when you are ready. It ends the act.", "boss_title": "Face the boss", "boss_line": "Nothing else is left. Pick the boss when you are ready.", "spend_line": "Spend your gold at the merchant (the square with the coin).",
             "chest_names": { "small": "Small", "medium": "Medium", "large": "Large" },
             "chest_notes": { "small": " Small chest: mostly tier 1.", "medium": " Medium chest: mostly tier 2.", "large": " Large chest: the best odds of high-tier relics." },
             "hover": {

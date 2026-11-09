@@ -138,6 +138,29 @@ static func read_state() -> RunState:
 	return state
 
 
+## What the Continue button says it resumes (MAP3 ux): {character, character_name, act, acts_total, room, room_total}, or {} when there is no usable save.
+## `room` is the whole-run number of the room you will be in next: at the map screen the rooms picked so far plus one, and at a room start that room.
+static func summary() -> Dictionary:
+	if not persistence_enabled():
+		return {}
+	var state: RunState = read_state()
+	return summary_of(state) if state != null else {}
+
+
+## `summary()` for a given state (pure, so it is testable without a file).
+static func summary_of(state: RunState) -> Dictionary:
+	if state == null:
+		return {}
+	var per_act: int = state.rooms_per_act()
+	var room: int = state.run_room_number()
+	if state.pending == RunState.PENDING_NODE:
+		room = (state.act - 1) * per_act + state.path.size() + 1  # at the map screen: the next room is the one still to pick
+	return {
+		"character": state.character_id, "character_name": CharacterDatabase.display_name(state.character_id),
+		"act": state.act, "acts_total": state.acts_total, "room": room, "room_total": state.run_room_total(),
+	}
+
+
 ## Makes the saved run the live one (`RunSession.current`). True on success; false (nothing changed) when there is no usable save.
 static func load_save() -> bool:
 	if not persistence_enabled():

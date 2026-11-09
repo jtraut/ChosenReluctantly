@@ -62,7 +62,7 @@
         "extra": ["--map", "--acts=1", "--run-seed=54", "--run-room=7", "--run-clear-after=1", "--run-auto-choose=skip"]
     },
     "map_room9": {
-        "description": "MAP1-B: room 9. Seed 54, room 9 cleared and its card offer rejected; the only way on is the boss.",
+        "description": "MAP1-B: room 9. Seed 54, room 9 (an elite) cleared and its relic offer skipped; the only way on is the boss.",
         "class": "rogue", "scenario": "", "after": "3.0",
         "extra": ["--map", "--acts=1", "--run-seed=54", "--run-room=9", "--run-clear-after=1", "--run-auto-choose=skip"]
     },
@@ -95,6 +95,21 @@
         "description": "MAP3-B: the act 1 mini-boss (room 10 of a three-act run): a golem with the mini-boss tier plus chasers, then shooters and more chasers. Run mode, seed 1.",
         "class": "rogue", "scenario": "", "after": "4.0",
         "extra": ["--run-seed=1", "--run-room=10"]
+    },
+    "act_transition": {
+        "description": "MAP3 ux: the act transition screen. The act 1 mini-boss (room 10) is cleared at 1 s, the relic and the card offers are skipped, and the Act 2 screen opens over the new map. Run mode, seed 1.",
+        "class": "rogue", "scenario": "", "after": "6.0",
+        "extra": ["--run-seed=1", "--run-room=10", "--run-clear-after=1", "--run-auto-choose=relic_skip+skip"]
+    },
+    "map_mini_boss": {
+        "description": "MAP3 ux: act 1's map with the mini-boss as the only way on (seed 1, room 9 (an elite) cleared and its relic offer skipped). Three acts: the HUD shows Act 1 of 3 and Room 9 of 30 behind the screen.",
+        "class": "rogue", "scenario": "", "after": "4.0",
+        "extra": ["--run-seed=1", "--run-room=9", "--run-clear-after=1", "--run-auto-choose=relic_skip+skip"]
+    },
+    "map_act2": {
+        "description": "MAP3 ux: act 2's map after room 14 (seed 1): the column numbers read 11 to 20, the title says Act 2 of 3, the hover says Room 15 and the line says every route ends at the mini-boss. Run mode.",
+        "class": "rogue", "scenario": "", "after": "4.0",
+        "extra": ["--run-seed=1", "--run-room=14", "--run-clear-after=1", "--run-auto-choose=skip+relic_skip"]
     },
     "final_boss_act3": {
         "description": "MAP3-B: the final boss (room 30 of a three-act run), with act 3's enemy scaling. Run mode, seed 1.",

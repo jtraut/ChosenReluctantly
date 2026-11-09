@@ -58,6 +58,9 @@ func _ready() -> void:
 	_controller = get_parent().get_node_or_null("RunController") as RunController
 	if _controller != null:
 		_controller.choice_requested.connect(_on_choice_requested)
+	var act_screen: ActScreen = _act_screen()
+	if act_screen != null:
+		act_screen.closed.connect(_on_act_screen_closed)
 
 
 func _exit_tree() -> void:
@@ -112,6 +115,7 @@ func _data_from_model(model: Dictionary) -> Dictionary:
 	return {
 		"map": model.get("map", {}), "path": model.get("path", []), "reachable": model.get("reachable", []), "nodes": model.get("nodes", []),
 		"gold": int(model.get("gold", 0)), "gold_earned": earned,
+		"act": int(model.get("act", 1)), "acts_total": int(model.get("acts_total", 1)), "run_room_total": int(model.get("run_room_total", 0)),
 	}
 
 
@@ -123,6 +127,7 @@ func data_from_controller() -> Dictionary:
 	return {
 		"map": _controller.map(), "path": _controller.taken_path(), "reachable": _controller.reachable_nodes(), "nodes": infos,
 		"gold": _controller.gold(), "gold_earned": 0,
+		"act": _controller.current_act(), "acts_total": _controller.act_count(), "run_room_total": _controller.run_room_total(),
 	}
 
 
@@ -138,8 +143,8 @@ func show_pick(screen_data: Dictionary) -> void:
 		return
 	_data = screen_data
 	_pick_pending = true
-	if GamePause.is_paused() and _mode != Mode.VIEW:
-		_hide_now()
+	if (GamePause.is_paused() or _act_screen_open()) and _mode != Mode.VIEW:
+		_hide_now()  # the act screen (MAP3 ux) opens in the same call as the next act's pick: the pick waits for its Continue
 		return
 	if _mode == Mode.VIEW:
 		return  # the view is up over the pause screen; the pick appears on resume
@@ -211,6 +216,22 @@ func _on_pause_changed(is_paused: bool) -> void:
 		_hide_now()
 		view_closed.emit()
 	if _pick_pending:
+		_resume_pick()
+
+
+func _act_screen() -> ActScreen:
+	var host: Node = get_parent()
+	return host.get_node_or_null("ActScreen") as ActScreen if host != null else null
+
+
+func _act_screen_open() -> bool:
+	var act_screen: ActScreen = _act_screen()
+	return act_screen != null and act_screen.is_open()
+
+
+## The act screen's Continue: the held pick opens now.
+func _on_act_screen_closed() -> void:
+	if _pick_pending and not GamePause.is_paused():
 		_resume_pick()
 
 
@@ -309,12 +330,21 @@ func _fill() -> void:
 	var texts: Dictionary = _texts()
 	var view: bool = _mode == Mode.VIEW
 	title_label.text = String(texts.get("view_title" if view else "title", ""))
+	var act: int = int(_data.get("act", 1))
+	var acts_total: int = int(_data.get("acts_total", 1))
 	var line: String = String(texts.get("view_line", "")) if view else (String(texts.get("start_hint", "")) if (_data.get("path", []) as Array).is_empty() else String(texts.get("line", "")))
-	if not view and MapLayout.boss_only(_info_list()):
-		title_label.text = String(texts.get("boss_title", title_label.text))  # one way on: say what it is, not "choose your path"
-		line = String(texts.get("boss_line", line))
+	if not view and acts_total > 1 and act < acts_total and not (_data.get("path", []) as Array).is_empty():
+		line = String(texts.get("line_act", line))  # the routes of acts 1 and 2 end at the mini-boss, not the boss
+	var last_type: String = MapLayout.only_way_on(_info_list()) if not view else ""
+	if last_type == "boss" or last_type == "mini_boss":
+		var prefix: String = "boss" if last_type == "boss" else "mini_boss"
+		title_label.text = String(texts.get(prefix + "_title", title_label.text))  # one way on: say what it is, not "choose your path"
+		line = String(texts.get(prefix + "_line", line))
 	elif int(_data.get("gold", 0)) > 0 and MapLayout.merchant_ahead(_info_list(), (_data.get("map", {}) as Dictionary).get("edges", [])) and String(texts.get("spend_line", "")) != "":
 		line += "  " + String(texts["spend_line"])  # gold has a use: say where
+	var act_text: String = ActText.act_label(act, acts_total)
+	if act_text != "":
+		title_label.text = String(texts.get("title_with_act", "%s  -  %s")) % [title_label.text, act_text]
 	line_label.text = line
 	gold_badge.set_total(int(_data.get("gold", 0)))
 	var earned: int = int(_data.get("gold_earned", 0))
@@ -550,7 +580,8 @@ func hover_text(node_id: int) -> String:
 	if info.is_empty():
 		return ""
 	var texts: Dictionary = _texts()
-	var text: String = String(texts.get("room_format", "%d %s")) % [int(info["room"]), String(info.get("hover", ""))]
+	var room_number: int = ActText.run_room(int(info["room"]), int(_data.get("act", 1)), int(_data.get("run_room_total", 0)), int(_data.get("acts_total", 1)))
+	var text: String = String(texts.get("room_format", "%d %s")) % [room_number, String(info.get("hover", ""))]
 	match MapLayout.node_state(info):
 		MapLayout.STATE_CURRENT:
 			text += "  " + String(texts.get("current_note", ""))

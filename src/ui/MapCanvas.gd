@@ -126,7 +126,7 @@ func _draw() -> void:
 	var room_color := Color.html(String(_cfg["room_color"]))
 	var cell: Vector2 = MapLayout.cell_size(_grid, _dims)
 	for room in range(1, _dims.x + 1):
-		var text: String = str(room)
+		var text: String = str(ActText.run_room(room, int(_data.get("act", 1)), int(_data.get("run_room_total", 0)), int(_data.get("acts_total", 1))))  # act 2 reads 11..20, as the HUD does
 		var text_size: Vector2 = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, room_px)
 		var x: float = (float(room) - 0.5) * cell.x - text_size.x * 0.5
 		draw_string(font, Vector2(x, float(room_px) + 2.0 * _unit), text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, room_px, room_color)

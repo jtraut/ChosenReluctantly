@@ -3,7 +3,7 @@ extends Node
 ## Needs a renderer (not --headless). Run:
 ##   godot --path . res://tools/UxCapture.tscn -- --size=1024x600 --class=rogue --mode=pips_recharge --out=screenshots/ux/a.png
 ## Modes: pips (full), pips_recharge (one spent, a pip coming back), pips_empty (all spent), stagger (a boss at its first
-## threshold, mid-stagger). The player is made immune and the spawner off, so the shot is only the state being checked.
+## threshold, mid-stagger), continue_pick (the class pick screen with a saved run). The player is made immune and the spawner off, so the shot is only the state being checked.
 
 const BOSS_PATH := "res://scenes/enemies/BossGuardian.tscn"
 const HIT_DAMAGE := 30.0  # stagger mode: a typical card hit
@@ -61,6 +61,26 @@ func _ready() -> void:
 			boss.health.current_health = boss.health.get_max_health() * thresholds[0] + HIT_DAMAGE * 0.25
 			boss.health.take_damage(HIT_DAMAGE, "physical")
 			await _wait(0.35)
+		"continue_pick":
+			# MAP3 ux: the class pick with a saved run (a three-act Wizard run at the map screen after room 14). The fixture goes to user://captures/,
+			# never the player's run_save.json. The screen is hosted by the capture (not a Main), so it only draws; Continue itself is tested in the suite.
+			RunSession.acts_override = 3
+			var saved: RunState = RunSession.begin_new_run(1, "wizard")
+			saved.jump_to_room(13)
+			saved.max_hp = 30.0
+			saved.hp = 22.0
+			RunNodes.open(saved)
+			RunSave.persist_override = true
+			RunSave.path = "user://captures/continue_save.json"
+			DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("user://captures"))
+			RunSave.write(saved)
+			var screen: ClassPickScreen = (load("res://scenes/ui/ClassPickScreen.tscn") as PackedScene).instantiate()
+			sub.add_child(screen)
+			screen.open()
+			screen.disarm()
+			await _wait(0.6)
+			RunSession.acts_override = 0
+			RunSave.reset()
 	await RenderingServer.frame_post_draw
 	var image := sub.get_texture().get_image()
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(out.get_base_dir()))

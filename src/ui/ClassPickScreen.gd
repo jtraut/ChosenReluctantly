@@ -21,6 +21,8 @@ extends CanvasLayer
 signal opened()
 ## The overlay closed because a pick was confirmed (and, for a different class, the run is restarting as it).
 signal confirmed(character_id: String)
+## MAP3 ux: Continue was pressed and the saved run is loading (the scene is being replaced by one built from it).
+signal continued(character_id: String)
 
 ## Launch arg (after `--`): open the screen even when `--class` fixed the class (captures).
 const ARG_SHOW := "--show-class-pick"
@@ -52,6 +54,10 @@ var _line_label: Label = null
 var _row: HBoxContainer = null
 var _start_label: Label = null
 var _keys_label: Label = null
+## MAP3 ux: the Continue entry, shown when a run save exists (RunSave.summary). It is one more stop in the arrow-key cycle, after the class cards,
+## and the one that starts highlighted: Enter resumes. A new run is a card away and replaces the save at its first save point.
+var _continue_button: Button = null
+var _continue_info: Dictionary = {}
 
 
 ## Test hook and tools: forget the override and the remembered run.
@@ -126,7 +132,9 @@ func open(preselect: String = "") -> void:
 		var main := get_parent() as Main
 		_controller = main.run_controller if main != null else null
 	_confirming = false
+	_continue_info = RunSave.summary() if _offers_continue() else {}
 	_rebuild_cards()
+	_refresh_continue()
 	visible = true
 	_hide_hud()
 	_paused_here = GamePause.pause()
@@ -135,8 +143,65 @@ func open(preselect: String = "") -> void:
 	_dim_until_armed(delay)
 	var wanted: String = preselect if preselect != "" else CharacterPick.preselected()
 	_last_focus = maxi(_index_of(wanted), 0)
+	if preselect == "" and has_continue():
+		_last_focus = _cards.size()  # a saved run: Continue is what Enter does
 	_focus(_last_focus)
 	opened.emit()
+
+
+## True when a saved run can be offered: this is the start of a run in a real game (the screen only opens then), and the save loads.
+func _offers_continue() -> bool:
+	return RunSave.has_save()
+
+
+## True while the Continue entry is on the screen.
+func has_continue() -> bool:
+	return _continue_button != null and _continue_button.visible
+
+
+## The Continue entry's two lines ("Continue your run" and what it resumes), "" when it is not shown (tests and captures).
+func continue_text() -> String:
+	return _continue_button.text if has_continue() else ""
+
+
+## What the saved run says about itself: "Rogue  -  Act 2 of 3  -  Room 14 of 30" (the act part is left out of a one-act save). Pure; unit-tested.
+static func continue_detail(info: Dictionary, cfg: Dictionary) -> String:
+	var parts: Array[String] = [String(info.get("character_name", ""))]
+	var act_text: String = ActText.act_label(int(info.get("act", 1)), int(info.get("acts_total", 1)))
+	if act_text != "":
+		parts.append(act_text)
+	parts.append(ActText.room_label(int(info.get("room", 1)), int(info.get("room_total", 1))))
+	return String(cfg.get("continue_separator", "  -  ")).join(PackedStringArray(parts))
+
+
+func _refresh_continue() -> void:
+	if _continue_button == null:
+		return
+	var cfg: Dictionary = UiConfig.class_pick()
+	_continue_button.visible = not _continue_info.is_empty()
+	if _continue_button.visible:
+		_continue_button.text = "%s%s%s" % [String(cfg.get("continue_label", "Continue")), char(10), continue_detail(_continue_info, cfg)]
+	_keys_label.text = String(cfg.get("continue_keys_hint", cfg["keys_hint"])) if _continue_button.visible else String(cfg["keys_hint"])
+
+
+## Resumes the saved run: loads it as the live run and replaces this scene with one built from it. Ignored before the arm delay or without a save.
+func continue_run() -> bool:
+	if not visible or _confirming or not options_armed() or not has_continue():
+		return false
+	var main := get_parent() as Main
+	if main == null or not RunSave.load_save():
+		return false
+	var loaded: RunState = RunSession.current
+	_confirmed_run = loaded  # the scene built from it must not ask again (an act's first map screen has an empty path)
+	CharacterPick.remember(loaded.character_id)
+	RunSession.selected_character = loaded.character_id
+	_confirming = true
+	for card in _cards:
+		card.disabled = true
+	_continue_button.disabled = true
+	continued.emit(loaded.character_id)
+	main.swap_to_fresh_scene()
+	return true
 
 
 func _hide_hud() -> void:
@@ -212,6 +277,9 @@ func panel_screen_rect() -> Rect2:
 func confirm(character_id: String = "") -> void:
 	if not visible or _confirming or not options_armed() or _controller == null:
 		return
+	if character_id == "" and _last_focus >= _cards.size() and has_continue():
+		continue_run()
+		return
 	var picked: String = character_id if character_id != "" else highlighted_id()
 	if picked == "":
 		return
@@ -245,24 +313,37 @@ func _index_of(character_id: String) -> int:
 	return -1
 
 
+## The stops of the highlight: the class cards, then Continue when it is shown.
+func _stops() -> int:
+	return _cards.size() + (1 if has_continue() else 0)
+
+
 func _focus(index: int) -> void:
-	if index < 0 or index >= _cards.size():
+	if index < 0 or index >= _stops():
 		return
 	_last_focus = index
-	_cards[index].grab_focus()
+	if index == _cards.size():
+		_continue_button.grab_focus()
+	else:
+		_cards[index].grab_focus()
 	_update_start_line(index)
 
 
 func _update_start_line(index: int) -> void:
+	var cfg: Dictionary = UiConfig.class_pick()
+	if index == _cards.size() and has_continue():
+		_start_label.text = String(cfg.get("continue_start", "Enter: continue"))
+		return
 	if index < 0 or index >= _cards.size():
 		return
-	_start_label.text = String(UiConfig.class_pick()["start_format"]) % String(_cards[index].entry["display_name"])
+	var format_key: String = "start_replaces_format" if has_continue() else "start_format"
+	_start_label.text = String(cfg.get(format_key, cfg["start_format"])) % String(_cards[index].entry["display_name"])
 
 
 func _step(delta: int) -> void:
-	if _cards.is_empty():
+	if _stops() == 0:
 		return
-	_focus(posmod(_last_focus + delta, _cards.size()))
+	_focus(posmod(_last_focus + delta, _stops()))
 
 
 ## Number keys and arrows move the highlight and are swallowed (nothing behind the screen may react); Space is swallowed
@@ -328,6 +409,14 @@ func _build() -> void:
 	_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	_column.add_child(_row)
+	_continue_button = Button.new()
+	_continue_button.name = "Continue"
+	_continue_button.visible = false
+	_continue_button.focus_mode = Control.FOCUS_ALL
+	_continue_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	_continue_button.pressed.connect(continue_run)
+	_continue_button.focus_entered.connect(_on_continue_focused)
+	_column.add_child(_continue_button)
 	_start_label = _make_label(HORIZONTAL_ALIGNMENT_CENTER)
 	_column.add_child(_start_label)
 	_keys_label = _make_label(HORIZONTAL_ALIGNMENT_CENTER)
@@ -374,8 +463,22 @@ func _apply_style() -> void:
 	_start_label.add_theme_font_size_override("font_size", roundi(float(cfg["name_font_size"]) * 0.8 * s))
 	_start_label.add_theme_color_override("font_color", Color.html(String(run_cfg["option_focus_color"])))
 	_keys_label.text = String(cfg["keys_hint"])
+	_style_continue(cfg, run_cfg, s)
 	_keys_label.add_theme_font_size_override("font_size", roundi(float(cfg["small_font_size"]) * s))
 	_keys_label.add_theme_color_override("font_color", text_color)
+
+
+func _style_continue(cfg: Dictionary, run_cfg: Dictionary, s: float) -> void:
+	_continue_button.add_theme_font_size_override("font_size", roundi(float(cfg["body_font_size"]) * 1.15 * s))
+	_continue_button.custom_minimum_size = Vector2(float(cfg["card_width"]) * 1.6 * s, 0.0)
+	for state: String in ["normal", "hover", "pressed", "focus", "disabled"]:
+		var box := StyleBoxFlat.new()
+		box.bg_color = Color.html(String(run_cfg["prompt_panel_color"])).lightened(0.06)
+		box.border_color = Color.html(String(run_cfg["option_focus_color"])) if state == "focus" else Color.html(String(run_cfg["prompt_panel_border_color"]))
+		box.set_border_width_all(maxi(roundi((5.0 if state == "focus" else 2.0) * s), 1))
+		box.set_corner_radius_all(roundi(6.0 * s))
+		box.set_content_margin_all(10.0 * s)
+		_continue_button.add_theme_stylebox_override(state, box)
 
 
 func _rebuild_cards() -> void:
@@ -405,6 +508,11 @@ func _rebuild_cards() -> void:
 	_fit()
 
 
+func _on_continue_focused() -> void:
+	_last_focus = _cards.size()
+	_update_start_line(_last_focus)
+
+
 func _on_card_focused(index: int) -> void:
 	_last_focus = index
 	_update_start_line(index)
@@ -414,11 +522,13 @@ func _on_resized() -> void:
 	if not is_node_ready():
 		return
 	_apply_style()
+	_refresh_continue()
 	if visible:
 		var keep: int = _last_focus
 		var was_confirming: bool = _confirming
 		_rebuild_cards()
 		_confirming = was_confirming
+		_continue_button.disabled = was_confirming
 		for card in _cards:
 			card.disabled = was_confirming
 		if not was_confirming:

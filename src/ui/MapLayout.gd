@@ -104,6 +104,17 @@ static func boss_only(infos: Array[Dictionary]) -> bool:
 	return reachable == 1 and boss
 
 
+## What the only way on is: "boss" or "mini_boss" when exactly one node can be picked and it is that, else "" (MAP3 ux: the act-end mini-boss reads as its own).
+static func only_way_on(infos: Array[Dictionary]) -> String:
+	var reachable: int = 0
+	var type_id: String = ""
+	for info: Dictionary in infos:
+		if bool(info.get("reachable", false)):
+			reachable += 1
+			type_id = String(info.get("type", ""))
+	return type_id if reachable == 1 and (type_id == "boss" or type_id == "mini_boss") else ""
+
+
 ## True when a merchant node can still be reached: from the node the player stands on, forward along `edges` ([from_id, to_id] pairs). A merchant in a
 ## room the player passed, or on a branch that no longer connects, does not count. Before the first pick (no current node) every unwalked merchant does.
 static func merchant_ahead(infos: Array[Dictionary], edges: Array) -> bool:

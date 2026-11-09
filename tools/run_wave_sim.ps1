@@ -66,9 +66,11 @@ if ($StartRoom -gt 0) { $extra += "--start-room=$StartRoom" }
 if ($Run) { $extra += "--run"; $extra += "--room-timeout=$RoomTimeout" }
 Push-Location $root
 try {
-    $out = & $godot --headless @fixedFps --path . res://tools/WaveSim.tscn -- @extra 2>&1 | Out-String
+    # BD3a: lines are printed as they arrive (a 12-run -Run takes 12 minutes or more, and the old Out-String buffered all of it, which looked like a hang).
+    $lines = New-Object System.Collections.Generic.List[string]
+    & $godot --headless @fixedFps --path . res://tools/WaveSim.tscn -- @extra 2>&1 | ForEach-Object { $text = "$_"; $lines.Add($text); Write-Host $text }
     $code = $LASTEXITCODE
-    Write-Host $out
+    $out = $lines -join "`n"
     $bad = ($out -split "`n") | Where-Object { $_ -match "ERROR|WARNING" }
     if ($bad) { Write-Host "Engine errors/warnings in output:"; $bad | ForEach-Object { Write-Host $_ }; exit 1 }
     exit $code

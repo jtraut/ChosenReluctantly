@@ -109,7 +109,7 @@ func test_fire_heavy_has_every_fire_card_and_physical_has_the_fewest_possible() 
 	var needed_fire: int = 0
 	for slot: String in spare:
 		needed_fire += maxi(0, 3 - int(spare[slot]))
-	assert_int(needed_fire).is_equal(1)  # BD3a: Bad Influence and Warm-Up gave the Rogue pool 4 Utility cards, so only the third Attack: AoE needs a Fire card
+	assert_int(needed_fire).is_equal(0)  # BD3a: Bad Influence and Warm-Up gave the Rogue pool 4 Utility cards, and Corner Cut and Knives a 4th and 5th non-Fire Attack: AoE, so no Fire card is needed any more
 
 
 func test_try_again_after_clear_keeps_the_preset_but_gets_a_new_seed() -> void:

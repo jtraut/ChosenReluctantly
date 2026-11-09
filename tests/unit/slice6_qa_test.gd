@@ -289,7 +289,9 @@ func test_projectile_lane_half_width_is_where_a_real_shot_stops_hitting() -> voi
 			var half_width: float = part["half_width"]
 			var along: float = float(part["start_offset"]) + 4.0
 			for case: Array in [[half_width - 0.05, true], [half_width + 0.1, false]]:
-				var enemy := _enemy_at(Vector3(float(case[0]), 0.0, -along))
+				# A fanned shot (yaw_degrees, BD3a) flies along a turned lane: turn the offsets with it.
+				var turned: Vector3 = Vector3(float(case[0]), 0.0, -along).rotated(Vector3.UP, deg_to_rad(float(params.get("yaw_degrees", 0.0))))
+				var enemy := _enemy_at(turned)
 				await _frames(2)
 				var before := enemy.health.current_health
 				EffectTemplates.execute("projectile", params, EffectContext.new(player, main, "player"))

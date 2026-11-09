@@ -1,10 +1,10 @@
 {
     "id": "rogue_knife_drawer",
-    "name": "The Knife Drawer",
+    "name": "Knives",
     "slot_type": "attack_aoe",
     "pool": "rogue",
     "cooldown_modifier": 0.3,
-    "flavor_text": "Everyone has one. Nobody admits what it's for.",
+    "flavor_text": "From the drawer everyone has and nobody admits to.",
     "effects": [
         {
             "template": "projectile",

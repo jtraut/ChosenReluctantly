@@ -503,6 +503,67 @@ Each slice should fit one sitting and gets the full loop (gameplay-dev -> ux-des
 
 **Order (director, 2026-11-02: D24 = A, D28 = A):** BD0 -> H3 (dodge return) -> MAP0 -> PL3 -> **BD1 -> BD2** -> first map build -> 3d -> BD3. BD2 sits before the map build so map nodes can offer relics from day one.
 
+**Split 2026-11-09 (director feedback, below):** BD3 becomes **BD3a, physical Rogue** (run next after MAP3) and **BD3b, Wizard depth** (the rest of BD3, where BD3 was). See §9a.
+
+## 9a. BD3a: physical Rogue builds (director feedback, 2026-11-09) [PROPOSED details]
+
+**The director's report** (a three-act run as a physical/Bleed Rogue, 2026-11-09): combat felt good, but there are far too few physical and Bleed cards to build around. About half his relics were pointless because they're Fire/Burn. He was "constantly rejecting (and pruning) fire/burn options instead of choosing new things", and he felt "trapped into doing a fire/burn focus". He wants this fixed as a priority, so playtests show real build variety.
+
+**What the data shows (2026-11-09):**
+- **Cards:** only one card in the game applies Bleed (`rogue_bleed_slash`).
+- **Card offers:** offers draw evenly across a Fire Rogue's pools: Rogue 12, Fire 11, Neutral 7. So about **37% of card offers are Fire** (11 of 30), however many physical cards he has picked.
+- **Rogue slot gaps:** the Rogue pool has 1 Attack: AoE card, 1 Utility card and 1 Recovery card.
+- **Relics:** 8 relics can come from an elite or a relic room for a Fire Rogue. **5 of the 8 need Burn:** Pyre Insurance, Smoldering Grudge, Lingering Embers, Heavy Sigh, and Spite Knuckles (the Rogue's own relic sets targets Burning). One is Bleed (Severance Package), one reads either status (Second Wind), and one is generic (ASAP Notice).
+- **Basic attacks:** the element's 20% Burn chance on light and heavy attacks keeps Burn relics firing a little in any build. That's why they look relevant while doing nothing for the plan.
+
+**Fix: pull R-C Bleed Out and R-D Grudge Brawler (§5) forward from BD3, and add enough content that Fire isn't the default.**
+
+**Engine (sitting A), from §3.4 and the BD3 row of §9:**
+- stacking statuses (`stacking.max_stacks`, default 1, so nothing changes until data or a stat says so);
+- `status_max_stacks.<id>` read through `StatModifiers`;
+- damage-over-time ticks multiplied by stacks;
+- `detonate_status` (deal the remaining ticks x N at once and remove the status);
+- `status_tick_rate.<id>` (Bad Influence);
+- stack counts shown on enemies (ux).
+- **D25 = A holds:** Bleed and Burn still don't stack by default. Stacking comes only from a keystone card or a relic, as below.
+
+**Cards: 8 new Rogue cards, all physical, filling the Rogue's thin slots.** The Rogue pool goes 12 -> 20, and a Fire Rogue's Fire share of card offers drops from about 37% to about 29% (11 of 38). Numbers are starting points; `CardDamageRule` is the gate on unconditional damage, as in BD1.
+
+| Card | Slot | Sketch | Archetype | From |
+|---|---|---|---|---|
+| `rogue_open_a_vein` **Keystone, Payoff** | Attack: Single | Cone 6 physical, cooldown +0.1. Detonates Bleed: its remaining damage x2 at once. | R-C | §5 |
+| `rogue_paper_cuts` | Attack: Single | 4 hits of 1.5, cooldown +0.3; each hit applies Bleed (adds a stack when stacking is on). | R-C | §5 |
+| `rogue_bad_influence` **Keystone, Primer** | Utility | For 6 s, your Bleed stacks to 5 and ticks 50% faster. **Changed from §5** (it only sped up ticks): D25 = A lets only keystones and relics make Bleed stack, so the archetype needs a keystone that does. | R-C | §5, changed |
+| `rogue_warm_up` **Keystone** | Utility | For 6 s, light attacks 30% faster and heavy cooldown -30%. | R-D | §5 |
+| `rogue_cut_corners` **NEW** | Attack: AoE | Spin r2.5 around you, physical, applies Bleed to everything hit. | R-C | new, 2026-11-09 |
+| `rogue_knife_drawer` **NEW** | Attack: AoE | Throw 5 knives in a fan, each a small physical hit that applies Bleed. The ranged option for a Bleed deck. | R-C | new, 2026-11-09 |
+| `rogue_excuse_me` **NEW** | Movement | Dash 4 m with pass-through; every enemy passed through starts Bleeding. | R-C / R-B | new, 2026-11-09 |
+| `rogue_blood_money` **NEW** | Recovery | A heal plus a few seconds of Leech, so a physical deck has a Rogue Recovery card besides Nap Time. | any | new, 2026-11-09 |
+
+Names are placeholders; story is dormant, so the names and flavour text follow the existing tone. Every new card uses the existing templates (cone, aoe, projectile, dash, heal, apply_status, buff). Only `detonate_status` and the stacking stats are new code.
+
+**Relics: 6 new non-Fire relics plus one retheme.** With these, Burn needs 4 of the 14 elite and relic-room relics a Fire Rogue can see (29%, down from 5 of 8, 62%).
+
+| Relic | Pool, tier | Rule | From |
+|---|---|---|---|
+| Serrated Excuse | rogue, 2 | Your Bleed stacks to 5. | §5 |
+| Salt in the Wound **NEW** | rogue, 1 | Your cards deal 25% more damage to Bleeding enemies. Smoldering Grudge's Bleed twin, which §5 said would come later. | §5 "twin" |
+| Per My Last Email | rogue, 2 | Casting from Attack: Single while its next card is a Primer applies Bleed. | §4.8 |
+| Chasing Paper | rogue, 1 | A Dash card that passes through an enemy gives +30% move speed for 2 s. | §4.8 |
+| Muscle Memory | neutral, 1 | Each light hit takes 0.15 s off the heavy attack's cooldown. | §4.5 L3 |
+| Overtime (Unpaid) | neutral, 2 | Light attacks 25% faster; card cooldowns 10% longer. | §4.5 L4 |
+| **Spite Knuckles (retheme)** | rogue, 1 | Every 4th light hit **sets the target Bleeding** (was: Burning). It's the Rogue's own relic and the Grudge Brawler's, so it shouldn't push Fire. | shipped BD2, changed |
+
+Chained Anchor (a tether) stays out because it needs new code.
+
+**Debug decks:** `rogue-bleed-out` and `rogue-grudge-brawler`, from the §5 lists with the new cards swapped in. A legal deck still needs 3 unique cards per slot, using only Rogue, Fire and Neutral cards. The Bleed Out deck should need no more than 2 Fire cards, against 1 in today's §5 list.
+
+**Not in BD3a:** the Wizard's non-Fire archetypes (W-B Thesis, W-D Ward Battlemage), `scale`, card triggers, the extra conditions, Exit Strategy and the other BD3 relics. They stay in **BD3b**. The Wizard has the same "trapped in Fire" problem, so it's a candidate to move up next.
+
+**Card offers lean toward your build (D43, director's call).** Content alone only takes the Fire share from about 37% to about 29%, because offers draw evenly across pools. The real lever is how offers are weighted, which is GDD §9 design and needs the director. If he picks B or C, it's built in BD3a sitting B.
+
+**MAP3b note:** tier 3 and boss-tier relics, and the rare and legendary cards, must cover Bleed and basic attacks as well as Burn. Fire mustn't be the only route to the strong rewards.
+
 ---
 
 ## 10. Sources

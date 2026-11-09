@@ -850,7 +850,7 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
       - **Spite Knuckles counts per room** (DECISIONS "BD2-A follow-ups"). A visible counter comes first; carrying the count across rooms waits for the director's play.
     - **Not verified by the playtester:** the primed marker and USED flash at 1024x600, the dim condition line on a really unlit slot, the chip flash over time, Cancel keeping your relics (qa tested it), and Heavy Sigh or Spite Knuckles firing in play. These go to the director's "what to try".
 
-- [ ] **BD3, depth 2 (after 3d unless the director moves it).** Stacking statuses (`stacking`, `per_stack`, `status_max_stacks.<id>`), `scale`, `detonate_status`, triggers on card buffs, conditions `self_stacks_at_least`/`deck_count_at_least`/`hp_below`; archetypes R-C Bleed Out, R-D Grudge Brawler, W-B Thesis, W-D Ward Battlemage (about 9 NEW cards, incl. a 4th Rogue Utility card); the other 8 relics plus Exit Strategy (slipped from BD2: a line of fire along the dash path needs new zone placement; DECISIONS "BD2-B"); stack counts on enemies. The sim checks become gating after tuning. Brief to be written at BD2's close.
+- [ ] **BD3, depth 2: split on 2026-11-09 (director feedback, BUILD_DEPTH §9a).** The Rogue physical half (stacking, `detonate_status`, R-C Bleed Out, R-D Grudge Brawler, the Bleed and basic-attack relics) is now **BD3a**, which runs after MAP3; its brief is under MAP3b's entry. Everything else below is **BD3b**, still after 3d. BD3's original text is kept here for reference: Stacking statuses (`stacking`, `per_stack`, `status_max_stacks.<id>`), `scale`, `detonate_status`, triggers on card buffs, conditions `self_stacks_at_least`/`deck_count_at_least`/`hp_below`; archetypes R-C Bleed Out, R-D Grudge Brawler, W-B Thesis, W-D Ward Battlemage (about 9 NEW cards, incl. a 4th Rogue Utility card); the other 8 relics plus Exit Strategy (slipped from BD2: a line of fire along the dash path needs new zone placement; DECISIONS "BD2-B"); stack counts on enemies. The sim checks become gating after tuning. Brief to be written at BD2's close.
 
 - [ ] **3d, loadouts (after BD1, BD2 and MAP1-MAP4, in the order above; D33 = B)**
   - **Goal:** from the second run on, you can build a starting deck, save it as a loadout and start runs with it. GDD §9 ("Starting decks and loadouts [DECIDED]", "Loadouts [DIRECTOR DECISION, 2026-11-02]"), §8 (passives linked to loadouts, free respec), §4 (deck rules).
@@ -1187,7 +1187,50 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
       - with `-Run -Seed 1 -Runs 12 -Route first`, both classes win at least 8/12 three-act runs, and the bot's time per act stays within about ±30% of act 1's.
       - **Run length:** a human 30-45 min (GDD §9) is checked by the playtester and the director, not the bot. Bot time isn't human time (MAP1 triage). The bot's 3-act median is reported as information.
       - Relic counts are reported but not gated until MAP3b.
-- [ ] **MAP3b, rarity and boss relics (after MAP3, before MAP4). Full loop. Tag `playtest-YYYY-MM-DD-MAP3b`.** Plan: MAP.md §4.5, BUILD_DEPTH §4.
+### Run order from 2026-11-09 (director: non-Fire build variety is a priority)
+MAP3 (finish: sitting B hand-back -> ux -> qa -> playtest -> docs -> close) -> **BD3a, physical Rogue** -> MAP3b -> MAP4 -> 3d -> BD3b (Wizard depth). Placement and scope are game-lead calls (DECISIONS "BD3a placement and scope"). The director can move BD3a ahead of MAP3's close, or bring BD3b up straight after it.
+
+- [ ] **BD3a, physical Rogue builds (after MAP3, before MAP3b). Full loop. Tag `playtest-YYYY-MM-DD-BD3a`.** Plan: BUILD_DEPTH §9a (the full card and relic list), §3.4 (stacking), §5 R-C and R-D. Director feedback 2026-11-09: too few physical and Bleed cards, about half his relics were Fire/Burn and useless to his build, and he kept rejecting and pruning Fire offers.
+  - **Goal:** a Fire Rogue can build a physical/Bleed deck, or a light-and-heavy deck, from what the run offers. Fire stops being the default.
+  - **gameplay-dev, sitting A (engine plus 4 cards):**
+    1. Stacking statuses: `stacking.max_stacks` on a status (default 1); `status_max_stacks.<id>` through `StatModifiers`; damage-over-time ticks x stacks; reapplying adds a stack up to the max and refreshes the duration. **D25 = A:** Burn and Bleed data stay at max 1, so with no keystone or relic nothing changes.
+    2. `detonate_status`, a card effect: deal the target's remaining ticks of a status x `multiplier` at once (respecting stacks and mitigation: Bleed through armor, Burn through resistance), then remove it. Fires `status_ended` with a new reason, `detonated`, so Pyre Insurance and Severance Package behave sensibly. Document which one you chose and why.
+    3. `status_tick_rate.<id>` stat (the tick interval is divided by it, base 1.0).
+    4. Check that a light attack speed stat and a heavy cooldown stat exist (`attack_interval.light` or whatever AttackController reads); add them if not.
+    5. Cards: `rogue_open_a_vein`, `rogue_paper_cuts`, `rogue_bad_influence`, `rogue_warm_up` (BUILD_DEPTH §9a). Each new Attack card passes `CardDamageRule` on unconditional damage.
+    6. Tests for every engine piece, including "Burn and Bleed don't stack without a source".
+    - At the end of sitting A, main runs, and the arena and bot-sim hashes are unchanged or rebaselined with the reason logged (new pool cards fill sim slots, as at BD1-B).
+  - **gameplay-dev, sitting B (content and measurement):**
+    1. Cards: `rogue_cut_corners`, `rogue_knife_drawer`, `rogue_excuse_me`, `rogue_blood_money`.
+    2. Relics: Serrated Excuse, Salt in the Wound, Per My Last Email, Chasing Paper, Muscle Memory, Overtime (Unpaid), with tiers as in §9a and sources elite, relic room and merchant.
+    3. **Spite Knuckles retheme:** Burn -> Bleed (old: every 4th light hit sets the target Burning; new: Bleeding). Record old and new in the hand-back for the CHANGELOG.
+    4. Debug decks `rogue-bleed-out` and `rogue-grudge-brawler`.
+    5. Bot sim: the plan-aware bot picks Bleed and basic-attack relics for those plans.
+    6. **Offer report:** the share of Fire cards in a Fire Rogue's card offers and the share of Burn-dependent relics in its relic offers, before and after (a tools script or a sim line; 1000 seeds).
+    7. If the director answers D43 with B or C, build it here, as data knobs in `run.json` `rewards`.
+  - **ux (after sitting A exposes the data):**
+    - stack counts on enemies ("Bleed x3");
+    - the detonate hit reads at a glance (a burst plus a larger damage number);
+    - tag chips and the condition line for the new cards;
+    - hover text for the new relics;
+    - the MAP3 carry-over: the shop overflows 4 px at 1280x720 when poor.
+  - **qa:**
+    - unit tests for stacking, detonate and tick rate;
+    - D25 regression (no default stacking);
+    - schema checks for the new cards and relics, and both debug decks legal;
+    - `CardDamageRule` passes on every new card;
+    - the no-card gate holds;
+    - parity, fingerprint and offer-share numbers checked against acceptance;
+    - the reload soak if Main or the autoloads change.
+  - **playtester:** play `rogue-bleed-out` and `rogue-grudge-brawler`, then a normal Fire Rogue run that tries to go physical from the starting deck. Questions: does the run offer enough to build it, and do the stacks and the detonate read?
+  - **Acceptance:**
+    - `rogue-bleed-out` and `rogue-grudge-brawler` boss times are within 70-130% of the standard Rogue deck (BUILD_DEPTH §2 parity).
+    - Kindling vs Bleed Out fingerprint distance is at least 0.6, and their top damage sources differ.
+    - A Fire Rogue's elite and relic-room relics are no more than about 30% Burn-dependent (from 62%).
+    - The Fire share of a Fire Rogue's card offers is reported (target about 29% with A; lower with D43 B or C).
+    - No-card gate holds. MAP3's run-sim floor (8/12 three-act wins, first route) holds for the Rogue.
+    - Main runs. Hashes are unchanged or rebaselined with a logged reason.
+- [ ] **MAP3b, rarity and boss relics (after BD3a, before MAP4). Full loop. Tag `playtest-YYYY-MM-DD-MAP3b`.** Plan: MAP.md §4.5, BUILD_DEPTH §4. **Added 2026-11-09:** the tier 3 relics, boss-tier relics and rare and legendary cards must cover Bleed and basic attacks as well as Burn (BUILD_DEPTH §9a).
   - **First, game-lead, docs only:**
     - a BUILD_DEPTH design pass: about 6 boss-tier relics per class, tier 3 relics, and the rare and legendary card list per pool;
     - decide whether any new effect code is needed;

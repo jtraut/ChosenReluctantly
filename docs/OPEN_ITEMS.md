@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-07 (MAP3 brief written and split into MAP3 + MAP3b; latest tag `playtest-2026-11-06-MAP2`)
-**Status: no decisions waiting (D41 = B and D42 = A recorded 2026-11-06, built in MAP3); 6 things to look at (51 new, 50, 49, 48, 47, 35), plus the round 2 vision check, which is now due. Next: MAP3 (three acts, mini-bosses, save and resume) -> MAP3b (rare/legendary cards, tier 3 and boss relics) -> MAP4 (events, curse cards, sacrifices, rest dig; probably two sittings) -> 3d (loadouts, starter relic).**
+Last updated: 2026-11-09 (your physical Rogue feedback: new slice BD3a planned, D43 added; latest tag `playtest-2026-11-06-MAP2`)
+**Status: 1 decision waiting (D43, new); 6 things to look at (51, 50, 49, 48, 47, 35), plus the round 2 vision check. Next: finish MAP3 (ux, qa, playtest, docs) -> **BD3a, physical Rogue** (Bleed stacking, a detonate keystone, 8 physical Rogue cards, 6 non-Fire relics) -> MAP3b -> MAP4 -> 3d -> BD3b (the Wizard's non-Fire builds).**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -17,7 +17,15 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## Needs your decision
 
-Nothing right now. Next new number: D43.
+Next new number: D44.
+
+D43. **Should card offers lean toward the build you're making?** (Your 2026-11-09 run: "constantly rejecting (and pruning) fire/burn options".)
+   - Today an offer draws evenly from your class, element and Neutral pools. For a Fire Rogue that's about 37% Fire cards, whatever you've picked so far.
+   - BD3a adds 8 physical Rogue cards, which only takes that to about 29%. More content alone won't stop the Fire offers.
+   - **A (default): no change.** Content only, about 29% Fire.
+   - **B: offers lean toward your deck.** An unpicked card that shares a tag with cards you already own (Bleed, Burn, Melee, Dash and so on) is twice as likely to be offered. Once you've gone physical, Fire offers thin out. Early offers stay mixed. The risk is that runs settle into a groove sooner.
+   - **C: offers lean toward your class.** Class cards are offered 1.5x as often as element cards, for everyone. That's about 23% Fire, but it doesn't follow your plan.
+   - My recommendation is **B**: it answers your complaint directly, and its weight is one number in data. B or C would be built in BD3a. Without an answer I build A.
 
 ## Needs your eyes
 

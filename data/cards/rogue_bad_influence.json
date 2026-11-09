@@ -4,7 +4,6 @@
     "slot_type": "utility",
     "pool": "rogue",
     "cooldown_modifier": 0.0,
-    "requires": { "status_sources": ["bleed"] },
     "keywords": ["Keystone", "Primer"],
     "flavor_text": "Teaches your cuts to multiply and hurry up. HR has been notified.",
     "effects": [

@@ -13,6 +13,11 @@ extends RefCounted
 ##   slot_types: [ids]       the deck holds at least one card of each slot type
 ##   pools: [ids]            the character owns each pool
 ##   status_sources: [ids]   something in the deck, or an owned element pool, applies each status
+##
+## The status lean (D43 = B, BD3a): a card you do not own yet that applies status S weighs x (1 + status_lean x n_S), capped at
+## status_lean_max, where n_S is the number of cards in the deck that apply S (counted per card, like `requires.status_sources`
+## reads effects, but the element pool's own status is not counted: only cards). A card that applies several statuses takes the best
+## of them. Cards with no status are untouched. `status_lean` missing or 0 turns the lean off, so a fixture or an old config keeps the old offers.
 
 
 static func offer_seed(run_seed: int, room_index: int) -> int:
@@ -32,6 +37,14 @@ static func generate(run_seed: int, room_index: int, deck: Array, cards: Array, 
 	var candidates: Array[String] = candidate_ids(cards, pools, deck_cards, pool_defs)
 	var unowned_weight: float = float(rewards.get("unowned_weight", 1.0))
 	var owned_weight: float = float(rewards.get("owned_weight", 1.0))
+	var lean: float = maxf(float(rewards.get("status_lean", 0.0)), 0.0)
+	var lean_max: float = maxf(float(rewards.get("status_lean_max", DEFAULT_LEAN_MAX)), 1.0)
+	var owned_by_status: Dictionary = status_counts(deck_cards) if lean > 0.0 else {}
+	var lean_factor: Dictionary = {}
+	if lean > 0.0:
+		for id: String in candidates:
+			if not deck.has(id):
+				lean_factor[id] = lean_for(by_id[id], owned_by_status, lean, lean_max)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = offer_seed(run_seed, room_index)
 	var out: Array[String] = []
@@ -40,7 +53,7 @@ static func generate(run_seed: int, room_index: int, deck: Array, cards: Array, 
 		var weights: Array[float] = []
 		var total: float = 0.0
 		for id: String in candidates:
-			var w: float = maxf(owned_weight if deck.has(id) else unowned_weight, 0.0)
+			var w: float = maxf(owned_weight if deck.has(id) else unowned_weight, 0.0) * float(lean_factor.get(id, 1.0))
 			weights.append(w)
 			total += w
 		if total <= 0.0:
@@ -55,6 +68,30 @@ static func generate(run_seed: int, room_index: int, deck: Array, cards: Array, 
 		out.append(candidates[picked])
 		candidates.remove_at(picked)
 	return out
+
+
+const DEFAULT_LEAN_MAX := 3.0
+
+
+## Status id -> how many of the deck's cards apply it (a card counts once per status, however many of its effects apply it).
+## A detonate is not a source (CardSummary.status_ids skips it).
+static func status_counts(deck_cards: Array[Dictionary]) -> Dictionary:
+	var counts: Dictionary = {}
+	for card: Dictionary in deck_cards:
+		var seen: Dictionary = {}
+		for status_id: String in CardSummary.status_ids(card):
+			if not seen.has(status_id):
+				seen[status_id] = true
+				counts[status_id] = int(counts.get(status_id, 0)) + 1
+	return counts
+
+
+## The weight factor of one unowned candidate: the best of 1 + lean x n_S over the statuses it applies, capped at lean_max (1.0 when it applies none).
+static func lean_for(card: Dictionary, counts: Dictionary, lean: float, lean_max: float) -> float:
+	var best: float = 1.0
+	for status_id: String in CardSummary.status_ids(card):
+		best = maxf(best, minf(1.0 + lean * float(counts.get(status_id, 0)), lean_max))
+	return best
 
 
 ## Sorted ids of the cards in the owned pools whose `requires` the deck and character meet.

@@ -11,6 +11,8 @@
         "offer_size": 3,
         "unowned_weight": 4.0,
         "owned_weight": 1.0,
+        "status_lean": 0.25,
+        "status_lean_max": 3.0,
         "reward_room_types": ["combat", "elite"]
     },
     "relics": {

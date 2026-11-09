@@ -385,6 +385,7 @@ func test_the_win_screen_of_a_three_act_run_counts_over_the_whole_run() -> void:
 
 
 func test_clearing_the_mini_boss_opens_the_act_screen_over_a_held_map() -> void:
+	(RunConfig.get_config()["acts"] as Dictionary)["start_heal"] = 0.0  # this test reads the MAP3 summary line (HP carried over unchanged); the D45 heal has its own tests
 	RunSession.map_override = 1
 	var state: RunState = RunSession.begin_new_run(31)
 	state.jump_to_room(9)  # the act 1 mini-boss

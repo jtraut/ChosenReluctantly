@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-09 (your physical Rogue feedback: new slice BD3a planned, D43 added; latest tag `playtest-2026-11-06-MAP2`)
-**Status: 1 decision waiting (D43, new); 6 things to look at (51, 50, 49, 48, 47, 35), plus the round 2 vision check. Next: finish MAP3 (ux, qa, playtest, docs) -> **BD3a, physical Rogue** (Bleed stacking, a detonate keystone, 8 physical Rogue cards, 6 non-Fire relics) -> MAP3b -> MAP4 -> 3d -> BD3b (the Wizard's non-Fire builds).**
+Last updated: 2026-11-09 (D43 = B and dual-class answer recorded; BD3a planned; latest tag `playtest-2026-11-06-MAP2`)
+**Status: no decisions waiting (D43 = B recorded 2026-11-09, built in BD3a); 6 things to look at (51, 50, 49, 48, 47, 35), plus the round 2 vision check. Next: finish MAP3 (ux, qa, playtest, docs) -> **BD3a, physical Rogue** (Bleed stacking, a detonate keystone, 8 physical Rogue cards, 6 non-Fire relics) -> MAP3b -> MAP4 -> 3d -> BD3b (the Wizard's non-Fire builds).**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -17,19 +17,7 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## Needs your decision
 
-Next new number: D44.
-
-D43. **Should card offers lean toward the build you're making?** (Your 2026-11-09 run: "constantly rejecting (and pruning) fire/burn options".)
-   - Today an offer draws evenly from your class, element and Neutral pools. For a Fire Rogue that's about 37% Fire cards, whatever you've picked so far.
-   - BD3a adds 8 physical Rogue cards, which only takes that to about 29%. More content alone won't stop the Fire offers.
-   - **A (default): no change.** Content only, about 29% Fire.
-   - **B: offers lean toward the statuses your deck applies.** Each unpicked card that applies Bleed (or Burn) gets a bonus to its offer weight, and the bonus grows with how many cards you own that apply it. Cards without a status aren't affected.
-     - Picking Bleed cards brings more Bleed. Pruning Burn cards shrinks the Burn lean.
-     - Your starting Rogue deck has 2 Burn cards and no Bleed, so the first offers lean slightly toward Burn until you pick or prune.
-     - The risk: runs settle into a groove sooner.
-     - BD3a's offer report would show how much B actually moves the Fire share.
-   - **C: offers lean toward your class.** Class cards are offered 1.5x as often as element cards, for everyone. That's about 23% Fire, but it doesn't follow your plan.
-   - My recommendation is **B**: it answers your complaint directly, and its weight is one number in data. B or C would be built in BD3a. Without an answer I build A.
+Nothing right now. Next new number: D44.
 
 ## Needs your eyes
 

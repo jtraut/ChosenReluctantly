@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-09 (director's physical Rogue feedback -> new slice BD3a; D43 asked). **Run order:** MAP1, MAP2 (done) -> **MAP3 (in progress: sitting B built, its hand-back and commit of the last changes pending)** -> **BD3a, physical Rogue** (new, director priority 2026-11-09) -> MAP3b -> MAP4 -> 3d -> BD3b (Wizard depth). All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2.
+Last updated: 2026-11-09 (director's physical Rogue feedback -> new slice BD3a; D43 = B and dual-class recorded). **Run order:** MAP1, MAP2 (done) -> **MAP3 (in progress: sitting B built, its hand-back and commit of the last changes pending)** -> **BD3a, physical Rogue** (new, director priority 2026-11-09) -> MAP3b -> MAP4 -> 3d -> BD3b (Wizard depth). All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2.
 
 ## What's done
 - **Director feedback 2026-11-09, planned (game-lead, docs only):**
@@ -20,7 +20,13 @@ Last updated: 2026-11-09 (director's physical Rogue feedback -> new slice BD3a; 
   - **Plan:**
     - BD3 is split. **BD3a, physical Rogue** (stacking, `detonate_status`, 8 Rogue cards, 6 relics, the Spite Knuckles retheme) runs after MAP3 and before MAP3b. **BD3b** (Wizard depth) stays after 3d.
     - Where it's written: BUILD_DEPTH §9a, the ROADMAP BD3a brief and run order, DECISIONS "BD3a placement and scope", and OPEN_ITEMS D43 (should offers lean toward your build; default A, recommended B).
+  - **Answered 2026-11-09:**
+    - **D43 = B:** offers lean toward the statuses your deck applies. Recorded in GDD §9, the ROADMAP BD3a sitting B step 7, and DECISIONS (starting numbers). Built in BD3a.
+    - **No "no element" option:** class + element is a dual-class system, and players lean either way or stay hybrid. Recorded in GDD §5 "Character creation".
+    - **Not answered:** whether the Wizard's BD3b should follow BD3a directly. Default: it stays after 3d.
   - **Pending for tech-writer (MAP3 docs pass):**
+    - archive D43 in RESOLVED with his answer and where it's recorded (the question's text is in commit 962fe50);
+    - CHANGELOG `[Director decision]` entries: D43 = B (offers: even draw across pools -> a lean toward owned statuses), and dual-class (no "no element" option; lean either side or stay hybrid);
     - the feedback as a CHANGELOG director-feedback entry;
     - the reprioritisation as `[Director decision]` (non-Fire build variety is a priority; BD3a runs before MAP3b);
     - his "felt good mostly" on the three-act run as MAP3 playtest input.
@@ -158,14 +164,14 @@ Last updated: 2026-11-09 (director's physical Rogue feedback -> new slice BD3a; 
    - Write the sitting B hand-back: steps 1-7 done or not; the act scaling actually chosen (act 2 HP x1.1, act 3 HP x1.2, damage x1, against the brief's starting 1.35/1.7); `-Route first` 3-act wins per class; per-act times; hashes.
    - game-lead records it under the MAP3 brief.
 2. Then the MAP3 loop: **ux** (Act N and Room N of 30, act transition screen, Continue button, mini-boss icon, MAP2 polish) -> **qa** -> **playtester** -> **tech-writer** (include the 2026-11-09 pending items above) -> close, tag `playtest-YYYY-MM-DD-MAP3`.
-3. Then **BD3a** (ROADMAP brief; gameplay-dev sitting A = engine plus 4 cards). Check D43 before sitting B.
+3. Then **BD3a** (ROADMAP brief; gameplay-dev sitting A = engine plus 4 cards; sitting B builds D43 = B).
 4. Then MAP3b (its design pass must cover Bleed and basic attacks too), MAP4, 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D42 answered (see RESOLVED). **D43 open** (offer weighting; default A, recommended B). Next free: D44.
+**D-numbers:** D21-D42 answered (see RESOLVED). D43 = B answered 2026-11-09. Next free: D44.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: D43 waiting (offer weighting); eyes 51 (visit the merchant), 50 (play the map, new), 49, 48, 47 and 35; the round 2 vision check is due. Answered items are in `docs/RESOLVED.md`.
+All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions waiting; eyes 51 (visit the merchant), 50 (play the map, new), 49, 48, 47 and 35; the round 2 vision check is due. Answered items are in `docs/RESOLVED.md`.

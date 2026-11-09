@@ -221,6 +221,7 @@ Fire, Water, Earth, Wind, Light, Dark. Others may be added.
 
 ### Character creation
 Pick one **class** and one **element** (for example Fire Rogue).
+- **Class + element is a dual-class system [DIRECTOR DECISION, 2026-11-09]:** there is no "no element" option. A build is a matter of which side the player leans into more (the class side, for example physical and Bleed for the Rogue, or the element side, for example Burn), or keeping it hybrid and evenly balanced. Both sides must offer enough cards and relics to lean into (BD3a, BUILD_DEPTH §9a).
 
 ### Wizard moved earlier **[DIRECTOR DECISION, 2026-10-29]**
 - The **Wizard** is added now, ahead of Milestone 4, as a ranged class: its **light and heavy attacks are ranged** and aimed at the reticle. Reason: an outside playtester expected left click to hit distant enemies under the reticle, and found the Rogue's melee swing confusing. Water and the subclasses stay in Milestone 4.
@@ -340,6 +341,7 @@ Rather than a full strength/weakness wheel, elements apply status effects (for e
 - After each won room, the player is offered **3 cards** and either **picks one** or **rejects the whole offer**. **[DIRECTOR DECISION]**
 - A reject token is spent only when the whole offer is declined. Each run allows only **3 rejects total**, so deck noise builds up over a run. **Card rarity [DIRECTOR DECISION, 2026-11-04]:** common, rare and legendary. Act 1 offers are common only, rare cards start appearing in act 2, and legendary cards have a chance from act 3. The act-end mini-bosses offer 3 rare (act 1) or 3 legendary (act 2) cards (§4a). **[DIRECTOR DECISION, 2026-11-04] (D35 = A):** still 3 per run over the three-act, 30-room run (about 20 card offers), not 3 per act.
 - **Offer size is a data value** (default 3) so boons, passives, and gear can later raise it or add rerolls.
+- **Offers lean toward your build [DIRECTOR DECISION, 2026-11-09] (D43 = B):** an unowned card that applies a status (Bleed, Burn) gets a bonus to its offer weight, and the bonus grows with how many owned cards apply that status. Cards with no status aren't affected. Picking a status brings more of it, and pruning it shrinks the lean. Rejected: no change (A), and weighting the class pool above the element pool for everyone (C). The weight values are data (`run.json` `rewards`), set in BD3a.
 - Rewards and path choices can offer ways to **clean the deck** (remove or swap cards), which creates meaningful routing decisions.
 - **[OPEN]** Whether shops and enemy drops also exist alongside post-battle rewards.
 - Subclass choices (class and element) occur at milestone points. **[OPEN]** exact timing.

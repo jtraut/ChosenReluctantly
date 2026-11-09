@@ -1207,7 +1207,10 @@ MAP3 (finish: sitting B hand-back -> ux -> qa -> playtest -> docs -> close) -> *
     4. Debug decks `rogue-bleed-out` and `rogue-grudge-brawler`.
     5. Bot sim: the plan-aware bot picks Bleed and basic-attack relics for those plans.
     6. **Offer report:** the share of Fire cards in a Fire Rogue's card offers and the share of Burn-dependent relics in its relic offers, before and after (a tools script or a sim line; 1000 seeds).
-    7. If the director answers D43 with B or C, build it here, as data knobs in `run.json` `rewards`.
+    7. **D43 = B (director, 2026-11-09; GDD §9): offers lean toward the statuses your deck applies.** In `RewardOffer`, an unowned candidate that applies status S gets weight x (1 + `status_lean` x n_S), capped at `status_lean_max`. n_S is the number of owned cards that apply S (counted per card, the same way `requires.status_sources` reads effects). Cards with no status are unchanged. Starting values in `run.json` `rewards`: `status_lean` 0.25, `status_lean_max` 3.0. The defaults must keep old saves and offers valid; 0 turns it off.
+       - The offer report shows, for a Fire Rogue that picks Bleed and prunes Burn, the Fire share and the Bleed share of card offers over the run, with and without the lean.
+       - Tune `status_lean` until that bot's Bleed share clearly rises over the run, without its last offers being only Bleed.
+       - The arena and bot-sim hashes may move; log the reason.
   - **ux (after sitting A exposes the data):**
     - stack counts on enemies ("Bleed x3");
     - the detonate hit reads at a glance (a burst plus a larger damage number);
@@ -1227,7 +1230,7 @@ MAP3 (finish: sitting B hand-back -> ux -> qa -> playtest -> docs -> close) -> *
     - `rogue-bleed-out` and `rogue-grudge-brawler` boss times are within 70-130% of the standard Rogue deck (BUILD_DEPTH §2 parity).
     - Kindling vs Bleed Out fingerprint distance is at least 0.6, and their top damage sources differ.
     - A Fire Rogue's elite and relic-room relics are no more than about 30% Burn-dependent (from 62%).
-    - The Fire share of a Fire Rogue's card offers is reported (target about 29% with A; lower with D43 B or C).
+    - The Fire share of a Fire Rogue's card offers is reported: about 29% for a neutral deck, and clearly lower over the run for a deck that picks Bleed and prunes Burn (D43 = B).
     - No-card gate holds. MAP3's run-sim floor (8/12 three-act wins, first route) holds for the Rogue.
     - Main runs. Hashes are unchanged or rebaselined with a logged reason.
 - [ ] **MAP3b, rarity and boss relics (after BD3a, before MAP4). Full loop. Tag `playtest-YYYY-MM-DD-MAP3b`.** Plan: MAP.md §4.5, BUILD_DEPTH §4. **Added 2026-11-09:** the tier 3 relics, boss-tier relics and rare and legendary cards must cover Bleed and basic attacks as well as Burn (BUILD_DEPTH §9a).

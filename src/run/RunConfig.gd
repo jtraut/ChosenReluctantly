@@ -21,6 +21,8 @@ const TIER_IDS: Array[String] = ["elite", "boss"]
 const OPTIONAL_TIER_IDS: Array[String] = ["mini_boss"]
 ## data/run.json `acts`: per-act enemy HP and damage multipliers and a gold multiplier ({"1": {...}, "2": {...}}); absent = every act is x1.
 const ACT_SCALE_KEYS: Array[String] = ["hp", "damage", "gold"]
+## BD3a (D45 = B): `acts.start_heal` is the fraction of max HP healed at the start of act 2 and later (0 = none, the MAP3 behaviour; a missing key reads 0).
+const ACT_START_HEAL_KEY := "start_heal"
 
 static var _cache: Dictionary = {}
 static var _loaded: bool = false
@@ -224,6 +226,10 @@ static func _validate_act_scale(value: Variant) -> Array[String]:
 		return errors
 	for key: Variant in (value as Dictionary).keys():
 		var entry: Variant = (value as Dictionary)[key]
+		if String(key) == ACT_START_HEAL_KEY:
+			if not _is_number(entry) or is_nan(float(entry)) or float(entry) < 0.0 or float(entry) > 1.0:
+				errors.append("acts.%s must be a number from 0 to 1 (the fraction of max HP healed when act 2 and later begin)" % ACT_START_HEAL_KEY)
+			continue
 		if not String(key).is_valid_int() or str(String(key).to_int()) != String(key) or String(key).to_int() < 1 or String(key).to_int() > RunState.MAX_ACTS:
 			errors.append("acts: '%s' must be an act number from 1 to %d" % [str(key), RunState.MAX_ACTS])
 		elif typeof(entry) != TYPE_DICTIONARY:
@@ -592,6 +598,14 @@ static func act_scale(act: int) -> Dictionary:
 	if typeof(entry) != TYPE_DICTIONARY:
 		return {"hp": 1.0, "damage": 1.0, "gold": 1.0}
 	return {"hp": float(entry["hp"]), "damage": float(entry["damage"]), "gold": float(entry["gold"])}
+
+
+## The fraction of max HP the player recovers at the start of act 2 and each later act (D45 = B), 0 to 1; 0 when the file has none.
+static func act_start_heal() -> float:
+	var value: Variant = (get_config().get("acts", {}) as Dictionary).get(ACT_START_HEAL_KEY)
+	if not _is_number(value):
+		return 0.0
+	return clampf(float(value), 0.0, 1.0)
 
 
 static func tier(tier_id: String) -> Dictionary:

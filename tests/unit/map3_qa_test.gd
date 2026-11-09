@@ -225,9 +225,9 @@ func test_acts_two_and_three_with_no_relic_left_give_a_card_offer_not_an_empty_s
 		assert_bool(checked).override_failure_message("no seed 1-59 has a %s in act %d" % [case[1], case[0]]).is_true()
 
 
-# ---- values a hand-edited save can carry (probe: reported, see the review) ----
+# ---- values a hand-edited save can carry (BD3a: RunSave._state_problem refuses them) ----
 
-func test_hp_and_reject_values_in_a_loaded_save_are_sane(do_skip := true, skip_reason := "known bug, qa MAP3 review: RunState.from_dict accepts hp 0, -1, above max and out-of-range rejects (hand-edited file only); un-skip when gameplay-dev clamps them") -> void:
+func test_hp_and_reject_values_in_a_loaded_save_are_sane() -> void:
 	var state: RunState = _act_two_state(67, 1)
 	var good: Dictionary = state.to_dict()
 	var cases: Array[Dictionary] = [{"hp": 0.0}, {"hp": -1.0}, {"hp": 9999.0}, {"rejects_remaining": -5}, {"rejects_remaining": 100000}]

@@ -204,4 +204,9 @@ static func _state_problem(state: RunState) -> String:
 			return "unknown card '%s'" % card_id
 	if not state.has_hp():
 		return "no HP"
+	# A hand-edited file can carry values no run reaches: a dead or over-full player, or a reject count outside 0..rejects_per_run.
+	if is_nan(state.hp) or state.hp <= 0.0 or state.hp > state.max_hp:
+		return "hp %s is outside 0 to the max HP %s" % [str(state.hp), str(state.max_hp)]
+	if state.rejects_remaining < 0 or state.rejects_remaining > RunConfig.rejects_per_run():
+		return "rejects_remaining %d is outside 0 to %d" % [state.rejects_remaining, RunConfig.rejects_per_run()]
 	return ""

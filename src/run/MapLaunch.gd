@@ -56,12 +56,17 @@ static func resolve_acts(args: PackedStringArray) -> Dictionary:
 	return {"acts": acts, "errors": errors}
 
 
-## `--run-room=N` counts rooms over the whole run (MAP3-B: 1 to `limit`, 30 for three acts of 10). "" when it is fine or absent, else why the launch is refused (exit 2).
-## Only a value that is a whole number above `limit` is a problem here; the other malformed values keep their old behaviour (the flag is ignored).
+## `--run-room=N` counts rooms over the whole run (MAP3-B: 1 to `limit`, 30 for three acts of 10, 10 for a one-act or straight run). "" when it is fine or absent,
+## else why the launch is refused (exit 2). BD3a: a value that is not a whole number from 1 to `limit` (`abc`, an empty or bare `--run-room`, 0, 11 on a 10-room run) is refused too, not ignored.
 static func run_room_problem(args: PackedStringArray, limit: int) -> String:
 	for arg: String in args:
-		if arg.begins_with("--run-room=") and arg.substr(11).is_valid_int() and arg.substr(11).to_int() > limit:
-			return "--run-room=%s is past the last room; this run has %d rooms (1 to %d)" % [arg.substr(11), limit, limit]
+		if arg != "--run-room" and not arg.begins_with("--run-room="):
+			continue
+		var value: String = arg.substr(11) if arg.begins_with("--run-room=") else ""
+		if not value.is_valid_int():
+			return "--run-room needs a whole number from 1 to %d, as --run-room=5 (got '%s')" % [limit, value]
+		if value.to_int() < 1 or value.to_int() > limit:
+			return "--run-room=%s is outside this run's rooms; it has %d rooms (1 to %d)" % [value, limit, limit]
 	return ""
 
 

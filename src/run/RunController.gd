@@ -34,7 +34,8 @@ signal class_picked(character_id: String)
 ## The run's gold changed: a fight node paid out (`delta` above 0), or a merchant purchase (`delta` below 0). `total` is `RunState.gold`.
 signal gold_changed(total: int, delta: int)
 ## MAP3-B: the run moved on to the next act (the mini-boss's rewards are done and the next act's map is open on its first pick). `act` is the new act (2, 3, ...);
-## `summary` is `act_summary()`: {act, acts_total, title, line, hp, max_hp, gold, relic_count, relics (display dictionaries), run_room_number, run_room_total, rooms_done}.
+## `summary` is `act_summary()`: {act, acts_total, title, line, hp, max_hp, gold, relic_count, relics (display dictionaries), run_room_number, run_room_total, rooms_done,
+## hp_before, hp_after, healed, heal_fraction (the D45 act-start heal)}.
 ## It fires before `choice_requested` for the new act's map, so an "Act 2" screen can show first. The state is autosaved right after.
 signal act_started(act: int, summary: Dictionary)
 ## The last room was won.
@@ -50,6 +51,8 @@ var _active: bool = false
 var _room_seconds: float = 0.0
 var _healed: float = 0.0
 var _summary: Dictionary = {}
+## The act-start heal (D45 = B) of the act that just began: {before, after} HP, or {} when none ran. Read by act_summary().
+var _act_heal: Dictionary = {}
 var _ctx: Dictionary = {}
 var _boss: Boss = null
 var _launch_room: int = 0
@@ -303,12 +306,11 @@ func _apply_launch_args(tree: SceneTree) -> bool:
 	_launch_gold = int(run_launch["gold"])
 	if int(map_launch["override"]) != MapLaunch.OVERRIDE_NONE:
 		RunSession.map_override = int(map_launch["override"])
-	if RunSession.map_on() and RunSession.acts_total() > 1:
-		var room_problem: String = MapLaunch.run_room_problem(args, RunSession.acts_total() * int(MapConfig.get_config().get("rooms", 10)))
-		if not room_problem.is_empty():
-			printerr("Launch refused: " + room_problem)
-			tree.quit(2)
-			return false
+	var room_problem: String = MapLaunch.run_room_problem(args, RunSession.acts_total() * int(MapConfig.get_config().get("rooms", 10)))
+	if not room_problem.is_empty():
+		printerr("Launch refused: " + room_problem)
+		tree.quit(2)
+		return false
 	if not _apply_relic_args(args, tree):
 		return false
 	if String(launch["deck"]) != "":
@@ -427,7 +429,7 @@ func _finish_room(healed: float) -> void:
 		relay.notify_room_cleared(int(room["index"]), String(room["type"]))
 	if _state.room_index >= _rooms.size() - 1 and not RunNodes.has_next_act(_state):
 		_state.outcome = "won"
-		RunSave.delete_save()
+		_delete_own_save()
 		run_won.emit()
 		return
 	if RunRelics.open_for_room(_state, String(room["type"]), false, _ctx) != RunState.PENDING_NONE:
@@ -491,12 +493,13 @@ func continue_to_next_room(force: bool = false) -> void:
 		if RunNodes.at_act_end(_state) and RunNodes.has_next_act(_state):
 			# MAP3-B: the act's mini-boss is done. Archive the act, make the next act's map and open its first pick (HP, gold, deck, relics, rejects carry over; no free heal).
 			if RunNodes.advance_act(_state):
+				_apply_act_start_heal()
 				_rooms = _build_rooms(RunConfig.get_config())
 				act_started.emit(_state.act, act_summary())
 			else:
 				push_error("RunController: act %d's map could not be made; the run ends here as a win" % (_state.act + 1))
 				_state.outcome = "won"
-				RunSave.delete_save()
+				_delete_own_save()
 				run_won.emit()
 				return
 		else:
@@ -509,13 +512,32 @@ func continue_to_next_room(force: bool = false) -> void:
 	_main.swap_to_fresh_scene()
 
 
+## D45 = B: acts 2 and later start with a heal of `acts.start_heal` x max HP (capped at max HP). Runs before the act's first autosave, so a
+## save written at the new act's map screen already holds the healed HP.
+func _apply_act_start_heal() -> void:
+	_act_heal = {}
+	var fraction: float = RunConfig.act_start_heal()
+	if fraction <= 0.0 or not _state.has_hp():
+		return
+	var before: float = _state.hp
+	_state.hp = minf(_state.hp + fraction * _state.max_hp, _state.max_hp)
+	_act_heal = {"before": before, "after": _state.hp}
+
+
+## Deletes the save when this run is a map run (the only kind that saves). A straight (--no-map) run that is won or lost never touches the
+## file, because the file may hold a map run it knows nothing about (BD3a).
+func _delete_own_save() -> void:
+	if _state != null and RunNodes.active(_state):
+		RunSave.delete_save()
+
+
 func _on_player_died() -> void:
 	if not _active:
 		return
 	_active = false
 	set_process(false)
 	_state.outcome = "lost"
-	RunSave.delete_save()
+	_delete_own_save()
 	run_lost.emit()
 
 
@@ -803,6 +825,9 @@ func act_summary() -> Dictionary:
 		"line": String(texts.get("summary", "HP %d of %d, %d gold, %d relics")) % [roundi(_state.hp), roundi(_state.max_hp), _state.gold, _state.relics.size()],
 		"hp": _state.hp, "max_hp": _state.max_hp, "gold": _state.gold, "relic_count": _state.relics.size(), "relics": relics_held,
 		"run_room_number": run_room_number(), "run_room_total": run_room_total(), "rooms_done": (_state.act - 1) * _state.rooms_per_act(),
+		# D45 = B: the act-start heal. hp_before is HP on entering the act (equal to hp_after when no heal ran, e.g. start_heal 0 or a run resumed from a save).
+		"hp_before": float(_act_heal.get("before", _state.hp)), "hp_after": _state.hp, "healed": float(_act_heal.get("after", _state.hp)) - float(_act_heal.get("before", _state.hp)),
+		"heal_fraction": RunConfig.act_start_heal() if not _act_heal.is_empty() else 0.0,
 	}
 
 

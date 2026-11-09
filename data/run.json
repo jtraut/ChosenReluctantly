@@ -33,6 +33,7 @@
         "mini_boss": { "hp_multiplier": 3.5, "armor": 22.0, "resistance_floor": 0.3, "resistance_cap": 0.5, "rank": "elite", "scale": 1.2, "marker_color": "#ff7f50", "marker_size": 0.3, "marker_height": 2.85 }
     },
     "acts": {
+        "start_heal": 0.3,
         "1": { "hp": 1.0, "damage": 1.0, "gold": 1.0 },
         "2": { "hp": 1.1, "damage": 1.0, "gold": 1.0 },
         "3": { "hp": 1.2, "damage": 1.0, "gold": 1.0 }

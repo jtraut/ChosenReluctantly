@@ -61,9 +61,12 @@ func toggle() -> bool:
 
 
 ## Forgets a pause without signals or time changes. For scene reloads (Main calls it
-## after Juice.reset()): the old scene and its listeners are going away.
+## after Juice.reset()): the old scene and its listeners are going away. It also unpauses the tree
+## (BD3a), so a reload or a test that ended while paused can never leave the next scene frozen.
 func reset() -> void:
 	_paused = false
+	if is_inside_tree():
+		get_tree().paused = false
 
 
 func _game_over_is_up() -> bool:

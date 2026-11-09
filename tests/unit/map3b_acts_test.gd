@@ -319,7 +319,7 @@ func test_the_launch_flag_accepts_one_to_thirty_and_refuses_more() -> void:
 	assert_str(MapLaunch.run_room_problem(PackedStringArray(["--run-room=1"]), 30)).is_empty()
 	assert_str(MapLaunch.run_room_problem(PackedStringArray(["--run-room=31"]), 30)).is_not_empty()
 	assert_str(MapLaunch.run_room_problem(PackedStringArray(["--run-seed=5"]), 30)).is_empty()
-	assert_str(MapLaunch.run_room_problem(PackedStringArray(["--run-room=abc"]), 30)).is_empty()
+	assert_str(MapLaunch.run_room_problem(PackedStringArray(["--run-room=abc"]), 30)).is_not_empty()
 
 
 func test_the_act_fields_round_trip_and_enter_equals() -> void:
@@ -704,7 +704,67 @@ func _latest_main(except_id: int) -> Main:
 	return found
 
 
+## D45 = B (BD3a): the act-start heal. Plays act 1's mini-boss to its end at `hp` of 30 and returns the controller and state of act 2's first screen.
+func _finish_act_one_at(hp: float) -> Array:
+	RunSession.map_override = 1
+	var state: RunState = RunSession.begin_new_run(31)
+	state.jump_to_room(9)
+	state.hp = hp
+	state.max_hp = 30.0
+	var main: Main = _spawn()
+	await _frames()
+	var controller: RunController = main.run_controller
+	await _win_room(main)
+	controller.pick_relic(state.offer[0])
+	controller.choose("skip")
+	return [controller, state]
+
+
+func test_the_act_start_heal_restores_a_fraction_of_max_hp_and_shows_in_the_summary() -> void:
+	assert_float(RunConfig.act_start_heal()).is_equal(0.3)  # the shipped value (D45 = B)
+	var pair: Array = await _finish_act_one_at(10.0)
+	var state: RunState = pair[1]
+	assert_int(state.act).is_equal(2)
+	assert_float(state.hp).is_equal_approx(19.0, 0.001)  # 10 + 0.3 x 30
+	var summary: Dictionary = (pair[0] as RunController).act_summary()
+	assert_float(float(summary["hp_before"])).is_equal_approx(10.0, 0.001)
+	assert_float(float(summary["hp_after"])).is_equal_approx(19.0, 0.001)
+	assert_float(float(summary["healed"])).is_equal_approx(9.0, 0.001)
+	assert_float(float(summary["heal_fraction"])).is_equal_approx(0.3, 0.001)
+	assert_float(float(summary["hp"])).is_equal_approx(19.0, 0.001)
+	# the save at the act's start already holds the healed HP
+	assert_float(RunSave.read_state().hp).is_equal_approx(19.0, 0.001)
+
+
+func test_the_act_start_heal_never_goes_past_max_hp() -> void:
+	var pair: Array = await _finish_act_one_at(28.0)
+	assert_float((pair[1] as RunState).hp).is_equal_approx(30.0, 0.001)
+	assert_float(float((pair[0] as RunController).act_summary()["healed"])).is_equal_approx(2.0, 0.001)
+
+
+func test_a_start_heal_of_zero_is_the_map3_behaviour() -> void:
+	(RunConfig.get_config()["acts"] as Dictionary)["start_heal"] = 0.0
+	assert_float(RunConfig.act_start_heal()).is_equal(0.0)
+	var pair: Array = await _finish_act_one_at(10.0)
+	assert_float((pair[1] as RunState).hp).is_equal_approx(10.0, 0.001)
+	var summary: Dictionary = (pair[0] as RunController).act_summary()
+	assert_float(float(summary["healed"])).is_equal(0.0)
+	assert_float(float(summary["hp_before"])).is_equal_approx(float(summary["hp_after"]), 0.001)
+	assert_float(float(summary["heal_fraction"])).is_equal(0.0)
+
+
+func test_the_start_heal_value_is_validated() -> void:
+	var config: Dictionary = RunConfig.get_config().duplicate(true)
+	for bad: Variant in [-0.1, 1.5, "x"]:
+		config["acts"]["start_heal"] = bad
+		var problems: Array[String] = RunConfig.validate(config, EnemyConfig.enemy_ids(), RunConfig._card_ids())
+		assert_bool(problems.any(func(p: String) -> bool: return p.contains("start_heal"))).is_true()
+	config["acts"].erase("start_heal")
+	assert_array(RunConfig.validate(config, EnemyConfig.enemy_ids(), RunConfig._card_ids())).is_empty()
+
+
 func test_clearing_the_mini_boss_pays_relic_then_card_then_opens_act_two_and_saves_it() -> void:
+	(RunConfig.get_config()["acts"] as Dictionary)["start_heal"] = 0.0  # MAP3's behaviour (BD3a's D45 heal has its own tests below)
 	RunSession.map_override = 1
 	var state: RunState = RunSession.begin_new_run(31)
 	state.jump_to_room(9)  # the act 1 mini-boss

@@ -2095,3 +2095,9 @@ Context: director feedback 2026-11-09. He played a three-act physical/Bleed Rogu
 
 ## 2026-11-09 - MAP3 close (game-lead)
 - **MAP3 closes with the `--no-map` save-deletion finding open.** tech-writer found by code reading that a `--no-map` win or loss deletes the player's saved map run. `--no-map` is a test launch the player has to type, the normal launch can't reach it, and it costs at most one saved run. It goes to BD3a sitting A housekeeping with a test. Rejected: reopening MAP3 for it.
+
+## 2026-11-09 - Applying D44 = C and D45 = B (game-lead)
+- **MB1 (mini-boss and act identity) is a new slice after BD3a and before MAP3b.** BD3a is the director's stated priority and is planned, so it stays first. MB1 goes before MAP3b because MAP3b's boss-tier relics are the mini-bosses' reward, so they should land on the finished fights. Rejected: folding MB1 into MAP3b, which would make that slice about 4 sittings; and running MB1 before BD3a, which goes against his 2026-11-09 priority.
+- **The mini-boss starting sketch** (an act 1 brute and an act 2 rogue-style duelist) is mine, built from his example. It's confirmed in a short MAP.md design note before the build, not invented in code.
+- **D45's heal is 30% of max HP at the start of acts 2 and 3**, the example value in his option B, stored as `acts.start_heal` so 0 turns it off. It's built as BD3a sitting A housekeeping because it's one data value and a small code path. Rejected: waiting for MB1.
+- **The act 3 damage bump from D44's option B waits for the sim after the heal.** The heal makes runs easier, and per-act scaling is data, so tuning both at once in MB1 is cleaner.

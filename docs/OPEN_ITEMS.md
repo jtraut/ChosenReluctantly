@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-11-09 (MAP3 closed; latest tag `playtest-2026-11-09-MAP3`)
-**Status: 2 decisions waiting (D44, D45); 7 things to look at (52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. MAP3 is done: a run is now three acts of 10 rooms, with mini-bosses and save/Continue. Next: **BD3a, physical Rogue** (Bleed stacking, a detonate keystone, 8 physical Rogue cards, 6 non-Fire relics) -> MAP3b -> MAP4 -> 3d -> BD3b (the Wizard's non-Fire builds).**
+**Status: no decisions waiting (D44 = C and D45 = B recorded 2026-11-09); 7 things to look at (52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. MAP3 is done: a run is now three acts of 10 rooms, with mini-bosses and save/Continue. Next: **BD3a, physical Rogue** (Bleed stacking, a detonate keystone, 8 physical Rogue cards, 6 non-Fire relics; plus your 30% heal at each act start) -> **MB1** (mini-bosses with their own attacks, a look per act) -> MAP3b -> MAP4 -> 3d -> BD3b (the Wizard's non-Fire builds).**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -17,17 +17,7 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## Needs your decision
 
-Next new number: D46.
-
-D44. **Should each act look and play a little differently?** The playtester found acts 2-3 feel like "act 1 with more": bigger enemy mixes and a bit more HP (x1.1, x1.2), the same damage, the same look. The act 1 mini-boss is a slightly bigger golem with two chasers, so it doesn't feel like an act ender. Giving the mini-boss a named HP bar and a bigger marker is a readability fix, and I've scheduled it for BD3a either way.
-   - **A (default): leave the acts as they are.** MAP3b adds boss relics and rare and legendary cards, which may be enough on their own.
-   - **B (recommended): one cheap visible change per act**, with no new enemy behaviour: a floor and light tint per act, act 3 enemy damage raised a little (the run sim picks the value), and a mini-boss with more adds.
-   - **C: real new threats:** new mini-boss attacks or a new enemy type per act. This needs new enemy behaviour, which MAP3 ruled out, so it would be its own slice and push MAP3b, MAP4 and 3d back.
-
-D45. **Do you heal between acts?** Right now you don't: your HP carries into the next act, and rests on the map are the way to heal. That was my stopgap call, not something in the GDD. The playtester found nothing tells you, so BD3a's act screen will say "Your HP carries over. Rests are on the map." and show low HP in red.
-   - **A (default): no heal between acts** (as it is now).
-   - **B: a partial heal at each act's start** (for example 30% of max HP).
-   - **C: a full heal at each act's start.**
+Nothing right now. Next new number: D46.
 
 ## Needs your eyes
 

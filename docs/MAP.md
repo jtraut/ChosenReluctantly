@@ -42,7 +42,7 @@ C combat · E elite · R* relic stage · M merchant · Rs rest · (mini-boss and
 
 - **Relic source ids** are the ones BUILD_DEPTH §4.6 reserved: `elite`, `relic_room`, `merchant`, `mini_boss`, `curse_room`, `buff_room`. Each node calls BD2's offer function `(source, count, rng)`, which respects the cap.
 - **Hardest path, best reward** (GDD §9): elites and mini-bosses give the most gold and relics, and they're also the dangerous fights. A relic route needs several elites (§4).
-- **Mini-boss** is data only: a `mini_boss` tier in `run.json` `tiers` (starting values: HP x3.5, armor 22, resistance floor 0.3), applied to an existing enemy in a `rooms.mini_boss` wave list with adds. There is no new boss AI.
+- **Superseded 2026-11-09 by D44 = C (GDD §9): the act-end mini-bosses get their own attacks and behaviours in slice MB1.** MAP3 shipped the interim below. **Mini-boss** is data only: a `mini_boss` tier in `run.json` `tiers` (starting values: HP x3.5, armor 22, resistance floor 0.3), applied to an existing enemy in a `rooms.mini_boss` wave list with adds. There is no new boss AI.
 
 ## 3. Generation rules and validation
 

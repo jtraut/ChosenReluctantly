@@ -3,9 +3,13 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-09 (MAP3 closed; BD3a next). **Run order:** MAP1, MAP2, MAP3 (done) -> **BD3a, physical Rogue** (new, director priority 2026-11-09) -> MAP3b -> MAP4 -> 3d -> BD3b (Wizard depth). All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2.
+Last updated: 2026-11-09 (MAP3 closed; D44 = C, D45 = B recorded; BD3a next). **Run order:** MAP1, MAP2, MAP3 (done) -> **BD3a, physical Rogue** (new, director priority 2026-11-09) -> MAP3b -> MAP4 -> 3d -> BD3b (Wizard depth). All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2.
 
 ## What's done
+- **D44 = C, D45 = B recorded 2026-11-09 (game-lead, docs only):**
+  - **His answers:** D44 = C: the mini-bosses especially get their own attacks and behaviours (his example: one smaller, less HP, quicker and hitting harder, rogue-style), plus the visible changes. D45 = B: a partial heal at each act's start, easy to change back if runs get too easy.
+  - **Where recorded:** GDD §9; MAP.md §2 (mini-boss line marked superseded); ROADMAP new slice MB1 (after BD3a, before MAP3b) and BD3a sitting A item 10 (30% heal, `acts.start_heal`); DECISIONS "Applying D44 = C and D45 = B".
+  - **Pending for tech-writer (BD3a docs pass):** archive D44 and D45 in RESOLVED (question text in commit 40d64ee) and add CHANGELOG `[Director decision]` entries: D44 (mini-boss = existing enemy + mini-boss tier, no new AI -> own attacks and behaviours, new slice MB1, per-act visual changes); D45 (no heal between acts -> 30% of max HP at the start of acts 2 and 3, a data value).
 - **MAP3 closed 2026-11-09:** three acts of 10 rooms, act-end mini-bosses, act scaling, save and Continue.
   - **Commits:** gameplay-dev 239c856..da739de (A), 5d85ee4..cd17992 (B); ux 5a75570..96bbdeb; qa PASS with carry-overs 890c9eb; playtest 02a8c5f (no blocker), triage 40d64ee; docs 969f3b1. Tag `playtest-2026-11-09-MAP3`.
   - **Baselines now:** suite 1954 (149 suites, 1 skipped bug probe); arena 1897787086 / 4207041509 / `-Plan` 1160207333; bot sim 846850403; `-NoMap` 12/12 57.5 s / 12/12 63.3 s; three acts `-Route first` Rogue 9/12, Wizard 10/12 (relic and safe in ROADMAP's MAP3 qa note).
@@ -159,14 +163,13 @@ Last updated: 2026-11-09 (MAP3 closed; BD3a next). **Run order:** MAP1, MAP2, MA
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes; they didn't flake in MAP3).
 
 ## Exact next step
-1. **gameplay-dev: BD3a sitting A** (ROADMAP BD3a brief: stacking, `detonate_status`, `status_tick_rate`, attack speed stats, 4 Rogue cards, tests; plus housekeeping items 7-9: the save hp/rejects probe, `GamePause.reset()`, the Wizard 3-act sim check, `--no-map` save deletion, silent launch-flag values).
+1. **gameplay-dev: BD3a sitting A** (ROADMAP BD3a brief: stacking, `detonate_status`, `status_tick_rate`, attack speed stats, 4 Rogue cards, tests; plus housekeeping items 7-10 (the D45 30% act-start heal included): the save hp/rejects probe, `GamePause.reset()`, the Wizard 3-act sim check, `--no-map` save deletion, silent launch-flag values).
 2. Then BD3a sitting B (content, D43 = B offer lean) -> ux (stack counts, detonate read, mini-boss named bar, act screen HP line) -> qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-BD3a`.
-3. Then MAP3b (its design pass covers Bleed and basic attacks, gold sinks, the playtester's gold ideas), MAP4, 3d, BD3b.
-4. If the director answers D44 or D45: record it, then fold it into BD3a's ux step or MAP3b.
+3. Then **MB1** (game-lead design note in MAP.md first), then MAP3b (its design pass covers Bleed and basic attacks, gold sinks, the playtester's gold ideas), MAP4, 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D43 answered (see RESOLVED). D44 and D45 open (2026-11-09). Next free: D46.
+**D-numbers:** D21-D45 answered (D44 = C, D45 = B on 2026-11-09). Next free: D46.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 

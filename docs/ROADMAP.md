@@ -1222,6 +1222,7 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
       - **Run length:** a human 30-45 min (GDD §9) is checked by the playtester and the director, not the bot. Bot time isn't human time (MAP1 triage). The bot's 3-act median is reported as information.
       - Relic counts are reported but not gated until MAP3b.
 ### Run order from 2026-11-09 (director: non-Fire build variety is a priority)
+**Updated 2026-11-09 (D44 = C):** MAP3 (done) -> BD3a -> **MB1, mini-boss and act identity** -> MAP3b -> MAP4 -> 3d -> BD3b. MB1's placement is a game-lead call (DECISIONS "Applying D44 = C and D45 = B").
 MAP3 (done 2026-11-09) -> **BD3a, physical Rogue** -> MAP3b -> MAP4 -> 3d -> BD3b (Wizard depth). Placement and scope are game-lead calls (DECISIONS "BD3a placement and scope"). The director can move BD3a ahead of MAP3's close, or bring BD3b up straight after it.
 
 - [ ] **BD3a, physical Rogue builds (after MAP3, before MAP3b). Full loop. Tag `playtest-YYYY-MM-DD-BD3a`.** Plan: BUILD_DEPTH §9a (the full card and relic list), §3.4 (stacking), §5 R-C and R-D. Director feedback 2026-11-09: too few physical and Bleed cards, about half his relics were Fire/Burn and useless to his build, and he kept rejecting and pruning Fire offers.
@@ -1238,6 +1239,7 @@ MAP3 (done 2026-11-09) -> **BD3a, physical Rogue** -> MAP3b -> MAP4 -> 3d -> BD3
     9. **MAP3 docs-pass findings (tech-writer, by code reading):**
        - a win or loss on a `--no-map` run calls `RunSave.delete_save()`, so it would delete a saved map run. Make `--no-map` a debug flag (or only delete the save of the run that owns it), with a test;
        - `--run-room=abc` is still silently ignored, and `--acts=1 --run-room=11` exits 0 silently. Refuse both with exit 2, like the other launch flags.
+    10. **D45 = B (director 2026-11-09):** at the start of acts 2 and 3, heal a fraction of max HP: `run.json` `acts` `start_heal` 0.3 (0 turns it off and gives MAP3's behaviour). Include it in `act_summary()` (HP before and after) for ux, with a test for 0 and 0.3. Re-run `-Route first` for both classes and report the change in wins and act times.
     - At the end of sitting A, main runs, and the arena and bot-sim hashes are unchanged or rebaselined with the reason logged (new pool cards fill sim slots, as at BD1-B).
   - **gameplay-dev, sitting B (content and measurement):**
     1. Cards: `rogue_cut_corners`, `rogue_knife_drawer`, `rogue_excuse_me`, `rogue_blood_money`.
@@ -1255,7 +1257,7 @@ MAP3 (done 2026-11-09) -> **BD3a, physical Rogue** -> MAP3b -> MAP4 -> 3d -> BD3
     - the detonate hit reads at a glance (a burst plus a larger damage number);
     - tag chips and the condition line for the new cards;
     - hover text for the new relics;
-    - the MAP3 playtest carry-overs: the mini-boss gets a named bar and a bigger marker, like the boss; the act screen says HP carries over ("Your HP carries over. Rests are on the map.") and shows low HP in red. (D44 or D45 answers may add to this.) The shop's 4 px overflow was fixed in MAP3.
+    - the MAP3 playtest carry-overs: the mini-boss gets a named bar and a bigger marker, like the boss (MB1 builds on it); the act screen shows the D45 heal ("You recover N HP. Rests are on the map.") and low HP in red. The shop's 4 px overflow was fixed in MAP3.
   - **qa:**
     - unit tests for stacking, detonate and tick rate;
     - D25 regression (no default stacking);
@@ -1272,6 +1274,15 @@ MAP3 (done 2026-11-09) -> **BD3a, physical Rogue** -> MAP3b -> MAP4 -> 3d -> BD3
     - The Fire share of a Fire Rogue's card offers is reported: about 29% for a neutral deck, and clearly lower over the run for a deck that picks Bleed and prunes Burn (D43 = B).
     - No-card gate holds. MAP3's run-sim floor (8/12 three-act wins, first route) holds for the Rogue.
     - Main runs. Hashes are unchanged or rebaselined with a logged reason.
+- [ ] **MB1, mini-boss and act identity (after BD3a, before MAP3b; D44 = C, director 2026-11-09). Full loop. Tag `playtest-YYYY-MM-DD-MB1`.** Director: the mini-bosses especially need their own attacks and behaviours, for example one smaller, with less HP than the others, but quicker and hitting harder in a rogue style; plus visible changes per act (GDD §9).
+  - **First, game-lead, docs only:** a short design note (in MAP.md, new section) for the two act-end mini-bosses: name, size, HP, speed, 2-3 attacks each with telegraphs, and how each tests the player differently. Starting sketch, to be confirmed there:
+    - **Act 1, the brute:** big, slow, high HP; a ground slam with a wide telegraph, a charge, and adds summoned at HP thresholds.
+    - **Act 2, the rogue-style duelist (the director's example):** small, about half the brute's HP, fast; a dash-strike combo, a short blink behind the player, and a hard-hitting quick slash with a short but readable telegraph.
+    - Per-act visuals: a floor and light tint per act (data), a mini-boss name and bar. An act 3 damage bump only if the sim says acts feel flat after D45.
+  - **gameplay-dev:** a mini-boss AI built on the existing boss attack framework (`bosses.json` attacks, wind-ups, telegraphs), with attacks and stats as data; `rooms.mini_boss` points at the new mini-bosses; the per-act tint. Probably two sittings (one per mini-boss). Combat feel per CLAUDE.md: telegraphs, hit-stop, knockback.
+  - **ux:** the mini-boss name and bar (building on BD3a's), attack telegraph readability, the act tint checked at 1280x720 and 1024x600.
+  - **qa:** each attack's telegraph and damage, the mini-boss scenarios, the 3-act `-Route first` gate (8/12 per class), hashes.
+  - **Acceptance:** each mini-boss is clearly different from any normal enemy and from the other (playtester); both classes win at least 8/12 three-act runs; scenarios `--scenario=mini_boss_act1` and `mini_boss_act2` exist for the director.
 - [ ] **MAP3b, rarity and boss relics (after BD3a, before MAP4). Full loop. Tag `playtest-YYYY-MM-DD-MAP3b`.** Plan: MAP.md §4.5, BUILD_DEPTH §4. **Added 2026-11-09:** the tier 3 relics, boss-tier relics and rare and legendary cards must cover Bleed and basic attacks as well as Burn (BUILD_DEPTH §9a).
   - **First, game-lead, docs only:**
     - a BUILD_DEPTH design pass: about 6 boss-tier relics per class, tier 3 relics, and the rare and legendary card list per pool;

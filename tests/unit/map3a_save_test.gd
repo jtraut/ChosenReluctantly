@@ -30,6 +30,7 @@ func after_test() -> void:
 	ClassPickScreen.reset()
 	Juice.reset()
 	GamePause.reset()
+	get_tree().paused = false  # GamePause.reset() forgets its flag but not the tree; a class pick left open by a test must not leak a paused tree
 
 
 ## A map run `rooms` rooms in (first reachable node each time), at the map screen.

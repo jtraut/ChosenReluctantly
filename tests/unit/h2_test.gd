@@ -34,6 +34,7 @@ func after_test() -> void:
 		_main.free()
 	_main = null
 	Juice.reset()
+	get_tree().paused = false  # GamePause.reset() forgets its flag but not the tree; a class pick left open by a test must not leak a paused tree
 
 
 func _frames(count: int) -> void:

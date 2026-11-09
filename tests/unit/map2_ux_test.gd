@@ -23,6 +23,7 @@ func after_test() -> void:
 	RunConfig.reset_cache()
 	MapConfig.reset_cache()
 	GamePause.reset()
+	get_tree().paused = false  # GamePause.reset() forgets its flag but not the tree; a class pick left open by a test must not leak a paused tree
 
 
 func _frames(count: int = 3) -> void:

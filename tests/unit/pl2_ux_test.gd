@@ -21,6 +21,7 @@ func after_test() -> void:
 	_reset_statics()
 	Juice.reset()
 	GamePause.reset()
+	get_tree().paused = false  # GamePause.reset() forgets its flag but not the tree; a class pick left open by a test must not leak a paused tree
 
 
 func _reset_statics() -> void:

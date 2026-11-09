@@ -555,3 +555,27 @@ func test_a_fan_of_identical_shots_reads_once_with_a_count() -> void:
 	assert_int(line.count("physical damage")).is_equal(1)
 	# distinct neighbours are not merged
 	assert_bool(CardSummary.effect_line(CardDatabase.get_card("rogue_cut_corners")).contains(" x (")).is_false()
+
+
+# --- payoffs wait for their setup (item 0 of sitting B) -----------------------------------------------------------------
+
+func test_open_a_vein_and_bad_influence_are_only_offered_to_a_deck_with_a_bleed_source() -> void:
+	# Without this the random-pick sim bot (and a player) is offered cards that do nothing yet; it cost the three-act Rogue run its floor.
+	CardDatabase.load_all()
+	var pool_defs: Dictionary = {}
+	for pool_id: Variant in PoolDatabase.known_ids():
+		pool_defs[String(pool_id)] = PoolDatabase.get_definition(String(pool_id))
+	var pools: Array[String] = CharacterDatabase.pools("rogue")
+	var rewards: Dictionary = RunConfig.rewards()
+	var plain: Array[String] = CharacterDatabase.starting_deck("rogue")
+	var bleeding: Array[String] = plain.duplicate()
+	bleeding.append("rogue_paper_cuts")
+	var seen_plain: bool = false
+	var seen_bleeding: bool = false
+	for run_seed in range(1, 300):
+		var offered_plain: Array[String] = RewardOffer.generate(run_seed, 1, plain, CardDatabase.all_cards(), pools, pool_defs, rewards)
+		var offered_bleeding: Array[String] = RewardOffer.generate(run_seed, 1, bleeding, CardDatabase.all_cards(), pools, pool_defs, rewards)
+		seen_plain = seen_plain or offered_plain.has("rogue_open_a_vein") or offered_plain.has("rogue_bad_influence")
+		seen_bleeding = seen_bleeding or offered_bleeding.has("rogue_open_a_vein") or offered_bleeding.has("rogue_bad_influence")
+	assert_bool(seen_plain).is_false()
+	assert_bool(seen_bleeding).is_true()

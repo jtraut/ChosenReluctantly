@@ -4,6 +4,7 @@
     "slot_type": "attack_single",
     "pool": "rogue",
     "cooldown_modifier": 0.1,
+    "requires": { "status_sources": ["bleed"] },
     "keywords": ["Keystone", "Payoff"],
     "flavor_text": "Cashes in every little cut at once. Nobody asked, but here we are.",
     "effects": [

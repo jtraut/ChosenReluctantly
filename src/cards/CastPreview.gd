@@ -14,7 +14,7 @@ extends Node3D
 ##
 ## Lives as a top-level child of the Player (so it does not turn with the body).
 
-const MAX_PARTS := 3
+const MAX_PARTS := 5  # BD3a: The Knife Drawer fans five knives, one lane each
 
 var _player: Player = null
 var _config: Dictionary = {}

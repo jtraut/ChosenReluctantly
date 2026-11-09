@@ -327,6 +327,15 @@ func trigger_progress(relic_id: String) -> int:
 	return 0
 
 
+## The event's target node, or null when it has none or was freed since the event (a killing blow frees the enemy before a deferred trigger runs;
+## casting a freed object to Node is a script error, so check validity on the Variant first).
+static func _live_target(event: Dictionary) -> Node:
+	var raw: Variant = event.get("target")
+	if raw == null or not is_instance_valid(raw):
+		return null
+	return raw as Node
+
+
 func _now() -> float:
 	return _relay.now() if _relay != null and is_instance_valid(_relay) else 0.0
 
@@ -360,7 +369,7 @@ func _matches(filter: Dictionary, event: Dictionary) -> bool:
 				if not _as_strings(wanted).has(String(event.get(key, ""))):
 					return false
 			"target_team":
-				if not _as_strings(wanted).has(CombatEventsRelay.team_of(event.get("target") as Node)):
+				if not _as_strings(wanted).has(CombatEventsRelay.team_of(_live_target(event))):
 					return false
 			"target_has_status":
 				if not _any_status(_as_strings(wanted), event):
@@ -380,7 +389,7 @@ func _any_status(wanted: Array[String], event: Dictionary) -> bool:
 	if event.has("statuses"):
 		var held: Array = event["statuses"]
 		return wanted.any(func(id: String) -> bool: return held.has(id))
-	var target := event.get("target") as Node
+	var target := _live_target(event)
 	if target == null or not is_instance_valid(target):
 		return false
 	var manager := target.get_node_or_null("StatusEffectManager") as StatusEffectManager
@@ -421,7 +430,7 @@ func _run_effects(trigger: Dictionary, event: Dictionary) -> void:
 	if place:
 		context.aim_point = where
 	if at == RelicSchema.AT_EVENT_TARGET:
-		var target := event.get("target") as Node
+		var target := _live_target(event)
 		if target != null and is_instance_valid(target):
 			var box := target.get_node_or_null("Hurtbox") as Hurtbox
 			if box != null:

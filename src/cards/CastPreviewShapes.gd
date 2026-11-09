@@ -57,7 +57,8 @@ static func parts_for_card(card_data: Dictionary, config: Dictionary) -> Array[D
 			"projectile":
 				parts.append({"shape": PROJECTILE_LANE, "size": VfxSizing.projectile_lane_length(float(params["max_range"]), float(params["hit_radius"])),
 						"half_angle_degrees": 0.0, "half_width": VfxSizing.projectile_lane_half_width(float(params["hit_radius"])),
-						"start_offset": EffectTemplates.PROJECTILE_MUZZLE_OFFSET, "damage_type": String(params["damage_type"])})
+						"start_offset": EffectTemplates.PROJECTILE_MUZZLE_OFFSET, "damage_type": String(params["damage_type"]),
+						"yaw_offset_degrees": float(params.get("yaw_degrees", 0.0))})  # a fan of shots draws one turned lane each
 			"dash":
 				var away: bool = String(params.get("direction_mode", EffectTemplates.DIRECTION_FORWARD)) == EffectTemplates.DIRECTION_AWAY
 				if params.has("damage"):

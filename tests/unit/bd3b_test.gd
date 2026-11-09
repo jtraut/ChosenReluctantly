@@ -535,3 +535,15 @@ func test_the_bot_takes_a_basic_attack_relic_when_the_deck_buffs_the_basic_attac
 		assert_bool(RelicPolicy.is_basic_attack_relic(RelicDatabase.get_relic(id))).override_failure_message(id).is_true()
 	for id: String in ["serrated_excuse", "salt_in_the_wound", "chasing_paper", "asap_notice", "pyre_insurance"]:
 		assert_bool(RelicPolicy.is_basic_attack_relic(RelicDatabase.get_relic(id))).override_failure_message(id).is_false()
+
+
+func test_a_trigger_aimed_at_an_enemy_that_was_freed_before_it_runs_does_not_error() -> void:
+	# The trigger runs deferred; by then a killed enemy has been freed. This was a script error ("Trying to cast a freed object") in the wave sim.
+	var main := _spawn_main()
+	var manager := _manager(main, ["spite_knuckles"] as Array[String])
+	var victim := _target(main, 100.0, Vector3(0, 0, -5))
+	victim.free()
+	for i in range(4):
+		manager.handle_event({"event": "hit_landed", "target": victim, "amount": 1.0, "damage_type": "physical", "kind": "hit", "origin": "light", "position": Vector3.ZERO, "tags": [] as Array[String], "slot_type": ""})
+	manager.flush()
+	assert_bool(is_instance_valid(manager)).is_true()

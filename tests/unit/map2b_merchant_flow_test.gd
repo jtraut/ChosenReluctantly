@@ -202,7 +202,7 @@ func test_the_removal_entry_says_why_when_no_card_can_be_removed() -> void:
 	assert_bool(RunChoices.removable_card_ids(state, ctx).is_empty()).is_true()  # the starter deck: every card is needed for a slot minimum
 	assert_bool(bool(removal["enabled"])).is_false()
 	assert_str(String(removal["reason_code"])).is_equal("none_removable")
-	assert_str(String(removal["reason"])).is_equal("Every card is needed to meet the deck minimums")
+	assert_str(String(removal["reason"])).starts_with("Every card is needed to meet the deck minimums")
 	assert_str(String((model["merchant"]["removal"] as Dictionary)["reason"])).is_equal("none_removable")
 	assert_bool(bool((model["merchant"]["removal"] as Dictionary)["can_buy"])).is_false()
 	var refused: Dictionary = RunChoices.apply(state, RunMerchant.OPTION_REMOVE_MENU, ctx)

@@ -347,6 +347,43 @@ func test_the_map_pick_waits_behind_the_act_screen_and_opens_on_continue() -> vo
 	assert_int(map_screen.mode()).is_equal(MapScreen.Mode.PICK)
 
 
+func test_a_pause_and_resume_does_not_open_the_held_pick_under_the_act_screen() -> void:
+	var host := Node.new()
+	add_child(host)
+	auto_free(host)
+	var act_screen := ActScreen.new()
+	act_screen.name = "ActScreen"
+	host.add_child(act_screen)
+	var map_screen: MapScreen = (load(MAP_SCREEN_PATH) as PackedScene).instantiate()
+	host.add_child(map_screen)
+	await _frames(1)
+	act_screen.show_act(_act_summary(2))
+	var nodes: Array[Dictionary] = [_info(0, 1, "combat", true), _info(1, 1, "elite", true)]
+	map_screen.show_pick(_map_data(2, 3, nodes))
+	GamePause.pause()
+	GamePause.resume()
+	assert_bool(map_screen.is_open()).is_false()
+	assert_bool(map_screen.pick_pending()).is_true()
+	act_screen.disarm()
+	act_screen.dismiss()
+	assert_bool(map_screen.is_open()).is_true()
+
+
+func test_the_win_screen_of_a_three_act_run_counts_over_the_whole_run() -> void:
+	var rows: Array[Dictionary] = RunPromptRows.win_rows([{}, {}, {}], 30, {}, RunConfig.ui()["win"])
+	assert_str(String(rows[0]["value"])).is_equal("3 / 30")
+	RunSession.map_override = 1
+	var state: RunState = RunSession.begin_new_run(31)
+	state.jump_to_room(29)  # the final boss
+	var main: Main = (load(RUN_MAIN_PATH) as PackedScene).instantiate()
+	add_child(main)
+	auto_free(main)
+	await _frames()
+	# the win screen reads run_room_total (30), not room_total (the act's 10): "30 / 10" would be wrong
+	assert_int(main.run_controller.run_room_total()).is_equal(30)
+	assert_int(main.run_controller.room_total()).is_equal(10)
+
+
 func test_clearing_the_mini_boss_opens_the_act_screen_over_a_held_map() -> void:
 	RunSession.map_override = 1
 	var state: RunState = RunSession.begin_new_run(31)

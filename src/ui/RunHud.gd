@@ -90,6 +90,7 @@ func _on_gold_changed(total: int, delta: int) -> void:
 func _apply_icon() -> void:
 	var tiers: Dictionary = RunConfig.get_config().get("tiers", {})
 	icon.shape = RunIcons.shape_for(_room_type)
+	icon.coin = _room_type == "merchant"
 	icon.color = RunIcons.color_for(_room_type, UiConfig.run_ui(), tiers)
 
 

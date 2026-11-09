@@ -163,6 +163,7 @@ func show_choice(model: Dictionary) -> void:
 		"rows": _locked_relic_rows(model),
 		"hint": String(model.get("next_line", "")),
 		"icon_shape": RunIcons.shape_for(room_type),
+		"icon_coin": room_type == "merchant",
 		"icon_color": RunIcons.color_for(room_type, UiConfig.run_ui(), tiers),
 	})
 
@@ -241,7 +242,7 @@ func _show_win() -> void:
 		"title": String(text["title"]),
 		"subtitle": "",
 		"line": String(text["line"]),
-		"rows": RunPromptRows.win_rows(history, _controller.room_total(), _controller.last_summary(), text),
+		"rows": RunPromptRows.win_rows(history, _controller.run_room_total(), _controller.last_summary(), text),
 		"button": String(text["button"]),
 		"hint": String(text.get("hint", "")),
 		"icon_shape": RunIcons.shape_for("boss"),
@@ -444,6 +445,7 @@ func _fill(content: Dictionary) -> void:
 	icon.visible = shape != ""
 	if shape != "":
 		icon.shape = shape
+		icon.coin = bool(content.get("icon_coin", false))  # the merchant's coin, as on the map
 		icon.color = content.get("icon_color", Color.WHITE)
 	for child in stats.get_children():
 		stats.remove_child(child)

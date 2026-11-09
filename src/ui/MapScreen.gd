@@ -201,6 +201,8 @@ func _hide_now() -> void:
 func _resume_pick() -> void:
 	if not _pick_pending or _blocked_by_game_over():
 		return
+	if _act_screen_open():
+		return  # a resume (the pause screen closing, the route view closing) must not open the pick under the act screen: its Continue does
 	if _controller != null and not _controller.has_choice():
 		_pick_pending = false  # answered while it was hidden
 		return

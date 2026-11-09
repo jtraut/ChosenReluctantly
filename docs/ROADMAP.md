@@ -1186,6 +1186,10 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
       - **Continue** on the start screen when a save exists (with what it resumes: class, act, room);
       - the mini-boss node icon and hover text;
       - the MAP2 polish fold-ins ("No card can go: deck minimums" gets a next step; the legend's merchant icon matches the coin).
+    - **ux: done 2026-11-09** (5a75570..96bbdeb). Suite 1945 (148 suites), 0 failures; arena 1897787086 and bot sim 846850403 unchanged.
+      - Built: two-line HUD plate on multi-act runs ("Act 2 of 3" / "Room 14 of 30 - Type"; one-act runs unchanged), whole-run numbers on the reward, merchant, cleared, lose and win screens; `ActScreen` on `act_started` (holds the map pick, survives pause/resume); Continue on the class-pick screen with `RunSave.summary()`; map title, act columns 11-20/21-30 and mini-boss lines; merchant coin on the legend, HUD plate and shop title; the shop's 4 px overflow (new `ui.json` `run_ui.shop_scroll_slack` 0.04); deck-minimum strings now say "Add a card first."
+      - New presets `act_transition`, `map_mini_boss`, `map_act2`; `ux_capture.gd --mode=continue_pick`.
+      - Carry-overs for qa: tests that open ClassPickScreen can leak a paused tree into later suites (map3_ux resets it; check the others). The HUD plate reads "Act 1 of 3" behind the Act 2 screen until the next room (accepted). Resuming at an act's first map shows no act screen.
     - **qa:**
       - the save round trip and every robustness case;
       - a 1000-seed sweep **per act**, 0 failures;

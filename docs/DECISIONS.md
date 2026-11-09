@@ -2073,3 +2073,11 @@ Context: director feedback 2026-11-09. He played a three-act physical/Bleed Rogu
 - **Act scaling is lighter than the brief's starting values: act 2 HP x1.1, act 3 HP x1.2, damage x1, gold x1.** Accepted. The run sim met the gates with them (Rogue 9/12, Wizard 10/12 three-act wins; every act within +13% of act 1's time). The act 2-3 wave lists are bigger mixes, so they already add difficulty, and damage at x1 keeps the Rogue's fight HP loss in range. Rejected: the brief's 1.35/1.15 and 1.7/1.3, which were proposals for the sim to tune. Easy to raise later in `data/run.json` `acts` if the playtest says later acts are too easy.
 - **`--acts=N` launch flag** for debug and capture: refused with exit 2 on a bad or repeated value, like the other launch flags, and counted as a debug flag so it never touches the save. Rejected: silently ignoring bad values.
 - **The one-act capture presets are pinned with `--acts=1`** so they keep their MAP2 meaning (boss at room 10). Two new unpinned presets cover the act 1 mini-boss and the act 3 boss. Rejected: re-pointing every preset at three-act rooms, which would change what qa's old screenshots compare against.
+
+## 2026-11-09 - MAP3 ux calls (ux-designer, decided by game-lead)
+- **New Run with a save present leaves the save alone until its first room start, then overwrites it.** The class cards say "(replaces your saved run)". Rejected: a confirm dialog, which adds a step for a one-slot save.
+- **Continue starts focused when a save exists**, and it sets the remembered class to the saved run's class. Rejected: focusing the last class, which makes Enter start over by accident.
+- **The act screen doesn't pause the game**, like the map pick (no fight is running). **Resuming a save at an act's first map shows no act screen**, because `act_started` doesn't fire on resume. Accepted for now; the playtest can ask for it.
+- **The HUD plate grows to two lines only on multi-act runs**, so one-act runs and their captures don't change.
+- **The shop shrinks instead of scrolling when up to 4% too tall** (`run_ui.shop_scroll_slack` 0.04). Rejected: a smaller font for every shop.
+- **Act summary reads "relics: N"** instead of "N relics", so it never says "1 relics".

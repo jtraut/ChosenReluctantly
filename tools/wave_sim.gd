@@ -156,6 +156,8 @@ var _damage_by_run: Array[Dictionary] = []
 ## 3b: the reward bot's own stream (seeded per run, so the picks repeat from --seed and never touch the combat bot).
 var _policy_rng := RandomNumberGenerator.new()
 const REJECT_CHANCE := 0.25
+## `--sim-random-picks` (-RandomPicks): the reward bot takes any not-yet-owned card at random, as before BD3a's dilution guard (the old baselines).
+var _random_picks: bool = false
 const HEAL_BELOW_FRACTION := 0.7
 
 
@@ -223,6 +225,8 @@ func _ready() -> void:
 			RunSession.relic_cap = arg.substr(16).to_int()
 		elif arg == "--sim-no-relics":
 			_no_relics = true
+		elif arg == "--sim-random-picks":
+			_random_picks = true
 		elif arg == "--sim-no-map":
 			_no_map = true
 		elif arg.begins_with("--sim-acts="):
@@ -1034,6 +1038,15 @@ func _policy_choose(controller: RunController) -> String:
 			if skip_id != "" and (_policy_rng.randf() < REJECT_CHANCE or cards.is_empty()):
 				return skip_id
 			var pool: Array[Dictionary] = unowned if not unowned.is_empty() else cards
+			if not _random_picks:
+				# BD3a: do not dilute a slot. An attack card whose cycling DPS is below the slot's average in the deck would lower the damage the
+				# random-press bot does (the three-act Rogue lost its 8/12 floor to this). Take the candidates that do not, else (nothing left) the pool as it was.
+				var useful: Array[Dictionary] = []
+				for option: Dictionary in pool:
+					if not _dilutes_attack_slot(String(option["card_id"]), state.deck):
+						useful.append(option)
+				if not useful.is_empty():
+					pool = useful
 			return String(pool[_policy_rng.randi_range(0, pool.size() - 1)]["id"])
 		RunState.PENDING_RELIC:
 			return RelicPolicy.offer_choice(options, state.deck)
@@ -1068,6 +1081,33 @@ func _policy_choose(controller: RunController) -> String:
 						best = String(option["id"])
 			return best if best != "" else (any if any != "" else back_id)
 	return ""
+
+
+## True when an attack card would pull its slot's average cycling DPS (CardDamageRule: cast damage / cycle) down: the card's DPS is below the mean DPS of the
+## attack cards of that slot already in the deck. Non-attack cards and a slot with no attack card yet never dilute.
+func _dilutes_attack_slot(card_id: String, deck: Array[String]) -> bool:
+	var card: Dictionary = CardDatabase.get_card(card_id)
+	if not CardDamageRule.is_damage_card(card):
+		return false
+	var slot_type: String = String(card["slot_type"])
+	var mine: float = _card_dps(card)
+	var total: float = 0.0
+	var count: int = 0
+	for owned_id: String in deck:
+		var owned: Dictionary = CardDatabase.get_card(owned_id)
+		if String(owned.get("slot_type", "")) == slot_type:
+			total += _card_dps(owned)
+			count += 1
+	return count > 0 and mine < total / float(count)
+
+
+func _card_dps(card: Dictionary) -> float:
+	var statuses: Dictionary = {}
+	for status_id: String in CardSummary.status_ids(card):
+		statuses[status_id] = StatusDatabase.get_status(status_id)
+	var base: float = float(SlotTypeDatabase.get_definition(String(card["slot_type"])).get("base_cooldown", 1.0))
+	var cycle: float = CardDamageRule.cycle_cooldown(card, base)
+	return CardDamageRule.cast_damage(card, statuses, cycle) / cycle
 
 
 ## Run end report data: HP at each room end, the final deck size and per-slot composition, and what the policy did.

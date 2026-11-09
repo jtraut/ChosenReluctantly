@@ -28,7 +28,7 @@ static func effect_line(card: Dictionary, slot_base_cooldown: float = -1.0, text
 			(conditional_parts[key] as Array[String]).append(part)
 		else:
 			parts.append(part)
-	var line: String = ", ".join(parts)
+	var line: String = ", ".join(_collapse_repeats(parts, text))
 	if slot_base_cooldown >= 0.0:
 		var cooldown: float = maxf(slot_base_cooldown + float(card.get("cooldown_modifier", 0.0)), 0.0)
 		line += ("" if line == "" else ". ") + String(_word(text, "cooldown")) % _num(cooldown)
@@ -39,6 +39,20 @@ static func effect_line(card: Dictionary, slot_base_cooldown: float = -1.0, text
 		line += ("" if line == "" else "
 ") + sentence
 	return line
+
+
+## BD3a: identical neighbouring parts read once with a count ("5 x (3 physical damage (shot), each hit applies Bleed for 3 s)"), so a fan of five
+## knives does not print the same clause five times.
+static func _collapse_repeats(parts: Array[String], text: Dictionary) -> Array[String]:
+	var out: Array[String] = []
+	var i: int = 0
+	while i < parts.size():
+		var run: int = 1
+		while i + run < parts.size() and parts[i + run] == parts[i]:
+			run += 1
+		out.append(parts[i] if run == 1 else String(_word(text, "repeat")) % [run, parts[i]])
+		i += run
+	return out
 
 
 ## The display text of one effect `condition` block ("If the target has Burn"), from data/run.json ui.effect.condition.
@@ -77,6 +91,7 @@ const DEFAULT_TEXT: Dictionary = {
 	"dash": "Dash %s m",
 	"dash_modes": {"away_from_aim": " away from your aim"},
 	"dash_damage": "%s %s damage",
+	"repeat": "%d x (%s)",
 	"dash_status": "enemies you pass through get %s",
 	"shot_status": "each hit applies %s",
 	"pass_through": "Walk through enemies for %s s",

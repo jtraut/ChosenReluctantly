@@ -436,7 +436,7 @@ func test_paper_cuts_applies_bleed_on_the_first_hit_and_stacks_only_with_a_keyst
 
 func test_the_new_buffs_read_in_plain_words_on_the_card() -> void:
 	var influence: String = CardSummary.effect_line(CardDatabase.get_card("rogue_bad_influence"))
-	assert_str(influence).contains("Bleed stacks 4 higher").contains("Bleed ticks 50% faster")
+	assert_str(influence).contains("Bleed can stack 4 more").contains("Bleed ticks 50% faster")
 	var warm: String = CardSummary.effect_line(CardDatabase.get_card("rogue_warm_up"))
 	assert_str(warm).contains("Light attack delay -30%").contains("Heavy attack cooldown -30%")
-	assert_str(CardSummary.effect_line(CardDatabase.get_card("rogue_open_a_vein"))).contains("Detonate Bleed")
+	assert_str(CardSummary.effect_line(CardDatabase.get_card("rogue_open_a_vein"))).contains("Detonate Bleed: 200% of its remaining damage")

@@ -78,8 +78,8 @@ const DEFAULT_TEXT: Dictionary = {
 	"dash_modes": {"away_from_aim": " away from your aim"},
 	"dash_damage": "%s %s damage",
 	"pass_through": "Walk through enemies for %s s",
-	"detonate": "Detonate %s: its remaining damage x%s at once",
-	"stack_cap": "%s stacks %s higher",
+	"detonate": "Detonate %s: %s%% of its remaining damage at once",
+	"stack_cap": "%s can stack %s more",
 	"tick_rate": "%s ticks %s faster",
 	"attack_interval": "%s attack delay %s",
 	"attack_cooldown": "%s attack cooldown %s",
@@ -138,7 +138,7 @@ static func _effect_part(template: String, params: Dictionary, text: Dictionary 
 		"pass_through":
 			return String(_word(text, "pass_through")) % _num(float(params.get("duration", 0.0)))
 		"detonate_status":
-			return String(_word(text, "detonate")) % [_status_name(String(params.get("status_id", "")), text), _num(float(params.get("multiplier", 1.0)))]
+			return String(_word(text, "detonate")) % [_status_name(String(params.get("status_id", "")), text), str(roundi(float(params.get("multiplier", 1.0)) * 100.0))]
 	return template.replace("_", " ").capitalize()
 
 

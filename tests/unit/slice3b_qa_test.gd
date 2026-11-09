@@ -183,6 +183,9 @@ func test_decisions_balance_table_matches_the_data_files() -> void:
 		"fire_slow_burn": [20.0, 3.3, 6.06],
 		"rogue_drive_by": [6.0, 1.1, 5.45],
 		"wizard_well_actually": [13.0, 2.5, 5.20],
+		# BD3a (BUILD_DEPTH 9a): Open a Vein 6 + its detonate (conditional, not counted); Paper Cuts 4 x 1.5 + Bleed 2 ticks
+		"rogue_open_a_vein": [6.0, 1.1, 5.45],
+		"rogue_paper_cuts": [8.0, 1.3, 6.15],
 	}
 	var statuses: Dictionary = {}
 	for status_id: String in ["burn", "bleed"]:

@@ -41,7 +41,7 @@ static func effect_line(card: Dictionary, slot_base_cooldown: float = -1.0, text
 	return line
 
 
-## BD3a: identical neighbouring parts read once with a count ("5 x (3 physical damage (shot), each hit applies Bleed for 3 s)"), so a fan of five
+## BD3a: identical neighbouring parts read once with a count ("5 times: 3 physical damage (shot), each hit applies Bleed for 3 s"), so a fan of five
 ## knives does not print the same clause five times.
 static func _collapse_repeats(parts: Array[String], text: Dictionary) -> Array[String]:
 	var out: Array[String] = []
@@ -91,7 +91,7 @@ const DEFAULT_TEXT: Dictionary = {
 	"dash": "Dash %s m",
 	"dash_modes": {"away_from_aim": " away from your aim"},
 	"dash_damage": "%s %s damage",
-	"repeat": "%d x (%s)",
+	"repeat": "%d times: %s",
 	"dash_status": "enemies you pass through get %s",
 	"shot_status": "each hit applies %s",
 	"pass_through": "Walk through enemies for %s s",

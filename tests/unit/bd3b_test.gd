@@ -551,10 +551,10 @@ func test_a_trigger_aimed_at_an_enemy_that_was_freed_before_it_runs_does_not_err
 
 func test_a_fan_of_identical_shots_reads_once_with_a_count() -> void:
 	var line: String = CardSummary.effect_line(CardDatabase.get_card("rogue_knife_drawer"))
-	assert_str(line).starts_with("5 x (3 physical damage (shot), each hit applies Bleed for 3 s)")
+	assert_str(line).starts_with("5 times: 3 physical damage (shot), each hit applies Bleed for 3 s")
 	assert_int(line.count("physical damage")).is_equal(1)
 	# distinct neighbours are not merged
-	assert_bool(CardSummary.effect_line(CardDatabase.get_card("rogue_cut_corners")).contains(" x (")).is_false()
+	assert_bool(CardSummary.effect_line(CardDatabase.get_card("rogue_cut_corners")).contains(" times: ")).is_false()
 
 
 # --- payoffs wait for their setup (item 0 of sitting B) -----------------------------------------------------------------

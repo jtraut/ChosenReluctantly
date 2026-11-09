@@ -405,3 +405,133 @@ func test_the_two_bd3a_decks_are_legal_and_hold_their_core() -> void:
 			fire += 1
 	assert_int(fire).is_less_equal(2)  # BUILD_DEPTH 9a: the Bleed Out deck needs no more than 2 Fire cards (it has none)
 	assert_int(DebugDecks.pool_counts(bleed_out["starter"]).get("fire", 0)).is_equal(0)
+
+
+# --- D43 = B: the offer lean ----------------------------------------------------------------------------------
+
+func _fixture_cards() -> Array:
+	var cards: Array = []
+	for i in range(4):
+		cards.append({"id": "bleed_%d" % i, "pool": "rogue", "slot_type": "attack_single", "effects": [{"template": "apply_status", "params": {"status_id": "bleed", "duration": 3.0}}]})
+	for i in range(4):
+		cards.append({"id": "plain_%d" % i, "pool": "rogue", "slot_type": "attack_single", "effects": [{"template": "cone", "params": {"damage": 5}}]})
+	cards.append({"id": "burn_0", "pool": "rogue", "slot_type": "attack_single", "effects": [{"template": "apply_status", "params": {"status_id": "burn", "duration": 3.0}}]})
+	cards.append({"id": "both_0", "pool": "rogue", "slot_type": "attack_single", "effects": [
+		{"template": "apply_status", "params": {"status_id": "bleed", "duration": 3.0}}, {"template": "apply_status", "params": {"status_id": "burn", "duration": 3.0}}]})
+	cards.append({"id": "vein", "pool": "rogue", "slot_type": "attack_single", "effects": [{"template": "detonate_status", "params": {"status_id": "bleed", "multiplier": 2.0}}]})
+	return cards
+
+
+func _share(deck: Array, id: String, rewards: Dictionary, seeds: int = 600) -> float:
+	var hits: int = 0
+	var total: int = 0
+	for run_seed in range(1, seeds + 1):
+		for offered: String in RewardOffer.generate(run_seed, 1, deck, _fixture_cards(), ["rogue"], {}, rewards):
+			total += 1
+			hits += 1 if offered == id else 0
+	return float(hits) / float(total)
+
+
+func test_the_lean_is_off_by_default_so_an_old_config_gives_the_old_offers() -> void:
+	var deck: Array = ["bleed_0", "bleed_1"]
+	var old: Dictionary = {"offer_size": 3, "unowned_weight": 4.0, "owned_weight": 1.0}
+	var zero: Dictionary = old.duplicate()
+	zero["status_lean"] = 0.0
+	zero["status_lean_max"] = 3.0
+	for run_seed in range(1, 40):
+		assert_array(RewardOffer.generate(run_seed, 2, deck, _fixture_cards(), ["rogue"], {}, old)).is_equal(RewardOffer.generate(run_seed, 2, deck, _fixture_cards(), ["rogue"], {}, zero))
+	assert_float(RunConfig.rewards().get("status_lean", -1.0) as float).is_equal(0.25)  # the shipped values
+	assert_float(RunConfig.rewards().get("status_lean_max", -1.0) as float).is_equal(3.0)
+
+
+func test_an_unowned_card_applying_a_status_the_deck_applies_is_offered_more_often() -> void:
+	var deck: Array = ["bleed_0", "bleed_1"]  # n_bleed = 2
+	var base: Dictionary = {"offer_size": 3, "unowned_weight": 4.0, "owned_weight": 1.0}
+	var leaning: Dictionary = base.duplicate()
+	leaning["status_lean"] = 0.25
+	leaning["status_lean_max"] = 3.0
+	var before: float = _share(deck, "bleed_2", base)
+	var after: float = _share(deck, "bleed_2", leaning)
+	assert_float(after).is_greater(before * 1.2)  # weight x1.5
+	# a card with no status and a card that applies a status the deck does not have are not helped
+	assert_float(_share(deck, "plain_0", leaning)).is_less(_share(deck, "plain_0", base))
+	assert_float(_share(deck, "burn_0", leaning)).is_less(_share(deck, "burn_0", base) * 1.05)
+
+
+func test_the_factor_is_one_plus_lean_times_the_owned_count_capped_and_a_detonate_is_not_a_source() -> void:
+	var cards: Dictionary = {}
+	for card: Dictionary in _fixture_cards():
+		cards[String(card["id"])] = card
+	var deck_cards: Array[Dictionary] = [cards["bleed_0"], cards["bleed_1"], cards["both_0"], cards["vein"], cards["plain_0"]]
+	var counts: Dictionary = RewardOffer.status_counts(deck_cards)
+	assert_int(int(counts["bleed"])).is_equal(3)  # bleed_0, bleed_1 and both_0; Open-a-Vein style detonates do not count
+	assert_int(int(counts["burn"])).is_equal(1)
+	assert_float(RewardOffer.lean_for(cards["bleed_2"], counts, 0.25, 3.0)).is_equal_approx(1.75, 0.0001)
+	assert_float(RewardOffer.lean_for(cards["bleed_2"], counts, 1.0, 3.0)).is_equal_approx(3.0, 0.0001)  # capped
+	assert_float(RewardOffer.lean_for(cards["plain_1"], counts, 0.25, 3.0)).is_equal(1.0)
+	assert_float(RewardOffer.lean_for(cards["vein"], counts, 0.25, 3.0)).is_equal(1.0)  # a detonate applies nothing
+	assert_float(RewardOffer.lean_for(cards["both_0"], counts, 0.25, 3.0)).is_equal_approx(1.75, 0.0001)  # the best of its statuses, not the product
+
+
+func test_owned_cards_and_the_element_pools_own_status_are_not_leaned() -> void:
+	var deck: Array = ["bleed_0", "bleed_1"]
+	var base: Dictionary = {"offer_size": 3, "unowned_weight": 4.0, "owned_weight": 1.0}
+	var leaning: Dictionary = base.duplicate()
+	leaning["status_lean"] = 0.5
+	# owned copies keep weight 1: their share does not rise with the lean
+	assert_float(_share(deck, "bleed_0", leaning)).is_less(_share(deck, "bleed_0", base) * 1.05)
+	# a Fire pool's own status (pool_defs) is not an owned card: n_burn stays 0, so a Burn card is not helped
+	var defs: Dictionary = {"fire": {"status": {"status_id": "burn", "base_chance": 0.2}}}
+	var hits_off: int = 0
+	var hits_on: int = 0
+	for run_seed in range(1, 400):
+		hits_off += 1 if RewardOffer.generate(run_seed, 1, deck, _fixture_cards(), ["rogue", "fire"], defs, base).has("burn_0") else 0
+		hits_on += 1 if RewardOffer.generate(run_seed, 1, deck, _fixture_cards(), ["rogue", "fire"], defs, leaning).has("burn_0") else 0
+	assert_int(hits_on).is_less_equal(hits_off + 2)
+
+
+func test_run_config_validates_the_lean_keys_and_an_old_block_without_them_stays_valid() -> void:
+	var cards: Array[String] = []
+	var config: Dictionary = RunConfig.get_config().duplicate(true)
+	assert_array(RunConfig.validate(config, [], cards)).is_empty()
+	(config["rewards"] as Dictionary).erase("status_lean")
+	(config["rewards"] as Dictionary).erase("status_lean_max")
+	assert_array(RunConfig.validate(config, [], cards)).is_empty()  # an old save or config without the keys
+	for bad: Variant in [-0.1, 11, "x", null]:
+		var broken: Dictionary = RunConfig.get_config().duplicate(true)
+		(broken["rewards"] as Dictionary)["status_lean"] = bad
+		assert_array(RunConfig.validate(broken, [], cards)).override_failure_message("status_lean %s" % str(bad)).is_not_empty()
+	for bad: Variant in [0.5, 101, "x"]:
+		var broken: Dictionary = RunConfig.get_config().duplicate(true)
+		(broken["rewards"] as Dictionary)["status_lean_max"] = bad
+		assert_array(RunConfig.validate(broken, [], cards)).override_failure_message("status_lean_max %s" % str(bad)).is_not_empty()
+
+
+# --- the plan-aware relic picks -----------------------------------------------------------------------------------
+
+func _relic_options(ids: Array[String]) -> Array:
+	var options: Array = []
+	for id: String in ids:
+		options.append({"kind": "relic", "id": id, "enabled": true, "keywords": RelicDatabase.get_relic(id).get("keywords", [])})
+	options.append({"kind": "relic_skip", "id": "skip"})
+	return options
+
+
+func test_the_bot_takes_a_bleed_relic_when_the_deck_is_a_bleed_deck() -> void:
+	var deck: Array[String] = ["rogue_bleed_slash", "rogue_paper_cuts", "rogue_cut_corners", "rogue_quick_slash"]
+	var options: Array = _relic_options(["asap_notice", "salt_in_the_wound", "pyre_insurance"] as Array[String])
+	assert_str(RelicPolicy.offer_choice(options, deck)).is_equal("salt_in_the_wound")
+	assert_str(RelicPolicy.offer_choice(options, ["rogue_quick_slash"] as Array[String])).is_equal("asap_notice")  # no plan: the first offered
+
+
+func test_the_bot_takes_a_basic_attack_relic_when_the_deck_buffs_the_basic_attacks() -> void:
+	var brawler: Array[String] = ["rogue_quick_slash", "rogue_warm_up", "rogue_nap_time"]
+	assert_bool(RelicPolicy.plays_basic_attacks(brawler)).is_true()
+	assert_bool(RelicPolicy.plays_basic_attacks(["rogue_quick_slash", "rogue_bad_influence"] as Array[String])).is_false()
+	var options: Array = _relic_options(["asap_notice", "overtime_unpaid", "pyre_insurance"] as Array[String])
+	assert_str(RelicPolicy.offer_choice(options, brawler)).is_equal("overtime_unpaid")
+	assert_str(RelicPolicy.offer_choice(options, ["rogue_quick_slash"] as Array[String])).is_equal("asap_notice")
+	for id: String in ["muscle_memory", "overtime_unpaid", "spite_knuckles", "heavy_sigh"]:
+		assert_bool(RelicPolicy.is_basic_attack_relic(RelicDatabase.get_relic(id))).override_failure_message(id).is_true()
+	for id: String in ["serrated_excuse", "salt_in_the_wound", "chasing_paper", "asap_notice", "pyre_insurance"]:
+		assert_bool(RelicPolicy.is_basic_attack_relic(RelicDatabase.get_relic(id))).override_failure_message(id).is_false()

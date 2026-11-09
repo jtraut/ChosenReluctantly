@@ -13,6 +13,7 @@ extends SceneTree
 ## Part 2, cards: the Fire share, the Bleed-applier share and the Burn-applier share of the card offers, in three phases of the run, for
 ##   neutral  - never picks anything (the starting deck all run),
 ##   bleed    - picks a card that applies Bleed when offered, else rejects (3 rejects), at every 4th offer prunes a card that applies Burn (deck minimums allowed),
+##   bleed-gone - the same bot, but a pruned card is never offered again that run (a "removed cards stay removed" rule; NOT in the game, shown to size the effect),
 ##   burn     - the mirror: picks a Burn applier, prunes a Bleed applier,
 ## each with the lean off and with the lean on, so the lean's effect shows. "last 5 offers all Bleed" is the share of the last five offers whose three cards all apply Bleed.
 
@@ -58,7 +59,7 @@ func _initialize() -> void:
 	_relic_report()
 	print("")
 	print("CARD OFFERS (share of every offered card; 3 cards per offer)")
-	for bot: String in ["neutral", "bleed", "burn"]:
+	for bot: String in ["neutral", "bleed", "bleed-gone", "burn"]:
 		for lean: float in [0.0, lean_on]:
 			_card_report(bot, lean, seeds, offers, character)
 	quit(0)
@@ -73,7 +74,7 @@ func _burn_dependent(relic: Dictionary) -> bool:
 
 func _relic_report() -> void:
 	print("")
-	print("RELIC OFFERS (a %s's elite and relic-room offers; tier1 and tier2 as shipped)" % _pools)
+	print("RELIC OFFERS (a %s's elite and relic-room offers; every tier with weight)" % str(_pools))
 	var empty: Array[String] = []
 	var tiers: Array[String] = ["tier1", "tier2", "tier3"]
 	for source: String in ["elite", "relic_room"]:
@@ -127,9 +128,10 @@ func _card_report(bot: String, lean: float, seeds: int, offers: int, character: 
 	var bleed_in_deck_end: int = 0
 	for run_seed in range(1, seeds + 1):
 		var deck: Array = CharacterDatabase.starting_deck(character).duplicate()
+		var cards: Array = _cards
 		var rejects: int = RunConfig.rejects_per_run()
 		for index in range(offers):
-			var offered: Array[String] = RewardOffer.generate(run_seed, index, deck, _cards, _pools, _pool_defs, rewards)
+			var offered: Array[String] = RewardOffer.generate(run_seed, index, deck, cards, _pools, _pool_defs, rewards)
 			for phase_index in range(PHASES.size()):
 				var phase: Array = PHASES[phase_index]
 				if index < int(phase[1]) or index >= int(phase[2]):
@@ -144,8 +146,9 @@ func _card_report(bot: String, lean: float, seeds: int, offers: int, character: 
 				last_sets += 1
 				if offered.all(func(id: String) -> bool: return _applies(id, "bleed")):
 					last_all_bleed += 1
-			var wanted: String = "bleed" if bot == "bleed" else ("burn" if bot == "burn" else "")
-			var pruned: String = "burn" if bot == "bleed" else ("bleed" if bot == "burn" else "")
+			var bleeder: bool = bot == "bleed" or bot == "bleed-gone"
+			var wanted: String = "bleed" if bleeder else ("burn" if bot == "burn" else "")
+			var pruned: String = "burn" if bleeder else ("bleed" if bot == "burn" else "")
 			if wanted != "":
 				var pick: String = ""
 				for id: String in offered:
@@ -161,6 +164,12 @@ func _card_report(bot: String, lean: float, seeds: int, offers: int, character: 
 					for id: String in deck:
 						if _applies(id, pruned) and DeckRules.can_remove(deck, id, DeckRules.shipped_config(), _slot_of, SlotTypeDatabase.known_ids()).is_empty():
 							deck.erase(id)
+							if bot == "bleed-gone":
+								var kept: Array = []
+								for card: Variant in cards:
+									if String((card as Dictionary)["id"]) != id:
+										kept.append(card)
+								cards = kept
 							break
 		for id: String in deck:
 			burn_in_deck_end += 1 if _applies(id, "burn") else 0

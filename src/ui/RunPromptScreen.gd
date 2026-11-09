@@ -93,7 +93,7 @@ func _show_cleared(summary: Dictionary) -> void:
 	var healed: float = float(summary.get("healed", 0.0))
 	show_content({
 		"title": String(text["title"]),
-		"subtitle": "%s  -  %s" % [_controller.room_label(), _controller.room_type_name(room_type)],
+		"subtitle": "%s  -  %s" % [_controller.run_room_label(), _controller.room_type_name(room_type)],
 		"line": _cleared_line(room_type, healed, text),
 		"rows": RunPromptRows.cleared_rows(summary, text),
 		"button": String(text["button"]),
@@ -150,7 +150,7 @@ func show_choice(model: Dictionary) -> void:
 	var merchant: Dictionary = model.get("merchant", {})
 	show_content({
 		"title": _titled(model, room_type),
-		"subtitle": "%s  -  %s" % [String(model.get("room_label", "")), String(model.get("room_type_name", ""))],
+		"subtitle": "%s  -  %s" % [ActText.model_room_label(model), String(model.get("room_type_name", ""))],
 		"line": merchant_line(model),
 		"screen": String(model.get("merchant_screen", "")),
 		"merchant": merchant,
@@ -1014,6 +1014,8 @@ func _fit_panel() -> void:
 		var room: float = _avail_height(cfg) - rest_h
 		var content_h: float = options_box.get_combined_minimum_size().y + scroll.get_theme_stylebox("panel").get_minimum_size().y
 		var wanted: float = minf(content_h, maxf(room, 120.0 * _scale(cfg)))
+		if _layout == "shop" and wanted < content_h and content_h - wanted <= content_h * float(cfg.get("shop_scroll_slack", 0.0)):
+			wanted = content_h  # MAP3 ux: a few pixels over (1280x720, poor) is better shrunk by the panel fit than a scroll bar for the last tile
 		if not is_equal_approx(scroll.custom_minimum_size.y, wanted):
 			scroll.custom_minimum_size.y = wanted
 		# When it does scroll, the bar must not sit on top of the tiles: the area is that much wider.

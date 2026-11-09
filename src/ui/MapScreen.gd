@@ -408,6 +408,7 @@ func _build_legend() -> void:
 		item.set_meta(&"type", type_id)
 		var icon := RunTypeIcon.new()
 		icon.shape = RunIcons.shape_for(type_id)
+		icon.coin = type_id == "merchant"  # the merchant's coin, as on the map node
 		icon.color = RunIcons.color_for(type_id, UiConfig.run_ui(), tiers)
 		icon.custom_minimum_size = Vector2(icon_px, icon_px)
 		icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER

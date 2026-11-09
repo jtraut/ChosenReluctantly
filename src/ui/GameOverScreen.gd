@@ -102,8 +102,10 @@ func run_line() -> String:
 	var template: String = String(RunConfig.ui().get("lose", {}).get("run_line", ""))
 	if template == "":
 		return ""
+	var reached: String = "run_room_number" if controller.has_method("run_room_number") else "room_number"
+	var of_total: String = "run_room_total" if controller.has_method("run_room_total") else "room_total"
 	return "
-" + template % [int(controller.call("room_number")), int(controller.call("room_total"))]
+" + template % [int(controller.call(reached)), int(controller.call(of_total))]
 
 
 ## Pixel scale for a viewport height, relative to the config's reference height.

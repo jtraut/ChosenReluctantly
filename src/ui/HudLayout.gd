@@ -62,9 +62,10 @@ static func dodge_rect(viewport_size: Vector2, cfg: Dictionary) -> Rect2:
 
 ## The "Room X of Y - Type" indicator: top right, at the safe margin (3c moved it from the top centre, which the
 ## boss bar owns). Clear of the health panel and meters (top left), the slots (bottom) and the F3 overlay.
-static func room_indicator_rect(viewport_size: Vector2, cfg: Dictionary) -> Rect2:
+## `acts` (MAP3 ux): a multi-act run adds a line ("Act 2 of 3") above the room line, so the plate is `room_indicator_size_acts` tall.
+static func room_indicator_rect(viewport_size: Vector2, cfg: Dictionary, acts: bool = false) -> Rect2:
 	var s := ui_scale(viewport_size, cfg)
-	var sz: Array = cfg["room_indicator_size"]
+	var sz: Array = cfg.get("room_indicator_size_acts", cfg["room_indicator_size"]) if acts else cfg["room_indicator_size"]
 	var size := Vector2(float(sz[0]), float(sz[1])) * s
 	var margin := float(cfg["safe_margin"]) * s
 	return Rect2(Vector2(viewport_size.x - margin - size.x, margin), size)
@@ -72,9 +73,9 @@ static func room_indicator_rect(viewport_size: Vector2, cfg: Dictionary) -> Rect
 
 ## The gold readout (MAP1): right under the room indicator, same right edge, `hud_gold_size` from data/ui.json `map_screen`. It sits in the
 ## top-right column, clear of the boss bar (top centre), the health panel (top left) and the slots.
-static func gold_rect(viewport_size: Vector2, cfg: Dictionary, map_cfg: Dictionary) -> Rect2:
+static func gold_rect(viewport_size: Vector2, cfg: Dictionary, map_cfg: Dictionary, acts: bool = false) -> Rect2:
 	var s := ui_scale(viewport_size, cfg)
-	var indicator := room_indicator_rect(viewport_size, cfg)
+	var indicator := room_indicator_rect(viewport_size, cfg, acts)
 	var sz: Array = map_cfg["hud_gold_size"]
 	var size := Vector2(float(sz[0]), float(sz[1])) * s
 	return Rect2(Vector2(indicator.end.x - size.x, indicator.end.y + float(map_cfg["hud_gold_gap"]) * s), size)

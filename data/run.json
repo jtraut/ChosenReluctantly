@@ -155,20 +155,20 @@
         "room_cleared": { "title": "Room cleared", "button": "Continue", "hint": "Enter to continue", "rest_line": "You rest. It helps a little (healed %d).", "rest_full_line": "You rest. Nothing needed healing.", "stat_hp": "HP", "stat_time": "Time", "stat_healed": "Healed" },
         "next_line": "Next: Room %d of %d - %s",
         "reward": { "title": "Room cleared", "line": "Pick a card, or reject the offer.", "skip_label": "Reject the offer", "skip_detail": "Spends one reject. Rejects left: %d of %d", "skip_disabled": "No rejects left. Pick a card.", "rejects_label": "Rejects left" },
-        "rest": { "title": "Rest", "line": "Heal a little, or get rid of a card.", "heal_label": "Rest and heal", "heal_detail": "Heal %d HP (%d%% of max)", "heal_full_detail": "HP is already full", "remove_label": "Remove a card", "remove_detail": "Take one card out of your deck", "remove_none": "Every card is needed to meet the deck minimums", "remove_locked": "Get another card for the %s slot first (minimum %d different)", "remove_locked_group": "Get another card for %s first", "remove_title": "Remove which card?", "remove_line": "Pick a card to remove. Greyed cards would break a deck minimum.", "remove_option": "Remove %s", "copies": "x%d", "back_label": "Back" },
+        "rest": { "title": "Rest", "line": "Heal a little, or get rid of a card.", "heal_label": "Rest and heal", "heal_detail": "Heal %d HP (%d%% of max)", "heal_full_detail": "HP is already full", "remove_label": "Remove a card", "remove_detail": "Take one card out of your deck", "remove_none": "Every card is needed to meet the deck minimums. Add a card first.", "remove_locked": "Get another card for the %s slot first (minimum %d different)", "remove_locked_group": "Get another card for %s first", "remove_title": "Remove which card?", "remove_line": "Pick a card to remove. Greyed cards would break a deck minimum.", "remove_option": "Remove %s", "copies": "x%d", "back_label": "Back" },
         "merchant": {
             "title": "Merchant", "line": "Spend your gold, then leave. You have %d gold.",
             "item_format": "%s - %d gold", "removal_format": "Remove a card - %d gold", "removal_name": "Remove a card", "removal_detail": "Each removal costs %d more.",
             "reroll_label": "Reroll the stock (free)", "reroll_name": "Reroll the stock", "reroll_detail": "Redraws what is unsold. Free rerolls left: %d",
             "leave_label": "Leave", "leave_detail": "Back to the map.", "back_label": "Back",
             "price_format": "%d gold", "free_tag": "Free", "sold_tag": "Sold", "shop_only_tag": "Only sold here", "need_more": "Need %d more gold",
-            "tile_reasons": { "none_removable": "No card can go: deck minimums", "no_rerolls": "No free rerolls left" },
+            "tile_reasons": { "none_removable": "No card can go. Add a card first.", "no_rerolls": "No free rerolls left" },
             "swap_note": "At the relic limit: you give one up first.", "relic_band": "%s, %s", "service_removal": "Service", "service_reroll": "Service",
             "list_hint": "Arrow keys move, Enter or click buys. Leave when you are done.", "remove_list_hint": "Arrow keys move, Enter or click removes the card. Back changes your mind.",
             "swap_cost": "It costs %d gold. You pay only when you give one up. Cancel charges nothing.", "sold_line": "Gone. The merchant is not restocking.",
             "remove_title": "Remove which card?", "remove_line": "Removing a card costs %d gold. Greyed cards would break a deck minimum.",
             "reasons": {
-                "sold": "Sold", "too_expensive": "Not enough gold", "not_for_sale": "Not for sale", "none_removable": "Every card is needed to meet the deck minimums",
+                "sold": "Sold", "too_expensive": "Not enough gold", "not_for_sale": "Not for sale", "none_removable": "Every card is needed to meet the deck minimums. Add a card first, then come back.",
                 "removal_blocked": "Removing this card would break a deck minimum", "no_rerolls": "No free rerolls left", "no_visit": "The merchant is closed",
                 "not_in_stock": "Not in stock", "unknown_relic": "This relic no longer exists", "none_giveable": "Nothing you hold can be given up",
                 "bad_giveup": "That relic can't be given up", "not_in_deck": "You don't have that card"
@@ -198,7 +198,7 @@
             "pick_hint": "Arrow keys move, Enter or click picks the room", "view_title": "Your route", "view_line": "Where you have been, and where you could still go.",
             "view_hint": "Arrow keys look around. Esc, Enter or Back closes", "back_label": "Back", "button_label": "Map",
             "legend_chest": "Dots show a relic stage's size: 1 small, 2 medium, 3 large.", "legend_states": "Gold ring: you are here.  White ring: you can pick it.  Dim: later.",
-            "legend_title": "Key", "boss_title": "Face the boss", "boss_line": "Nothing else is left. Pick the boss when you are ready.", "spend_line": "Spend your gold at the merchant (the square).",
+            "legend_title": "Key", "boss_title": "Face the boss", "boss_line": "Nothing else is left. Pick the boss when you are ready.", "spend_line": "Spend your gold at the merchant (the square with the coin).",
             "chest_names": { "small": "Small", "medium": "Medium", "large": "Large" },
             "chest_notes": { "small": " Small chest: mostly tier 1.", "medium": " Medium chest: mostly tier 2.", "large": " Large chest: the best odds of high-tier relics." },
             "hover": {

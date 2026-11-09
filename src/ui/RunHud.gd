@@ -1,6 +1,6 @@
 extends CanvasLayer
 class_name RunHud
-## "Room X of Y - Type" indicator (Milestone 3a): a small dark plate at the top centre with a type icon (a shape,
+## "Room X of Y - Type" indicator (Milestone 3a; MAP3 ux: over three acts a first line "Act 2 of 3" and the whole-run room, "Room 14 of 30"): a small dark plate at the top centre with a type icon (a shape,
 ## so the type never depends on colour), sized and placed by HudLayout.room_indicator_rect from data/ui.json.
 ## Shown only in run mode; it listens to the sibling RunController's `room_started`.
 
@@ -32,8 +32,19 @@ func _ready() -> void:
 func _on_room_started(_index: int, _total: int, room_type: String, controller: RunController) -> void:
 	_sync_gold()
 	_room_type = room_type
-	label.text = "%s  -  %s" % [controller.room_label(), controller.room_type_name()]
-	_apply_icon()
+	label.text = indicator_text(controller.act_label(), controller.run_room_label(), controller.room_type_name())
+	_apply_layout()  # the plate is taller on a multi-act run
+
+
+## The plate's text: "Act 2 of 3" on its own line above "Room 14 of 30  -  Type"; a one-act run (empty `act_text`) has the room line only, as before.
+static func indicator_text(act_text: String, room_text: String, type_text: String) -> String:
+	var line: String = "%s  -  %s" % [room_text, type_text]
+	return line if act_text == "" else "%s%s%s" % [act_text, char(10), line]
+
+
+## True when the run has acts to show (the plate has its extra line).
+func _acts_on() -> bool:
+	return _controller != null and _controller.act_label() != ""
 
 
 func _build_gold() -> void:
@@ -87,7 +98,7 @@ func _apply_layout() -> void:
 	var cfg := UiConfig.run_ui()
 	var vp := get_viewport().get_visible_rect().size
 	var s := HudLayout.ui_scale(vp, hud_cfg)
-	var rect := HudLayout.room_indicator_rect(vp, hud_cfg)
+	var rect := HudLayout.room_indicator_rect(vp, hud_cfg, _acts_on())
 	panel.position = rect.position
 	panel.custom_minimum_size = rect.size
 	panel.size = rect.size
@@ -112,7 +123,7 @@ func _apply_gold_layout(hud_cfg: Dictionary, vp: Vector2, s: float) -> void:
 	if gold_badge == null:
 		return
 	var map_cfg: Dictionary = UiConfig.map_screen()
-	var rect := HudLayout.gold_rect(vp, hud_cfg, map_cfg)
+	var rect := HudLayout.gold_rect(vp, hud_cfg, map_cfg, _acts_on())
 	gold_badge.position = rect.position
 	gold_badge.size = rect.size
 	gold_badge.custom_minimum_size = rect.size

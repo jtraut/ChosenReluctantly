@@ -159,7 +159,7 @@ Last updated: 2026-11-09 (MAP3 closed; D44 = C, D45 = B recorded; BD3a next). **
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- Nothing in progress. MAP3 closed 2026-11-09 (tag `playtest-2026-11-09-MAP3`). BD3a is next and hasn't started.
+- **BD3a sitting A handed to gameplay-dev 2026-11-09** (ROADMAP BD3a brief, items 1-10). If the session cuts off, check `git log` for gameplay-dev commits after 947ee9f: if sitting A is partial, re-hand gameplay-dev the remaining items; main must still run.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes; they didn't flake in MAP3).
 
 ## Exact next step

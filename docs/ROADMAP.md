@@ -1290,6 +1290,7 @@ un_offer_report.ps1`.
   - **qa re-check FAIL 2026-11-09** (8e8c3bc; `docs/reviews/2026-11-09-bd3a-recheck-qa.md`). One blocker: a614f76's deferred-call ERROR. **ux** builds the label inside the deferred call. **qa** gives a short verdict from one isolated `slice5d_qa_test` run and one full suite run. Everything else passes.
   - **qa PASS 2026-11-09** (4b97a61, on ux e51981e). Suite 2083 / 157, exit 0, 0 orphans. Arena 3172486861. **Carry-over (non-blocking, to MB1 housekeeping):** tidy the `!is_inside_tree()` engine log in `bd3a_ux_test` and `a1_qa_test`.
   - **playtester:** play `rogue-bleed-out` and `rogue-grudge-brawler`, then a normal Fire Rogue run that tries to go physical from the starting deck. **Difficulty check (the sim floor was missed):** is a normal three-act Fire Rogue run clearly harder than at the MAP3 tag? Also note the act-start heal (D45), which the bot can't measure. Questions: does the run offer enough to build it, and do the stacks and the detonate read?
+  - **Playtest 2026-11-09** (2034c6e, `docs/playtests/2026-11-09-bd3a-short.md`): no blocker; not harder than MAP3. Triage in DECISIONS "BD3a playtest triage". D48 (more Bleed cards now) and eyes 53 and 54 are for the director. ux carry-overs go to MB1 ux.
   - **Acceptance:**
     - `rogue-bleed-out` and `rogue-grudge-brawler` boss times are within 70-130% of the standard Rogue deck (BUILD_DEPTH §2 parity).
     - Kindling vs Bleed Out fingerprint distance is at least 0.6, and their top damage sources differ.
@@ -1311,11 +1312,13 @@ un_offer_report.ps1`.
     - **Act 2, the rogue-style duelist (the director's example):** small, about half the brute's HP, fast; a dash-strike combo, a short blink behind the player, and a hard-hitting quick slash with a short but readable telegraph.
     - Per-act visuals: a floor and light tint per act (data), a mini-boss name and bar. An act 3 damage bump only if the sim says acts feel flat after D45.
   - **gameplay-dev:** a mini-boss AI built on the existing boss attack framework (`bosses.json` attacks, wind-ups, telegraphs), with attacks and stats as data; `rooms.mini_boss` points at the new mini-bosses; the per-act tint. Probably two sittings (one per mini-boss). Combat feel per CLAUDE.md: telegraphs, hit-stop, knockback.
+  - **ux carry-overs from the BD3a playtest:** stack labels overlap each other, the elite marker and the "Bleed detonated" word; the mini-boss bar behind the Act 2 screen says "Act 2" (should be Act 1); the doubled "HP" on the low-HP line; a cue that Open a Vein is better on stacks. Also housekeeping: the `!is_inside_tree()` log in `bd3a_ux_test` and `a1_qa_test`.
   - **ux:** the mini-boss name and bar (building on BD3a's), attack telegraph readability, the act tint checked at 1280x720 and 1024x600.
   - **qa:** each attack's telegraph and damage, the mini-boss scenarios, the 3-act `-Route first` gate (8/12 per class), hashes.
   - **Acceptance:** each mini-boss is clearly different from any normal enemy and from the other (playtester); both classes win at least 8/12 three-act runs; scenarios `--scenario=mini_boss_act1` and `mini_boss_act2` exist for the director.
 - [ ] **MAP3b, rarity and boss relics (after BD3a, before MAP4). Full loop. Tag `playtest-YYYY-MM-DD-MAP3b`.** Plan: MAP.md §4.5, BUILD_DEPTH §4. **Added 2026-11-09:** the tier 3 relics, boss-tier relics and rare and legendary cards must cover Bleed and basic attacks as well as Burn (BUILD_DEPTH §9a).
   - **First, game-lead, docs only:**
+    - **from BD3a's playtest:** a non-Burn heavy-attack relic; a candidate rule where pruning or rejecting a type also shrinks its offers; Bleed share in late offers (8.5%) as a target to raise;
     - a BUILD_DEPTH design pass: about 6 boss-tier relics per class, tier 3 relics, and the rare and legendary card list per pool;
     - decide whether any new effect code is needed;
     - **rare and legendary: retag or new cards?** Default: legendary cards are all new, and rare may retag up to 2 existing cards per pool. Decided and logged in the design pass.

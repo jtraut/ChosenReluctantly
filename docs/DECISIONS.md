@@ -2190,3 +2190,16 @@ gameplay-dev e4ef264..bf0d44c. `Player._apply_aim` ignored `aim_point_override`,
   - **Parity:** bleed-out 92% (79% with relics), grudge-brawler 109% (94%), kindling 106% (96%), against standard 29.8 s.
   - **No-card gate:** 0/12 for each class.
   - **Three-act pooled:** Rogue 35/36, Wizard 29/36.
+
+## 2026-11-09 - BD3a playtest triage (game-lead)
+Report: `docs/playtests/2026-11-09-bd3a-short.md` (2034c6e). No blocker. The difficulty check answers "not harder than MAP3, slightly easier": enemy, boss and player data are unchanged since the MAP3 tag, and D45's heal is the only difficulty change. Rejected alternatives in brackets.
+- **There are still few Bleed cards (6), and late offers are about 8.5% Bleed.** The content gap is the director's call to schedule, so it goes to him as D48. Default: BD3a closes as it is, and Bleed and physical rares and legendaries come in MAP3b, already planned. The alternative is a short common-card top-up now. [Adding cards without asking, which reorders his run order.]
+- **The stack fantasy needing a source (Bad Influence or Serrated Excuse) is his D25 = A, working as designed.** It isn't re-asked. ux adds a cue that Open a Vein is better on stacks. [Re-opening D25.]
+- **Grudge Brawler using Heavy Sigh, a Burn relic, is acceptable.** R-D is a basic-attack plan, not a non-Fire plan, and GDD §5's dual-class rule allows hybrids. A non-Burn heavy-attack relic goes onto the MAP3b relic list. [Changing the preset now.]
+- **The idea that pruning or rejecting a type also shrinks its offers** goes into the MAP3b design pass as a candidate. It isn't asked now: D47 just shipped, and the director hasn't played it yet.
+- **Not blocking, to MB1's ux** (which builds on the mini-boss bar):
+  - stack labels overlap each other, the elite marker and the "Bleed detonated" word;
+  - the mini-boss bar behind the Act 2 screen says "Act 2 Mini-boss" (it should say Act 1);
+  - "HP" is repeated on the low-HP line;
+  - the Open a Vein stacks cue.
+- **A human three-act run is the only real difficulty read** while the bot is uncalibrated. It's eyes item 53 for the director, and SIM1 uses his answer.

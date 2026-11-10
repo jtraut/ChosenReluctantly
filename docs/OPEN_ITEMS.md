@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-09 (BD3a in progress; D46 = B, D47 = B recorded; latest tag `playtest-2026-11-09-MAP3`)
-**Status: no decisions waiting (D46 = B, D47 = B recorded 2026-11-09). 7 things to look at (52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. BD3a (physical Rogue) is being built: sittings A and B are in, ux is working, and pruned cards staying gone (D47) gets built next. Then qa and the playtest. After BD3a: MB1 -> MAP3b -> MAP4 -> 3d -> BD3b.**
+Last updated: 2026-11-09 (BD3a qa PASS and playtested; D48 new; latest tag `playtest-2026-11-09-MAP3`)
+**Status: 1 decision waiting (D48: more Bleed cards now or in MAP3b; default: later). 9 things to look at (54, 53, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. BD3a (physical Rogue) has passed qa and the playtest; it closes after the docs pass. Next: **SIM1** (bot re-calibration) -> MB1 -> MAP3b -> MAP4 -> 3d -> BD3b.**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -17,11 +17,24 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## Needs your decision
 
-Nothing right now. Next new number: D48.
+Next new number: D49.
+
+**D48. More Bleed and physical cards now, or in MAP3b?** BD3a took a Fire Rogue's Burn relics from 62% to 29% of its relic offers. A deck that picks Bleed and removes Fire now sees about 32% Fire offers late in a run, down from 39%. But there are still only 6 Bleed cards in the game, so once you own them, only about 8% of late offers are Bleed.
+- **A. Close BD3a as it is.** Bleed and physical rare and legendary cards come in MAP3b, as planned, after SIM1 and MB1.
+- **B. A short top-up sitting now:** about 4 more common Bleed or physical cards, before SIM1. It costs about one sitting, and SIM1 and MB1 start later.
+- **Default: A.** My suggestion is to play first (item 53) and pick B if the build still feels thin.
 
 ## Needs your eyes
 
 Reply with the number and a word or two.
+
+53. **Play a physical Rogue (BD3a), from main.** `godot --path .` as the Rogue.
+    - **Try to go Bleed from the start.** Take Bleed cards, remove Fire ones at rests and the merchant (removed cards no longer come back, your D47), and see if the run gives you enough.
+    - **Harder or easier than your MAP3 run?** Enemies are unchanged since MAP3. Your 30% heal at each act start is the only difficulty change. The test bot can't tell us any more (see 54), so your answer is the measure.
+    - **Look for:** "Bleed x3" over enemies (stacks need Bad Influence or the Serrated Excuse relic), the big "!" number when Open a Vein detonates, the act screen's heal line, and the mini-boss's named bar.
+    - **Shortcuts:** `-- --deck=rogue-bleed-out` and `-- --deck=rogue-grudge-brawler` (add `--relics=spite_knuckles+muscle_memory+overtime_unpaid+heavy_sigh` for the brawler's full plan).
+
+54. **FYI: the test bot was half-blind until today.** In every headless sim the bot aimed without turning, so cones, knives and dashes missed. Your own play was never affected. Fixed, it wins almost every run, so every old bot number (the H1/H2 dodge-off results, the MAP1-MAP3 run baselines) was measured with a weaker bot than we thought. No shipped value changes because of this. A new tooling slice, **SIM1**, makes the bot play more like a person and re-measures everything before MB1. Reply "ok" when you've read this.
 
 52. **Play a three-act run (MAP3), with a clock running.** `godot --path .` (a run is now 30 rooms in 3 acts).
     - **How long did it take on the clock?** The target is 30-45 min. The bots take about 13.5 min of sim time, and the playtester guesses 20-30 min for a person.

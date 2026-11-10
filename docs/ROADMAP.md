@@ -1225,7 +1225,7 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
 **Updated 2026-11-09 (D44 = C; SIM1 added the same day):** MAP3 (done) -> BD3a -> **SIM1, sim re-calibration** -> **MB1, mini-boss and act identity** -> MAP3b -> MAP4 -> 3d -> BD3b. MB1's placement is a game-lead call (DECISIONS "Applying D44 = C and D45 = B").
 MAP3 (done 2026-11-09) -> **BD3a, physical Rogue** -> MAP3b -> MAP4 -> 3d -> BD3b (Wizard depth). Placement and scope are game-lead calls (DECISIONS "BD3a placement and scope"). The director can move BD3a ahead of MAP3's close, or bring BD3b up straight after it.
 
-- [ ] **BD3a, physical Rogue builds (after MAP3, before MAP3b). Full loop. Tag `playtest-YYYY-MM-DD-BD3a`.** Plan: BUILD_DEPTH §9a (the full card and relic list), §3.4 (stacking), §5 R-C and R-D. Director feedback 2026-11-09: too few physical and Bleed cards, about half his relics were Fire/Burn and useless to his build, and he kept rejecting and pruning Fire offers.
+- [x] **BD3a, physical Rogue builds — Done 2026-11-09, tag `playtest-2026-11-09-BD3a`** (qa PASS 4b97a61, playtest 2034c6e, docs 71119f8..d139723). Original brief: Plan: BUILD_DEPTH §9a (the full card and relic list), §3.4 (stacking), §5 R-C and R-D. Director feedback 2026-11-09: too few physical and Bleed cards, about half his relics were Fire/Burn and useless to his build, and he kept rejecting and pruning Fire offers.
   - **Goal:** a Fire Rogue can build a physical/Bleed deck, or a light-and-heavy deck, from what the run offers. Fire stops being the default.
   - **gameplay-dev, sitting A (engine plus 4 cards):**
     1. Stacking statuses: `stacking.max_stacks` on a status (default 1); `status_max_stacks.<id>` through `StatModifiers`; damage-over-time ticks x stacks; reapplying adds a stack up to the max and refreshes the duration. **D25 = A:** Burn and Bleed data stay at max 1, so with no keystone or relic nothing changes.
@@ -1305,6 +1305,7 @@ un_offer_report.ps1`.
     - the Wizard checked the same way.
   - **qa:** re-run and re-record every sim baseline (the hashes, `-Run` per class for 1 act, 3 acts and `-NoMap`, routes, `-Relics`, the no-card gate, the BD3a fingerprint), and propose the new floors.
   - **game-lead:** sets the floors in DECISIONS. MB1's acceptance uses the new floor.
+  - **Also:** check why headless `--run-room=30` (without `--quit`) didn't exit in tech-writer's BD3a pass; the MAP3 pass recorded exit 0.
   - **Acceptance:** each sim number has one current value with its commit; there's a bot setting whose results are argued against human reports; MB1 can gate on it.
 - [ ] **MB1, mini-boss and act identity (after BD3a, before MAP3b; D44 = C, director 2026-11-09). Full loop. Tag `playtest-YYYY-MM-DD-MB1`.** Director: the mini-bosses especially need their own attacks and behaviours, for example one smaller, with less HP than the others, but quicker and hitting harder in a rogue style; plus visible changes per act (GDD §9).
   - **First, game-lead, docs only:** a short design note (in MAP.md, new section) for the two act-end mini-bosses: name, size, HP, speed, 2-3 attacks each with telegraphs, and how each tests the player differently. Starting sketch, to be confirmed there:
@@ -1315,7 +1316,7 @@ un_offer_report.ps1`.
   - **ux carry-overs from the BD3a playtest:** stack labels overlap each other, the elite marker and the "Bleed detonated" word; the mini-boss bar behind the Act 2 screen says "Act 2" (should be Act 1); the doubled "HP" on the low-HP line; a cue that Open a Vein is better on stacks. Also housekeeping: the `!is_inside_tree()` log in `bd3a_ux_test` and `a1_qa_test`.
   - **ux:** the mini-boss name and bar (building on BD3a's), attack telegraph readability, the act tint checked at 1280x720 and 1024x600.
   - **qa:** each attack's telegraph and damage, the mini-boss scenarios, the 3-act `-Route first` gate (8/12 per class), hashes.
-  - **Acceptance:** each mini-boss is clearly different from any normal enemy and from the other (playtester); both classes win at least 8/12 three-act runs; scenarios `--scenario=mini_boss_act1` and `mini_boss_act2` exist for the director.
+  - **Acceptance:** each mini-boss is clearly different from any normal enemy and from the other (playtester); both classes meet SIM1's three-act floor (the old 8/12 is suspended); scenarios `--scenario=mini_boss_act1` and `mini_boss_act2` exist for the director.
 - [ ] **MAP3b, rarity and boss relics (after BD3a, before MAP4). Full loop. Tag `playtest-YYYY-MM-DD-MAP3b`.** Plan: MAP.md §4.5, BUILD_DEPTH §4. **Added 2026-11-09:** the tier 3 relics, boss-tier relics and rare and legendary cards must cover Bleed and basic attacks as well as Burn (BUILD_DEPTH §9a).
   - **First, game-lead, docs only:**
     - **from BD3a's playtest:** a non-Burn heavy-attack relic; a candidate rule where pruning or rejecting a type also shrinks its offers; Bleed share in late offers (8.5%) as a target to raise;

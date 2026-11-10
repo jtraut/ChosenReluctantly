@@ -1,13 +1,13 @@
 # Director open items
 
-Last updated: 2026-11-09 (BD3a qa PASS and playtested; D48 new; latest tag `playtest-2026-11-09-MAP3`)
-**Status: 1 decision waiting (D48: more Bleed cards now or in MAP3b; default: later). 9 things to look at (54, 53, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. BD3a (physical Rogue) has passed qa and the playtest; it closes after the docs pass. Next: **SIM1** (bot re-calibration) -> MB1 -> MAP3b -> MAP4 -> 3d -> BD3b.**
+Last updated: 2026-11-09 (BD3a closed; D48 new; latest tag `playtest-2026-11-09-BD3a`)
+**Status: 1 decision waiting (D48: more Bleed cards now or in MAP3b; default: later). 9 things to look at (54, 53, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. BD3a (physical Rogue) is done, tag `playtest-2026-11-09-BD3a`. Next: **SIM1** (bot re-calibration) -> MB1 -> MAP3b -> MAP4 -> 3d -> BD3b.**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
 ## How to playtest
 
-- **Latest known-good build:** `git checkout playtest-2026-11-09-MAP3`, play, then `git checkout main`. The one before it is `playtest-2026-11-06-MAP2`. Older tags are in `docs/RESOLVED.md`.
+- **Latest known-good build:** `git checkout playtest-2026-11-09-BD3a`, play, then `git checkout main`. The one before it is `playtest-2026-11-09-MAP3`. Older tags are in `docs/RESOLVED.md`.
 - **Relics:** `-- --relics=pyre_insurance+heavy_sigh` starts with relics; `-- --relic-cap=1` tries the give-one-up step.
 - **Normal run:** `godot --path .` (three acts of 10 rooms on a branching map; Continue on the class pick resumes a saved run). Extras: `-- --run-seed=5`, `-- --run-room=10` (act 1 mini-boss), `-- --run-room=30` (final boss), `-- --acts=1` (the old one-act run), `-- --no-map` (straight run), `-- --class=wizard`.
 - **Preset decks:** `godot --path . -- --list-decks`, then for example `-- --deck=fire-heavy-rogue --full-deck --run-room=10`.
@@ -28,7 +28,7 @@ Next new number: D49.
 
 Reply with the number and a word or two.
 
-53. **Play a physical Rogue (BD3a), from main.** `godot --path .` as the Rogue.
+53. **Play a physical Rogue (BD3a), tag `playtest-2026-11-09-BD3a` or main.** `godot --path .` as the Rogue.
     - **Try to go Bleed from the start.** Take Bleed cards, remove Fire ones at rests and the merchant (removed cards no longer come back, your D47), and see if the run gives you enough.
     - **Harder or easier than your MAP3 run?** Enemies are unchanged since MAP3. Your 30% heal at each act start is the only difficulty change. The test bot can't tell us any more (see 54), so your answer is the measure.
     - **Look for:** "Bleed x3" over enemies (stacks need Bad Influence or the Serrated Excuse relic), the big "!" number when Open a Vein detonates, the act screen's heal line, and the mini-boss's named bar.

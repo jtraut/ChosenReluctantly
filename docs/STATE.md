@@ -3,9 +3,21 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-09 (MAP3 closed; D44 = C, D45 = B recorded; BD3a next). **Run order:** MAP1, MAP2, MAP3 (done) -> **BD3a, physical Rogue** (new, director priority 2026-11-09) -> MAP3b -> MAP4 -> 3d -> BD3b (Wizard depth). All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2.
+Last updated: 2026-11-09 (BD3a closed, tag `playtest-2026-11-09-BD3a`; SIM1 next). **Run order:** BD3a (done) -> **SIM1, sim re-calibration** -> MB1 -> MAP3b -> MAP4 -> 3d -> BD3b. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2, MAP3, BD3a.
 
 ## What's done
+- **BD3a closed 2026-11-09:** physical Rogue: stacking, detonate, 8 Rogue cards, 6 relics, Spite Knuckles -> Bleed, D43 lean + D46 = B, D47 = B, D45 heal, mini-boss bar.
+  - **Commits:**
+    - gameplay-dev 7625eee..6f57756 (A), 4afe5b9..f48e696 (B), a41dfd0, 49f3f3e, 7b81933..29da9bf (D47), e4ef264..bf0d44c (fixes, including the sim aim bug a9d56fc);
+    - ux aa02650..cff56aa, a614f76, e51981e;
+    - qa FAIL 4477c95..39ef43a, re-check FAIL 8e8c3bc, PASS 4b97a61;
+    - playtest 2034c6e (no blocker; not harder than MAP3);
+    - docs 71119f8..d139723.
+  - Tag `playtest-2026-11-09-BD3a`.
+  - **Baselines now:** suite 2083 (157 suites, exit 0, 0 orphans); arena 3172486861 / 916264160 / `-Plan -Seed 1 -Seconds 30` 1317880580; bot sim 3476063471. Every bot run number before a9d56fc is stale; SIM1 re-baselines. Fixed-bot info: Rogue three-act 35/36, Wizard 29/36.
+  - **New director items:** D48 (Bleed content now or MAP3b; default A), eyes 53 (play a physical Rogue: harder or easier?), 54 (the bot FYI).
+  - **Carry-overs:** MB1 ux (label overlaps, the "Act 2 Mini-boss" bar, doubled "HP", the Open a Vein cue, the `!is_inside_tree()` log); MAP3b (non-Burn heavy relic, a prune or reject shrink rule, late Bleed share 8.5%); SIM1 (`--run-room=30` headless not exiting).
+  - **Doc fixes from the docs pass:** D44 isn't in ROADMAP BD3a item 10, and MAP.md §2 holds only D44. That's fine as recorded; tech-writer used the right places.
 - **D46 = B, D47 = B recorded 2026-11-09 (game-lead, docs only):**
   - **His answers:** D46 = B: the lean counts only cards you've added, not the starting deck. That's already shipped in 49f3f3e as `rewards.status_lean_skip_starter: true`. D47 = B: a pruned card is never offered again that run. gameplay-dev builds it after ux.
   - **Where recorded:** GDD §9 (the lean bullet, plus a new "Pruned cards stay gone" bullet), the ROADMAP BD3a D47 item, and OPEN_ITEMS (removed).
@@ -163,13 +175,12 @@ Last updated: 2026-11-09 (MAP3 closed; D44 = C, D45 = B recorded; BD3a next). **
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **BD3a sittings A and B done 2026-11-09** (gameplay-dev 7625eee..6f57756 and 4afe5b9..f48e696; DECISIONS "BD3a sitting A" / "sitting B"; hashes rebaselined there). The D43 lean at 0.25 fails acceptance (neutral Fire share 30% -> 38%), so a lean measurement was run (a41dfd0). D46 (starter cards in the lean; default B = not counted, set for the playtest) and D47 (pruned cards never return; default A) are in OPEN_ITEMS. The Rogue three-act floor is missed (21/36) and re-scoped to a playtester difficulty check.
-- Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes; they didn't flake in MAP3).
+- Nothing in progress. BD3a closed 2026-11-09. SIM1 is next and hasn't started.
+- Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step
-1. **tech-writer: the BD3a docs pass** (handoff note in the game-lead session; if lost, rebuild it from DECISIONS entries 2026-11-09 "BD3a sitting A" through "BD3a playtest triage", commit range d198161..HEAD). Playtest 2034c6e, no blocker. qa PASS 4b97a61.
-2. Then game-lead close, tag `playtest-YYYY-MM-DD-BD3a`.
-3. Then **SIM1** (sim re-calibration, new), then **MB1** (game-lead design note in MAP.md first), then MAP3b (its design pass covers Bleed and basic attacks, gold sinks, the playtester's gold ideas), MAP4, 3d, BD3b.
+1. **SIM1** (ROADMAP brief): gameplay-dev adds the human-like bot settings and a tuned preset, then qa re-baselines every sim number, then game-lead sets the floors. If the director answers D48 = B first, a short Bleed card top-up sitting runs before SIM1 (game-lead writes the card list in BUILD_DEPTH first).
+2. Then **MB1** (game-lead design note in MAP.md first), MAP3b, MAP4, 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
@@ -178,4 +189,4 @@ Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions waiting; eyes 51 (visit the merchant), 50 (play the map, new), 49, 48, 47 and 35; the round 2 vision check is due. Answered items are in `docs/RESOLVED.md`.
+All director-facing items are in `docs/OPEN_ITEMS.md`: D48 (Bleed content timing, default A); eyes 54, 53, 52, 51, 50, 49, 48, 47 and 35; the round 2 vision check is due. Answered items are in `docs/RESOLVED.md`.

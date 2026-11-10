@@ -167,9 +167,9 @@ Last updated: 2026-11-09 (MAP3 closed; D44 = C, D45 = B recorded; BD3a next). **
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes; they didn't flake in MAP3).
 
 ## Exact next step
-1. **BD3a qa FAILED (4477c95..39ef43a). Fix batch in ROADMAP BD3a "qa FAIL":** ux (orphan leak, `cast_preview` test: done in a614f76; its full-suite result wasn't reported, so gameplay-dev's full run checks exit 0 and 0 orphans) -> **gameplay-dev (next)** (Bleed Out room 1-2 deaths and the three-act drop to 17/36, the `physical-rogue` Fire card) -> qa re-check. Triage in DECISIONS "BD3a qa FAIL triage".
+1. **qa: the BD3a re-check** (ROADMAP BD3a "qa FAIL" item 3). The fixes are in: ux a614f76, gameplay-dev e4ef264..bf0d44c. The "Rogue drop" was the sim bot's aim bug, fixed in a9d56fc; every sim number before it is stale (DECISIONS "The sim bot's aim bug and the baselines"). Suite 2080 / 156, exit 0, 0 orphans. New hashes: arena 3172486861 / 916264160 / `-Plan` 1317880580; bot sim 3476063471.
 2. Then playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-BD3a`.
-3. Then **MB1** (game-lead design note in MAP.md first), then MAP3b (its design pass covers Bleed and basic attacks, gold sinks, the playtester's gold ideas), MAP4, 3d, BD3b.
+3. Then **SIM1** (sim re-calibration, new), then **MB1** (game-lead design note in MAP.md first), then MAP3b (its design pass covers Bleed and basic attacks, gold sinks, the playtester's gold ideas), MAP4, 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 

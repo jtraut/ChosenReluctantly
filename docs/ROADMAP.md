@@ -1222,7 +1222,7 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
       - **Run length:** a human 30-45 min (GDD §9) is checked by the playtester and the director, not the bot. Bot time isn't human time (MAP1 triage). The bot's 3-act median is reported as information.
       - Relic counts are reported but not gated until MAP3b.
 ### Run order from 2026-11-09 (director: non-Fire build variety is a priority)
-**Updated 2026-11-09 (D44 = C):** MAP3 (done) -> BD3a -> **MB1, mini-boss and act identity** -> MAP3b -> MAP4 -> 3d -> BD3b. MB1's placement is a game-lead call (DECISIONS "Applying D44 = C and D45 = B").
+**Updated 2026-11-09 (D44 = C; SIM1 added the same day):** MAP3 (done) -> BD3a -> **SIM1, sim re-calibration** -> **MB1, mini-boss and act identity** -> MAP3b -> MAP4 -> 3d -> BD3b. MB1's placement is a game-lead call (DECISIONS "Applying D44 = C and D45 = B").
 MAP3 (done 2026-11-09) -> **BD3a, physical Rogue** -> MAP3b -> MAP4 -> 3d -> BD3b (Wizard depth). Placement and scope are game-lead calls (DECISIONS "BD3a placement and scope"). The director can move BD3a ahead of MAP3's close, or bring BD3b up straight after it.
 
 - [ ] **BD3a, physical Rogue builds (after MAP3, before MAP3b). Full loop. Tag `playtest-YYYY-MM-DD-BD3a`.** Plan: BUILD_DEPTH §9a (the full card and relic list), §3.4 (stacking), §5 R-C and R-D. Director feedback 2026-11-09: too few physical and Bleed cards, about half his relics were Fire/Burn and useless to his build, and he kept rejecting and pruning Fire offers.
@@ -1285,7 +1285,8 @@ un_offer_report.ps1`.
        - diagnose why `-Run -Plan -NoMap -NoRelics -Deck rogue-bleed-out` wins 0/12, with 9 deaths in rooms 1-2, and why the Rogue three-act pooled score fell to 17/36 (seeds 1/13/25: 8, 6, 3). Fix it if it's a bug or a clear data mistake; report first if it needs a balance change beyond §9a;
        - drop `fire_fine_burn_then` from `physical-rogue`, fix its description and `t_decks_test`, and un-skip qa's probe;
        - run the full suite (exit 0, 0 orphans).
-    3. **qa:** re-check the blockers, the suite exit and the floor numbers.
+    - **Item 1 done** (a614f76). **Item 2 done** (e4ef264..bf0d44c): the cause was the sim bot's aim bug (DECISIONS "The sim bot's aim bug and the baselines"). Suite 2080 / 156, exit 0, 0 orphans.
+    3. **qa:** re-check the blockers and the suite exit. Re-measure BD3a's acceptance with the fixed bot: parity, fingerprint and the top source, the three-act `-Route first` seeds 1/13/25 per class, and the no-card gate. The floors are information only until SIM1. Note the new hashes.
   - **playtester:** play `rogue-bleed-out` and `rogue-grudge-brawler`, then a normal Fire Rogue run that tries to go physical from the starting deck. **Difficulty check (the sim floor was missed):** is a normal three-act Fire Rogue run clearly harder than at the MAP3 tag? Also note the act-start heal (D45), which the bot can't measure. Questions: does the run offer enough to build it, and do the stacks and the detonate read?
   - **Acceptance:**
     - `rogue-bleed-out` and `rogue-grudge-brawler` boss times are within 70-130% of the standard Rogue deck (BUILD_DEPTH §2 parity).
@@ -1294,6 +1295,14 @@ un_offer_report.ps1`.
     - The Fire share of a Fire Rogue's card offers is reported: about 29% for a neutral deck, and clearly lower over the run for a deck that picks Bleed and prunes Burn (D43 = B).
     - No-card gate holds. MAP3's run-sim floor (8/12 three-act wins, first route) holds for the Rogue.
     - Main runs. Hashes are unchanged or rebaselined with a logged reason.
+- [ ] **SIM1, sim re-calibration (tooling; after BD3a, before MB1). qa + gameplay-dev; no tag.** Why: until a9d56fc the sim bot never turned toward its aim, so every bot-measured balance number was taken with a crippled bot. Fixed, it wins 35/36 Rogue three-act runs with about 30 s bosses (DECISIONS "The sim bot's aim bug and the baselines").
+  - **gameplay-dev:**
+    - add data-driven "human-like" bot settings (`reaction_delay`, `aim_error_degrees`, maybe a cast hesitation), off by default so the hashes hold;
+    - a preset tuned so the Rogue three-act win rate and boss times land near what human reports say (the director: "felt good mostly"; playtester notes);
+    - the Wizard checked the same way.
+  - **qa:** re-run and re-record every sim baseline (the hashes, `-Run` per class for 1 act, 3 acts and `-NoMap`, routes, `-Relics`, the no-card gate, the BD3a fingerprint), and propose the new floors.
+  - **game-lead:** sets the floors in DECISIONS. MB1's acceptance uses the new floor.
+  - **Acceptance:** each sim number has one current value with its commit; there's a bot setting whose results are argued against human reports; MB1 can gate on it.
 - [ ] **MB1, mini-boss and act identity (after BD3a, before MAP3b; D44 = C, director 2026-11-09). Full loop. Tag `playtest-YYYY-MM-DD-MB1`.** Director: the mini-bosses especially need their own attacks and behaviours, for example one smaller, with less HP than the others, but quicker and hitting harder in a rogue style; plus visible changes per act (GDD §9).
   - **First, game-lead, docs only:** a short design note (in MAP.md, new section) for the two act-end mini-bosses: name, size, HP, speed, 2-3 attacks each with telegraphs, and how each tests the player differently. Starting sketch, to be confirmed there:
     - **Act 1, the brute:** big, slow, high HP; a ground slam with a wide telegraph, a charge, and adds summoned at HP thresholds.

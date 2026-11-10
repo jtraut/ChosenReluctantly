@@ -23,6 +23,7 @@ var _is_word: bool = false
 var _prefix: String = ""
 ## Shown after the digits (the closing bracket of an armor or resist number).
 var _suffix: String = ""
+var _emphasized: bool = false
 
 
 const STYLE_NONE := &""
@@ -154,9 +155,25 @@ func merge_hit(amount: float, is_big: bool) -> void:
 	_total += amount
 	text = _prefix + display_amount(_total) + _suffix
 	_elapsed = minf(_elapsed, _duration * MERGE_REFRESH)
-	if is_big:
+	if is_big and not _emphasized:
 		_base_scale = _big_scale * (_muted_scale if style != STYLE_NONE else 1.0)
 		scale = Vector3.ONE * _base_scale
+
+
+## A status detonation: this number grows to `factor` times its normal size and ends with `mark` ("!"), a shape cue
+## that does not rely on colour. Later merges keep the mark.
+func emphasize(factor: float, mark: String) -> void:
+	_suffix += mark
+	_base_scale = maxf(_base_scale, factor)
+	_emphasized = true
+	scale = Vector3.ONE * _base_scale
+	text = _prefix + display_amount(_total) + _suffix
+	_elapsed = minf(_elapsed, _duration * MERGE_REFRESH)
+
+
+## True once `emphasize` ran.
+func is_emphasized() -> bool:
+	return _emphasized
 
 
 ## Seconds since this number was spawned or last merged into.

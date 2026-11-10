@@ -135,8 +135,20 @@ func _ready() -> void:
 	if _status != null:
 		_status.status_applied.connect(_on_status_applied)
 		_status.status_expired.connect(_on_status_expired)
+		var stacks := StatusStackLabel.new()
+		stacks.name = "StatusStackLabel"
+		_add_sibling_deferred.call_deferred(stacks)  # a sibling, not a child: this bar hides itself, the count must not
 	# Sibling Health may not have run its _ready yet; read initial state after.
 	_initialize.call_deferred()
+
+
+func _add_sibling_deferred(label: StatusStackLabel) -> void:
+	var host: Node = get_parent()
+	if host == null or _status == null or not is_instance_valid(_status):
+		label.free()
+		return
+	host.add_child(label)
+	label.setup(_status)
 
 
 func _initialize() -> void:

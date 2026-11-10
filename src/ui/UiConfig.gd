@@ -326,6 +326,25 @@ const DEFAULT_HUD: Dictionary = {
 	"relic_cue_max": 6,
 }
 
+## Stack counts over an enemy ("Bleed x3") and the detonate cue (BD3a). Sizes follow `damage_numbers` (meters per font pixel).
+const DEFAULT_STATUS_STACKS: Dictionary = {
+	"font_size": 40,
+	"pixel_size": 0.009,
+	"outline_size": 12,
+	"outline_color": "#0d080b",
+	"height": 3.5,
+	"min_stacks": 2,
+	"count_format": "%s x%d",
+	"max_suffix": " MAX",
+	"render_priority": 12,
+	"detonate_scale": 1.9,
+	"detonate_suffix": "!",
+	"detonate_word": "%s burst",
+	"detonate_word_scale": 0.8,
+	"detonate_word_height": 3.4,
+	"burst_radius": 1.1,
+}
+
 ## Small floating words (not damage numbers). The "IMMUNE" popup when a stun bounces.
 const DEFAULT_POPUPS: Dictionary = {
 	"immune_text": "IMMUNE",
@@ -510,6 +529,32 @@ static func validate_melee_cue(block: Dictionary) -> Array[String]:
 			problems.append("%s must be >= 0" % key)
 		elif key.ends_with("alpha") and float(value) > 1.0:
 			problems.append("%s must be <= 1" % key)
+	return problems
+
+static func status_stacks() -> Dictionary:
+	var merged := merge_with_defaults(DEFAULT_STATUS_STACKS, _table.get_entry("status_stacks"))
+	var problems := validate_status_stacks(merged)
+	if problems.is_empty():
+		return merged
+	push_error("data/ui.json status_stacks invalid: " + "; ".join(problems))
+	return DEFAULT_STATUS_STACKS.duplicate()
+
+
+static func validate_status_stacks(block: Dictionary) -> Array[String]:
+	var problems: Array[String] = []
+	for key: String in ["font_size", "pixel_size", "outline_size", "height", "detonate_scale", "detonate_word_scale", "detonate_word_height", "burst_radius", "render_priority"]:
+		if not _is_number(block.get(key)) or float(block[key]) <= 0.0:
+			problems.append("%s must be a number > 0" % key)
+	if not _is_number(block.get("min_stacks")) or float(block["min_stacks"]) < 1.0:
+		problems.append("min_stacks must be a number >= 1")
+	if typeof(block.get("outline_color")) != TYPE_STRING or not String(block["outline_color"]).is_valid_html_color():
+		problems.append("outline_color must be a hex color")
+	for key: String in ["count_format", "detonate_word"]:
+		if typeof(block.get(key)) != TYPE_STRING or not String(block[key]).contains("%s"):
+			problems.append("%s must be a string containing %%s" % key)
+	for key: String in ["max_suffix", "detonate_suffix"]:
+		if typeof(block.get(key)) != TYPE_STRING:
+			problems.append("%s must be a string" % key)
 	return problems
 
 

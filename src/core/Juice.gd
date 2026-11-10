@@ -117,6 +117,25 @@ func on_hit_landed(world_pos: Vector3, amount: float, damage_type: String, kind:
 		hit_stop(0.03, 0.2)
 
 
+## BD3a: a status detonation reads at a glance. Called right after the burst's own hit (so its damage number is the freshest
+## one on screen): that number is enlarged and marked, and a short word ("Bleed burst") rises above the enemy.
+func on_detonated(world_pos: Vector3, amount: float, damage_type: String, word: String, word_color: Color) -> void:
+	var cfg: Dictionary = UiConfig.status_stacks()
+	_prune_numbers()
+	var entries: Array = []
+	for live: DamageNumber in _live_numbers:
+		entries.append({"pos": live.global_position, "type": live.damage_type, "idle": live.idle_time()})
+	var spot: Vector3 = world_pos + Vector3(0.0, float(UiConfig.damage_numbers()["spawn_height"]), 0.0)
+	var at: int = DamageNumber.find_merge_index(entries, spot, damage_type, float(UiConfig.damage_numbers()["merge_radius"]), float(UiConfig.damage_numbers()["merge_window"]))
+	if at >= 0:
+		_live_numbers[at].emphasize(float(cfg["detonate_scale"]), String(cfg["detonate_suffix"]))
+	elif amount > 0.0:
+		spawn_damage_number(world_pos, amount, damage_type)  # the hit's own number was lost (cap); show the burst anyway
+		if not _live_numbers.is_empty():
+			_live_numbers[_live_numbers.size() - 1].emphasize(float(cfg["detonate_scale"]), String(cfg["detonate_suffix"]))
+	spawn_popup(world_pos, word, word_color, float(cfg["detonate_word_scale"]), float(cfg["detonate_word_height"]))
+
+
 ## A small floating word at `world_pos` (see UiConfig.popups). `height` is above the point.
 func spawn_popup(world_pos: Vector3, words: String, color: Color, text_scale: float, height: float) -> void:
 	popup_count += 1

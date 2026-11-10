@@ -57,18 +57,18 @@ func test_preset_family_shapes() -> void:
 	var fire: Dictionary = presets["fire-heavy-rogue"]
 	assert_int(int(DebugDecks.pool_counts(fire["starter"]).get("fire", 0))).is_equal(7)  # every Fire card there was at T-decks (BD1-B added 4 more, in the archetype decks)
 	var physical: Dictionary = presets["physical-rogue"]
-	# BD3a: the deck rules need exactly one Fire AoE (Utility has 4 non-Fire cards now): the fewest possible Fire cards.
-	assert_int(int(DebugDecks.pool_counts(physical["starter"]).get("fire", 0))).is_equal(1)
-	assert_int(int(DebugDecks.pool_counts(physical["full"]).get("fire", 0))).is_equal(1)
+	# BD3a: the Rogue and neutral pools cover every slot's minimum without Fire (4 Utility, 4 non-Fire Attack: AoE), so the fewest possible Fire cards is 0.
+	assert_int(int(DebugDecks.pool_counts(physical["starter"]).get("fire", 0))).is_equal(0)
+	assert_int(int(DebugDecks.pool_counts(physical["full"]).get("fire", 0))).is_equal(0)
 
 
-func test_physical_rogue_cannot_have_fewer_fire_cards_and_still_pass_the_rules() -> void:
-	# Drop every Fire card that is left in the starter, one at a time: each removal breaks a slot minimum.
+func test_physical_rogue_has_no_fire_card_and_passes_the_rules() -> void:
+	# BD3a: no Fire card is needed any more, so the preset holds none and both of its lists pass the shipped rules.
 	var preset: Dictionary = (DebugDecks.read_dir()["presets"] as Dictionary)["physical-rogue"]
-	for fire_card in ["fire_fine_burn_then"]:
-		var smaller: Array = (preset["starter"] as Array).duplicate()
-		smaller.erase(fire_card)
-		assert_array(DeckRules.check_shipped(smaller).problems).is_not_empty()
+	for list_name in ["starter", "full"]:
+		for card_id in (preset[list_name] as Array):
+			assert_str(String(CardDatabase.get_card(String(card_id)).get("pool", ""))).is_not_equal("fire")
+		assert_array(DeckRules.check_shipped(preset[list_name] as Array).problems).is_empty()
 
 
 # ---- Validation ----

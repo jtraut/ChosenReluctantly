@@ -1,16 +1,16 @@
 {
     "name": "physical-rogue",
-    "description": "Rogue and neutral physical cards; only 1 Fire card (Fine Burn Then, the third Attack: AoE) because the deck rules need it.",
+    "description": "Rogue and neutral physical cards only: no Fire card at all (the deck rules need none since the Rogue pool has 4 Utility and 4 non-Fire Attack: AoE cards).",
     "starter": [
         "rogue_quick_slash", "rogue_overhand_whatever", "rogue_bleed_slash",
-        "rogue_everyone_calm_down", "neutral_shrug_bomb", "fire_fine_burn_then",
+        "rogue_everyone_calm_down", "neutral_shrug_bomb", "rogue_cut_corners",
         "rogue_bad_influence", "neutral_deep_sigh", "rogue_not_my_problem",
         "rogue_lunge_strike", "rogue_ugh_fine_moving", "neutral_backward_leap",
         "neutral_healing_potion", "rogue_nap_time", "neutral_regeneration"
     ],
     "full": [
         "rogue_quick_slash", "rogue_quick_slash", "rogue_overhand_whatever", "rogue_overhand_whatever", "rogue_bleed_slash", "rogue_flurry", "neutral_pointy_stick",
-        "rogue_everyone_calm_down", "rogue_everyone_calm_down", "neutral_shrug_bomb", "fire_fine_burn_then",
+        "rogue_everyone_calm_down", "rogue_everyone_calm_down", "neutral_shrug_bomb", "rogue_cut_corners",
         "rogue_bad_influence", "rogue_warm_up", "rogue_open_a_vein", "rogue_paper_cuts", "neutral_deep_sigh", "rogue_not_my_problem",
         "rogue_lunge_strike", "rogue_shadow_step", "rogue_ugh_fine_moving", "neutral_backward_leap",
         "neutral_healing_potion", "rogue_nap_time", "neutral_regeneration", "neutral_leech"

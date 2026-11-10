@@ -205,9 +205,9 @@ func test_an_enemy_freed_in_its_spawn_frame_leaves_no_orphan_node() -> void:
 # ---- 4. Regression probe: physical-rogue still carries a Fire card the rules no longer need ----
 # t_decks_qa_test computes the fewest Fire cards the rules need from the pools (0 since Cutting Corners and The Knife Drawer gave the Rogue 4
 # non-Fire Attack: AoE cards) but no longer compares the preset with it, and the preset still holds Fine Burn Then and says "because the deck rules
-# need it". This is that comparison. Skipped until gameplay-dev drops the card (and fixes the description and t_decks_test); un-skip with the fix.
+# need it". This is that comparison. Un-skipped when gameplay-dev dropped the card.
 
-func test_physical_rogue_holds_no_more_fire_cards_than_the_rules_need(do_skip := true, skip_reason := "known: physical-rogue keeps fire_fine_burn_then although the pools now cover every slot without Fire; gameplay-dev to drop it") -> void:
+func test_physical_rogue_holds_no_more_fire_cards_than_the_rules_need() -> void:
 	var spare: Dictionary = {}
 	for card_id: String in RunConfig.cards_in_pools(["rogue", "neutral"]):
 		var slot: String = String(CardDatabase.get_card(card_id).get("slot_type", ""))

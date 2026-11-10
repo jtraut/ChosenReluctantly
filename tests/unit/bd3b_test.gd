@@ -598,7 +598,7 @@ func test_run_config_validates_status_lean_skip_starter() -> void:
 	var cards: Array[String] = []
 	var config: Dictionary = RunConfig.get_config().duplicate(true)
 	assert_array(RunConfig.validate(config, [], cards)).is_empty()
-	assert_bool(bool(RunConfig.rewards().get("status_lean_skip_starter", false))).is_false()  # shipped default: off
+	assert_bool(bool(RunConfig.rewards().get("status_lean_skip_starter", false))).is_true()  # shipped default: on (D46)
 	(config["rewards"] as Dictionary)["status_lean_skip_starter"] = true
 	assert_array(RunConfig.validate(config, [], cards)).is_empty()
 	for bad: Variant in [1, "true", null]:

@@ -13,6 +13,7 @@
         "owned_weight": 1.0,
         "status_lean": 0.25,
         "status_lean_max": 3.0,
+        "status_lean_skip_starter": true,
         "reward_room_types": ["combat", "elite"]
     },
     "relics": {

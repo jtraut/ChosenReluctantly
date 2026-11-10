@@ -121,7 +121,7 @@ static func _draw_cards(state: RunState, node_id: int, reroll_index: int, ctx: D
 	var rewards: Dictionary = (ctx["rewards"] as Dictionary).duplicate()
 	rewards["offer_size"] = needed + kept.size()  # asks for the kept ids too, then drops them, so a reroll never repeats one
 	var stream: int = CARD_STREAM_BASE + (node_id + ACT_NODE_STEP * (state.act - 1)) * 64 + reroll_index
-	for card_id: String in RewardOffer.generate(state.seed_value, stream, state.deck, ctx["cards"], ctx["pools"], ctx["pool_defs"], rewards):
+	for card_id: String in RewardOffer.generate(state.seed_value, stream, state.deck, ctx["cards"], ctx["pools"], ctx["pool_defs"], rewards, CharacterDatabase.starting_deck(state.character_id)):
 		if not kept.has(card_id) and result.size() < needed:
 			result.append(card_id)
 	return result

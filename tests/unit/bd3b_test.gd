@@ -556,3 +556,51 @@ func test_a_fan_of_identical_shots_reads_once_with_a_count() -> void:
 	# distinct neighbours are not merged
 	assert_bool(CardSummary.effect_line(CardDatabase.get_card("rogue_cut_corners")).contains(" times: ")).is_false()
 
+
+
+# --- status_lean_skip_starter (lean measurement) ----------------------------------------------------------------
+
+func test_added_cards_counts_copies_beyond_the_starter() -> void:
+	assert_array(RewardOffer.added_cards(["bleed_0", "burn_0", "burn_0", "plain_0"], ["bleed_0", "burn_0"])).is_equal(["burn_0", "plain_0"])
+	assert_array(RewardOffer.added_cards(["plain_0"], ["bleed_0", "plain_0"])).is_empty()  # a pruned starter card is not negative
+	assert_array(RewardOffer.added_cards(["a", "b"], [])).is_equal(["a", "b"])
+
+
+func test_skip_starter_stops_starter_status_cards_leaning_the_offer() -> void:
+	var starter: Array = ["bleed_0", "bleed_1"]
+	var deck: Array = starter.duplicate()
+	var base: Dictionary = {"offer_size": 3, "unowned_weight": 4.0, "owned_weight": 1.0, "status_lean": 0.5, "status_lean_max": 3.0}
+	var skip: Dictionary = base.duplicate()
+	skip["status_lean_skip_starter"] = true
+	var off: Dictionary = base.duplicate()
+	off["status_lean"] = 0.0
+	for run_seed in range(1, 40):
+		# starter-only deck + skip: same offers as no lean at all
+		assert_array(RewardOffer.generate(run_seed, 2, deck, _fixture_cards(), ["rogue"], {}, skip, starter)).is_equal(RewardOffer.generate(run_seed, 2, deck, _fixture_cards(), ["rogue"], {}, off, starter))
+		# flag false (the default): the starter still leans, and the starter argument is ignored
+		assert_array(RewardOffer.generate(run_seed, 2, deck, _fixture_cards(), ["rogue"], {}, base, starter)).is_equal(RewardOffer.generate(run_seed, 2, deck, _fixture_cards(), ["rogue"], {}, base))
+	# a picked card still counts: add bleed_2, so n_bleed = 1 and bleed_3 is helped again
+	var grown: Array = deck.duplicate()
+	grown.append("bleed_2")
+	var plain_share: float = _share_starter(grown, "bleed_3", off, starter)
+	assert_float(_share_starter(grown, "bleed_3", skip, starter)).is_greater(plain_share * 1.1)
+	assert_float(_share_starter(grown, "bleed_3", base, starter)).is_greater(_share_starter(grown, "bleed_3", skip, starter))
+
+
+func _share_starter(deck: Array, id: String, rewards: Dictionary, starter: Array) -> float:
+	var hits: int = 0
+	for run_seed in range(1, 601):
+		hits += 1 if RewardOffer.generate(run_seed, 1, deck, _fixture_cards(), ["rogue"], {}, rewards, starter).has(id) else 0
+	return float(hits) / 600.0
+
+
+func test_run_config_validates_status_lean_skip_starter() -> void:
+	var cards: Array[String] = []
+	var config: Dictionary = RunConfig.get_config().duplicate(true)
+	assert_array(RunConfig.validate(config, [], cards)).is_empty()
+	assert_bool(bool(RunConfig.rewards().get("status_lean_skip_starter", false))).is_false()  # shipped default: off
+	(config["rewards"] as Dictionary)["status_lean_skip_starter"] = true
+	assert_array(RunConfig.validate(config, [], cards)).is_empty()
+	for bad: Variant in [1, "true", null]:
+		(config["rewards"] as Dictionary)["status_lean_skip_starter"] = bad
+		assert_array(RunConfig.validate(config, [], cards)).override_failure_message("skip_starter %s" % str(bad)).is_not_empty()

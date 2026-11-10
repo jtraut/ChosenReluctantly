@@ -125,6 +125,8 @@ static func _validate_rewards(value: Variant) -> Array[String]:
 		errors.append("rewards.status_lean must be a number in [0, 10] (0 turns the lean off)")
 	if r.has("status_lean_max") and (not _is_number(r["status_lean_max"]) or float(r["status_lean_max"]) < 1.0 or float(r["status_lean_max"]) > 100.0):
 		errors.append("rewards.status_lean_max must be a number in [1, 100]")
+	if r.has("status_lean_skip_starter") and typeof(r["status_lean_skip_starter"]) != TYPE_BOOL:
+		errors.append("rewards.status_lean_skip_starter must be true or false")
 	if _is_number(r.get("unowned_weight")) and _is_number(r.get("owned_weight")) and float(r["unowned_weight"]) + float(r["owned_weight"]) <= 0.0:
 		errors.append("rewards: unowned_weight and owned_weight cannot both be 0")
 	var types: Variant = r.get("reward_room_types")

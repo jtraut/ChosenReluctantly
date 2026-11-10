@@ -17,7 +17,7 @@ extends RefCounted
 ## The status lean (D43 = B, BD3a): a card you do not own yet that applies status S weighs x (1 + status_lean x n_S), capped at
 ## status_lean_max, where n_S is the number of cards in the deck that apply S (counted per card, like `requires.status_sources`
 ## reads effects, but the element pool's own status is not counted: only cards). A card that applies several statuses takes the best
-## of them. Cards with no status are untouched. `status_lean` missing or 0 turns the lean off, so a fixture or an old config keeps the old offers.
+## of them. Cards with no status are untouched. Optional `status_lean_skip_starter` (default false): n_S counts only cards beyond the starting deck. `status_lean` missing or 0 turns the lean off, so a fixture or an old config keeps the old offers.
 
 
 static func offer_seed(run_seed: int, room_index: int) -> int:
@@ -26,7 +26,8 @@ static func offer_seed(run_seed: int, room_index: int) -> int:
 
 ## `cards`: all card dicts. `deck`: card ids owned. `pools`: owned pool ids. `pool_defs`: pool id -> definition
 ## (for element status sources). `rewards`: the run.json `rewards` block. Returns up to offer_size distinct ids.
-static func generate(run_seed: int, room_index: int, deck: Array, cards: Array, pools: Array, pool_defs: Dictionary, rewards: Dictionary) -> Array[String]:
+## `starter`: the run's starting deck. Only read when `rewards.status_lean_skip_starter` is true (see `added_cards`).
+static func generate(run_seed: int, room_index: int, deck: Array, cards: Array, pools: Array, pool_defs: Dictionary, rewards: Dictionary, starter: Array = []) -> Array[String]:
 	var by_id: Dictionary = {}
 	for card: Variant in cards:
 		by_id[String((card as Dictionary).get("id", ""))] = card
@@ -39,7 +40,13 @@ static func generate(run_seed: int, room_index: int, deck: Array, cards: Array, 
 	var owned_weight: float = float(rewards.get("owned_weight", 1.0))
 	var lean: float = maxf(float(rewards.get("status_lean", 0.0)), 0.0)
 	var lean_max: float = maxf(float(rewards.get("status_lean_max", DEFAULT_LEAN_MAX)), 1.0)
-	var owned_by_status: Dictionary = status_counts(deck_cards) if lean > 0.0 else {}
+	var counted_cards: Array[Dictionary] = deck_cards
+	if lean > 0.0 and bool(rewards.get("status_lean_skip_starter", false)):
+		counted_cards = []
+		for card_id: String in added_cards(deck, starter):
+			if by_id.has(card_id):
+				counted_cards.append(by_id[card_id])
+	var owned_by_status: Dictionary = status_counts(counted_cards) if lean > 0.0 else {}
 	var lean_factor: Dictionary = {}
 	if lean > 0.0:
 		for id: String in candidates:
@@ -71,6 +78,22 @@ static func generate(run_seed: int, room_index: int, deck: Array, cards: Array, 
 
 
 const DEFAULT_LEAN_MAX := 3.0
+
+
+## The deck's cards beyond the starting deck, by copies: each id is counted (copies in the deck - copies in the starter), never below 0.
+## Pruning a starter card and picking it up again counts the re-pick as starter (a copy-count rule, so no per-card tracking is saved).
+static func added_cards(deck: Array, starter: Array) -> Array[String]:
+	var left: Dictionary = {}
+	for id: Variant in starter:
+		left[String(id)] = int(left.get(String(id), 0)) + 1
+	var out: Array[String] = []
+	for id: Variant in deck:
+		var key: String = String(id)
+		if int(left.get(key, 0)) > 0:
+			left[key] = int(left[key]) - 1
+		else:
+			out.append(key)
+	return out
 
 
 ## Status id -> how many of the deck's cards apply it (a card counts once per status, however many of its effects apply it).

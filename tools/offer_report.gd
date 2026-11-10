@@ -7,6 +7,8 @@ extends SceneTree
 ##   --offers=N    how many card reward offers one run has (default 18: about the combat rooms and mini-bosses of a three-act run)
 ##   --lean=X      override rewards.status_lean for this report (D43 = B; default = data/run.json; 0 = off)
 ##   --class=ID    the character (default rogue)
+##   --skip-starter  count only cards beyond the starting deck toward the lean (rewards.status_lean_skip_starter = true)
+##   --matrix      the lean-measurement table instead of the full report: lean 0 / 0.1 / 0.25 x starter counted / not counted, neutral and bleed bots, plus bleed-gone at the best setting
 ##
 ## Part 1, relics: what a Fire Rogue's elite and relic-room offers can draw from, listing every eligible relic, which are Burn-dependent (keyword
 ## Burn and not Bleed: Second Wind reads either status, so it is not), and the share by count and by tier weight for each act.
@@ -33,6 +35,8 @@ func _initialize() -> void:
 	var offers: int = 18
 	var lean_override: float = -1.0
 	var character: String = "rogue"
+	var skip_starter: bool = false
+	var matrix: bool = false
 	for arg: String in OS.get_cmdline_user_args():
 		if arg.begins_with("--seeds="):
 			seeds = maxi(int(arg.substr(8)), 1)
@@ -42,6 +46,10 @@ func _initialize() -> void:
 			lean_override = float(arg.substr(7))
 		elif arg.begins_with("--class="):
 			character = arg.substr(8)
+		elif arg == "--skip-starter":
+			skip_starter = true
+		elif arg == "--matrix":
+			matrix = true
 	CardDatabase.load_all()
 	RelicDatabase.load_all()
 	_cards = CardDatabase.all_cards()
@@ -52,10 +60,15 @@ func _initialize() -> void:
 	_pools = CharacterDatabase.pools(character)
 	_rewards = (RunConfig.rewards() as Dictionary).duplicate()
 	_slot_of = DeckRules.slot_map_from_database()
+	_rewards["status_lean_skip_starter"] = skip_starter
 	var shipped_lean: float = float(_rewards.get("status_lean", 0.0))
 	var lean_on: float = lean_override if lean_override >= 0.0 else shipped_lean
 	print("OFFER REPORT: class %s, pools %s, %d seeds, %d card offers per run, shipped status_lean %s (max %s), lean used for the 'on' rows %s" % [
 			character, _pools, seeds, offers, str(shipped_lean), str(_rewards.get("status_lean_max", 3.0)), str(lean_on)])
+	if matrix:
+		_matrix(seeds, offers, character)
+		quit(0)
+		return
 	_relic_report()
 	print("")
 	print("CARD OFFERS (share of every offered card; 3 cards per offer)")
@@ -114,9 +127,25 @@ func _applies(card_id: String, status_id: String) -> bool:
 	return CardSummary.status_ids(_by_id[card_id]).has(status_id)
 
 
+func _matrix(seeds: int, offers: int, character: String) -> void:
+	print("LEAN MATRIX (skip = rewards.status_lean_skip_starter)")
+	for lean: float in [0.0, 0.1, 0.25]:
+		for skip: bool in [false, true]:
+			if lean == 0.0 and skip:
+				continue
+			_rewards["status_lean_skip_starter"] = skip
+			print("--- lean %s, starter %s" % [str(lean), "not counted" if skip else "counted"])
+			for bot: String in ["neutral", "bleed"]:
+				_card_report(bot, lean, seeds, offers, character)
+	_rewards["status_lean_skip_starter"] = true
+	print("--- lean 0.25, starter not counted, a pruned card never returns (hypothetical)")
+	_card_report("bleed-gone", 0.25, seeds, offers, character)
+
+
 func _card_report(bot: String, lean: float, seeds: int, offers: int, character: String) -> void:
 	var rewards: Dictionary = _rewards.duplicate()
 	rewards["status_lean"] = lean
+	var starter: Array = CharacterDatabase.starting_deck(character)
 	# per phase: [offered cards, fire, bleed appliers, burn appliers]
 	var phase_counts: Array = []
 	for phase: Array in PHASES:
@@ -131,7 +160,7 @@ func _card_report(bot: String, lean: float, seeds: int, offers: int, character: 
 		var cards: Array = _cards
 		var rejects: int = RunConfig.rejects_per_run()
 		for index in range(offers):
-			var offered: Array[String] = RewardOffer.generate(run_seed, index, deck, cards, _pools, _pool_defs, rewards)
+			var offered: Array[String] = RewardOffer.generate(run_seed, index, deck, cards, _pools, _pool_defs, rewards, starter)
 			for phase_index in range(PHASES.size()):
 				var phase: Array = PHASES[phase_index]
 				if index < int(phase[1]) or index >= int(phase[2]):
@@ -179,5 +208,6 @@ func _card_report(bot: String, lean: float, seeds: int, offers: int, character: 
 		var counts: Array = phase_counts[phase_index]
 		var n: float = maxf(float(counts[0]), 1.0)
 		line += " | %s Fire %4.1f%% Bleed %4.1f%% Burn %4.1f%%" % [String((PHASES[phase_index] as Array)[0]).split(" ")[0], 100.0 * float(counts[1]) / n, 100.0 * float(counts[2]) / n, 100.0 * float(counts[3]) / n]
+	line += " | Bleed cards picked %.1f" % (float(bleed_picked) / float(seeds))
 	line += " | last 5 offers all Bleed %4.1f%% | deck at end: %.1f Bleed, %.1f Burn cards" % [100.0 * float(last_all_bleed) / maxf(float(last_sets), 1.0), float(bleed_in_deck_end) / float(seeds), float(burn_in_deck_end) / float(seeds)]
 	print(line)

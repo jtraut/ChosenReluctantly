@@ -99,7 +99,7 @@ static func open_for_room(state: RunState, room_type: String, is_last_room: bool
 	elif room_type == "rest":
 		state.pending = RunState.PENDING_REST
 	elif not is_last_room and (RunConfig.ROOM_TYPES.has(room_type) and ((ctx["rewards"] as Dictionary).get("reward_room_types", []) as Array).has(room_type)):
-		var offered: Array[String] = RewardOffer.generate(state.seed_value, state.stream_index(), state.deck, ctx["cards"], ctx["pools"], ctx["pool_defs"], ctx["rewards"])
+		var offered: Array[String] = RewardOffer.generate(state.seed_value, state.stream_index(), state.deck, ctx["cards"], ctx["pools"], ctx["pool_defs"], ctx["rewards"], CharacterDatabase.starting_deck(state.character_id))
 		if not RunSession.forced_offer.is_empty():
 			offered = RunSession.forced_offer.duplicate()  # --run-offer (capture tooling): used by this one offer only
 			RunSession.forced_offer = []

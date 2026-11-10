@@ -1259,6 +1259,7 @@ un_offer_report.ps1`.
   - **gameplay-dev, lean measurement (short, before ux):** in `tools/offer_report.gd`, add a "count only cards added after the starter" variant (a `run.json` `rewards` flag, default off so behaviour is unchanged). Report for a neutral Fire Rogue and for the Bleed-picking, Burn-pruning bot: Fire and Bleed shares early/mid/late, plus Bleed cards at the end, for lean 0 / 0.1 / 0.25 x starter counted / not counted, and the "pruned never returns" row at the best setting. No shipped value changes; game-lead writes D46/D47 from the table.
     - **Done 2026-11-09:** a41dfd0 (`status_lean_skip_starter`, report `-SkipStarter`/`-Matrix`). D46 and D47 are in OPEN_ITEMS.
   - **gameplay-dev, D46 default (tiny):** set `rewards.status_lean_skip_starter: true` in `data/run.json`. Check the arena and bot-sim hashes (expected unchanged; rebaseline with a reason if not), run the RewardOffer/RunConfig suites, and run the Rogue three-act `-Route first` seed 1 once for information.
+    - **Done 2026-11-09:** 49f3f3e. Hashes unchanged. Neutral Fire share 30.0/30.8/29.8. Rogue three-act seed 1: 9/12 (sitting B 7/12). **Carry-over (gameplay-dev, next touch):** `tools/offer_report.gd` line 63 overwrites the shipped flag from the CLI, so a plain report shows 38%; it should read `run.json` unless a switch is given.
   - **ux (after sitting A exposes the data):**
     - stack counts on enemies ("Bleed x3");
     - the detonate hit reads at a glance (a burst plus a larger damage number);

@@ -175,3 +175,23 @@ func test_dry_pools_give_a_short_offer_and_then_no_reward_screen() -> void:
 	state.gold = 100
 	assert_str(RunChoices.open_for_room(state, "merchant", false, ctx)).is_equal(RunState.PENDING_MERCHANT)
 	assert_array(state.merchant_visit["cards"] as Array).is_empty()
+
+
+func test_the_relic_rooms_card_offer_fallback_also_leaves_out_removed_cards() -> void:
+	# An elite with no relic left to offer gives its card offer instead (RunRelics -> RunChoices.open_for_room): that offer obeys D47 too.
+	var ctx: Dictionary = _ctx()
+	(ctx["relics"] as Dictionary)["catalog"] = []
+	var state: RunState = _full_state(41)
+	var target: String = state.deck[0]
+	state.record_removal(target)
+	for run_seed in range(1, 120):
+		state.seed_value = run_seed
+		RunRelics.open_for_room(state, "elite", false, ctx)
+		assert_str(state.pending).is_equal(RunState.PENDING_REWARD)
+		assert_bool(state.offer.has(target)).is_false()
+	var all_ids: Array[String] = []
+	for card: Variant in (ctx["cards"] as Array):
+		if (ctx["pools"] as Array).has(String((card as Dictionary).get("pool", ""))):
+			all_ids.append(String((card as Dictionary)["id"]))
+	state.removed_cards = all_ids
+	assert_str(RunRelics.open_for_room(state, "elite", false, ctx)).is_equal(RunState.PENDING_NONE)

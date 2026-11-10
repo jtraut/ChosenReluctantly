@@ -167,8 +167,8 @@ Last updated: 2026-11-09 (MAP3 closed; D44 = C, D45 = B recorded; BD3a next). **
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes; they didn't flake in MAP3).
 
 ## Exact next step
-1. **ux-designer: BD3a ux** (ROADMAP BD3a "ux" list, including the sitting B items). The D46 default is set (49f3f3e).
-2. Then **gameplay-dev: D47 = B** (ROADMAP BD3a, pruned cards stay gone, plus the offer report fix), then qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-BD3a`.
+1. **gameplay-dev: D47 = B** (ROADMAP BD3a: pruned cards stay gone, the offer report fix, the `m3b_flow_test` re-pin, full suite). ux is done (aa02650..cff56aa).
+2. Then qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-BD3a`.
 3. Then **MB1** (game-lead design note in MAP.md first), then MAP3b (its design pass covers Bleed and basic attacks, gold sinks, the playtester's gold ideas), MAP4, 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.

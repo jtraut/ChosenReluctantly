@@ -2145,3 +2145,13 @@ Commit a41dfd0 adds `rewards.status_lean_skip_starter` (optional bool, default f
 - **D46 default B (don't count the starter) is set in `run.json` for the BD3a playtest.** The shipped 0.25 with the starter counted fails the slice acceptance (neutral Fire share 38.2%). Not counting the starter gives 30.0/30.8/29.8, the same as lean 0, and slightly raises the Bleed bot's early Bleed share. It's one data flag to change back if he picks A. The GDD §9 text "owned cards" stays as it is until he answers. [Shipping A because it matches the GDD wording, which hands him the complaint he asked to fix; C, turning the lean off, which throws away his D43 = B.]
 - **D47 default A (no change).** A "never offered again" rule is new design, so it isn't built until he answers. Measured with the lean at 0.25 and the starter not counted: late Fire 39.1% -> 31.6%.
 - **After the D46 flip (49f3f3e):** the Rogue three-act `-Route first` seed 1 went 7/12 -> 9/12, back to the MAP3 value. The floor is still re-scoped as above; qa re-reads it over the pooled seeds.
+
+## 2026-11-09 - BD3a ux calls (ux-designer, decided by game-lead)
+Commits aa02650..cff56aa.
+- **The act screen's low-HP red starts at 50% of max HP** (`ui.act.low_hp_fraction`). With D45's 30% heal you can never be at or below 30% after the heal, so a 0.3 threshold would never fire. [0.3.]
+- **The mini-boss name lives on `tiers.mini_boss`** ("Act %d Mini-boss"), because the tier is what the bar reads. MB1 can override it per encounter. The marker size is 0.34, the same as the boss; 0.42 out-signed the final boss. [`rooms.mini_boss`; a bigger marker.]
+- **Stack counts show from 2 stacks** ("Bleed x3", and "MAX" at the cap). The boss gets the label too. The detonate word is "Bleed detonated", so it doesn't collide with Severance Package's "bursts".
+- **"In slot" shows 3 names, then "+N more".** The §9a names "Cutting Corners" and "The Knife Drawer" are restored, so the "temporary names" line in "BD3a sitting B" is done.
+- **No hover on the HUD relic chips; the pause list is enough for now.** The chips ignore the mouse during combat on purpose, and the rule text is on the offer, shop and pause screens. This isn't sent to the director. It comes back if a playtest says relics are hard to read mid-run. [Adding hover to combat HUD chips.]
+- **Open a Vein shows 2 tag chips at 1024x600** ("Keystone + Payoff", Melee), so Bleed can drop off. That's the existing chip rule; no change.
+- **`m3b_flow_test`'s offer-and-reject test fails on main since the D46 flip (49f3f3e),** because its pinned seeded offer moved. It's re-pinned in the D47 sitting, which moves offers again anyway.

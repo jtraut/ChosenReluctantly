@@ -167,7 +167,7 @@ Last updated: 2026-11-09 (MAP3 closed; D44 = C, D45 = B recorded; BD3a next). **
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes; they didn't flake in MAP3).
 
 ## Exact next step
-1. **BD3a re-check FAILED on one narrow blocker (qa 8e8c3bc):** a614f76 logs a deferred-call ERROR when the label is freed. **ux next** (build the label inside the deferred call), then a short qa verdict, then the playtester. Everything else passes (DECISIONS "BD3a re-check"). Hashes: arena 3172486861 / 916264160 / `-Plan` 1317880580; bot sim 3476063471. Suite 2082.
+1. **qa: a short BD3a verdict** on ux's e51981e (the deferred-call ERROR fix; ux reports the full suite at 2082 cases, exit 0, 0 orphans, no deferred ERROR). Then the playtester. Earlier re-check: qa 8e8c3bc, DECISIONS "BD3a re-check".
 2. Then playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-BD3a`.
 3. Then **SIM1** (sim re-calibration, new), then **MB1** (game-lead design note in MAP.md first), then MAP3b (its design pass covers Bleed and basic attacks, gold sinks, the playtester's gold ideas), MAP4, 3d, BD3b.
 

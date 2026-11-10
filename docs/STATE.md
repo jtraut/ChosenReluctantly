@@ -159,17 +159,17 @@ Last updated: 2026-11-09 (MAP3 closed; D44 = C, D45 = B recorded; BD3a next). **
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **BD3a sitting A done 2026-11-09** (gameplay-dev 7625eee..6f57756; DECISIONS "BD3a sitting A"; hashes rebaselined there). **Sitting B handed to gameplay-dev** (ROADMAP BD3a sitting B, items 0-7). If cut off, check `git log` after the STATE commit for sitting B work and re-hand the remaining items.
+- **BD3a sittings A and B done 2026-11-09** (gameplay-dev 7625eee..6f57756 and 4afe5b9..f48e696; DECISIONS "BD3a sitting A" / "sitting B"; hashes rebaselined there). The D43 lean at 0.25 fails acceptance (neutral Fire share 30% -> 38%), so **a short gameplay-dev lean measurement is handed off** (ROADMAP BD3a). Then game-lead writes D46 (starter cards in the lean) and D47 (pruned cards never return) into OPEN_ITEMS. The Rogue three-act floor is missed (21/36) and re-scoped to a playtester difficulty check.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes; they didn't flake in MAP3).
 
 ## Exact next step
-1. **gameplay-dev: BD3a sitting B** (content, Spite Knuckles retheme, debug decks, plan-aware bot, offer report, D43 = B lean, Rogue floor re-check).
+1. **gameplay-dev: the BD3a lean measurement** (ROADMAP), then game-lead writes D46/D47 in OPEN_ITEMS.
 2. Then ux (stack counts, detonate read, mini-boss named bar, act screen HP line) -> qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-BD3a`.
 3. Then **MB1** (game-lead design note in MAP.md first), then MAP3b (its design pass covers Bleed and basic attacks, gold sinks, the playtester's gold ideas), MAP4, 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D45 answered (D44 = C, D45 = B on 2026-11-09). Next free: D46.
+**D-numbers:** D21-D45 answered. D46 and D47 are reserved for the lean questions. Next free: D48.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 

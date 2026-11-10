@@ -548,7 +548,7 @@ Names are placeholders; story is dormant, so the names and flavour text follow t
 |---|---|---|---|
 | Serrated Excuse | rogue, 2 | Your Bleed stacks to 5. | §5 |
 | Salt in the Wound **NEW** | rogue, 1 | Your cards deal 25% more damage to Bleeding enemies. Smoldering Grudge's Bleed twin, which §5 said would come later. | §5 "twin" |
-| Per My Last Email | rogue, 2 | Casting from Attack: Single while its next card is a Primer applies Bleed. | §4.8 |
+| Per My Last Email | rogue, 2 | An Attack: Single hit applies Bleed 3 s if you cast a Primer in the last 6 s. (Revised in BD3a: no Attack: Single card is a Primer, so the "next card" reading could never fire. DECISIONS "BD3a sitting B".) | §4.8 |
 | Chasing Paper | rogue, 1 | A Dash card that passes through an enemy gives +30% move speed for 2 s. | §4.8 |
 | Muscle Memory | neutral, 1 | Each light hit takes 0.15 s off the heavy attack's cooldown. | §4.5 L3 |
 | Overtime (Unpaid) | neutral, 2 | Light attacks 25% faster; card cooldowns 10% longer. | §4.5 L4 |

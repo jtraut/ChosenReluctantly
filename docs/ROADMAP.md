@@ -1254,11 +1254,14 @@ MAP3 (done 2026-11-09) -> **BD3a, physical Rogue** -> MAP3b -> MAP4 -> 3d -> BD3
        - The offer report shows, for a Fire Rogue that picks Bleed and prunes Burn, the Fire share and the Bleed share of card offers over the run, with and without the lean.
        - Tune `status_lean` until that bot's Bleed share clearly rises over the run, without its last offers being only Bleed.
        - The arena and bot-sim hashes may move; log the reason.
+    - **Done 2026-11-09:** gameplay-dev 4afe5b9..f48e696 (DECISIONS "BD3a sitting B"). Suite 2034 / 152. Relic Burn share 62.5% -> 28.6% (met). Neutral Fire card share 30.0% at lean 0 (met), 38.2% at the shipped 0.25 (fails). Parity and fingerprint met. Rogue three-act floor missed (21/36 pooled), re-scoped to a playtest difficulty check. New `toolsun_offer_report.ps1`.
+  - **gameplay-dev, lean measurement (short, before ux):** in `tools/offer_report.gd`, add a "count only cards added after the starter" variant (a `run.json` `rewards` flag, default off so behaviour is unchanged). Report for a neutral Fire Rogue and for the Bleed-picking, Burn-pruning bot: Fire and Bleed shares early/mid/late, plus Bleed cards at the end, for lean 0 / 0.1 / 0.25 x starter counted / not counted, and the "pruned never returns" row at the best setting. No shipped value changes; game-lead writes D46/D47 from the table.
   - **ux (after sitting A exposes the data):**
     - stack counts on enemies ("Bleed x3");
     - the detonate hit reads at a glance (a burst plus a larger damage number);
     - tag chips and the condition line for the new cards;
     - hover text for the new relics;
+    - **from sitting B:** cap the "In slot: A / B / ..." list (for example "+N more") so `offer_fit_test` holds as pools grow, then restore the §9a names "Cutting Corners" (`rogue_cut_corners`) and "The Knife Drawer" (`rogue_knife_drawer`); Excuse Me's preview shows the dash lane but not its 0.9 m Bleed sweep; tag chips for the 4 sitting B cards; hover text for the 6 relics (`rule_text`);
     - the MAP3 playtest carry-overs: the mini-boss gets a named bar and a bigger marker, like the boss (MB1 builds on it); the act screen shows the D45 heal ("You recover N HP. Rests are on the map.") and low HP in red. The shop's 4 px overflow was fixed in MAP3.
   - **qa:**
     - unit tests for stacking, detonate and tick rate;
@@ -1268,7 +1271,8 @@ MAP3 (done 2026-11-09) -> **BD3a, physical Rogue** -> MAP3b -> MAP4 -> 3d -> BD3
     - the no-card gate holds;
     - parity, fingerprint and offer-share numbers checked against acceptance;
     - the reload soak if Main or the autoloads change.
-  - **playtester:** play `rogue-bleed-out` and `rogue-grudge-brawler`, then a normal Fire Rogue run that tries to go physical from the starting deck. Questions: does the run offer enough to build it, and do the stacks and the detonate read?
+    - **from sitting B:** review the four qa-owned tests gameplay-dev edited (`f1_movement_test` 8 -> 9 dashes, `m3c_qa_test` " times" unit, `slice6_qa_test` lane yaw, `t_decks_qa_test` `needed_fire` 1 -> 0), the `RelicManager._live_target` fix, and rule on the fingerprint top-source reading (slot level vs card level). Record the Rogue floor miss (21/36) as known and re-scoped, not as a FAIL (DECISIONS "BD3a sitting B").
+  - **playtester:** play `rogue-bleed-out` and `rogue-grudge-brawler`, then a normal Fire Rogue run that tries to go physical from the starting deck. **Difficulty check (the sim floor was missed):** is a normal three-act Fire Rogue run clearly harder than at the MAP3 tag? Also note the act-start heal (D45), which the bot can't measure. Questions: does the run offer enough to build it, and do the stacks and the detonate read?
   - **Acceptance:**
     - `rogue-bleed-out` and `rogue-grudge-brawler` boss times are within 70-130% of the standard Rogue deck (BUILD_DEPTH §2 parity).
     - Kindling vs Bleed Out fingerprint distance is at least 0.6, and their top damage sources differ.

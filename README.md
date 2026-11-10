@@ -327,7 +327,7 @@ BD3a docs pass, 2026-11-09, Windows, Godot 4.7.2 (console build via `GODOT_BIN`)
 **Bot-measured numbers from before the sim bot's aim fix (a9d56fc, BD3a) are stale.** The old MAP3 baselines (Rogue 9/12, Wizard 10/12, final boss 47.0 s and 56.9 s, the 11/12 and 12/12 one-act and straight-run clears, 57.5 s and 63.3 s) came from a bot that faced a fixed direction. They are not repeated here and are no longer gates. The new SIM1 slice re-baselines every sim number and sets new floors; until then the fixed-bot numbers below are information only.
 
 Run in this pass:
-- `tools\run_tests.ps1`: TESTS_RESULT
+- `tools\run_tests.ps1`: **2083 test cases, 157 suites, 0 errors, 0 failures, 0 flaky, 0 skipped, 0 orphans**, exit 0, 15 min 42 s (wave sims and offer reports ran beside it, so slower than a quiet run). No "Error calling deferred method" line in the log.
 - `tools\run_wave_sim.ps1 -Seed 1 -Seconds 30 -Scale 1`: `state_hash 3172486861`; `-Seconds 90`: 916264160; `-Seconds 30 -Plan`: 1317880580 (all WAVE SIM OK). `tools\run_bot_sim.ps1 -Rooms 20 -Seed 3`: checksum 3476063471. All four match qa's re-check.
 - `tools\run_wave_sim.ps1 -Run -Seed 1 -Runs 1 -Class rogue` (three acts, first route): won all three acts, 30 of 30 rooms, sim time 533 s in about 45 s wall clock, WAVE SIM OK. The 12-run forms were not re-run (12 to 15 minutes each).
 - `tools\run_offer_report.ps1 -Seeds 100` (exit 0, 28.6% of the Rogue's elite relics need Burn), `-Seeds 20 -Lean 0.1 -CountStarter` and `-Seeds 20 -Matrix` (both exit 0).
@@ -335,7 +335,7 @@ Run in this pass:
 - `--run-room=30` (headless, `--class=rogue`) printed no refusal and had not exited after about 3 minutes under load, so it was killed and no exit code was recorded. The MAP3 pass recorded exit 0 for the same flag; the difference is unexplained (unverified: a headless run may simply not quit on its own).
 
 Carried from qa (BD3a re-check, 4b97a61), not re-run here:
-- Full suite on e51981e: 2082 cases (2083 with qa's last test), 157 suites, 0 failures, 0 orphans, no "Error calling deferred method" line, no exit 139. The first re-check run crashed with exit 139 beside about 15 sim processes; a quiet run passed.
+- Full suite on e51981e: 2082 cases (2083 with qa's last test; this pass's run above matches), 157 suites, 0 failures, 0 orphans. qa's first re-check run crashed with exit 139 beside about 15 sim processes; a quiet run passed.
 - Boss-room parity (fixed bot, `-Run -Plan -NoMap -StartRoom 10 -Seed 1 -Runs 12 -Class rogue -Deck <d>`, all won) against the standard Rogue deck (29.8 s): rogue-bleed-out 92% (79% with its two relics), rogue-grudge-brawler 109% (94%), rogue-kindling 106% (96%). All inside the 70 to 130% line. The boss starts at full HP, so this does not test survival.
 - Fingerprint (Kindling vs Bleed Out, L1 over damage-by-source shares): 0.61 with relics on median vectors (0.66 on means), 0.45 with relics off. game-lead accepted the with-relics reading as a thin pass; SIM1 re-measures it.
 - Three-act pooled (`-Route first`, seeds 1, 13, 25, fixed bot): Rogue 35/36 (36/36 for the pre-BD3a build plus the fix), Wizard 29/36. No-card gate 0/12 for each class. Reload soak OK four ways (plain, `-Class wizard`, `-Map`, `-Class wizard -Map`).

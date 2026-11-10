@@ -7,7 +7,9 @@ extends SceneTree
 ##   --offers=N    how many card reward offers one run has (default 18: about the combat rooms and mini-bosses of a three-act run)
 ##   --lean=X      override rewards.status_lean for this report (D43 = B; default = data/run.json; 0 = off)
 ##   --class=ID    the character (default rogue)
-##   --skip-starter  count only cards beyond the starting deck toward the lean (rewards.status_lean_skip_starter = true)
+##   --skip-starter  force rewards.status_lean_skip_starter true (count only cards beyond the starting deck toward the lean)
+##   --count-starter force it false (the starting deck counts toward the lean)
+##                   With neither switch the report reads the shipped data/run.json value (it used to overwrite it with false).
 ##   --matrix      the lean-measurement table instead of the full report: lean 0 / 0.1 / 0.25 x starter counted / not counted, neutral and bleed bots, plus bleed-gone at the best setting
 ##
 ## Part 1, relics: what a Fire Rogue's elite and relic-room offers can draw from, listing every eligible relic, which are Burn-dependent (keyword
@@ -15,7 +17,8 @@ extends SceneTree
 ## Part 2, cards: the Fire share, the Bleed-applier share and the Burn-applier share of the card offers, in three phases of the run, for
 ##   neutral  - never picks anything (the starting deck all run),
 ##   bleed    - picks a card that applies Bleed when offered, else rejects (3 rejects), at every 4th offer prunes a card that applies Burn (deck minimums allowed),
-##   bleed-gone - the same bot, but a pruned card is never offered again that run (a "removed cards stay removed" rule; NOT in the game, shown to size the effect),
+##   bleed-old  - the same bot under the pre-D47 rule, where a pruned card could be offered again (NOT in the game, shown to size D47's effect).
+##                Every other bot plays the real D47 = B rule: a card pruned from the deck is never offered again that run (RunState.removed_cards),
 ##   burn     - the mirror: picks a Burn applier, prunes a Bleed applier,
 ## each with the lean off and with the lean on, so the lean's effect shows. "last 5 offers all Bleed" is the share of the last five offers whose three cards all apply Bleed.
 
@@ -35,7 +38,7 @@ func _initialize() -> void:
 	var offers: int = 18
 	var lean_override: float = -1.0
 	var character: String = "rogue"
-	var skip_starter: bool = false
+	var skip_starter: Variant = null  # null = the shipped data/run.json value
 	var matrix: bool = false
 	for arg: String in OS.get_cmdline_user_args():
 		if arg.begins_with("--seeds="):
@@ -48,6 +51,8 @@ func _initialize() -> void:
 			character = arg.substr(8)
 		elif arg == "--skip-starter":
 			skip_starter = true
+		elif arg == "--count-starter":
+			skip_starter = false
 		elif arg == "--matrix":
 			matrix = true
 	CardDatabase.load_all()
@@ -60,11 +65,13 @@ func _initialize() -> void:
 	_pools = CharacterDatabase.pools(character)
 	_rewards = (RunConfig.rewards() as Dictionary).duplicate()
 	_slot_of = DeckRules.slot_map_from_database()
-	_rewards["status_lean_skip_starter"] = skip_starter
+	if skip_starter != null:
+		_rewards["status_lean_skip_starter"] = bool(skip_starter)
 	var shipped_lean: float = float(_rewards.get("status_lean", 0.0))
 	var lean_on: float = lean_override if lean_override >= 0.0 else shipped_lean
-	print("OFFER REPORT: class %s, pools %s, %d seeds, %d card offers per run, shipped status_lean %s (max %s), lean used for the 'on' rows %s" % [
-			character, _pools, seeds, offers, str(shipped_lean), str(_rewards.get("status_lean_max", 3.0)), str(lean_on)])
+	print("OFFER REPORT: class %s, pools %s, %d seeds, %d card offers per run, shipped status_lean %s (max %s), lean used for the 'on' rows %s, starter not counted toward the lean: %s%s" % [
+			character, _pools, seeds, offers, str(shipped_lean), str(_rewards.get("status_lean_max", 3.0)), str(lean_on), str(_rewards.get("status_lean_skip_starter", false)),
+			"" if skip_starter == null else " (set from the command line)"])
 	if matrix:
 		_matrix(seeds, offers, character)
 		quit(0)
@@ -72,7 +79,7 @@ func _initialize() -> void:
 	_relic_report()
 	print("")
 	print("CARD OFFERS (share of every offered card; 3 cards per offer)")
-	for bot: String in ["neutral", "bleed", "bleed-gone", "burn"]:
+	for bot: String in ["neutral", "bleed", "bleed-old", "burn"]:
 		for lean: float in [0.0, lean_on]:
 			_card_report(bot, lean, seeds, offers, character)
 	quit(0)
@@ -138,8 +145,8 @@ func _matrix(seeds: int, offers: int, character: String) -> void:
 			for bot: String in ["neutral", "bleed"]:
 				_card_report(bot, lean, seeds, offers, character)
 	_rewards["status_lean_skip_starter"] = true
-	print("--- lean 0.25, starter not counted, a pruned card never returns (hypothetical)")
-	_card_report("bleed-gone", 0.25, seeds, offers, character)
+	print("--- lean 0.25, starter not counted, the pre-D47 rule (a pruned card can come back; NOT in the game)")
+	_card_report("bleed-old", 0.25, seeds, offers, character)
 
 
 func _card_report(bot: String, lean: float, seeds: int, offers: int, character: String) -> void:
@@ -157,10 +164,10 @@ func _card_report(bot: String, lean: float, seeds: int, offers: int, character: 
 	var bleed_in_deck_end: int = 0
 	for run_seed in range(1, seeds + 1):
 		var deck: Array = CharacterDatabase.starting_deck(character).duplicate()
-		var cards: Array = _cards
+		var removed: Array[String] = []  # the real D47 rule: ids pruned this run are never offered again (bleed-old plays without it)
 		var rejects: int = RunConfig.rejects_per_run()
 		for index in range(offers):
-			var offered: Array[String] = RewardOffer.generate(run_seed, index, deck, cards, _pools, _pool_defs, rewards, starter)
+			var offered: Array[String] = RewardOffer.generate(run_seed, index, deck, _cards, _pools, _pool_defs, rewards, starter, [] if bot == "bleed-old" else removed)
 			for phase_index in range(PHASES.size()):
 				var phase: Array = PHASES[phase_index]
 				if index < int(phase[1]) or index >= int(phase[2]):
@@ -175,7 +182,7 @@ func _card_report(bot: String, lean: float, seeds: int, offers: int, character: 
 				last_sets += 1
 				if offered.all(func(id: String) -> bool: return _applies(id, "bleed")):
 					last_all_bleed += 1
-			var bleeder: bool = bot == "bleed" or bot == "bleed-gone"
+			var bleeder: bool = bot == "bleed" or bot == "bleed-old"
 			var wanted: String = "bleed" if bleeder else ("burn" if bot == "burn" else "")
 			var pruned: String = "burn" if bleeder else ("bleed" if bot == "burn" else "")
 			if wanted != "":
@@ -193,12 +200,8 @@ func _card_report(bot: String, lean: float, seeds: int, offers: int, character: 
 					for id: String in deck:
 						if _applies(id, pruned) and DeckRules.can_remove(deck, id, DeckRules.shipped_config(), _slot_of, SlotTypeDatabase.known_ids()).is_empty():
 							deck.erase(id)
-							if bot == "bleed-gone":
-								var kept: Array = []
-								for card: Variant in cards:
-									if String((card as Dictionary)["id"]) != id:
-										kept.append(card)
-								cards = kept
+							if not removed.has(id):
+								removed.append(id)
 							break
 		for id: String in deck:
 			burn_in_deck_end += 1 if _applies(id, "burn") else 0

@@ -4,6 +4,24 @@ The archive of the director's answered, received and acknowledged items, moved h
 
 ## 2026-11-09
 
+### Answers recorded in 7fb5460 (D46, D47)
+
+Removed from OPEN_ITEMS in 7fb5460. The question text, with the measured numbers, is in `git show eb6322a:docs/OPEN_ITEMS.md`.
+
+| ID | Question | Your answer | Where it went |
+|---|---|---|---|
+| D46 | Should your starting deck count toward the offer lean (your D43 = B)? A Fire Rogue's starter has 3 Burn cards, so with them counted the lean pushes Fire before you pick anything: a Rogue that picks nothing saw 38% Fire offers (30% with no lean; about 37% before BD3a). **A**: count the starting deck (as worded, "owned cards"). **B** (default, recommended): count only cards you added, 30% Fire until you start picking. **C**: turn the lean off. | **B** (2026-11-09). | GDD section 9 (7fb5460; the lean now counts cards you have "added"); ROADMAP BD3a. Built in 49f3f3e as `data/run.json` `rewards.status_lean_skip_starter` true (false restores A). |
+| D47 | Should a card you prune (remove at a rest or the merchant) stop showing up in offers for the rest of the run? Today a removed card counts as never owned and returns at full weight (4x an owned card); for a Rogue that picks Bleed and prunes Burn, late Fire offers were about 39%. **A** (default until answered): no change. **B** (recommended): pruned cards never come back (about 32% Fire late). **C**: they come back at lower weight (not measured). | **B** (2026-11-09). | GDD section 9 "Pruned cards stay gone" (7fb5460); ROADMAP BD3a. Built in 7b81933..29da9bf: `RunState.removed_cards`, saved as `removed_cards`; excluded from card offers and the merchant's stock. Late Fire share 39.1% -> 31.6% in the offer report. |
+
+### Answers recorded in 947ee9f (D44, D45)
+
+Removed from OPEN_ITEMS in 947ee9f. The question text is in `git show 40d64ee:docs/OPEN_ITEMS.md`.
+
+| ID | Question | Your answer | Where it went |
+|---|---|---|---|
+| D44 | Should each act look and play a little differently? The MAP3 playtester found acts 2 and 3 feel like "act 1 with more", and the act 1 mini-boss (a slightly bigger golem with two chasers) does not feel like an act ender. **A** (default): leave the acts alone. **B** (recommended): one cheap visible change per act with no new enemy behaviour (a floor and light tint per act, a little more act 3 damage, a mini-boss with more adds). **C**: real new threats (new mini-boss attacks or an enemy type per act), which needs new enemy behaviour and its own slice. | **C** (2026-11-09): mini-bosses get their own attacks and behaviours (his example: one is smaller, with less HP than the others, but quicker and hits harder, in a rogue style), and each act gets visible changes (for example a floor and light tint per act). | GDD section 9 "Each mini-boss and act has its own identity" (947ee9f); `docs/MAP.md` section 2 (the old "no new boss AI" mini-boss marked superseded); ROADMAP slice MB1 (new, after BD3a and SIM1, before MAP3b); DECISIONS "Applying D44 = C and D45 = B". (The named mini-boss bar and bigger marker were a separate readability fix, built in BD3a ux.) |
+| D45 | Do you heal between acts? Today you do not (a game-lead stopgap, not a GDD rule); BD3a's act screen would say "Your HP carries over. Rests are on the map." **A** (default): no heal. **B**: a partial heal at each act's start (for example 30% of max HP). **C**: a full heal at each act's start. | **B** (2026-11-09), easy to change back: set the value to 0 to restore "HP carries over". | GDD section 9 "A partial heal at each act's start" (947ee9f); ROADMAP BD3a sitting A item 10. Built in f2e54d1: `data/run.json` `acts.start_heal` 0.3. The act screen shows the heal line instead of "HP carries over". |
+
 ### Answers recorded in f007e83 (D43 and the dual-class rule)
 
 Removed from OPEN_ITEMS in f007e83. The D43 question text (as first worded) is in `git show 2802791:docs/OPEN_ITEMS.md`; its final wording, with B reworded as a status lean, is in `git show 962fe50:docs/OPEN_ITEMS.md`.

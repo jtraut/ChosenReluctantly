@@ -105,3 +105,17 @@ Rogue act medians (seed 1 / 13 / 25): act 1 183 / 179 / 182 s, act 2 210 / 200 /
 ## Addendum: whole-run Bleed Out (my earlier 0/12)
 
 `-Run -Plan -Seed 1 -Runs 12 -NoMap -NoRelics -Class rogue -Deck rogue-bleed-out`: **12/12 won** (was 0/12 with the aim bug), all 12 reached room 10, boss median 30.6 s (standard deck in the same form was 12/12 before). The carry-over is closed for the sim; the playtester still plays it from room 1 as a human.
+
+## Final verdict (e51981e): PASS
+
+BD3a is PASS. The one remaining blocker, the "Error calling deferred method" ERROR, is gone.
+
+- **Diff review.** `_add_stack_label_deferred()` takes no argument and builds the `StatusStackLabel` inside the call. It returns early, building nothing, if the bar is out of the tree, `_status` is gone, or the host is missing or out of the tree. So no node crosses the deferred boundary, and nothing is built before a parent exists, so nothing can orphan. `_stacks` and `_exit_tree` are removed, and they are no longer needed.
+- **Orphan guarantee.** `bd3a_qa_test` (20 enemies freed in their spawn frame, 0 orphans) passes in the full suite.
+- **Label on live enemies.** There was no test for this, so I added `test_a_live_enemy_gets_its_status_stack_label_as_a_sibling_of_the_bar` to `tests/unit/bd3a_recheck_qa_test.gd` (3 cases now, all pass). A live MeleeChaser has a `StatusStackLabel` sibling after 3 frames.
+- **`slice5d_qa_test` alone.** 9 cases, exit 0, 0 orphans, 0 "Error calling deferred" lines.
+- **Full suite** (`tools\run_tests.ps1`, about 15.5 min). Exit 0, 157/157 suites, 2082/2082 cases, 0 errors, 0 failures, 0 orphans, 0 "Error calling deferred" lines, and no exit 139. This was before my added case; it is 2083 now.
+- **`Condition "!is_inside_tree()"` ERROR.** It appears at `bd3a_ux_test > test_an_emphasized_number_is_larger...` (alone: 24 cases, exit 0) and also in `a1_qa_test > test_boss_phase_floor_still_holds...`. The second is a file unrelated to `EnemyHpBar`, and e51981e touches only `src/ui/EnemyHpBar.gd`, so it does not come from this fix. It is an engine "Returning: Transform3D()" log from a test node asking for a transform while out of the tree. It is harmless to results, but it is noise. I did not check it at cff56aa. Non-blocking, carry-over for ux/gameplay-dev.
+- **Arena `-Seed 1 -Seconds 30`:** `state_hash 3172486861`, WAVE SIM OK, exit 0. Unchanged.
+
+Carry-overs: the same list as above (tidy the `!is_inside_tree()` log; game-lead decides on the thin 0.61 fingerprint; SIM1 re-baseline; tech-writer README and CHANGELOG, now 2083 cases).

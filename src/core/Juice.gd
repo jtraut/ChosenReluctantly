@@ -118,7 +118,7 @@ func on_hit_landed(world_pos: Vector3, amount: float, damage_type: String, kind:
 
 
 ## BD3a: a status detonation reads at a glance. Called right after the burst's own hit (so its damage number is the freshest
-## one on screen): that number is enlarged and marked, and a short word ("Bleed burst") rises above the enemy.
+## one on screen): that number is enlarged and marked, and a short word ("Bleed detonated") rises above the enemy.
 func on_detonated(world_pos: Vector3, amount: float, damage_type: String, word: String, word_color: Color) -> void:
 	var cfg: Dictionary = UiConfig.status_stacks()
 	_prune_numbers()

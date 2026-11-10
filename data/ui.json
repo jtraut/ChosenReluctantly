@@ -220,6 +220,24 @@
         "resist_open": "<",
         "resist_close": ">"
     },
+    "status_stacks": {
+        "font_size": 40,
+        "pixel_size": 0.009,
+        "outline_size": 12,
+        "outline_color": "#0d080b",
+        "height": 3.5,
+        "min_stacks": 2,
+        "count_format": "%s x%d",
+        "max_suffix": " MAX",
+        "render_priority": 12,
+        "detonate_scale": 1.9,
+        "detonate_suffix": "!",
+        "detonate_word": "%s detonated",
+        "detonate_word_scale": 0.8,
+        "detonate_word_height": 3.4,
+        "burst_radius": 1.1,
+        "boss_gap": 0.5
+    },
     "popups": {
         "immune_text": "IMMUNE",
         "immune_color": "#cfd8dc",

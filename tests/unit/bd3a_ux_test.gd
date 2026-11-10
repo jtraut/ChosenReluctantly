@@ -34,7 +34,7 @@ func test_two_stacking_statuses_each_get_a_line_in_a_fixed_order() -> void:
 
 
 func test_the_detonate_word_uses_the_status_name() -> void:
-	assert_str(StatusStackLabel.detonate_word("Bleed", UiConfig.status_stacks())).is_equal("Bleed burst")
+	assert_str(StatusStackLabel.detonate_word("Bleed", UiConfig.status_stacks())).is_equal("Bleed detonated")
 
 
 func test_shipped_status_stack_config_is_valid() -> void:
@@ -164,7 +164,7 @@ func test_only_a_live_mini_boss_tier_enemy_gets_the_bar() -> void:
 	assert_bool(MiniBossBar.is_candidate("normal", false)).is_false()
 
 
-func test_the_shipped_mini_boss_tier_has_a_name_and_a_marker_bigger_than_the_boss() -> void:
+func test_the_shipped_mini_boss_tier_has_a_name_and_a_marker_as_big_as_the_boss() -> void:
 	var tier: Dictionary = RunConfig.tier("mini_boss")
 	assert_str(MiniBossBar.title_for(tier, 1)).is_equal("Act 1 Mini-boss")
 	assert_float(float(tier["marker_size"])).is_greater_equal(float(RunConfig.tier("boss")["marker_size"]))

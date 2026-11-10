@@ -301,6 +301,7 @@ func _try_bind(node: Node) -> void:
 		return
 	_unbind()
 	_boss = boss
+	_attach_stack_label(boss)
 	boss.health.health_changed.connect(_on_health_changed)
 	boss.phase_changed.connect(_on_phase_changed)
 	boss.stagger_started.connect(_on_stagger_started)
@@ -335,6 +336,17 @@ func _try_bind(node: Node) -> void:
 	set_process(true)
 	if boss.telegraph_left() > 0.0:
 		_start_telegraph(_current_attack_label())
+
+
+## BD3a: a boss shows its Bleed stack count and the detonate cue like an enemy does (its HP bar is this block, not an EnemyHpBar). One label
+## per boss, set above its body.
+func _attach_stack_label(boss: Boss) -> void:
+	if boss.get_node_or_null("StatusStackLabel") != null or boss.status_manager == null:
+		return
+	var label := StatusStackLabel.new()
+	label.name = "StatusStackLabel"
+	boss.add_child(label)
+	label.setup(boss.status_manager, TemplateVfx.body_top(boss) + float(UiConfig.status_stacks()["boss_gap"]))
 
 
 ## The armor and resistance line plus the armor pip, from the boss's live health (called on bind and on layout).

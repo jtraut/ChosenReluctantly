@@ -1043,7 +1043,7 @@
         "late_hit": {"at": 0.6, "indices": [0], "amount": 5000.0}
     },
     "bd3a_stacks": {
-        "_note": "BD3a ux capture: Paper Cuts (4 Bleed applications per cast) with Serrated Excuse (max 5) stacks Bleed on two chasers: counts at 0.8 s and 1.4 s, then Open a Vein detonates at 1.9 s (burst, big number, 'Bleed burst').",
+        "_note": "BD3a ux capture: Paper Cuts (4 Bleed applications per cast) with Serrated Excuse (max 5) stacks Bleed on two chasers: counts at 0.8 s and 1.4 s, then Open a Vein detonates at 1.9 s (burst, big number, 'Bleed detonated').",
         "disable_spawner": true,
         "player_max_health": 9999,
         "freeze_aim": true,
@@ -1063,6 +1063,71 @@
             {"at": 0.3, "slot": "attack_single", "card": "rogue_paper_cuts"},
             {"at": 0.9, "slot": "attack_single", "card": "rogue_paper_cuts"},
             {"at": 1.9, "slot": "attack_single", "card": "rogue_open_a_vein"}
+        ]
+    },
+    "bd3a_stacks_boss": {
+        "_note": "BD3a ux capture: the same Bleed stacking and Open a Vein detonation against the boss (idle, 9999 HP): its stack count and the detonate cue.",
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "freeze_aim": true,
+        "aim_preview_distance": 5.0,
+        "enemy_max_health": 9999,
+        "enemies_idle": true,
+        "disable_auto_attack": true,
+        "deck": ["rogue_paper_cuts", "rogue_open_a_vein", "rogue_quick_slash"],
+        "relics": ["serrated_excuse"],
+        "origin_offset": [0.0, 0.0, -2.2],
+        "columns": 1,
+        "groups": [
+            {"scene": "res://scenes/enemies/BossGuardian.tscn", "count": 1}
+        ],
+        "casts": [
+            {"at": 0.3, "slot": "attack_single", "card": "rogue_paper_cuts"},
+            {"at": 0.9, "slot": "attack_single", "card": "rogue_paper_cuts"},
+            {"at": 1.9, "slot": "attack_single", "card": "rogue_open_a_vein"}
+        ]
+    },
+    "bd3a_stacks_elite": {
+        "_note": "BD3a ux capture: Bleed stacks on an elite (diamond marker above the HP bar), to check the count clears the marker.",
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "freeze_aim": true,
+        "aim_preview_distance": 5.0,
+        "enemy_max_health": 2000,
+        "enemies_idle": true,
+        "disable_auto_attack": true,
+        "deck": ["rogue_paper_cuts", "rogue_open_a_vein", "rogue_quick_slash"],
+        "relics": ["serrated_excuse"],
+        "origin_offset": [-0.7, 0.0, -1.5],
+        "spacing": [1.4, -1.5],
+        "columns": 2,
+        "groups": [
+            {"scene": "res://scenes/enemies/FireResistantGolem.tscn", "count": 2}
+        ],
+        "elite_indices": [0, 1],
+        "casts": [
+            {"at": 0.3, "slot": "attack_single", "card": "rogue_paper_cuts"},
+            {"at": 0.9, "slot": "attack_single", "card": "rogue_paper_cuts"}
+        ]
+    },
+    "bd3a_excuse_preview": {
+        "_note": "BD3a ux capture: holding Excuse Me (Movement) shows its dash lane as the real Bleed sweep (0.9 m hit radius), not a thin line.",
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "freeze_aim": true,
+        "aim_preview_distance": 5.0,
+        "enemy_max_health": 2000,
+        "enemies_idle": true,
+        "disable_auto_attack": true,
+        "deck": ["rogue_excuse_me", "rogue_quick_slash"],
+        "origin_offset": [-0.7, 0.0, -2.0],
+        "spacing": [1.4, -1.5],
+        "columns": 2,
+        "groups": [
+            {"scene": "res://scenes/enemies/MeleeChaser.tscn", "count": 4}
+        ],
+        "previews": [
+            {"at": 0.5, "slot": "movement", "card": "rogue_excuse_me", "release_at": 2.0}
         ]
     }
 }

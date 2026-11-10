@@ -96,7 +96,7 @@ const DEFAULT_TEXT: Dictionary = {
 	"shot_status": "each hit applies %s",
 	"pass_through": "Walk through enemies for %s s",
 	"detonate": "Detonate %s: %s%% of its remaining damage at once",
-	"stack_cap": "%s can stack %s more",
+	"stack_cap": "%s can stack %s more times",
 	"tick_rate": "%s ticks %s faster",
 	"attack_interval": "%s attack delay %s",
 	"attack_cooldown": "%s attack cooldown %s",

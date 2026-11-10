@@ -33,7 +33,7 @@
     "tiers": {
         "elite": { "hp_multiplier": 2.0, "armor": 17.0, "resistance_floor": 0.25, "resistance_cap": 0.5, "rank": "elite", "scale": 1.0, "marker_color": "#ffd23f", "marker_size": 0.26, "marker_height": 2.85 },
         "boss":  { "hp_multiplier": 7.0, "armor": 27.0, "resistance_floor": 0.35, "resistance_cap": 0.5, "rank": "boss",  "scale": 1.0,  "marker_color": "#ff3f6c", "marker_size": 0.34, "marker_height": 2.85 },
-        "mini_boss": { "hp_multiplier": 3.5, "armor": 22.0, "resistance_floor": 0.3, "resistance_cap": 0.5, "rank": "elite", "scale": 1.2, "marker_color": "#ff7f50", "marker_size": 0.42, "marker_height": 2.85, "display_name": "Mini-boss", "name_format": "Act %d Mini-boss" }
+        "mini_boss": { "hp_multiplier": 3.5, "armor": 22.0, "resistance_floor": 0.3, "resistance_cap": 0.5, "rank": "elite", "scale": 1.2, "marker_color": "#ff7f50", "marker_size": 0.34, "marker_height": 2.85, "display_name": "Mini-boss", "name_format": "Act %d Mini-boss" }
     },
     "acts": {
         "start_heal": 0.3,
@@ -141,6 +141,9 @@
             "status_damage_over_time": "%s %s damage/s for %s s", "status_heal_over_time": "%s %s HP/s for %s s",
             "cooldown": "Cooldown %s s", "slot_cooldown": "%s cooldown %s s", "armor": "%s armor", "for": "for %s s",
             "within": "%s, within %s s",
+            "repeat": "%d times: %s", "shot_status": "each hit applies %s", "dash_status": "enemies you pass through get %s",
+            "detonate": "Detonate %s: %s%% of its remaining damage at once", "stack_cap": "%s can stack %s more times", "tick_rate": "%s ticks %s faster",
+            "attack_interval": "%s attack delay %s", "attack_cooldown": "%s attack cooldown %s",
             "buff_stats": {
                 "slot_cooldown_skip": "Next %s cast has no cooldown",
                 "status_damage_mult": "%s you apply deals %s damage"

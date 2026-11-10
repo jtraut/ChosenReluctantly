@@ -38,7 +38,7 @@ static func compose(entries: Array, cfg: Dictionary) -> String:
 	return "\n".join(lines)
 
 
-## The word shown with a detonation, for example "Bleed burst".
+## The word shown with a detonation, for example "Bleed detonated".
 static func detonate_word(display_name: String, cfg: Dictionary) -> String:
 	return String(cfg["detonate_word"]) % display_name
 
@@ -46,7 +46,7 @@ static func detonate_word(display_name: String, cfg: Dictionary) -> String:
 # ---- Lifecycle ----
 
 ## Call right after add_child.
-func setup(status: StatusEffectManager) -> void:
+func setup(status: StatusEffectManager, height: float = -1.0) -> void:
 	_cfg = UiConfig.status_stacks()
 	_status = status
 	billboard = BaseMaterial3D.BILLBOARD_ENABLED
@@ -58,7 +58,7 @@ func setup(status: StatusEffectManager) -> void:
 	outline_modulate = Color.html(String(_cfg["outline_color"]))
 	render_priority = int(_cfg["render_priority"])
 	outline_render_priority = render_priority - 1
-	position = Vector3(0.0, float(_cfg["height"]), 0.0)
+	position = Vector3(0.0, float(_cfg["height"]) if height < 0.0 else height, 0.0)
 	visible = false
 	if _status == null:
 		return
@@ -103,7 +103,7 @@ func _status_color(def: Dictionary) -> Color:
 
 
 ## The detonate hit reads at a glance: the damage number that just landed is enlarged and ends with "!", a burst ring
-## expands round the enemy and a short "<Status> burst" word rises above it (Juice.on_detonated).
+## expands round the enemy and a short "<Status> detonated" word rises above it (Juice.on_detonated).
 func _on_detonated(status_id: String, amount: float, _stacks: int) -> void:
 	refresh()
 	var owner_node := get_parent() as Node3D

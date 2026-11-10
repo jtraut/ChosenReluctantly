@@ -339,10 +339,11 @@ const DEFAULT_STATUS_STACKS: Dictionary = {
 	"render_priority": 12,
 	"detonate_scale": 1.9,
 	"detonate_suffix": "!",
-	"detonate_word": "%s burst",
+	"detonate_word": "%s detonated",
 	"detonate_word_scale": 0.8,
 	"detonate_word_height": 3.4,
 	"burst_radius": 1.1,
+	"boss_gap": 0.5,
 }
 
 ## Small floating words (not damage numbers). The "IMMUNE" popup when a stun bounces.
@@ -542,7 +543,7 @@ static func status_stacks() -> Dictionary:
 
 static func validate_status_stacks(block: Dictionary) -> Array[String]:
 	var problems: Array[String] = []
-	for key: String in ["font_size", "pixel_size", "outline_size", "height", "detonate_scale", "detonate_word_scale", "detonate_word_height", "burst_radius", "render_priority"]:
+	for key: String in ["font_size", "pixel_size", "outline_size", "height", "detonate_scale", "detonate_word_scale", "detonate_word_height", "burst_radius", "boss_gap", "render_priority"]:
 		if not _is_number(block.get(key)) or float(block[key]) <= 0.0:
 			problems.append("%s must be a number > 0" % key)
 	if not _is_number(block.get("min_stacks")) or float(block["min_stacks"]) < 1.0:

@@ -31,6 +31,7 @@ var _cfg: Dictionary = {}
 var _bars: Dictionary = {}
 var _scale: float = 1.0
 var _telegraph_active: bool = false
+var _mini_bar: MiniBossBar = null
 
 
 # ---- Pure logic (unit-tested) ----
@@ -109,9 +110,10 @@ const GROUP := &"boss_hp_bar"
 
 ## Bottom edge (screen pixels) of the bar block while it shows, else 0. Damage numbers keep below it (DamageNumber).
 func occupied_bottom() -> float:
+	var mini: float = _mini_bar.occupied_bottom() if _mini_bar != null else 0.0  # BD3a: the mini-boss bar holds the same spot
 	if not is_showing():
-		return 0.0
-	return _root.position.y + _root.size.y
+		return mini
+	return maxf(_root.position.y + _root.size.y, mini)
 
 
 func _ready() -> void:
@@ -121,6 +123,9 @@ func _ready() -> void:
 	_bars = UiConfig.hp_bars()
 	_build()
 	_apply_layout()
+	_mini_bar = MiniBossBar.new()
+	_mini_bar.name = "MiniBossBar"
+	add_child(_mini_bar)
 	get_viewport().size_changed.connect(_apply_layout)
 	_root.visible = false
 	set_process(false)

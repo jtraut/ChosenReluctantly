@@ -146,3 +146,53 @@ func test_a_plain_dash_keeps_its_cosmetic_lane() -> void:
 	var card: Dictionary = {"effects": [{"template": "dash", "params": {"distance": 3.0, "speed": 14.0}}]}
 	var parts: Array[Dictionary] = CastPreviewShapes.parts_for_card(card, {})
 	assert_bool(bool(parts[0].get("cosmetic_width", false))).is_true()
+
+
+# --- Mini-boss bar ---
+
+func test_the_mini_boss_title_uses_the_act_then_the_plain_name_then_a_fallback() -> void:
+	assert_str(MiniBossBar.title_for({"name_format": "Act %d Mini-boss", "display_name": "Mini-boss"}, 2)).is_equal("Act 2 Mini-boss")
+	assert_str(MiniBossBar.title_for({"display_name": "The Overdue Golem"}, 2)).is_equal("The Overdue Golem")
+	assert_str(MiniBossBar.title_for({}, 1)).is_equal("Mini-boss")
+	assert_str(MiniBossBar.title_for({"name_format": "no placeholder"}, 1)).is_equal("Mini-boss")
+
+
+func test_only_a_live_mini_boss_tier_enemy_gets_the_bar() -> void:
+	assert_bool(MiniBossBar.is_candidate("mini_boss", false)).is_true()
+	assert_bool(MiniBossBar.is_candidate("mini_boss", true)).is_false()
+	assert_bool(MiniBossBar.is_candidate("elite", false)).is_false()
+	assert_bool(MiniBossBar.is_candidate("normal", false)).is_false()
+
+
+func test_the_shipped_mini_boss_tier_has_a_name_and_a_marker_bigger_than_the_boss() -> void:
+	var tier: Dictionary = RunConfig.tier("mini_boss")
+	assert_str(MiniBossBar.title_for(tier, 1)).is_equal("Act 1 Mini-boss")
+	assert_float(float(tier["marker_size"])).is_greater_equal(float(RunConfig.tier("boss")["marker_size"]))
+
+
+func test_the_bar_shows_for_a_mini_boss_and_hides_when_it_dies() -> void:
+	var world: Node = WorldRef.get_world(get_tree())
+	if world == null:
+		world = Node3D.new()
+		add_child(world)
+		auto_free(world)
+		WorldRef.register(world)
+	var bar := MiniBossBar.new()
+	add_child(bar)
+	auto_free(bar)
+	await get_tree().process_frame
+	assert_bool(bar.visible).is_false()
+	assert_float(bar.occupied_bottom()).is_equal(0.0)
+	var enemy: Enemy = (load("res://scenes/enemies/FireResistantGolem.tscn") as PackedScene).instantiate()
+	world.add_child(enemy)
+	await get_tree().process_frame
+	enemy.apply_tier("mini_boss", RunConfig.tier("mini_boss"))
+	await get_tree().create_timer(0.5).timeout
+	assert_bool(bar.visible).is_true()
+	assert_str(bar.title_text()).is_equal("Act 1 Mini-boss")
+	assert_float(bar.occupied_bottom()).is_greater(0.0)
+	enemy.health.take_damage(1.0e9)
+	for i in range(3):  # a hit-stop makes the next frame's delta tiny, so give the bar a few frames to notice
+		await get_tree().process_frame
+	assert_bool(bar.visible).is_false()
+	WorldRef.unregister(world)

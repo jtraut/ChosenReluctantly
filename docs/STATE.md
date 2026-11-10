@@ -167,8 +167,8 @@ Last updated: 2026-11-09 (MAP3 closed; D44 = C, D45 = B recorded; BD3a next). **
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes; they didn't flake in MAP3).
 
 ## Exact next step
-1. **qa: a short BD3a verdict** on ux's e51981e (the deferred-call ERROR fix; ux reports the full suite at 2082 cases, exit 0, 0 orphans, no deferred ERROR). Then the playtester. Earlier re-check: qa 8e8c3bc, DECISIONS "BD3a re-check".
-2. Then playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-BD3a`.
+1. **playtester: BD3a** (ROADMAP BD3a playtester line: `rogue-bleed-out` from room 1, `rogue-grudge-brawler`, a normal Fire Rogue going physical as the difficulty check against MAP3, the act-start heal, the stack and detonate read, the Wizard in acts 2-3). qa PASS 4b97a61, suite 2083 / 157.
+2. Then tech-writer -> close, tag `playtest-YYYY-MM-DD-BD3a`.
 3. Then **SIM1** (sim re-calibration, new), then **MB1** (game-lead design note in MAP.md first), then MAP3b (its design pass covers Bleed and basic attacks, gold sinks, the playtester's gold ideas), MAP4, 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.

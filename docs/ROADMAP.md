@@ -1279,6 +1279,13 @@ un_offer_report.ps1`.
     - parity, fingerprint and offer-share numbers checked against acceptance;
     - the reload soak if Main or the autoloads change.
     - **from sitting B:** review the four qa-owned tests gameplay-dev edited (`f1_movement_test` 8 -> 9 dashes, `m3c_qa_test` " times" unit, `slice6_qa_test` lane yaw, `t_decks_qa_test` `needed_fire` 1 -> 0), the `RelicManager._live_target` fix, and rule on the fingerprint top-source reading (slot level vs card level). Record the Rogue floor miss (21/36) as known and re-scoped, not as a FAIL (DECISIONS "BD3a sitting B").
+  - **qa FAIL 2026-11-09** (4477c95, baf31e6, 39ef43a; `docs/reviews/2026-11-09-bd3a-qa.md`; triage in DECISIONS "BD3a qa FAIL triage"). Fix batch, in order:
+    1. **ux:** fix the `StatusStackLabel` orphan leak in `EnemyHpBar` (the suite must exit 0 with 0 orphans) and un-skip `bd3a_qa_test`'s orphan probe. Align `cast_preview_6a_test`'s dash branch with the code (`status_id` and `hit_radius`).
+    2. **gameplay-dev:**
+       - diagnose why `-Run -Plan -NoMap -NoRelics -Deck rogue-bleed-out` wins 0/12, with 9 deaths in rooms 1-2, and why the Rogue three-act pooled score fell to 17/36 (seeds 1/13/25: 8, 6, 3). Fix it if it's a bug or a clear data mistake; report first if it needs a balance change beyond §9a;
+       - drop `fire_fine_burn_then` from `physical-rogue`, fix its description and `t_decks_test`, and un-skip qa's probe;
+       - run the full suite (exit 0, 0 orphans).
+    3. **qa:** re-check the blockers, the suite exit and the floor numbers.
   - **playtester:** play `rogue-bleed-out` and `rogue-grudge-brawler`, then a normal Fire Rogue run that tries to go physical from the starting deck. **Difficulty check (the sim floor was missed):** is a normal three-act Fire Rogue run clearly harder than at the MAP3 tag? Also note the act-start heal (D45), which the bot can't measure. Questions: does the run offer enough to build it, and do the stacks and the detonate read?
   - **Acceptance:**
     - `rogue-bleed-out` and `rogue-grudge-brawler` boss times are within 70-130% of the standard Rogue deck (BUILD_DEPTH §2 parity).

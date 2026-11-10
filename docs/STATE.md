@@ -167,7 +167,7 @@ Last updated: 2026-11-09 (MAP3 closed; D44 = C, D45 = B recorded; BD3a next). **
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320` (possible flakes; they didn't flake in MAP3).
 
 ## Exact next step
-1. **qa: the BD3a review** (ROADMAP BD3a qa list, including the "from sitting B" line, ux's edited `cast_preview_6a_test`, and D47). Build is done: gameplay-dev 7625eee..29da9bf, ux aa02650..cff56aa. Suite 2069 / 154.
+1. **BD3a qa FAILED (4477c95..39ef43a). Fix batch in ROADMAP BD3a "qa FAIL":** ux (orphan leak, `cast_preview` test) -> gameplay-dev (Bleed Out room 1-2 deaths and the three-act drop to 17/36, the `physical-rogue` Fire card) -> qa re-check. Triage in DECISIONS "BD3a qa FAIL triage".
 2. Then playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-BD3a`.
 3. Then **MB1** (game-lead design note in MAP.md first), then MAP3b (its design pass covers Bleed and basic attacks, gold sinks, the playtester's gold ideas), MAP4, 3d, BD3b.
 

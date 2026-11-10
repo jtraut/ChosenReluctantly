@@ -196,3 +196,35 @@ func test_the_bar_shows_for_a_mini_boss_and_hides_when_it_dies() -> void:
 		await get_tree().process_frame
 	assert_bool(bar.visible).is_false()
 	WorldRef.unregister(world)
+
+
+# --- Act screen: the D45 heal and low HP ---
+
+func test_the_heal_line_shows_the_healed_amount_and_nothing_when_zero() -> void:
+	assert_str(ActText.heal_line({"healed": 9.0})).is_equal("You recover 9 HP. Rests are on the map.")
+	assert_str(ActText.heal_line({"healed": 8.6})).is_equal("You recover 9 HP. Rests are on the map.")
+	assert_str(ActText.heal_line({"healed": 0.0})).is_empty()  # a resumed act
+	assert_str(ActText.heal_line({})).is_empty()
+
+
+func test_low_hp_is_at_or_under_the_data_fraction_and_adds_a_word() -> void:
+	var fraction: float = float(RunConfig.ui()["act"]["low_hp_fraction"])
+	assert_bool(ActText.is_low_hp({"hp": 30.0 * fraction, "max_hp": 30.0})).is_true()
+	assert_bool(ActText.is_low_hp({"hp": 30.0 * fraction + 1.0, "max_hp": 30.0})).is_false()
+	assert_bool(ActText.is_low_hp({"hp": 5.0, "max_hp": 0.0})).is_false()
+	assert_str(ActText.summary_line({"line": "HP 4 of 30", "hp": 4.0, "max_hp": 30.0})).is_equal("Low HP: HP 4 of 30")
+	assert_str(ActText.summary_line({"line": "HP 29 of 30", "hp": 29.0, "max_hp": 30.0})).is_equal("HP 29 of 30")
+
+
+func test_the_act_screen_shows_the_heal_line_only_when_something_healed_and_goes_red_when_low() -> void:
+	var screen := ActScreen.new()
+	add_child(screen)
+	auto_free(screen)
+	await get_tree().process_frame
+	screen.show_act({"title": "Act 2", "line": "HP 4 of 30", "hp": 4.0, "max_hp": 30.0, "healed": 6.0})
+	assert_bool(screen.heal_label.visible).is_true()
+	assert_str(screen.line_label.text).starts_with("Low HP")
+	assert_that(screen.line_label.get_theme_color("font_color")).is_equal(Color.html(String(RunConfig.ui()["act"]["low_hp_color"])))
+	screen.show_act({"title": "Act 2", "line": "HP 29 of 30", "hp": 29.0, "max_hp": 30.0, "healed": 0.0})
+	assert_bool(screen.heal_label.visible).is_false()
+	assert_str(screen.line_label.text).is_equal("HP 29 of 30")

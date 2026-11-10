@@ -3,7 +3,7 @@ extends Node
 ## Needs a renderer (not --headless). Run:
 ##   godot --path . res://tools/UxCapture.tscn -- --size=1024x600 --class=rogue --mode=pips_recharge --out=screenshots/ux/a.png
 ## Modes: pips (full), pips_recharge (one spent, a pip coming back), pips_empty (all spent), stagger (a boss at its first
-## threshold, mid-stagger), continue_pick (the class pick screen with a saved run). The player is made immune and the spawner off, so the shot is only the state being checked.
+## threshold, mid-stagger), continue_pick (the class pick screen with a saved run), act_heal / act_low / act_resumed (the Act 2 screen, BD3a). The player is made immune and the spawner off, so the shot is only the state being checked.
 
 const BOSS_PATH := "res://scenes/enemies/BossGuardian.tscn"
 const HIT_DAMAGE := 30.0  # stagger mode: a typical card hit
@@ -81,6 +81,22 @@ func _ready() -> void:
 			await _wait(0.6)
 			RunSession.acts_override = 0
 			RunSave.reset()
+		"act_heal", "act_low", "act_resumed":
+			# BD3a ux: the Act 2 screen with fabricated summaries (the numbers of RunController.act_summary), over the arena: a heal that leaves
+			# HP healthy (act_heal), a heal that leaves it low (act_low: red, "Low HP"), and a resumed act (healed 0: no heal line).
+			var summary: Dictionary = {
+				"act": 2, "acts_total": 3, "title": "Act 2", "gold": 120, "relic_count": 3,
+				"hp_before": 14.0, "hp_after": 23.0, "healed": 9.0, "hp": 23.0, "max_hp": 30.0, "heal_fraction": 0.3,
+			}
+			if mode == "act_low":
+				summary.merge({"hp_before": 2.0, "hp_after": 8.0, "healed": 6.0, "hp": 8.0, "max_hp": 22.0}, true)
+			elif mode == "act_resumed":
+				summary.merge({"hp_before": 23.0, "healed": 0.0, "heal_fraction": 0.0}, true)
+			summary["line"] = String(RunConfig.ui()["act"]["summary"]) % [roundi(float(summary["hp"])), roundi(float(summary["max_hp"])), int(summary["gold"]), int(summary["relic_count"])]
+			var act_screen := ActScreen.new()
+			sub.add_child(act_screen)
+			act_screen.show_act(summary)
+			await _wait(0.7)
 	await RenderingServer.frame_post_draw
 	var image := sub.get_texture().get_image()
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(out.get_base_dir()))

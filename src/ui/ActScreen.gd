@@ -19,6 +19,7 @@ var panel: PanelContainer = null
 var column: VBoxContainer = null
 var title_label: Label = null
 var line_label: Label = null
+var heal_label: Label = null
 var flavor_label: Label = null
 var button: Button = null
 var hint_label: Label = null
@@ -67,7 +68,9 @@ func show_act(summary_in: Dictionary) -> void:
 	_summary = summary_in
 	var texts: Dictionary = RunConfig.ui().get("act", {})
 	title_label.text = String(summary_in.get("title", ""))
-	line_label.text = String(summary_in.get("line", ""))
+	line_label.text = ActText.summary_line(summary_in)
+	heal_label.text = ActText.heal_line(summary_in)
+	heal_label.visible = heal_label.text != ""
 	flavor_label.text = String(texts.get("flavor", ""))
 	flavor_label.visible = flavor_label.text != ""
 	button.text = String(texts.get("button", "Continue"))
@@ -142,9 +145,11 @@ func _build() -> void:
 	panel.add_child(column)
 	title_label = _make_label("Title")
 	line_label = _make_label("Line")
+	heal_label = _make_label("Heal")
 	flavor_label = _make_label("Flavor")
 	column.add_child(title_label)
 	column.add_child(line_label)
+	column.add_child(heal_label)
 	column.add_child(flavor_label)
 	button = Button.new()
 	button.name = "Continue"
@@ -184,7 +189,11 @@ func _apply_style() -> void:
 	title_label.add_theme_font_size_override("font_size", roundi(float(cfg["prompt_title_font_size"]) * 1.2 * s))
 	title_label.add_theme_color_override("font_color", Color.html(String(cfg["prompt_title_color"])))
 	line_label.add_theme_font_size_override("font_size", roundi(float(cfg["prompt_subtitle_font_size"]) * 1.1 * s))
-	line_label.add_theme_color_override("font_color", text_color)
+	# Low HP reads red (and says "Low HP" in words, ActText.summary_line).
+	var low: bool = ActText.is_low_hp(_summary)
+	line_label.add_theme_color_override("font_color", Color.html(String(RunConfig.ui().get("act", {}).get("low_hp_color", "#ff6b6b"))) if low else text_color)
+	heal_label.add_theme_font_size_override("font_size", roundi(float(cfg["prompt_subtitle_font_size"]) * s))
+	heal_label.add_theme_color_override("font_color", text_color)
 	flavor_label.add_theme_font_size_override("font_size", roundi(float(cfg["prompt_subtitle_font_size"]) * s))
 	flavor_label.add_theme_color_override("font_color", text_color.darkened(0.15))
 	hint_label.add_theme_font_size_override("font_size", roundi(float(cfg["prompt_subtitle_font_size"]) * 0.85 * s))

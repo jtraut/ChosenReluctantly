@@ -191,7 +191,7 @@ func test_a_run_resumed_from_the_act_two_save_shows_no_heal_line_and_no_act_scre
 # same frame, the deferred call to the freed bar never runs and the new Label3D is never added or freed. slice5d_qa_test (61 orphans) and
 # slice6_qa_test (10) show it in the full suite as exit 101. Skipped until gameplay-dev/ux fix it; un-skip with the fix.
 
-func test_an_enemy_freed_in_its_spawn_frame_leaves_no_orphan_node(do_skip := true, skip_reason := "known regression since aa02650: EnemyHpBar leaks its StatusStackLabel when freed before the deferred add; un-skip when fixed") -> void:
+func test_an_enemy_freed_in_its_spawn_frame_leaves_no_orphan_node() -> void:
 	var before: int = int(Performance.get_monitor(Performance.OBJECT_ORPHAN_NODE_COUNT))
 	for i in range(20):
 		var enemy: Node = (load("res://scenes/enemies/MeleeChaser.tscn") as PackedScene).instantiate()

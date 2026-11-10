@@ -108,6 +108,9 @@ static func dominant_resistance(resistances: Dictionary) -> String:
 
 # ---- Node lifecycle ----
 
+var _stacks: StatusStackLabel = null
+
+
 func _ready() -> void:
 	set_process(false)
 	_ensure_shared()
@@ -136,16 +139,26 @@ func _ready() -> void:
 		_status.status_applied.connect(_on_status_applied)
 		_status.status_expired.connect(_on_status_expired)
 		var stacks := StatusStackLabel.new()
+		_stacks = stacks
 		stacks.name = "StatusStackLabel"
 		_add_sibling_deferred.call_deferred(stacks)  # a sibling, not a child: this bar hides itself, the count must not
 	# Sibling Health may not have run its _ready yet; read initial state after.
 	_initialize.call_deferred()
 
 
+## The label is built before it has a parent, so if this bar leaves the tree first (an enemy freed in its spawn frame drops the deferred add) it
+## would leak as an orphan. Free it then; once added it is a sibling and dies with the enemy.
+func _exit_tree() -> void:
+	if _stacks != null and is_instance_valid(_stacks) and _stacks.get_parent() == null:
+		_stacks.free()
+	_stacks = null
+
+
 func _add_sibling_deferred(label: StatusStackLabel) -> void:
 	var host: Node = get_parent()
 	if host == null or _status == null or not is_instance_valid(_status):
 		label.free()
+		_stacks = null
 		return
 	host.add_child(label)
 	label.setup(_status)

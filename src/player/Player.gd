@@ -1083,9 +1083,12 @@ func _apply_movement(delta: float) -> void:
 
 
 func _apply_aim(delta: float) -> void:
-	if camera == null:
-		return
-	var aim_point: Variant = _ground_point_under_mouse()
+	# A fixed aim point (the wave sim bot, scenarios) turns the body like the mouse does: cones, dashes and projectiles use the facing.
+	var aim_point: Variant = aim_point_override
+	if aim_point == null:
+		if camera == null:
+			return
+		aim_point = _ground_point_under_mouse()
 	if aim_point == null:
 		return
 	var to_aim := (aim_point as Vector3) - global_position

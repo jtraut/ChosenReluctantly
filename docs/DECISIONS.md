@@ -2181,3 +2181,12 @@ gameplay-dev e4ef264..bf0d44c. `Player._apply_aim` ignored `aim_point_override`,
 - **The 8/12 sim floors stop being gates until they're re-calibrated.** The bot now wins 35/36 with bosses at about 30 s, so the floor can't catch a run that's too hard for a human. A new tooling slice, **SIM1**, runs before MB1 (whose acceptance uses the floor). It re-baselines every sim number, and makes the bot human-like enough for floors to mean something: reaction delay, aim error, or a tuned plan. It sets new floors from human reports where we have them, the director's "felt good mostly" three-act Rogue run among them. [New floors set straight from the fixed bot, which would pass anything; leaving the old floors, which now never fail.]
 - **Hash rebaseline (a9d56fc; the bot now faces its target, so positions change):** arena 30 s 2833360253 -> 3172486861, 90 s 2458345884 -> 916264160, `-Plan -Seed 1 -Seconds 30` 197110259 -> 1317880580. Bot sim 3476063471 is unchanged.
 - **`physical-rogue` has no Fire card** (`fire_fine_burn_then` -> `rogue_cut_corners`).
+
+## 2026-11-09 - BD3a re-check (qa 8e8c3bc, FAIL on one narrow blocker; game-lead)
+- **Blocker:** a614f76 frees the queued label, so Godot logs "Error calling deferred method ... _add_sibling_deferred" once per suite run (and one loaded-machine run crashed with exit 139 right after it). ux builds the label inside the deferred call, so no node crosses the deferred boundary. qa re-checks with one isolated run and one full run.
+- **The fingerprint passes on the with-relics reading: 0.61 on median vectors (BUILD_DEPTH wording), 0.66 on mean vectors.** Relics off it's 0.45, a fail. I keep the with-relics ruling, because the archetypes are defined with their relics. It's a thin pass, so SIM1's human-like bot re-measures it. If it drops below 0.6, Bleed Out gets more distinct in MAP3b (its Bleed content). [Failing BD3a on a margin the bot settings can move.]
+- **Correction to "BD3a qa FAIL triage":** the reason given there ("with relics Bleed Out tops at `status:bleed`") was measured with the aim bug. With the fixed bot, Bleed Out tops at Attack: Single and Kindling at Attack: AoE in both readings. Bleed ticks are third, at 21-23%. The ruling still stands.
+- **Fixed-bot numbers (seed 1, for SIM1):**
+  - **Parity:** bleed-out 92% (79% with relics), grudge-brawler 109% (94%), kindling 106% (96%), against standard 29.8 s.
+  - **No-card gate:** 0/12 for each class.
+  - **Three-act pooled:** Rogue 35/36, Wizard 29/36.

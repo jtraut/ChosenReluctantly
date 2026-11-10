@@ -1287,6 +1287,7 @@ un_offer_report.ps1`.
        - run the full suite (exit 0, 0 orphans).
     - **Item 1 done** (a614f76). **Item 2 done** (e4ef264..bf0d44c): the cause was the sim bot's aim bug (DECISIONS "The sim bot's aim bug and the baselines"). Suite 2080 / 156, exit 0, 0 orphans.
     3. **qa:** re-check the blockers and the suite exit. Re-measure BD3a's acceptance with the fixed bot: parity, fingerprint and the top source, the three-act `-Route first` seeds 1/13/25 per class, and the no-card gate. The floors are information only until SIM1. Note the new hashes.
+  - **qa re-check FAIL 2026-11-09** (8e8c3bc; `docs/reviews/2026-11-09-bd3a-recheck-qa.md`). One blocker: a614f76's deferred-call ERROR. **ux** builds the label inside the deferred call. **qa** gives a short verdict from one isolated `slice5d_qa_test` run and one full suite run. Everything else passes.
   - **playtester:** play `rogue-bleed-out` and `rogue-grudge-brawler`, then a normal Fire Rogue run that tries to go physical from the starting deck. **Difficulty check (the sim floor was missed):** is a normal three-act Fire Rogue run clearly harder than at the MAP3 tag? Also note the act-start heal (D45), which the bot can't measure. Questions: does the run offer enough to build it, and do the stacks and the detonate read?
   - **Acceptance:**
     - `rogue-bleed-out` and `rogue-grudge-brawler` boss times are within 70-130% of the standard Rogue deck (BUILD_DEPTH §2 parity).

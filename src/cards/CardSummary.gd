@@ -146,7 +146,9 @@ static func _effect_part(template: String, params: Dictionary, text: Dictionary 
 		"heal":
 			return String(_word(text, "heal")) % _num(float(params.get("amount", 0.0)))
 		"apply_status":
-			return status_text(String(params.get("status_id", "")), float(params.get("duration", 0.0)), text)
+			var applied: String = status_text(String(params.get("status_id", "")), float(params.get("duration", 0.0)), text)
+			# BD3a ux: a multi-hit card applies the status once per hit (that is what stacks), so say so.
+			return String(_word(text, "shot_status")) % applied if hits > 1 else applied
 		"dash":
 			var dash: String = String(_word(text, "dash")) % _num(float(params.get("distance", 0.0)))
 			dash += String((_word(text, "dash_modes") as Dictionary).get(String(params.get("direction_mode", "")), ""))

@@ -1,6 +1,6 @@
 {
     "id": "rogue_cut_corners",
-    "name": "Corner Cut",
+    "name": "Cutting Corners",
     "slot_type": "attack_aoe",
     "pool": "rogue",
     "cooldown_modifier": 0.2,

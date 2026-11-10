@@ -153,7 +153,7 @@
             },
             "condition_line": "%s: %s"
         },
-        "option": { "unavailable": "Unavailable: %s", "owned": "You own %d", "slot_now": "In slot: %s", "copies": "x%d", "slot_key": "%s", "slot_label": "%s (%s)", "pick_hint": "Enter to pick", "dodge_hint": "The dodge does not count.", "dodge_slots": ["movement"], "act_hint": "Enter to choose", "remove_hint": "Enter to remove", "list_hint": "Arrow keys move, Enter or click confirms", "remove_list_hint": "Arrow keys move, Enter or click confirms" },
+        "option": { "unavailable": "Unavailable: %s", "owned": "You own %d", "slot_now": "In slot: %s", "slot_now_max": 3, "slot_now_more": "+%d more", "copies": "x%d", "slot_key": "%s", "slot_label": "%s (%s)", "pick_hint": "Enter to pick", "dodge_hint": "The dodge does not count.", "dodge_slots": ["movement"], "act_hint": "Enter to choose", "remove_hint": "Enter to remove", "list_hint": "Arrow keys move, Enter or click confirms", "remove_list_hint": "Arrow keys move, Enter or click confirms" },
         "room_label": "Room %d of %d",
         "type_names": { "combat": "Combat", "elite": "Elite", "rest": "Rest", "boss": "Boss", "relic_room": "Relics", "merchant": "Merchant", "mini_boss": "Mini-boss", "curse_room": "Curse", "buff_room": "Buff" },
         "room_cleared": { "title": "Room cleared", "button": "Continue", "hint": "Enter to continue", "rest_line": "You rest. It helps a little (healed %d).", "rest_full_line": "You rest. Nothing needed healing.", "stat_hp": "HP", "stat_time": "Time", "stat_healed": "Healed" },

@@ -75,16 +75,20 @@ const SLOT_NOW_SEPARATOR: String = " / "
 
 ## "Utility (1) now: A / B / C": the distinct cards already held in the offered card's slot (data/run.json
 ## ui.option.slot_now, first %s = the slot's name and live key). "" when the slot holds nothing yet or is unknown.
-static func slot_now_text(slot_type: String, names: Array, format: String) -> String:
+static func slot_now_text(slot_type: String, names: Array, format: String, max_names: int = 0, more_format: String = "+%d more") -> String:
 	if slot_key_for(slot_type) <= 0 or names.is_empty():
 		return ""
 	var joined: PackedStringArray = PackedStringArray()
 	for entry: Variant in names:
 		joined.append(String(entry))
+	# BD3a: the list is capped (data/run.json ui.option.slot_now_max), so a pool that grows never grows the card; the rest read "+N more".
+	var listed: String = SLOT_NOW_SEPARATOR.join(joined)
+	if max_names > 0 and joined.size() > max_names:
+		listed = SLOT_NOW_SEPARATOR.join(joined.slice(0, max_names)) + " " + more_format % (joined.size() - max_names)
 	# One %s: the chip above the line already names the slot and its key, so the line only lists the cards.
 	if format.count("%s") < 2:
-		return format % SLOT_NOW_SEPARATOR.join(joined)
-	return format % [InputLabels.slot_label(slot_type), SLOT_NOW_SEPARATOR.join(joined)]
+		return format % listed
+	return format % [InputLabels.slot_label(slot_type), listed]
 
 
 ## Builds the card. `extra`: index (0-based, -1 = no number), owned (int), rejects_remaining, rejects_max, texts (run.json ui.option).
@@ -208,7 +212,7 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 		_pips.draw.connect(_draw_pips)
 		_inner.add_child(_pips)
 	if look == Look.CARD:
-		var now_text: String = slot_now_text(String(opt.get("slot_type", "")), opt.get("slot_contents", []), String(texts.get("slot_now", "%s now: %s")))
+		var now_text: String = slot_now_text(String(opt.get("slot_type", "")), opt.get("slot_contents", []), String(texts.get("slot_now", "%s now: %s")), int(texts.get("slot_now_max", 0)), String(texts.get("slot_now_more", "+%d more")))
 		if now_text != "":
 			slot_now_label = _label(now_text, small_size, body_color, true)
 			slot_now_label.custom_minimum_size.x = inner_width

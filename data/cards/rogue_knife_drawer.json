@@ -1,6 +1,6 @@
 {
     "id": "rogue_knife_drawer",
-    "name": "Knives",
+    "name": "The Knife Drawer",
     "slot_type": "attack_aoe",
     "pool": "rogue",
     "cooldown_modifier": 0.3,

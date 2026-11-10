@@ -113,3 +113,36 @@ func test_the_shipped_cap_is_set_and_a_big_pool_does_not_grow_the_line() -> void
 	var few: String = RunOptionCard.slot_now_text("attack_single", many.slice(0, cap + 1), String(texts["slot_now"]), cap, String(texts["slot_now_more"]))
 	var lots: String = RunOptionCard.slot_now_text("attack_single", many, String(texts["slot_now"]), cap, String(texts["slot_now_more"]))
 	assert_int(lots.length()).is_less_equal(few.length() + 2)
+
+
+# --- Relic text ---
+
+func test_every_relic_has_a_short_rule_text_that_fits_a_tile() -> void:
+	for id: String in RelicDatabase.ids():
+		var rule: String = String(RelicDatabase.get_relic(id).get("rule_text", ""))
+		assert_str(rule).override_failure_message("%s has no rule_text" % id).is_not_empty()
+		assert_int(rule.length()).override_failure_message("%s rule_text is %d characters" % [id, rule.length()]).is_less_equal(110)
+
+
+func test_spite_knuckles_text_says_bleed() -> void:
+	var rule: String = String(RelicDatabase.get_relic("spite_knuckles")["rule_text"])
+	assert_str(rule).contains("Bleeding")
+	assert_str(rule).not_contains("Burning")
+
+
+# --- Excuse Me's preview ---
+
+func test_excuse_me_previews_its_bleed_sweep_not_just_the_lane() -> void:
+	var parts: Array[Dictionary] = CastPreviewShapes.parts_for_card(CardDatabase.get_card("rogue_excuse_me"), {})
+	assert_int(parts.size()).is_equal(1)
+	var part: Dictionary = parts[0]
+	assert_str(String(part["shape"])).is_equal(CastPreviewShapes.DASH_PATH)
+	assert_bool(bool(part.get("cosmetic_width", false))).is_false()  # a real hit area, not a decorative lane
+	assert_float(float(part["half_width"])).is_equal_approx(VfxSizing.dash_path_half_width(0.9), 0.0001)
+	assert_float(float(part["size"])).is_equal_approx(VfxSizing.dash_path_length(4.0, 0.9), 0.0001)
+
+
+func test_a_plain_dash_keeps_its_cosmetic_lane() -> void:
+	var card: Dictionary = {"effects": [{"template": "dash", "params": {"distance": 3.0, "speed": 14.0}}]}
+	var parts: Array[Dictionary] = CastPreviewShapes.parts_for_card(card, {})
+	assert_bool(bool(parts[0].get("cosmetic_width", false))).is_true()

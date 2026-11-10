@@ -90,7 +90,7 @@ func test_every_card_in_data_previews_with_the_vfx_sizing_of_its_hit_params() ->
 					assert_float(part["half_width"]).is_equal_approx(VfxSizing.projectile_lane_half_width(float(params["hit_radius"])), 0.0001)
 					assert_float(part["start_offset"]).is_equal(EffectTemplates.PROJECTILE_MUZZLE_OFFSET)
 				"dash":
-					if params.has("damage"):
+					if params.has("damage") or params.has("status_id"):  # BD3a ux: a status-applying dash previews its swept hit area too
 						assert_str(part["shape"]).is_equal("dash_path")
 						assert_float(part["size"]).is_equal_approx(VfxSizing.dash_path_length(float(params["distance"]), float(params["hit_radius"])), 0.0001)
 					else:

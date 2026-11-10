@@ -61,12 +61,12 @@ static func parts_for_card(card_data: Dictionary, config: Dictionary) -> Array[D
 						"yaw_offset_degrees": float(params.get("yaw_degrees", 0.0))})  # a fan of shots draws one turned lane each
 			"dash":
 				var away: bool = String(params.get("direction_mode", EffectTemplates.DIRECTION_FORWARD)) == EffectTemplates.DIRECTION_AWAY
-				if params.has("damage"):
-					# A damaging dash draws the swept hit area: reaching sideways, behind the start and past the end.
+				# A dash that damages or applies a status (BD3a, Excuse Me's Bleed) draws the swept hit area: reaching sideways, behind the start and past the end.
+				if params.has("damage") or (params.has("status_id") and params.has("hit_radius")):
 					var hit_radius: float = float(params["hit_radius"])
 					parts.append({"shape": DASH_PATH, "size": VfxSizing.dash_path_length(float(params["distance"]), hit_radius),
 							"half_angle_degrees": 0.0, "half_width": VfxSizing.dash_path_half_width(hit_radius),
-							"start_offset": -VfxSizing.lateral_reach(hit_radius), "damage_type": String(params["damage_type"]),
+							"start_offset": -VfxSizing.lateral_reach(hit_radius), "damage_type": String(params.get("damage_type", "physical")),
 							"yaw_offset_degrees": 180.0 if away else 0.0})
 				else:
 					parts.append({"shape": DASH_PATH, "size": float(params["distance"]),

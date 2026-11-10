@@ -2155,3 +2155,13 @@ Commits aa02650..cff56aa.
 - **No hover on the HUD relic chips; the pause list is enough for now.** The chips ignore the mouse during combat on purpose, and the rule text is on the offer, shop and pause screens. This isn't sent to the director. It comes back if a playtest says relics are hard to read mid-run. [Adding hover to combat HUD chips.]
 - **Open a Vein shows 2 tag chips at 1024x600** ("Keystone + Payoff", Melee), so Bleed can drop off. That's the existing chip rule; no change.
 - **`m3b_flow_test`'s offer-and-reject test fails on main since the D46 flip (49f3f3e),** because its pinned seeded offer moved. It's re-pinned in the D47 sitting, which moves offers again anyway.
+
+## 2026-11-09 - D47 = B build (gameplay-dev, logged by game-lead)
+Commits 7b81933..29da9bf. Suite 154 suites, 2069 cases, 0 failures. Hashes unchanged. Rejected alternatives in brackets.
+- **Removing one copy bans the id,** following the GDD's wording, "a card you remove". [Banning only once every copy is gone.]
+- **A pruned card on the merchant's shelf in the same visit leaves the shelf,** so it can't be bought straight back. [Showing it but making it unbuyable.]
+- **`removed_cards` is validated like the deck:** a non-string, an empty string or an unknown id makes the save unusable. No save version bump; a missing key reads as empty.
+- **Nothing erases a ban.** Only debug paths (`--full-deck`, `--run-offer`, presets) can put a removed card back in the deck, and it still never appears in an offer.
+- **Offer report:** it now reads the shipped flags from `run.json`, with `-SkipStarter`/`-CountStarter` overrides, and the bots play the real D47 rule. The Bleed-picking, Burn-pruning bot's Fire share is 29.9/31.7/31.6% (pre-D47 rule: 30.8/35.9/39.1%). A neutral Fire Rogue's is 30.0/30.8/29.8%.
+- **Rogue three-act `-Route first` seed 1 went 9/12 -> 8/12** (D47 is the only gameplay change since). That's at the floor; the gate stays re-scoped as in "BD3a sitting B".
+- **The pinned `-Plan` arena value 197110259 comes from `-Plan -Seed 1 -Seconds 30`.** Bare `-Plan` defaults to 90 s (2710411178, not pinned).

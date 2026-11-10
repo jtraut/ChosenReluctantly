@@ -6,6 +6,10 @@
 Last updated: 2026-11-09 (MAP3 closed; D44 = C, D45 = B recorded; BD3a next). **Run order:** MAP1, MAP2, MAP3 (done) -> **BD3a, physical Rogue** (new, director priority 2026-11-09) -> MAP3b -> MAP4 -> 3d -> BD3b (Wizard depth). All briefs are in ROADMAP. Each build slice gets the full loop and a `playtest-YYYY-MM-DD-<slice>` tag. OPEN_ITEMS holds active items only; tech-writer archives answered ones in `docs/RESOLVED.md`. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2.
 
 ## What's done
+- **D46 = B, D47 = B recorded 2026-11-09 (game-lead, docs only):**
+  - **His answers:** D46 = B: the lean counts only cards you've added, not the starting deck. That's already shipped in 49f3f3e as `rewards.status_lean_skip_starter: true`. D47 = B: a pruned card is never offered again that run. gameplay-dev builds it after ux.
+  - **Where recorded:** GDD §9 (the lean bullet, plus a new "Pruned cards stay gone" bullet), the ROADMAP BD3a D47 item, and OPEN_ITEMS (removed).
+  - **Pending for tech-writer (BD3a docs pass):** archive D46 and D47 in RESOLVED (the question text is in commit eb6322a). Add CHANGELOG `[Director decision]` entries: D46 (the lean counted every owned card, now only added cards: a neutral Fire Rogue's Fire offers go 38% -> 30%); D47 (pruned cards came back at full weight, now never offered again that run: the Bleed bot's late Fire share 39% -> about 32%).
 - **D44 = C, D45 = B recorded 2026-11-09 (game-lead, docs only):**
   - **His answers:** D44 = C: the mini-bosses especially get their own attacks and behaviours (his example: one smaller, less HP, quicker and hitting harder, rogue-style), plus the visible changes. D45 = B: a partial heal at each act's start, easy to change back if runs get too easy.
   - **Where recorded:** GDD §9; MAP.md §2 (mini-boss line marked superseded); ROADMAP new slice MB1 (after BD3a, before MAP3b) and BD3a sitting A item 10 (30% heal, `acts.start_heal`); DECISIONS "Applying D44 = C and D45 = B".
@@ -164,12 +168,12 @@ Last updated: 2026-11-09 (MAP3 closed; D44 = C, D45 = B recorded; BD3a next). **
 
 ## Exact next step
 1. **ux-designer: BD3a ux** (ROADMAP BD3a "ux" list, including the sitting B items). The D46 default is set (49f3f3e).
-2. Then qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-BD3a`.
+2. Then **gameplay-dev: D47 = B** (ROADMAP BD3a, pruned cards stay gone, plus the offer report fix), then qa -> playtester -> tech-writer -> close, tag `playtest-YYYY-MM-DD-BD3a`.
 3. Then **MB1** (game-lead design note in MAP.md first), then MAP3b (its design pass covers Bleed and basic attacks, gold sinks, the playtester's gold ideas), MAP4, 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D45 answered. D46 and D47 are open (defaults B and A). Next free: D48.
+**D-numbers:** D21-D45 answered. D46 = B and D47 = B (2026-11-09). Next free: D48.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 

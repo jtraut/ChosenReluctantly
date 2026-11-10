@@ -99,7 +99,7 @@ static func open_for_room(state: RunState, room_type: String, is_last_room: bool
 	elif room_type == "rest":
 		state.pending = RunState.PENDING_REST
 	elif not is_last_room and (RunConfig.ROOM_TYPES.has(room_type) and ((ctx["rewards"] as Dictionary).get("reward_room_types", []) as Array).has(room_type)):
-		var offered: Array[String] = RewardOffer.generate(state.seed_value, state.stream_index(), state.deck, ctx["cards"], ctx["pools"], ctx["pool_defs"], ctx["rewards"], CharacterDatabase.starting_deck(state.character_id))
+		var offered: Array[String] = RewardOffer.generate(state.seed_value, state.stream_index(), state.deck, ctx["cards"], ctx["pools"], ctx["pool_defs"], ctx["rewards"], CharacterDatabase.starting_deck(state.character_id), state.removed_cards)
 		if not RunSession.forced_offer.is_empty():
 			offered = RunSession.forced_offer.duplicate()  # --run-offer (capture tooling): used by this one offer only
 			RunSession.forced_offer = []
@@ -280,6 +280,7 @@ static func apply(state: RunState, option_id: String, ctx: Dictionary) -> Dictio
 			state.pending = RunState.PENDING_REST_REMOVE
 		"remove":
 			state.deck.remove_at(state.deck.find(String(found["card_id"])))
+			state.record_removal(String(found["card_id"]))
 			state.log_choice("remove", String(found["card_id"]))
 			_close(state)
 			result["finished"] = true

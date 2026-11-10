@@ -40,6 +40,10 @@ var hp: float = -1.0
 var max_hp: float = -1.0
 var deck: Array[String] = []
 var rejects_remaining: int = 0
+## D47 = B: card ids removed from the deck this run (rest room, merchant, any deck-clean). They are never offered again, in card offers or the
+## merchant's stock. Ids only, no duplicates. An old save without the key loads as empty. Nothing erases an entry: a removed card can still be
+## re-added by a debug path (`--full-deck`, a forced `--run-offer`), and then it simply sits in the deck while staying out of offers.
+var removed_cards: Array[String] = []
 ## One entry per finished room: {index, type, wave_id, hp_end, seconds}.
 var history: Array[Dictionary] = []
 ## "" while the run is going, then "won" or "lost".
@@ -245,6 +249,7 @@ func to_dict() -> Dictionary:
 		"hp": hp,
 		"max_hp": max_hp,
 		"deck": deck.duplicate(),
+		"removed_cards": removed_cards.duplicate(),
 		"rejects_remaining": rejects_remaining,
 		"history": history.duplicate(true),
 		"outcome": outcome,
@@ -351,6 +356,7 @@ static func from_dict(data: Dictionary) -> RunState:
 		})
 	# Old dicts (before BD2) have no relic lists: they load as empty.
 	state.relics = _id_list(data.get("relics", []), "relics")
+	state.removed_cards = _id_list(data.get("removed_cards", []), "removed_cards")  # D47: a missing key (an old save) is empty
 	state.relics_given_up = _id_list(data.get("relics_given_up", []), "relics_given_up")
 	var relic_problem: String = _relic_problem(state)
 	if not relic_problem.is_empty():
@@ -585,6 +591,12 @@ static func _id_list(value: Variant, label: String) -> Array[String]:
 		if not ids.has(String(item)):
 			ids.append(String(item))
 	return ids
+
+
+## Notes that a card was removed from the deck (D47 = B): it is never offered again this run. No duplicates.
+func record_removal(card_id: String) -> void:
+	if not card_id.is_empty() and not removed_cards.has(card_id):
+		removed_cards.append(card_id)
 
 
 ## True when the run holds this relic.

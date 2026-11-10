@@ -121,7 +121,7 @@ static func _draw_cards(state: RunState, node_id: int, reroll_index: int, ctx: D
 	var rewards: Dictionary = (ctx["rewards"] as Dictionary).duplicate()
 	rewards["offer_size"] = needed + kept.size()  # asks for the kept ids too, then drops them, so a reroll never repeats one
 	var stream: int = CARD_STREAM_BASE + (node_id + ACT_NODE_STEP * (state.act - 1)) * 64 + reroll_index
-	for card_id: String in RewardOffer.generate(state.seed_value, stream, state.deck, ctx["cards"], ctx["pools"], ctx["pool_defs"], rewards, CharacterDatabase.starting_deck(state.character_id)):
+	for card_id: String in RewardOffer.generate(state.seed_value, stream, state.deck, ctx["cards"], ctx["pools"], ctx["pool_defs"], rewards, CharacterDatabase.starting_deck(state.character_id), state.removed_cards):
 		if not kept.has(card_id) and result.size() < needed:
 			result.append(card_id)
 	return result
@@ -239,6 +239,10 @@ static func buy_removal(state: RunState, card_id: String, ctx: Dictionary) -> Di
 	if price > state.gold:
 		return _refuse(result, "too_expensive")
 	state.deck.erase(card_id)  # one copy
+	state.record_removal(card_id)
+	# D47: a copy of the pruned card already on the shelf (unsold) goes too, so it can't be bought straight back in the same visit.
+	if not (state.merchant_visit["sold_cards"] as Array).has(card_id):
+		(state.merchant_visit["cards"] as Array).erase(card_id)
 	state.merchant_removals += 1
 	_pay(state, price)
 	state.log_choice("merchant_remove", card_id, float(price))

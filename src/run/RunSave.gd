@@ -182,6 +182,8 @@ static func _data_problem(data: Dictionary) -> String:
 		return "run format version %d is not %d" % [int(data["version"]), RunState.FORMAT_VERSION]
 	if not CharacterDatabase.has(str(data.get("character", ""))):
 		return "unknown character"
+	if data.has("removed_cards") and (typeof(data["removed_cards"]) != TYPE_ARRAY or (data["removed_cards"] as Array).any(func(v: Variant) -> bool: return typeof(v) != TYPE_STRING or String(v).is_empty())):
+		return "removed_cards is not a list of card ids"
 	if typeof(data.get("map")) != TYPE_DICTIONARY or (data["map"] as Dictionary).is_empty():
 		return "no map"
 	return ""
@@ -202,6 +204,9 @@ static func _state_problem(state: RunState) -> String:
 	for card_id: String in state.deck:
 		if not CardDatabase.has_card(card_id):
 			return "unknown card '%s'" % card_id
+	for card_id: String in state.removed_cards:
+		if not CardDatabase.has_card(card_id):
+			return "unknown removed card '%s'" % card_id
 	if not state.has_hp():
 		return "no HP"
 	# A hand-edited file can carry values no run reaches: a dead or over-full player, or a reject count outside 0..rejects_per_run.

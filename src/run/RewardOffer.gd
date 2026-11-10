@@ -27,7 +27,9 @@ static func offer_seed(run_seed: int, room_index: int) -> int:
 ## `cards`: all card dicts. `deck`: card ids owned. `pools`: owned pool ids. `pool_defs`: pool id -> definition
 ## (for element status sources). `rewards`: the run.json `rewards` block. Returns up to offer_size distinct ids.
 ## `starter`: the run's starting deck. Only read when `rewards.status_lean_skip_starter` is true (see `added_cards`).
-static func generate(run_seed: int, room_index: int, deck: Array, cards: Array, pools: Array, pool_defs: Dictionary, rewards: Dictionary, starter: Array = []) -> Array[String]:
+## `removed`: card ids pruned from the deck this run (D47 = B, GDD 9): never offered again, even when a copy is still in the deck. If that
+## leaves fewer than offer_size candidates the offer is just shorter, and an empty one means no reward screen (see RunChoices.open_for_room).
+static func generate(run_seed: int, room_index: int, deck: Array, cards: Array, pools: Array, pool_defs: Dictionary, rewards: Dictionary, starter: Array = [], removed: Array = []) -> Array[String]:
 	var by_id: Dictionary = {}
 	for card: Variant in cards:
 		by_id[String((card as Dictionary).get("id", ""))] = card
@@ -36,6 +38,8 @@ static func generate(run_seed: int, room_index: int, deck: Array, cards: Array, 
 		if by_id.has(String(card_id)):
 			deck_cards.append(by_id[String(card_id)])
 	var candidates: Array[String] = candidate_ids(cards, pools, deck_cards, pool_defs)
+	for gone: Variant in removed:
+		candidates.erase(String(gone))
 	var unowned_weight: float = float(rewards.get("unowned_weight", 1.0))
 	var owned_weight: float = float(rewards.get("owned_weight", 1.0))
 	var lean: float = maxf(float(rewards.get("status_lean", 0.0)), 0.0)

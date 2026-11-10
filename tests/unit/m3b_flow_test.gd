@@ -68,8 +68,9 @@ func test_winning_a_combat_room_opens_the_reward_with_offers_and_a_reject() -> v
 	assert_bool(screen.is_open()).is_true()
 	assert_int(screen.options_box.get_child_count()).is_equal(RunConfig.offer_size() + 1)
 	assert_bool(screen.button.visible).is_false()
-	# The same offer comes from the same seed and deck.
-	var again := RewardOffer.generate(state.seed_value, 0, state.deck, CardDatabase.all_cards(), main.player.owned_pools, {"fire": PoolDatabase.get_definition("fire")}, RunConfig.rewards())
+	# The same offer comes from the same seed and deck. Since D43 (49f3f3e) the shipped status lean counts only cards beyond the starting deck, so the
+	# rebuild must pass the starter (and, since D47, the removed list) like RunChoices does; without it the lean saw a different count and the offer moved.
+	var again := RewardOffer.generate(state.seed_value, 0, state.deck, CardDatabase.all_cards(), main.player.owned_pools, {"fire": PoolDatabase.get_definition("fire")}, RunConfig.rewards(), CharacterDatabase.starting_deck(state.character_id), state.removed_cards)
 	assert_array(again).is_equal(state.offer)
 
 

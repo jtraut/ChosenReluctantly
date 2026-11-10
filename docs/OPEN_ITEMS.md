@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-09 (MAP3 closed; latest tag `playtest-2026-11-09-MAP3`)
-**Status: no decisions waiting (D44 = C and D45 = B recorded 2026-11-09); 7 things to look at (52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. MAP3 is done: a run is now three acts of 10 rooms, with mini-bosses and save/Continue. Next: **BD3a, physical Rogue** (Bleed stacking, a detonate keystone, 8 physical Rogue cards, 6 non-Fire relics; plus your 30% heal at each act start) -> **MB1** (mini-bosses with their own attacks, a look per act) -> MAP3b -> MAP4 -> 3d -> BD3b (the Wizard's non-Fire builds).**
+Last updated: 2026-11-09 (BD3a in progress; D46, D47 new; latest tag `playtest-2026-11-09-MAP3`)
+**Status: 2 decisions waiting (D46, D47: how the offer lean and pruned cards work; defaults in use). 7 things to look at (52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. BD3a (physical Rogue) is being built: sittings A and B are in, and ux, qa and the playtest come next. Then MB1 -> MAP3b -> MAP4 -> 3d -> BD3b.**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -17,7 +17,19 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## Needs your decision
 
-Nothing right now. Next new number: D46.
+Next new number: D48. Both questions came out of BD3a, which is being built (not tagged yet). I'm going ahead with the defaults; both are one data switch.
+
+**D46. Should your starting deck count toward the offer lean (your D43 = B)?** The lean boosts cards whose status your deck already applies. A Fire Rogue's starting deck has 3 Burn cards, so with them counted the lean pushes Fire before you've picked anything. That's the opposite of what you asked for. Measured over 1000 seeds, share of card offers that are Fire for a Rogue that picks nothing:
+- **A. Count the starting deck** (built as you worded it, "owned cards"): 38% Fire. Before BD3a it was about 37%.
+- **B. Count only cards you've added:** 30% Fire, the same as no lean, until you start picking. A Bleed-picking deck sees slightly more Bleed early (16% -> 18%).
+- **C. Turn the lean off:** 30% Fire, and no lean toward any build.
+- **Default and my recommendation: B.** It's on for your BD3a playtest. `run.json` `rewards.status_lean_skip_starter`.
+
+**D47. Should a card you prune (remove at a rest or the merchant) stop showing up in offers for the rest of the run?** Right now a removed card counts as never owned, so it comes back at full weight (4x an owned card). That's probably why you kept rejecting the same Fire cards. For a Rogue that picks Bleed and prunes Burn, the share of Fire offers late in the run:
+- **A. No change:** about 39% Fire late.
+- **B. Pruned cards never come back:** about 32% Fire late. A pruned card is gone for good, even if you change your mind.
+- **C. Pruned cards come back at lower weight** (for example the owned weight). The numbers would be in between; not measured.
+- **Default: A (no change) until you answer. My recommendation: B.** It's the lever that most directly fixes "I kept rejecting Fire". The lean can't fix it alone.
 
 ## Needs your eyes
 

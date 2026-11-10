@@ -1254,8 +1254,11 @@ MAP3 (done 2026-11-09) -> **BD3a, physical Rogue** -> MAP3b -> MAP4 -> 3d -> BD3
        - The offer report shows, for a Fire Rogue that picks Bleed and prunes Burn, the Fire share and the Bleed share of card offers over the run, with and without the lean.
        - Tune `status_lean` until that bot's Bleed share clearly rises over the run, without its last offers being only Bleed.
        - The arena and bot-sim hashes may move; log the reason.
-    - **Done 2026-11-09:** gameplay-dev 4afe5b9..f48e696 (DECISIONS "BD3a sitting B"). Suite 2034 / 152. Relic Burn share 62.5% -> 28.6% (met). Neutral Fire card share 30.0% at lean 0 (met), 38.2% at the shipped 0.25 (fails). Parity and fingerprint met. Rogue three-act floor missed (21/36 pooled), re-scoped to a playtest difficulty check. New `toolsun_offer_report.ps1`.
+    - **Done 2026-11-09:** gameplay-dev 4afe5b9..f48e696 (DECISIONS "BD3a sitting B"). Suite 2034 / 152. Relic Burn share 62.5% -> 28.6% (met). Neutral Fire card share 30.0% at lean 0 (met), 38.2% at the shipped 0.25 (fails). Parity and fingerprint met. Rogue three-act floor missed (21/36 pooled), re-scoped to a playtest difficulty check. New `tools
+un_offer_report.ps1`.
   - **gameplay-dev, lean measurement (short, before ux):** in `tools/offer_report.gd`, add a "count only cards added after the starter" variant (a `run.json` `rewards` flag, default off so behaviour is unchanged). Report for a neutral Fire Rogue and for the Bleed-picking, Burn-pruning bot: Fire and Bleed shares early/mid/late, plus Bleed cards at the end, for lean 0 / 0.1 / 0.25 x starter counted / not counted, and the "pruned never returns" row at the best setting. No shipped value changes; game-lead writes D46/D47 from the table.
+    - **Done 2026-11-09:** a41dfd0 (`status_lean_skip_starter`, report `-SkipStarter`/`-Matrix`). D46 and D47 are in OPEN_ITEMS.
+  - **gameplay-dev, D46 default (tiny):** set `rewards.status_lean_skip_starter: true` in `data/run.json`. Check the arena and bot-sim hashes (expected unchanged; rebaseline with a reason if not), run the RewardOffer/RunConfig suites, and run the Rogue three-act `-Route first` seed 1 once for information.
   - **ux (after sitting A exposes the data):**
     - stack counts on enemies ("Bleed x3");
     - the detonate hit reads at a glance (a burst plus a larger damage number);

@@ -79,6 +79,19 @@
             "telegraph_duration": 1.0,
             "projectile_speed": 9.0,
             "projectile_max_range": 16.0
+        } },
+        "boss_duelist": { "rank": "elite", "scene": "res://scenes/enemies/BossDuelist.tscn",
+        "stats": {
+            "move_speed": 5.0,
+            "is_ranged": false,
+            "attack_range": 2.2,
+            "preferred_range": 3.0,
+            "attack_damage": 9.0,
+            "attack_damage_type": "physical",
+            "attack_cooldown": 1.2,
+            "telegraph_duration": 0.6,
+            "projectile_speed": 9.0,
+            "projectile_max_range": 16.0
         } }
     }
 }

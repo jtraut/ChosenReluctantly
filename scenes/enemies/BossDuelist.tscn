@@ -1,0 +1,70 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://src/enemies/Boss.gd" id="1"]
+[ext_resource type="Script" path="res://src/combat/Health.gd" id="2"]
+[ext_resource type="Script" path="res://src/combat/StatusEffectManager.gd" id="3"]
+[ext_resource type="Script" path="res://src/combat/Hurtbox.gd" id="4"]
+
+[sub_resource type="CapsuleShape3D" id="Shape_body"]
+radius = 0.42
+height = 1.8
+
+[sub_resource type="CapsuleShape3D" id="Shape_hurt"]
+radius = 0.5
+height = 1.9
+
+[sub_resource type="CapsuleMesh" id="Mesh_body"]
+radius = 0.4
+height = 1.8
+
+[sub_resource type="StandardMaterial3D" id="Mat_body"]
+albedo_color = Color(0.13, 0.13, 0.2, 1)
+
+[sub_resource type="BoxMesh" id="Mesh_tie"]
+size = Vector3(0.16, 0.75, 0.06)
+
+[sub_resource type="StandardMaterial3D" id="Mat_tie"]
+albedo_color = Color(1, 0.2, 0.3, 1)
+emission_enabled = true
+emission = Color(1, 0.2, 0.3, 1)
+emission_energy_multiplier = 0.6
+
+[node name="BossDuelist" type="CharacterBody3D"]
+collision_layer = 4
+collision_mask = 5
+script = ExtResource("1")
+enemy_id = "boss_duelist"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("Shape_body")
+
+[node name="BodyMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+mesh = SubResource("Mesh_body")
+material_override = SubResource("Mat_body")
+
+[node name="Tie" type="MeshInstance3D" parent="BodyMesh"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, -0.39)
+mesh = SubResource("Mesh_tie")
+material_override = SubResource("Mat_tie")
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("2")
+max_health = 90.0
+
+[node name="StatusEffectManager" type="Node" parent="."]
+script = ExtResource("3")
+health_path = NodePath("../Health")
+
+[node name="Hurtbox" type="Area3D" parent="."]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("4")
+team = "enemy"
+health_path = NodePath("../Health")
+status_manager_path = NodePath("../StatusEffectManager")
+
+[node name="HurtboxShape" type="CollisionShape3D" parent="Hurtbox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+shape = SubResource("Shape_hurt")

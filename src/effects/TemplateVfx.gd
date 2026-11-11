@@ -202,6 +202,28 @@ static func aoe_telegraph(pool: EffectPool, center: Vector3, hit_reach: float, c
 	return effects
 
 
+## MB1: a boss blink's landing marker, held for the whole wind-up: the aoe telegraph language at the landing point (outline plus a fill that grows in,
+## so it reads as "something arrives here") and a thin guide line from where the boss stands to the marker. The parts are driven (`set_progress`), the
+## guide line fades on its own over `duration`. Held until each effect is passed to EffectPool.stop().
+static func blink_marker(pool: EffectPool, from: Vector3, landing: Vector3, radius: float, color: Color, duration: float) -> Array[PooledEffect]:
+	var parts: Array[PooledEffect] = aoe_telegraph(pool, landing, radius, color, true)
+	if pool == null or duration <= 0.0:
+		return parts
+	var along: Vector3 = Vector3(landing.x - from.x, 0.0, landing.z - from.z)
+	if along.length() > 0.5:
+		var dir: Vector3 = along.normalized()
+		var yaw: float = atan2(-dir.x, -dir.z)
+		var guide: PooledEffect = pool.play(EffectPool.Shape.STRIP, Vector3(from.x, 0.02, from.z), BLINK_GUIDE_HALF_WIDTH, color, duration, 1.0, 1.0, BLINK_GUIDE_ALPHA, BLINK_GUIDE_ALPHA_END, yaw)
+		if guide != null:
+			parts.append(guide.lengthened(along.length()).driven())
+	return parts
+
+
+const BLINK_GUIDE_HALF_WIDTH := 0.07
+const BLINK_GUIDE_ALPHA := 0.15
+const BLINK_GUIDE_ALPHA_END := 0.5
+
+
 static func set_aoe_telegraph_progress(effects: Array, fraction: float) -> void:
 	for effect: Variant in effects:
 		if effect is PooledEffect and is_instance_valid(effect):

@@ -109,6 +109,48 @@ static func disc_containing(centers: Array[Vector3], reach: float, point: Vector
 	return -1
 
 
+## MB1 blink: how close (metres, ground) a landing may be to the player's centre. Over the two body radii (0.55 + 0.4) with a margin, so the
+## boss never lands on top of the player.
+const BLINK_MIN_GAP := 1.2
+## The landing marker's radius is the boss's body plus this much, so the marker is bigger than the boss that will stand in it.
+const BLINK_MARKER_EXTRA := 0.45
+
+
+## MB1 blink: where the boss lands. `behind` metres past the player along the boss-to-player line, held inside +-`limit` on both ground axes;
+## when the arena edge (or the clamp) leaves that closer to the player than BLINK_MIN_GAP, it moves to the boss's side of the player instead
+## (the same distance, toward the boss), so it is never inside a wall nor on top of the player. Ground coordinates; y is 0.
+static func blink_landing(boss_pos: Vector3, player_pos: Vector3, behind: float, limit: float, min_gap: float = BLINK_MIN_GAP) -> Vector3:
+	var player_flat := Vector3(player_pos.x, 0.0, player_pos.z)
+	var out_dir := Vector3(player_pos.x - boss_pos.x, 0.0, player_pos.z - boss_pos.z)
+	out_dir = out_dir.normalized() if out_dir.length() > 0.001 else Vector3(0.0, 0.0, 1.0)
+	var spot: Vector3 = _clamp_ground(player_flat + out_dir * behind, limit)
+	if _ground_distance(spot, player_flat) >= min_gap:
+		return spot
+	spot = _clamp_ground(player_flat - out_dir * maxf(behind, min_gap), limit)
+	if _ground_distance(spot, player_flat) >= min_gap:
+		return spot
+	# Cornered both ways (the player is in a corner of a tiny arena): any direction that holds the gap and the arena.
+	for step_index in range(16):
+		var angle: float = TAU * float(step_index) / 16.0
+		var candidate: Vector3 = _clamp_ground(player_flat + Vector3(cos(angle), 0.0, sin(angle)) * min_gap, limit)
+		if _ground_distance(candidate, player_flat) >= min_gap - 0.0001:
+			return candidate
+	return spot
+
+
+static func _clamp_ground(point: Vector3, limit: float) -> Vector3:
+	return Vector3(clampf(point.x, -limit, limit), 0.0, clampf(point.z, -limit, limit))
+
+
+static func _ground_distance(a: Vector3, b: Vector3) -> float:
+	return Vector2(a.x - b.x, a.z - b.z).length()
+
+
+## MB1 blink: radius of the landing marker for a boss body of `body_radius`.
+static func blink_marker_radius(body_radius: float) -> float:
+	return body_radius + BLINK_MARKER_EXTRA
+
+
 ## Volley: half width of each shot's lane.
 static func volley_half_width(attack: Dictionary) -> float:
 	return VfxSizing.lateral_reach_vs_player(float(attack["hit_radius"]))
@@ -142,6 +184,8 @@ static func escape(attack: Dictionary, windup_seconds: float, walk_speed: float,
 			required = aoe_reach(attack) + (BossConfig.aoe_scatter(attack) if BossConfig.aoe_count(attack) > 1 else 0.0)
 		"charge":
 			required = charge_half_width(attack)
+		"blink":
+			required = 0.0  # MB1: a blink never hurts, so there is nothing to leave (the backstab it chains into is checked as its own cone)
 		"volley":
 			# Leaving the fan sideways. The lateral distance to clear grows with range; so does the time a shot takes to get there.
 			var half_spread: float = deg_to_rad(float(attack["spread_degrees"]) * 0.5)

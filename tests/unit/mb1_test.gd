@@ -205,13 +205,16 @@ func test_final_hp_is_max_health_times_the_acts_hp_with_no_tier_on_top() -> void
 	assert_float(brute.health.max_health).is_equal_approx(base * 1.1, 0.001)  # (a scale of 1 changes nothing)
 
 
-func test_the_act_one_mini_boss_room_has_no_second_stage_and_act_two_is_untouched() -> void:
+func test_each_mini_boss_room_is_one_stage_with_the_boss_alone() -> void:
 	var config: Dictionary = RunConfig.get_config()
-	var act1: Dictionary = RunConfig.variant_by_id(config, "mini_boss", "mini_boss_act1")
-	assert_int((act1["stages"] as Array).size()).is_equal(1)
-	var act2: Dictionary = RunConfig.variant_by_id(config, "mini_boss", "mini_boss_act2")
-	assert_int((act2["stages"] as Array).size()).is_equal(2)
-	assert_str(String((((act2["stages"] as Array)[0] as Dictionary)["spawns"] as Array)[0]["enemy"])).is_equal("fire_resistant_golem")
+	for pair: Array in [["mini_boss_act1", BRUTE_ID], ["mini_boss_act2", "boss_duelist"]]:
+		var room: Dictionary = RunConfig.variant_by_id(config, "mini_boss", String(pair[0]))
+		assert_int((room["stages"] as Array).size()).is_equal(1)
+		var spawns: Array = ((room["stages"] as Array)[0] as Dictionary)["spawns"]
+		assert_int(spawns.size()).is_equal(1)
+		assert_str(String((spawns[0] as Dictionary)["enemy"])).is_equal(String(pair[1]))
+		assert_int(int((spawns[0] as Dictionary)["count"])).is_equal(1)
+		assert_bool((spawns[0] as Dictionary).has("tier")).is_false()  # no x3.5 tier on top of the act's own scaling
 
 
 # ---- the brute's numbers (MAP.md 11.2) ----

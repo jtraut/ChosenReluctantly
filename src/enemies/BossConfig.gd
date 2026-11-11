@@ -12,11 +12,15 @@ extends RefCounted
 ##           rest within `scatter` of it, all telegraphed at once; a player is hit at most once per cast (needs place "target")
 ##   volley  count, spread_degrees, speed, shot_range, hit_radius   a fan of projectile lanes
 ##   charge  distance, speed, hit_radius                        a run along a locked lane, boss not solid meanwhile
+##   blink   behind                                             [MB1] no damage: a landing marker `behind` metres behind the player is locked when
+##           the wind-up starts and shown for all of it, then the boss teleports there (clamped to the arena, never on the player)
+## [MB1] Any attack may also carry `chain` (an attack id of the same boss): when it finishes recovering, the named attack starts its own
+## full wind-up at once (re-aimed at the player, no attack gap). A chained attack has no phase weight; a chain is 2 attacks long at most.
 ## Every attack also has: label, windup, recover, damage, damage_type, knockback, min_range, max_range (the distance to
 ## the player it may be picked at), shake, shake_duration, hit_stop.
 
 const PATH := "res://data/bosses.json"
-const KINDS: Array[String] = ["cone", "aoe", "volley", "charge"]
+const KINDS: Array[String] = ["cone", "aoe", "volley", "charge", "blink"]
 const COMMON_ATTACK_KEYS: Array[String] = ["kind", "label", "windup", "recover", "damage", "damage_type", "knockback", "min_range", "max_range", "shake", "shake_duration", "hit_stop"]
 ## Kind-specific keys (all required for their kind).
 const KIND_KEYS: Dictionary = {
@@ -24,7 +28,11 @@ const KIND_KEYS: Dictionary = {
 	"aoe": ["radius", "place"],
 	"volley": ["count", "spread_degrees", "speed", "shot_range", "hit_radius"],
 	"charge": ["distance", "speed", "hit_radius"],
+	"blink": ["behind"],
 }
+## MB1: the optional attack key that names the attack to start straight after this one, and the longest chain (attacks, the first included).
+const CHAIN_KEY := "chain"
+const MAX_CHAIN_ATTACKS := 2
 const PLACES: Array[String] = ["self", "target"]
 ## MB1: optional aoe fields. `count` discs per cast (default 1 = the old single disc), `scatter` the metres the extra discs may sit from the first.
 const AOE_OPTIONAL_KEYS: Array[String] = ["count", "scatter"]
@@ -122,8 +130,10 @@ static func _validate_boss(id: String, def: Dictionary, rules: Dictionary, known
 		errors.append("%s.attacks must be an object (attack id -> definition)" % where)
 	else:
 		var attacks: Dictionary = def["attacks"]
-		if attacks.size() < int(rules.get("min_attacks", 3)):
-			errors.append("%s needs at least %d attacks" % [where, int(rules.get("min_attacks", 3))])
+		# MB1: only attacks a phase can pick count (a chain-only attack cannot start on its own).
+		var startable: int = weighted_attack_ids(def).size()
+		if startable < int(rules.get("min_attacks", 3)):
+			errors.append("%s needs at least %d attacks it can start (it has %d with a phase weight above 0)" % [where, int(rules.get("min_attacks", 3)), startable])
 		for attack_id: Variant in attacks.keys():
 			attack_ids.append(String(attack_id))
 			if typeof(attacks[attack_id]) != TYPE_DICTIONARY:
@@ -131,6 +141,7 @@ static func _validate_boss(id: String, def: Dictionary, rules: Dictionary, known
 				continue
 			errors.append_array(validate_attack("%s.attacks.%s" % [where, str(attack_id)], attacks[attack_id], float(rules.get("min_telegraph", 0.6))))
 	errors.append_array(_validate_phases(where, def, attack_ids, rules, known_enemies))
+	errors.append_array(_validate_chains(where, def, float(rules.get("min_telegraph", 0.6))))
 	return errors
 
 
@@ -146,6 +157,7 @@ static func validate_attack(where: String, attack: Dictionary, min_telegraph: fl
 		allowed.append(String(kind_key))
 	if kind == "aoe":
 		allowed.append_array(AOE_OPTIONAL_KEYS)
+	allowed.append(CHAIN_KEY)
 	for key: Variant in attack.keys():
 		if not allowed.has(String(key)):
 			errors.append("%s: unknown key '%s' for a %s attack" % [where, str(key), kind])
@@ -191,7 +203,104 @@ static func validate_attack(where: String, attack: Dictionary, min_telegraph: fl
 			_num(attack, "distance", 1.0, 40.0, where, errors)
 			_num(attack, "speed", 1.0, 60.0, where, errors)
 			_num(attack, "hit_radius", 0.1, 4.0, where, errors)
+		"blink":
+			_num(attack, "behind", 0.5, 6.0, where, errors)
+			# A blink is only the move: it never hurts, so a data typo cannot make a harmless-looking marker deal damage.
+			if _is_num(attack.get("damage")) and float(attack["damage"]) != 0.0:
+				errors.append("%s.damage must be 0 for a blink (it deals no damage)" % where)
+			if _is_num(attack.get("knockback")) and float(attack["knockback"]) != 0.0:
+				errors.append("%s.knockback must be 0 for a blink" % where)
+	if attack.has(CHAIN_KEY) and (typeof(attack[CHAIN_KEY]) != TYPE_STRING or String(attack[CHAIN_KEY]).is_empty()):
+		errors.append("%s.chain must be an attack id" % where)
 	return errors
+
+
+## MB1: the `chain` fields of one boss. The target exists; no cycle; at most MAX_CHAIN_ATTACKS attacks in a chain; a chained attack has no
+## phase weight; and in every phase that can start the chain, each link still telegraphs at least min_telegraph after windup_scale.
+static func _validate_chains(where: String, def: Dictionary, min_telegraph: float) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(def.get("attacks")) != TYPE_DICTIONARY:
+		return errors
+	var attacks: Dictionary = def["attacks"]
+	var targets: Array[String] = []
+	for attack_id: Variant in attacks.keys():
+		var attack: Variant = attacks[attack_id]
+		if typeof(attack) != TYPE_DICTIONARY or typeof((attack as Dictionary).get(CHAIN_KEY)) != TYPE_STRING:
+			continue
+		var at: String = "%s.attacks.%s.chain" % [where, str(attack_id)]
+		var next: String = String((attack as Dictionary)[CHAIN_KEY])
+		if next.is_empty():
+			continue
+		if not attacks.has(next):
+			errors.append("%s: unknown attack id '%s'" % [at, next])
+			continue
+		targets.append(next)
+		# Walk the chain: a repeat is a cycle; too many attacks is too deep.
+		var seen: Array[String] = [String(attack_id)]
+		var cursor: String = next
+		var cycle: bool = false
+		while true:
+			if seen.has(cursor):
+				cycle = true
+				break
+			seen.append(cursor)
+			var after: String = chain_of(attacks[cursor]) if typeof(attacks.get(cursor)) == TYPE_DICTIONARY else ""
+			if after.is_empty() or not attacks.has(after):
+				break
+			cursor = after
+		if cycle:
+			errors.append("%s: the chain loops back to '%s' (no cycles)" % [at, cursor])
+		elif seen.size() > MAX_CHAIN_ATTACKS:
+			errors.append("%s: the chain from '%s' is %d attacks long (at most %d)" % [at, str(attack_id), seen.size(), MAX_CHAIN_ATTACKS])
+	var phases: Variant = def.get("phases")
+	if typeof(phases) != TYPE_ARRAY:
+		return errors
+	for index in range((phases as Array).size()):
+		var phase: Variant = (phases as Array)[index]
+		if typeof(phase) != TYPE_DICTIONARY or typeof((phase as Dictionary).get("attacks")) != TYPE_ARRAY:
+			continue
+		var windup_scale: float = float((phase as Dictionary)["windup_scale"]) if _is_num((phase as Dictionary).get("windup_scale")) else 1.0
+		for entry: Variant in ((phase as Dictionary)["attacks"] as Array):
+			if typeof(entry) != TYPE_DICTIONARY or typeof((entry as Dictionary).get("id")) != TYPE_STRING:
+				continue
+			var id: String = String((entry as Dictionary)["id"])
+			var weight: float = float((entry as Dictionary)["weight"]) if _is_num((entry as Dictionary).get("weight")) else 0.0
+			if weight <= 0.0 or not attacks.has(id):
+				continue
+			if targets.has(id):
+				errors.append("%s.phases[%d].attacks: '%s' is chained from another attack, so it has no phase weight" % [where, index, id])
+			# Each link that can follow this attack telegraphs in this phase, so it needs the same floor.
+			var cursor_id: String = id
+			var guard: int = 0
+			while guard < 8 and typeof(attacks.get(cursor_id)) == TYPE_DICTIONARY and chain_of(attacks[cursor_id]) != "":
+				cursor_id = chain_of(attacks[cursor_id])
+				guard += 1
+				if typeof(attacks.get(cursor_id)) != TYPE_DICTIONARY or not _is_num((attacks[cursor_id] as Dictionary).get("windup")):
+					break
+				var effective: float = float((attacks[cursor_id] as Dictionary)["windup"]) * windup_scale
+				if effective < min_telegraph - 0.0001:
+					errors.append("%s.phases[%d]: chained attack '%s' (after '%s') telegraphs %.2f s in this phase, under the %.2f s minimum" % [where, index, cursor_id, id, effective, min_telegraph])
+	return errors
+
+
+## MB1: the ids of the attacks some phase can pick (a weight above 0). Tolerates malformed data (returns what it can read).
+static func weighted_attack_ids(def: Dictionary) -> Array[String]:
+	var out: Array[String] = []
+	if typeof(def.get("phases")) != TYPE_ARRAY:
+		return out
+	for phase: Variant in (def["phases"] as Array):
+		if typeof(phase) != TYPE_DICTIONARY or typeof((phase as Dictionary).get("attacks")) != TYPE_ARRAY:
+			continue
+		for entry: Variant in ((phase as Dictionary)["attacks"] as Array):
+			if typeof(entry) == TYPE_DICTIONARY and typeof((entry as Dictionary).get("id")) == TYPE_STRING and _is_num((entry as Dictionary).get("weight")) \
+					and float((entry as Dictionary)["weight"]) > 0.0 and not out.has(String((entry as Dictionary)["id"])):
+				out.append(String((entry as Dictionary)["id"]))
+	return out
+
+
+## MB1: the attack id that follows `attack` ("" when it has no chain).
+static func chain_of(attack: Dictionary) -> String:
+	return String(attack[CHAIN_KEY]) if typeof(attack.get(CHAIN_KEY)) == TYPE_STRING else ""
 
 
 static func _validate_phases(where: String, def: Dictionary, attack_ids: Array[String], rules: Dictionary, known_enemies: Array[String]) -> Array[String]:

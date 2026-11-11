@@ -70,6 +70,38 @@
                     "summon": { "enemy": "melee_chaser", "count": 2 },
                     "attacks": [ { "id": "mop_sweep", "weight": 2 }, { "id": "wet_floor", "weight": 2 }, { "id": "forklift", "weight": 2 } ] }
             ]
+        },
+        "boss_duelist": {
+            "mini_boss": true,
+            "display_name": "The Corporate Raider",
+            "max_health": 90.0,
+            "resistance": 0.17,
+            "armor": 10.0,
+            "knockback_taken": 0.5,
+            "body_radius": 0.55,
+            "max_adds_alive": 0,
+            "spawn_grace": 1.5,
+            "spawn": { "distance_min": 7.0, "distance_max": 9.0, "screen_half_width": 9.0, "screen_up": 1.5, "screen_down": 3.6 },
+            "transition": { "stagger": 0.5, "duration": 0.9, "shake": 0.4, "shake_duration": 0.4, "hit_stop": 0.08, "ring_size": 4.0 },
+            "death": { "beat_seconds": 1.0, "slow_mo_scale": 0.3, "shake": 0.6, "shake_duration": 0.5 },
+            "attacks": {
+                "hostile_takeover": { "kind": "cone", "label": "Hostile takeover", "windup": 0.6, "recover": 0.35, "damage": 9.0, "damage_type": "physical", "knockback": 6.0,
+                    "range": 2.6, "half_angle_degrees": 50.0, "min_range": 0.0, "max_range": 3.4, "shake": 0.3, "shake_duration": 0.2, "hit_stop": 0.09 },
+                "leveraged_dash": { "kind": "charge", "label": "Leveraged dash", "windup": 0.7, "recover": 0.3, "damage": 5.0, "damage_type": "physical", "knockback": 5.0,
+                    "distance": 6.0, "speed": 18.0, "hit_radius": 0.6, "min_range": 2.5, "max_range": 10.0, "shake": 0.25, "shake_duration": 0.2, "hit_stop": 0.07, "chain": "leveraged_dash_2" },
+                "leveraged_dash_2": { "kind": "charge", "label": "Leveraged dash", "windup": 0.6, "recover": 0.8, "damage": 5.0, "damage_type": "physical", "knockback": 5.0,
+                    "distance": 6.0, "speed": 18.0, "hit_radius": 0.6, "min_range": 0.0, "max_range": 60.0, "shake": 0.25, "shake_duration": 0.2, "hit_stop": 0.07 },
+                "golden_parachute": { "kind": "blink", "label": "Golden parachute", "windup": 0.7, "recover": 0.15, "damage": 0.0, "damage_type": "physical", "knockback": 0.0,
+                    "behind": 1.8, "min_range": 3.0, "max_range": 14.0, "shake": 0.15, "shake_duration": 0.12, "hit_stop": 0.0, "chain": "backstab" },
+                "backstab": { "kind": "cone", "label": "Backstab", "windup": 0.6, "recover": 0.8, "damage": 7.0, "damage_type": "physical", "knockback": 5.0,
+                    "range": 2.4, "half_angle_degrees": 60.0, "min_range": 0.0, "max_range": 60.0, "shake": 0.3, "shake_duration": 0.2, "hit_stop": 0.08 }
+            },
+            "phases": [
+                { "name": "Due diligence", "enters_at": 1.0, "move_speed": 5.0, "attack_gap": 1.2, "windup_scale": 1.0,
+                    "attacks": [ { "id": "hostile_takeover", "weight": 3 }, { "id": "leveraged_dash", "weight": 2 }, { "id": "golden_parachute", "weight": 1 } ] },
+                { "name": "Aggressive restructuring", "enters_at": 0.5, "move_speed": 5.6, "attack_gap": 0.9, "windup_scale": 1.0,
+                    "attacks": [ { "id": "hostile_takeover", "weight": 2 }, { "id": "leveraged_dash", "weight": 2 }, { "id": "golden_parachute", "weight": 2 } ] }
+            ]
         }
     }
 }

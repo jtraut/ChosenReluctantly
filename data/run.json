@@ -119,8 +119,7 @@
                 { "delay": 0.0, "spawns": [ { "enemy": "boss_brute", "count": 1 } ] }
             ] },
             { "id": "mini_boss_act2", "acts": [2], "first_wave_delay": 2.0, "stages": [
-                { "delay": 0.0, "spawns": [ { "enemy": "fire_resistant_golem", "count": 1, "tier": "mini_boss" }, { "enemy": "ranged_shooter", "count": 2 } ] },
-                { "delay": 6.0, "until_alive_at_most": 3, "spawns": [ { "enemy": "melee_chaser", "count": 1, "tier": "mini_boss" }, { "enemy": "melee_chaser", "count": 3 }, { "enemy": "ranged_shooter", "count": 2 } ] }
+                { "delay": 0.0, "spawns": [ { "enemy": "boss_duelist", "count": 1 } ] }
             ] }
         ],
         "boss": [

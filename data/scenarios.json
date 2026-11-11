@@ -1140,6 +1140,40 @@
         "columns": 1,
         "groups": [ { "scene": "res://scenes/enemies/BossBrute.tscn", "count": 1 } ]
     },
+    "mini_boss_act2": {
+        "_note": "MB1: the act 2 mini-boss room as a run plays it: the Corporate Raider alone, the Rogue's standard deck, full HP, act 2 scaling and tint",
+        "disable_spawner": true,
+        "natural_hp": true,
+        "standard_deck": true,
+        "act": 2,
+        "origin_offset": [0.0, 0.0, -8.0],
+        "columns": 1,
+        "groups": [ { "scene": "res://scenes/enemies/BossDuelist.tscn", "count": 1 } ]
+    },
+    "mini_boss_blink": {
+        "_note": "MB1 capture only: the Raider with 9999 HP on both sides, throwing only Golden parachute (the blink, then the backstab it chains into), to see the landing marker",
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "enemy_max_health": 9999,
+        "standard_deck": true,
+        "act": 2,
+        "origin_offset": [0.0, 0.0, -7.0],
+        "columns": 1,
+        "groups": [ { "scene": "res://scenes/enemies/BossDuelist.tscn", "count": 1 } ],
+        "boss_attacks": ["golden_parachute"]
+    },
+    "mini_boss_dash_combo": {
+        "_note": "MB1 capture only: the Raider with 9999 HP on both sides, throwing only Leveraged dash (the two-dash combo)",
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "enemy_max_health": 9999,
+        "standard_deck": true,
+        "act": 2,
+        "origin_offset": [0.0, 0.0, -7.0],
+        "columns": 1,
+        "groups": [ { "scene": "res://scenes/enemies/BossDuelist.tscn", "count": 1 } ],
+        "boss_attacks": ["leveraged_dash"]
+    },
     "mini_boss_wet_floor": {
         "_note": "MB1 capture only: the brute with 9999 HP on both sides, throwing only Wet floor, to see the three telegraphed discs",
         "disable_spawner": true,

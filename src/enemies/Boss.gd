@@ -91,6 +91,10 @@ var _scripted_index: int = 0
 var _active_wedge: AttackArcVisual = null
 ## MB1: the discs of the current multi-disc aoe wind-up (locked when it starts; empty for a single disc).
 var _aoe_locked: Array[Vector3] = []
+## MB1: where the current blink wind-up will land the boss (locked when the wind-up starts; the marker shows it the whole wind-up).
+var _blink_point: Vector3 = Vector3.ZERO
+## MB1: the blink marker colour: a cool violet-white, so it never reads as a damage telegraph (those take the damage type's colour).
+const BLINK_COLOR := Color(0.72, 0.62, 1.0)
 
 
 func _ready() -> void:
@@ -212,6 +216,14 @@ func telegraph_total() -> float:
 
 func telegraph_left() -> float:
 	return maxf(_telegraph_remaining, 0.0)
+
+
+## MB1: the ground point the current blink wind-up will land on (the marker's centre), or the boss's own position when no blink is winding up.
+## A blink is never a threat itself (threat_reach 0, in_threat false, escape_direction zero); the attack it chains into is, once it winds up.
+func blink_target() -> Vector3:
+	if _state == State.WINDUP and String(_attack.get("kind", "")) == "blink":
+		return _blink_point
+	return Vector3(global_position.x, 0.0, global_position.z)
 
 
 ## How far from the boss an attack can currently hurt: the sim's bot dodges inside this. 0 while nothing is winding up.
@@ -337,7 +349,7 @@ func _physics_process(delta: float) -> void:
 				move = _tick_charge(delta)
 			State.RECOVER:
 				if _state_time >= float(_attack["recover"]):
-					_enter_chase()
+					_finish_recover()
 				elif _restoring and _overlaps_target():
 					move = _step_away()
 	velocity.x = move.x + _knockback_velocity.x
@@ -364,6 +376,16 @@ func _enter_chase() -> void:
 	_state_time = 0.0
 	_attack_id = ""
 	_attack_cooldown_remaining = float(_phase()["attack_gap"])
+
+
+## MB1: recovery is over. An attack with a `chain` hands straight on to the named attack: its own full wind-up, re-aimed at the player, with
+## no attack gap. A stun, a phase transition or the boss's death never gets here (each cancels the attack first), so they drop the chain.
+func _finish_recover() -> void:
+	var next_id: String = BossConfig.chain_of(_attack)
+	if next_id != "" and _attacks.has(next_id):
+		_begin_windup(next_id)
+	else:
+		_enter_chase()
 
 
 func _tick_chase(delta: float) -> Vector3:
@@ -417,6 +439,9 @@ func _begin_windup(attack_id: String) -> void:
 	if String(_attack["kind"]) == "aoe" and BossConfig.aoe_count(_attack) > 1:
 		# MB1: the discs are rolled once, from the boss's own seeded stream, and locked for the whole wind-up.
 		_aoe_locked = BossRules.aoe_centers(_lock_point, BossConfig.aoe_count(_attack), BossConfig.aoe_scatter(_attack), _rng, ARENA_LIMIT)
+	if String(_attack["kind"]) == "blink":
+		# MB1: the landing spot is fixed now, from where the player stands now; the player can walk off it (that is the dodge).
+		_blink_point = BossRules.blink_landing(global_position, target.global_position, float(_attack["behind"]), ARENA_LIMIT)
 	_telegraph_total = BossRules.windup(_attack, _phase())
 	_telegraph_remaining = _telegraph_total
 	_set_body_color(TELEGRAPH_COLOR)
@@ -459,6 +484,8 @@ func _start_telegraph_visual() -> void:
 					parts.append(lane)
 			parts.append_array(TemplateVfx.boss_volley_gaps(_tele_pool, global_position, _lock_dir, angles, BossRules.volley_half_width(_attack), _telegraph_total))
 			_hold_parts(parts)
+		"blink":
+			_hold_parts(TemplateVfx.blink_marker(_tele_pool, global_position, _blink_point, BossRules.blink_marker_radius(body_radius), BLINK_COLOR, _telegraph_total))
 		"charge":
 			var lane2: PooledEffect = TemplateVfx.enemy_charge_lane(_tele_pool, global_position, _lock_dir, float(_attack["distance"]), float(_attack["hit_radius"]), color, _telegraph_total, true)
 			var single: Array[PooledEffect] = []
@@ -502,7 +529,7 @@ func _update_telegraph_visual(progress: float) -> void:
 		"cone":
 			if _active_wedge != null:
 				_active_wedge.show_windup(progress)
-		"aoe":
+		"aoe", "blink":
 			if _tele_pool != null and is_instance_valid(_tele_pool):
 				for index in range(_tele_parts.size()):
 					if _tele_pool.is_running(_tele_parts[index], _tele_gens[index]):
@@ -574,6 +601,8 @@ func _land_attack() -> void:
 					"max_range": float(_attack["shot_range"]), "hit_radius": float(_attack["hit_radius"]),
 					"knockback_strength": float(_attack["knockback"]), "yaw_degrees": angle,
 				}, context)
+		"blink":
+			_blink_now(pool)
 		"charge":
 			_state = State.ACTIVE
 			_state_time = 0.0
@@ -590,6 +619,27 @@ func _land_attack() -> void:
 	attack_landed.emit(_attack_id, hit_player)
 	_state = State.RECOVER
 	_state_time = 0.0
+
+
+## MB1: the teleport of a blink. The marker was locked at wind-up start; if the player stands on it by now (or it would not clear them), the
+## landing slides to the boss's side of the player (BossRules.blink_landing). No damage; faces the player on arrival.
+func _blink_now(pool: EffectPool) -> void:
+	var from: Vector3 = global_position
+	var spot: Vector3 = _blink_point
+	if _has_live_target() and Vector2(spot.x - target.global_position.x, spot.z - target.global_position.z).length() < BossRules.BLINK_MIN_GAP:
+		# Re-resolve from the boss's side of the player: the line is the same, only the side flips.
+		spot = BossRules.blink_landing(target.global_position * 2.0 - from, target.global_position, float(_attack["behind"]), ARENA_LIMIT)
+	var look: Dictionary = {"color": BLINK_COLOR, "scale": 1.5}
+	TemplateVfx.dash_start(pool, from, look)
+	global_position = Vector3(spot.x, global_position.y, spot.z)
+	velocity = Vector3.ZERO
+	_knockback_velocity = Vector3.ZERO
+	TemplateVfx.dash_end(pool, global_position, look)
+	if _has_live_target():
+		var face: Vector3 = _flat_to_target()
+		if face.length() > 0.01:
+			global_transform.basis = Basis.looking_at(face.normalized(), Vector3.UP)
+	_blink_point = global_position
 
 
 ## MB1: lands every disc of a multi-disc aoe at once. Each hurtbox is damaged at most once per cast, by the first disc that holds it.

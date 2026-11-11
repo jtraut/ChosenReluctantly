@@ -2203,3 +2203,11 @@ Report: `docs/playtests/2026-11-09-bd3a-short.md` (2034c6e). No blocker. The dif
   - "HP" is repeated on the low-HP line;
   - the Open a Vein stacks cue.
 - **A human three-act run is the only real difficulty read** while the bot is uncalibrated. It's eyes item 53 for the director, and SIM1 uses his answer.
+
+## 2026-11-11 - SIM1 targets and method (game-lead)
+SIM1 needs a target for its "human-like" bot preset. No human win rate exists, so the target is provisional. Rejected alternatives in brackets.
+- **Anchors used:** the director accepted a boss fight of about 1 minute (RESOLVED 39: Rogue about 66 s, "boss length is fine"; RESOLVED 10), the 1-dodge Wizard "seemed fine" (RESOLVED 40), and his three-act physical Rogue run "felt good mostly".
+- **Provisional target (Rogue, standard deck):** median boss time 50-80 s, three-act `-Route first` win rate about 50-75% pooled over seeds 1/13/25. The win band is my judgment. It's cheap to change, so it isn't escalated, and the director's own three-act run (eyes 53) overrides it. [Asking the director for a win rate first, which would stall SIM1 on a number he can give better by playing.]
+- **gameplay-dev delivers a sweep table, not one hand-tuned preset.** game-lead/qa pick the cell, so a wrong target doesn't mean redoing the build. Sweep on 1-act or boss-room runs; three-act only to confirm. [Tuning to a single target inside gameplay-dev.]
+- **One preset for both classes.** The Wizard is reported on the Rogue's preset. [Per-class presets, which would hide the class gap the floors are meant to catch.]
+- **Determinism:** bot jitter uses the sim's seeded RNG; with the settings off, every current hash holds.

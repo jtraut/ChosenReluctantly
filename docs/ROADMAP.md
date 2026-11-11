@@ -1307,6 +1307,18 @@ un_offer_report.ps1`.
   - **game-lead:** sets the floors in DECISIONS. MB1's acceptance uses the new floor.
   - **Also:** check why headless `--run-room=30` (without `--quit`) didn't exit in tech-writer's BD3a pass; the MAP3 pass recorded exit 0.
   - **Acceptance:** each sim number has one current value with its commit; there's a bot setting whose results are argued against human reports; MB1 can gate on it.
+  - **Detailed brief (game-lead, 2026-11-11; DECISIONS "SIM1 targets and method"):**
+    - **Human anchors** (the only ones we have): the boss fight near 1 minute was accepted by the director (RESOLVED 39: about 66 s Rogue, "boss length is fine"; RESOLVED 10: "near 1 minute"); the 1-dodge Wizard "seemed fine" (RESOLVED 40); his three-act physical Rogue run "felt good mostly". No human win rate exists.
+    - **Provisional target for the human-like preset (Rogue, standard deck):** median boss time 50-80 s (from about 30 s now), three-act `-Route first` win rate about 50-75% (pooled seeds 1/13/25). The win band is a judgment call; the director's eyes-53 run overrides it.
+    - **gameplay-dev, sitting 1:**
+      1. Data-driven bot settings (`reaction_delay` s, `aim_error_degrees`, optional `cast_hesitation` s), all off by default. Jitter uses the sim's seeded RNG, never global `randf`, so a seed repeats exactly.
+      2. With settings off: arena 3172486861 / 916264160 / `-Plan -Seed 1 -Seconds 30` 1317880580 and bot sim 3476063471 unchanged.
+      3. A flag (e.g. `-Human <preset>` / `--bot-preset=`) and presets in data (`data/` JSON, not code).
+      4. **A sweep table, not one tuned value:** a small grid (about 3 x 3) of `reaction_delay` x `aim_error_degrees`, Rogue, measured on 1-act or boss-room runs (12 runs each); win rate and median boss time per cell. Three-act runs only to confirm the chosen preset (they cost 12-15 min each).
+      5. **One preset for both classes:** pick the Rogue cell nearest the target, then run the Wizard on the same preset and report it. No per-class tuning (it would hide the class gap the floors exist to catch).
+      6. Find out why headless `--run-room=30` without `--quit` didn't exit in tech-writer's BD3a pass; fix or report.
+    - **qa, sitting 2:** re-record every sim baseline (list above) on the fixed bot and on the preset, re-measure the BD3a fingerprint and parity on the preset, propose floors.
+    - **game-lead:** sets the floors in DECISIONS; OPEN_ITEMS notes that the director's own runs set the bar.
 - [ ] **MB1, mini-boss and act identity (after BD3a, before MAP3b; D44 = C, director 2026-11-09). Full loop. Tag `playtest-YYYY-MM-DD-MB1`.** Director: the mini-bosses especially need their own attacks and behaviours, for example one smaller, with less HP than the others, but quicker and hitting harder in a rogue style; plus visible changes per act (GDD §9).
   - **First, game-lead, docs only:** a short design note (in MAP.md, new section) for the two act-end mini-bosses: name, size, HP, speed, 2-3 attacks each with telegraphs, and how each tests the player differently. Starting sketch, to be confirmed there:
     - **Act 1, the brute:** big, slow, high HP; a ground slam with a wide telegraph, a charge, and adds summoned at HP thresholds.

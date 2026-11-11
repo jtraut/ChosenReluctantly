@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-11 (D48 = A recorded; SIM1 next). Previous: 2026-11-09 (BD3a closed, tag `playtest-2026-11-09-BD3a`). **Run order:** BD3a (done) -> **SIM1, sim re-calibration** -> MB1 -> MAP3b -> MAP4 -> 3d -> BD3b. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2, MAP3, BD3a.
+Last updated: 2026-11-11 (SIM1 started: brief written, gameplay-dev sitting 1 next). Previous: 2026-11-09 (BD3a closed, tag `playtest-2026-11-09-BD3a`). **Run order:** BD3a (done) -> **SIM1, sim re-calibration** -> MB1 -> MAP3b -> MAP4 -> 3d -> BD3b. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2, MAP3, BD3a.
 
 ## What's done
 - **D48 = A recorded 2026-11-11 (game-lead, docs only):**
@@ -179,7 +179,7 @@ Last updated: 2026-11-11 (D48 = A recorded; SIM1 next). Previous: 2026-11-09 (BD
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- Nothing in progress. BD3a closed 2026-11-09. SIM1 is next and hasn't started.
+- **SIM1 in progress.** game-lead wrote the detailed brief (ROADMAP SIM1 "Detailed brief"; DECISIONS "SIM1 targets and method"). Next: gameplay-dev sitting 1 (bot settings, presets, sweep table, `--run-room=30` exit check). Then qa sitting 2, then game-lead sets floors. No tag; tech-writer docs pass at the end (also carries the D48 pending items below).
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step

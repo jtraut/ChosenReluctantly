@@ -12,7 +12,26 @@ static func short_text(card: Dictionary, texts: Dictionary) -> String:
 		var shown: String = _short(effect["condition"], texts)
 		if shown != "" and not seen.has(shown):
 			seen.append(shown)
+	var payoff: String = detonate_short(card, texts)
+	if payoff != "":
+		seen.append(payoff)
 	return ", ".join(seen)
+
+
+## MB1 ux (BD3a playtest carry-over): a card that cashes in a status (a `detonate_status` effect, Open a Vein) works with one stack but is the
+## point of the build with several, and nothing on the slot said so. The dim line says "Wants Bleed stacks". Read from the effect, never a card id;
+## it is words only (no glow), so the slot's LIVE state and the bot's plan, which read conditions, are untouched. "" for any other card.
+static func detonate_short(card: Dictionary, texts: Dictionary) -> String:
+	var effects: Variant = card.get("effects", [])
+	if typeof(effects) != TYPE_ARRAY:
+		return ""
+	for effect: Variant in (effects as Array):
+		if typeof(effect) == TYPE_DICTIONARY and String((effect as Dictionary).get("template", "")) == "detonate_status":
+			var params: Variant = (effect as Dictionary).get("params", {})
+			var status_id: String = String((params as Dictionary).get("status_id", "")) if params is Dictionary else ""
+			var entry: Dictionary = StatusDatabase.get_status(status_id)
+			return String(texts.get("detonate_status", "")) % String(entry.get("display_name", status_id.replace("_", " ").capitalize())) if String(texts.get("detonate_status", "")).contains("%s") else ""
+	return ""
 
 
 static func _short(condition: Dictionary, texts: Dictionary) -> String:

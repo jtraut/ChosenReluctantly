@@ -212,7 +212,7 @@ func test_low_hp_is_at_or_under_the_data_fraction_and_adds_a_word() -> void:
 	assert_bool(ActText.is_low_hp({"hp": 30.0 * fraction, "max_hp": 30.0})).is_true()
 	assert_bool(ActText.is_low_hp({"hp": 30.0 * fraction + 1.0, "max_hp": 30.0})).is_false()
 	assert_bool(ActText.is_low_hp({"hp": 5.0, "max_hp": 0.0})).is_false()
-	assert_str(ActText.summary_line({"line": "HP 4 of 30", "hp": 4.0, "max_hp": 30.0})).is_equal("Low HP: HP 4 of 30")
+	assert_str(ActText.summary_line({"line": "HP 4 of 30", "hp": 4.0, "max_hp": 30.0})).is_equal("Running low: HP 4 of 30")
 	assert_str(ActText.summary_line({"line": "HP 29 of 30", "hp": 29.0, "max_hp": 30.0})).is_equal("HP 29 of 30")
 
 
@@ -223,7 +223,7 @@ func test_the_act_screen_shows_the_heal_line_only_when_something_healed_and_goes
 	await get_tree().process_frame
 	screen.show_act({"title": "Act 2", "line": "HP 4 of 30", "hp": 4.0, "max_hp": 30.0, "healed": 6.0})
 	assert_bool(screen.heal_label.visible).is_true()
-	assert_str(screen.line_label.text).starts_with("Low HP")
+	assert_str(screen.line_label.text).starts_with("Running low")
 	assert_that(screen.line_label.get_theme_color("font_color")).is_equal(Color.html(String(RunConfig.ui()["act"]["low_hp_color"])))
 	screen.show_act({"title": "Act 2", "line": "HP 29 of 30", "hp": 29.0, "max_hp": 30.0, "healed": 0.0})
 	assert_bool(screen.heal_label.visible).is_false()

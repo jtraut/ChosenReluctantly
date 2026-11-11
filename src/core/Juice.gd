@@ -127,17 +127,29 @@ func on_detonated(world_pos: Vector3, amount: float, damage_type: String, word: 
 		entries.append({"pos": live.global_position, "type": live.damage_type, "idle": live.idle_time()})
 	var spot: Vector3 = world_pos + Vector3(0.0, float(UiConfig.damage_numbers()["spawn_height"]), 0.0)
 	var at: int = DamageNumber.find_merge_index(entries, spot, damage_type, float(UiConfig.damage_numbers()["merge_radius"]), float(UiConfig.damage_numbers()["merge_window"]))
+	var number: DamageNumber = null
 	if at >= 0:
-		_live_numbers[at].emphasize(float(cfg["detonate_scale"]), String(cfg["detonate_suffix"]))
+		number = _live_numbers[at]
+		number.emphasize(float(cfg["detonate_scale"]), String(cfg["detonate_suffix"]))
 	elif amount > 0.0:
 		spawn_damage_number(world_pos, amount, damage_type)  # the hit's own number was lost (cap); show the burst anyway
 		if not _live_numbers.is_empty():
-			_live_numbers[_live_numbers.size() - 1].emphasize(float(cfg["detonate_scale"]), String(cfg["detonate_suffix"]))
-	spawn_popup(world_pos, word, word_color, float(cfg["detonate_word_scale"]), float(cfg["detonate_word_height"]))
+			number = _live_numbers[_live_numbers.size() - 1]
+			number.emphasize(float(cfg["detonate_scale"]), String(cfg["detonate_suffix"]))
+	# The word rides above the emphasised number: a boss's hits land as high as the word's fixed height, so the two printed over each other.
+	var word_height: float = float(cfg["detonate_word_height"])
+	if number != null and number.is_inside_tree():
+		word_height = maxf(word_height, number.global_position.y - world_pos.y + float(cfg["detonate_word_above_number"]))
+	# Under a boss bar both the number and the word are clamped to the same spot just below it (the boss's body is high on screen), so the word is
+	# pushed further down by `detonate_word_clamp_extra` (pixels at 720p) and never prints over the number.
+	var tree := Engine.get_main_loop() as SceneTree
+	var world: Node = WorldRef.get_world(tree) if tree != null else null
+	var screen_scale: float = world.get_viewport().get_visible_rect().size.y / 720.0 if world != null and world.get_viewport() != null else 1.0
+	spawn_popup(world_pos, word, word_color, float(cfg["detonate_word_scale"]), word_height, float(cfg["detonate_word_clamp_extra"]) * screen_scale)
 
 
 ## A small floating word at `world_pos` (see UiConfig.popups). `height` is above the point.
-func spawn_popup(world_pos: Vector3, words: String, color: Color, text_scale: float, height: float) -> void:
+func spawn_popup(world_pos: Vector3, words: String, color: Color, text_scale: float, height: float, clamp_extra_px: float = 0.0) -> void:
 	popup_count += 1
 	last_popup_text = words
 	var tree := Engine.get_main_loop() as SceneTree
@@ -148,6 +160,7 @@ func spawn_popup(world_pos: Vector3, words: String, color: Color, text_scale: fl
 	instance.configure(UiConfig.damage_numbers())
 	WorldRef.get_world(tree).add_child(instance)
 	instance.global_position = world_pos + Vector3(0.0, height, 0.0)
+	instance.clamp_extra_px = clamp_extra_px
 	instance.show_text(words, color, text_scale)
 
 

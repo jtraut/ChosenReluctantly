@@ -329,7 +329,7 @@ func test_bleed_by_armor_burn_by_resistance_on_a_real_elite() -> void:
 func test_boss_phase_floor_still_holds_with_the_real_armor_on() -> void:
 	var main := _spawn_main()
 	var boss: Boss = (load(BOSS_PATH) as PackedScene).instantiate()
-	boss.global_position = main.player.global_position + Vector3(0, 0, -8.0)
+	boss.position = main.player.global_position + Vector3(0, 0, -8.0)
 	boss.spawn_index = 0
 	main.add_child(boss)
 	boss.set_seed(7)

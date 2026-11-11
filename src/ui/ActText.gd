@@ -55,9 +55,9 @@ static func is_low_hp(summary: Dictionary) -> bool:
 	return float(summary.get("hp", max_hp)) <= max_hp * float(_texts().get("low_hp_fraction", 0.5))
 
 
-## The summary line, with the low-HP word added when HP is low, so the warning is not carried by the red colour alone ("Low HP: HP 9 of 30, ...").
+## The summary line, with the low-HP word added when HP is low, so the warning is not carried by the red colour alone ("Running low: HP 9 of 30, ...").
 static func summary_line(summary: Dictionary) -> String:
 	var line: String = String(summary.get("line", ""))
 	if is_low_hp(summary):
-		return "%s: %s" % [String(_texts().get("low_hp_tag", "Low HP")), line]
+		return "%s: %s" % [String(_texts().get("low_hp_tag", "Running low")), line]
 	return line

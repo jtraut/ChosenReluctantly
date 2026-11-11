@@ -179,7 +179,7 @@
                 "bad_giveup": "That relic can't be given up", "not_in_deck": "You don't have that card"
             }
         },
-        "slot_condition": { "target_has_status": "Needs %s", "cast_within_slot": "After %s", "cast_within_slot_key": "After %s (%s)", "cast_within_tag": "After %s", "zone_active": "Needs zone", "slot_short": { "movement": "Move" } },
+        "slot_condition": { "target_has_status": "Needs %s", "cast_within_slot": "After %s", "cast_within_slot_key": "After %s (%s)", "cast_within_tag": "After %s", "zone_active": "Needs zone", "detonate_status": "Wants %s stacks", "slot_short": { "movement": "Move" } },
         "relic": {
             "title": "Relic found", "line": "Pick a relic to keep for this run, or skip.",
             "room_title": "Relic room", "room_title_chest": "%s (%s chest)", "room_line": "Nobody is guarding this one. Pick a relic to keep for this run, or skip.",
@@ -193,7 +193,7 @@
             "pause_given_up": "Given up this run", "pause_empty": "No relics yet. Elite rooms and the relic room offer them.", "pause_count": "%d of %d held",
             "tier_names": { "tier1": "Tier 1", "tier2": "Tier 2", "tier3": "Tier 3", "boss": "Boss" }
         },
-        "act": { "label": "Act %d of %d", "title": "Act %d", "run_room_label": "Room %d of %d", "summary": "HP %d of %d, %d gold, relics: %d", "flavor": "Another act. Same hero, same reluctance.", "button": "Continue", "hint": "Enter to continue", "heal": "You recover %d HP. Rests are on the map.", "low_hp_fraction": 0.5, "low_hp_tag": "Low HP", "low_hp_color": "#ff6b6b" },
+        "act": { "label": "Act %d of %d", "title": "Act %d", "run_room_label": "Room %d of %d", "summary": "HP %d of %d, %d gold, relics: %d", "flavor": "Another act. Same hero, same reluctance.", "button": "Continue", "hint": "Enter to continue", "heal": "You recover %d HP. Rests are on the map.", "low_hp_fraction": 0.5, "low_hp_tag": "Running low", "low_hp_color": "#ff6b6b" },
         "win": { "title": "Run complete", "line": "Somehow, you finished. Nobody is more surprised than you.", "button": "New run", "hint": "Enter to start over", "stat_rooms": "Rooms cleared", "stat_time": "Total time", "stat_hp": "HP left" },
         "lose": { "run_line": "Reached room %d of %d." },
         "map": {

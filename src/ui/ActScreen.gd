@@ -189,7 +189,7 @@ func _apply_style() -> void:
 	title_label.add_theme_font_size_override("font_size", roundi(float(cfg["prompt_title_font_size"]) * 1.2 * s))
 	title_label.add_theme_color_override("font_color", Color.html(String(cfg["prompt_title_color"])))
 	line_label.add_theme_font_size_override("font_size", roundi(float(cfg["prompt_subtitle_font_size"]) * 1.1 * s))
-	# Low HP reads red (and says "Low HP" in words, ActText.summary_line).
+	# Low HP reads red (and says "Running low" in words, ActText.summary_line).
 	var low: bool = ActText.is_low_hp(_summary)
 	line_label.add_theme_color_override("font_color", Color.html(String(RunConfig.ui().get("act", {}).get("low_hp_color", "#ff6b6b"))) if low else text_color)
 	heal_label.add_theme_font_size_override("font_size", roundi(float(cfg["prompt_subtitle_font_size"]) * s))

@@ -235,6 +235,9 @@
         "detonate_word": "%s detonated",
         "detonate_word_scale": 0.8,
         "detonate_word_height": 3.4,
+        "detonate_word_clamp_extra": 44.0,
+        "detonate_word_above_number": 0.9,
+        "stagger_step": 0.45,
         "burst_radius": 1.1,
         "boss_gap": 0.5
     },

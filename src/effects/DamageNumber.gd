@@ -13,6 +13,8 @@ var style: StringName = &""
 var _elapsed: float = 0.0
 var _duration: float = 0.8
 var _rise: float = 1.2
+## Extra screen pixels pushed down when the boss-bar clamp moves this number (a "Bleed detonated" word, so it lands below the emphasised number instead of on it).
+var clamp_extra_px: float = 0.0
 var _start_pos: Vector3
 var _total: float = 0.0
 var _base_scale: float = 1.0
@@ -147,7 +149,7 @@ func show_amount(amount: float, type: String, color: Color, is_big: bool, prefix
 	if style != STYLE_NONE:
 		_base_scale *= _muted_scale  # a reduced hit reads smaller as well as greyer
 	scale = Vector3.ONE * _base_scale
-	_start_pos = global_position
+	_start_pos = global_position if is_inside_tree() else position  # a number built outside the tree (a test) has no global transform yet
 
 
 ## Adds another hit of the same type into this number and keeps it on screen a little longer.
@@ -190,7 +192,7 @@ func show_text(words: String, color: Color, text_scale: float) -> void:
 	scale = Vector3.ONE * text_scale
 	render_priority += 1
 	outline_render_priority = render_priority - 1
-	_start_pos = global_position
+	_start_pos = global_position if is_inside_tree() else position  # a number built outside the tree (a test) has no global transform yet
 
 
 func is_word() -> bool:
@@ -225,5 +227,6 @@ func _keep_clear_of_boss_bar() -> void:
 	var wanted: float = clamp_below_bar(screen.y, limit, float(UiConfig.damage_numbers().get("boss_bar_gap", 6.0)))
 	if wanted <= screen.y:
 		return
+	wanted += clamp_extra_px
 	var depth: float = -(camera.global_transform.affine_inverse() * global_position).z
 	global_position = camera.project_position(Vector2(screen.x, wanted), depth)

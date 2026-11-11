@@ -38,6 +38,12 @@ static func compose(entries: Array, cfg: Dictionary) -> String:
 	return "\n".join(lines)
 
 
+## MB1 ux: neighbouring enemies stand at nearly the same screen height, so their "Bleed x5 MAX" labels printed over each other. Every other
+## enemy (by spawn index) gets its label one `step` higher; two tiers are enough for a pair, three or more still stagger in an A-B-A pattern.
+static func stagger_height(base: float, index: int, step: float) -> float:
+	return base + (float(absi(index) % 2) * step if index >= 0 else 0.0)
+
+
 ## The word shown with a detonation, for example "Bleed detonated".
 static func detonate_word(display_name: String, cfg: Dictionary) -> String:
 	return String(cfg["detonate_word"]) % display_name

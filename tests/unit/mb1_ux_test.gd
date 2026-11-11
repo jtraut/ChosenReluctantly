@@ -14,9 +14,14 @@ func before_test() -> void:
 	RunConfig.reset_cache()
 	BossConfig.reset_cache()
 	BossStagger.disable()
+	Juice.hit_stop_enabled = false
 
 
 func after_test() -> void:
+	# A boss death plays a slow-mo beat: leave the clock and the juice state as the next suite expects them.
+	Juice.hit_stop_enabled = true
+	Juice.reset()
+	Engine.time_scale = 1.0
 	RunSession.clear()
 	RunConfig.reset_cache()
 	BossConfig.reset_cache()

@@ -18,9 +18,11 @@
 #   The run line and the ROUTE SUMMARY add gold spent, relics bought and removals.
 # -Run also prints the damage the player's side dealt by source (light, heavy, each slot type, each status, each relic) per run and over all runs with the fingerprint spread, relic pick/skip/swap counts, and BOSS TIMES with timed-out boss fights listed apart.
 # -StartRoom N (needs -Run): start every run at room N (10 = the boss) with the starter deck and full HP (--start-room).
+# -BotPreset <name> (SIM1; --bot-preset=): the human-like bot settings from data/bot_presets.json (off = the perfect bot, the default; human = the SIM1 preset). An unknown name exits nonzero with the valid names.
+#   -BotDelay <s>, -BotAimError <degrees>, -BotHesitation <s> (--bot-delay= etc.) override one number of the preset, for sweeps. Seeded: the same -Seed repeats exactly.
 # -Run plays whole seeded runs (Milestone 3a): -Seed is the first run seed, -Runs the number of runs, -RoomTimeout sim seconds before a room counts as a soft lock.
 # Fails on a failed check OR any ERROR / SCRIPT ERROR / WARNING line in the engine output.
-param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets, [int]$StartRoom = 0, [switch]$Plan, [string]$Relics = "", [int]$RelicCap = 0, [string]$Swap = "", [switch]$NoRelics, [string]$Route = "", [switch]$Map, [switch]$NoMap, [switch]$Merchant, [int]$Acts = 0)
+param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets, [int]$StartRoom = 0, [switch]$Plan, [string]$Relics = "", [int]$RelicCap = 0, [string]$Swap = "", [switch]$NoRelics, [string]$Route = "", [switch]$Map, [switch]$NoMap, [switch]$Merchant, [int]$Acts = 0, [string]$BotPreset = "", [double]$BotDelay = -1, [double]$BotAimError = -1, [double]$BotHesitation = -1)
 
 $root = Split-Path -Parent $PSScriptRoot
 $godot = $env:GODOT_BIN
@@ -62,6 +64,10 @@ if ($Map) { $extra += "--sim-map" }
 if ($NoMap) { $extra += "--sim-no-map" }
 if ($Merchant) { $extra += "--sim-merchant" }
 if ($Acts -gt 0) { $extra += "--sim-acts=$Acts" }
+if ($BotPreset) { $extra += "--bot-preset=$BotPreset" }
+if ($BotDelay -ge 0) { $extra += "--bot-delay=$BotDelay" }
+if ($BotAimError -ge 0) { $extra += "--bot-aim-error=$BotAimError" }
+if ($BotHesitation -ge 0) { $extra += "--bot-hesitation=$BotHesitation" }
 if ($StartRoom -gt 0) { $extra += "--start-room=$StartRoom" }
 if ($Run) { $extra += "--run"; $extra += "--room-timeout=$RoomTimeout" }
 Push-Location $root

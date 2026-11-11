@@ -136,6 +136,14 @@ var _room_min_hp: float = INF
 var _no_relics: bool = false
 var _swap_out: String = ""
 var _swap_in: String = ""
+## SIM1 `--bot-preset=<name>` (-BotPreset): the human-like bot settings (data/bot_presets.json); "" / "off" = the perfect bot, hashes unchanged.
+## `--bot-delay=`, `--bot-aim-error=` and `--bot-hesitation=` override one number of the preset (the sweep). Everything the bot decides goes through
+## `_human` (a delay line with seeded aim error) only when a setting is above 0; with all off no line of the old path changes.
+var _bot_preset: String = ""
+var _bot_overrides: Dictionary = {}
+var _bot_settings: BotSettings = BotSettings.new()
+var _human_on: bool = false
+var _human: HumanBotFilter = HumanBotFilter.new()
 ## `--sim-route=first|relic|safe|random` (wave sim -Route, run mode, MAP1-B): the runs walk the branching map and the bot follows that route policy (RouteBot).
 ## `--sim-map` (-Map) turns the map on with the `first` route. Either one forces the map on for this process. "" = whatever data/map.json says (on as shipped); `--sim-no-map` forces the straight run.
 var _route_policy: String = ""
@@ -242,11 +250,37 @@ func _ready() -> void:
 				push_error("wave sim: -Route must be one of %s, got '%s'" % [", ".join(RouteBot.POLICIES), _route_policy])
 				get_tree().quit(2)
 				return
+		elif arg.begins_with("--bot-preset="):
+			_bot_preset = arg.substr(13)
+		elif arg.begins_with("--bot-delay="):
+			_bot_overrides["reaction_delay"] = float(arg.substr(12))
+		elif arg.begins_with("--bot-aim-error="):
+			_bot_overrides["aim_error_degrees"] = float(arg.substr(16))
+		elif arg.begins_with("--bot-hesitation="):
+			_bot_overrides["cast_hesitation"] = float(arg.substr(17))
 		elif arg.begins_with("--sim-swap="):
 			_swap_out = arg.substr(11).get_slice("=", 0)
 			_swap_in = arg.substr(11).get_slice("=", 1)
 		elif arg.begins_with("--room-timeout="):
 			_room_timeout = maxf(10.0, float(arg.substr(15)))
+	var loaded: Dictionary = BotSettings.load_named(_bot_preset)
+	if not (loaded["problems"] as Array[String]).is_empty():
+		push_error("wave sim: -BotPreset: " + "; ".join(loaded["problems"] as Array[String]))
+		get_tree().quit(2)
+		return
+	_bot_settings = loaded["settings"] as BotSettings
+	for field: String in _bot_overrides.keys():
+		var value: float = float(_bot_overrides[field])
+		if value < 0.0 or is_nan(value):
+			push_error("wave sim: --bot-%s must be 0 or more" % field)
+			get_tree().quit(2)
+			return
+		_bot_settings.set(field, value)
+	if not _bot_overrides.is_empty():
+		_bot_settings.preset_name += "+overrides"
+	_human_on = _bot_settings.is_active()
+	if _human_on:
+		print("Bot settings: %s (reaction_delay %.2f s, aim_error %.1f deg, cast_hesitation %.2f s)" % [_bot_settings.preset_name, _bot_settings.reaction_delay, _bot_settings.aim_error_degrees, _bot_settings.cast_hesitation])
 	# A preset deck is for one class: refuse a clash like a real launch does, and let a preset alone pick its class.
 	if not RunSession.debug_deck.is_empty():
 		var preset_class: String = RunSession.preset_character(RunSession.debug_deck)
@@ -325,6 +359,7 @@ func _fail(message: String) -> void:
 
 func _reset_run_state(run_seed: int) -> void:
 	_rng.seed = run_seed
+	_human.reset(_bot_settings, run_seed * 7919 + 31)
 	_sim_time = 0.0
 	_clock = 0.0
 	_kills = 0
@@ -555,6 +590,13 @@ func _track_progress() -> void:
 # ---- The bot ----
 
 func _press(action: StringName, strength: float = 1.0) -> void:
+	if _human_on:
+		_human.push_press(_sim_time, action, String(action).begins_with("slot_") or String(action).begins_with("dead_card_swap_"))
+		return
+	_press_now(action, strength)
+
+
+func _press_now(action: StringName, strength: float = 1.0) -> void:
 	if _is_latched_action(action):
 		_send_action(action, true)
 	else:
@@ -594,7 +636,27 @@ func _release_all() -> void:
 		Input.action_release(action)
 
 
+## SIM1: hands the game whatever the human filter says is due now: the lagged aim (with its error), movement and presses.
+func _human_flush() -> void:
+	var due: Dictionary = _human.due(_sim_time, _player.global_position)
+	if due["aim"] != null:
+		_player.aim_point_override = due["aim"]
+	if due["move"] != null:
+		_drive(due["move"] as Vector3)
+	for action: StringName in due["presses"] as Array[StringName]:
+		_press_now(action)
+
+
+func _bot_drive(want: Vector3) -> void:
+	if _human_on:
+		_human.push_move(_sim_time, want)
+	else:
+		_drive(want)
+
+
 func _bot_step(enemies: Array[Enemy]) -> void:
+	if _human_on:
+		_human_flush()
 	if _idle:
 		return  # a player who stands still: only the auto light attack acts (aim is frozen)
 	if enemies.is_empty():
@@ -616,7 +678,10 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 		var wind: float = float(enemy.get("_telegraph_remaining"))
 		if wind > 0.0 and wind < 0.2 and d < (enemy.attack_range + 1.0 if not enemy.is_ranged else 9.0):
 			danger = enemy
-	_player.aim_point_override = nearest.global_position
+	if _human_on:
+		_human.push_aim(_sim_time, nearest.global_position)
+	else:
+		_player.aim_point_override = nearest.global_position
 	# Kite: back off when something is close, close in on a lone enemy, otherwise strafe.
 	var away := (me - nearest.global_position)
 	away.y = 0.0
@@ -658,7 +723,7 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 		# Close in and stand still beside it: no arena-edge push into the enemy, and no dodge (below), so the light attack can land.
 		want = Vector3.ZERO if nearest_d <= 2.0 else -away
 	_pin_want = want
-	_drive(want)
+	_bot_drive(want)
 	# Dodge whenever the player could: the Player's own availability (a charge and no roll under way) is the gate,
 	# and the throttle is only the roll length, so charges (not a timer) limit the bot.
 	var can_dodge: bool = _sim_time >= _dodge_cooldown_until and bool(_player.get_dodge_state()["available"]) and not deadlocked
@@ -794,7 +859,7 @@ func _hunting(enemies: Array[Enemy]) -> bool:
 
 
 func _hold_still() -> void:
-	_drive(Vector3.ZERO)
+	_bot_drive(Vector3.ZERO)
 
 
 ## World direction -> WASD strengths relative to the camera, the inverse of Player's movement input.
@@ -1158,6 +1223,7 @@ func _begin_run_room(run_seed: int, room: Dictionary) -> void:
 	_plan_busy_until.clear()  # _sim_time restarts every room, so a busy time from the last room would lock slots in this one
 	_plan_policy = PlanPolicy.new()
 	_rng.seed = run_seed * 131 + int(room["index"])
+	_human.reset(_bot_settings, run_seed * 7919 + 31 + int(room["index"]))
 	_player.card_slots.card_cast.connect(func(_slot_type: String, card_id: String) -> void: _card_casts[card_id] = int(_card_casts.get(card_id, 0)) + 1)
 	_slot_stuck_since.clear()
 	_room_min_hp = _player.health.current_health

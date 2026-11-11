@@ -10,7 +10,8 @@ param(
     [int]$Seed = 1,
     [switch]$Plan,
     [string]$Deck = "",
-    [string]$Swap = ""
+    [string]$Swap = "",
+    [string]$BotPreset = ""
 )
 
 $root = Split-Path -Parent $PSScriptRoot
@@ -39,6 +40,7 @@ try {
     if ($Plan) { $extra += "--plan" }
     if ($Deck) { $extra += "--deck=$Deck" }
     if ($Swap) { $extra += "--swap=$Swap" }
+    if ($BotPreset) { $extra += "--bot-preset=$BotPreset" }
     $out = & $godot --headless --path . -s res://tools/bot_sim.gd -- @extra 2>&1 | Out-String
     $code = $LASTEXITCODE
     Write-Host $out

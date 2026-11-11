@@ -1,0 +1,8 @@
+{
+	"_comment": "SIM1: human-like settings for the sim bot (tools/wave_sim.gd, tools/bot_sim.gd). 'off' is the perfect bot and must stay all zero (the sim hashes assume it). reaction_delay: seconds between the bot deciding and the game seeing it (movement, aim, dodge, presses). aim_error_degrees: the aim is off by a random angle within plus or minus this, re-rolled every aim_resample seconds. cast_hesitation: extra random 0..this seconds before a card slot press.",
+	"default": "off",
+	"presets": {
+		"off": {"reaction_delay": 0.0, "aim_error_degrees": 0.0, "cast_hesitation": 0.0, "aim_resample": 0.35},
+		"human": {"reaction_delay": 0.25, "aim_error_degrees": 15.0, "cast_hesitation": 0.0, "aim_resample": 0.35}
+	}
+}

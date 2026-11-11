@@ -32,6 +32,8 @@ var _plan_checksum: int = 0
 ## `--swap=<old>=<new>` (plan mode with --deck): one copy of card <old> in the preset deck is replaced by <new>, checked against the deck rules.
 var _swap_out: String = ""
 var _swap_in: String = ""
+## SIM1 `--bot-preset=<name>`: validated only (see _read_plan_args).
+var _bot_preset: String = ""
 
 
 func _initialize() -> void:
@@ -81,6 +83,16 @@ func _read_plan_args() -> bool:
 		elif arg.begins_with("--swap="):
 			_swap_out = arg.substr("--swap=".length()).get_slice("=", 0)
 			_swap_in = arg.substr("--swap=".length()).get_slice("=", 1)
+		elif arg.begins_with("--bot-preset="):
+			_bot_preset = arg.substr("--bot-preset=".length())
+	# SIM1: the preset is validated like in the wave sim (an unknown name fails). This sim has no aim, movement or enemies to react to, so a
+	# preset changes nothing here: the checksum is the same for every preset.
+	var loaded: Dictionary = BotSettings.load_named(_bot_preset)
+	if not (loaded["problems"] as Array[String]).is_empty():
+		push_error("bot-sim: --bot-preset: " + "; ".join(loaded["problems"] as Array[String]))
+		return false
+	if (loaded["settings"] as BotSettings).is_active():
+		print("note: bot preset '%s' has no effect in the bot-sim (no aim or movement here); use the wave sim" % _bot_preset)
 	if _deck_name != "" and not _plan:
 		push_error("bot-sim: --deck needs --plan")
 		return false

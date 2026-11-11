@@ -37,8 +37,9 @@ var _fill := MeshInstance3D.new()
 var _edge := MeshInstance3D.new()
 var _fill_material := StandardMaterial3D.new()
 var _edge_material := StandardMaterial3D.new()
-var _backing := MeshInstance3D.new()
-var _backing_material := StandardMaterial3D.new()
+## The dark band under a boss's edge: built only by setup(..., backed = true), so the player's arc and an enemy's wedge allocate nothing for it.
+var _backing: MeshInstance3D = null
+var _backing_material: StandardMaterial3D = null
 var _edge_thickness: float = EDGE_THICKNESS
 
 
@@ -55,6 +56,8 @@ func setup(attack_range: float, half_angle_degrees: float, color: Color, edge_th
 	position.y = GROUND_OFFSET
 	var parts: Array = [[_fill, _fill_material, mesh], [_edge, _edge_material, build_outline(attack_range, half_angle_degrees, edge_thickness)]]
 	if backed:
+		_backing = MeshInstance3D.new()
+		_backing_material = StandardMaterial3D.new()
 		parts.push_front([_backing, _backing_material, build_outline(attack_range, half_angle_degrees, edge_thickness * BACKING_THICKNESS_SCALE)])
 	for part: Array in parts:
 		var node: MeshInstance3D = part[0]
@@ -174,13 +177,14 @@ func flash(duration: float) -> void:
 func set_outline_on_top(on_top: bool) -> void:
 	_edge_material.no_depth_test = on_top
 	_edge_material.render_priority = ON_TOP_PRIORITY if on_top else 0
-	_backing_material.no_depth_test = on_top
-	_backing_material.render_priority = (ON_TOP_PRIORITY - 1) if on_top else 0
+	if _backing_material != null:
+		_backing_material.no_depth_test = on_top
+		_backing_material.render_priority = (ON_TOP_PRIORITY - 1) if on_top else 0
 
 
 ## True when the dark band under the outline was built (boss telegraphs).
 func has_backing() -> bool:
-	return _backing.mesh != null
+	return _backing != null
 
 
 ## The outline band width this wedge was built with.
@@ -193,7 +197,8 @@ func hide_now() -> void:
 	visible = false
 	_fill.visible = false
 	_edge.visible = false
-	_backing.visible = false
+	if _backing != null:
+		_backing.visible = false
 
 
 func _kill_tween() -> void:

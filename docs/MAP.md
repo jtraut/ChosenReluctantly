@@ -306,3 +306,90 @@ MAP1 and MAP2 together are the "first map build" that D28 places before 3d, with
 **Also answered 2026-11-04:** **D34 = C** (his own option): relics grow with the run, hard cap 20 and hard to reach; at the cap you remove a relic to take a new one; no duplicate relics. **D35 = A:** still 3 rejects per run over 30 rooms. **Revised the same day (item 42):** relic tiers 1/2/3/boss with odds rising per act; elites always give a relic and never cards; act-end mini-bosses are the only source of boss-tier relics (2 per run) and also offer 3 rare (act 1) or 3 legendary (act 2) cards; rare cards appear from act 2, legendary from act 3 (§2, §4.5).
 
 No open questions in this doc.
+
+## 11. The act-end mini-bosses (MB1; D44 = C, director 2026-11-09)
+
+game-lead design note, 2026-11-11. The director's direction is in GDD §9 ("Each mini-boss and act has its own identity"). The numbers below are game-lead's starting values, logged in DECISIONS "MB1 design note". The sim floors and the playtest tune them. Names and flavour are placeholders until story is active.
+
+### 11.1 Shared rules
+- **Built on the boss framework.** Each mini-boss is an entry in `data/bosses.json` (attacks, wind-ups, telegraphs, phases), run by `Boss.gd`, with its own scene made of primitives. `rooms.mini_boss` spawns it alone. Any adds come from phase `summon`, never from a second wave stage. Using one mechanism keeps the add count readable and under `max_adds_cap` 6.
+- **Final HP = `max_health` in `bosses.json` x the act's `acts.N.hp`.** There's no tier multiplier on top: the spawn entry carries no `tier`, so the x3.5 `mini_boss` tier is never applied as well. For comparison, today's mini-boss (the golem at x3.5) has 175 HP in act 1 and about 192 in act 2.
+- **The `tiers.mini_boss` entry stays** for MAP4's optional in-act mini-boss node (an existing enemy plus the tier).
+- **A mini-boss is not the boss.**
+  - Its status rank is `elite`, as today's mini-boss tier is.
+  - Its death plays a shorter beat (`death.beat_seconds` 1.0 instead of 1.6).
+  - Its death ends the room and so the act. It never ends the run.
+  - The rewards still come from the `mini_boss` node type, as in MAP3.
+  - gameplay-dev adds a field in `bosses.json` that tells a mini-boss from the boss, so the HP bar, rank and death beat follow from data.
+- **Fairness rules hold unchanged.** Every wind-up is at least `rules.min_telegraph` (0.6 s) after the phase's `windup_scale`. Every mini-boss has at least `rules.min_attacks` (3) attacks it can start on its own.
+- **The sim bot must be able to dodge every new kind.** Each new attack kind or field implements `threat_reach`, `in_threat` and `escape_direction`, like the four existing kinds. Without that, the SIM1 floors mean nothing for MB1.
+- **Act tint:** `run.json` `acts.N.tint`, holding a floor colour and a light colour per act. Act 1 keeps today's look, act 2 is cooler (blue-grey), act 3 is warmer (dull red). Nothing else changes per act. There's no act 3 damage bump unless the sim says acts feel flat after D45.
+
+### 11.2 Act 1: the brute, "Head of Facilities" (placeholder name)
+**How it tests you:** positioning and crowd control. It's slow, with long, wide telegraphs, and it punishes greed and standing in the open. It brings help.
+
+- **Body:** a wide box (not the Guardian's capsule), hazard yellow, about 1.3x the Guardian's footprint (`body_radius` 1.3). Its move speed is 2.2 / 2.5 / 2.8 by phase, against the player's 6.0 and the Guardian's 2.6-3.4.
+- **Stats:** `max_health` 170 (act 1: 170), armor 30, resistance 0.3, `knockback_taken` 0, `max_adds_alive` 3.
+- **Attacks:**
+
+| Id | Kind | Wind-up | Damage | Shape | Notes |
+|---|---|---|---|---|---|
+| `mop_sweep` "Mop sweep" | cone (existing) | 1.0 | 7 | range 3.6, half-angle 90 (a half circle) | Wider than any Guardian cone: you get behind it, not to its side. Knockback 8. |
+| `wet_floor` "Wet floor" | aoe **+ NEW fields `count`, `scatter`** | 1.1 | 6 | 3 circles of radius 2.0: one on the player, two within 3.0 m of them, all telegraphed at once | **The signature move.** The Guardian never places several circles. A player is hit at most once per cast. Knockback 4. |
+| `forklift` "Forklift charge" | charge (existing) | 1.1 | 8 | distance 10, speed 13, hit radius 1.3 | Slower and shorter than the Guardian's stampede. Knockback 12. |
+
+- **Phases:**
+  - **1.0 "On the clock":** gap 1.6, scale 1.0; sweep 3, wet floor 2, forklift 1.
+  - **0.6 "Overtime":** summons 2 `melee_chaser` ("the maintenance crew"); gap 1.3; sweep 2, wet floor 3, forklift 2.
+  - **0.3 "Union break is over":** summons 2 more `melee_chaser`; gap 1.1, scale 0.9 (the shortest wind-up is 0.9 s); all three at weight 2.
+- **How it differs from the Guardian (the act 3 boss):**
+  - a box silhouette and a different colour;
+  - no ranged volley;
+  - multi-circle floor hazards;
+  - a half-circle sweep;
+  - adds every phase, and they're always melee crew.
+
+### 11.3 Act 2: the duelist, "The Corporate Raider" (placeholder name; the director's example)
+**How it tests you:** reactions and dodge timing. It's small, fast and fragile, with short readable telegraphs and hard hits. Burst it down while it recovers. No adds: it's a duel.
+
+- **Body:** a thin capsule about the player's size (`body_radius` 0.55), a dark suit with a bright tie stripe so its facing reads. Its move speed is 5.0 / 5.6 by phase, just under the player's 6.0. You can kite it, but only just.
+- **Stats:** `max_health` 90 (act 2 x1.1: 99, about half of today's 192), armor 10, resistance 0.3, `knockback_taken` 0.5 (your hits push it a little).
+- **Attacks** (three it can start; two that only follow another):
+
+| Id | Kind | Wind-up | Damage | Shape | Notes |
+|---|---|---|---|---|---|
+| `hostile_takeover` "Hostile takeover" | cone (existing) | 0.6 | 9 | range 2.6, half-angle 50 | The quick hard slash. It's the hardest single hit of either mini-boss. Recover 0.35. Knockback 6. |
+| `leveraged_dash` "Leveraged dash" | charge (existing) **+ NEW field `chain`** | 0.7 | 5 | distance 6, speed 18, hit radius 0.6 | Chains into `leveraged_dash_2`. |
+| `leveraged_dash_2` (chain only) | charge | 0.6 | 5 | as above, re-aimed at the player | It has its own full telegraph. Combo total: 10. |
+| `golden_parachute` "Golden parachute" | **NEW kind `blink`** | 0.7 | 0 | Telegraphs a landing marker 1.8 m behind the player, locked when the wind-up starts; then it teleports there | Chains into `backstab`. The marker is the tell. |
+| `backstab` (chain only) | cone | 0.6 | 7 | range 2.4, half-angle 60 | Aimed at where the player is when its own wind-up starts. |
+
+- **Phases:**
+  - **1.0 "Due diligence":** move 5.0, gap 1.2, scale 1.0; takeover 3, dash 2, parachute 1.
+  - **0.5 "Aggressive restructuring":** move 5.6, gap 0.9, scale 1.0; takeover 2, dash 2, parachute 2.
+  - The scale stays at 1.0, so every wind-up stays at 0.6 s or more.
+- **`chain` rule (NEW):**
+  - When an attack with `chain` finishes recovering, the named attack starts its own wind-up at once. There's no attack gap, and the new wind-up has its own full telegraph.
+  - Chained attacks get no phase weight.
+  - At most 2 attacks in a chain. No cycles. The validator checks both.
+- **`blink` kind (NEW):**
+  - It deals no damage and is never in threat itself.
+  - The landing marker must be visible for the whole wind-up.
+  - It never lands outside the arena, or inside a wall or the player; if it would, it moves the point toward the boss.
+- **Damage against 22 HP (Wizard) and 30 HP (Rogue), with act 2's damage x1.0:**
+
+| What hits | Total | Wizard 22 HP | Rogue 30 HP |
+|---|---|---|---|
+| Any one full sequence: slash 9, combo 10, or parachute + backstab 7 | at most 10 | survives at full HP | survives |
+| Two sequences in a row (worst: combo + combo) | at most 20 | survives on 2 | survives on 10 |
+| Three sequences in a row (worst: combo, combo, slash) | at most 29 | dies | survives on 1 |
+
+- **The brute's worst single hit** is 8 (forklift); wet floor can't hit twice in one cast.
+
+### 11.4 Scenarios and checks
+- `--scenario=mini_boss_act1` and `--scenario=mini_boss_act2`: the player in the mini-boss room with a standard deck at full HP, act scaling applied. These are for the director and the playtester.
+- qa gates on SIM1's floors (DECISIONS "SIM1 qa FAIL triage and the floors"):
+  - `human` three-act, Rogue at least 21/36, Wizard at least 9/36;
+  - off-bot guards: Rogue 32/36, Wizard 25/36.
+- qa also reports **the room where each human-preset loss happens** (10 = the brute, 20 = the duelist), so a mini-boss spike shows up even when the floor holds.
+- If the Wizard falls under its floor because of room 20, the first knob is the duelist's damage, not its telegraphs.

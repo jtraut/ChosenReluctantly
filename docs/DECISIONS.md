@@ -2234,3 +2234,15 @@ Review: `docs/reviews/2026-11-11-sim1-qa.md`. One blocker: `tools\run_wave_sim.p
 gameplay-dev a047b9b fixed the gate (case-sensitive, prefix-anchored in all three sim wrappers) and the two nits. Suite 2100 / 160, exit 0, 0 orphans; off-hashes unchanged. No playtest: SIM1 is tooling and changes nothing a player sees. Rejected alternatives in brackets.
 - **The human Wizard won 0/12 on `-Route safe`** (seed 1; the route with the fewest relics, median 4; furthest room 20). Off it was 9/12. It's one seed, not gated, and it fits the Wizard gap already named for BD3b, so it's added there as a finding. **MB1 gates on `-Route first` only**; it also reports `safe` per class for information. [Gating `safe` now, which would block MB1 on the Wizard gap.]
 - The other Wizard rows (human): `-Route relic` 6/12, `-Relics` 1-act 11/12; off 9/12 and 12/12.
+
+## 2026-11-11 - MB1 design note (game-lead)
+The full note is in `docs/MAP.md` §11. These are my starting values, not director decisions. The sim floors and the playtest tune them. Rejected alternatives are in brackets.
+- **Both mini-bosses run on `Boss.gd` and `bosses.json`,** with a field that marks a mini-boss: rank `elite`, a shorter death beat, and never a run win. [A new AI class, which would duplicate the telegraph, phase and fairness code.]
+- **HP is anchored to today's mini-boss** (175 in act 1, about 192 in act 2), because the SIM1 floors were measured against it. The brute has 170 and the duelist 90 (99 in act 2), the duelist's being about half, as the director's example says. Final HP = `bosses.json` x `acts.N.hp`, with no tier multiplier. [Keeping the x3.5 tier on top, which would double-scale.]
+- **Every wind-up stays at 0.6 s or more,** so the duelist's "short telegraph" is the existing floor. [Lowering `min_telegraph` for the duelist: it's the Wizard's worst matchup and the Wizard has the least floor slack.]
+- **The duelist's damage is set so a full-HP Wizard (22) survives any two sequences** (at most 20). Its hardest single hit is 9, against the Guardian's 10. If the Wizard falls under its floor in room 20, damage is the first knob.
+- **The brute has a signature move the Guardian doesn't** (three telegraphed floor circles at once) and drops the volley. That keeps it from being the "bigger copy" D44 rejected. [Brute = slam + charge + adds only: too close to the Guardian's kit.]
+- **Adds come only from phase `summon`;** the mini-boss rooms lose their second wave stage. [Both, which makes the add count hard to read and to cap.]
+- **New code is limited to three pieces:** the aoe `count`/`scatter` fields, the `chain` field and the `blink` kind. Each implements the sim bot's threat functions.
+- **Two gameplay-dev sittings along the new code.** Sitting A: the mini-boss marker, the act tint, aoe `count`/`scatter`, the brute, act 1 room data and `mini_boss_act1`. Sitting B: `chain`, `blink`, the duelist, act 2 room data and `mini_boss_act2`.
+- **The act tint lives in `run.json` `acts.N.tint`** (floor and light colours). There's no act 3 damage bump for now.

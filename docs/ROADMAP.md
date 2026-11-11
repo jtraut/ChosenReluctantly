@@ -1320,7 +1320,24 @@ un_offer_report.ps1`.
     - **qa, sitting 2:** re-record every sim baseline (list above) on the fixed bot and on the preset, re-measure the BD3a fingerprint and parity on the preset, propose floors.
     - **game-lead:** sets the floors in DECISIONS; OPEN_ITEMS notes that the director's own runs set the bar.
 - [ ] **MB1, mini-boss and act identity (after BD3a, before MAP3b; D44 = C, director 2026-11-09). Full loop. Tag `playtest-YYYY-MM-DD-MB1`.** Director: the mini-bosses especially need their own attacks and behaviours, for example one smaller, with less HP than the others, but quicker and hitting harder in a rogue style; plus visible changes per act (GDD §9).
-  - **First, game-lead, docs only:** a short design note (in MAP.md, new section) for the two act-end mini-bosses: name, size, HP, speed, 2-3 attacks each with telegraphs, and how each tests the player differently. Starting sketch, to be confirmed there:
+  - **Design note done 2026-11-11: `docs/MAP.md` §11** (DECISIONS "MB1 design note"). It supersedes the sketch below. The brute keeps its role but drops the Guardian-like slam for a three-circle "Wet floor". The duelist's telegraphs stay at the 0.6 s floor.
+    - **gameplay-dev sitting A:**
+      - a `bosses.json` mini-boss marker: rank `elite`, death beat 1.0 s, never a run win;
+      - `run.json` `acts.N.tint`;
+      - aoe `count`/`scatter`, with sim threat functions;
+      - the brute's scene and data;
+      - `rooms.mini_boss` act 1 spawns the brute alone;
+      - `--scenario=mini_boss_act1`;
+      - tests.
+    - **gameplay-dev sitting B:**
+      - the `chain` field (validator: depth at most 2, no cycles, no phase weight);
+      - the `blink` kind (landing marker for the whole wind-up, clamped to the arena), with sim threat functions;
+      - the duelist's scene and data;
+      - act 2 room data;
+      - `--scenario=mini_boss_act2`;
+      - tests.
+    - **Before handing to ux,** gameplay-dev runs the SIM1 three-act gate once and reports it, with the room of each human-preset loss.
+    - Original sketch, kept for the record:
     - **Act 1, the brute:** big, slow, high HP; a ground slam with a wide telegraph, a charge, and adds summoned at HP thresholds.
     - **Act 2, the rogue-style duelist (the director's example):** small, about half the brute's HP, fast; a dash-strike combo, a short blink behind the player, and a hard-hitting quick slash with a short but readable telegraph.
     - Per-act visuals: a floor and light tint per act (data), a mini-boss name and bar. An act 3 damage bump only if the sim says acts feel flat after D45.

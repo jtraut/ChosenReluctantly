@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-11 (SIM1 closed; MB1 next, starting with game-lead's design note in MAP.md).
+Last updated: 2026-11-11 (MB1 started: design note done in MAP.md §11; gameplay-dev sitting A next).
 
 ## What's done
 - **SIM1 closed 2026-11-11 (tooling, no tag, no playtest):** brief ca7cc1d; gameplay-dev d15e691, 85e7d6a, a047b9b; qa FAIL e19ecec/c5202ff (ps1 gate regex), re-check PASS 95aebd7; docs 2531020 (also archived D48 and its changelog entry).
@@ -184,11 +184,20 @@ Last updated: 2026-11-11 (SIM1 closed; MB1 next, starting with game-lead's desig
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- Nothing in progress. SIM1 closed 2026-11-11. MB1 is next and hasn't started.
+- **MB1 in progress.**
+  - **Done:** game-lead's design note, `docs/MAP.md` §11 (DECISIONS "MB1 design note"), with the ROADMAP MB1 sittings A and B.
+  - **No code yet.**
+  - **Next:** gameplay-dev sitting A (the mini-boss marker, act tint, aoe `count`/`scatter`, the brute, `mini_boss_act1`).
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step
-1. **MB1** (ROADMAP brief): game-lead writes the mini-boss design note in MAP.md first (two mini-bosses: name, size, HP, speed, 2-3 attacks with telegraphs), then gameplay-dev (probably two sittings, one per mini-boss), ux (the BD3a carry-overs plus the mini-boss bar), qa (gates on the SIM1 floors, `-Route first`; reports `safe` for information), playtester, docs.
+1. **MB1** (ROADMAP brief and MAP.md §11). The order:
+   1. gameplay-dev sitting A (the brute);
+   2. gameplay-dev sitting B (the duelist, `chain`, `blink`), then the SIM1 gate run;
+   3. ux (the BD3a carry-overs and the named mini-boss bar);
+   4. qa (the SIM1 floors, `-Route first`, and the room of each loss);
+   5. the playtester;
+   6. the docs pass.
 2. Then MAP3b, MAP4, 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.

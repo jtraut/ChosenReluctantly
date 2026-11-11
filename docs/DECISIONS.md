@@ -2311,3 +2311,23 @@ If the playtest finds them soft, the knobs are, in order:
 - Label the second dash link so it reads as coming.
 - The blink marker must not read as a damage zone; the backstab outline is thin.
 - Re-check the BD3a mini-boss bar item against `BossHpBar`. `MiniBossBar` is now unused in runs.
+
+## 2026-11-11 - MB1 ux triage (ux 1b3fe3a..7897d66; game-lead)
+The suite is 2191 / 163, 0 orphans, and the hashes are unchanged. ux's 11 judgment calls are accepted as listed in the hand-back:
+1. the "(1/2)" / "(2/2)" chain cue, derived from data;
+2. the cyan ring-and-ghost blink marker, distinct by shape;
+3. compact multi-disc telegraphs;
+4. thicker boss wedges;
+5. "Running low" for the low-HP tag;
+6. "Wants Bleed stacks", as words only;
+7. the on-screen stack-label lift;
+8. the act read once at bind;
+9. MiniBossBar kept for MAP4;
+10. act tints unchanged;
+11. the commit attribution line.
+
+Two items stay open:
+- **The Open a Vein LIVE glow isn't asked of the director.** It's a cheap, reversible readability call. It waits on the playtest: if the words-only cue is missed, gameplay-dev exposes stack counts to the slot view in MAP3b. [Building a new condition type now.]
+- **The ux "eyes" items go to the playtester, not to OPEN_ITEMS:** act 3 red chasers on the dull-red floor, the "Running low" wording, and stack labels with 3 or more neighbours. They reach the director only if the playtester finds a problem.
+
+**Flake watch:** `player_death_test.test_enemy_stops_targeting_dead_player` failed twice in full runs (enemy velocity 2.4) and passes alone. qa investigates in the MB1 review. ux's added reset may only mask it.

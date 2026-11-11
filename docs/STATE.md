@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-11 (SIM1 started: brief written, gameplay-dev sitting 1 next). Previous: 2026-11-09 (BD3a closed, tag `playtest-2026-11-09-BD3a`). **Run order:** BD3a (done) -> **SIM1, sim re-calibration** -> MB1 -> MAP3b -> MAP4 -> 3d -> BD3b. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2, MAP3, BD3a.
+Last updated: 2026-11-11 (SIM1 gameplay-dev done d15e691..85e7d6a; qa sitting 2 next). Previous: 2026-11-09 (BD3a closed, tag `playtest-2026-11-09-BD3a`). **Run order:** BD3a (done) -> **SIM1, sim re-calibration** -> MB1 -> MAP3b -> MAP4 -> 3d -> BD3b. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2, MAP3, BD3a.
 
 ## What's done
 - **D48 = A recorded 2026-11-11 (game-lead, docs only):**
@@ -179,7 +179,7 @@ Last updated: 2026-11-11 (SIM1 started: brief written, gameplay-dev sitting 1 ne
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **SIM1 in progress.** game-lead wrote the detailed brief (ROADMAP SIM1 "Detailed brief"; DECISIONS "SIM1 targets and method"). Next: gameplay-dev sitting 1 (bot settings, presets, sweep table, `--run-room=30` exit check). Then qa sitting 2, then game-lead sets floors. No tag; tech-writer docs pass at the end (also carries the D48 pending items below).
+- **SIM1 in progress.** Brief ca7cc1d. gameplay-dev d15e691..85e7d6a: `data/bot_presets.json` (off, human = 0.2 s delay / 25 deg), `--bot-preset=` / `-BotPreset`, sweep overrides, hashes unchanged, suite 2095 / 158 exit 0. Human preset: Rogue three-act 26/36, Wizard 15/36; boss time doesn't respond (about 36 s Rogue). Triage in DECISIONS "SIM1 sitting 1 triage". **Next: qa sitting 2** (re-baseline everything off and on `human`, BD3a fingerprint and parity on `human`, propose floors), then game-lead floors, then the tech-writer docs pass (also carries D48, the `--quit-after` note, the new flags, the suite count).
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step

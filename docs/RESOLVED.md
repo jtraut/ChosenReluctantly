@@ -2,6 +2,16 @@
 
 The archive of the director's answered, received and acknowledged items, moved here from `docs/OPEN_ITEMS.md`. Owned by tech-writer (director, 2026-11-02). Newest dated section first; IDs (D19, call 16, checklist item 33) are kept so they can be searched. Old entries change only to fix a factual error.
 
+## 2026-11-11
+
+### Answer recorded in ba252e3 (D48)
+
+Removed from OPEN_ITEMS in ba252e3. The question text is in `git show 76f1302:docs/OPEN_ITEMS.md`.
+
+| ID | Question | Your answer | Where it went |
+|---|---|---|---|
+| D48 | More Bleed and physical cards now, or in MAP3b? BD3a cut a Fire Rogue's Burn relics from 62% to 29% of its relic offers, and a deck that picks Bleed and removes Fire sees about 32% Fire offers late (down from 39%). But there are only 6 Bleed cards, so late offers are about 8% Bleed once you own them. **A** (default): close BD3a as it is; Bleed and physical rare and legendary cards come in MAP3b, after SIM1 and MB1. **B**: a short top-up sitting now, about 4 more common Bleed or physical cards, before SIM1. | **A** (2026-11-11). | ROADMAP MAP3b entry and the BD3a playtest line (ba252e3). No build work; the run order is unchanged. Changelog: 2026-11-11, `[Director decision]`. |
+
 ## 2026-11-09
 
 ### Answers recorded in 7fb5460 (D46, D47)

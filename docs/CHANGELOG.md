@@ -2,6 +2,44 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
+## 2026-11-11 (Slice SIM1: sim re-calibration, tooling only, no tag; D48 = A)
+
+### Slice SIM1: a human-like sim bot and new floors
+
+Commit range ca7cc1d..8c02798. gameplay-dev d15e691, 85e7d6a, a047b9b; qa e19ecec (FAIL), c5202ff, 95aebd7 (PASS; review `docs/reviews/2026-11-11-sim1-qa.md`, which holds the full baseline table); game-lead ca7cc1d, 2b6ff27, 1664f71, 8c02798. Tooling only: nothing a player sees changed, so there is no playtest and no tag.
+
+#### Added
+- **Human-like bot settings** (d15e691, 85e7d6a): `reaction_delay` (a lag on everything the bot decides), `aim_error_degrees` (a random aim offset, re-rolled every `aim_resample` s) and `cast_hesitation` (a random extra wait before a card press). The jitter is seeded from the sim RNG, so a seed repeats exactly. All settings are off by default, so every sim hash is unchanged (3172486861 / 916264160 / `-Plan` 1317880580 / bot sim 3476063471).
+  - New code: `src/debug/BotSettings.gd`, `src/debug/HumanBotFilter.gd`. Presets: `data/bot_presets.json`, `off` (the perfect bot) and `human` (0.2 s delay, 25 degrees aim error).
+- **Flags.** Godot args `--bot-preset=<name>`, `--bot-delay=`, `--bot-aim-error=`, `--bot-hesitation=` (the last three are wave sim only). PowerShell: `-BotPreset <name>` (wave sim and bot sim), `-BotDelay`, `-BotAimError`, `-BotHesitation` (wave sim). In the bot sim the preset only validates the name, because that sim has no aim or movement.
+- **A new baseline form:** `-Relics pyre_insurance+heavy_sigh`.
+- **Tests** (2083 -> 2100 cases, 157 -> 160 suites, exit 0, 0 orphans): `tests/unit/sim1_bot_settings_test.gd`, `sim1_qa_test.gd`, `sim1_flag_validation_test.gd`.
+- **Baselines** (qa, pooled seeds 1/13/25, `-Route first`, `off` bot / `human` preset; the rest of the rows are in the review):
+  - Three-act win rate: Rogue 35/36 / 26/36; Wizard 29/36 / 15/36.
+  - One-act (`-Acts 1`): Rogue 12/12 (boss median 34.5 s) / 12/12 (41.9 s); Wizard 12/12 (36.7 s) / 11/12 (69.8 s).
+
+#### Changed
+- **The engine-error filter in `run_wave_sim.ps1`, `run_bot_sim.ps1` and `run_reload_cycle.ps1` is now case-sensitive and anchored to a line prefix** (`^\s*(SCRIPT )?ERROR:|^\s*WARNING:`) (a047b9b). The old case-insensitive `ERROR|WARNING` match flagged the `aim_error` settings line, so every run with aim error exited 1 (qa's blocker in e19ecec).
+- **Non-numeric `--bot-*` values now exit 2** instead of reading as 0, and the bot sim no longer prints an empty preset name (a047b9b).
+- **Sim floors replaced** (from MB1 on; DECISIONS "SIM1 qa FAIL triage and the floors"). Win rate is the calibration axis; boss time is information only. Gate on pooled counts over seeds 1/13/25, `-Route first`, 36 runs, never on one seed:
+  - Old floor: 8/12 on the fixed bot, which now wins 35/36 and so can no longer fail. New floors, human three-act: Rogue at least 21/36, Wizard at least 9/36 (about 2 binomial SDs under today's 26 and 15). Per class, not one floor, because one floor would fail the Wizard today and block MB1 on a gap MB1 is not scoped to fix.
+  - Off-bot guards: Rogue at least 32/36, Wizard at least 25/36.
+  - No-card ceiling at most 25%, measured on the `off` bot (a weaker bot makes it trivially true).
+  - Parity 70-130% of the standard deck's boss time, on both bots.
+  - Fingerprint at least 0.6 with relics, on the `off` bot (today 0.61 off, 0.73 human).
+- **MB1 gates on `-Route first` only;** it reports `safe` per class for information.
+
+#### Findings
+- **The Wizard gap** is a named finding for BD3b: three-act 81% off -> 42% human against the Rogue's 97% -> 72%. The human Wizard won 0/12 on `-Route safe` (seed 1, the route with the fewest relics; furthest room 20). Neither is gated today.
+- The `human` preset moves the Wizard's boss time to 50-70 s but the Rogue's only to 35-43 s.
+
+#### Director decisions
+- **[Director decision] D48 = A** (2026-11-11): Bleed content timing. No Bleed top-up sitting now; BD3a closes as it is. The late-offer Bleed share stays at about 8.5% (6 Bleed cards) until MAP3b adds Bleed and physical rare and legendary cards. Recorded in the ROADMAP MAP3b entry and the BD3a playtest line (ba252e3).
+
+#### Docs and process
+- README: the stale `-Run` baselines were replaced by the SIM1 table, the new flags were documented, and a note was added that a plain headless `--run-room=N` waits for input by design (add `--quit-after N` for an exit-code check; `--run-clear-after=1` alone does not exit).
+- `docs/RESOLVED.md`: D48 archived. `docs/ARCHITECTURE.md`: BotSettings, HumanBotFilter and the presets file added.
+
 ## 2026-11-09 (Slice BD3a: physical Rogue; Slice MAP3: three acts, mini-bosses, scaling, save and resume; D41 = B built; director decisions D43 to D47 and dual-class)
 
 ### Slice BD3a: physical Rogue (stacking Bleed, detonate, 8 cards, 6 relics, the offer lean)

@@ -647,6 +647,15 @@ func _human_flush() -> void:
 		_press_now(action)
 
 
+## SIM1: seconds a press stays in flight in the human filter (reaction delay, plus the longest hesitation for a card press). The bot's own throttles
+## (the dodge roll length, the plan's press gap) start at decision time, so they add this: otherwise one decision queues the same press again and again.
+## 0 with the settings off, so the standard path is unchanged.
+func _human_lag(card: bool = false) -> float:
+	if not _human_on:
+		return 0.0
+	return _bot_settings.reaction_delay + (_bot_settings.cast_hesitation if card else 0.0)
+
+
 func _bot_drive(want: Vector3) -> void:
 	if _human_on:
 		_human.push_move(_sim_time, want)
@@ -731,17 +740,17 @@ func _bot_step(enemies: Array[Enemy]) -> void:
 		_press(&"dodge")
 		if _boss_log and not _boss_cur.is_empty():
 			_boss_cur["dodges"] = int(_boss_cur.get("dodges", 0)) + 1
-		_dodge_cooldown_until = _sim_time + _player.dodge_duration
+		_dodge_cooldown_until = _sim_time + _player.dodge_duration + _human_lag()
 	elif _pellet_imminent and can_dodge:
 		_press(&"dodge")
-		_dodge_cooldown_until = _sim_time + _player.dodge_duration
+		_dodge_cooldown_until = _sim_time + _player.dodge_duration + _human_lag()
 		if _boss_log and not _boss_cur.is_empty():
 			_boss_cur["dodges"] = int(_boss_cur.get("dodges", 0)) + 1
 	elif danger != null and not (danger is Boss) and can_dodge:
 		_press(&"dodge")
 		if _boss_log and not _boss_cur.is_empty():
 			_boss_cur["dodges"] = int(_boss_cur.get("dodges", 0)) + 1
-		_dodge_cooldown_until = _sim_time + _player.dodge_duration
+		_dodge_cooldown_until = _sim_time + _player.dodge_duration + _human_lag()
 	if crowd >= 2 and _sim_time >= _heavy_until:
 		_press(&"attack_heavy")
 		_heavy_until = _sim_time + 1.9
@@ -787,11 +796,11 @@ func _plan_cards(in_danger: bool, dodge_ready: bool) -> void:
 				elif not SlotSynergy.conditional_effects(card).is_empty():
 					_plan_stats["held_casts"] = int(_plan_stats["held_casts"]) + 1
 				_press(StringName("slot_%d" % (index + 1)))
-				_plan_busy_until[slot_type] = _sim_time + PLAN_PRESS_GAP
+				_plan_busy_until[slot_type] = _sim_time + PLAN_PRESS_GAP + _human_lag(true)
 			PlanPolicy.SWAP:
 				_plan_stats["swaps"] = int(_plan_stats["swaps"]) + 1
 				_press(StringName("dead_card_swap_%d" % (index + 1)))
-				_plan_busy_until[slot_type] = _sim_time + PLAN_PRESS_GAP
+				_plan_busy_until[slot_type] = _sim_time + PLAN_PRESS_GAP + _human_lag(true)
 
 
 ## The Wizard stand-off (metres): its bolt reaches 12 m and its heavy disc 7 m, melee enemies close in on it.

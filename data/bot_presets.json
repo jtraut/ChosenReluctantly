@@ -3,6 +3,6 @@
 	"default": "off",
 	"presets": {
 		"off": {"reaction_delay": 0.0, "aim_error_degrees": 0.0, "cast_hesitation": 0.0, "aim_resample": 0.35},
-		"human": {"reaction_delay": 0.25, "aim_error_degrees": 15.0, "cast_hesitation": 0.0, "aim_resample": 0.35}
+		"human": {"reaction_delay": 0.2, "aim_error_degrees": 25.0, "cast_hesitation": 0.0, "aim_resample": 0.35}
 	}
 }

@@ -10,6 +10,7 @@ var _aims: Array[Dictionary] = []
 var _moves: Array[Dictionary] = []
 var _presses: Array[Dictionary] = []
 var _aim_target: Variant = null
+var _move_dir: Variant = null
 var _error_radians: float = 0.0
 var _next_resample: float = 0.0
 
@@ -21,6 +22,7 @@ func reset(new_settings: BotSettings, seed_value: int) -> void:
 	_moves.clear()
 	_presses.clear()
 	_aim_target = null
+	_move_dir = null
 	_error_radians = 0.0
 	_next_resample = 0.0
 
@@ -41,11 +43,10 @@ func push_press(now: float, action: StringName, is_card: bool) -> void:
 
 
 ## What is due at `now`: {"aim": Vector3 or null (the aim point to use now, error applied, from the player at `me`),
-## "move": Vector3 or null (the latest due move direction), "presses": Array[StringName] (in the order they fell due)}.
+## "move": Vector3 or null (the latest due move direction; it stays until a newer one falls due, so a frame never drops the held keys), "presses": Array[StringName] (in the order they fell due)}.
 func due(now: float, me: Vector3) -> Dictionary:
-	var latest_move: Variant = null
 	while not _moves.is_empty() and float(_moves[0]["due"]) <= now:
-		latest_move = _moves[0]["value"]
+		_move_dir = _moves[0]["value"]
 		_moves.remove_at(0)
 	while not _aims.is_empty() and float(_aims[0]["due"]) <= now:
 		_aim_target = _aims[0]["value"]
@@ -65,7 +66,7 @@ func due(now: float, me: Vector3) -> Dictionary:
 	var aim: Variant = null
 	if _aim_target != null:
 		aim = _apply_error(_aim_target as Vector3, me, now)
-	return {"aim": aim, "move": latest_move, "presses": presses}
+	return {"aim": aim, "move": _move_dir, "presses": presses}
 
 
 func _apply_error(target: Vector3, me: Vector3, now: float) -> Vector3:

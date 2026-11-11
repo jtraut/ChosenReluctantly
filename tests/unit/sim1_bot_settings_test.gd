@@ -107,6 +107,19 @@ func test_filter_lags_by_the_reaction_delay() -> void:
 	assert_array(late["presses"] as Array).is_equal([&"dodge"])
 
 
+func test_move_stays_until_a_newer_one_falls_due() -> void:
+	var filter := HumanBotFilter.new()
+	filter.reset(BotSettings.custom(0.25, 0.0), 1)
+	filter.push_move(0.0, Vector3.RIGHT)
+	for frame in range(15, 40):
+		var due: Dictionary = filter.due(float(frame) / 60.0, Vector3.ZERO)
+		if frame >= 15:
+			assert_vector(due["move"] as Vector3).override_failure_message("the move dropped at frame %d" % frame).is_equal(Vector3.RIGHT)
+	filter.push_move(0.7, Vector3.LEFT)
+	assert_vector(filter.due(0.8, Vector3.ZERO)["move"] as Vector3).is_equal(Vector3.RIGHT)
+	assert_vector(filter.due(0.95, Vector3.ZERO)["move"] as Vector3).is_equal(Vector3.LEFT)
+
+
 func test_aim_error_stays_inside_the_setting() -> void:
 	var filter := HumanBotFilter.new()
 	filter.reset(BotSettings.custom(0.0, 10.0), 3)

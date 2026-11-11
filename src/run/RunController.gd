@@ -95,6 +95,7 @@ func begin(main: Main) -> void:
 	_setup_relics(main)
 	player.player_died.connect(_on_player_died, CONNECT_ONE_SHOT)
 	var room: Dictionary = current_room()
+	ActTint.apply(main, _state.act)  # MB1: the act's own floor and light colour
 	var spawner: EnemySpawner = main.enemy_spawner
 	if _state.has_pending():
 		# A reload mid-choice: the room is already won and recorded, so do not fight it again; reopen the choice.

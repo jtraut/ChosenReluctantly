@@ -148,7 +148,8 @@ func _build() -> void:
 		spawner.set_seed(int(_def.get("wave_seed", 1)))
 		spawner.plan = WavePlan.new(config, spawner.rng())
 	# Keep the player alive for the whole capture.
-	player.health.set_max_health(float(_def.get("player_max_health", 9999.0)))
+	if not bool(_def.get("natural_hp", false)):
+		player.health.set_max_health(float(_def.get("player_max_health", 9999.0)))
 	player.health.heal(player.health.get_max_health())
 	# Capture-only: stop mouse aim so the player keeps facing -Z.
 	if bool(_def.get("freeze_aim", false)):
@@ -171,6 +172,10 @@ func _build() -> void:
 	if launch_class != "":
 		player.card_slots.set_deck(CharacterDatabase.starting_deck(launch_class))
 		player.use_heavy_class(CharacterDatabase.heavy_class(launch_class))
+	# MB1: the class's own starter deck (the Rogue's unless `--class` / `character` names another), as a run starts it.
+	if bool(_def.get("standard_deck", false)):
+		var own_class: String = launch_class if launch_class != "" else String(_def.get("character", CharacterDatabase.DEFAULT_ID))
+		player.card_slots.set_deck(CharacterDatabase.starting_deck(own_class))
 	# Capture-only (BD1-B): a fixed deck, so a capture holds the same cards every time (the arena player holds its whole pool).
 	if _def.has("deck"):
 		var fixed: Array[String] = []
@@ -213,6 +218,14 @@ func _build() -> void:
 			enemy.target = null if bool(_def.get("enemies_idle", false)) else player
 			_enemies.append(enemy)
 			index += 1
+
+	# MB1: `act` plays the room as that act of a run: its enemy HP and damage scaling, and its floor and light tint.
+	if _def.has("act"):
+		var act_number: int = int(_def["act"])
+		var scale: Dictionary = RunConfig.act_scale(act_number)
+		for enemy in _enemies:
+			enemy.apply_act_scale(float(scale["hp"]), float(scale["damage"]))
+		ActTint.apply(_main, act_number)
 
 	# Capture-only: no automatic light attack, so it neither knocks the enemies out
 	# of the cards' reach nor draws its own flash over the card visuals.

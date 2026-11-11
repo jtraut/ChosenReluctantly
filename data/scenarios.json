@@ -1129,5 +1129,15 @@
         "previews": [
             {"at": 0.5, "slot": "movement", "card": "rogue_excuse_me", "release_at": 2.0}
         ]
+    },
+    "mini_boss_act1": {
+        "_note": "MB1: the act 1 mini-boss room as a run plays it: the brute alone, the Rogue's standard deck, full HP, act 1 scaling and tint",
+        "disable_spawner": true,
+        "natural_hp": true,
+        "standard_deck": true,
+        "act": 1,
+        "origin_offset": [0.0, 0.0, -8.0],
+        "columns": 1,
+        "groups": [ { "scene": "res://scenes/enemies/BossBrute.tscn", "count": 1 } ]
     }
 }

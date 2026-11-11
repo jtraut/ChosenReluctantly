@@ -89,6 +89,26 @@ static func aoe_reach(attack: Dictionary) -> float:
 	return VfxSizing.lateral_reach_vs_player(float(attack["radius"]))
 
 
+## MB1: where the discs of one aoe cast land. The first sits on `first` (the player's spot when the wind-up starts); each of the
+## other `count - 1` sits within `scatter` metres of it, at least a third of that away so the discs spread out, inside +-`limit`
+## on both ground axes. A count of 1 returns just `first` and never draws from `rng` (so a single-disc attack keeps its random stream).
+static func aoe_centers(first: Vector3, count: int, scatter: float, rng: RandomNumberGenerator, limit: float) -> Array[Vector3]:
+	var out: Array[Vector3] = [Vector3(first.x, 0.0, first.z)]
+	for index in range(1, count):
+		var angle: float = rng.randf_range(0.0, TAU)
+		var dist: float = rng.randf_range(scatter * 0.35, scatter)
+		out.append(Vector3(clampf(first.x + cos(angle) * dist, -limit, limit), 0.0, clampf(first.z + sin(angle) * dist, -limit, limit)))
+	return out
+
+
+## MB1: the index of the first disc (radius `reach`) that contains the ground point, or -1. A cast hurts a player once however many discs hold them.
+static func disc_containing(centers: Array[Vector3], reach: float, point: Vector3) -> int:
+	for index in range(centers.size()):
+		if Vector2(point.x - centers[index].x, point.z - centers[index].z).length() <= reach:
+			return index
+	return -1
+
+
 ## Volley: half width of each shot's lane.
 static func volley_half_width(attack: Dictionary) -> float:
 	return VfxSizing.lateral_reach_vs_player(float(attack["hit_radius"]))
@@ -118,7 +138,8 @@ static func escape(attack: Dictionary, windup_seconds: float, walk_speed: float,
 		"cone":
 			required = cone_reach(attack)
 		"aoe":
-			required = aoe_reach(attack)
+			# MB1: a multi-disc cast can chain discs, so the worst spot is a disc radius plus the scatter from the clear ground.
+			required = aoe_reach(attack) + (BossConfig.aoe_scatter(attack) if BossConfig.aoe_count(attack) > 1 else 0.0)
 		"charge":
 			required = charge_half_width(attack)
 		"volley":

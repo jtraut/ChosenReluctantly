@@ -89,6 +89,8 @@ var _known_max: float = 0.0
 var _scripted: Array[String] = []
 var _scripted_index: int = 0
 var _active_wedge: AttackArcVisual = null
+## MB1: the discs of the current multi-disc aoe wind-up (locked when it starts; empty for a single disc).
+var _aoe_locked: Array[Vector3] = []
 
 
 func _ready() -> void:
@@ -119,7 +121,13 @@ func _ready() -> void:
 	_attack_cooldown_remaining = float(_def["spawn_grace"])
 	if not _seeded:
 		_rng.seed = 1000003 + maxi(spawn_index, 0)
-	tier = "boss"
+	if is_mini_boss():
+		# MB1: an act-end mini-boss is an elite-rank fight with its own tier id; its death ends the room, never the run.
+		tier = "mini_boss"
+		if status_manager != null:
+			status_manager.rank = "elite"
+	else:
+		tier = "boss"
 
 
 # ---- API for the spawner, ux and tests ----
@@ -149,6 +157,11 @@ func debug_script_attacks(ids: Array[String]) -> void:
 func set_seed(seed_value: int) -> void:
 	_rng.seed = seed_value
 	_seeded = true
+
+
+## MB1: true for an act-end mini-boss (bosses.json `mini_boss`), false for the final boss.
+func is_mini_boss() -> bool:
+	return bool(_def.get("mini_boss", false))
 
 
 func display_name() -> String:
@@ -209,7 +222,10 @@ func threat_reach() -> float:
 		"cone":
 			return BossRules.cone_reach(_attack)
 		"aoe":
-			return BossRules.aoe_reach(_attack) + (0.0 if String(_attack["place"]) == "self" else maxf(_lock_point.distance_to(global_position), 0.0))
+			var farthest: float = 0.0
+			for center: Vector3 in _aoe_centers():
+				farthest = maxf(farthest, Vector2(center.x - global_position.x, center.z - global_position.z).length())
+			return BossRules.aoe_reach(_attack) + farthest
 		"volley":
 			return float(_attack["shot_range"])
 		"charge":
@@ -228,8 +244,7 @@ func in_threat(point: Vector3) -> bool:
 				return false
 			return rel.length() < 0.001 or rad_to_deg(_lock_dir.angle_to(rel)) <= float(_attack["half_angle_degrees"])
 		"aoe":
-			var center: Vector3 = _aoe_center()
-			return Vector2(point.x - center.x, point.z - center.z).length() <= BossRules.aoe_reach(_attack)
+			return BossRules.disc_containing(_aoe_centers(), BossRules.aoe_reach(_attack), point) >= 0
 		"volley":
 			var half_width: float = BossRules.volley_half_width(_attack)
 			for angle: float in BossRules.volley_angles(int(_attack["count"]), float(_attack["spread_degrees"])):
@@ -393,6 +408,10 @@ func _begin_windup(attack_id: String) -> void:
 	_lock_point = Vector3(target.global_position.x, 0.0, target.global_position.z)
 	_charge_start = Vector3(global_position.x, 0.0, global_position.z)
 	global_transform.basis = Basis.looking_at(_lock_dir, Vector3.UP)  # the aim is locked for the whole wind-up
+	_aoe_locked = []
+	if String(_attack["kind"]) == "aoe" and BossConfig.aoe_count(_attack) > 1:
+		# MB1: the discs are rolled once, from the boss's own seeded stream, and locked for the whole wind-up.
+		_aoe_locked = BossRules.aoe_centers(_lock_point, BossConfig.aoe_count(_attack), BossConfig.aoe_scatter(_attack), _rng, ARENA_LIMIT)
 	_telegraph_total = BossRules.windup(_attack, _phase())
 	_telegraph_remaining = _telegraph_total
 	_set_body_color(TELEGRAPH_COLOR)
@@ -420,7 +439,10 @@ func _start_telegraph_visual() -> void:
 			_active_wedge = _wedge_for(_attack_id, color)
 			_active_wedge.show_windup(0.0)
 		"aoe":
-			_hold_parts(TemplateVfx.aoe_telegraph(_tele_pool, _aoe_center(), BossRules.aoe_reach(_attack), color, true))
+			var disc_parts: Array[PooledEffect] = []
+			for disc_center: Vector3 in _aoe_centers():  # MB1: every disc of a multi-disc cast is drawn at once, for the full wind-up
+				disc_parts.append_array(TemplateVfx.aoe_telegraph(_tele_pool, disc_center, BossRules.aoe_reach(_attack), color, true))
+			_hold_parts(disc_parts)
 		"volley":
 			var half_width_hit: float = float(_attack["hit_radius"])
 			var angles: Array[float] = BossRules.volley_angles(int(_attack["count"]), float(_attack["spread_degrees"]))
@@ -459,6 +481,13 @@ func _hold_parts(parts: Array[PooledEffect]) -> void:
 		_tele_gens.append(part.generation)
 
 
+## The discs the current aoe wind-up threatens: the locked scatter (MB1) or the single disc.
+func _aoe_centers() -> Array[Vector3]:
+	if not _aoe_locked.is_empty():
+		return _aoe_locked
+	return [_aoe_center()]
+
+
 func _aoe_center() -> Vector3:
 	return _lock_point if String(_attack["place"]) == "target" else Vector3(global_position.x, 0.0, global_position.z)
 
@@ -488,6 +517,7 @@ func _stop_telegraph_visual() -> void:
 
 ## Drops whatever is being wound up (the target died, a transition began, the boss died). No hit lands.
 func _cancel_attack() -> void:
+	_aoe_locked = []
 	_stop_telegraph_visual()
 	_telegraph_remaining = 0.0
 	_set_body_color(_rest_color())
@@ -522,6 +552,8 @@ func _land_attack() -> void:
 			}, context)
 			hit_player = not context.last_hits.is_empty()
 			TemplateVfx.cone_sweep(pool, global_position, atan2(-_lock_dir.x, -_lock_dir.z), BossRules.cone_reach(_attack), float(_attack["half_angle_degrees"]), color, true)
+		"aoe" when not _aoe_locked.is_empty():
+			hit_player = _land_multi_aoe(pool)
 		"aoe":
 			var center: Vector3 = _aoe_center()
 			EffectTemplates.execute("aoe", {
@@ -553,6 +585,26 @@ func _land_attack() -> void:
 	attack_landed.emit(_attack_id, hit_player)
 	_state = State.RECOVER
 	_state_time = 0.0
+
+
+## MB1: lands every disc of a multi-disc aoe at once. Each hurtbox is damaged at most once per cast, by the first disc that holds it.
+## Returns true when something was hit.
+func _land_multi_aoe(pool: EffectPool) -> bool:
+	var space: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+	var team: String = hurtbox.team if hurtbox != null else "enemy"
+	var reach: float = BossRules.aoe_reach(_attack)
+	var hit: Array[Hurtbox] = []
+	var look: Dictionary = ElementVisuals.visual_for_team(String(_attack["damage_type"]), "enemy")
+	for center: Vector3 in _aoe_centers():
+		for victim: Hurtbox in MeleeQuery.find_hurtboxes_in_sphere(space, center, float(_attack["radius"]), team, CollisionLayers.HURTBOX):
+			if hit.has(victim):
+				continue
+			hit.append(victim)
+			victim.receive_damage(float(_attack["damage"]), String(_attack["damage_type"]),
+					EffectTemplates.knockback_from(center, victim.global_position, float(_attack["knockback"])), self, Health.KIND_HIT, "enemy")
+		TemplateVfx.aoe(pool, center, reach, look)
+	_aoe_locked = []
+	return not hit.is_empty()
 
 
 ## The charge: runs along the locked lane at speed, hurting the target once when the swept sphere touches it.

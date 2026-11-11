@@ -8,6 +8,8 @@ extends RefCounted
 ## Attack kinds (all built from the shared shapes, telegraphed for at least rules.min_telegraph):
 ##   cone    range, half_angle_degrees                          a wedge in front of the boss
 ##   aoe     radius, place ("self" | "target")                  a ground disc, on the boss or on where the player stood
+##           [MB1] optional count (1..MAX_AOE_COUNT, default 1) and scatter (metres): `count` discs, one on the target and the
+##           rest within `scatter` of it, all telegraphed at once; a player is hit at most once per cast (needs place "target")
 ##   volley  count, spread_degrees, speed, shot_range, hit_radius   a fan of projectile lanes
 ##   charge  distance, speed, hit_radius                        a run along a locked lane, boss not solid meanwhile
 ## Every attack also has: label, windup, recover, damage, damage_type, knockback, min_range, max_range (the distance to
@@ -24,8 +26,14 @@ const KIND_KEYS: Dictionary = {
 	"charge": ["distance", "speed", "hit_radius"],
 }
 const PLACES: Array[String] = ["self", "target"]
+## MB1: optional aoe fields. `count` discs per cast (default 1 = the old single disc), `scatter` the metres the extra discs may sit from the first.
+const AOE_OPTIONAL_KEYS: Array[String] = ["count", "scatter"]
+const MAX_AOE_COUNT := 6
+const MAX_AOE_SCATTER := 12.0
 const RULE_KEYS: Array[String] = ["min_telegraph", "max_transition", "max_adds_cap", "min_attacks"]
-const BOSS_KEYS: Array[String] = ["display_name", "max_health", "resistance", "armor", "knockback_taken", "body_radius", "max_adds_alive", "spawn_grace", "spawn", "transition", "death", "attacks", "phases"]
+## MB1: `mini_boss` (optional bool, default false) marks an act-end mini-boss: rank elite, tier "mini_boss", its own shorter death beat
+## from `death`, and its death ends the room (and the act), never the run (the run is won by node type, not by a boss dying).
+const BOSS_KEYS: Array[String] = ["mini_boss", "display_name", "max_health", "resistance", "armor", "knockback_taken", "body_radius", "max_adds_alive", "spawn_grace", "spawn", "transition", "death", "attacks", "phases"]
 ## Optional: where the boss may appear, relative to the player. Distances are metres on the ground; the on-screen box is
 ## screen_half_width metres left/right, screen_up metres up the screen and screen_down metres down it, for the boss's GROUND point.
 ## It is asymmetric because the body is drawn upward from that point (the guardian is 3.8 m tall, about 3.1 m on screen) and the
@@ -81,6 +89,8 @@ static func _validate_boss(id: String, def: Dictionary, rules: Dictionary, known
 	for key: Variant in def.keys():
 		if not BOSS_KEYS.has(String(key)):
 			errors.append("%s: unknown key '%s'" % [where, str(key)])
+	if def.has("mini_boss") and typeof(def["mini_boss"]) != TYPE_BOOL:
+		errors.append("%s.mini_boss must be true or false" % where)
 	if typeof(def.get("display_name")) != TYPE_STRING or String(def["display_name"]).strip_edges().is_empty():
 		errors.append("%s.display_name must be a non-empty string" % where)
 	_num(def, "max_health", 1.0, 100000.0, where, errors)
@@ -134,6 +144,8 @@ static func validate_attack(where: String, attack: Dictionary, min_telegraph: fl
 	var allowed: Array[String] = COMMON_ATTACK_KEYS.duplicate()
 	for kind_key: Variant in (KIND_KEYS[kind] as Array):
 		allowed.append(String(kind_key))
+	if kind == "aoe":
+		allowed.append_array(AOE_OPTIONAL_KEYS)
 	for key: Variant in attack.keys():
 		if not allowed.has(String(key)):
 			errors.append("%s: unknown key '%s' for a %s attack" % [where, str(key), kind])
@@ -160,6 +172,15 @@ static func validate_attack(where: String, attack: Dictionary, min_telegraph: fl
 			_num(attack, "radius", 0.1, 30.0, where, errors)
 			if typeof(attack.get("place")) != TYPE_STRING or not PLACES.has(String(attack["place"])):
 				errors.append("%s.place must be one of %s" % [where, str(PLACES)])
+			if attack.has("count"):
+				_whole(attack, "count", 1, MAX_AOE_COUNT, where, errors)
+			if attack.has("scatter"):
+				_num(attack, "scatter", 0.0, MAX_AOE_SCATTER, where, errors)
+			if aoe_count(attack) > 1:
+				if String(attack.get("place", "")) != "target":
+					errors.append("%s: count above 1 needs place \"target\" (the first disc lands on the player)" % where)
+				if not _is_num(attack.get("scatter")) or float(attack["scatter"]) <= 0.0:
+					errors.append("%s: count above 1 needs a scatter above 0" % where)
 		"volley":
 			_whole(attack, "count", 1, 15, where, errors)
 			_num(attack, "spread_degrees", 0.0, 180.0, where, errors)
@@ -280,6 +301,21 @@ static func stagger_seconds(def: Dictionary) -> float:
 	if block is Dictionary and _is_num((block as Dictionary).get("stagger")):
 		return float((block as Dictionary)["stagger"])
 	return DEFAULT_STAGGER
+
+
+## MB1: how many discs an aoe attack drops per cast (1 when `count` is absent or malformed).
+static func aoe_count(attack: Dictionary) -> int:
+	return maxi(int(attack["count"]), 1) if _is_num(attack.get("count")) else 1
+
+
+## MB1: the metres the extra discs may sit from the first (0 when absent).
+static func aoe_scatter(attack: Dictionary) -> float:
+	return maxf(float(attack["scatter"]), 0.0) if _is_num(attack.get("scatter")) else 0.0
+
+
+## MB1: true when the boss entry is an act-end mini-boss (`mini_boss` true).
+static func is_mini_boss(enemy_id: String) -> bool:
+	return bool(boss(enemy_id).get("mini_boss", false))
 
 
 static func _is_num(value: Variant) -> bool:

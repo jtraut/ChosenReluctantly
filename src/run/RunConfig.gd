@@ -23,6 +23,9 @@ const OPTIONAL_TIER_IDS: Array[String] = ["mini_boss"]
 const ACT_SCALE_KEYS: Array[String] = ["hp", "damage", "gold"]
 ## BD3a (D45 = B): `acts.start_heal` is the fraction of max HP healed at the start of act 2 and later (0 = none, the MAP3 behaviour; a missing key reads 0).
 const ACT_START_HEAL_KEY := "start_heal"
+## MB1: `acts.N.tint` = {floor, light}, html colours for the arena floor and the sun in that act.
+const ACT_TINT_KEY := "tint"
+const ACT_TINT_PARTS: Array[String] = ["floor", "light"]
 
 static var _cache: Dictionary = {}
 static var _loaded: bool = false
@@ -243,12 +246,30 @@ static func _validate_act_scale(value: Variant) -> Array[String]:
 			errors.append("acts.%s must be an object {hp, damage, gold}" % str(key))
 		else:
 			for scale_key: Variant in (entry as Dictionary).keys():
-				if not ACT_SCALE_KEYS.has(String(scale_key)):
+				if not ACT_SCALE_KEYS.has(String(scale_key)) and String(scale_key) != ACT_TINT_KEY:
 					errors.append("acts.%s: unknown key '%s'" % [str(key), str(scale_key)])
+			if (entry as Dictionary).has(ACT_TINT_KEY):
+				errors.append_array(_validate_act_tint("acts.%s.%s" % [str(key), ACT_TINT_KEY], (entry as Dictionary)[ACT_TINT_KEY]))
 			for scale_key: String in ACT_SCALE_KEYS:
 				var multiplier: Variant = (entry as Dictionary).get(scale_key)
 				if not _is_number(multiplier) or float(multiplier) < 0.1 or float(multiplier) > 20.0:
 					errors.append("acts.%s.%s must be a number in [0.1, 20]" % [str(key), scale_key])
+	return errors
+
+
+## MB1: `acts.N.tint` is {floor, light}, two html colours (the arena floor and the sun for that act).
+static func _validate_act_tint(where: String, tint: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(tint) != TYPE_DICTIONARY:
+		errors.append("%s must be an object {floor, light}" % where)
+		return errors
+	for key: Variant in (tint as Dictionary).keys():
+		if not ACT_TINT_PARTS.has(String(key)):
+			errors.append("%s: unknown key '%s'" % [where, str(key)])
+	for part: String in ACT_TINT_PARTS:
+		var hex: Variant = (tint as Dictionary).get(part)
+		if typeof(hex) != TYPE_STRING or not String(hex).is_valid_html_color():
+			errors.append("%s.%s must be an html color like \"#4d734d\"" % [where, part])
 	return errors
 
 
@@ -605,6 +626,15 @@ static func act_scale(act: int) -> Dictionary:
 	if typeof(entry) != TYPE_DICTIONARY:
 		return {"hp": 1.0, "damage": 1.0, "gold": 1.0}
 	return {"hp": float(entry["hp"]), "damage": float(entry["damage"]), "gold": float(entry["gold"])}
+
+
+## MB1: the arena tint of act `act` as {floor: Color, light: Color}, or {} when the file gives that act none (the scene's own look stays).
+static func act_tint(act: int) -> Dictionary:
+	var entry: Variant = (get_config().get("acts", {}) as Dictionary).get(str(act))
+	if typeof(entry) != TYPE_DICTIONARY or typeof((entry as Dictionary).get(ACT_TINT_KEY)) != TYPE_DICTIONARY:
+		return {}
+	var tint: Dictionary = (entry as Dictionary)[ACT_TINT_KEY]
+	return {"floor": Color.html(String(tint["floor"])), "light": Color.html(String(tint["light"]))}
 
 
 ## The fraction of max HP the player recovers at the start of act 2 and each later act (D45 = B), 0 to 1; 0 when the file has none.

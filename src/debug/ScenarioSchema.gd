@@ -5,7 +5,8 @@ extends RefCounted
 ## so a bad flag fails loudly with a clear message instead of an index error mid-build.
 ## An unknown key is a problem too (it catches typos such as "aim_point_ofset").
 
-const BOOLS: Array[String] = ["disable_spawner", "freeze_aim", "enemies_idle", "disable_auto_attack", "dense_waves"]
+const BOOLS: Array[String] = ["disable_spawner", "freeze_aim", "enemies_idle", "disable_auto_attack", "dense_waves", "natural_hp", "standard_deck"]
+## MB1: `natural_hp` keeps the class's real max HP (no 9999 default); `standard_deck` gives the player the class's starter deck.
 ## key -> minimum (inclusive) for a finite number.
 const NUMBERS: Dictionary = {
 	"player_max_health": 1.0, "player_start_damage": 0.0, "aim_preview_distance": 0.0,
@@ -13,7 +14,7 @@ const NUMBERS: Dictionary = {
 	"stun_at": 0.0, "stun_duration": 0.01, "open_settings_at": 0.0, "debug_overlay_at": 0.0,
 }
 ## key -> minimum (inclusive) for a whole number.
-const INTS: Dictionary = {"columns": 1, "status_seed": -2147483647, "wave_seed": 0, "boss_phase": 0}
+const INTS: Dictionary = {"columns": 1, "status_seed": -2147483647, "wave_seed": 0, "boss_phase": 0, "act": 1}
 const STRINGS: Array[String] = ["heavy_class", "character", "_note"]
 ## key -> array of non-empty strings (3c: "boss_attacks" scripts the boss's attack order for captures).
 const STRING_ARRAYS: Array[String] = ["boss_attacks", "relics"]

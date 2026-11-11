@@ -253,10 +253,22 @@ func _ready() -> void:
 		elif arg.begins_with("--bot-preset="):
 			_bot_preset = arg.substr(13)
 		elif arg.begins_with("--bot-delay="):
+			if not arg.substr(12).is_valid_float():
+				push_error("wave sim: --bot-delay needs a number, got '%s'" % arg.substr(12))
+				get_tree().quit(2)
+				return
 			_bot_overrides["reaction_delay"] = float(arg.substr(12))
 		elif arg.begins_with("--bot-aim-error="):
+			if not arg.substr(16).is_valid_float():
+				push_error("wave sim: --bot-aim-error needs a number, got '%s'" % arg.substr(16))
+				get_tree().quit(2)
+				return
 			_bot_overrides["aim_error_degrees"] = float(arg.substr(16))
 		elif arg.begins_with("--bot-hesitation="):
+			if not arg.substr(17).is_valid_float():
+				push_error("wave sim: --bot-hesitation needs a number, got '%s'" % arg.substr(17))
+				get_tree().quit(2)
+				return
 			_bot_overrides["cast_hesitation"] = float(arg.substr(17))
 		elif arg.begins_with("--sim-swap="):
 			_swap_out = arg.substr(11).get_slice("=", 0)

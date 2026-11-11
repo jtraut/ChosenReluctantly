@@ -92,7 +92,7 @@ func _read_plan_args() -> bool:
 		push_error("bot-sim: --bot-preset: " + "; ".join(loaded["problems"] as Array[String]))
 		return false
 	if (loaded["settings"] as BotSettings).is_active():
-		print("note: bot preset '%s' has no effect in the bot-sim (no aim or movement here); use the wave sim" % _bot_preset)
+		print("note: bot preset '%s' has no effect in the bot-sim (no aim or movement here); use the wave sim" % (loaded["settings"] as BotSettings).preset_name)
 	if _deck_name != "" and not _plan:
 		push_error("bot-sim: --deck needs --plan")
 		return false

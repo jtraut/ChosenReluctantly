@@ -46,7 +46,7 @@ try {
     Write-Host $out
     # qa (Slice 5): the sim used to print "Bot-sim OK" and exit 0 while the script had failed to compile
     # (SCRIPT ERROR: Identifier not found: Juice). Any engine error or warning line is a failure.
-    $bad = ($out -split "`n") | Where-Object { $_ -match "ERROR|WARNING" }
+    $bad = ($out -split "`n") | Where-Object { $_ -cmatch '^\s*(SCRIPT )?ERROR:|^\s*WARNING:' }
     if ($bad) { Write-Host "Engine errors/warnings in output (bot-sim FAILED):"; $bad | Select-Object -First 10 | ForEach-Object { Write-Host $_ }; exit 1 }
     exit $code
 } finally {

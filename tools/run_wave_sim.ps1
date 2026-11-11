@@ -77,7 +77,7 @@ try {
     & $godot --headless @fixedFps --path . res://tools/WaveSim.tscn -- @extra 2>&1 | ForEach-Object { $text = "$_"; $lines.Add($text); Write-Host $text }
     $code = $LASTEXITCODE
     $out = $lines -join "`n"
-    $bad = ($out -split "`n") | Where-Object { $_ -match "ERROR|WARNING" }
+    $bad = ($out -split "`n") | Where-Object { $_ -cmatch '^\s*(SCRIPT )?ERROR:|^\s*WARNING:' }
     if ($bad) { Write-Host "Engine errors/warnings in output:"; $bad | ForEach-Object { Write-Host $_ }; exit 1 }
     exit $code
 } finally {

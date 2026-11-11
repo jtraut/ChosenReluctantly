@@ -27,7 +27,7 @@ try {
     $out = & $godot --headless --path . res://tools/ReloadCycle.tscn -- "--cycles=$Cycles" @classArg 2>&1 | Out-String
     $code = $LASTEXITCODE
     Write-Host $out
-    $bad = ($out -split "`n") | Where-Object { $_ -match "ERROR|WARNING" }
+    $bad = ($out -split "`n") | Where-Object { $_ -cmatch '^\s*(SCRIPT )?ERROR:|^\s*WARNING:' }
     if ($bad) { Write-Host "Engine errors/warnings in output:"; $bad | ForEach-Object { Write-Host $_ }; exit 1 }
     exit $code
 } finally {

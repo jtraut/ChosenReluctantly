@@ -101,6 +101,19 @@
         "class": "rogue", "scenario": "", "after": "6.0",
         "extra": ["--run-seed=1", "--run-room=10", "--run-clear-after=1", "--run-auto-choose=relic_skip+skip"]
     },
+    "mini_boss_act2": {
+        "description": "MB1: the act 2 mini-boss (room 20 of a three-act run): the Corporate Raider alone, act 2 scaling and tint. Run mode, seed 1.",
+        "class": "rogue", "scenario": "", "after": "4.0",
+        "extra": ["--run-seed=1", "--run-room=20"]
+    },
+    "mini_boss_blink": {
+        "description": "MB1: the Raider's Golden parachute (blink): shots at 0.1 s (landing marker just drawn), 0.45 s (marker filling), 0.9 s (it has landed and the backstab winds up). Needs a renderer.",
+        "class": "rogue", "scenario": "mini_boss_blink", "after": "0.1,0.45,0.9", "at_boss_attack": "golden_parachute"
+    },
+    "mini_boss_dash_combo": {
+        "description": "MB1: the Raider's Leveraged dash combo: shots 0.3 s into the first wind-up, and 0.3 s into the second link's wind-up (about 1.4 s in).",
+        "class": "rogue", "scenario": "mini_boss_dash_combo", "after": "0.3,1.45", "at_boss_attack": "leveraged_dash"
+    },
     "map_mini_boss": {
         "description": "MAP3 ux: act 1's map with the mini-boss as the only way on (seed 1, room 9 (an elite) cleared and its relic offer skipped). Three acts: the HUD shows Act 1 of 3 and Room 9 of 30 behind the screen.",
         "class": "rogue", "scenario": "", "after": "4.0",

@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-09 (BD3a closed; D48 new; latest tag `playtest-2026-11-09-BD3a`)
-**Status: 1 decision waiting (D48: more Bleed cards now or in MAP3b; default: later). 9 things to look at (54, 53, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. BD3a (physical Rogue) is done, tag `playtest-2026-11-09-BD3a`. Next: **SIM1** (bot re-calibration) -> MB1 -> MAP3b -> MAP4 -> 3d -> BD3b.**
+Last updated: 2026-11-11 (D48 = A recorded; latest tag `playtest-2026-11-09-BD3a`)
+**Status: no decisions waiting. 9 things to look at (54, 53, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. BD3a (physical Rogue) is done, tag `playtest-2026-11-09-BD3a`. Next: **SIM1** (bot re-calibration) -> MB1 -> MAP3b -> MAP4 -> 3d -> BD3b.**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -19,10 +19,7 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 Next new number: D49.
 
-**D48. More Bleed and physical cards now, or in MAP3b?** BD3a took a Fire Rogue's Burn relics from 62% to 29% of its relic offers. A deck that picks Bleed and removes Fire now sees about 32% Fire offers late in a run, down from 39%. But there are still only 6 Bleed cards in the game, so once you own them, only about 8% of late offers are Bleed.
-- **A. Close BD3a as it is.** Bleed and physical rare and legendary cards come in MAP3b, as planned, after SIM1 and MB1.
-- **B. A short top-up sitting now:** about 4 more common Bleed or physical cards, before SIM1. It costs about one sitting, and SIM1 and MB1 start later.
-- **Default: A.** My suggestion is to play first (item 53) and pick B if the build still feels thin.
+Nothing waiting. Your last answer, D48 = A (2026-11-11), is recorded: Bleed and physical rares and legendaries come in MAP3b.
 
 ## Needs your eyes
 

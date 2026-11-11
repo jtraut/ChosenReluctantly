@@ -3,9 +3,13 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-09 (BD3a closed, tag `playtest-2026-11-09-BD3a`; SIM1 next). **Run order:** BD3a (done) -> **SIM1, sim re-calibration** -> MB1 -> MAP3b -> MAP4 -> 3d -> BD3b. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2, MAP3, BD3a.
+Last updated: 2026-11-11 (D48 = A recorded; SIM1 next). Previous: 2026-11-09 (BD3a closed, tag `playtest-2026-11-09-BD3a`). **Run order:** BD3a (done) -> **SIM1, sim re-calibration** -> MB1 -> MAP3b -> MAP4 -> 3d -> BD3b. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2, MAP3, BD3a.
 
 ## What's done
+- **D48 = A recorded 2026-11-11 (game-lead, docs only):**
+  - **His answer:** close BD3a as it is; no Bleed top-up sitting. Bleed and physical rare and legendary cards come in MAP3b, as planned. This was the default, so the run order is unchanged.
+  - **Where recorded:** ROADMAP MAP3b entry and the BD3a playtest line; OPEN_ITEMS (removed).
+  - **Pending for tech-writer (SIM1 docs pass):** archive D48 in RESOLVED with his answer and where it's recorded (the question text is in commit 76f1302, `docs/OPEN_ITEMS.md`). CHANGELOG `[Director decision]` entry: D48 = A, Bleed content timing: no top-up now; late-offer Bleed share stays about 8.5% until MAP3b adds Bleed and physical rares and legendaries.
 - **BD3a closed 2026-11-09:** physical Rogue: stacking, detonate, 8 Rogue cards, 6 relics, Spite Knuckles -> Bleed, D43 lean + D46 = B, D47 = B, D45 heal, mini-boss bar.
   - **Commits:**
     - gameplay-dev 7625eee..6f57756 (A), 4afe5b9..f48e696 (B), a41dfd0, 49f3f3e, 7b81933..29da9bf (D47), e4ef264..bf0d44c (fixes, including the sim aim bug a9d56fc);
@@ -179,14 +183,14 @@ Last updated: 2026-11-09 (BD3a closed, tag `playtest-2026-11-09-BD3a`; SIM1 next
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step
-1. **SIM1** (ROADMAP brief): gameplay-dev adds the human-like bot settings and a tuned preset, then qa re-baselines every sim number, then game-lead sets the floors. If the director answers D48 = B first, a short Bleed card top-up sitting runs before SIM1 (game-lead writes the card list in BUILD_DEPTH first).
+1. **SIM1** (ROADMAP brief): gameplay-dev adds the human-like bot settings and a tuned preset, then qa re-baselines every sim number, then game-lead sets the floors.
 2. Then **MB1** (game-lead design note in MAP.md first), MAP3b, MAP4, 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D45 answered. D46 = B and D47 = B (2026-11-09). D48 is open (default A). Next free: D49.
+**D-numbers:** D21-D45 answered. D46 = B and D47 = B (2026-11-09). D48 = A (2026-11-11). Next free: D49.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: D48 (Bleed content timing, default A); eyes 54, 53, 52, 51, 50, 49, 48, 47 and 35; the round 2 vision check is due. Answered items are in `docs/RESOLVED.md`.
+All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions open; eyes 54, 53, 52, 51, 50, 49, 48, 47 and 35; the round 2 vision check is due. Answered items are in `docs/RESOLVED.md`.

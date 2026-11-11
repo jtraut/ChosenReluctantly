@@ -2246,3 +2246,35 @@ The full note is in `docs/MAP.md` §11. These are my starting values, not direct
 - **New code is limited to three pieces:** the aoe `count`/`scatter` fields, the `chain` field and the `blink` kind. Each implements the sim bot's threat functions.
 - **Two gameplay-dev sittings along the new code.** Sitting A: the mini-boss marker, the act tint, aoe `count`/`scatter`, the brute, act 1 room data and `mini_boss_act1`. Sitting B: `chain`, `blink`, the duelist, act 2 room data and `mini_boss_act2`.
 - **The act tint lives in `run.json` `acts.N.tint`** (floor and light colours). There's no act 3 damage bump for now.
+
+## 2026-11-11 - MB1 sitting A triage (gameplay-dev 5991616..f0fbdc3; game-lead)
+All four SIM1 floors pass:
+
+| Bot | Class | Wins (36 runs) | SIM1 baseline |
+|---|---|---|---|
+| human | Rogue | 27 | 26 |
+| human | Wizard | 15 | 15 |
+| off | Rogue | 35 | 35 |
+| off | Wizard | 29 | 29 |
+
+The hashes are unchanged and the suite is 2136, 0 orphans. No human-preset run was lost at room 10, the brute's room. That's information, not a gate. The act 1 brute may be on the easy side; the playtest decides.
+- **The brute's armor is 22, not 30, with resistance 0.3.**
+  - The armor-parity validator rejects armor 30 with resistance 0.3. 22 is exactly the old `mini_boss` tier's defence, so the SIM1 anchor holds. MAP.md §11.2 is corrected.
+  - [Armor 30 with resistance about 0.37: a tankier brute nobody asked for. A parity exception: it weakens a tested rule for one enemy.]
+- **Elite-rank bosses can be stunned** (gameplay-dev's call, accepted):
+  - a stun cancels the wind-up or charge with no hit;
+  - the duration is halved for elites;
+  - the final Guardian stays immune.
+  - This is the existing status rule applied consistently, so the GDD doesn't change.
+- **gameplay-dev's other filled-in values are accepted:**
+  - recover times;
+  - `max_range` values;
+  - a shorter transition and death beat;
+  - the spawn block copied from the Guardian;
+  - the act tints `#4d734d`/`#ffffff`, `#46606f`/`#dce8ff`, `#704840`/`#ffe3cf`;
+  - the scenario flags `natural_hp`, `standard_deck` and `act`.
+- **The sim's `BOSS TIMES` line now includes the brute fight.** It isn't comparable with the earlier final-boss-only figures.
+- **For ux:**
+  - the brute uses `BossHpBar` with its `display_name`;
+  - whether to add an "Act 1 Mini-boss" subtitle is ux's call;
+  - `MiniBossBar` only covers tier-`mini_boss` enemies (the act 2 golem until sitting B).

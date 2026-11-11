@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-11 (MB1 started: design note done in MAP.md §11; gameplay-dev sitting A next).
+Last updated: 2026-11-11 (MB1: design note 5ecbbf9, gameplay-dev sitting A 5991616..f0fbdc3 done; sitting B next).
 
 ## What's done
 - **SIM1 closed 2026-11-11 (tooling, no tag, no playtest):** brief ca7cc1d; gameplay-dev d15e691, 85e7d6a, a047b9b; qa FAIL e19ecec/c5202ff (ps1 gate regex), re-check PASS 95aebd7; docs 2531020 (also archived D48 and its changelog entry).
@@ -186,8 +186,12 @@ Last updated: 2026-11-11 (MB1 started: design note done in MAP.md §11; gameplay
 ## In progress
 - **MB1 in progress.**
   - **Done:** game-lead's design note, `docs/MAP.md` §11 (DECISIONS "MB1 design note"), with the ROADMAP MB1 sittings A and B.
-  - **No code yet.**
-  - **Next:** gameplay-dev sitting A (the mini-boss marker, act tint, aoe `count`/`scatter`, the brute, `mini_boss_act1`).
+  - **Sitting A done** (5991616..f0fbdc3):
+    - the brute, the mini-boss marker, the act tint and aoe `count`/`scatter`;
+    - suite 2136, 0 orphans; hashes unchanged.
+    - **Gate:** human Rogue 27/36, Wizard 15/36; off 35/36, 29/36.
+    - Triage in DECISIONS "MB1 sitting A triage".
+  - **Next:** gameplay-dev sitting B (the duelist, `chain`, `blink`, `mini_boss_act2`).
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step

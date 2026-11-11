@@ -329,7 +329,7 @@ game-lead design note, 2026-11-11. The director's direction is in GDD §9 ("Each
 **How it tests you:** positioning and crowd control. It's slow, with long, wide telegraphs, and it punishes greed and standing in the open. It brings help.
 
 - **Body:** a wide box (not the Guardian's capsule), hazard yellow, about 1.3x the Guardian's footprint (`body_radius` 1.3). Its move speed is 2.2 / 2.5 / 2.8 by phase, against the player's 6.0 and the Guardian's 2.6-3.4.
-- **Stats:** `max_health` 170 (act 1: 170), armor 30, resistance 0.3, `knockback_taken` 0, `max_adds_alive` 3.
+- **Stats:** `max_health` 170 (act 1: 170), armor 22 (was 30 in the first draft; the armor-parity validator needs armor and resistance to match, DECISIONS "MB1 sitting A triage"), resistance 0.3, `knockback_taken` 0, `max_adds_alive` 3.
 - **Attacks:**
 
 | Id | Kind | Wind-up | Damage | Shape | Notes |

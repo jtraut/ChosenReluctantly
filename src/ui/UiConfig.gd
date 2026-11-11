@@ -762,6 +762,10 @@ const DEFAULT_BOSS_BAR: Dictionary = {
 	"stagger_text": "STAGGERED",
 	"stagger_hint_text": "Hit it now",
 	"stagger_color": "#bfe6ff",
+	"subtitle_height": 22,
+	"subtitle_font_size": 16,
+	"chain_format": "%s (%d/%d)",
+	"subtitle_whiten": 0.45,
 }
 
 

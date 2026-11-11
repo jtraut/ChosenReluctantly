@@ -32,6 +32,10 @@ var _bars: Dictionary = {}
 var _scale: float = 1.0
 var _telegraph_active: bool = false
 var _mini_bar: MiniBossBar = null
+var _subtitle_label: Label = null
+## MB1 ux: the subtitle text of the bound boss ("Act 1 Mini-boss"), read once when the bar binds so a later change of act (the Act 2 screen
+## opens while this bar fades out) can never rewrite it. "" for the final boss.
+var _subtitle: String = ""
 
 
 # ---- Pure logic (unit-tested) ----
@@ -96,6 +100,55 @@ static func armor_tint(armor_reduction: float, cfg: Dictionary) -> Color:
 		return Color(0.0, 0.0, 0.0, 0.0)
 	var color := Color.html(String(cfg["armor_tint"]))
 	return Color(color.r, color.g, color.b, 1.0)
+
+
+## MB1 ux: "Act 1 Mini-boss" under a mini-boss's name (the tier's `name_format`, so one wording is reused), "" for the final boss.
+static func subtitle_text(is_mini_boss: bool, act: int, tier_cfg: Dictionary) -> String:
+	return MiniBossBar.title_for(tier_cfg, act) if is_mini_boss else ""
+
+
+## MB1 ux: where an attack sits in a chain, as Vector2i(step, length) with step 1-based; Vector2i.ZERO when it is not part of one. The
+## chain is read from the data (`chain` names the attack that follows), so a new combo needs no code. `attacks` is a boss's `attacks` block.
+static func chain_step(attacks: Dictionary, attack_id: String) -> Vector2i:
+	var head: String = attack_id
+	var guard: int = 0
+	while guard < 8:
+		guard += 1
+		var parent: String = ""
+		for other: Variant in attacks:
+			var def: Variant = attacks[other]
+			if def is Dictionary and String((def as Dictionary).get("chain", "")) == head:
+				parent = String(other)
+				break
+		if parent == "":
+			break
+		head = parent
+	var length: int = 1
+	var step: int = 1 if head == attack_id else 0
+	var cursor: String = head
+	guard = 0
+	while guard < 8:
+		guard += 1
+		var node: Variant = attacks.get(cursor)
+		var next_id: String = String((node as Dictionary).get("chain", "")) if node is Dictionary else ""
+		if next_id == "" or not attacks.has(next_id):
+			break
+		length += 1
+		cursor = next_id
+		if cursor == attack_id:
+			step = length
+	if length < 2 or step == 0:
+		return Vector2i.ZERO
+	return Vector2i(step, length)
+
+
+## The attack line text: the attack's label, with "(1/2)" or "(2/2)" when it belongs to a chain, so the second link of a combo reads as coming
+## (and as the last one) instead of looking like the first one again. `format` is boss_bar `chain_format` (label, step, length).
+static func attack_line(attacks: Dictionary, attack_id: String, label: String, format: String) -> String:
+	var step: Vector2i = chain_step(attacks, attack_id)
+	if step == Vector2i.ZERO or label == "":
+		return label
+	return format % [label, step.x, step.y]
 
 
 ## How many thresholds the boss is past, given the phase it is in (phase 0 = none, phase 2 of 3 = both).
@@ -182,6 +235,10 @@ func _build() -> void:
 	_name_label = _text_label(true)
 	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_root.add_child(_name_label)
+	_subtitle_label = _text_label(true)
+	_subtitle_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_subtitle_label.visible = false
+	_root.add_child(_subtitle_label)
 	_meter = BossMeter.new()
 	_meter.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_root.add_child(_meter)
@@ -218,8 +275,9 @@ func _apply_layout() -> void:
 	_scale = HudLayout.ui_scale(vp, hud_cfg)
 	var rect := HudLayout.boss_bar_rect(vp, hud_cfg)
 	var s: float = _scale
+	var sub_h: float = (float(_cfg["subtitle_height"]) + float(_cfg["row_gap"])) * s if _subtitle != "" else 0.0
 	_root.position = rect.position
-	_root.size = rect.size
+	_root.size = Vector2(rect.size.x, rect.size.y + sub_h)  # a mini-boss's subtitle row grows the block, so the damage-number band follows
 	var gap: float = float(_cfg["row_gap"]) * s
 	var y: float = 0.0
 	var name_h: float = float(_cfg["name_height"]) * s
@@ -227,6 +285,14 @@ func _apply_layout() -> void:
 	_name_label.add_theme_color_override("font_color", Color.html(String(_cfg["text_color"])))
 	_name_label.add_theme_constant_override("outline_size", maxi(roundi(4.0 * s), 2))
 	y += name_h + gap
+	_subtitle_label.visible = _subtitle != ""
+	if _subtitle != "":
+		_place(_subtitle_label, 0.0, y, rect.size.x, sub_h - gap)
+		_subtitle_label.add_theme_color_override("font_color", Color.html(String(RunConfig.tier(MiniBossBar.TIER_ID).get("marker_color", "#ffffff"))).lerp(Color.WHITE, float(_cfg["subtitle_whiten"])))
+		_subtitle_label.add_theme_constant_override("outline_size", maxi(roundi(3.0 * s), 2))
+		_subtitle_label.add_theme_font_size_override("font_size", roundi(float(_cfg["subtitle_font_size"]) * s))
+		_subtitle_label.text = _subtitle
+		y += sub_h
 	var meter_h: float = float(_cfg["meter_height"]) * s
 	_place(_meter, 0.0, y, rect.size.x, meter_h)
 	_meter.colors = _bars["colors"]
@@ -301,6 +367,8 @@ func _try_bind(node: Node) -> void:
 		return
 	_unbind()
 	_boss = boss
+	_subtitle = subtitle_text(boss.is_mini_boss(), ActTint.act_of(get_parent(), RunSession.current.act if RunSession.current != null else 1), RunConfig.tier(MiniBossBar.TIER_ID))
+	_apply_layout()
 	_attach_stack_label(boss)
 	boss.health.health_changed.connect(_on_health_changed)
 	boss.phase_changed.connect(_on_phase_changed)
@@ -386,7 +454,8 @@ func _disconnect(sig: Signal, callable: Callable) -> void:
 ## The label of the attack being wound up, from the boss data (used when the bar binds mid-wind-up).
 func _current_attack_label() -> String:
 	var attacks: Dictionary = BossConfig.boss(_boss.enemy_id).get("attacks", {})
-	return String((attacks.get(_boss.current_attack_id(), {}) as Dictionary).get("label", ""))
+	var id: String = _boss.current_attack_id()
+	return attack_line(attacks, id, String((attacks.get(id, {}) as Dictionary).get("label", "")), String(_cfg["chain_format"]))
 
 
 # ---- Signals ----
@@ -459,10 +528,11 @@ func _on_transition_ended(_index: int) -> void:
 	_push_meter()
 
 
-func _on_attack_telegraphed(_attack_id: String, label: String, _windup: float) -> void:
+func _on_attack_telegraphed(attack_id: String, label: String, _windup: float) -> void:
 	if _staggered:
 		return  # the stagger cue owns the attack line until the roar
-	_start_telegraph(label)
+	var attacks: Dictionary = BossConfig.boss(_boss.enemy_id).get("attacks", {}) if _boss != null else {}
+	_start_telegraph(attack_line(attacks, attack_id, label, String(_cfg["chain_format"])))
 
 
 func _on_attack_landed(_attack_id: String, _hit: bool) -> void:

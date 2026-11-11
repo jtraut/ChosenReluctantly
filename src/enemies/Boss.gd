@@ -93,8 +93,8 @@ var _active_wedge: AttackArcVisual = null
 var _aoe_locked: Array[Vector3] = []
 ## MB1: where the current blink wind-up will land the boss (locked when the wind-up starts; the marker shows it the whole wind-up).
 var _blink_point: Vector3 = Vector3.ZERO
-## MB1: the blink marker colour: a cool violet-white, so it never reads as a damage telegraph (those take the damage type's colour).
-const BLINK_COLOR := Color(0.72, 0.62, 1.0)
+## MB1: the blink marker colour: a cool cyan-white (it was violet, MB1 ux: close to the pink damage telegraph on a blue-grey floor), so it never reads as a damage telegraph (those take the damage type's colour).
+const BLINK_COLOR := Color(0.74, 0.97, 1.0)
 
 
 func _ready() -> void:
@@ -472,7 +472,7 @@ func _start_telegraph_visual() -> void:
 		"aoe":
 			var disc_parts: Array[PooledEffect] = []
 			for disc_center: Vector3 in _aoe_centers():  # MB1: every disc of a multi-disc cast is drawn at once, for the full wind-up
-				disc_parts.append_array(TemplateVfx.aoe_telegraph(_tele_pool, disc_center, BossRules.aoe_reach(_attack), color, true))
+				disc_parts.append_array(TemplateVfx.aoe_telegraph(_tele_pool, disc_center, BossRules.aoe_reach(_attack), color, true, _aoe_locked.size() > 1))
 			_hold_parts(disc_parts)
 		"volley":
 			var half_width_hit: float = float(_attack["hit_radius"])
@@ -501,7 +501,7 @@ func _wedge_for(attack_id: String, color: Color) -> AttackArcVisual:
 		var wedge := AttackArcVisual.new()
 		wedge.name = "TelegraphWedge_" + attack_id
 		add_child(wedge)
-		wedge.setup(BossRules.cone_reach(_attack), float(_attack["half_angle_degrees"]), color)
+		wedge.setup(BossRules.cone_reach(_attack), float(_attack["half_angle_degrees"]), color, AttackArcVisual.BOSS_EDGE_THICKNESS, true)  # MB1 ux: a thick edge on a dark band
 		wedge.set_outline_on_top(true)  # adds standing on the cone must not hide its edge
 		_wedges[attack_id] = wedge
 	return _wedges[attack_id]

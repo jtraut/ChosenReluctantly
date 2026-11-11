@@ -23,6 +23,12 @@ const FILL_START_SCALE := 0.15
 const FILL_ALPHA := 0.3
 const EDGE_PULSE_CYCLES := 3.0
 const ON_TOP_PRIORITY := 10
+## MB1 ux: a boss's telegraph edge is thicker and sits on a dark band, so the pale outline reads on a pale or blue-grey floor and
+## under an act tint. The player's own arc keeps EDGE_THICKNESS and no band.
+const BOSS_EDGE_THICKNESS := 0.24
+const BACKING_THICKNESS_SCALE := 1.7
+const BACKING_COLOR := Color(0.05, 0.03, 0.05)
+const BACKING_ALPHA := 0.7
 
 var _material := StandardMaterial3D.new()
 var _color: Color = Color.WHITE
@@ -31,10 +37,15 @@ var _fill := MeshInstance3D.new()
 var _edge := MeshInstance3D.new()
 var _fill_material := StandardMaterial3D.new()
 var _edge_material := StandardMaterial3D.new()
+var _backing := MeshInstance3D.new()
+var _backing_material := StandardMaterial3D.new()
+var _edge_thickness: float = EDGE_THICKNESS
 
 
-func setup(attack_range: float, half_angle_degrees: float, color: Color) -> void:
+## `edge_thickness` is the band width of the outline; `backed` adds the dark band under it (boss telegraphs).
+func setup(attack_range: float, half_angle_degrees: float, color: Color, edge_thickness: float = EDGE_THICKNESS, backed: bool = false) -> void:
 	_color = color
+	_edge_thickness = edge_thickness
 	_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	_material.cull_mode = BaseMaterial3D.CULL_DISABLED
@@ -42,7 +53,10 @@ func setup(attack_range: float, half_angle_degrees: float, color: Color) -> void
 	mesh = build_fan(attack_range, half_angle_degrees)
 	material_override = _material
 	position.y = GROUND_OFFSET
-	for part: Array in [[_fill, _fill_material, mesh], [_edge, _edge_material, build_outline(attack_range, half_angle_degrees, EDGE_THICKNESS)]]:
+	var parts: Array = [[_fill, _fill_material, mesh], [_edge, _edge_material, build_outline(attack_range, half_angle_degrees, edge_thickness)]]
+	if backed:
+		parts.push_front([_backing, _backing_material, build_outline(attack_range, half_angle_degrees, edge_thickness * BACKING_THICKNESS_SCALE)])
+	for part: Array in parts:
 		var node: MeshInstance3D = part[0]
 		var material: StandardMaterial3D = part[1]
 		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
@@ -125,6 +139,9 @@ func show_windup(progress: float) -> void:
 	_fill_material.albedo_color = Color(pale, FILL_ALPHA)
 	_edge.visible = true
 	_edge_material.albedo_color = Color(pale, 0.75 + 0.25 * sin(p * EDGE_PULSE_CYCLES * TAU))
+	if has_backing():
+		_backing.visible = true
+		_backing_material.albedo_color = Color(BACKING_COLOR, BACKING_ALPHA)
 
 
 ## The impact: a solid fan in the attack color plus a bright white edge, fading out.
@@ -135,6 +152,9 @@ func flash(duration: float) -> void:
 	_material.albedo_color = Color(_color, FLASH_ALPHA)
 	_edge.visible = true
 	_edge_material.albedo_color = Color(Color.WHITE, 1.0)
+	if has_backing():
+		_backing.visible = true
+		_backing_material.albedo_color = Color(BACKING_COLOR, BACKING_ALPHA)
 	if not is_inside_tree() or duration <= 0.0:
 		hide_now()
 		return
@@ -143,6 +163,8 @@ func flash(duration: float) -> void:
 	var hold: float = duration * FLASH_HOLD_FRACTION
 	_tween.tween_property(_material, "albedo_color:a", 0.0, duration - hold).set_delay(hold)
 	_tween.tween_property(_edge_material, "albedo_color:a", 0.0, duration - hold).set_delay(hold)
+	if has_backing():
+		_tween.tween_property(_backing_material, "albedo_color:a", 0.0, duration - hold).set_delay(hold)
 	_tween.chain().tween_callback(hide_now)
 
 
@@ -152,6 +174,18 @@ func flash(duration: float) -> void:
 func set_outline_on_top(on_top: bool) -> void:
 	_edge_material.no_depth_test = on_top
 	_edge_material.render_priority = ON_TOP_PRIORITY if on_top else 0
+	_backing_material.no_depth_test = on_top
+	_backing_material.render_priority = (ON_TOP_PRIORITY - 1) if on_top else 0
+
+
+## True when the dark band under the outline was built (boss telegraphs).
+func has_backing() -> bool:
+	return _backing.mesh != null
+
+
+## The outline band width this wedge was built with.
+func edge_thickness() -> float:
+	return _edge_thickness
 
 
 func hide_now() -> void:
@@ -159,6 +193,7 @@ func hide_now() -> void:
 	visible = false
 	_fill.visible = false
 	_edge.visible = false
+	_backing.visible = false
 
 
 func _kill_tween() -> void:

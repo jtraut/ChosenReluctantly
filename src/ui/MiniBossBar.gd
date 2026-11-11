@@ -23,6 +23,9 @@ var _fill: float = 1.0
 var _ghost: float = 1.0
 var _ghost_delay_left: float = 0.0
 var _scan_left: float = 0.0
+## The act the bound mini-boss belongs to, read once when the bar binds (MB1 ux): the Act 2 screen opens while a dying mini-boss's bar is still up,
+## and reading the act live there said "Act 2" over act 1's mini-boss (the BD3a playtest carry-over).
+var _act: int = 1
 
 
 # ---- Pure (unit-tested) ----
@@ -59,6 +62,7 @@ func title_text() -> String:
 # ---- Lifecycle ----
 
 func _ready() -> void:
+	_act = RunSession.current.act if RunSession.current != null else 1  # until something binds
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_cfg = UiConfig.boss_bar()
 	_bars = UiConfig.hp_bars()
@@ -155,6 +159,7 @@ func _try_bind(enemy: Enemy) -> void:
 	if enemy == null:
 		return
 	_enemy = enemy
+	_act = ActTint.act_of(WorldRef.get_world(get_tree()), RunSession.current.act if RunSession.current != null else 1)
 	enemy.health.health_changed.connect(_on_health_changed)
 	_fill = EnemyHpBar.fill_ratio(enemy.health.get_current_health(), enemy.health.get_max_health())
 	_ghost = _fill
@@ -192,8 +197,7 @@ func _push_meter() -> void:
 func _refresh_texts() -> void:
 	if _name_label == null:
 		return
-	var act: int = RunSession.current.act if RunSession.current != null else 1
-	var title: String = title_for(RunConfig.tier(TIER_ID), act)
+	var title: String = title_for(RunConfig.tier(TIER_ID), _act)
 	var base: int = roundi(float(_cfg["name_font_size"]) * _scale)
 	var low: int = roundi(float(_cfg["name_min_font_size"]) * _scale)
 	var fit: Dictionary = TextFit.fit(title, _name_label.get_theme_font("font"), _name_label.size.x, 1, base, low)

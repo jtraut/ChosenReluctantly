@@ -178,7 +178,9 @@ const AOE_TELEGRAPH_EDGE_ALPHA_END := 1.0
 ## Radius of a boss telegraph's second, inner outline ring, as a fraction of the hit reach.
 const BOSS_EDGE_INNER := 0.93
 
-static func aoe_telegraph(pool: EffectPool, center: Vector3, hit_reach: float, color: Color, boss: bool = false) -> Array[PooledEffect]:
+## `compact` (MB1 ux, several discs at once): only the fill and the one edge per disc, so overlapping discs do not pile up
+## rings (the union of the fills is the danger area; each disc keeps one outline).
+static func aoe_telegraph(pool: EffectPool, center: Vector3, hit_reach: float, color: Color, boss: bool = false, compact: bool = false) -> Array[PooledEffect]:
 	var effects: Array[PooledEffect] = []
 	if pool == null:
 		return effects
@@ -190,6 +192,8 @@ static func aoe_telegraph(pool: EffectPool, center: Vector3, hit_reach: float, c
 		if boss:
 			edge.drawn_over()
 		effects.append(edge.driven())
+	if compact:
+		return effects
 	var front: PooledEffect = pool.play(EffectPool.Shape.RING, center + Vector3(0.0, 0.03, 0.0), hit_reach, Color.WHITE, 1.0, AOE_TELEGRAPH_START, 1.0, 0.8, 0.0)
 	if front != null:
 		effects.append(front.driven())
@@ -202,12 +206,30 @@ static func aoe_telegraph(pool: EffectPool, center: Vector3, hit_reach: float, c
 	return effects
 
 
-## MB1: a boss blink's landing marker, held for the whole wind-up: the aoe telegraph language at the landing point (outline plus a fill that grows in,
-## so it reads as "something arrives here") and a thin guide line from where the boss stands to the marker. The parts are driven (`set_progress`), the
-## guide line fades on its own over `duration`. Held until each effect is passed to EffectPool.stop().
+## MB1 ux: a boss blink's landing marker, held for the whole wind-up. It is the "they will APPEAR here" language and must not read as a damage
+## zone, so it shares nothing with the damage telegraph (no filled disc, no pink): a thin ring at the landing spot, a second ring that
+## shrinks onto it (arrival converges, a damage zone fills), a faint ghost of the body standing there, a small centre pip and a thin guide
+## line from where the boss stands. The parts are driven (`set_progress`), the guide line fades on its own over `duration`. Held until
+## each effect is passed to EffectPool.stop().
 static func blink_marker(pool: EffectPool, from: Vector3, landing: Vector3, radius: float, color: Color, duration: float) -> Array[PooledEffect]:
-	var parts: Array[PooledEffect] = aoe_telegraph(pool, landing, radius, color, true)
-	if pool == null or duration <= 0.0:
+	var parts: Array[PooledEffect] = []
+	if pool == null:
+		return parts
+	var pale: Color = lighter(color, 0.5)
+	var rest: PooledEffect = pool.play(EffectPool.Shape.RING, landing + Vector3(0.0, 0.02, 0.0), radius, pale, 1.0, 1.0, 1.0, BLINK_RING_ALPHA, BLINK_RING_ALPHA_END)
+	if rest != null:
+		parts.append(rest.drawn_over().driven())
+	var closing: PooledEffect = pool.play(EffectPool.Shape.RING, landing + Vector3(0.0, 0.03, 0.0), radius, Color.WHITE, 1.0, BLINK_CLOSING_FROM, 1.0, BLINK_CLOSING_ALPHA, BLINK_CLOSING_ALPHA_END)
+	if closing != null:
+		parts.append(closing.drawn_over().driven())
+	var ghost: PooledEffect = pool.play(EffectPool.Shape.SPHERE, landing + Vector3(0.0, BLINK_GHOST_HEIGHT, 0.0), radius * BLINK_GHOST_SCALE, color, 1.0, BLINK_GHOST_FROM, 1.0, BLINK_GHOST_ALPHA, BLINK_GHOST_ALPHA_END)
+	if ghost != null:
+		ghost.stretch_y = BLINK_GHOST_STRETCH
+		parts.append(ghost.driven())
+	var pip: PooledEffect = pool.play(EffectPool.Shape.DISC, landing + Vector3(0.0, 0.04, 0.0), radius * BLINK_PIP_SCALE, Color.WHITE, 1.0, 1.0, 1.0, BLINK_PIP_ALPHA, BLINK_PIP_ALPHA_END)
+	if pip != null:
+		parts.append(pip.drawn_over().driven())
+	if duration <= 0.0:
 		return parts
 	var along: Vector3 = Vector3(landing.x - from.x, 0.0, landing.z - from.z)
 	if along.length() > 0.5:
@@ -219,6 +241,22 @@ static func blink_marker(pool: EffectPool, from: Vector3, landing: Vector3, radi
 	return parts
 
 
+const BLINK_RING_ALPHA := 0.55
+const BLINK_RING_ALPHA_END := 1.0
+## The closing ring starts this many times wider than the landing ring and shrinks onto it over the wind-up.
+const BLINK_CLOSING_FROM := 2.0
+const BLINK_CLOSING_ALPHA := 0.25
+const BLINK_CLOSING_ALPHA_END := 0.9
+## The ghost: a tall faint sphere (about the boss's size) that firms up as the wind-up runs.
+const BLINK_GHOST_HEIGHT := 0.8
+const BLINK_GHOST_SCALE := 0.6
+const BLINK_GHOST_FROM := 0.5
+const BLINK_GHOST_STRETCH := 1.5
+const BLINK_GHOST_ALPHA := 0.06
+const BLINK_GHOST_ALPHA_END := 0.4
+const BLINK_PIP_SCALE := 0.18
+const BLINK_PIP_ALPHA := 0.6
+const BLINK_PIP_ALPHA_END := 1.0
 const BLINK_GUIDE_HALF_WIDTH := 0.07
 const BLINK_GUIDE_ALPHA := 0.15
 const BLINK_GUIDE_ALPHA_END := 0.5

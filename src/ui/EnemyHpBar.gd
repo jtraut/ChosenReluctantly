@@ -151,9 +151,7 @@ func _add_stack_label_deferred() -> void:
 	var label := StatusStackLabel.new()
 	label.name = "StatusStackLabel"
 	host.add_child(label)
-	var cfg: Dictionary = UiConfig.status_stacks()
-	var host_enemy := host as Enemy
-	label.setup(_status, StatusStackLabel.stagger_height(float(cfg["height"]), host_enemy.spawn_index if host_enemy != null else -1, float(cfg["stagger_step"])))
+	label.setup(_status)
 
 
 func _initialize() -> void:

@@ -4,8 +4,13 @@ extends Label3D
 ## signal-driven: it reads `stacks_of` / `max_stacks_of` and the status names from data, and hides while nothing stacks.
 ## Text and sizes live in data/ui.json `status_stacks`. The count is words, so it does not rely on colour.
 
+const GROUP := &"status_stack_labels"
+
 var _status: StatusEffectManager = null
 var _cfg: Dictionary = {}
+var _base_height: float = 0.0
+## Current rise (world metres) over the base height, eased toward what clears the labels below this one.
+var _lift: float = 0.0
 
 
 # ---- Pure rules (unit-tested) ----
@@ -38,10 +43,26 @@ static func compose(entries: Array, cfg: Dictionary) -> String:
 	return "\n".join(lines)
 
 
-## MB1 ux: neighbouring enemies stand at nearly the same screen height, so their "Bleed x5 MAX" labels printed over each other. Every other
-## enemy (by spawn index) gets its label one `step` higher; two tiers are enough for a pair, three or more still stagger in an A-B-A pattern.
-static func stagger_height(base: float, index: int, step: float) -> float:
-	return base + (float(absi(index) % 2) * step if index >= 0 else 0.0)
+## MB1 ux: how far (camera-plane metres) the label of the enemy that is higher on screen must rise to clear the one below it. `dx` and `dy` are
+## the camera-plane offset from the lower label to this one (dy >= 0 means this one is the upper), `half_w` and `half_h` the summed half sizes of the
+## two texts, `pad` a small gap. 0 when they do not overlap horizontally or this label is already clear. Two neighbours' "Bleed x5 MAX" lines printed over
+## each other because enemies a body apart stand within one text height on screen.
+static func lift_over(dx: float, dy: float, half_w: float, half_h: float, pad: float) -> float:
+	if dy < 0.0 or absf(dx) >= half_w:
+		return 0.0
+	return maxf(half_h + pad - dy, 0.0)
+
+
+## The size in camera-plane metres of a label's text (Label3D.get_aabb is a cube, so it cannot say): a line is `font_size` x `pixel_size` high with a
+## little leading, and a glyph averages about 0.55 of that wide. Close enough to tell whether two labels touch.
+static func text_size(text: String, font_size: int, pixel_size: float) -> Vector2:
+	var line_m: float = float(font_size) * pixel_size
+	var lines: PackedStringArray = text.split("
+")
+	var longest: int = 0
+	for line: String in lines:
+		longest = maxi(longest, line.length())
+	return Vector2(float(longest) * line_m * 0.55, float(maxi(lines.size(), 1)) * line_m * 1.15)
 
 
 ## The word shown with a detonation, for example "Bleed detonated".
@@ -64,8 +85,11 @@ func setup(status: StatusEffectManager, height: float = -1.0) -> void:
 	outline_modulate = Color.html(String(_cfg["outline_color"]))
 	render_priority = int(_cfg["render_priority"])
 	outline_render_priority = render_priority - 1
-	position = Vector3(0.0, float(_cfg["height"]) if height < 0.0 else height, 0.0)
+	_base_height = float(_cfg["height"]) if height < 0.0 else height
+	position = Vector3(0.0, _base_height, 0.0)
 	visible = false
+	set_process(false)
+	add_to_group(GROUP)
 	if _status == null:
 		return
 	_status.status_stacks_changed.connect(_on_stacks_changed)
@@ -91,6 +115,46 @@ func refresh() -> void:
 	text = compose(entries, _cfg)
 	modulate = tint
 	visible = text != ""
+	set_process(visible)
+	if not visible:
+		_lift = 0.0
+		position.y = _base_height
+
+
+## The label's centre without its lift, in the world: the owner's position plus the base height.
+func base_world() -> Vector3:
+	var host := get_parent() as Node3D
+	return (host.global_position if host != null else Vector3.ZERO) + Vector3(0.0, _base_height, 0.0)
+
+
+func current_lift() -> float:
+	return _lift
+
+
+## Eases the label up over any visible label below it on screen (the one that is nearer the camera). Ordering uses the base positions and the amount uses the
+## other label's current rise, so a column of three stacks upward and nothing can chase its own tail.
+func _process(delta: float) -> void:
+	var camera: Camera3D = get_viewport().get_camera_3d() if is_inside_tree() else null
+	if camera == null or not visible:
+		return
+	var mine: Vector3 = base_world()
+	var size: Vector2 = text_size(text, font_size, pixel_size)
+	var target: float = 0.0
+	var up_in_world: float = maxf(camera.global_transform.basis.y.dot(Vector3.UP), 0.2)
+	for node: Node in get_tree().get_nodes_in_group(GROUP):
+		var other := node as StatusStackLabel
+		if other == null or other == self or not other.visible:
+			continue
+		var other_base: Vector3 = other.base_world()
+		var base_delta: Vector3 = mine - other_base
+		if base_delta.dot(camera.global_transform.basis.y) < 0.0:
+			continue  # this one is the lower label: it stays put, the other rises
+		var lifted_delta: Vector3 = mine - (other_base + Vector3(0.0, other.current_lift(), 0.0))
+		var other_size: Vector2 = text_size(other.text, other.font_size, other.pixel_size)
+		var rise: float = lift_over(lifted_delta.dot(camera.global_transform.basis.x), lifted_delta.dot(camera.global_transform.basis.y), (size.x + other_size.x) * 0.5, (size.y + other_size.y) * 0.5, float(_cfg["overlap_pad"]))
+		target = maxf(target, rise / up_in_world)
+	_lift = move_toward(_lift, target, float(_cfg["lift_speed"]) * delta)
+	position.y = _base_height + _lift
 
 
 func _on_stacks_changed(_status_id: String, _stacks: int) -> void:

@@ -223,14 +223,51 @@ func test_a_multi_disc_telegraph_draws_one_edge_per_disc() -> void:
 
 # ---- stack labels, the Open a Vein cue, the low-HP line, the detonate word ----
 
-func test_neighbouring_enemies_get_stack_labels_at_two_heights() -> void:
-	var step: float = float(UiConfig.status_stacks()["stagger_step"])
-	var base: float = float(UiConfig.status_stacks()["height"])
-	assert_float(StatusStackLabel.stagger_height(base, 0, step)).is_equal(base)
-	assert_float(StatusStackLabel.stagger_height(base, 1, step)).is_equal_approx(base + step, 0.0001)
-	assert_float(StatusStackLabel.stagger_height(base, 2, step)).is_equal(base)
-	assert_float(StatusStackLabel.stagger_height(base, -1, step)).is_equal(base)  # no spawn index yet: the base height
-	assert_float(step).is_greater(0.0)
+func test_the_upper_stack_label_rises_just_enough_to_clear_the_one_below() -> void:
+	# Two texts 1.0 wide and 0.36 high, 0.1 m apart on screen: the upper one rises by the shortfall plus the pad.
+	assert_float(StatusStackLabel.lift_over(0.3, 0.1, 1.0, 0.36, 0.06)).is_equal_approx(0.36 + 0.06 - 0.1, 0.0001)
+	assert_float(StatusStackLabel.lift_over(0.3, 0.5, 1.0, 0.36, 0.06)).is_equal(0.0)  # already clear
+	assert_float(StatusStackLabel.lift_over(1.2, 0.1, 1.0, 0.36, 0.06)).is_equal(0.0)  # side by side
+	assert_float(StatusStackLabel.lift_over(0.0, -0.1, 1.0, 0.36, 0.06)).is_equal(0.0)  # the lower label never moves
+	var cfg: Dictionary = UiConfig.status_stacks()
+	assert_float(float(cfg["overlap_pad"])).is_greater_equal(0.0)
+	assert_float(float(cfg["lift_speed"])).is_greater(0.0)
+
+
+func test_a_label_text_size_grows_with_its_longest_line_and_its_line_count() -> void:
+	var one: Vector2 = StatusStackLabel.text_size("Bleed x5 MAX", 40, 0.009)
+	var two: Vector2 = StatusStackLabel.text_size("Bleed x5 MAX
+Burn x2", 40, 0.009)
+	assert_float(two.y).is_greater(one.y * 1.9)
+	assert_float(two.x).is_equal_approx(one.x, 0.0001)
+	assert_float(one.y).is_between(0.3, 0.6)  # about a text line high at the shipped size
+
+
+func test_two_overlapping_stack_labels_separate_in_a_scene() -> void:
+	var main := _spawn_main()
+	var cam := Camera3D.new()
+	main.add_child(cam)
+	cam.global_position = Vector3(0.0, 12.0, 12.0)
+	cam.look_at(Vector3.ZERO)
+	cam.make_current()
+	var labels: Array[StatusStackLabel] = []
+	for offset: Vector3 in [Vector3(0.0, 0.0, -0.4), Vector3(0.6, 0.0, 0.2)]:
+		var host := Node3D.new()
+		main.add_child(host)
+		host.global_position = offset
+		var manager := StatusEffectManager.new()
+		host.add_child(manager)
+		var label := StatusStackLabel.new()
+		host.add_child(label)
+		label.setup(manager)
+		label.text = "Bleed x5 MAX"
+		label.visible = true
+		label.set_process(true)
+		labels.append(label)
+	await _frames(40)
+	var lifts: Array[float] = [labels[0].current_lift(), labels[1].current_lift()]
+	assert_float(maxf(lifts[0], lifts[1])).is_greater(0.0)
+	assert_float(minf(lifts[0], lifts[1])).is_equal(0.0)  # only one rises: the one higher on screen
 
 
 func test_open_a_vein_says_it_wants_stacks_and_a_plain_attack_says_nothing() -> void:

@@ -839,3 +839,41 @@ func test_killing_the_act_two_mini_boss_ends_the_act_and_never_the_run() -> void
 	controller.choose("skip")
 	assert_array(seen_acts).is_equal([3])
 	assert_bool(won[0]).is_false()
+
+
+# ---- knockback and a locked lane ----
+
+func test_a_hit_during_a_dash_wind_up_does_not_push_the_boss_off_its_drawn_lane() -> void:
+	# The duelist is the first boss that takes knockback (0.5). The charge lane and its telegraph are anchored at the wind-up's start, so a push
+	# during the wind-up would put the real dash off the drawn lane (and the sim bot would dodge the wrong strip).
+	var main := _spawn_main()
+	main.player.global_position = Vector3.ZERO
+	main.player.health.damage_immune = true
+	var boss := _frozen(main, 6.0)
+	await _frames(1)
+	var start: Vector3 = Vector3(boss.global_position.x, 0.0, boss.global_position.z)
+	boss._begin_windup("leveraged_dash")
+	assert_vector(boss._charge_start).is_equal(start)
+	boss._on_damaged(1.0, "physical", Vector3(10.0, 0.0, 0.0))
+	for tick in range(int(0.65 / STEP)):
+		boss._physics_process(STEP)
+	assert_str(boss.state_name()).is_equal("WINDUP")
+	assert_float(Vector2(boss.global_position.x - start.x, boss.global_position.z - start.z).length()).override_failure_message("the boss slid %.2f m during its wind-up" % Vector2(boss.global_position.x - start.x, boss.global_position.z - start.z).length()).is_less(0.01)
+	boss._cancel_attack()
+	# A hit while it chases or recovers still shoves it a little: that is what knockback_taken 0.5 is for.
+	var before: Vector3 = boss.global_position
+	boss._on_damaged(1.0, "physical", Vector3(10.0, 0.0, 0.0))
+	for tick in range(6):
+		boss._physics_process(STEP)
+	assert_float(boss.global_position.x - before.x).is_greater(0.05)
+
+
+func test_a_push_left_over_from_recovering_is_cleared_when_the_next_wind_up_starts() -> void:
+	var main := _spawn_main()
+	main.player.global_position = Vector3.ZERO
+	var boss := _frozen(main, 6.0)
+	await _frames(1)
+	boss._on_damaged(1.0, "physical", Vector3(10.0, 0.0, 0.0))
+	assert_float(boss._knockback_velocity.length()).is_greater(0.0)
+	boss._begin_windup("leveraged_dash")
+	assert_float(boss._knockback_velocity.length()).is_equal(0.0)

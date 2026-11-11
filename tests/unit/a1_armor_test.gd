@@ -3,7 +3,7 @@ extends GdUnitTestSuite
 ## Slice A1: armor (GDD section 7). Formula, channels, cap, penetration, player armor, DoT, validation, tier parity.
 
 const K := 50.0
-const KNOWN_ENEMIES: Array[String] = ["melee_chaser", "ranged_shooter", "fire_resistant_golem", "boss_guardian", "boss_brute"]
+const KNOWN_ENEMIES: Array[String] = ["melee_chaser", "ranged_shooter", "fire_resistant_golem", "boss_guardian", "boss_brute", "boss_duelist"]
 
 
 class Attacker extends Node:

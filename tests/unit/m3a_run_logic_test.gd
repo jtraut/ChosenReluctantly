@@ -3,7 +3,7 @@ extends GdUnitTestSuite
 ## Milestone 3a, pure logic: run config validation, the seeded generator, RunState round-trip, tier maths,
 ## finite wave plans, and the Main run-mode switch. No scene needed.
 
-const KNOWN_ENEMIES: Array[String] = ["melee_chaser", "ranged_shooter", "fire_resistant_golem", "boss_guardian", "boss_brute"]
+const KNOWN_ENEMIES: Array[String] = ["melee_chaser", "ranged_shooter", "fire_resistant_golem", "boss_guardian", "boss_brute", "boss_duelist"]
 
 
 func _shipped() -> Dictionary:

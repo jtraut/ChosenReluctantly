@@ -430,6 +430,7 @@ func _begin_windup(attack_id: String) -> void:
 		_attack["damage"] = float(_attack["damage"]) * damage_scale
 	_state = State.WINDUP
 	_state_time = 0.0
+	_knockback_velocity = Vector3.ZERO  # MB1: leftover push from a hit while recovering must not drag the locked lane off the boss
 	var to_target: Vector3 = _flat_to_target()
 	_lock_dir = to_target.normalized() if to_target.length() > 0.01 else -global_transform.basis.z
 	_lock_point = Vector3(target.global_position.x, 0.0, target.global_position.z)
@@ -738,7 +739,10 @@ func _overlaps_target() -> bool:
 # ---- Damage, phases, death ----
 
 func _on_damaged(amount: float, damage_type: String, knockback: Vector3) -> void:
-	_knockback_velocity = knockback * float(_def.get("knockback_taken", 0.0))
+	# MB1: a boss that takes knockback (the duelist) must not slide while a wind-up or charge is locked: the charge lane and its telegraph are
+	# anchored where the wind-up began, so a shove would put the real dash off the drawn lane. Hits push it while it chases or recovers.
+	if _state != State.WINDUP and _state != State.ACTIVE:
+		_knockback_velocity = knockback * float(_def.get("knockback_taken", 0.0))
 	_flash_body(HIT_FLASH_COLOR)
 	Juice.on_hit_landed(global_position + Vector3(0.0, 1.5, 0.0), amount, damage_type, health.last_kind, health.last_channel, health.last_reduction)
 	if is_transitioning() or is_staggered() or _state == State.DEAD or phase_index + 1 >= _phases.size():

@@ -70,11 +70,11 @@ func test_shipped_stagger_is_valid_and_the_whole_transition_fits_the_cap() -> vo
 	assert_float(_stagger()).is_equal(0.8)
 	var rules: Dictionary = BossConfig.get_config()["rules"]
 	assert_float(_stagger() + _roar()).is_less_equal(float(rules["max_transition"]))
-	assert_array(BossConfig.validate(_config(), ["melee_chaser", "ranged_shooter", "fire_resistant_golem", "boss_guardian", "boss_brute"])).is_empty()
+	assert_array(BossConfig.validate(_config(), ["melee_chaser", "ranged_shooter", "fire_resistant_golem", "boss_guardian", "boss_brute", "boss_duelist"])).is_empty()
 
 
 func test_stagger_validation() -> void:
-	var known: Array[String] = ["melee_chaser", "ranged_shooter", "fire_resistant_golem", "boss_guardian", "boss_brute"]
+	var known: Array[String] = ["melee_chaser", "ranged_shooter", "fire_resistant_golem", "boss_guardian", "boss_brute", "boss_duelist"]
 	var plain: Dictionary = _config()
 	(plain["bosses"][BOSS_ID]["transition"] as Dictionary).erase("stagger")
 	assert_array(BossConfig.validate(plain, known)).override_failure_message("stagger is optional").is_empty()

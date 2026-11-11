@@ -2217,3 +2217,15 @@ SIM1 needs a target for its "human-like" bot preset. No human win rate exists, s
 - **The `human` preset (0.2 s delay, 25 degrees aim error) is accepted as provisional.** Rogue three-act 26/36 (72%, top of the band); Wizard 15/36 (42%) on the same preset. The curve is steep (0.25 s gives 13/36), so floors must allow for seed noise. The Wizard gap is recorded as a finding for the floors and for BD3b, not tuned away. [A per-class preset; a slower preset nearer 60%, which would sit on the steep part of the curve.]
 - **gameplay-dev's own calls are accepted:** the lag is a delay on every bot decision; the aim error is a uniform angle re-rolled every 0.35 s; sweeps use override flags, not one preset per cell.
 - **`--run-room=30` not exiting headless is by design:** a plain launch waits for input. Docs should say to add `--quit-after N` for an exit-code check. No code change.
+
+## 2026-11-11 - SIM1 qa FAIL triage and the floors (qa e19ecec, c5202ff; game-lead)
+Review: `docs/reviews/2026-11-11-sim1-qa.md`. One blocker: `tools\run_wave_sim.ps1` line 80 matches `ERROR|WARNING` case-insensitively, so the `aim_error` settings line makes every run with aim error exit 1. gameplay-dev makes it a case-sensitive engine-prefix match and fixes the two nits (`--bot-delay=abc` is silently 0; the bot sim prints `bot preset ''`). qa re-checks and runs the three missing Wizard numbers (`-Route relic`, `-Route safe`, `-Relics`). The suite is red on purpose (2 cases in `sim1_qa_test.gd`) until the fix. Rejected alternatives in brackets.
+- **The floors (set now; they apply from MB1 on), on pooled seeds 1/13/25, `-Route first`, 36 runs. Gate on pooled counts only, never on a single seed:**
+  - **Primary, `human` preset, three-act:** Rogue at least 21/36, Wizard at least 9/36 (about 2 binomial SDs below today's 26 and 15).
+  - **Guards on the off bot (catch broken content, not difficulty):** Rogue at least 32/36, Wizard at least 25/36.
+  - **No-card ceiling:** at most 25% clears, measured on the **off** bot. A weaker bot makes the ceiling trivially true. [Gating it on `human`, as the brief said.]
+  - **Parity:** 70-130% of the standard deck's boss time, on both bots.
+  - **Fingerprint:** at least 0.6 with relics on median vectors, on the off bot (the thin reading, 0.61; `human` gives 0.73).
+- **Per-class floors, not one.** One floor (about 21/36) would fail the Wizard today (15/36) and block MB1 on a gap MB1 isn't scoped to fix. The one-preset rule still holds, so the gap stays visible. **The Wizard gap is a named finding for BD3b** (human 42% vs Rogue 72%; the Wizard is far more sensitive to the preset, 81% -> 42%). [One shared floor; a per-class preset.]
+- **Boss-time correction to "SIM1 sitting 1 triage":** the preset does move the Wizard's boss time (to 50-62 s, inside the old target); only the Rogue's stays at 35-43 s. Win rate stays the calibration axis.
+- **`-Relics pyre_insurance+heavy_sigh`** is qa's new form; it's the baseline from now on.

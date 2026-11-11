@@ -3,9 +3,14 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-11 (SIM1 qa PASS 95aebd7; tech-writer docs pass next, then game-lead closes SIM1). Suite is green again: 2100 / 160.
+Last updated: 2026-11-11 (SIM1 closed; MB1 next, starting with game-lead's design note in MAP.md).
 
 ## What's done
+- **SIM1 closed 2026-11-11 (tooling, no tag, no playtest):** brief ca7cc1d; gameplay-dev d15e691, 85e7d6a, a047b9b; qa FAIL e19ecec/c5202ff (ps1 gate regex), re-check PASS 95aebd7; docs 2531020 (also archived D48 and its changelog entry).
+  - **Shipped:** `data/bot_presets.json` (off, human = 0.2 s delay / 25 deg aim error), `--bot-preset=` / `-BotPreset`, sweep overrides, a case-sensitive engine-error gate in the sim wrappers.
+  - **Baselines now:** suite 2100 (160 suites, exit 0, 0 orphans); hashes unchanged (arena 3172486861 / 916264160 / `-Plan` 1317880580; bot sim 3476063471). Three-act pooled `-Route first`, off / human: Rogue 35/36 / 26/36, Wizard 29/36 / 15/36. Full table in `docs/reviews/2026-11-11-sim1-qa.md`.
+  - **Floors (from MB1):** human three-act Rogue at least 21/36, Wizard at least 9/36; off-bot guards 32/36, 25/36; no-card at most 25% (off); parity 70-130%; fingerprint at least 0.6 (off, with relics). DECISIONS "SIM1 qa FAIL triage and the floors".
+  - **BD3b findings:** the Wizard gap (human 42% vs Rogue 72%), human Wizard `-Route safe` 0/12.
 - **D48 = A recorded 2026-11-11 (game-lead, docs only):**
   - **His answer:** close BD3a as it is; no Bleed top-up sitting. Bleed and physical rare and legendary cards come in MAP3b, as planned. This was the default, so the run order is unchanged.
   - **Where recorded:** ROADMAP MAP3b entry and the BD3a playtest line; OPEN_ITEMS (removed).
@@ -179,16 +184,16 @@ Last updated: 2026-11-11 (SIM1 qa PASS 95aebd7; tech-writer docs pass next, then
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **SIM1 in progress.** Brief ca7cc1d. gameplay-dev d15e691..85e7d6a: `data/bot_presets.json` (off, human = 0.2 s delay / 25 deg), `--bot-preset=` / `-BotPreset`, sweep overrides, hashes unchanged, suite 2095 / 158 exit 0. Human preset: Rogue three-act 26/36, Wizard 15/36; boss time doesn't respond (about 36 s Rogue). Triage in DECISIONS "SIM1 sitting 1 triage". qa e19ecec/c5202ff: **FAIL** on one blocker (`run_wave_sim.ps1` line 80 matches `aim_error` as an error, so the human preset exits 1); everything else sound, full baselines in `docs/reviews/2026-11-11-sim1-qa.md`. Floors set in DECISIONS "SIM1 qa FAIL triage and the floors". gameplay-dev fix a047b9b; qa re-check **PASS** 95aebd7 (suite 2100 / 160 exit 0; hashes unchanged; Wizard human `safe` 0/12 noted for BD3b, DECISIONS "SIM1 re-check PASS"). No playtest (tooling). **Next: tech-writer docs pass for ca7cc1d..95aebd7, then game-lead closes SIM1 (ROADMAP done, STATE, OPEN_ITEMS) and starts MB1 with its MAP.md design note.**
+- Nothing in progress. SIM1 closed 2026-11-11. MB1 is next and hasn't started.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step
-1. **SIM1** (ROADMAP brief): gameplay-dev adds the human-like bot settings and a tuned preset, then qa re-baselines every sim number, then game-lead sets the floors.
-2. Then **MB1** (game-lead design note in MAP.md first), MAP3b, MAP4, 3d, BD3b.
+1. **MB1** (ROADMAP brief): game-lead writes the mini-boss design note in MAP.md first (two mini-bosses: name, size, HP, speed, 2-3 attacks with telegraphs), then gameplay-dev (probably two sittings, one per mini-boss), ux (the BD3a carry-overs plus the mini-boss bar), qa (gates on the SIM1 floors, `-Route first`; reports `safe` for information), playtester, docs.
+2. Then MAP3b, MAP4, 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D45 answered. D46 = B and D47 = B (2026-11-09). D48 = A (2026-11-11). Next free: D49.
+**D-numbers:** D21-D45 answered. D46 = B and D47 = B (2026-11-09). D48 = A (2026-11-11, archived in RESOLVED 2531020). Next free: D49.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 

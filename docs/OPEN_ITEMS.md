@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-11-11 (D48 = A recorded; latest tag `playtest-2026-11-09-BD3a`)
-**Status: no decisions waiting. 9 things to look at (54, 53, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. BD3a (physical Rogue) is done, tag `playtest-2026-11-09-BD3a`. SIM1 (bot re-calibration) passed qa and is in its docs pass. Next: **MB1** (mini-bosses) -> MAP3b -> MAP4 -> 3d -> BD3b.**
+**Status: no decisions waiting. 9 things to look at (54, 53, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. BD3a (physical Rogue) is done, tag `playtest-2026-11-09-BD3a`. SIM1 (bot re-calibration) is done; no new build to play. Next: **MB1** (mini-bosses) -> MAP3b -> MAP4 -> 3d -> BD3b.**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 

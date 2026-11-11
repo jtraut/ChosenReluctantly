@@ -1298,7 +1298,7 @@ un_offer_report.ps1`.
     - The Fire share of a Fire Rogue's card offers is reported: about 29% for a neutral deck, and clearly lower over the run for a deck that picks Bleed and prunes Burn (D43 = B).
     - No-card gate holds. MAP3's run-sim floor (8/12 three-act wins, first route) holds for the Rogue.
     - Main runs. Hashes are unchanged or rebaselined with a logged reason.
-- [ ] **SIM1, sim re-calibration (tooling; after BD3a, before MB1). qa + gameplay-dev; no tag.** Why: until a9d56fc the sim bot never turned toward its aim, so every bot-measured balance number was taken with a crippled bot. Fixed, it wins 35/36 Rogue three-act runs with about 30 s bosses (DECISIONS "The sim bot's aim bug and the baselines").
+- [x] **SIM1, sim re-calibration (tooling; after BD3a, before MB1). qa + gameplay-dev; no tag.** **Done 2026-11-11:** gameplay-dev d15e691, 85e7d6a, a047b9b; qa FAIL e19ecec/c5202ff, re-check PASS 95aebd7; docs 2531020. Floors in DECISIONS "SIM1 qa FAIL triage and the floors"; baselines in `docs/reviews/2026-11-11-sim1-qa.md`. Why: until a9d56fc the sim bot never turned toward its aim, so every bot-measured balance number was taken with a crippled bot. Fixed, it wins 35/36 Rogue three-act runs with about 30 s bosses (DECISIONS "The sim bot's aim bug and the baselines").
   - **gameplay-dev:**
     - add data-driven "human-like" bot settings (`reaction_delay`, `aim_error_degrees`, maybe a cast hesitation), off by default so the hashes hold;
     - a preset tuned so the Rogue three-act win rate and boss times land near what human reports say (the director: "felt good mostly"; playtester notes);

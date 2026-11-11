@@ -353,7 +353,7 @@ game-lead design note, 2026-11-11. The director's direction is in GDD §9 ("Each
 **How it tests you:** reactions and dodge timing. It's small, fast and fragile, with short readable telegraphs and hard hits. Burst it down while it recovers. No adds: it's a duel.
 
 - **Body:** a thin capsule about the player's size (`body_radius` 0.55), a dark suit with a bright tie stripe so its facing reads. Its move speed is 5.0 / 5.6 by phase, just under the player's 6.0. You can kite it, but only just.
-- **Stats:** `max_health` 90 (act 2 x1.1: 99, about half of today's 192), armor 10, resistance 0.3, `knockback_taken` 0.5 (your hits push it a little).
+- **Stats:** `max_health` 90 (act 2 x1.1: 99, about half of today's 192), armor 10, resistance 0.17 (was 0.3 in the first draft; the armor-parity validator needs them to match, DECISIONS "MB1 sitting B triage"), `knockback_taken` 0.5 (your hits push it a little).
 - **Attacks** (three it can start; two that only follow another):
 
 | Id | Kind | Wind-up | Damage | Shape | Notes |

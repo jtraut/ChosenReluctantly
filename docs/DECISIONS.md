@@ -2278,3 +2278,36 @@ The hashes are unchanged and the suite is 2136, 0 orphans. No human-preset run w
   - the brute uses `BossHpBar` with its `display_name`;
   - whether to add an "Act 1 Mini-boss" subtitle is ux's call;
   - `MiniBossBar` only covers tier-`mini_boss` enemies (the act 2 golem until sitting B).
+
+## 2026-11-11 - MB1 sitting B triage (gameplay-dev a284270..8dae255; game-lead)
+All floors pass:
+
+| Bot | Class | Wins (36 runs) | Sitting A |
+|---|---|---|---|
+| human | Rogue | 28 | 27 |
+| human | Wizard | 15 | 15 |
+| off | Rogue | 35 | 35 |
+| off | Wizard | 30 | 29 |
+
+The suite is 2174, 0 orphans, and the hashes are unchanged.
+
+**Neither mini-boss cost a human-preset run (0 losses at room 10, 0 at room 20).** The duelist dies in a median 15 s (Rogue) and 23 s (Wizard). The Rogue's median HP left is 22 of 30, the Wizard's 22 of 22.
+
+**Kept for the playtest, not retuned.** The bot isn't a reliable read of reaction-based fights. The director's "hits harder" is a feel judgment, and the playtester and he will answer it. [Raising the damage or HP now on bot numbers alone.]
+
+If the playtest finds them soft, the knobs are, in order:
+1. the duelist's HP (90 -> about 120);
+2. its damage, within the 22 HP two-sequence rule;
+3. the brute's summon count.
+
+**gameplay-dev's calls, accepted:**
+- **Duelist armor 10 and resistance 0.17** (parity; it stays fragile). [21.4 / 0.3 would make it as tough as the brute.] MAP.md §11.3 is corrected.
+- **"Behind" means the far side of the player from the boss,** not the player's facing. It's clamped to the arena and moves to the boss's side if it would land within 1.2 m of the player. This is readable in isometric view, where facing isn't.
+- **A chain is at most 2 attacks** (one link), as MAP.md says.
+- **Bosses ignore knockback during a wind-up or an active attack.** Otherwise a hit could shove the duelist off its drawn telegraph. Fairness beats push.
+- The filled-in values in the hand-back are accepted, including the enemies.json `move_speed` 4.5. The phase speeds 5.0 / 5.6 are what play.
+
+**For ux:**
+- Label the second dash link so it reads as coming.
+- The blink marker must not read as a damage zone; the backstab outline is thin.
+- Re-check the BD3a mini-boss bar item against `BossHpBar`. `MiniBossBar` is now unused in runs.

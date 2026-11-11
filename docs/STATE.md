@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-11 (MB1: design note 5ecbbf9, gameplay-dev sitting A 5991616..f0fbdc3 done; sitting B next).
+Last updated: 2026-11-11 (MB1: gameplay-dev sittings A and B done; ux next).
 
 ## What's done
 - **SIM1 closed 2026-11-11 (tooling, no tag, no playtest):** brief ca7cc1d; gameplay-dev d15e691, 85e7d6a, a047b9b; qa FAIL e19ecec/c5202ff (ps1 gate regex), re-check PASS 95aebd7; docs 2531020 (also archived D48 and its changelog entry).
@@ -191,7 +191,12 @@ Last updated: 2026-11-11 (MB1: design note 5ecbbf9, gameplay-dev sitting A 59916
     - suite 2136, 0 orphans; hashes unchanged.
     - **Gate:** human Rogue 27/36, Wizard 15/36; off 35/36, 29/36.
     - Triage in DECISIONS "MB1 sitting A triage".
-  - **Next:** gameplay-dev sitting B (the duelist, `chain`, `blink`, `mini_boss_act2`).
+  - **Sitting B done** (a284270..8dae255):
+    - the duelist, `chain` and `blink`;
+    - suite 2174, 0 orphans; hashes unchanged.
+    - **Gate:** human Rogue 28/36, Wizard 15/36; off 35/36, 30/36.
+    - 0 human losses at rooms 10 and 20. Both may be soft: playtest call. DECISIONS "MB1 sitting B triage".
+  - **Next:** ux. MB1 ux list in ROADMAP, plus the triage's ux notes: the dash link label, the blink marker read, the bar.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step

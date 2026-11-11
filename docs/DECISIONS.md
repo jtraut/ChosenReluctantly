@@ -2229,3 +2229,8 @@ Review: `docs/reviews/2026-11-11-sim1-qa.md`. One blocker: `tools\run_wave_sim.p
 - **Per-class floors, not one.** One floor (about 21/36) would fail the Wizard today (15/36) and block MB1 on a gap MB1 isn't scoped to fix. The one-preset rule still holds, so the gap stays visible. **The Wizard gap is a named finding for BD3b** (human 42% vs Rogue 72%; the Wizard is far more sensitive to the preset, 81% -> 42%). [One shared floor; a per-class preset.]
 - **Boss-time correction to "SIM1 sitting 1 triage":** the preset does move the Wizard's boss time (to 50-62 s, inside the old target); only the Rogue's stays at 35-43 s. Win rate stays the calibration axis.
 - **`-Relics pyre_insurance+heavy_sigh`** is qa's new form; it's the baseline from now on.
+
+## 2026-11-11 - SIM1 re-check PASS (qa 95aebd7; game-lead)
+gameplay-dev a047b9b fixed the gate (case-sensitive, prefix-anchored in all three sim wrappers) and the two nits. Suite 2100 / 160, exit 0, 0 orphans; off-hashes unchanged. No playtest: SIM1 is tooling and changes nothing a player sees. Rejected alternatives in brackets.
+- **The human Wizard won 0/12 on `-Route safe`** (seed 1; the route with the fewest relics, median 4; furthest room 20). Off it was 9/12. It's one seed, not gated, and it fits the Wizard gap already named for BD3b, so it's added there as a finding. **MB1 gates on `-Route first` only**; it also reports `safe` per class for information. [Gating `safe` now, which would block MB1 on the Wizard gap.]
+- The other Wizard rows (human): `-Route relic` 6/12, `-Relics` 1-act 11/12; off 9/12 and 12/12.

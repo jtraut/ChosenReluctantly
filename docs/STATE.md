@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-11 (SIM1 qa FAIL on one ps1 blocker; floors set; gameplay-dev fix next). **The suite is red on purpose (2 cases in `sim1_qa_test.gd`) until the fix.** Previous: 2026-11-09 (BD3a closed, tag `playtest-2026-11-09-BD3a`). **Run order:** BD3a (done) -> **SIM1, sim re-calibration** -> MB1 -> MAP3b -> MAP4 -> 3d -> BD3b. Done so far: A1, T-decks, W1a, PL2, F1, P-dodge, W1b, K1, H1, H2, BD0, H3, MAP0, PL3, BD1, BD2, MAP1, MAP2, MAP3, BD3a.
+Last updated: 2026-11-11 (SIM1 qa PASS 95aebd7; tech-writer docs pass next, then game-lead closes SIM1). Suite is green again: 2100 / 160.
 
 ## What's done
 - **D48 = A recorded 2026-11-11 (game-lead, docs only):**
@@ -179,7 +179,7 @@ Last updated: 2026-11-11 (SIM1 qa FAIL on one ps1 blocker; floors set; gameplay-
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **SIM1 in progress.** Brief ca7cc1d. gameplay-dev d15e691..85e7d6a: `data/bot_presets.json` (off, human = 0.2 s delay / 25 deg), `--bot-preset=` / `-BotPreset`, sweep overrides, hashes unchanged, suite 2095 / 158 exit 0. Human preset: Rogue three-act 26/36, Wizard 15/36; boss time doesn't respond (about 36 s Rogue). Triage in DECISIONS "SIM1 sitting 1 triage". qa e19ecec/c5202ff: **FAIL** on one blocker (`run_wave_sim.ps1` line 80 matches `aim_error` as an error, so the human preset exits 1); everything else sound, full baselines in `docs/reviews/2026-11-11-sim1-qa.md`. Floors set in DECISIONS "SIM1 qa FAIL triage and the floors". **Next: gameplay-dev fixes the regex and two nits; then qa re-checks and runs the Wizard `-Route relic`/`safe`/`-Relics`; then the tech-writer docs pass** (D48, the bot flags, the `--quit-after` note, the suite count, the qa baseline table); then game-lead closes.
+- **SIM1 in progress.** Brief ca7cc1d. gameplay-dev d15e691..85e7d6a: `data/bot_presets.json` (off, human = 0.2 s delay / 25 deg), `--bot-preset=` / `-BotPreset`, sweep overrides, hashes unchanged, suite 2095 / 158 exit 0. Human preset: Rogue three-act 26/36, Wizard 15/36; boss time doesn't respond (about 36 s Rogue). Triage in DECISIONS "SIM1 sitting 1 triage". qa e19ecec/c5202ff: **FAIL** on one blocker (`run_wave_sim.ps1` line 80 matches `aim_error` as an error, so the human preset exits 1); everything else sound, full baselines in `docs/reviews/2026-11-11-sim1-qa.md`. Floors set in DECISIONS "SIM1 qa FAIL triage and the floors". gameplay-dev fix a047b9b; qa re-check **PASS** 95aebd7 (suite 2100 / 160 exit 0; hashes unchanged; Wizard human `safe` 0/12 noted for BD3b, DECISIONS "SIM1 re-check PASS"). No playtest (tooling). **Next: tech-writer docs pass for ca7cc1d..95aebd7, then game-lead closes SIM1 (ROADMAP done, STATE, OPEN_ITEMS) and starts MB1 with its MAP.md design note.**
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step

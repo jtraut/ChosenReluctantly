@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-11-11 (D48 = A recorded; latest tag `playtest-2026-11-09-BD3a`)
-**Status: no decisions waiting. 9 things to look at (54, 53, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. BD3a (physical Rogue) is done, tag `playtest-2026-11-09-BD3a`. Next: **SIM1** (bot re-calibration) -> MB1 -> MAP3b -> MAP4 -> 3d -> BD3b.**
+**Status: no decisions waiting. 9 things to look at (54, 53, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. BD3a (physical Rogue) is done, tag `playtest-2026-11-09-BD3a`. SIM1 (bot re-calibration) passed qa and is in its docs pass. Next: **MB1** (mini-bosses) -> MAP3b -> MAP4 -> 3d -> BD3b.**
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -31,7 +31,7 @@ Reply with the number and a word or two.
     - **Look for:** "Bleed x3" over enemies (stacks need Bad Influence or the Serrated Excuse relic), the big "!" number when Open a Vein detonates, the act screen's heal line, and the mini-boss's named bar.
     - **Shortcuts:** `-- --deck=rogue-bleed-out` and `-- --deck=rogue-grudge-brawler` (add `--relics=spite_knuckles+muscle_memory+overtime_unpaid+heavy_sigh` for the brawler's full plan).
 
-54. **FYI: the test bot was half-blind until today.** In every headless sim the bot aimed without turning, so cones, knives and dashes missed. Your own play was never affected. Fixed, it wins almost every run, so every old bot number (the H1/H2 dodge-off results, the MAP1-MAP3 run baselines) was measured with a weaker bot than we thought. No shipped value changes because of this. A new tooling slice, **SIM1**, makes the bot play more like a person and re-measures everything before MB1. Reply "ok" when you've read this.
+54. **FYI: the test bot was half-blind until today.** In every headless sim the bot aimed without turning, so cones, knives and dashes missed. Your own play was never affected. Fixed, it wins almost every run, so every old bot number (the H1/H2 dodge-off results, the MAP1-MAP3 run baselines) was measured with a weaker bot than we thought. No shipped value changes because of this. **SIM1 (done 2026-11-11)** added a "human" bot setting (0.2 s reaction delay, 25 degree aim error). On it the Rogue wins 26/36 three-act runs and the Wizard 15/36, so the Wizard is clearly harder for the bot; that goes to BD3b. These are only bot numbers: your own three-act runs (53) set the real bar. Reply "ok" when you've read this.
 
 52. **Play a three-act run (MAP3), with a clock running.** `godot --path .` (a run is now 30 rooms in 3 acts).
     - **How long did it take on the clock?** The target is 30-45 min. The bots take about 13.5 min of sim time, and the playtester guesses 20-30 min for a person.

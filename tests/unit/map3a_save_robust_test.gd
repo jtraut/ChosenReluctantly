@@ -3,7 +3,7 @@ extends GdUnitTestSuite
 ## MAP3 sitting A, step 1: RunState.from_dict must refuse or repair damaged saves without a script error, and BossConfig.validate must report
 ## (not crash on) a non-object boss attack.
 
-const KNOWN_ENEMIES: Array[String] = ["melee_chaser", "ranged_shooter", "fire_resistant_golem", "boss_guardian"]
+const KNOWN_ENEMIES: Array[String] = ["melee_chaser", "ranged_shooter", "fire_resistant_golem", "boss_guardian", "boss_brute"]
 
 
 func before_test() -> void:

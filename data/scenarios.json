@@ -1139,5 +1139,16 @@
         "origin_offset": [0.0, 0.0, -8.0],
         "columns": 1,
         "groups": [ { "scene": "res://scenes/enemies/BossBrute.tscn", "count": 1 } ]
+    },
+    "mini_boss_wet_floor": {
+        "_note": "MB1 capture only: the brute with 9999 HP on both sides, throwing only Wet floor, to see the three telegraphed discs",
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "enemy_max_health": 9999,
+        "standard_deck": true,
+        "origin_offset": [0.0, 0.0, -7.0],
+        "columns": 1,
+        "groups": [ { "scene": "res://scenes/enemies/BossBrute.tscn", "count": 1 } ],
+        "boss_attacks": ["wet_floor"]
     }
 }

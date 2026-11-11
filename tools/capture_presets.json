@@ -92,7 +92,7 @@
         "extra": ["--map", "--acts=1", "--run-seed=54", "--run-node=33", "--run-gold=200", "--full-deck", "--run-auto-choose=merchant_remove_menu"]
     },
     "mini_boss_act1": {
-        "description": "MAP3-B: the act 1 mini-boss (room 10 of a three-act run): a golem with the mini-boss tier plus chasers, then shooters and more chasers. Run mode, seed 1.",
+        "description": "MB1: the act 1 mini-boss (room 10 of a three-act run): the brute, Head of Facilities, alone (its chasers come from its phases). Run mode, seed 1.",
         "class": "rogue", "scenario": "", "after": "4.0",
         "extra": ["--run-seed=1", "--run-room=10"]
     },

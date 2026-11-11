@@ -141,11 +141,51 @@ func test_a_mini_boss_takes_its_own_tier_rank_and_death_beat_from_data() -> void
 	assert_float(brute._death_total).is_equal(1.0)
 
 
-func test_a_stun_is_reduced_on_the_mini_boss_like_an_elite() -> void:
+func _stun_def() -> Dictionary:
+	return (StatusDatabase.get_status("stun") as Dictionary).duplicate(true)
+
+
+func test_a_stun_drops_the_mini_bosss_wind_up_with_no_hit_and_the_final_boss_stays_immune() -> void:
+	var main := _spawn_main()
+	var brute := _boss(main, BRUTE_PATH, 4.0)
+	main.player.global_position = Vector3.ZERO
+	main.player.health.base_armor = 0.0
+	await _frames(1)
+	brute.debug_script_attacks(["wet_floor"] as Array[String])
+	brute._attack_cooldown_remaining = 0.0
+	var landed: Array[String] = []
+	brute.attack_landed.connect(func(attack_id: String, _hit: bool) -> void: landed.append(attack_id))
+	var winding: bool = false
+	for frame in range(120):
+		await get_tree().physics_frame
+		if brute.state_name() == "WINDUP":
+			winding = true
+			break
+	assert_bool(winding).is_true()
+	await _frames(10)  # well inside the 1.1 s telegraph
+	assert_bool(brute.telegraph_left() > 0.5).is_true()
+	var hp: float = main.player.health.current_health
+	brute.status_manager.apply_status("stun", _stun_def(), 5.0)
+	assert_bool(brute.is_stunned()).override_failure_message("an elite-rank mini-boss takes a stun").is_true()
+	await _frames(90)  # past where the wind-up would have landed
+	assert_array(landed).is_empty()
+	assert_float(main.player.health.current_health).is_equal(hp)
+	assert_bool(brute.state_name() == "WINDUP" or brute.state_name() == "ACTIVE").is_false()
+	assert_int(brute._aoe_locked.size()).is_equal(0)
+	assert_int(brute._tele_parts.size()).is_equal(0)  # the telegraph is gone, not left on the floor
+	# The final boss is still immune (rank boss, stun multiplier 0).
+	var guardian := _boss(main, GUARDIAN_PATH, 14.0)
+	await _frames(1)
+	guardian.status_manager.apply_status("stun", _stun_def(), 5.0)
+	assert_bool(guardian.is_stunned()).is_false()
+
+
+func test_a_stun_is_half_as_long_on_the_mini_boss_as_on_a_plain_enemy() -> void:
 	var main := _spawn_main()
 	var brute := _boss(main, BRUTE_PATH)
 	await _frames(1)
-	assert_str(brute.status_manager.rank).is_equal("elite")
+	brute.status_manager.apply_status("stun", _stun_def(), 2.0)
+	assert_float(brute.status_manager.stun_time_remaining()).is_equal_approx(1.0, 0.05)  # elite x0.5
 
 
 func test_final_hp_is_max_health_times_the_acts_hp_with_no_tier_on_top() -> void:

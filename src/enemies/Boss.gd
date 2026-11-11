@@ -8,7 +8,7 @@ class_name Boss
 ## projectile), drawn at the vs-player reach (VfxSizing) so what is shown is what hits.
 ##
 ## Fairness rules, all from data and tested: every telegraph is at least rules.min_telegraph seconds; every attack can
-## be escaped by walking or by the dodge (BossRules.escape); the boss cannot be stunned (rank boss, stun multiplier 0).
+## be escaped by walking or by the dodge (BossRules.escape); the final boss cannot be stunned (rank boss, stun multiplier 0); an act-end mini-boss (rank elite) can, and a stun drops its wind-up with no hit.
 ## Pinning: the boss is not solid to the player (or to other enemies) while it charges and once it is dead. After a
 ## charge it becomes solid again only once it no longer overlaps the player's body, so a charge can never trap a
 ## player against a wall. During a phase transition it stands still and stays solid.
@@ -319,6 +319,11 @@ func _physics_process(delta: float) -> void:
 		_tick_stagger(delta)
 	elif _state == State.TRANSITION:
 		_tick_transition(delta)
+	elif is_stunned():
+		# MB1: an elite-rank mini-boss can be stunned (the final boss cannot: rank boss, stun multiplier 0). Like any enemy it drops its
+		# wind-up or charge with no hit and stands still (knockback only); the next wind-up gets its full telegraph.
+		if _state != State.CHASE:
+			_cancel_attack()
 	elif not _has_live_target():
 		if _state != State.CHASE:
 			_cancel_attack()

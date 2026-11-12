@@ -166,3 +166,59 @@ func test_every_card_name_fits_its_slot_name_label_at_every_size() -> void:
 			if lines > label.max_lines_visible or needed > label.size.y + 0.5 or label.text.ends_with(TextFit.ELLIPSIS):
 				bad.append("%s @%d: lines %d, needs %.1f of %.1f, text '%s'" % [String(card.get("id", "")), height, lines, needed, label.size.y, label.text])
 	assert_array(bad).override_failure_message("\n".join(bad)).is_empty()
+
+
+# --- MB1 nit: stack labels vs damage numbers ---
+
+func test_a_number_covers_a_label_only_when_the_boxes_touch() -> void:
+	assert_bool(StatusStackLabel.covers(0.2, 0.1, 0.5, 0.3)).is_true()
+	assert_bool(StatusStackLabel.covers(0.6, 0.1, 0.5, 0.3)).is_false()  # beside it
+	assert_bool(StatusStackLabel.covers(0.0, 0.4, 0.5, 0.3)).is_false()  # above it
+	assert_bool(StatusStackLabel.covers(-0.4, -0.2, 0.5, 0.3)).is_true()
+
+
+func test_the_label_dims_while_covered_and_returns_after_without_a_jump() -> void:
+	var alpha: float = 1.0
+	for _i in range(60):
+		alpha = StatusStackLabel.alpha_step(alpha, true, 0.25, 8.0, 1.0 / 60.0)
+	assert_float(alpha).is_equal_approx(0.25, 0.0001)
+	var one_step: float = StatusStackLabel.alpha_step(0.25, false, 0.25, 8.0, 1.0 / 60.0)
+	assert_float(one_step).is_between(0.25, 0.5)
+	for _i in range(60):
+		alpha = StatusStackLabel.alpha_step(alpha, false, 0.25, 8.0, 1.0 / 60.0)
+	assert_float(alpha).is_equal(1.0)
+
+
+func test_a_configured_damage_number_joins_the_group_the_labels_read() -> void:
+	var number: DamageNumber = (load("res://scenes/effects/DamageNumber.tscn") as PackedScene).instantiate()
+	number.configure(UiConfig.damage_numbers())
+	add_child(number)
+	auto_free(number)
+	assert_bool(number.is_in_group(DamageNumber.GROUP)).is_true()
+
+
+func test_the_dim_settings_are_valid_data() -> void:
+	var block: Dictionary = UiConfig.status_stacks()
+	assert_array(UiConfig.validate_status_stacks(block)).is_empty()
+	assert_float(float(block["number_dim_alpha"])).is_between(0.0, 1.0)
+
+
+# --- MB1 nit: red chasers on the act 3 floor ---
+
+static func _luminance(color: Color) -> float:
+	var lin := PackedFloat32Array()
+	for channel: float in [color.r, color.g, color.b]:
+		lin.append(channel / 12.92 if channel <= 0.04045 else pow((channel + 0.055) / 1.055, 2.4))
+	return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
+
+
+static func _contrast(a: Color, b: Color) -> float:
+	var hi: float = maxf(_luminance(a), _luminance(b))
+	var lo: float = minf(_luminance(a), _luminance(b))
+	return (hi + 0.05) / (lo + 0.05)
+
+
+func test_the_act_3_floor_is_further_from_the_chaser_red_than_the_old_dull_red_one() -> void:
+	var chaser := Color(0.75, 0.15, 0.15)  # scenes/enemies/MeleeChaser.tscn body albedo
+	var floor_now: Color = RunConfig.act_tint(3)["floor"]
+	assert_float(_contrast(chaser, floor_now)).override_failure_message("act 3 floor %s against the chaser" % floor_now.to_html()).is_greater(_contrast(chaser, Color.html("#704840")) + 0.25)

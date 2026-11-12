@@ -7,6 +7,9 @@ class_name DamageNumber
 ## A merged number's clock is pulled back to at most this fraction of its life.
 const MERGE_REFRESH := 0.3
 
+## Every live number and word popup is in this group (the stack labels dim under them).
+const GROUP := &"damage_numbers"
+
 var damage_type: String = ""
 ## "" (plain), STYLE_ARMOR or STYLE_RESIST: part of the merge key, so a muted armored hit never folds into a plain one.
 var style: StringName = &""
@@ -122,6 +125,7 @@ static func color_for(type: String, lighten: float) -> Color:
 
 ## Applies the shared style from data. Call right after instantiating.
 func configure(cfg: Dictionary) -> void:
+	add_to_group(GROUP)  # MB1 ux: the status stack labels look for numbers that cover them
 	font_size = int(cfg["font_size"])
 	pixel_size = float(cfg["pixel_size"])
 	outline_size = int(cfg["outline_size"])

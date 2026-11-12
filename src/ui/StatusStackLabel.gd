@@ -69,6 +69,17 @@ static func text_size(text: String, font_size: int, pixel_size: float) -> Vector
 	return Vector2(float(longest) * line_m * 0.55, float(maxi(lines.size(), 1)) * line_m * 1.15)
 
 
+## MB1 ux: whether a damage number's text box touches a stack label's. Offsets are camera-plane metres from the label to the number; the half sizes are
+## each text's half width and half height. A neighbour's number rising through the label of the enemy in front used to print over it.
+static func covers(dx: float, dy: float, half_w: float, half_h: float) -> bool:
+	return absf(dx) < half_w and absf(dy) < half_h
+
+
+## One step of the label's alpha: down to `dim` (data number_dim_alpha) while a number covers it, back to 1 after, at `speed` alpha per second.
+static func alpha_step(current: float, covered: bool, dim: float, speed: float, delta: float) -> float:
+	return move_toward(current, dim if covered else 1.0, speed * delta)
+
+
 ## The word shown with a detonation, for example "Bleed detonated".
 static func detonate_word(display_name: String, cfg: Dictionary) -> String:
 	return String(cfg["detonate_word"]) % display_name
@@ -171,6 +182,21 @@ func _process(delta: float) -> void:
 		target = maxf(target, rise / up_in_world)
 	_lift = move_toward(_lift, target, float(_cfg["lift_speed"]) * delta)
 	position.y = _base_height + _lift
+	modulate.a = alpha_step(modulate.a, _covered_by_number(camera, size), float(_cfg["number_dim_alpha"]), float(_cfg["number_dim_speed"]), delta)
+
+
+## True while a live damage number (or a "detonated" word) overlaps this label on screen.
+func _covered_by_number(camera: Camera3D, size: Vector2) -> bool:
+	var mine: Vector3 = global_position
+	for node: Node in get_tree().get_nodes_in_group(DamageNumber.GROUP):
+		var number := node as DamageNumber
+		if number == null or not number.is_inside_tree() or not number.visible:
+			continue
+		var offset: Vector3 = number.global_position - mine
+		var number_size: Vector2 = text_size(number.text, number.font_size, number.pixel_size) * number.scale.x
+		if covers(offset.dot(camera.global_transform.basis.x), offset.dot(camera.global_transform.basis.y), (size.x + number_size.x) * 0.5, (size.y + number_size.y) * 0.5):
+			return true
+	return false
 
 
 func _on_stacks_changed(_status_id: String, _stacks: int) -> void:

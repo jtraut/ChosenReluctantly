@@ -239,6 +239,8 @@
         "detonate_word_clamp_extra": 44.0,
         "detonate_word_above_number": 0.9,
         "overlap_pad": 0.06,
+        "number_dim_alpha": 0.25,
+        "number_dim_speed": 8.0,
         "lift_speed": 6.0,
         "burst_radius": 1.1,
         "boss_gap": 0.5

@@ -41,7 +41,7 @@
         "start_heal": 0.3,
         "1": { "hp": 1.0, "damage": 1.0, "gold": 1.0, "tint": { "floor": "#4d734d", "light": "#ffffff" } },
         "2": { "hp": 1.1, "damage": 1.0, "gold": 1.0, "tint": { "floor": "#46606f", "light": "#dce8ff" } },
-        "3": { "hp": 1.2, "damage": 1.0, "gold": 1.0, "tint": { "floor": "#704840", "light": "#ffe3cf" } }
+        "3": { "hp": 1.2, "damage": 1.0, "gold": 1.0, "tint": { "floor": "#4a3f4d", "light": "#ffe3cf" } }
     },
     "rooms": {
         "combat": [

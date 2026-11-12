@@ -505,7 +505,7 @@ static func _validate_relic_text(value: Variant) -> Array[String]:
 ## ui.effect strings the synergy text needs (BD1): condition wording, the primed-buff wording and the buff stat sentences.
 const EFFECT_TEXT_GROUPS: Dictionary = {
 	"condition": ["target_has_status", "cast_within_slot", "cast_within_tag", "zone_active"],
-	"buff_stats": ["slot_cooldown_skip", "status_damage_mult"],
+	"buff_stats": ["slot_cooldown_skip", "status_damage_mult", "card_damage_mult_vs_status"],
 }
 
 

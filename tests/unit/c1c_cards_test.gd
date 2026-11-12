@@ -263,7 +263,7 @@ func test_the_preset_deck_holds_every_fire_rogue_pool_card_and_starts_unblocked(
 	var owned: Array[String] = main.player.card_slots.owned_card_ids()
 	var expected: Array[String] = []
 	for card: Dictionary in CardDatabase.all_cards():
-		if FIRE_ROGUE_POOLS.has(String(card["pool"])):
+		if FIRE_ROGUE_POOLS.has(String(card["pool"])) and CardSchema.rarity_of(card) == "common":  # MAP3b: the arena's pool fill takes only common cards
 			expected.append(String(card["id"]))
 	owned.sort()
 	expected.sort()

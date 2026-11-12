@@ -32,7 +32,7 @@
                 "stat": "armor",
                 "modifier_type": "additive",
                 "value": 8.0,
-                "duration": 3.0
+                "duration": 1.4
             }
         }
     ]

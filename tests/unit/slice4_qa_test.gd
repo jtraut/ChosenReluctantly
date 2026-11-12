@@ -127,7 +127,7 @@ func test_every_shipped_card_cast_repeatedly_stays_within_cap_and_returns_to_idl
 	await get_tree().process_frame
 	await get_tree().process_frame
 	# A Bleed drop (C1-e) is a short transient: one that fell just before the enemies went still has to fade out.
-	for i in range(180):  # BD1-B: was 60; Slow Burn adds a second 4 s zone per round, and the last one needs a little longer to run out
+	for i in range(420):  # MAP3b B: was 180 (Scorched Earth's zone lasts 6 s); BD1-B: was 60; Slow Burn adds a second 4 s zone per round, and the last one needs a little longer to run out
 		await get_tree().physics_frame
 	assert_int(pool.active_count()).is_equal(0)
 	# No node growth beyond the pool itself and the two spawn-time children.

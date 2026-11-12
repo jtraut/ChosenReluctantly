@@ -15,6 +15,7 @@
         "fire_hot_head", "neutral_deep_sigh", "wizard_borrowed_focus", "wizard_footwork_allegedly", "wizard_ward",
         "wizard_sideways_blink", "wizard_tactical_hover", "neutral_backward_leap", "fire_blaze_and_bail",
         "neutral_healing_potion", "neutral_leech", "neutral_regeneration",
-        "fire_fan_the_flames", "fire_kindling", "fire_heat_sink", "fire_slow_burn", "wizard_parting_gift", "wizard_well_actually"
+        "fire_fan_the_flames", "fire_kindling", "fire_heat_sink", "fire_slow_burn", "wizard_parting_gift", "wizard_well_actually",
+        "wizard_reply_all", "wizard_strongly_worded_ward", "wizard_office_hours", "wizard_tenure", "wizard_peer_review", "wizard_sabbatical", "fire_controlled_demolition", "fire_hot_desking", "fire_scorched_earth", "neutral_second_opinion", "neutral_golden_handshake"
     ]
 }

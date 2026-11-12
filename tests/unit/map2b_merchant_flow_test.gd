@@ -439,7 +439,7 @@ func test_a_save_taken_in_the_shop_the_removal_list_or_the_swap_restores_the_sam
 	# the swap
 	var relic_option: Dictionary = {}
 	for option: Dictionary in _options_of_kind(RunChoices.model(state, ctx, "merchant"), "buy_relic"):
-		if bool(option["enabled"]):
+		if bool(option["enabled"]) and not String(option["id"]).ends_with("pyre_insurance"):  # the held relic can sit in the stock
 			relic_option = option
 			break
 	RunChoices.apply(state, String(relic_option["id"]), ctx)

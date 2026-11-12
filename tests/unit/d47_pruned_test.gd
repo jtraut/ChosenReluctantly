@@ -160,6 +160,8 @@ func test_dry_pools_give_a_short_offer_and_then_no_reward_screen() -> void:
 	for card: Variant in (ctx["cards"] as Array):
 		if (ctx["pools"] as Array).has(String((card as Dictionary).get("pool", ""))):
 			all_ids.append(String((card as Dictionary)["id"]))
+	# MAP3b B: act 1 offers only common cards, so the two that are left must be common ones (commons first).
+	all_ids.sort_custom(func(a: String, b: String) -> bool: return (CardSchema.rarity_of(CardDatabase.get_card(a)) == "common") and (CardSchema.rarity_of(CardDatabase.get_card(b)) != "common"))
 	# Two cards left in the pools: the offer is those two, never more and never a removed one.
 	state.removed_cards = all_ids.slice(2)
 	RunChoices.open_for_room(state, "combat", false, ctx)

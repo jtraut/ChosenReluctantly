@@ -126,9 +126,9 @@ func test_a_card_without_rarity_is_common_and_a_bad_rarity_is_an_error() -> void
 	assert_array(CardSchema.validate(bad)).is_not_empty()
 
 
-func test_the_shipped_cards_are_all_common_until_sitting_b() -> void:
+func test_the_shipped_cards_carry_a_valid_rarity() -> void:
 	for card: Variant in CardDatabase.all_cards():
-		assert_str(CardSchema.rarity_of(card)).is_equal("common")
+		assert_bool(CardSchema.RARITIES.has(CardSchema.rarity_of(card))).is_true()  # sitting B ships 9 rare and 8 legendary cards (map3b_content_test counts them)
 
 
 # --- verify item: cards may use reduce_cooldown ---

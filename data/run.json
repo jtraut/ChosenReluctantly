@@ -146,7 +146,8 @@
             "attack_interval": "%s attack delay %s", "attack_cooldown": "%s attack cooldown %s",
             "buff_stats": {
                 "slot_cooldown_skip": "Next %s cast has no cooldown",
-                "status_damage_mult": "%s you apply deals %s damage"
+                "status_damage_mult": "%s you apply deals %s damage",
+                "card_damage_mult_vs_status": "Cards deal %s to enemies with %s"
             },
             "condition": {
                 "target_has_status": "If the target has %s",

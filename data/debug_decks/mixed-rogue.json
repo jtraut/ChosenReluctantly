@@ -17,6 +17,7 @@
         "rogue_nap_time", "neutral_healing_potion", "neutral_leech", "neutral_regeneration",
         "fire_fan_the_flames", "fire_kindling", "fire_heat_sink", "fire_slow_burn", "rogue_drive_by", "rogue_momentum",
         "rogue_open_a_vein", "rogue_paper_cuts", "rogue_bad_influence", "rogue_warm_up",
-        "rogue_cut_corners", "rogue_knife_drawer", "rogue_excuse_me", "rogue_blood_money"
+        "rogue_cut_corners", "rogue_knife_drawer", "rogue_excuse_me", "rogue_blood_money",
+        "rogue_arterial_spray", "rogue_hemorrhage_clause", "rogue_knuckle_sandwich", "rogue_exsanguinate", "rogue_thousand_memos", "rogue_brawl_clause", "fire_controlled_demolition", "fire_hot_desking", "fire_scorched_earth", "neutral_second_opinion", "neutral_golden_handshake"
     ]
 }

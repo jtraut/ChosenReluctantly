@@ -98,7 +98,7 @@ func test_fire_heavy_has_every_fire_card_and_physical_has_the_fewest_possible() 
 	var all_fire: Array = RunConfig.cards_in_pools(["fire"])
 	var fire_starter: Array = (_presets()["fire-heavy-rogue"]["starter"] as Array)
 	for card_id: String in all_fire:
-		if ["fire_fan_the_flames", "fire_kindling", "fire_heat_sink", "fire_slow_burn"].has(card_id):
+		if ["fire_fan_the_flames", "fire_kindling", "fire_heat_sink", "fire_slow_burn", "fire_controlled_demolition", "fire_hot_desking", "fire_scorched_earth"].has(card_id):
 			continue  # BD1-B: the new Fire cards live in the archetype decks; the T-decks starters did not change
 		assert_bool(fire_starter.has(card_id)).override_failure_message("fire-heavy starter lacks " + card_id).is_true()
 	# The non-Fire pool cannot supply 3 unique Utility or 3 unique AoE cards: count it from the data, not from the preset.

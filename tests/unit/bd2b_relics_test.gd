@@ -6,7 +6,7 @@ extends GdUnitTestSuite
 const MAIN_SCENE_PATH := "res://scenes/main/Main.tscn"
 ## The original six (BD2-B). MAP2-B adds seven more (map2b_relics_test); every relic of both sets is listed here, sorted as the loader sorts them.
 const SHIPPED: Array[String] = ["heavy_sigh", "lingering_embers", "pyre_insurance", "second_wind_unwillingly", "smoldering_grudge", "spite_knuckles"]
-const ALL_SHIPPED: Array[String] = ["as_per_the_attached_document", "asap_notice", "chasing_paper", "grading_curve", "heavy_sigh", "lingering_embers", "liquidate_assets", "muscle_memory", "overtime_unpaid", "paperwork_fire", "per_my_last_email", "pyre_insurance", "request_for_quotation", "salt_in_the_wound", "second_wind_unwillingly", "serrated_excuse", "severance_package", "smoldering_grudge", "spite_knuckles"]
+const ALL_SHIPPED: Array[String] = ["action_item", "adrenaline_vial", "as_per_the_attached_document", "asap_notice", "blood_oath", "bureaucratic_red_tape", "burnout_syndrome", "cc_all_staff", "chasing_paper", "closing_argument", "corporate_buyout", "desk_slam", "endowed_chair", "ergonomic_chair", "faculty_meeting", "fight_club_membership", "grading_curve", "heavy_sigh", "hostile_work_environment", "kindling_jar", "lingering_embers", "liquidate_assets", "muscle_memory", "office_supplies", "overtime_unpaid", "paperwork_fire", "per_my_last_email", "pyre_insurance", "request_for_quotation", "sabbatical_fund", "salt_in_the_wound", "second_wind_unwillingly", "serrated_excuse", "severance_package", "sinking_fund", "smoldering_grudge", "spite_knuckles", "synergy_workshop", "tenured_professor", "the_ivory_tower", "the_micromanager", "the_non_compete_clause"]
 
 
 func before_test() -> void:
@@ -70,9 +70,9 @@ func test_the_shipped_relics_load_clean_and_follow_the_brief() -> void:
 	assert_array(RelicDatabase.problems()).is_empty()
 	assert_array(RelicDatabase.ids()).is_equal(ALL_SHIPPED)
 	for relic: Dictionary in RelicDatabase.all_relics():
-		assert_bool(["tier1", "tier2"].has(String(relic["rarity"]))).is_true()
+		assert_bool(["tier1", "tier2", "tier3", "boss"].has(String(relic["rarity"]))).is_true()  # MAP3b B added tier 3 and the boss tier
 		assert_str(String(relic["rule_text"])).is_not_empty()
-		if not Merchant.is_shop_only(relic):  # the shop-only relics (MAP2-B) are sold by the merchant alone
+		if not Merchant.is_shop_only(relic) and String(relic["rarity"]) != "boss":  # the shop-only relics (MAP2-B) are sold by the merchant alone; boss relics come from the mini-boss
 			assert_bool((relic["sources"] as Array).has("elite") and (relic["sources"] as Array).has("relic_room")).is_true()
 		assert_bool(not (relic["sources"] as Array).has("boss")).is_true()
 
@@ -86,9 +86,9 @@ func test_the_wizard_cannot_find_the_rogue_relic_and_both_classes_see_the_rest()
 	var tiers: Array[String] = ["tier1", "tier2"]
 	var rogue_all: Array[String] = RelicOffer.offer("elite", 20, rng, weights, empty, empty, rogue, RelicDatabase.all_relics(), tiers)
 	var wizard_all: Array[String] = RelicOffer.offer("elite", 20, rng, weights, empty, empty, wizard, RelicDatabase.all_relics(), tiers)
-	assert_int(rogue_all.size()).is_equal(14)  # the original six, ASAP Notice and Severance Package, and BD3a's six (Serrated Excuse, Salt in the Wound, Per My Last Email, Chasing Paper, Muscle Memory, Overtime)
+	assert_int(rogue_all.size()).is_equal(16)  # MAP3b B: + Desk Slam, Adrenaline Vial (tier 1-2 only here);  # the original six, ASAP Notice and Severance Package, and BD3a's six (Serrated Excuse, Salt in the Wound, Per My Last Email, Chasing Paper, Muscle Memory, Overtime)
 	assert_bool(rogue_all.has("spite_knuckles")).is_true()
-	assert_int(wizard_all.size()).is_equal(10)  # five of the six, ASAP Notice, Paperwork Fire and Grading Curve, and BD3a's two neutral ones (Muscle Memory, Overtime)
+	assert_int(wizard_all.size()).is_equal(15)  # MAP3b B: + Desk Slam, Adrenaline Vial, cc: All Staff, Office Supplies, Ergonomic Chair;  # five of the six, ASAP Notice, Paperwork Fire and Grading Curve, and BD3a's two neutral ones (Muscle Memory, Overtime)
 	assert_bool(wizard_all.has("spite_knuckles")).is_false()
 
 

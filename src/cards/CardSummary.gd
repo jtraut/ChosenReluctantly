@@ -111,7 +111,7 @@ const DEFAULT_TEXT: Dictionary = {
 	"armor": "%s armor",
 	"for": "for %s s",
 	"within": "%s, within %s s",
-	"buff_stats": {"slot_cooldown_skip": "Next %s cast has no cooldown", "status_damage_mult": "%s you apply deals %s damage"},
+	"buff_stats": {"slot_cooldown_skip": "Next %s cast has no cooldown", "status_damage_mult": "%s you apply deals %s damage", "card_damage_mult_vs_status": "Cards deal %s to enemies with %s"},
 	"condition": {
 		"target_has_status": "If the target has %s",
 		"cast_within_slot": "If you used your %s slot in the last %s s",
@@ -214,6 +214,8 @@ static func buff_text(params: Dictionary, text: Dictionary = {}) -> String:
 		head = String(buff_stats["slot_cooldown_skip"]) % _slot_name(stat.get_slice(".", 1), text)
 	elif stat.begins_with("status_damage_mult.") and multiplicative:
 		head = String(buff_stats["status_damage_mult"]) % [_status_name(stat.get_slice(".", 1), text), _percent(value)]
+	elif stat.begins_with("card_damage_mult_vs_status.") and multiplicative:
+		head = String(buff_stats["card_damage_mult_vs_status"]) % [_percent(value), _status_name(stat.get_slice(".", 1), text)]
 	elif stat.begins_with("status_max_stacks.") and not multiplicative:
 		head = String(_word(text, "stack_cap")) % [_status_name(stat.get_slice(".", 1), text), _num(value)]
 	elif stat.begins_with("status_tick_rate.") and multiplicative:

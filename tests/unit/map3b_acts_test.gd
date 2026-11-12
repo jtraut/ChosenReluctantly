@@ -498,13 +498,13 @@ func test_the_mini_boss_offers_a_relic_then_a_card_offer() -> void:
 	assert_int(state.offer.size()).is_equal(3)
 
 
-func test_the_mini_boss_relic_offer_can_be_skipped_for_free() -> void:
+func test_the_mini_boss_boss_relic_offer_has_no_skip_and_costs_no_reject() -> void:  # MAP3b B: with boss relics shipped the offer is the real boss-tier one (no skip)
 	var ctx: Dictionary = RunChoices.shipped_context(CharacterDatabase.pools("rogue"))
 	var state: RunState = _state_in_act(1)
 	var rejects: int = state.rejects_remaining
 	RunRelics.open_for_room(state, "mini_boss", false, ctx)
 	var skipped: Dictionary = RunRelics.apply(state, "relic_skip", ctx)
-	assert_bool(bool(skipped["ok"])).is_true()
+	assert_bool(bool(skipped["ok"])).is_false()
 	assert_int(state.rejects_remaining).is_equal(rejects)
 
 
@@ -519,7 +519,7 @@ func _own_every_relic_the_elite_can_offer(state: RunState, ctx: Dictionary) -> v
 func test_an_exhausted_relic_pool_falls_back_to_one_card_offer() -> void:
 	var ctx: Dictionary = RunChoices.shipped_context(CharacterDatabase.pools("rogue"))
 	for act_number in [1, 2, 3]:
-		for room_type in ["elite", "relic_room", "mini_boss"]:
+		for room_type in ["elite", "relic_room"]:  # the mini-boss now has its own boss-tier relics to offer
 			var state: RunState = _state_in_act(act_number)
 			_own_every_relic_the_elite_can_offer(state, ctx)
 			RunSession.forced_relic_offer = []

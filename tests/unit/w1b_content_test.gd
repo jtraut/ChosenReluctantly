@@ -4,7 +4,7 @@ extends GdUnitTestSuite
 
 const NEW_ATTACK_CARDS: Array[String] = ["wizard_bolt_volley", "wizard_overqualified_bolt", "wizard_arcane_nova"]
 ## BD1-B's new Fire cards by id (qa BD2: was a tag test, which would silently skip a future Keystone or Primer card).
-const BD1_FIRE_CARDS: Array[String] = ["fire_fan_the_flames", "fire_kindling", "fire_heat_sink", "fire_slow_burn"]
+const BD1_FIRE_CARDS: Array[String] = ["fire_fan_the_flames", "fire_kindling", "fire_heat_sink", "fire_slow_burn", "fire_controlled_demolition", "fire_hot_desking", "fire_scorched_earth"]
 
 
 func test_new_wizard_cards_pass_the_damage_rule_with_margin_over_the_rogue_light() -> void:

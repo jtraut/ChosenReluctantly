@@ -189,6 +189,16 @@ func test_decisions_balance_table_matches_the_data_files() -> void:
 		# BD3a sitting B: Cutting Corners 10 + Bleed 3 s capped to the 2.7 s cycle (5 ticks); The Knife Drawer 5 knives x 3 (the knives' own Bleed is not credited)
 		"rogue_cut_corners": [15.0, 2.7, 5.56],
 		"rogue_knife_drawer": [15.0, 2.8, 5.36],
+		# MAP3b B (rare and legendary): unconditional damage only (BUILD_DEPTH 12.3)
+		"fire_controlled_demolition": [13.0, 2.5, 5.20],
+		"fire_scorched_earth": [36.0, 2.5, 14.40],
+		"rogue_arterial_spray": [13.0, 2.5, 5.20],
+		"rogue_exsanguinate": [21.0, 4.0, 5.25],
+		"rogue_knuckle_sandwich": [7.0, 1.0, 7.00],
+		"rogue_thousand_memos": [11.0, 1.0, 11.00],
+		"wizard_office_hours": [30.0, 2.5, 12.00],
+		"wizard_peer_review": [18.0, 2.5, 7.20],
+		"wizard_reply_all": [15.0, 1.0, 15.00],
 	}
 	var statuses: Dictionary = {}
 	for status_id: String in ["burn", "bleed"]:

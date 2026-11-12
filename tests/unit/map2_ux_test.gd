@@ -191,7 +191,7 @@ func test_a_longer_shop_scrolls_and_every_tile_stays_reachable() -> void:
 	var spare_relic: String = ""
 	for relic: Variant in RelicDatabase.all_relics():
 		var id: String = String((relic as Dictionary)["id"])
-		if not relics.has(id) and not state.has_relic(id) and Merchant.relic_price(id, _ctx()) > 0:
+		if not relics.has(id) and not state.has_relic(id) and ((relic as Dictionary)["sources"] as Array).has("merchant") and Merchant.relic_price(id, _ctx()) > 0:
 			spare_relic = id
 			break
 	var spare_card: String = ""
@@ -202,6 +202,17 @@ func test_a_longer_shop_scrolls_and_every_tile_stays_reachable() -> void:
 			break
 	relics.append(spare_relic)
 	cards.append(spare_card)
+	# MAP3b B: with the longer relic and card text of the new content a plain fourth row now fits by shrinking, so stretch the stock one more row each.
+	for relic: Variant in RelicDatabase.all_relics():
+		var extra_id: String = String((relic as Dictionary)["id"])
+		if not relics.has(extra_id) and not state.has_relic(extra_id) and ((relic as Dictionary)["sources"] as Array).has("merchant") and Merchant.relic_price(extra_id, _ctx()) > 0:
+			relics.append(extra_id)
+			break
+	for card: Variant in (_ctx()["cards"] as Array):
+		var extra_card: String = String((card as Dictionary)["id"])
+		if not cards.has(extra_card):
+			cards.append(extra_card)
+			break
 	assert_bool(by_id.is_empty()).is_false()
 	var screen: RunPromptScreen = await _open(Vector2(1024, 600), _model(state))
 	assert_bool(screen.scroll.get_v_scroll_bar().visible).is_true()  # four rows do not fit 1024x600
@@ -534,16 +545,22 @@ func test_every_enabled_shop_option_can_be_reached_with_the_arrow_keys_at_1024_b
 func test_the_clipped_rows_of_a_long_shop_are_reached_and_scrolled_into_view() -> void:
 	var state: RunState = _shop(200, ["request_for_quotation"])
 	var visit: Dictionary = state.merchant_visit
+	var added: int = 0
 	for relic: Variant in RelicDatabase.all_relics():
 		var id: String = String((relic as Dictionary)["id"])
-		if not (visit["relics"] as Array).has(id) and not state.has_relic(id) and Merchant.relic_price(id, _ctx()) > 0:
+		if not (visit["relics"] as Array).has(id) and not state.has_relic(id) and ((relic as Dictionary)["sources"] as Array).has("merchant") and Merchant.relic_price(id, _ctx()) > 0:
 			(visit["relics"] as Array).append(id)
-			break
+			added += 1
+			if added >= 2:  # MAP3b B: two extra rows of each, so the stock still overflows 1024x600
+				break
+	added = 0
 	for card: Variant in (_ctx()["cards"] as Array):
 		var card_id: String = String((card as Dictionary)["id"])
 		if not (visit["cards"] as Array).has(card_id):
 			(visit["cards"] as Array).append(card_id)
-			break
+			added += 1
+			if added >= 2:  # MAP3b B: two extra rows of each, so the stock still overflows 1024x600
+				break
 	var screen: RunPromptScreen = await _open(Vector2(1024, 600), _model(state))
 	assert_bool(screen.scroll.get_v_scroll_bar().visible).is_true()
 	var reached: Array[Button] = _reachable_by_arrows(screen)

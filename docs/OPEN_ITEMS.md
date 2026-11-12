@@ -1,13 +1,13 @@
 # Director open items
 
-Last updated: 2026-11-11 (D48 = A recorded; latest tag `playtest-2026-11-09-BD3a`)
-**Status: no decisions waiting. 9 things to look at (54, 53, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. BD3a (physical Rogue) is done, tag `playtest-2026-11-09-BD3a`. SIM1 (bot re-calibration) is done; no new build to play. Next: **MB1** (mini-bosses) -> MAP3b -> MAP4 -> 3d -> BD3b.**
+Last updated: 2026-11-11 (MB1 closed; latest tag `playtest-2026-11-11-MB1`)
+**Status:** no decisions waiting. 10 things to look at (55, 54, 53, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. **MB1 (new mini-bosses) is done**, tag `playtest-2026-11-11-MB1`. Next: **MAP3b** (rare and legendary cards, boss relics) -> MAP4 -> 3d -> BD3b.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
 ## How to playtest
 
-- **Latest known-good build:** `git checkout playtest-2026-11-09-BD3a`, play, then `git checkout main`. The one before it is `playtest-2026-11-09-MAP3`. Older tags are in `docs/RESOLVED.md`.
+- **Latest known-good build:** `git checkout playtest-2026-11-11-MB1`, play, then `git checkout main`. The one before it is `playtest-2026-11-09-BD3a`. Older tags are in `docs/RESOLVED.md`.
 - **Relics:** `-- --relics=pyre_insurance+heavy_sigh` starts with relics; `-- --relic-cap=1` tries the give-one-up step.
 - **Normal run:** `godot --path .` (three acts of 10 rooms on a branching map; Continue on the class pick resumes a saved run). Extras: `-- --run-seed=5`, `-- --run-room=10` (act 1 mini-boss), `-- --run-room=30` (final boss), `-- --acts=1` (the old one-act run), `-- --no-map` (straight run), `-- --class=wizard`.
 - **Preset decks:** `godot --path . -- --list-decks`, then for example `-- --deck=fire-heavy-rogue --full-deck --run-room=10`.
@@ -24,6 +24,23 @@ Nothing waiting. Your last answer, D48 = A (2026-11-11), is recorded: Bleed and 
 ## Needs your eyes
 
 Reply with the number and a word or two.
+
+55. **Fight the two new mini-bosses (MB1), tag `playtest-2026-11-11-MB1` or main.** Try each as both the Rogue and the Wizard (`-- --class=wizard`).
+    - **How to get there:**
+      - Act 1, "Head of Facilities": `godot --path . -- --scenario=mini_boss_act1`.
+      - Act 2, "The Corporate Raider", your small, quick, hard-hitting example: `-- --scenario=mini_boss_act2`.
+      - Both use your real HP, not 9999.
+      - Or meet them in a run at rooms 10 and 20.
+    - **Real act-ending fights, or speed bumps?** The test bot never lost to either one. The playtester thinks the Raider is a speed bump for a Rogue who keeps moving.
+    - **If you don't say otherwise, MAP3b starts by:**
+      - raising the Raider's HP from 90 to 120;
+      - spreading the Head of Facilities' "Wet floor" circles so there are real gaps to stand in.
+      - Say "55 leave" to keep them as they are, or "55 harder" or "55 easier".
+    - **Look for:**
+      - the "Act 1 Mini-boss" line under the name;
+      - the cyan ring where the Raider will teleport (it isn't a damage zone);
+      - "(1/2)" and "(2/2)" on the dash combo;
+      - the floor colour changing each act.
 
 53. **Play a physical Rogue (BD3a), tag `playtest-2026-11-09-BD3a` or main.** `godot --path .` as the Rogue.
     - **Try to go Bleed from the start.** Take Bleed cards, remove Fire ones at rests and the merchant (removed cards no longer come back, your D47), and see if the run gives you enough.

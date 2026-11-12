@@ -3,9 +3,28 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-11 (MB1: build, ux, qa PASS, playtest 73e844b done; tech-writer docs pass next, then close and tag).
+Last updated: 2026-11-11 (MB1 closed, tag `playtest-2026-11-11-MB1`; MAP3b next, starting with game-lead's design pass).
 
 ## What's done
+- **MB1 closed 2026-11-11.** Tag `playtest-2026-11-11-MB1`.
+  - **Commits:**
+    - design 5ecbbf9 (MAP.md §11);
+    - gameplay-dev 5991616..f0fbdc3 (A: the brute, mini-boss marker, act tint, multi-disc aoe), a284270..8dae255 (B: the duelist, `chain`, `blink`);
+    - ux 1b3fe3a..7897d66;
+    - qa PASS e3835d0;
+    - playtest 73e844b;
+    - docs 46ea683.
+  - **Baselines now:**
+    - suite 2191 (163 suites, 0 orphans);
+    - hashes unchanged (arena 3172486861 / 916264160 / `-Plan` 1317880580; bot 3476063471);
+    - SIM1 three-act `-Route first` pooled: human Rogue 28/36, Wizard 15/36; off 35/36, 30/36;
+    - 0 losses at rooms 10 and 20.
+  - **Carry-overs to MAP3b** (ROADMAP "From MB1"):
+    - the tuning default, duelist HP 90 -> 120 and Wet floor gaps (eyes 55);
+    - the Open a Vein glow;
+    - the ux nits;
+    - the housekeeping items.
+  - **New director item:** eyes 55 (fight both mini-boss scenarios: real fights or speed bumps?).
 - **SIM1 closed 2026-11-11 (tooling, no tag, no playtest):** brief ca7cc1d; gameplay-dev d15e691, 85e7d6a, a047b9b; qa FAIL e19ecec/c5202ff (ps1 gate regex), re-check PASS 95aebd7; docs 2531020 (also archived D48 and its changelog entry).
   - **Shipped:** `data/bot_presets.json` (off, human = 0.2 s delay / 25 deg aim error), `--bot-preset=` / `-BotPreset`, sweep overrides, a case-sensitive engine-error gate in the sim wrappers.
   - **Baselines now:** suite 2100 (160 suites, exit 0, 0 orphans); hashes unchanged (arena 3172486861 / 916264160 / `-Plan` 1317880580; bot sim 3476063471). Three-act pooled `-Route first`, off / human: Rogue 35/36 / 26/36, Wizard 29/36 / 15/36. Full table in `docs/reviews/2026-11-11-sim1-qa.md`.
@@ -184,41 +203,18 @@ Last updated: 2026-11-11 (MB1: build, ux, qa PASS, playtest 73e844b done; tech-w
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **MB1 in progress.**
-  - **Done:** game-lead's design note, `docs/MAP.md` §11 (DECISIONS "MB1 design note"), with the ROADMAP MB1 sittings A and B.
-  - **Sitting A done** (5991616..f0fbdc3):
-    - the brute, the mini-boss marker, the act tint and aoe `count`/`scatter`;
-    - suite 2136, 0 orphans; hashes unchanged.
-    - **Gate:** human Rogue 27/36, Wizard 15/36; off 35/36, 29/36.
-    - Triage in DECISIONS "MB1 sitting A triage".
-  - **Sitting B done** (a284270..8dae255):
-    - the duelist, `chain` and `blink`;
-    - suite 2174, 0 orphans; hashes unchanged.
-    - **Gate:** human Rogue 28/36, Wizard 15/36; off 35/36, 30/36.
-    - 0 human losses at rooms 10 and 20. Both may be soft: playtest call. DECISIONS "MB1 sitting B triage".
-  - **ux done** (1b3fe3a..7897d66):
-    - the mini-boss subtitle;
-    - the chain cue;
-    - the blink marker;
-    - the boss wedges;
-    - the BD3a carry-overs.
-    - Suite 2191. DECISIONS "MB1 ux triage".
-  - **qa PASS** (e3835d0): gate 28/15/35/30; suite 2191; hashes unchanged. DECISIONS "MB1 qa PASS".
-  - **Playtest** (73e844b): no blocker; both mini-bosses look soft. The tuning default goes to MAP3b's first step via eyes item 55. DECISIONS "MB1 playtest triage".
-  - **Next:**
-    1. the tech-writer docs pass;
-    2. game-lead closes: ROADMAP [x], OPEN_ITEMS (status, tag, item 55), tag `playtest-2026-11-11-MB1`.
+- Nothing in progress. MB1 closed 2026-11-11.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step
-1. **MB1** (ROADMAP brief and MAP.md §11). The order:
-   1. gameplay-dev sitting A (the brute);
-   2. gameplay-dev sitting B (the duelist, `chain`, `blink`), then the SIM1 gate run;
-   3. ux (the BD3a carry-overs and the named mini-boss bar);
-   4. qa (the SIM1 floors, `-Route first`, and the room of each loss);
+1. **MAP3b** (ROADMAP brief). The order:
+   1. game-lead's BUILD_DEPTH design pass (boss-tier and tier 3 relics, rare and legendary cards, Bleed and physical coverage, retag or new);
+   2. gameplay-dev, first applying the MB1 tuning default unless eyes 55 says otherwise;
+   3. ux;
+   4. qa;
    5. the playtester;
-   6. the docs pass.
-2. Then MAP3b, MAP4, 3d, BD3b.
+   6. docs.
+2. Then MAP4, 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
@@ -227,4 +223,4 @@ Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions open; eyes 54, 53, 52, 51, 50, 49, 48, 47 and 35; the round 2 vision check is due. Answered items are in `docs/RESOLVED.md`.
+All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions open; eyes 55, 54, 53, 52, 51, 50, 49, 48, 47 and 35; the round 2 vision check is due. Answered items are in `docs/RESOLVED.md`.

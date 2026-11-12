@@ -1319,7 +1319,15 @@ un_offer_report.ps1`.
       6. Find out why headless `--run-room=30` without `--quit` didn't exit in tech-writer's BD3a pass; fix or report.
     - **qa, sitting 2:** re-record every sim baseline (list above) on the fixed bot and on the preset, re-measure the BD3a fingerprint and parity on the preset, propose floors.
     - **game-lead:** sets the floors in DECISIONS; OPEN_ITEMS notes that the director's own runs set the bar.
-- [ ] **MB1, mini-boss and act identity (after BD3a, before MAP3b; D44 = C, director 2026-11-09). Full loop. Tag `playtest-YYYY-MM-DD-MB1`.** Director: the mini-bosses especially need their own attacks and behaviours, for example one smaller, with less HP than the others, but quicker and hitting harder in a rogue style; plus visible changes per act (GDD §9).
+- [x] **MB1, mini-boss and act identity (after BD3a, before MAP3b; D44 = C, director 2026-11-09). Full loop. Tag `playtest-2026-11-11-MB1`.**
+  - **Done 2026-11-11.**
+    - design 5ecbbf9;
+    - gameplay-dev 5991616..f0fbdc3 (A), a284270..8dae255 (B);
+    - ux 1b3fe3a..7897d66;
+    - qa PASS e3835d0;
+    - playtest 73e844b (no blocker);
+    - docs 46ea683.
+  - The tuning default (duelist HP 120, Wet floor gaps) is MAP3b's first step, unless eyes item 55 says otherwise. Director: the mini-bosses especially need their own attacks and behaviours, for example one smaller, with less HP than the others, but quicker and hitting harder in a rogue style; plus visible changes per act (GDD §9).
   - **Design note done 2026-11-11: `docs/MAP.md` §11** (DECISIONS "MB1 design note"). It supersedes the sketch below. The brute keeps its role but drops the Guardian-like slam for a three-circle "Wet floor". The duelist's telegraphs stay at the 0.6 s floor.
     - **gameplay-dev sitting A:**
       - a `bosses.json` mini-boss marker: rank `elite`, death beat 1.0 s, never a run win;

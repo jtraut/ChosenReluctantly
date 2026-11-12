@@ -439,7 +439,7 @@ func _begin_windup(attack_id: String) -> void:
 	_aoe_locked = []
 	if String(_attack["kind"]) == "aoe" and BossConfig.aoe_count(_attack) > 1:
 		# MB1: the discs are rolled once, from the boss's own seeded stream, and locked for the whole wind-up.
-		_aoe_locked = BossRules.aoe_centers(_lock_point, BossConfig.aoe_count(_attack), BossConfig.aoe_scatter(_attack), _rng, ARENA_LIMIT)
+		_aoe_locked = BossRules.aoe_centers(_lock_point, BossConfig.aoe_count(_attack), BossConfig.aoe_scatter(_attack), _rng, ARENA_LIMIT, BossConfig.aoe_scatter_min(_attack))
 	if String(_attack["kind"]) == "blink":
 		# MB1: the landing spot is fixed now, from where the player stands now; the player can walk off it (that is the dodge).
 		_blink_point = BossRules.blink_landing(global_position, target.global_position, float(_attack["behind"]), ARENA_LIMIT)

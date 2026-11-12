@@ -92,12 +92,20 @@ static func aoe_reach(attack: Dictionary) -> float:
 ## MB1: where the discs of one aoe cast land. The first sits on `first` (the player's spot when the wind-up starts); each of the
 ## other `count - 1` sits within `scatter` metres of it, at least a third of that away so the discs spread out, inside +-`limit`
 ## on both ground axes. A count of 1 returns just `first` and never draws from `rng` (so a single-disc attack keeps its random stream).
-static func aoe_centers(first: Vector3, count: int, scatter: float, rng: RandomNumberGenerator, limit: float) -> Array[Vector3]:
+static func aoe_centers(first: Vector3, count: int, scatter: float, rng: RandomNumberGenerator, limit: float, min_dist: float = -1.0) -> Array[Vector3]:
 	var out: Array[Vector3] = [Vector3(first.x, 0.0, first.z)]
+	var near: float = scatter * 0.35 if min_dist < 0.0 else minf(min_dist, scatter)
 	for index in range(1, count):
 		var angle: float = rng.randf_range(0.0, TAU)
-		var dist: float = rng.randf_range(scatter * 0.35, scatter)
-		out.append(Vector3(clampf(first.x + cos(angle) * dist, -limit, limit), 0.0, clampf(first.z + sin(angle) * dist, -limit, limit)))
+		var dist: float = rng.randf_range(near, scatter)
+		var spot: Vector3 = Vector3.ZERO
+		# MAP3b: a wall clamp must not pull a disc back under the player; turn a quarter at a time until one holds the gap.
+		for turn in range(4):
+			var turned: float = angle + float(turn) * PI * 0.5
+			spot = Vector3(clampf(first.x + cos(turned) * dist, -limit, limit), 0.0, clampf(first.z + sin(turned) * dist, -limit, limit))
+			if Vector2(spot.x - first.x, spot.z - first.z).length() >= near - 0.0001:
+				break
+		out.append(spot)
 	return out
 
 

@@ -242,6 +242,7 @@ func test_the_brute_matches_the_design_note() -> void:
 	assert_float(float(wet["radius"])).is_equal(2.0)
 	assert_int(BossConfig.aoe_count(wet)).is_equal(3)
 	assert_float(BossConfig.aoe_scatter(wet)).is_equal(3.0)
+	assert_float(BossConfig.aoe_scatter_min(wet)).is_equal(3.0)  # MAP3b: the outer discs land at least 3 m from the player
 	assert_float(float(wet["knockback"])).is_equal(4.0)
 	var fork: Dictionary = attacks["forklift"]
 	assert_str(String(fork["kind"])).is_equal("charge")
@@ -743,3 +744,20 @@ func test_the_scenario_schema_rejects_bad_new_flags() -> void:
 	assert_array(ScenarioSchema.validate("x", {"act": 0})).is_not_empty()
 	assert_array(ScenarioSchema.validate("x", {"natural_hp": "yes"})).is_not_empty()
 	assert_array(ScenarioSchema.validate("x", {"standard_deck": 1})).is_not_empty()
+
+
+func test_wet_floor_outer_discs_land_at_least_3_m_from_the_player() -> void:
+	var wet: Dictionary = BossConfig.boss("boss_brute")["attacks"]["wet_floor"]
+	var near: float = BossConfig.aoe_scatter_min(wet)
+	assert_float(near).is_greater_equal(3.0)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 21
+	for spot in [Vector3(0.0, 0.0, 0.0), Vector3(17.9, 0.0, -17.9), Vector3(-18.0, 0.0, 3.0)]:
+		for round_index in range(60):
+			var centers: Array[Vector3] = BossRules.aoe_centers(spot, BossConfig.aoe_count(wet), BossConfig.aoe_scatter(wet), rng, 18.0, near)
+			for index in [1, 2]:
+				assert_float(Vector2(centers[index].x - spot.x, centers[index].z - spot.z).length()).is_greater_equal(3.0 - 0.001)
+
+
+func test_the_raider_has_120_health() -> void:
+	assert_float(float(BossConfig.boss("boss_duelist")["max_health"])).is_equal(120.0)

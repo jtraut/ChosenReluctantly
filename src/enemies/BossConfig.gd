@@ -35,7 +35,7 @@ const CHAIN_KEY := "chain"
 const MAX_CHAIN_ATTACKS := 2
 const PLACES: Array[String] = ["self", "target"]
 ## MB1: optional aoe fields. `count` discs per cast (default 1 = the old single disc), `scatter` the metres the extra discs may sit from the first.
-const AOE_OPTIONAL_KEYS: Array[String] = ["count", "scatter"]
+const AOE_OPTIONAL_KEYS: Array[String] = ["count", "scatter", "scatter_min"]
 const MAX_AOE_COUNT := 6
 const MAX_AOE_SCATTER := 12.0
 const RULE_KEYS: Array[String] = ["min_telegraph", "max_transition", "max_adds_cap", "min_attacks"]
@@ -188,6 +188,10 @@ static func validate_attack(where: String, attack: Dictionary, min_telegraph: fl
 				_whole(attack, "count", 1, MAX_AOE_COUNT, where, errors)
 			if attack.has("scatter"):
 				_num(attack, "scatter", 0.0, MAX_AOE_SCATTER, where, errors)
+			if attack.has("scatter_min"):
+				_num(attack, "scatter_min", 0.0, MAX_AOE_SCATTER, where, errors)
+				if _is_num(attack.get("scatter")) and _is_num(attack["scatter_min"]) and float(attack["scatter_min"]) > float(attack["scatter"]):
+					errors.append("%s.scatter_min must not exceed scatter" % where)
 			if aoe_count(attack) > 1:
 				if String(attack.get("place", "")) != "target":
 					errors.append("%s: count above 1 needs place \"target\" (the first disc lands on the player)" % where)
@@ -420,6 +424,11 @@ static func aoe_count(attack: Dictionary) -> int:
 ## MB1: the metres the extra discs may sit from the first (0 when absent).
 static func aoe_scatter(attack: Dictionary) -> float:
 	return maxf(float(attack["scatter"]), 0.0) if _is_num(attack.get("scatter")) else 0.0
+
+
+## MAP3b: the nearest an extra disc may land to the first (metres); a third of `scatter` when absent (the MB1 rule).
+static func aoe_scatter_min(attack: Dictionary) -> float:
+	return maxf(float(attack["scatter_min"]), 0.0) if _is_num(attack.get("scatter_min")) else aoe_scatter(attack) * 0.35
 
 
 ## MB1: true when the boss entry is an act-end mini-boss (`mini_boss` true).

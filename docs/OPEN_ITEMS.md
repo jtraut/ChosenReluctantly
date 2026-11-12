@@ -46,6 +46,7 @@ Reply with the number and a word or two.
       - raising the Raider's HP from 90 to 120;
       - spreading the Head of Facilities' "Wet floor" circles so there are real gaps to stand in.
       - Say "55 leave" to keep them as they are, or "55 harder" or "55 easier".
+    - **Update 2026-11-12:** that default is now on main. It didn't change anything for the test bot: it still wins the same runs, and both fights still cost it almost no HP. If you want them harder, it'll take new pressure (more adds, faster attacks), not just more HP.
     - **Look for:**
       - the "Act 1 Mini-boss" line under the name;
       - the cyan ring where the Raider will teleport (it isn't a damage zone);

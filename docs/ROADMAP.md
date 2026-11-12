@@ -1385,6 +1385,7 @@ un_offer_report.ps1`.
   - **ux:** the gold frame for legendary cards, the rarity on card tiles, and the boss-relic offer screen.
   - **qa:** the price-below-tier test, "exactly 2 boss relics" on every finished 3-act run, and pool sizes.
   - **Acceptance:** the original MAP3 relic targets (MAP.md §4.5): `relic` median 14-17, `safe` 6-8, exactly 2 boss relics, and nobody at the cap in the median run.
+  - **Sitting A done 2026-11-12** (5d5678c..472beb0; DECISIONS "MAP3b sitting A triage"). Suite 2233 / 164, 0 orphans; hashes unchanged; SIM1 gate unchanged (human 28/36 and 15/36, off 35/36 and 30/36). One-act card prices dropped: both run lengths use 55/85/125. **Sitting B next.**
   - **Detailed brief (game-lead, 2026-11-12; BUILD_DEPTH §12, DECISIONS "MAP3b design pass").** The design pass is done. All the content is new; no existing card is retagged. New effect code is limited to the §12.2 list. D49 (should pruning or rejecting shrink a type's offers) went to the director with default A, no new rule, so nothing here waits on it. Sittings:
     - **gameplay-dev sitting A, engine and carry-overs:**
       1. The MB1 tuning default, unless eyes 55 says otherwise: the duelist's `max_health` 90 -> 120; Wet floor's outer discs land at least 3 m from the player. Run the SIM1 three-act gate once and report it.

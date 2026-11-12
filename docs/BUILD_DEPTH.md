@@ -619,7 +619,7 @@ The content MAP.md §4.5 asks for, written so that **Bleed and basic attacks get
   - at the cap, the pick goes through the give-one-up step, where Cancel goes back to the boss offer instead of leaving it;
   - they can't be given up (shipped rule);
   - the second offer excludes only the relic you own, so the 6 per class leaves 5 to draw 3 from.
-- **Card prices (`merchant.card_prices`), at the three-act relic scale 80/120/170:** common 55, rare 85, legendary 125. Each is below the matching relic tier (tier 1 80, tier 2 120, tier 3 170). The one-act run scales them by the same 0.75 as the relics: 40/65/95, the ROADMAP's proposal. The sim tunes them under D41 = B (income first).
+- **Card prices (`merchant.card_prices`), at the three-act relic scale 80/120/170:** common 55, rare 85, legendary 125. Each is below the matching relic tier (tier 1 80, tier 2 120, tier 3 170). ~~The one-act run scales them by the same 0.75 as the relics: 40/65/95.~~ **Corrected at sitting A:** no one-act price scaling exists in code (`--acts=1` already uses 80/120/170 for relics), so the one-act run uses the same 55/85/125 (DECISIONS "MAP3b sitting A triage"). The sim tunes them under D41 = B (income first).
 - **Bot-safe rule (SIM1).** Every relic and card here keeps every slot, both attacks and the dodge usable. No auto-cast, no disabled slot, no dodge loss. That's why Cursed Gauntlet, Quarterly Downsizing, The Unstable Core, Glass Hourglass and Brainstorming Session are **not** taken in this pass: each one needs bot rules, input rules or ux work this slice doesn't have. They stay candidates (§4.5, §4.8).
 
 ### 12.2 New code (all in gameplay-dev sitting A)

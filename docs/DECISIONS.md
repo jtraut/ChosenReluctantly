@@ -2417,3 +2417,24 @@ The content plan is in `docs/BUILD_DEPTH.md` §12, and the sittings are in the R
   - Liquidate Assets stays tier 2.
   - `CardDamageRule` is a floor, not a ceiling, so rare and legendary power is judged by the sim and the playtest.
 - **D49 (pruning or rejecting shrinks a type's offers) goes to the director.** It changes GDD §9 offer weighting, as D43 did. Default A: no new rule. Nothing in MAP3b waits on it.
+
+## 2026-11-12 - MAP3b sitting A triage (gameplay-dev 5d5678c..472beb0; game-lead)
+- **Accepted as built:**
+  - Suite 2233 / 164, 0 orphans.
+  - Hashes unchanged.
+  - SIM1 gate at the MB1 tuning, unchanged on every cell: human Rogue 28/36, Wizard 15/36; off 35/36, 30/36. There were no losses at rooms 10 or 20.
+- **One-act card prices: no scaling.** The brief's 40/65/95 assumed a 0.75 one-act relic scale that was never built: `--acts=1` already uses 80/120/170. Cards use 55/85/125 in both run lengths. The one-act run is a debug and legacy mode.
+  - [Building a one-act price scale: new code for a mode nobody plays by default.]
+- **gameplay-dev's calls, accepted:**
+  - the rarity roll on its own seeded stream (old offers are unchanged when act 1 is all common);
+  - the keys `rewards.rarity_weights` and `rewards.mini_boss_rarity`, not a new `cards` block;
+  - with no boss relics shipped, the mini-boss keeps the interim offer with skip until sitting B;
+  - a boss offer that can't be taken at the cap (only boss relics held, `--relic-cap=1`) shows Skip, so it can't deadlock;
+  - Wet floor `scatter_min` 3 equal to `scatter` 3 (a wider scatter broke the fairness tests);
+  - `GroundClamp` at floor y 0;
+  - relic bolts use the reticle direction.
+- **Eyes 55 data point:** the default tuning (Raider 120 HP, Wet floor ring) didn't move the bot results, and the fights still cost the bots almost no HP. It's relayed in OPEN_ITEMS 55: "harder" would need more than HP.
+- **For qa:**
+  - the gate at HEAD, which includes card price 55, chest `min_tier` 2 and the relic aim fix;
+  - Cancel at the cap with `--relic-cap=1`;
+  - expect more exhausted-pool fallbacks in act 3 until sitting B adds tier 3 relics.

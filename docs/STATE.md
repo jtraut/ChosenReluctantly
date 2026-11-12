@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-12 (MAP3b design pass done; gameplay-dev sitting A in progress).
+Last updated: 2026-11-12 (MAP3b sitting A done; gameplay-dev sitting B in progress).
 
 ## What's done
 - **MB1 closed 2026-11-11.** Tag `playtest-2026-11-11-MB1`.
@@ -208,12 +208,14 @@ Last updated: 2026-11-12 (MAP3b design pass done; gameplay-dev sitting A in prog
   - the ROADMAP MAP3b "Detailed brief", with sittings A (engine), B (content) and C (tuning; may merge into B), plus DECISIONS "MAP3b design pass" (3526e32);
   - OPEN_ITEMS D49, default A, which nothing waits on.
   - Brief review fixes in 81c8e76: common-only pool fill, the stack hard cap, the save round trip, and the verify items.
-  - **gameplay-dev sitting A started 2026-11-12.** If cut off, check `git log` for gameplay-dev commits after 81c8e76 and ask gameplay-dev to resume from the first unfinished brief item.
+  - **Sitting A done** (5d5678c..472beb0; triage in DECISIONS "MAP3b sitting A triage"). Suite 2233 / 164; hashes unchanged.
+  - **gameplay-dev sitting B (content) started 2026-11-12.** If cut off, check `git log` after 472beb0 and resume B from the first missing file.
+  - **Docs pass notes for tech-writer:** gameplay-dev's sitting A hand-back lists the README, ARCHITECTURE and CHANGELOG changes. The old -> new values are: Raider HP 90 -> 120; `card_price` 40 -> `card_prices` 55/85/125; large chest `min_tier` 1 -> 2; new `scatter_min` 3, `rarity_weights`, `mini_boss_rarity`, `stacking.hard_cap` 10, and `blink_*` vfx keys. Classes and functions: `GroundClamp`, `RunState.offer_rarity`, `AttackController.get_damage`, `swap_locked`, `SlotSynergy.detonate_*`, `Player.get_shot_direction`.
   - **For the MAP3b docs pass:** a CHANGELOG process/design note for the design pass, and nothing to archive yet.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step
-1. **MAP3b: gameplay-dev sitting A** (ROADMAP MAP3b "Detailed brief", items 1-10). It opens with the MB1 tuning default, because eyes 55 is unanswered. Then sitting B (content), C (tuning), ux, qa, the playtester, the docs pass, and close.
+1. **MAP3b: gameplay-dev sitting B (content)**, then C (tuning; may merge into B), ux, qa, the playtester, the docs pass, and close.
 2. Then MAP4, 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.

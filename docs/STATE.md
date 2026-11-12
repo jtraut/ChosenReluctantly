@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-12 (MAP3b sitting A done; gameplay-dev sitting B in progress).
+Last updated: 2026-11-12 (MAP3b sittings A and B done; gameplay-dev sitting C in progress).
 
 ## What's done
 - **MB1 closed 2026-11-11.** Tag `playtest-2026-11-11-MB1`.
@@ -221,17 +221,16 @@ Last updated: 2026-11-12 (MAP3b sitting A done; gameplay-dev sitting B in progre
       - remove `mini_boss` from Pyre Insurance's sources;
       - then sitting C.
     - Calls: DECISIONS "MAP3b sitting B interim calls".
-    - **Later commits:**
-      - f6bbf46: the damage bumps and the pool-fill test.
-      - 3da6356: test and preset pins follow the new content. The armor buffs were shortened to fit under their recast: Brawl Clause 8 -> 3.5 s, Strongly Worded Ward 6 -> 3.5 s, Sabbatical 3 -> 1.4 s. There's also a summary line for `card_damage_mult_vs_status`.
-      - gameplay-dev's final sitting B report never arrived (its second report was refused).
-      - **Next:** a fresh gameplay-dev run checks the suite, the hashes and the SIM1 gate at HEAD, removes `mini_boss` from Pyre Insurance, and then does sitting C.
-  - **Docs pass notes for tech-writer:** gameplay-dev's sitting A hand-back lists the README, ARCHITECTURE and CHANGELOG changes. The old -> new values are: Raider HP 90 -> 120; `card_price` 40 -> `card_prices` 55/85/125; large chest `min_tier` 1 -> 2; new `scatter_min` 3, `rarity_weights`, `mini_boss_rarity`, `stacking.hard_cap` 10, and `blink_*` vfx keys. Classes and functions: `GroundClamp`, `RunState.offer_rarity`, `AttackController.get_damage`, `swap_locked`, `SlotSynergy.detonate_*`, `Player.get_shot_direction`.
-  - **For the MAP3b docs pass:** a CHANGELOG process/design note for the design pass, and nothing to archive yet.
+    - **Later commits:** f6bbf46 (the damage bumps), 3da6356 (pins, and the armor buffs shortened under their recast: Brawl Clause 8 -> 3.5 s, Strongly Worded Ward 6 -> 3.5 s, Sabbatical 3 -> 1.4 s).
+    - **Results game-lead read from gameplay-dev's output** (its final report was refused):
+      - suite 2243, 0 failures, 0 orphans, exit 0;
+      - SIM1 at 3da6356, `-Route first`, pooled: human Rogue 29/36, Wizard 22/36 (was 15/36); off 35/36, 34/36 (was 30/36). Floors hold.
+      - Bots end with about 750-870 unspent gold and buy 0 relics on `first`: that's sitting C.
+    - **Sitting C, gameplay-dev, in progress:** hashes at HEAD, remove `mini_boss` from Pyre Insurance, gold tuning, the Bleed share, the spread check.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step
-1. **MAP3b: gameplay-dev sitting B (content)**, then C (tuning; may merge into B), ux, qa, the playtester, the docs pass, and close.
+1. **MAP3b: gameplay-dev sitting C (tuning)**, then ux, qa, the playtester, the docs pass, and close.
 2. Then MAP4, 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.

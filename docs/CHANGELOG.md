@@ -2,7 +2,33 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-11-11 (Slice SIM1: sim re-calibration, tooling only, no tag; D48 = A)
+## 2026-11-11 (Slices MB1 and SIM1; MB1 mini-boss and act identity, D44 = C; SIM1 is tooling only, no tag, D48 = A)
+
+### Slice MB1: mini-boss and act identity
+
+Commit range 5ecbbf9..dd57b4a. Design note: `docs/MAP.md` section 11. gameplay-dev 5991616, f0fbdc3 (sitting A), a284270, 7cb5ea0, 8dae255 (sitting B); ux 1b3fe3a, 543fc64, c229682, 869a1ae, 7897d66; qa e3835d0 (PASS, `docs/reviews/2026-11-11-mb1-qa.md`); playtest 73e844b (`docs/playtests/2026-11-11-mb1.md`, no blocker); game-lead triage commits d5e7cde, 2e67155, 4bf78dd, 394d893, dd57b4a. The director's call that started this slice (D44 = C) is already recorded as a `[Director decision]` entry from the BD3a pass; it is not repeated here.
+
+#### Changed
+- **The act 1 mini-boss is now "Head of Facilities" (`boss_brute`)** (5991616, f0fbdc3). Old: the `fire_resistant_golem` at the x3.5 `mini_boss` tier, 175 HP, with adds in a second wave stage. New: a slow yellow box, 170 HP, armor 22, resistance 0.3, attacks Mop sweep, Wet floor (3 discs) and Forklift charge, 3 phases, `melee_chaser` summons at 60% and 30% HP. Values: `data/bosses.json`.
+- **The act 2 mini-boss is now "The Corporate Raider" (`boss_duelist`)** (a284270, 2e67155). Old: the golem at the tier, about 192 HP in act 2, with adds. New: small and fast, 90 HP (99 in act 2), armor 10, resistance 0.17, no adds. Attacks: Hostile takeover (9), Leveraged dash (a two-link combo, 5 + 5), and Golden parachute (a blink behind the player) into Backstab (7). Armor and resistance were left untuned for the playtest.
+- **Mini-bosses run on `Boss.gd`** through a `mini_boss: true` field in `data/bosses.json`: status rank elite, a 1.0 s death beat, and a mini-boss death ends the act, never the run. Final HP is `max_health` x `acts.N.hp`, with no tier multiplier. `tiers.mini_boss` stays in `data/run.json` for MAP4.
+- **Elite-rank bosses can be stunned** (f0fbdc3): a stun cancels the wind-up and lasts half as long; the Guardian stays immune. **Bosses ignore knockback during a wind-up or an active attack** (8dae255); before, a boss that takes knockback could slide during a locked wind-up or charge.
+- **Act 2 screen tag "Low HP" is now "Running low"**, and the doubled HP on that screen is fixed (543fc64).
+
+#### Added
+- **Boss-data features:** aoe `count` / `scatter` (several discs per cast, hit once per cast); a `chain` field (the next attack winds up straight after; at most 2 attacks, no cycles; a chain-only attack gets no weight); a `blink` attack kind (no damage, a landing marker, arena-clamped). New validators `BossConfig.weighted_attack_ids` and `is_mini_boss`; `BossRules.blink_landing` and multi-disc `escape`.
+- **Act tint** (5991616): `data/run.json` `acts.N.tint` {floor, light}: act 1 #4d734d / #ffffff, act 2 #46606f / #dce8ff, act 3 #704840 / #ffe3cf. New `src/run/ActTint.gd` (`act_of`, `apply`).
+- **Boss-bar and cue UX** (ux): a "Act N Mini-boss" subtitle on the boss bar (fixes the BD3a bug where the bar could say Act 2 behind the Act 2 screen); a "(1/2)" / "(2/2)" chain cue on the attack line; a cyan ring-and-ghost blink marker; thicker boss wedges; a compact multi-disc telegraph; stack labels that lift clear of each other on screen; the "Bleed detonated" word kept clear of the damage number; Open a Vein's slot shows "Wants Bleed stacks" (`ConditionCue.detonate_short`); `!is_inside_tree()` log housekeeping. New `data/ui.json` keys: `boss_bar` `subtitle_height`, `subtitle_font_size`, `subtitle_whiten`, `chain_format`; `status_stacks` `detonate_word_clamp_extra`, `detonate_word_above_number`, `overlap_pad`, `lift_speed`.
+- **Scenarios and captures:** `--scenario=mini_boss_act1`, `mini_boss_act2`, and capture-only `mini_boss_blink`, `mini_boss_dash_combo`, `mini_boss_wet_floor`; scenario keys `natural_hp`, `standard_deck`, `act`, `boss_attacks`; capture presets `mini_boss_act2`, `mini_boss_blink`, `mini_boss_dash_combo` (`mini_boss_act1` was repointed to the brute). `mini_boss_wet_floor` is a scenario only: `tools\capture_screenshot.ps1 -Scenario mini_boss_wet_floor -AtBossAttack wet_floor -After "0.3,0.9"`.
+- **Baselines** (qa): 2191 test cases, 163 suites, 0 orphans (SIM1 ended at 2100 / 160). Sim hashes unchanged: arena 3172486861 / 916264160, `-Plan` 1317880580, bot 3476063471. SIM1 three-act `-Route first`, pooled seeds 1/13/25: human Rogue 28/36 and Wizard 15/36, off Rogue 35/36 and Wizard 30/36 (SIM1 baselines were human Rogue 26, Wizard 15, off Rogue 35, Wizard 29). The sim's BOSS TIMES line now includes the mini-boss fights, so it is not comparable with older final-boss-only figures.
+
+#### Fixed
+- **`player_death_test` flake** (qa, e3835d0): the test enemy no longer spawns inside the player, which gave a flaky sideways velocity; the test now has a diagnostic message.
+- A node leak on every non-boss wedge (the dark band is now allocated only for boss wedges, c229682); the mb1 ux suite resets the clock and juice state afterwards, since a boss death leaves slow-mo behind (7897d66).
+
+#### Docs and process
+- gameplay-dev, ux and qa now follow the session attribution line on their commits.
+- README: the `mini_boss_act1` preset row no longer says "golem plus chasers". The `-StartRoom 10` three-act form was not verified by qa and stays marked unverified.
 
 ### Slice SIM1: a human-like sim bot and new floors
 

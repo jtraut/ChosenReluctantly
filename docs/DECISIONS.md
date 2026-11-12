@@ -2368,3 +2368,45 @@ Report: `docs/playtests/2026-11-11-mb1.md`. The smoke check passed and there's n
   - stack labels still collide with a neighbour's damage numbers at 2 enemies (the 3+ case is unverified);
   - slot card names clip at a comma;
   - red chasers have low contrast on the act 3 floor.
+
+## 2026-11-12 - MAP3b design pass (game-lead)
+The content plan is in `docs/BUILD_DEPTH.md` §12, and the sittings are in the ROADMAP MAP3b "Detailed brief". These are the calls made without a director directive:
+- **Counting rule.** MAP.md §4.5's "5+ rare, 4+ legendary per class pool" is met on each class's eligible set (class + Fire + Neutral), and at least half of a class's rare and legendary cards come from its own pool.
+  - Result: 6 rare and 5 legendary per class, 6 of the 11 from the class pool.
+  - [Counting the eligible set only: Fire and Neutral could fill most of a Rogue's top tier, which is the "trapped in Fire" problem again.]
+- **Retag or new: all new; no retags.**
+  - Retagging BD3a's Bleed commons would pull them out of act 1 offers.
+  - Retagging Fire commons would shrink the Fire Wizard's act 1 options before BD3b.
+  - [The brief's default allowed up to 2 retags per pool.]
+- **New code is limited to:**
+  - card rarity and the per-act rolls;
+  - the mini-boss boss-relic offer;
+  - card prices by rarity;
+  - two stats, `attack_damage_mult.<light|heavy>` and `dead_card_swap_locked`;
+  - possibly allowing `reduce_cooldown` on cards.
+  - Everything else uses shipped stats, events and templates, each with a named shipped example in §12.2.
+  - [Taking Performance Review, The Glass Ceiling, Thermal Ward, Echoing Aegis or cc: All Staff as written: each needs a new event, condition or projectile rule.]
+- **Bot-safe boss relics only.** No dodge loss, no disabled slot, no auto-cast and no input rebinding. So Cursed Gauntlet, Quarterly Downsizing, The Unstable Core, Glass Hourglass and Brainstorming Session stay candidates.
+  - Reason: SIM1's floors gate every slice, and each of those needs its own bot rules, and some need ux.
+  - [Building them with bot rules now: it roughly doubles sitting A for 1-2 relics per class.]
+- **Rarity with the shipped offer rules:**
+  - the slot rolls a rarity first, then uses the unowned/owned weights, the D43 lean and D47 pruning;
+  - an empty rarity falls down, never up;
+  - the mini-boss card offer fixes the rarity and uses the same fall-down.
+  - [Rolling rarity after picking a card: the lean would then also have to weight rarity, which is harder to explain.]
+- **Boss offer at the cap:** Cancel in the give-up step goes back to the boss offer, because "no skip" means you can't leave without one. The second offer excludes only the owned boss relic: 6 per class leaves 5 to draw 3.
+  - [Showing every offered boss relic only once per run: that needs 7 or more per class.]
+- **Card prices:**
+  - three-act: common 55, rare 85, legendary 125;
+  - one-act: 40/65/95.
+  - Each is below its relic tier (80/120/170 and 60/90/130); the sim tunes them under D41 = B.
+  - [Keeping the one-act 40/65/95 for three acts: commons would cost half a tier 1 relic, cheaper than intended.]
+- **The Wizard's top tier is knowingly thinner.** No new Fire Wizard cards. Its 6 class-pool cards use projectiles, armor, the auto bolt and cooldowns, because Thesis and Ward Battlemage need BD3b's code. BD3b closes the gap.
+- **Targets:**
+  - late-offer Bleed share for a Bleed Rogue in act 3: at least 12% (it was 8.5%; the content gives an estimated 18%);
+  - Burn-needing relics: Rogue 5 of 23, Wizard 7 of 22 (was 6 of 10);
+  - boss relics needing Burn: 1 of 6 per class.
+- **Split:** three gameplay-dev sittings in one tag: A engine, B content, C tuning. C may merge into B. A's tests use fixture content, so A doesn't wait on B.
+  - [One sitting: about 40 new data files plus the engine is too much for one sitting.]
+  - [Two tags: a playtest of rarity with no rare cards has nothing to judge.]
+- **D49 (pruning or rejecting shrinks a type's offers) goes to the director.** It changes GDD §9 offer weighting, as D43 did. Default A: no new rule. Nothing in MAP3b waits on it.

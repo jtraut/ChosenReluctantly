@@ -1372,7 +1372,7 @@ un_offer_report.ps1`.
       - blink visual constants in code.
   - **First, game-lead, docs only:**
     - **from BD3a's playtest:** a non-Burn heavy-attack relic; a candidate rule where pruning or rejecting a type also shrinks its offers; Bleed share in late offers (8.5%) as a target to raise;
-    - a BUILD_DEPTH design pass: about 6 boss-tier relics per class, tier 3 relics, and the rare and legendary card list per pool;
+    - a BUILD_DEPTH design pass: about 6 boss-tier relics per class, tier 3 relics, and the rare and legendary card list per pool (**done 2026-11-12: BUILD_DEPTH §12**);
     - decide whether any new effect code is needed;
     - **rare and legendary: retag or new cards?** Default: legendary cards are all new, and rare may retag up to 2 existing cards per pool. Decided and logged in the design pass.
   - **Build:**
@@ -1385,6 +1385,50 @@ un_offer_report.ps1`.
   - **ux:** the gold frame for legendary cards, the rarity on card tiles, and the boss-relic offer screen.
   - **qa:** the price-below-tier test, "exactly 2 boss relics" on every finished 3-act run, and pool sizes.
   - **Acceptance:** the original MAP3 relic targets (MAP.md §4.5): `relic` median 14-17, `safe` 6-8, exactly 2 boss relics, and nobody at the cap in the median run.
+  - **Detailed brief (game-lead, 2026-11-12; BUILD_DEPTH §12, DECISIONS "MAP3b design pass").** The design pass is done. All the content is new; no existing card is retagged. New effect code is limited to the §12.2 list. D49 (should pruning or rejecting shrink a type's offers) went to the director with default A, no new rule, so nothing here waits on it. Sittings:
+    - **gameplay-dev sitting A, engine and carry-overs:**
+      1. The MB1 tuning default, unless eyes 55 says otherwise: the duelist's `max_health` 90 -> 120; Wet floor's outer discs land at least 3 m from the player. Run the SIM1 three-act gate once and report it.
+      2. Card `rarity` (`common` by default; `rare`, `legendary`) in `CardSchema`, and `run.json` `cards.rarity_weights` per act (MAP.md §4.5). Each offer slot rolls a rarity, then draws with today's weights, lean and pruning. An empty rarity falls to the next one down. Merchant card stock uses the same roll.
+      3. The mini-boss reward (`mini_boss` node):
+         - gold;
+         - then the boss-relic offer: pick 1 of 3 `boss`-rarity relics, no skip. At the cap, Cancel in the give-up step returns to the offer;
+         - then the card offer: rare after act 1, legendary after act 2, with the fall-down rule and normal rejects.
+      4. `merchant.card_prices` by rarity, replacing `card_price` (§12.1): three-act common 55, rare 85, legendary 125; one-act 40/65/95. A validator check that every card price is below its relic tier price.
+      5. New stats `attack_damage_mult.light` / `.heavy` (`AttackController`) and `dead_card_swap_locked` (`CardSlotController`; `PlanPolicy` must not attempt a refused swap).
+      6. Check that cards may use `reduce_cooldown`, and allow it if `CardSchema` refuses.
+      7. Restore the large chest's `min_tier` 2 in `data/map.json`.
+      8. Expose stack counts to the slot view, for ux's Open a Vein glow.
+      9. Housekeeping:
+         - co-located solid bodies climb;
+         - the O(n^2) stack-label scan;
+         - the untyped loop variable in `Scenario.gd`;
+         - the blink visual constants move to data.
+      10. Tests use fixture cards and relics, so A doesn't wait for B's content. One example card per rarity and one boss relic is enough.
+    - **gameplay-dev sitting B, content (data only, plus fixes it finds):**
+      - the 17 cards of §12.3;
+      - the 15 tier 1-3 relics of §12.4;
+      - the 8 boss relics of §12.5.
+      Then the §12.6 pool-size checks and the SIM1 three-act gate, reporting the room of each human-preset loss.
+    - **gameplay-dev sitting C, tuning (merge into B if B finishes early):**
+      - the final gold tuning (D41 = B: income first, then prices) against MAP.md §4.5: `relic` median 14-17, `safe` 6-8, nobody at the cap;
+      - the late-offer Bleed share for the Bleed Rogue in act 3;
+      - the boss-relic spread report.
+    - **ux:**
+      - rarity on card tiles and the gold frame for legendaries;
+      - the boss-relic offer screen (no Skip tile; it reads as a different tier);
+      - the Open a Vein glow;
+      - the MB1 nits: stack labels against a neighbour's damage numbers, slot names clipping at a comma, red chasers on the act 3 floor.
+      - Check at 1280x720 and 1024x600.
+    - **qa:** BUILD_DEPTH §12.6, plus:
+      - the price-below-tier test;
+      - "exactly 2 boss relics" on every finished three-act run;
+      - pool sizes per class;
+      - the fall-down rule;
+      - Cancel at the cap during a boss offer;
+      - save and Continue in the middle of the mini-boss reward;
+      - hashes.
+    - **Playtester:** fight both mini-bosses and read their rewards; is a boss relic exciting and clearly a different tier? Play one Bleed Rogue run into act 3: does it get enough Bleed?
+    - **Acceptance:** MAP.md §4.5's relic targets and exactly 2 boss relics per finished run; SIM1 floors hold; late Bleed share at least 12%; every class sees at least 5 rare, 4 legendary and 6 boss relics.
 - [ ] **MAP4, events (after MAP3, before 3d; D33 = B; widened by the director 2026-11-04). Full loop.** Plan: BUILD_DEPTH §4.7, `docs/MAP.md` §2.
   - **Events:** an `event` ("?") node with data-driven events (`data/events/*.json`; closed outcome list; costs shown plainly; placeholder text). The curse room, buff room and altar (sacrifice) are event kinds.
   - **Curse cards (D38 = A, director 2026-11-04):** card `curse` flag; event outcome `curse_card` shuffles one into a slot; curse cards don't count toward slot minimums, never appear in offers, and are removable at rest, the merchant or by events. Tests: deck rules ignore curses, the swap skips past them.

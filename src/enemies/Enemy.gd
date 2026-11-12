@@ -225,6 +225,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y -= gravity * delta
 	move_and_slide()
+	GroundClamp.apply(self)
 
 
 ## Spawn grace (s1-f): the enemy may not start an attack for `seconds`, so a fresh

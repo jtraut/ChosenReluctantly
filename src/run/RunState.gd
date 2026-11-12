@@ -55,6 +55,9 @@ var pending: String = PENDING_NONE
 var offer: Array[String] = []
 ## PENDING_RELIC_SWAP only: the offered relic the player chose and must give another relic up to take ("" otherwise). Cancel clears it.
 var relic_incoming: String = ""
+## MAP3b: what kind of offer the open choice is. "" for a normal one; "boss" for the mini-boss's boss-relic offer (PENDING_RELIC and its swap step:
+## pick 1 of the offer, no skip); "rare" or "legendary" for a mini-boss card reward (PENDING_REWARD, the rarity it started at). Cleared when the choice closes.
+var offer_rarity: String = ""
 ## One entry per choice made: {index, kind: pick|reject|heal|remove, card_id, amount}. Picks and removals also
 ## change `deck`; this is the record the sim and the end screens read.
 var choice_log: Array[Dictionary] = []
@@ -219,6 +222,7 @@ func jump_to_node(node_id: int) -> bool:
 	room_index = trail.size() - 1
 	pending = PENDING_NONE
 	offer = []
+	offer_rarity = ""
 	return true
 
 
@@ -256,6 +260,7 @@ func to_dict() -> Dictionary:
 		"pending": pending,
 		"offer": offer.duplicate(),
 		"relic_incoming": relic_incoming,
+		"offer_rarity": offer_rarity,
 		"choice_log": choice_log.duplicate(true),
 		"relics": relics.duplicate(),
 		"relics_given_up": relics_given_up.duplicate(),
@@ -331,6 +336,7 @@ static func from_dict(data: Dictionary) -> RunState:
 		state.pending = String(pending_value)
 		if state.pending == PENDING_RELIC_SWAP or state.pending == PENDING_MERCHANT_SWAP:
 			state.relic_incoming = incoming_id
+		state.offer_rarity = _offer_rarity_for(state.pending, data.get("offer_rarity", ""))
 	else:
 		# An unknown (or non-string, or an empty reward) pending must not leave a screen that can never close.
 		# The choice is dropped. If the room it followed was already won and recorded (the history holds
@@ -410,6 +416,19 @@ static func from_dict(data: Dictionary) -> RunState:
 	elif dropped_choice and not state.history.is_empty() and int((state.history[state.history.size() - 1] as Dictionary)["index"]) == state.room_index:
 		state.room_index += 1
 	return state
+
+
+## MAP3b: the saved `offer_rarity` when it fits the open choice ("boss" for a relic offer, a card rarity for a reward), else "" (loudly, if it was set).
+static func _offer_rarity_for(pending_value: String, saved: Variant) -> String:
+	if typeof(saved) == TYPE_STRING and String(saved).is_empty():
+		return ""
+	var fits: bool = typeof(saved) == TYPE_STRING and (
+			([PENDING_RELIC, PENDING_RELIC_SWAP].has(pending_value) and String(saved) == "boss")
+			or (pending_value == PENDING_REWARD and ["rare", "legendary"].has(String(saved))))
+	if not fits:
+		push_error("RunState.from_dict: offer_rarity %s does not fit the open choice '%s'; using a normal offer" % [str(saved), pending_value])
+		return ""
+	return String(saved)
 
 
 ## True when a merchant pending value has what it needs: an open visit, and for the swap an incoming relic that is in stock, unsold and not owned.

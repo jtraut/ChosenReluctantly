@@ -5,6 +5,7 @@
         "damage_per_tick": 2.0,
         "damage_type": "fire",
         "tick_interval": 1.0,
+        "stacking": { "hard_cap": 10 },
         "visual": { "kind": "flame", "size": 0.25 },
         "flavor_text": "Fine. It's fine. Everything's fine."
     },
@@ -14,6 +15,7 @@
         "damage_per_tick": 1.0,
         "damage_type": "physical",
         "tick_interval": 0.5,
+        "stacking": { "hard_cap": 10 },
         "visual": { "kind": "drips", "size": 0.14, "color": "#e0123f", "offset": 0.55 },
         "flavor_text": "Small cut. Big commitment."
     },

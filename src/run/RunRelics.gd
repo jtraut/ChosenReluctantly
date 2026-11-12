@@ -50,6 +50,11 @@ static func weights_for(state: RunState, relics: Dictionary, act_offset: int = 0
 	return row if not row.is_empty() else relics["weights"]
 
 
+## True while the open relic choice (the offer or its give-up step) is the mini-boss's boss-relic offer.
+static func is_boss_offer(state: RunState) -> bool:
+	return state.has_relic_choice() and state.offer_rarity == RelicOffer.BOSS_RARITY
+
+
 static func enabled(ctx: Dictionary) -> bool:
 	return ctx.has("relics") and bool((ctx["relics"] as Dictionary).get("enabled", false))
 
@@ -73,7 +78,17 @@ static func open_for_room(state: RunState, room_type: String, is_last_room: bool
 	for pool_id: Variant in (ctx.get("pools", []) as Array):
 		pools.append(String(pool_id))
 	var ids: Array[String] = []
-	if not RunSession.forced_relic_offer.is_empty():
+	var boss_offer: bool = false
+	if room_type == "mini_boss" and RunSession.forced_relic_offer.is_empty():
+		# MAP3b: the act-end mini-boss offers boss-tier relics: pick 1 of `offer_count`, no skip, drawn uniformly among the unowned boss relics of
+		# the run's pools. With none left (or none in the data yet) it falls back to the interim elite-tier offer below, skip allowed.
+		var boss_rarities: Array[String] = [RelicOffer.BOSS_RARITY]
+		ids = RelicOffer.offer(RelicSchema.BOSS_SOURCE, int(relics["offer_count"]), offer_rng(state.seed_value, state.stream_index()), {}, state.relics,
+				state.relics_given_up, pools, relics["catalog"], boss_rarities)
+		boss_offer = not ids.is_empty()
+	if not ids.is_empty():
+		pass
+	elif not RunSession.forced_relic_offer.is_empty():
 		ids = RunSession.forced_relic_offer.duplicate()  # --relic-offer (capture tooling): used by this one offer only
 		RunSession.forced_relic_offer = []
 	else:
@@ -86,10 +101,12 @@ static func open_for_room(state: RunState, room_type: String, is_last_room: bool
 	state.pending = RunState.PENDING_NONE
 	state.offer = []
 	state.relic_incoming = ""
+	state.offer_rarity = ""
 	if ids.is_empty():
 		# Nothing left to offer: the source gives its card offer instead (the relic room acts like a combat room for that).
 		return RunChoices.open_for_room(state, "combat" if room_type == "relic_room" else room_type, false, ctx)
 	state.offer = ids
+	state.offer_rarity = RelicOffer.BOSS_RARITY if boss_offer else ""
 	state.pending = RunState.PENDING_RELIC
 	return state.pending
 
@@ -163,6 +180,8 @@ static func title_and_line(state: RunState, ctx: Dictionary, room_type: String =
 		var incoming: Dictionary = display(state.relic_incoming, ctx)
 		var line_key: String = "swap_line_one" if (state.relics.size() == 1 and ui.has("swap_line_one")) else "swap_line"  # singular text for a cap of 1
 		return {"title": String(ui.get("swap_title", "")), "line": String(ui.get(line_key, "")) % [state.relics.size(), String(incoming["name"])]}
+	if is_boss_offer(state) and ui.has("boss_title"):
+		return {"title": String(ui.get("boss_title", "")), "line": String(ui.get("boss_line", ""))}
 	if room_type == "relic_room":
 		return {"title": String(ui.get("room_title", "")), "line": String(ui.get("room_line", ""))}
 	return {"title": String(ui.get("title", "")), "line": String(ui.get("line", ""))}
@@ -177,10 +196,11 @@ static func options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 				var option: Dictionary = relic_option(OPTION_RELIC + ":" + relic_id, OPTION_RELIC, relic_id, ctx)
 				option["needs_swap"] = needs_swap(state, ctx)
 				out.append(option)
-			var skip: Dictionary = RunChoices.blank_option(OPTION_SKIP, OPTION_SKIP)
-			skip["label"] = String(ui.get("skip_label", ""))
-			skip["detail"] = String(ui.get("skip_detail", ""))
-			out.append(skip)
+			if not is_boss_offer(state):  # MAP3b: a boss-relic offer has no skip
+				var skip: Dictionary = RunChoices.blank_option(OPTION_SKIP, OPTION_SKIP)
+				skip["label"] = String(ui.get("skip_label", ""))
+				skip["detail"] = String(ui.get("skip_detail", ""))
+				out.append(skip)
 		RunState.PENDING_RELIC_SWAP:
 			for relic_id: String in giveable_ids(state, ctx):
 				var option: Dictionary = relic_option(OPTION_GIVEUP + ":" + relic_id, OPTION_GIVEUP, relic_id, ctx)
@@ -210,6 +230,7 @@ static func model_extras(state: RunState, ctx: Dictionary) -> Dictionary:
 	var swapping: bool = state.pending == RunState.PENDING_RELIC_SWAP
 	var extras: Dictionary = {
 		"relic_choice": "giveup" if swapping else "offer",
+		"boss_offer": is_boss_offer(state),
 		"relics_owned": owned_display(state, ctx),
 		"relics_given_up": given_up_display(state, ctx),
 		"relic_max_owned": max_owned(ctx),

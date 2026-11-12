@@ -134,9 +134,17 @@ func try_use(slot_type: String) -> bool:
 	return true
 
 
+## MAP3b: the `dead_card_swap_locked` stat (base 0): above 0 the dead-card swap is refused (The Micromanager).
+const SWAP_LOCKED_STAT := "dead_card_swap_locked"
+
+
+func swap_locked() -> bool:
+	return stat_modifiers != null and stat_modifiers.apply(SWAP_LOCKED_STAT, 0.0) > 0.0
+
+
 func try_swap(slot_type: String) -> bool:
 	var slot: CardSlot = get_slot(slot_type)
-	if slot == null:
+	if slot == null or swap_locked():
 		return false
 	return slot.swap_card()
 
@@ -161,6 +169,6 @@ func _cast_card(card_data: Dictionary) -> void:
 func _owned_card_ids_for_slot(slot_type: String, owned_pools: Array[String]) -> Array[String]:
 	var ids: Array[String] = []
 	for card_data: Dictionary in CardDatabase.cards_for_slot_type(slot_type):
-		if owned_pools.has(card_data.get("pool", "")):
+		if owned_pools.has(card_data.get("pool", "")) and CardSchema.rarity_of(card_data) == CardSchema.RARITY_COMMON:  # MAP3b: a pool-filled deck takes only common cards
 			ids.append(card_data["id"])
 	return ids

@@ -64,6 +64,7 @@ static func open_for_room(state: RunState, ctx: Dictionary) -> String:
 	var node_id: int = state.path[state.path.size() - 1] if not state.path.is_empty() else state.room_index
 	Merchant.open_visit(state, node_id, ctx)
 	state.offer = []
+	state.offer_rarity = ""
 	state.relic_incoming = ""
 	state.pending = RunState.PENDING_MERCHANT
 	return state.pending

@@ -184,7 +184,7 @@ static func _number_in(value: Variant, minimum: float, maximum: float, inclusive
 
 ## True for a stat whose base is 1.0 and which must stay above zero (a "factor" stat).
 static func is_factor_stat(stat: String) -> bool:
-	return stat.begins_with(StatusEffectManager.STATUS_DAMAGE_MULT_PREFIX) or stat.begins_with(StatusEffectManager.STATUS_TICK_RATE_PREFIX) or stat.begins_with(CARD_DAMAGE_VS_STATUS_PREFIX) or stat == ZONE_DURATION_MULT_STAT or stat == DAMAGE_MULT_STAT
+	return stat.begins_with(StatusEffectManager.STATUS_DAMAGE_MULT_PREFIX) or stat.begins_with(StatusEffectManager.STATUS_TICK_RATE_PREFIX) or stat.begins_with(CARD_DAMAGE_VS_STATUS_PREFIX) or stat == ZONE_DURATION_MULT_STAT or stat == DAMAGE_MULT_STAT or stat.begins_with(AttackController.ATTACK_DAMAGE_MULT_PREFIX)
 
 
 static func _validate_buff(params: Dictionary, errors: Array[String]) -> void:
@@ -208,6 +208,8 @@ static func _validate_buff(params: Dictionary, errors: Array[String]) -> void:
 	if typeof(stat) == TYPE_STRING and is_factor_stat(String(stat)) and _is_number(params.get("value")) and float(params["value"]) <= STATUS_DAMAGE_MULT_FLOOR:
 		# The stat's base is 1.0, so a change of -1 or less would make the factor zero or negative.
 		errors.append("a %s buff 'value' must be above %s (the factor would be zero or negative)" % [String(stat), str(STATUS_DAMAGE_MULT_FLOOR)])
+	if typeof(stat) == TYPE_STRING and String(stat).begins_with(AttackController.ATTACK_DAMAGE_MULT_PREFIX) and not ["light", "heavy"].has(String(stat).substr(AttackController.ATTACK_DAMAGE_MULT_PREFIX.length())):
+		errors.append("'%s' must end in .light or .heavy" % String(stat))
 	if typeof(stat) == TYPE_STRING and String(stat) == ZONE_STATUS_CHANCE_STAT and String(params.get("modifier_type", "")) != StatModifiers.ADDITIVE:
 		errors.append("a %s buff must be additive (it adds to the zone's status chance)" % ZONE_STATUS_CHANCE_STAT)
 	if typeof(stat) == TYPE_STRING and String(stat).begins_with(CARD_DAMAGE_VS_STATUS_PREFIX) and not StatusDatabase.has_status(String(stat).substr(CARD_DAMAGE_VS_STATUS_PREFIX.length())):

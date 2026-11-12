@@ -69,6 +69,8 @@ static func validate(config: Dictionary, known_enemies: Array[String], _known_ca
 	errors.append_array(_validate_rooms(config, known_enemies, total))
 	errors.append_array(_validate_ui(config.get("ui")))
 	errors.append_array(RelicConfig.validate_block(config.get("relics")))
+	if typeof(config.get("merchant")) == TYPE_DICTIONARY and typeof(config.get("relics")) == TYPE_DICTIONARY:
+		errors.append_array(MerchantConfig.validate_card_vs_relic_prices((config["merchant"] as Dictionary).get("card_prices"), (config["relics"] as Dictionary).get("prices")))
 	return errors
 
 
@@ -130,6 +132,7 @@ static func _validate_rewards(value: Variant) -> Array[String]:
 		errors.append("rewards.status_lean_max must be a number in [1, 100]")
 	if r.has("status_lean_skip_starter") and typeof(r["status_lean_skip_starter"]) != TYPE_BOOL:
 		errors.append("rewards.status_lean_skip_starter must be true or false")
+	errors.append_array(validate_rarity_rewards(r))
 	if _is_number(r.get("unowned_weight")) and _is_number(r.get("owned_weight")) and float(r["unowned_weight"]) + float(r["owned_weight"]) <= 0.0:
 		errors.append("rewards: unowned_weight and owned_weight cannot both be 0")
 	var types: Variant = r.get("reward_room_types")
@@ -139,6 +142,46 @@ static func _validate_rewards(value: Variant) -> Array[String]:
 		for t: Variant in (types as Array):
 			if typeof(t) != TYPE_STRING or not FIGHT_TYPES.has(String(t)):
 				errors.append("rewards.reward_room_types: '%s' is not a fighting room type (combat, elite, boss)" % str(t))
+	return errors
+
+
+## MAP3b: the optional `rewards.rarity_weights` ({act number: {common, rare, legendary weights}}, each row summing above 0, common first in every row)
+## and `rewards.mini_boss_rarity` ({act number: "rare" | "legendary"}: the fixed rarity of that act's mini-boss card offer). Absent = common only.
+static func validate_rarity_rewards(r: Dictionary) -> Array[String]:
+	var errors: Array[String] = []
+	if r.has("rarity_weights"):
+		var table: Variant = r["rarity_weights"]
+		if typeof(table) != TYPE_DICTIONARY or (table as Dictionary).is_empty():
+			errors.append("rewards.rarity_weights must be an object {act number: {rarity: weight}}")
+		else:
+			for act_key: Variant in (table as Dictionary).keys():
+				var row: Variant = (table as Dictionary)[act_key]
+				if not String(act_key).is_valid_int() or int(String(act_key)) < 1:
+					errors.append("rewards.rarity_weights: '%s' is not an act number" % str(act_key))
+				if typeof(row) != TYPE_DICTIONARY:
+					errors.append("rewards.rarity_weights.%s must be an object {rarity: weight}" % str(act_key))
+					continue
+				var total: float = 0.0
+				for rarity: Variant in (row as Dictionary).keys():
+					if not CardSchema.RARITIES.has(String(rarity)):
+						errors.append("rewards.rarity_weights.%s: unknown rarity '%s' (%s)" % [str(act_key), str(rarity), CardSchema.RARITIES])
+					elif not _is_number((row as Dictionary)[rarity]) or float((row as Dictionary)[rarity]) < 0.0 or float((row as Dictionary)[rarity]) > 1000.0:
+						errors.append("rewards.rarity_weights.%s.%s must be a number in [0, 1000]" % [str(act_key), str(rarity)])
+					else:
+						total += float((row as Dictionary)[rarity])
+				if total <= 0.0:
+					errors.append("rewards.rarity_weights.%s: the weights must add up to more than 0" % str(act_key))
+	if r.has("mini_boss_rarity"):
+		var fixed: Variant = r["mini_boss_rarity"]
+		if typeof(fixed) != TYPE_DICTIONARY:
+			errors.append("rewards.mini_boss_rarity must be an object {act number: rarity}")
+		else:
+			for act_key: Variant in (fixed as Dictionary).keys():
+				var value: Variant = (fixed as Dictionary)[act_key]
+				if not String(act_key).is_valid_int() or int(String(act_key)) < 1:
+					errors.append("rewards.mini_boss_rarity: '%s' is not an act number" % str(act_key))
+				if typeof(value) != TYPE_STRING or not CardSchema.RARITIES.has(String(value)):
+					errors.append("rewards.mini_boss_rarity.%s must be one of %s" % [str(act_key), CardSchema.RARITIES])
 	return errors
 
 

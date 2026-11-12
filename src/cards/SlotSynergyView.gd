@@ -57,7 +57,11 @@ static func view_for(player: Player) -> Dictionary:
 		for hurtbox: Hurtbox in MeleeQuery.find_hurtboxes_in_sphere(space, player.global_position, SEARCH_RADIUS, team, CollisionLayers.HURTBOX):
 			if hurtbox.status_manager == null:
 				continue
-			enemies.append({"pos": hurtbox.global_position, "statuses": hurtbox.status_manager.active_status_ids()})
+			var held: Array = hurtbox.status_manager.active_status_ids()
+			var stacks: Dictionary = {}
+			for status_id: Variant in held:
+				stacks[String(status_id)] = hurtbox.status_manager.stacks_of(String(status_id))
+			enemies.append({"pos": hurtbox.global_position, "statuses": held, "stacks": stacks})
 	return {
 		"now": relay.now() if relay != null else 0.0,
 		"history": relay.history if relay != null else null,

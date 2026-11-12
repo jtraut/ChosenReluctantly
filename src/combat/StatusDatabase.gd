@@ -112,11 +112,17 @@ static func _validate_stacking(stacking: Variant, stackable: bool) -> Array[Stri
 		errors.append("'stacking' is only supported by damage_over_time statuses")
 	var block: Dictionary = stacking
 	for key: Variant in block.keys():
-		if String(key) != "max_stacks":
-			errors.append("'stacking.%s' is not a known key (only max_stacks)" % str(key))
-	var value: Variant = block.get("max_stacks")
-	if (typeof(value) != TYPE_FLOAT and typeof(value) != TYPE_INT) or float(value) != floorf(float(value)) or float(value) < 1.0 or float(value) > float(MAX_STACKS):
-		errors.append("'stacking.max_stacks' must be a whole number from 1 to %d" % MAX_STACKS)
+		if not ["max_stacks", "hard_cap"].has(String(key)):
+			errors.append("'stacking.%s' is not a known key (max_stacks, hard_cap)" % str(key))
+	# MAP3b: `hard_cap` clamps the stat-raised cap and may stand alone (the base cap then stays 1).
+	for field: String in ["max_stacks", "hard_cap"]:
+		if field == "max_stacks" and not block.has(field) and block.has("hard_cap"):
+			continue
+		if field == "hard_cap" and not block.has(field):
+			continue
+		var value: Variant = block.get(field)
+		if (typeof(value) != TYPE_FLOAT and typeof(value) != TYPE_INT) or float(value) != floorf(float(value)) or float(value) < 1.0 or float(value) > float(MAX_STACKS):
+			errors.append("'stacking.%s' must be a whole number from 1 to %d" % [field, MAX_STACKS])
 	return errors
 
 

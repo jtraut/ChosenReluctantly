@@ -223,7 +223,7 @@ func _build() -> void:
 	if _def.has("act"):
 		var act_number: int = int(_def["act"])
 		var scale: Dictionary = RunConfig.act_scale(act_number)
-		for enemy in _enemies:
+		for enemy: Enemy in _enemies:
 			enemy.apply_act_scale(float(scale["hp"]), float(scale["damage"]))
 		ActTint.apply(_main, act_number)
 
@@ -234,7 +234,7 @@ func _build() -> void:
 
 	# Capture-only: tough enemies so the player's auto attack does not clear the stage.
 	if _def.has("enemy_max_health"):
-		for enemy in _enemies:
+		for enemy: Enemy in _enemies:
 			enemy.health.set_max_health(float(_def["enemy_max_health"]))
 			enemy.health.heal(enemy.health.get_max_health())
 	# Capture-only (A1): make these enemies elites through the real tier path (HP, armor, resistance, marker).
@@ -246,7 +246,7 @@ func _build() -> void:
 		_hit_unmitigated(player.health, float(_def["player_start_damage"]))
 
 	# Capture-only (3c): start the boss in a later phase and/or script its attack order, so each attack can be shot.
-	for enemy in _enemies:
+	for enemy: Enemy in _enemies:
 		if enemy is Boss:
 			if _def.has("boss_phase"):
 				(enemy as Boss).debug_set_phase(int(_def["boss_phase"]))

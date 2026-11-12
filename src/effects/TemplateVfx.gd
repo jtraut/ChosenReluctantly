@@ -216,17 +216,17 @@ static func blink_marker(pool: EffectPool, from: Vector3, landing: Vector3, radi
 	if pool == null:
 		return parts
 	var pale: Color = lighter(color, 0.5)
-	var rest: PooledEffect = pool.play(EffectPool.Shape.RING, landing + Vector3(0.0, 0.02, 0.0), radius, pale, 1.0, 1.0, 1.0, BLINK_RING_ALPHA, BLINK_RING_ALPHA_END)
+	var rest: PooledEffect = pool.play(EffectPool.Shape.RING, landing + Vector3(0.0, 0.02, 0.0), radius, pale, 1.0, 1.0, 1.0, VfxConfig.marker("blink_ring_alpha"), VfxConfig.marker("blink_ring_alpha_end"))
 	if rest != null:
 		parts.append(rest.drawn_over().driven())
-	var closing: PooledEffect = pool.play(EffectPool.Shape.RING, landing + Vector3(0.0, 0.03, 0.0), radius, Color.WHITE, 1.0, BLINK_CLOSING_FROM, 1.0, BLINK_CLOSING_ALPHA, BLINK_CLOSING_ALPHA_END)
+	var closing: PooledEffect = pool.play(EffectPool.Shape.RING, landing + Vector3(0.0, 0.03, 0.0), radius, Color.WHITE, 1.0, VfxConfig.marker("blink_closing_from"), 1.0, VfxConfig.marker("blink_closing_alpha"), VfxConfig.marker("blink_closing_alpha_end"))
 	if closing != null:
 		parts.append(closing.drawn_over().driven())
-	var ghost: PooledEffect = pool.play(EffectPool.Shape.SPHERE, landing + Vector3(0.0, BLINK_GHOST_HEIGHT, 0.0), radius * BLINK_GHOST_SCALE, color, 1.0, BLINK_GHOST_FROM, 1.0, BLINK_GHOST_ALPHA, BLINK_GHOST_ALPHA_END)
+	var ghost: PooledEffect = pool.play(EffectPool.Shape.SPHERE, landing + Vector3(0.0, VfxConfig.marker("blink_ghost_height"), 0.0), radius * VfxConfig.marker("blink_ghost_scale"), color, 1.0, VfxConfig.marker("blink_ghost_from"), 1.0, VfxConfig.marker("blink_ghost_alpha"), VfxConfig.marker("blink_ghost_alpha_end"))
 	if ghost != null:
-		ghost.stretch_y = BLINK_GHOST_STRETCH
+		ghost.stretch_y = VfxConfig.marker("blink_ghost_stretch")
 		parts.append(ghost.driven())
-	var pip: PooledEffect = pool.play(EffectPool.Shape.DISC, landing + Vector3(0.0, 0.04, 0.0), radius * BLINK_PIP_SCALE, Color.WHITE, 1.0, 1.0, 1.0, BLINK_PIP_ALPHA, BLINK_PIP_ALPHA_END)
+	var pip: PooledEffect = pool.play(EffectPool.Shape.DISC, landing + Vector3(0.0, 0.04, 0.0), radius * VfxConfig.marker("blink_pip_scale"), Color.WHITE, 1.0, 1.0, 1.0, VfxConfig.marker("blink_pip_alpha"), VfxConfig.marker("blink_pip_alpha_end"))
 	if pip != null:
 		parts.append(pip.drawn_over().driven())
 	if duration <= 0.0:
@@ -235,31 +235,11 @@ static func blink_marker(pool: EffectPool, from: Vector3, landing: Vector3, radi
 	if along.length() > 0.5:
 		var dir: Vector3 = along.normalized()
 		var yaw: float = atan2(-dir.x, -dir.z)
-		var guide: PooledEffect = pool.play(EffectPool.Shape.STRIP, Vector3(from.x, 0.02, from.z), BLINK_GUIDE_HALF_WIDTH, color, duration, 1.0, 1.0, BLINK_GUIDE_ALPHA, BLINK_GUIDE_ALPHA_END, yaw)
+		var guide: PooledEffect = pool.play(EffectPool.Shape.STRIP, Vector3(from.x, 0.02, from.z), VfxConfig.marker("blink_guide_half_width"), color, duration, 1.0, 1.0, VfxConfig.marker("blink_guide_alpha"), VfxConfig.marker("blink_guide_alpha_end"), yaw)
 		if guide != null:
 			parts.append(guide.lengthened(along.length()).driven())
 	return parts
 
-
-const BLINK_RING_ALPHA := 0.55
-const BLINK_RING_ALPHA_END := 1.0
-## The closing ring starts this many times wider than the landing ring and shrinks onto it over the wind-up.
-const BLINK_CLOSING_FROM := 2.0
-const BLINK_CLOSING_ALPHA := 0.25
-const BLINK_CLOSING_ALPHA_END := 0.9
-## The ghost: a tall faint sphere (about the boss's size) that firms up as the wind-up runs.
-const BLINK_GHOST_HEIGHT := 0.8
-const BLINK_GHOST_SCALE := 0.6
-const BLINK_GHOST_FROM := 0.5
-const BLINK_GHOST_STRETCH := 1.5
-const BLINK_GHOST_ALPHA := 0.06
-const BLINK_GHOST_ALPHA_END := 0.4
-const BLINK_PIP_SCALE := 0.18
-const BLINK_PIP_ALPHA := 0.6
-const BLINK_PIP_ALPHA_END := 1.0
-const BLINK_GUIDE_HALF_WIDTH := 0.07
-const BLINK_GUIDE_ALPHA := 0.15
-const BLINK_GUIDE_ALPHA_END := 0.5
 
 
 static func set_aoe_telegraph_progress(effects: Array, fraction: float) -> void:

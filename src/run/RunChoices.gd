@@ -20,6 +20,7 @@ extends RefCounted
 ##   opens_list: bool    true on "Remove a card" in the rest menu (it opens the removal list)
 ##   amount: float       HP a heal option gives, else 0
 ##   owned: int          copies of this card in the deck now (card options), else 0
+##   rarity: String      card options: "common" | "rare" | "legendary" (MAP3b), else ""
 ##   slot_contents: Array[String]  names of the distinct cards the deck holds in this card's slot now, in name order
 ##                       (card options of a reward; [] elsewhere), for "Slot 1 now: A, B, C"
 ##
@@ -92,21 +93,36 @@ static func open_for_room(state: RunState, room_type: String, is_last_room: bool
 	state.pending = RunState.PENDING_NONE
 	state.offer = []
 	state.relic_incoming = ""
+	state.offer_rarity = ""
+	var fixed_rarity: String = ""
 	if room_type == "mini_boss":
-		room_type = "combat"  # MAP3-B: the act-end mini-boss's card offer is a normal one (MAP3b swaps in the rare or legendary offer)
+		# MAP3b: the act-end mini-boss's card offer has a fixed rarity (rare after act 1, legendary after act 2; `rewards.mini_boss_rarity`),
+		# with the usual fall-down when the pool has none of it. An act with no entry gets a normal offer.
+		fixed_rarity = mini_boss_rarity(ctx["rewards"], state.act)
+		room_type = "combat"
 	if room_type == "merchant":
 		RunMerchant.open_for_room(state, ctx)  # MAP2-B: a merchant node is a room with no fight; its choice is the shop
 	elif room_type == "rest":
 		state.pending = RunState.PENDING_REST
 	elif not is_last_room and (RunConfig.ROOM_TYPES.has(room_type) and ((ctx["rewards"] as Dictionary).get("reward_room_types", []) as Array).has(room_type)):
-		var offered: Array[String] = RewardOffer.generate(state.seed_value, state.stream_index(), state.deck, ctx["cards"], ctx["pools"], ctx["pool_defs"], ctx["rewards"], CharacterDatabase.starting_deck(state.character_id), state.removed_cards)
+		var offered: Array[String] = RewardOffer.generate(state.seed_value, state.stream_index(), state.deck, ctx["cards"], ctx["pools"], ctx["pool_defs"], ctx["rewards"], CharacterDatabase.starting_deck(state.character_id), state.removed_cards, state.act, fixed_rarity)
 		if not RunSession.forced_offer.is_empty():
 			offered = RunSession.forced_offer.duplicate()  # --run-offer (capture tooling): used by this one offer only
 			RunSession.forced_offer = []
 		if not offered.is_empty():
 			state.offer = offered
+			state.offer_rarity = fixed_rarity
 			state.pending = RunState.PENDING_REWARD
 	return state.pending
+
+
+## The fixed card rarity of an act's mini-boss offer ("" when the config has none for that act).
+static func mini_boss_rarity(rewards: Dictionary, act: int) -> String:
+	var table: Variant = rewards.get("mini_boss_rarity", {})
+	if typeof(table) != TYPE_DICTIONARY:
+		return ""
+	var value: Variant = (table as Dictionary).get(str(act), "")
+	return String(value) if typeof(value) == TYPE_STRING and CardSchema.RARITIES.has(String(value)) else ""
 
 
 static func model(state: RunState, ctx: Dictionary, room_type: String = "") -> Dictionary:
@@ -132,6 +148,7 @@ static func model(state: RunState, ctx: Dictionary, room_type: String = "") -> D
 		"rejects_max": int(ctx["rejects_max"]),
 		"owned": owned_counts(state),
 		"next_room_type": "",
+		"offer_rarity": state.offer_rarity,
 	}
 	if state.has_relic_choice():
 		var texts: Dictionary = RunRelics.title_and_line(state, ctx, room_type)
@@ -299,6 +316,7 @@ static func close(state: RunState) -> void:
 	state.pending = RunState.PENDING_NONE
 	state.offer = []
 	state.relic_incoming = ""
+	state.offer_rarity = ""
 
 
 ## The result dict of `apply` before anything happened. Relic results add `relic_id` (and `gave_up` on a swap).
@@ -386,6 +404,7 @@ static func card_option(option_id: String, kind: String, card_id: String, ctx: D
 	option["flavor"] = String(card.get("flavor_text", ""))
 	option["slot_type"] = slot_type
 	option["slot_name"] = String((ctx["slot_names"] as Dictionary).get(slot_type, slot_type))
+	option["rarity"] = CardSchema.rarity_of(card)
 	var effect_text: Dictionary = ((ctx["ui"] as Dictionary).get("effect", {}) as Dictionary).duplicate()
 	effect_text["slot_names"] = ctx["slot_names"]
 	effect_text["statuses"] = ctx.get("statuses", {})
@@ -397,5 +416,5 @@ static func _blank(option_id: String, kind: String) -> Dictionary:
 	return {
 		"id": option_id, "kind": kind, "label": "", "detail": "", "flavor": "", "card_id": "",
 		"slot_type": "", "slot_name": "", "count": 0, "enabled": true, "reason": "",
-		"costs_reject": false, "opens_list": false, "amount": 0.0, "owned": 0, "slot_contents": [],
+		"costs_reject": false, "opens_list": false, "amount": 0.0, "owned": 0, "slot_contents": [], "rarity": "",
 	}

@@ -456,7 +456,7 @@ func choose(option_id: String) -> Dictionary:
 	if _state.gold != gold_before:
 		gold_changed.emit(_state.gold, _state.gold - gold_before)  # a merchant purchase: a negative delta
 	if bool(result["finished"]) and ["relic_pick", "relic_swap", "relic_skip"].has(String(result["kind"])) and room_type() == "mini_boss":
-		# The act-end mini-boss pays a relic offer and then a card offer (interim reward, MAP3b swaps in the boss-tier and rare/legendary offers).
+		# MAP3b: the act-end mini-boss pays a relic offer (boss-tier when the data has boss relics, else the interim elite-tier one) and then a card offer (rare after act 1, legendary after act 2).
 		if RunChoices.open_for_room(_state, "mini_boss", false, _ctx) != RunState.PENDING_NONE:
 			_state.hp = _main.player.health.current_health
 			choice_resolved.emit(result)
@@ -490,6 +490,7 @@ func continue_to_next_room(force: bool = false) -> void:
 			return  # a choice is open: only `choose` ends it (force = tests and debug only)
 		_state.pending = RunState.PENDING_NONE
 		_state.offer = []
+		_state.offer_rarity = ""
 	if RunNodes.active(_state):
 		if RunNodes.at_act_end(_state) and RunNodes.has_next_act(_state):
 			# MAP3-B: the act's mini-boss is done. Archive the act, make the next act's map and open its first pick (HP, gold, deck, relics, rejects carry over; no free heal).

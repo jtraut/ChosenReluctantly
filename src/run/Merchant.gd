@@ -121,7 +121,7 @@ static func _draw_cards(state: RunState, node_id: int, reroll_index: int, ctx: D
 	var rewards: Dictionary = (ctx["rewards"] as Dictionary).duplicate()
 	rewards["offer_size"] = needed + kept.size()  # asks for the kept ids too, then drops them, so a reroll never repeats one
 	var stream: int = CARD_STREAM_BASE + (node_id + ACT_NODE_STEP * (state.act - 1)) * 64 + reroll_index
-	for card_id: String in RewardOffer.generate(state.seed_value, stream, state.deck, ctx["cards"], ctx["pools"], ctx["pool_defs"], rewards, CharacterDatabase.starting_deck(state.character_id), state.removed_cards):
+	for card_id: String in RewardOffer.generate(state.seed_value, stream, state.deck, ctx["cards"], ctx["pools"], ctx["pool_defs"], rewards, CharacterDatabase.starting_deck(state.character_id), state.removed_cards, state.act):
 		if not kept.has(card_id) and result.size() < needed:
 			result.append(card_id)
 	return result
@@ -145,8 +145,11 @@ static func relic_price(relic_id: String, ctx: Dictionary) -> int:
 	return RelicConfig.price_for_tier(String(relic.get("rarity", "")), (ctx.get("merchant", {}) as Dictionary).get("prices", {}))
 
 
-static func card_price(ctx: Dictionary) -> int:
-	return int(((ctx.get("merchant", {}) as Dictionary).get("config", {}) as Dictionary).get("card_price", 0))
+## A card's price by its rarity (`merchant.card_prices`, MAP3b); the common price when no card id is given or the card is unknown.
+static func card_price(ctx: Dictionary, card_id: String = "") -> int:
+	var prices: Dictionary = ((ctx.get("merchant", {}) as Dictionary).get("config", {}) as Dictionary).get("card_prices", {})
+	var rarity: String = CardSchema.rarity_of(((ctx.get("by_id", {}) as Dictionary).get(card_id, {}))) if not card_id.is_empty() else CardSchema.RARITY_COMMON
+	return int(prices.get(rarity, 0))
 
 
 ## The price of the next removal: removal_base + removal_step x removals already bought.
@@ -212,7 +215,7 @@ static func buy_card(state: RunState, card_id: String, ctx: Dictionary) -> Dicti
 		return _refuse(result, "not_in_stock")
 	if (state.merchant_visit["sold_cards"] as Array).has(card_id):
 		return _refuse(result, "sold")
-	var price: int = card_price(ctx)
+	var price: int = card_price(ctx, card_id)
 	result["price"] = price
 	if price > state.gold:
 		return _refuse(result, "too_expensive")
@@ -330,11 +333,11 @@ static func items(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 		out.append({"kind": KIND_RELIC, "id": relic_id, "name": String(RunRelics.display(relic_id, ctx)["name"]), "price": price, "sold": sold,
 				"can_buy": reason.is_empty(), "reason": reason, "needs_giveup": reason.is_empty() and at_cap})
 	for card_id: String in _ids(visit["cards"]):
-		var card_cost: int = card_price(ctx)
+		var card_cost: int = card_price(ctx, card_id)
 		var card_sold: bool = (visit["sold_cards"] as Array).has(card_id)
 		var card_reason: String = "sold" if card_sold else ("too_expensive" if card_cost > state.gold else "")
 		var card: Dictionary = (ctx["by_id"] as Dictionary).get(card_id, {})
-		out.append({"kind": KIND_CARD, "id": card_id, "name": String(card.get("name", card_id)), "price": card_cost, "sold": card_sold,
+		out.append({"kind": KIND_CARD, "id": card_id, "name": String(card.get("name", card_id)), "rarity": CardSchema.rarity_of(card), "price": card_cost, "sold": card_sold,
 				"can_buy": card_reason.is_empty(), "reason": card_reason, "needs_giveup": false})
 	var removal: int = removal_price(state, ctx)
 	var removal_reason: String = ""

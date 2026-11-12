@@ -14,7 +14,9 @@
         "status_lean": 0.25,
         "status_lean_max": 3.0,
         "status_lean_skip_starter": true,
-        "reward_room_types": ["combat", "elite"]
+        "reward_room_types": ["combat", "elite"],
+        "rarity_weights": { "1": { "common": 100 }, "2": { "common": 80, "rare": 20 }, "3": { "common": 62, "rare": 30, "legendary": 8 } },
+        "mini_boss_rarity": { "1": "rare", "2": "legendary" }
     },
     "relics": {
         "enabled": true,
@@ -28,7 +30,7 @@
             "3": { "tier1": 5, "tier2": 25, "tier3": 70 }
         }
     },
-    "merchant": { "card_price": 40, "removal_base": 50, "removal_step": 25, "relic_stock": 3, "shop_only_slots": 1, "card_stock": 3 },
+    "merchant": { "card_prices": { "common": 55, "rare": 85, "legendary": 125 }, "removal_base": 50, "removal_step": 25, "relic_stock": 3, "shop_only_slots": 1, "card_stock": 3 },
     "gold": { "combat": [24, 36], "elite": [60, 80], "mini_boss": [90, 110] },
     "tiers": {
         "elite": { "hp_multiplier": 2.0, "armor": 17.0, "resistance_floor": 0.25, "resistance_cap": 0.5, "rank": "elite", "scale": 1.0, "marker_color": "#ffd23f", "marker_size": 0.26, "marker_height": 2.85 },

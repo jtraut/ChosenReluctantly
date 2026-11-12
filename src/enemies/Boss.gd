@@ -94,7 +94,8 @@ var _aoe_locked: Array[Vector3] = []
 ## MB1: where the current blink wind-up will land the boss (locked when the wind-up starts; the marker shows it the whole wind-up).
 var _blink_point: Vector3 = Vector3.ZERO
 ## MB1: the blink marker colour: a cool cyan-white (it was violet, MB1 ux: close to the pink damage telegraph on a blue-grey floor), so it never reads as a damage telegraph (those take the damage type's colour).
-const BLINK_COLOR := Color(0.74, 0.97, 1.0)
+static func blink_color() -> Color:
+	return VfxConfig.color_of("blink_color")  # data/vfx.json (MAP3b: it was a code constant)
 
 
 func _ready() -> void:
@@ -359,6 +360,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity.y -= gravity * delta
 	move_and_slide()
+	GroundClamp.apply(self)
 
 
 func _phase() -> Dictionary:
@@ -486,7 +488,7 @@ func _start_telegraph_visual() -> void:
 			parts.append_array(TemplateVfx.boss_volley_gaps(_tele_pool, global_position, _lock_dir, angles, BossRules.volley_half_width(_attack), _telegraph_total))
 			_hold_parts(parts)
 		"blink":
-			_hold_parts(TemplateVfx.blink_marker(_tele_pool, global_position, _blink_point, BossRules.blink_marker_radius(body_radius), BLINK_COLOR, _telegraph_total))
+			_hold_parts(TemplateVfx.blink_marker(_tele_pool, global_position, _blink_point, BossRules.blink_marker_radius(body_radius), blink_color(), _telegraph_total))
 		"charge":
 			var lane2: PooledEffect = TemplateVfx.enemy_charge_lane(_tele_pool, global_position, _lock_dir, float(_attack["distance"]), float(_attack["hit_radius"]), color, _telegraph_total, true)
 			var single: Array[PooledEffect] = []
@@ -630,7 +632,7 @@ func _blink_now(pool: EffectPool) -> void:
 	if _has_live_target() and Vector2(spot.x - target.global_position.x, spot.z - target.global_position.z).length() < BossRules.BLINK_MIN_GAP:
 		# Re-resolve from the boss's side of the player: the line is the same, only the side flips.
 		spot = BossRules.blink_landing(target.global_position * 2.0 - from, target.global_position, float(_attack["behind"]), ARENA_LIMIT)
-	var look: Dictionary = {"color": BLINK_COLOR, "scale": 1.5}
+	var look: Dictionary = {"color": blink_color(), "scale": 1.5}
 	TemplateVfx.dash_start(pool, from, look)
 	global_position = Vector3(spot.x, global_position.y, spot.z)
 	velocity = Vector3.ZERO

@@ -441,4 +441,8 @@ func _run_effects(trigger: Dictionary, event: Dictionary) -> void:
 		if place and String(effect.get("template", "")) == "aoe" and not params.has("center"):
 			params = params.duplicate()
 			params["center"] = where
+		if String(effect.get("template", "")) == "projectile" and not params.has("direction") and _player.has_method("get_shot_direction"):
+			# MAP3b: a relic's bolt follows the aim (the reticle), not the body, which trails the mouse by a few frames.
+			params = params.duplicate()
+			params["direction"] = _player.call("get_shot_direction")
 		EffectTemplates.execute(String(effect.get("template", "")), params, context, effect.get("condition", {}))

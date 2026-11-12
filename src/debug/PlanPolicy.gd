@@ -28,6 +28,8 @@ const SWAP := "swap"
 const WAIT := "wait"
 
 var hold_seconds: float = HOLD_SECONDS
+## MAP3b: set by the caller each frame from CardSlotController.swap_locked(): while true the policy never decides SWAP (it casts or waits instead).
+var swap_locked: bool = false
 ## slot type -> {"card": id, "since": game time the hold began}; absent = not holding.
 var _holding: Dictionary = {}
 
@@ -80,7 +82,7 @@ func _decide_payoff(slot_type: String, slot: CardSlot, card: Dictionary, slots: 
 	if held.is_empty() or String(held["card"]) != slot.current_card_id or now < float(held["since"]):  # a new room resets the clock
 		held = {"card": slot.current_card_id, "since": now}
 		_holding[slot_type] = held
-	if not can_pay_off_soon(card, slot_type, slots, view) and _has_other_card(slot):
+	if not swap_locked and not can_pay_off_soon(card, slot_type, slots, view) and _has_other_card(slot):
 		_holding.erase(slot_type)
 		return SWAP
 	if now - float(held["since"]) >= hold_seconds:

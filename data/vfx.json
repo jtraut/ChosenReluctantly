@@ -73,6 +73,24 @@
     "buff_cues": {
         "armor": { "color": "#8fd0ff", "ring_radius": 0.95, "ring_alpha": 0.7, "bubble_radius": 0.75, "bubble_alpha": 0.28, "bubble_height": 0.9, "pulse": 0.07, "pulse_hz": 1.2 }
     },
+    "blink_ring_alpha": 0.55,
+    "blink_ring_alpha_end": 1.0,
+    "blink_closing_from": 2.0,
+    "blink_closing_alpha": 0.25,
+    "blink_closing_alpha_end": 0.9,
+    "blink_ghost_height": 0.8,
+    "blink_ghost_scale": 0.6,
+    "blink_ghost_from": 0.5,
+    "blink_ghost_stretch": 1.5,
+    "blink_ghost_alpha": 0.06,
+    "blink_ghost_alpha_end": 0.4,
+    "blink_pip_scale": 0.18,
+    "blink_pip_alpha": 0.6,
+    "blink_pip_alpha_end": 1.0,
+    "blink_guide_half_width": 0.07,
+    "blink_guide_alpha": 0.15,
+    "blink_guide_alpha_end": 0.5,
+    "blink_color": "#bdf7ff",
     "team_tints": {
         "enemy": { "color": "#ff3d8b", "neutral_mix": 1.0, "element_mix": 0.4 }
     }

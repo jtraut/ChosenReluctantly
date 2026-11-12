@@ -201,6 +201,7 @@ func _run_plan_room(room_index: int) -> void:
 		var burning: bool = relay.history.cast_within(now, 4.0, "", "Burn")
 		var view: Dictionary = {"now": now, "history": relay.history, "zone_count": 1 if relay.history.cast_within(now, 4.0, "", "Zone") else 0, "origin": Vector3.ZERO, "forward": Vector3(0, 0, -1),
 				"aim_point": Vector3(0, 0, -2), "arena": Rect2(), "enemies": [{"pos": Vector3(0, 0, -2), "statuses": ["burn"] if burning else []}]}
+		policy.swap_locked = controller.swap_locked()
 		var decisions: Dictionary = policy.decide_all(controller.slots, view, 1.0, (tick / 90) % 3 == 0, false)
 		for slot_type: String in CardSlotController.SLOT_TYPE_ORDER:
 			var card_id: String = controller.get_slot(slot_type).current_card_id

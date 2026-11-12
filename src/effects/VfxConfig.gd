@@ -76,6 +76,24 @@ const DEFAULTS: Dictionary = {
 	"boss_volley_gap_segment_length": 1.0,
 	"boss_volley_gap_alpha_start": 0.12,
 	"boss_volley_gap_alpha_end": 0.55,
+	"blink_ring_alpha": 0.55,
+	"blink_ring_alpha_end": 1.0,
+	"blink_closing_from": 2.0,
+	"blink_closing_alpha": 0.25,
+	"blink_closing_alpha_end": 0.9,
+	"blink_ghost_height": 0.8,
+	"blink_ghost_scale": 0.6,
+	"blink_ghost_from": 0.5,
+	"blink_ghost_stretch": 1.5,
+	"blink_ghost_alpha": 0.06,
+	"blink_ghost_alpha_end": 0.4,
+	"blink_pip_scale": 0.18,
+	"blink_pip_alpha": 0.6,
+	"blink_pip_alpha_end": 1.0,
+	"blink_guide_half_width": 0.07,
+	"blink_guide_alpha": 0.15,
+	"blink_guide_alpha_end": 0.5,
+	"blink_color": "#bdf7ff",
 	"buff_cues": {},
 	"team_tints": {"enemy": {"color": "#ff3d8b", "neutral_mix": 1.0, "element_mix": 0.4}},
 }
@@ -91,9 +109,10 @@ const MARKER_KEYS: Array[String] = ["enemy_shot_lane_alpha", "boss_lane_alpha", 
 		"ghost_show_delay", "ghost_body_alpha", "ghost_ring_radius", "ghost_ring_alpha", "ghost_ring_pulse", "ghost_ring_hz",
 		"heal_number_interval", "heal_number_offset_x", "drain_pulse_duration", "drain_pulse_size", "drain_pulse_alpha", "drain_min_interval",
 		"bleed_drop_duration", "bleed_drop_fall", "bleed_drop_alpha", "heal_mote_duration", "heal_mote_rise", "heal_mote_size",
-		"reticle_range_alpha", "reticle_range_thickness", "reticle_marker_size", "reticle_marker_alpha", "dash_arrow_length", "dash_arrow_half_width"]
+		"reticle_range_alpha", "reticle_range_thickness", "reticle_marker_size", "reticle_marker_alpha", "dash_arrow_length", "dash_arrow_half_width",
+		"blink_ring_alpha", "blink_ring_alpha_end", "blink_closing_from", "blink_closing_alpha", "blink_closing_alpha_end", "blink_ghost_height", "blink_ghost_scale", "blink_ghost_from", "blink_ghost_stretch", "blink_ghost_alpha", "blink_ghost_alpha_end", "blink_pip_scale", "blink_pip_alpha", "blink_pip_alpha_end", "blink_guide_half_width", "blink_guide_alpha", "blink_guide_alpha_end"]
 ## Colours of the cues that no element owns (hex strings).
-const COLOR_KEYS: Array[String] = ["heal_color", "buff_color", "ghost_color", "drain_color", "boss_volley_gap_color"]
+const COLOR_KEYS: Array[String] = ["heal_color", "buff_color", "ghost_color", "drain_color", "boss_volley_gap_color", "blink_color"]
 
 static var _cache: Dictionary = {}
 static var _loaded: bool = false

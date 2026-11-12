@@ -5,6 +5,18 @@ extends RefCounted
 ## (CardDatabase), not here, so this can be tested against malformed data
 ## without polluting a "zero errors" run.
 
+## MAP3b: card rarity, lowest first (`rarity` is optional and defaults to common). Read by RewardOffer, the merchant and the pool-fill rule.
+const RARITY_COMMON := "common"
+const RARITIES: Array[String] = ["common", "rare", "legendary"]
+
+
+static func rarity_of(card_data: Variant) -> String:
+	if typeof(card_data) != TYPE_DICTIONARY:
+		return RARITY_COMMON
+	var value: Variant = (card_data as Dictionary).get("rarity", RARITY_COMMON)
+	return String(value) if typeof(value) == TYPE_STRING and RARITIES.has(String(value)) else RARITY_COMMON
+
+
 static func validate(card_data: Dictionary) -> Array[String]:
 	var errors: Array[String] = []
 
@@ -14,6 +26,8 @@ static func validate(card_data: Dictionary) -> Array[String]:
 	_validate_slot_type(card_data, errors)
 	_validate_pool(card_data, errors)
 	_validate_cooldown_modifier(card_data, errors)
+	if card_data.has("rarity") and (typeof(card_data["rarity"]) != TYPE_STRING or not RARITIES.has(String(card_data["rarity"]))):
+		errors.append("rarity must be one of %s" % [RARITIES])
 	_validate_effects(card_data, errors)
 	errors.append_array(CardTags.validate_keywords(card_data))
 	if card_data.has("requires"):

@@ -11,6 +11,9 @@ var _cfg: Dictionary = {}
 var _base_height: float = 0.0
 ## Current rise (world metres) over the base height, eased toward what clears the labels below this one.
 var _lift: float = 0.0
+## MAP3b: the text's size, worked out when the text changes (not per frame per neighbour), and every live label in one array (no per-frame group query).
+var _text_size: Vector2 = Vector2.ZERO
+static var _live: Array[StatusStackLabel] = []
 
 
 # ---- Pure rules (unit-tested) ----
@@ -90,6 +93,7 @@ func setup(status: StatusEffectManager, height: float = -1.0) -> void:
 	visible = false
 	set_process(false)
 	add_to_group(GROUP)
+	_live.append(self)
 	if _status == null:
 		return
 	_status.status_stacks_changed.connect(_on_stacks_changed)
@@ -113,6 +117,7 @@ func refresh() -> void:
 		if shows(stacks, _cfg):
 			tint = _status_color(def)
 	text = compose(entries, _cfg)
+	_text_size = text_size(text, font_size, pixel_size)
 	modulate = tint
 	visible = text != ""
 	set_process(visible)
@@ -127,6 +132,10 @@ func base_world() -> Vector3:
 	return (host.global_position if host != null else Vector3.ZERO) + Vector3(0.0, _base_height, 0.0)
 
 
+func _exit_tree() -> void:
+	_live.erase(self)
+
+
 func current_lift() -> float:
 	return _lift
 
@@ -138,19 +147,18 @@ func _process(delta: float) -> void:
 	if camera == null or not visible:
 		return
 	var mine: Vector3 = base_world()
-	var size: Vector2 = text_size(text, font_size, pixel_size)
+	var size: Vector2 = _text_size
 	var target: float = 0.0
 	var up_in_world: float = maxf(camera.global_transform.basis.y.dot(Vector3.UP), 0.2)
-	for node: Node in get_tree().get_nodes_in_group(GROUP):
-		var other := node as StatusStackLabel
-		if other == null or other == self or not other.visible:
+	for other: StatusStackLabel in _live:
+		if other == self or not is_instance_valid(other) or not other.visible:
 			continue
 		var other_base: Vector3 = other.base_world()
 		var base_delta: Vector3 = mine - other_base
 		if base_delta.dot(camera.global_transform.basis.y) < 0.0:
 			continue  # this one is the lower label: it stays put, the other rises
 		var lifted_delta: Vector3 = mine - (other_base + Vector3(0.0, other.current_lift(), 0.0))
-		var other_size: Vector2 = text_size(other.text, other.font_size, other.pixel_size)
+		var other_size: Vector2 = other._text_size
 		var rise: float = lift_over(lifted_delta.dot(camera.global_transform.basis.x), lifted_delta.dot(camera.global_transform.basis.y), (size.x + other_size.x) * 0.5, (size.y + other_size.y) * 0.5, float(_cfg["overlap_pad"]))
 		target = maxf(target, rise / up_in_world)
 	_lift = move_toward(_lift, target, float(_cfg["lift_speed"]) * delta)

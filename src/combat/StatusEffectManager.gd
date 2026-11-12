@@ -84,6 +84,8 @@ class ActiveStatus:
 	## BD3a: how many stacks are on (1 for everything that does not stack), and the status's own max before stat modifiers.
 	var stacks: int = 1
 	var base_max_stacks: int = 1
+	## MAP3b: `stacking.hard_cap`, the ceiling above the stat-raised cap (0 = none).
+	var hard_cap: int = 0
 
 	func source_node() -> Node:
 		return instance_from_id(source_id) as Node if source_id != 0 else null
@@ -103,6 +105,7 @@ class ActiveStatus:
 		var stacking: Variant = status_def.get("stacking")
 		if typeof(stacking) == TYPE_DICTIONARY:
 			base_max_stacks = maxi(int((stacking as Dictionary).get("max_stacks", 1)), 1)
+			hard_cap = maxi(int((stacking as Dictionary).get("hard_cap", 0)), 0)
 		var visual: Variant = status_def.get("visual")
 		if typeof(visual) == TYPE_DICTIONARY:
 			cue = visual
@@ -372,7 +375,8 @@ func _max_stacks(active: ActiveStatus, source: Node) -> int:
 		var mods: Variant = source.get(&"stat_modifiers")
 		if mods is StatModifiers:
 			base = (mods as StatModifiers).apply(STATUS_MAX_STACKS_PREFIX + active.status_id, base)
-	return maxi(roundi(base), 1)
+	var capped: int = maxi(roundi(base), 1)
+	return mini(capped, active.hard_cap) if active.hard_cap > 0 else capped
 
 
 ## The applier's `status_tick_rate.<id>` stat (base 1.0, never below MIN_TICK_RATE); the tick interval is divided by it.

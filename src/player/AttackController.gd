@@ -29,6 +29,8 @@ signal attack_cancelled(attack_id: StringName)
 
 ## Stat the wind-up slow is registered on (Player movement reads it).
 const MOVE_SPEED_STAT := "move_speed"
+## MAP3b: a factor stat (base 1.0) per basic attack: "attack_damage_mult.light" / "attack_damage_mult.heavy". Read by get_damage.
+const ATTACK_DAMAGE_MULT_PREFIX := "attack_damage_mult."
 const MIN_INTERVAL := 0.05
 const NEVER := 1000000.0
 
@@ -77,6 +79,13 @@ func get_def(attack_id: StringName) -> Dictionary:
 	if not _states.has(attack_id):
 		return {}
 	return (_states[attack_id] as State).def
+
+
+## MAP3b: the damage of one hit of the attack after the `attack_damage_mult.<attack_id>` stat (base 1.0; "light" and "heavy").
+func get_damage(attack_id: StringName) -> float:
+	if not _states.has(attack_id):
+		return 0.0
+	return float((_states[attack_id] as State).def["damage"]) * maxf(_modifiers.apply(ATTACK_DAMAGE_MULT_PREFIX + String(attack_id), 1.0), 0.0)
 
 
 ## Effective cooldown in seconds after StatModifiers (floored at MIN_INTERVAL).

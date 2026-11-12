@@ -160,6 +160,7 @@ static func node_info(state: RunState, node_id: int, ctx: Dictionary) -> Diction
 ## Opens the pick-next-node choice (nothing else may be pending). Returns the pending value.
 static func open(state: RunState) -> String:
 	state.offer = []
+	state.offer_rarity = ""
 	state.relic_incoming = ""
 	state.pending = RunState.PENDING_NODE
 	return state.pending

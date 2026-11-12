@@ -794,6 +794,7 @@ func _deadlocked_on_last_enemy(enemies: Array[Enemy]) -> bool:
 func _plan_cards(in_danger: bool, dodge_ready: bool) -> void:
 	var view: Dictionary = SlotSynergyView.view_for(_player)
 	var hp_fraction: float = _player.health.get_current_health() / maxf(_player.health.get_max_health(), 1.0)
+	_plan_policy.swap_locked = _player.card_slots.swap_locked()
 	var decisions: Dictionary = _plan_policy.decide_all(_player.card_slots.slots, view, hp_fraction, in_danger, dodge_ready)
 	for index in range(CardSlotController.SLOT_TYPE_ORDER.size()):
 		var slot_type: String = CardSlotController.SLOT_TYPE_ORDER[index]

@@ -253,6 +253,7 @@ func _physics_process(delta: float) -> void:
 	_handle_attack(delta)
 	_handle_card_slot_input()
 	move_and_slide()
+	GroundClamp.apply(self)
 	if forced_this_tick and (not _path_hit.is_empty() or _dash_track_card != ""):
 		_tick_path_hits()
 	if forced_this_tick and _forced_move_time_remaining <= 0.0:
@@ -862,7 +863,7 @@ func _on_attack_fired(attack_id: StringName) -> void:
 		_aoe_targets.erase(attack_id)
 		landed_at = target
 		EffectTemplates.execute("aoe", {
-			"damage": def["damage"],
+			"damage": attacks.get_damage(attack_id),
 			"damage_type": def["damage_type"],
 			"radius": def["radius"],
 			"center": target,
@@ -872,7 +873,7 @@ func _on_attack_fired(attack_id: StringName) -> void:
 		# The Wizard's light: the shared "projectile" template, flying along the line to the reticle. The damage
 		# lands when the bolt arrives, so there is no hit-stop or shake here (the hit itself brings the usual ones).
 		EffectTemplates.execute("projectile", {
-			"damage": def["damage"],
+			"damage": attacks.get_damage(attack_id),
 			"damage_type": def["damage_type"],
 			"speed": def["speed"],
 			"max_range": def["range"],
@@ -889,7 +890,7 @@ func _on_attack_fired(attack_id: StringName) -> void:
 		# Light and heavy arcs are just "cone" effects with no card behind them, so
 		# they go through the same EffectTemplates path a Rogue card would.
 		EffectTemplates.execute("cone", {
-			"damage": def["damage"],
+			"damage": attacks.get_damage(attack_id),
 			"damage_type": def["damage_type"],
 			"range": def["range"],
 			"half_angle_degrees": def["half_angle_degrees"],
@@ -1112,6 +1113,12 @@ func get_aim_point() -> Variant:
 	if camera == null or not is_inside_tree():
 		return null
 	return _ground_point_under_mouse()
+
+
+## MAP3b: the flat unit direction a shot flies when it should follow the aim (the reticle), not the body's lagging facing. Relic-spawned
+## projectiles use it, as the Wizard's light bolt does.
+func get_shot_direction() -> Vector3:
+	return _projectile_direction()
 
 
 ## Read-only, for UI. The flat unit direction the player FACES, which is the

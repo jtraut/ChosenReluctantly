@@ -10,7 +10,7 @@ extends RefCounted
 ##   history: CastHistory        the caster's recent casts
 ##   zone_count: int             how many Zones of the caster are alive
 ##   origin: Vector3, forward: Vector3 (flat), aim_point: Variant (Vector3 or null), arena: Rect2
-##   enemies: Array[Dictionary]  [{pos: Vector3, statuses: Array}]
+##   enemies: Array[Dictionary]  [{pos: Vector3, statuses: Array, stacks: Dictionary status id -> stack count (MAP3b; optional)}]
 ##
 ## Live rule: a card with a condition is live when ANY of its conditional effects has a live condition. cast_within
 ## and zone_active read the caster; target_has_status is live when any enemy inside that effect's preview area (the
@@ -72,6 +72,30 @@ static func is_live(card: Dictionary, view: Dictionary) -> bool:
 		if condition_live(effect, card, view):
 			return true
 	return false
+
+
+## MAP3b: the status a card cashes in (the first `detonate_status` effect's `status_id`), or "".
+static func detonate_status_of(card: Dictionary) -> String:
+	for effect: Variant in (card.get("effects", []) as Array):
+		if typeof(effect) == TYPE_DICTIONARY and String((effect as Dictionary).get("template", "")) == "detonate_status":
+			return String(((effect as Dictionary).get("params", {}) as Dictionary).get("status_id", ""))
+	return ""
+
+
+## MAP3b: the most stacks of `status_id` held by one enemy inside the card's preview area (0 when none): what Open a Vein's glow reads.
+static func stacks_in_area(card: Dictionary, status_id: String, view: Dictionary) -> int:
+	var no_ring: Dictionary = {"self_ring_enabled": false}
+	var parts: Array[Dictionary] = CastPreviewShapes.parts_for_card({"effects": card.get("effects", [])}, no_ring)
+	var best: int = 0
+	for enemy: Variant in (view.get("enemies", []) as Array):
+		var held: int = int(((enemy as Dictionary).get("stacks", {}) as Dictionary).get(status_id, 0))
+		if held <= best:
+			continue
+		for part: Dictionary in parts:
+			if part_contains(part, view, (enemy as Dictionary)["pos"]):
+				best = held
+				break
+	return best
 
 
 ## One conditional effect's condition, live in `view`? `card` supplies the fallback preview area for an effect that
@@ -168,6 +192,7 @@ static func primed_for(slot_type: String, card_id: String, primed_state: Array[D
 ##   chips        keywords first, then derived tags (all of them; the UI picks how many to draw)
 ##   keywords     the authored keywords only; keyword_rules maps each to its rule text (data/keywords.json)
 ##   has_condition, condition_text ("" without one), condition_live
+##   detonate_status ("" unless the card cashes a status in), detonate_stacks (the most stacks of it on one enemy in the card's area, MAP3b)
 ##   primed, primed_time_left (seconds, -1 = no limit), primed_duration (the full window, for a bar), primed_charges
 static func slot_info(slot_type: String, card_id: String, view: Dictionary, primed_state: Array[Dictionary], text: Dictionary) -> Dictionary:
 	var card: Dictionary = CardDatabase.get_card(card_id)
@@ -194,6 +219,8 @@ static func slot_info(slot_type: String, card_id: String, view: Dictionary, prim
 		"has_condition": has_condition,
 		"condition_text": condition_display(card, text) if has_condition else "",
 		"condition_live": has_condition and is_live(card, view),
+		"detonate_status": detonate_status_of(card),
+		"detonate_stacks": stacks_in_area(card, detonate_status_of(card), view) if not detonate_status_of(card).is_empty() else 0,
 		"primed": not matching.is_empty(),
 		"primed_time_left": time_left,
 		"primed_duration": duration,

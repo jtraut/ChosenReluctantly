@@ -195,7 +195,7 @@ func test_the_blink_marker_has_no_damage_style_fill_and_converges() -> void:
 	add_child(pool)
 	auto_free(pool)
 	var radius: float = BossRules.blink_marker_radius(0.55)
-	var parts: Array[PooledEffect] = TemplateVfx.blink_marker(pool, Vector3.ZERO, Vector3(0.0, 0.0, 4.0), radius, Boss.BLINK_COLOR, 0.7)
+	var parts: Array[PooledEffect] = TemplateVfx.blink_marker(pool, Vector3.ZERO, Vector3(0.0, 0.0, 4.0), radius, Boss.blink_color(), 0.7)
 	assert_int(parts.size()).is_greater_equal(4)
 	for part: PooledEffect in parts:
 		var is_damage_fill: bool = part.mesh == EffectPool.disc_mesh() and is_equal_approx(part.base_size, radius)
@@ -213,7 +213,7 @@ func test_the_blink_marker_has_no_damage_style_fill_and_converges() -> void:
 	assert_float(closing.scale.x).is_equal_approx(radius, 0.001)
 	# The blink colour is not the damage telegraph colour.
 	var damage: Color = ElementVisuals.visual_for_team("physical", "enemy")["color"]
-	assert_bool(Boss.BLINK_COLOR.is_equal_approx(damage)).is_false()
+	assert_bool(Boss.blink_color().is_equal_approx(damage)).is_false()
 
 
 func test_a_multi_disc_telegraph_draws_one_edge_per_disc() -> void:

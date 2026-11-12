@@ -203,7 +203,7 @@ Last updated: 2026-11-11 (MB1 closed, tag `playtest-2026-11-11-MB1`; MAP3b next,
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- Nothing in progress. MB1 closed 2026-11-11.
+- **MAP3b design pass (game-lead, docs only), started 2026-11-12.** Writing BUILD_DEPTH §12 (rare and legendary cards, tier 3 and boss relics), the ROADMAP MAP3b detailed brief and sittings, DECISIONS "MAP3b design pass", and D49 in OPEN_ITEMS. If cut off: whatever is committed stands; finish the missing pieces, then hand to gameplay-dev sitting A.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step

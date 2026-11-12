@@ -167,7 +167,7 @@ func _card_report(bot: String, lean: float, seeds: int, offers: int, character: 
 		var removed: Array[String] = []  # the real D47 rule: ids pruned this run are never offered again (bleed-old plays without it)
 		var rejects: int = RunConfig.rejects_per_run()
 		for index in range(offers):
-			var offered: Array[String] = RewardOffer.generate(run_seed, index, deck, _cards, _pools, _pool_defs, rewards, starter, [] if bot == "bleed-old" else removed)
+			var offered: Array[String] = RewardOffer.generate(run_seed, index, deck, _cards, _pools, _pool_defs, rewards, starter, [] if bot == "bleed-old" else removed, mini(1 + index * 3 / offers, 3))
 			for phase_index in range(PHASES.size()):
 				var phase: Array = PHASES[phase_index]
 				if index < int(phase[1]) or index >= int(phase[2]):

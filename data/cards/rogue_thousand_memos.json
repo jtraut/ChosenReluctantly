@@ -1,0 +1,40 @@
+{
+    "id": "rogue_thousand_memos",
+    "name": "Death by a Thousand Memos",
+    "slot_type": "attack_single",
+    "pool": "rogue",
+    "rarity": "legendary",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "Each one is a small cut. All of them are marked urgent.",
+    "effects": [
+        {
+            "template": "cone",
+            "params": {
+                "damage": 1.5,
+                "damage_type": "physical",
+                "range": 2.0,
+                "half_angle_degrees": 45,
+                "hits": 6,
+                "hit_interval": 0.1
+            }
+        },
+        {
+            "template": "apply_status",
+            "params": {
+                "status_id": "bleed",
+                "duration": 3.0,
+                "hits": 6,
+                "hit_interval": 0.1
+            }
+        },
+        {
+            "template": "buff",
+            "params": {
+                "stat": "status_max_stacks.bleed",
+                "modifier_type": "additive",
+                "value": 4,
+                "duration": 6.0
+            }
+        }
+    ]
+}

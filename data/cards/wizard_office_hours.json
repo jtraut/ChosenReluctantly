@@ -1,0 +1,23 @@
+{
+    "id": "wizard_office_hours",
+    "name": "Office Hours",
+    "slot_type": "attack_aoe",
+    "pool": "wizard",
+    "rarity": "rare",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "Drop-ins welcome. Staying is mandatory.",
+    "effects": [
+        {
+            "template": "zone",
+            "params": {
+                "shape": "circle",
+                "radius": 2.5,
+                "duration": 5.0,
+                "tick_interval": 0.5,
+                "damage": 3,
+                "damage_type": "neutral",
+                "max_range": 8.0
+            }
+        }
+    ]
+}

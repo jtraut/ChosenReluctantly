@@ -1,0 +1,50 @@
+{
+    "id": "corporate_buyout",
+    "name": "Corporate Buyout",
+    "pool": "neutral",
+    "rarity": "boss",
+    "sources": [
+        "mini_boss"
+    ],
+    "keywords": [],
+    "modifiers": [
+        {
+            "stat": "attack_damage_mult.light",
+            "modifier_type": "multiplicative",
+            "value": 1.0
+        },
+        {
+            "stat": "attack_damage_mult.heavy",
+            "modifier_type": "multiplicative",
+            "value": 1.0
+        },
+        {
+            "stat": "slot_cooldown.attack_single",
+            "modifier_type": "multiplicative",
+            "value": 0.4
+        },
+        {
+            "stat": "slot_cooldown.attack_aoe",
+            "modifier_type": "multiplicative",
+            "value": 0.4
+        },
+        {
+            "stat": "slot_cooldown.utility",
+            "modifier_type": "multiplicative",
+            "value": 0.4
+        },
+        {
+            "stat": "slot_cooldown.movement",
+            "modifier_type": "multiplicative",
+            "value": 0.4
+        },
+        {
+            "stat": "slot_cooldown.recovery",
+            "modifier_type": "multiplicative",
+            "value": 0.4
+        }
+    ],
+    "triggers": [],
+    "rule_text": "Light and heavy attacks deal double damage. Card cooldowns are 40% longer.",
+    "flavor_text": "Under new management. The new management hits things."
+}

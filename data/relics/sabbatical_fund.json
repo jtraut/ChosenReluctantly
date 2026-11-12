@@ -1,0 +1,38 @@
+{
+    "id": "sabbatical_fund",
+    "name": "Sabbatical Fund",
+    "pool": "wizard",
+    "rarity": "tier3",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "card_cast",
+            "filter": {
+                "slot_type": "movement"
+            },
+            "at": "player",
+            "internal_cooldown": 0.0,
+            "effects": [
+                {
+                    "template": "buff",
+                    "params": {
+                        "stat": "slot_cooldown_skip.attack_single",
+                        "modifier_type": "additive",
+                        "value": 1,
+                        "duration": 6.0,
+                        "consume_on_cast": "attack_single",
+                        "charges": 1
+                    }
+                }
+            ]
+        }
+    ],
+    "rule_text": "After a Movement card, your next Attack: Single has no cooldown.",
+    "flavor_text": "Funds for rest. Spent on being ready."
+}

@@ -1,0 +1,38 @@
+{
+    "id": "hostile_work_environment",
+    "name": "Hostile Work Environment",
+    "pool": "rogue",
+    "rarity": "tier3",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [
+        "Bleed"
+    ],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "hit_landed",
+            "filter": {
+                "origin": "light",
+                "target_team": "enemy",
+                "target_has_status": "bleed"
+            },
+            "at": "event_target",
+            "internal_cooldown": 0.0,
+            "effects": [
+                {
+                    "template": "apply_status",
+                    "params": {
+                        "status_id": "bleed",
+                        "duration": 3.0
+                    }
+                }
+            ]
+        }
+    ],
+    "rule_text": "Light hits on a Bleeding enemy add another Bleed stack.",
+    "flavor_text": "Complaints go to the person bleeding. They have been busy."
+}

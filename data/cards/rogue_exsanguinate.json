@@ -1,0 +1,32 @@
+{
+    "id": "rogue_exsanguinate",
+    "name": "Exsanguinate",
+    "slot_type": "attack_aoe",
+    "pool": "rogue",
+    "rarity": "legendary",
+    "cooldown_modifier": 1.5,
+    "keywords": [
+        "Keystone",
+        "Payoff"
+    ],
+    "rule_exception": "Legendary payoff on a 4 s cycle: the x3 Bleed detonation is its damage, which the rule does not count.",
+    "flavor_text": "Everyone's accounts settled at once. Nobody was consulted.",
+    "effects": [
+        {
+            "template": "aoe",
+            "params": {
+                "damage": 6,
+                "damage_type": "physical",
+                "radius": 4.0,
+                "knockback_strength": 1.5
+            }
+        },
+        {
+            "template": "detonate_status",
+            "params": {
+                "status_id": "bleed",
+                "multiplier": 3.0
+            }
+        }
+    ]
+}

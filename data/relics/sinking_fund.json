@@ -1,0 +1,39 @@
+{
+    "id": "sinking_fund",
+    "name": "Sinking Fund",
+    "pool": "neutral",
+    "rarity": "tier3",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "hit_landed",
+            "filter": {
+                "origin": "light",
+                "target_team": "enemy",
+                "every_nth": 8
+            },
+            "at": "player",
+            "internal_cooldown": 0.0,
+            "effects": [
+                {
+                    "template": "projectile",
+                    "params": {
+                        "damage": 10,
+                        "damage_type": "neutral",
+                        "speed": 22.0,
+                        "max_range": 14.0,
+                        "hit_radius": 0.3
+                    }
+                }
+            ]
+        }
+    ],
+    "rule_text": "Every 8th light attack that hits also fires a 10-damage bolt forward.",
+    "flavor_text": "Small deposits. Eventually it pays out, violently."
+}

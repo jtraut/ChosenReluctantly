@@ -1,0 +1,25 @@
+{
+    "id": "the_micromanager",
+    "name": "The Micromanager",
+    "pool": "neutral",
+    "rarity": "boss",
+    "sources": [
+        "mini_boss"
+    ],
+    "keywords": [],
+    "modifiers": [
+        {
+            "stat": "damage_mult",
+            "modifier_type": "multiplicative",
+            "value": 0.25
+        },
+        {
+            "stat": "dead_card_swap_locked",
+            "modifier_type": "additive",
+            "value": 1
+        }
+    ],
+    "triggers": [],
+    "rule_text": "You deal 25% more damage. You can no longer swap a dead card.",
+    "flavor_text": "I'll just be over your shoulder. Always."
+}

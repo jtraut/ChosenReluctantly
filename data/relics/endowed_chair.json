@@ -1,0 +1,62 @@
+{
+    "id": "endowed_chair",
+    "name": "Endowed Chair",
+    "pool": "wizard",
+    "rarity": "tier3",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "hit_landed",
+            "filter": {
+                "origin": "light",
+                "target_team": "enemy",
+                "every_nth": 5
+            },
+            "at": "player",
+            "internal_cooldown": 0.0,
+            "effects": [
+                {
+                    "template": "projectile",
+                    "params": {
+                        "damage": 3,
+                        "damage_type": "neutral",
+                        "speed": 20.0,
+                        "max_range": 12.0,
+                        "hit_radius": 0.25,
+                        "yaw_degrees": -15
+                    }
+                },
+                {
+                    "template": "projectile",
+                    "params": {
+                        "damage": 3,
+                        "damage_type": "neutral",
+                        "speed": 20.0,
+                        "max_range": 12.0,
+                        "hit_radius": 0.25,
+                        "yaw_degrees": 0
+                    }
+                },
+                {
+                    "template": "projectile",
+                    "params": {
+                        "damage": 3,
+                        "damage_type": "neutral",
+                        "speed": 20.0,
+                        "max_range": 12.0,
+                        "hit_radius": 0.25,
+                        "yaw_degrees": 15
+                    }
+                }
+            ]
+        }
+    ],
+    "rule_text": "Every 5th light attack that hits fires a fan of 3 bolts.",
+    "flavor_text": "Very comfortable. Slightly haunted."
+}

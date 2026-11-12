@@ -1,0 +1,39 @@
+{
+    "id": "wizard_sabbatical",
+    "name": "Sabbatical",
+    "slot_type": "movement",
+    "pool": "wizard",
+    "rarity": "legendary",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "Out of office. Leaves a parting statement.",
+    "effects": [
+        {
+            "template": "aoe",
+            "params": {
+                "damage": 10,
+                "damage_type": "neutral",
+                "radius": 3.0,
+                "anchor": "caster",
+                "delay": 0.6
+            }
+        },
+        {
+            "template": "dash",
+            "params": {
+                "distance": 6.0,
+                "speed": 40.0,
+                "pass_through": true,
+                "invulnerable": true
+            }
+        },
+        {
+            "template": "buff",
+            "params": {
+                "stat": "armor",
+                "modifier_type": "additive",
+                "value": 8.0,
+                "duration": 3.0
+            }
+        }
+    ]
+}

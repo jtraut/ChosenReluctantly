@@ -1,0 +1,72 @@
+{
+    "id": "adrenaline_vial",
+    "name": "Adrenaline Vial",
+    "pool": "neutral",
+    "rarity": "tier2",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "player_damaged",
+            "filter": {
+                "min_amount": 5
+            },
+            "at": "player",
+            "internal_cooldown": 20.0,
+            "effects": [
+                {
+                    "template": "buff",
+                    "params": {
+                        "stat": "slot_cooldown.attack_single",
+                        "modifier_type": "multiplicative",
+                        "value": -0.3,
+                        "duration": 4.0
+                    }
+                },
+                {
+                    "template": "buff",
+                    "params": {
+                        "stat": "slot_cooldown.attack_aoe",
+                        "modifier_type": "multiplicative",
+                        "value": -0.3,
+                        "duration": 4.0
+                    }
+                },
+                {
+                    "template": "buff",
+                    "params": {
+                        "stat": "slot_cooldown.utility",
+                        "modifier_type": "multiplicative",
+                        "value": -0.3,
+                        "duration": 4.0
+                    }
+                },
+                {
+                    "template": "buff",
+                    "params": {
+                        "stat": "slot_cooldown.movement",
+                        "modifier_type": "multiplicative",
+                        "value": -0.3,
+                        "duration": 4.0
+                    }
+                },
+                {
+                    "template": "buff",
+                    "params": {
+                        "stat": "slot_cooldown.recovery",
+                        "modifier_type": "multiplicative",
+                        "value": -0.3,
+                        "duration": 4.0
+                    }
+                }
+            ]
+        }
+    ],
+    "rule_text": "Taking a hit of 5 or more makes your card cooldowns 30% faster for 4 s.",
+    "flavor_text": "Not prescribed. Not refused, either."
+}

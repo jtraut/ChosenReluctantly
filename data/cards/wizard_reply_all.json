@@ -1,0 +1,66 @@
+{
+    "id": "wizard_reply_all",
+    "name": "Reply All",
+    "slot_type": "attack_single",
+    "pool": "wizard",
+    "rarity": "rare",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "Everyone was copied. Everyone regrets it.",
+    "effects": [
+        {
+            "template": "projectile",
+            "params": {
+                "damage": 3,
+                "damage_type": "neutral",
+                "speed": 20.0,
+                "max_range": 12.0,
+                "hit_radius": 0.25,
+                "yaw_degrees": -20
+            }
+        },
+        {
+            "template": "projectile",
+            "params": {
+                "damage": 3,
+                "damage_type": "neutral",
+                "speed": 20.0,
+                "max_range": 12.0,
+                "hit_radius": 0.25,
+                "yaw_degrees": -10
+            }
+        },
+        {
+            "template": "projectile",
+            "params": {
+                "damage": 3,
+                "damage_type": "neutral",
+                "speed": 20.0,
+                "max_range": 12.0,
+                "hit_radius": 0.25,
+                "yaw_degrees": 0
+            }
+        },
+        {
+            "template": "projectile",
+            "params": {
+                "damage": 3,
+                "damage_type": "neutral",
+                "speed": 20.0,
+                "max_range": 12.0,
+                "hit_radius": 0.25,
+                "yaw_degrees": 10
+            }
+        },
+        {
+            "template": "projectile",
+            "params": {
+                "damage": 3,
+                "damage_type": "neutral",
+                "speed": 20.0,
+                "max_range": 12.0,
+                "hit_radius": 0.25,
+                "yaw_degrees": 20
+            }
+        }
+    ]
+}

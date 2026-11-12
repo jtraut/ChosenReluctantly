@@ -1,0 +1,32 @@
+{
+    "id": "wizard_tenure",
+    "name": "Tenure",
+    "slot_type": "utility",
+    "pool": "wizard",
+    "rarity": "legendary",
+    "cooldown_modifier": 0.0,
+    "keywords": [
+        "Keystone"
+    ],
+    "flavor_text": "Untouchable, unhurried, and somehow still busy.",
+    "effects": [
+        {
+            "template": "buff",
+            "params": {
+                "stat": "attack_interval.light",
+                "modifier_type": "multiplicative",
+                "value": -0.333,
+                "duration": 8.0
+            }
+        },
+        {
+            "template": "buff",
+            "params": {
+                "stat": "attack_cooldown.heavy",
+                "modifier_type": "multiplicative",
+                "value": -0.5,
+                "duration": 8.0
+            }
+        }
+    ]
+}

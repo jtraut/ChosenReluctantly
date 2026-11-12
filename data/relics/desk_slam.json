@@ -1,0 +1,36 @@
+{
+    "id": "desk_slam",
+    "name": "Desk Slam",
+    "pool": "neutral",
+    "rarity": "tier2",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "hit_landed",
+            "filter": {
+                "origin": "heavy",
+                "target_team": "enemy"
+            },
+            "at": "event_position",
+            "internal_cooldown": 1.0,
+            "effects": [
+                {
+                    "template": "aoe",
+                    "params": {
+                        "damage": 5,
+                        "damage_type": "physical",
+                        "radius": 2.0
+                    }
+                }
+            ]
+        }
+    ],
+    "rule_text": "A heavy hit sends out a shockwave: 5 physical damage in a 2 m radius.",
+    "flavor_text": "The meeting is over when somebody says so."
+}

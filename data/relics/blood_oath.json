@@ -1,0 +1,32 @@
+{
+    "id": "blood_oath",
+    "name": "Blood Oath",
+    "pool": "rogue",
+    "rarity": "boss",
+    "sources": [
+        "mini_boss"
+    ],
+    "keywords": [
+        "Bleed"
+    ],
+    "modifiers": [
+        {
+            "stat": "status_max_stacks.bleed",
+            "modifier_type": "additive",
+            "value": 9
+        },
+        {
+            "stat": "card_damage_mult_vs_status.bleed",
+            "modifier_type": "multiplicative",
+            "value": 0.25
+        },
+        {
+            "stat": "move_speed",
+            "modifier_type": "multiplicative",
+            "value": -0.1
+        }
+    ],
+    "triggers": [],
+    "rule_text": "Bleed stacks to 10 and your cards deal 25% more to Bleeding enemies. Move speed -10%.",
+    "flavor_text": "Signed in something. You don't remember what."
+}

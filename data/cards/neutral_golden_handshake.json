@@ -1,0 +1,45 @@
+{
+    "id": "neutral_golden_handshake",
+    "name": "Golden Handshake",
+    "slot_type": "recovery",
+    "pool": "neutral",
+    "rarity": "legendary",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "A generous package. Everything else is on the house too.",
+    "effects": [
+        {
+            "template": "heal",
+            "params": {
+                "amount": 10
+            }
+        },
+        {
+            "template": "reduce_cooldown",
+            "params": {
+                "slot_type": "attack_single",
+                "seconds": 3.0
+            }
+        },
+        {
+            "template": "reduce_cooldown",
+            "params": {
+                "slot_type": "attack_aoe",
+                "seconds": 3.0
+            }
+        },
+        {
+            "template": "reduce_cooldown",
+            "params": {
+                "slot_type": "utility",
+                "seconds": 3.0
+            }
+        },
+        {
+            "template": "reduce_cooldown",
+            "params": {
+                "slot_type": "movement",
+                "seconds": 3.0
+            }
+        }
+    ]
+}

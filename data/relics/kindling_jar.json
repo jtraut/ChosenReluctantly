@@ -1,0 +1,24 @@
+{
+    "id": "kindling_jar",
+    "name": "Kindling Jar",
+    "pool": "fire",
+    "rarity": "tier3",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [
+        "Burn"
+    ],
+    "modifiers": [
+        {
+            "stat": "status_max_stacks.burn",
+            "modifier_type": "additive",
+            "value": 2
+        }
+    ],
+    "triggers": [],
+    "rule_text": "Your Burn can stack up to 3 times.",
+    "flavor_text": "Labelled 'Do not open'. It was already open."
+}

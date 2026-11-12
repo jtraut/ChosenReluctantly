@@ -1,0 +1,32 @@
+{
+    "id": "burnout_syndrome",
+    "name": "Burnout Syndrome",
+    "pool": "fire",
+    "rarity": "boss",
+    "sources": [
+        "mini_boss"
+    ],
+    "keywords": [
+        "Burn"
+    ],
+    "modifiers": [
+        {
+            "stat": "status_tick_rate.burn",
+            "modifier_type": "multiplicative",
+            "value": 1.0
+        },
+        {
+            "stat": "status_max_stacks.burn",
+            "modifier_type": "additive",
+            "value": 4
+        },
+        {
+            "stat": "slot_cooldown.recovery",
+            "modifier_type": "multiplicative",
+            "value": 0.5
+        }
+    ],
+    "triggers": [],
+    "rule_text": "Burn ticks twice as fast and stacks to 5. Your Recovery slot takes 50% longer.",
+    "flavor_text": "Running hot. Running out."
+}

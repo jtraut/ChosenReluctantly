@@ -1,0 +1,42 @@
+{
+    "id": "bureaucratic_red_tape",
+    "name": "Bureaucratic Red Tape",
+    "pool": "neutral",
+    "rarity": "tier3",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "card_cast",
+            "filter": {
+                "tag": "Keystone"
+            },
+            "at": "player",
+            "internal_cooldown": 0.0,
+            "effects": [
+                {
+                    "template": "aoe",
+                    "params": {
+                        "damage": 1,
+                        "damage_type": "neutral",
+                        "radius": 3.0
+                    }
+                },
+                {
+                    "template": "apply_status",
+                    "params": {
+                        "status_id": "stun",
+                        "duration": 1.5
+                    }
+                }
+            ]
+        }
+    ],
+    "rule_text": "Casting a Keystone card stuns enemies within 3 m for 1.5 s.",
+    "flavor_text": "Form 27-B must be filed before anything moves."
+}

@@ -1,0 +1,28 @@
+{
+    "id": "rogue_knuckle_sandwich",
+    "name": "Knuckle Sandwich",
+    "slot_type": "attack_single",
+    "pool": "rogue",
+    "rarity": "rare",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "Lunch is served. Your other hand is already hungry.",
+    "effects": [
+        {
+            "template": "cone",
+            "params": {
+                "damage": 7,
+                "damage_type": "physical",
+                "range": 1.8,
+                "half_angle_degrees": 45,
+                "knockback_strength": 2.0
+            }
+        },
+        {
+            "template": "reduce_cooldown",
+            "params": {
+                "attack_id": "heavy",
+                "seconds": 60.0
+            }
+        }
+    ]
+}

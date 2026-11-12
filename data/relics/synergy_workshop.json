@@ -1,0 +1,29 @@
+{
+    "id": "synergy_workshop",
+    "name": "Synergy Workshop",
+    "pool": "rogue",
+    "rarity": "tier3",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [
+        "Bleed"
+    ],
+    "modifiers": [
+        {
+            "stat": "status_tick_rate.bleed",
+            "modifier_type": "multiplicative",
+            "value": 0.5
+        },
+        {
+            "stat": "card_damage_mult_vs_status.bleed",
+            "modifier_type": "multiplicative",
+            "value": 0.15
+        }
+    ],
+    "triggers": [],
+    "rule_text": "Your Bleed ticks 50% faster, and your cards deal 15% more to Bleeding enemies.",
+    "flavor_text": "Let's circle back to the bleeding. Offline."
+}

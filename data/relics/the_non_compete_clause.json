@@ -1,0 +1,69 @@
+{
+    "id": "the_non_compete_clause",
+    "name": "The Non-Compete Clause",
+    "pool": "neutral",
+    "rarity": "boss",
+    "sources": [
+        "mini_boss"
+    ],
+    "keywords": [],
+    "modifiers": [
+        {
+            "stat": "attack_damage_mult.light",
+            "modifier_type": "multiplicative",
+            "value": -0.5
+        },
+        {
+            "stat": "attack_damage_mult.heavy",
+            "modifier_type": "multiplicative",
+            "value": -0.5
+        }
+    ],
+    "triggers": [
+        {
+            "event": "card_cast",
+            "filter": {},
+            "at": "player",
+            "internal_cooldown": 0.0,
+            "effects": [
+                {
+                    "template": "reduce_cooldown",
+                    "params": {
+                        "slot_type": "attack_single",
+                        "seconds": 0.5
+                    }
+                },
+                {
+                    "template": "reduce_cooldown",
+                    "params": {
+                        "slot_type": "attack_aoe",
+                        "seconds": 0.5
+                    }
+                },
+                {
+                    "template": "reduce_cooldown",
+                    "params": {
+                        "slot_type": "utility",
+                        "seconds": 0.5
+                    }
+                },
+                {
+                    "template": "reduce_cooldown",
+                    "params": {
+                        "slot_type": "movement",
+                        "seconds": 0.5
+                    }
+                },
+                {
+                    "template": "reduce_cooldown",
+                    "params": {
+                        "slot_type": "recovery",
+                        "seconds": 0.5
+                    }
+                }
+            ]
+        }
+    ],
+    "rule_text": "Each card cast takes 0.5 s off every slot. Light and heavy attacks deal half damage.",
+    "flavor_text": "You may not hit things elsewhere. Cards only."
+}

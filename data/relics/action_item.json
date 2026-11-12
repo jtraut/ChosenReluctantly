@@ -1,0 +1,36 @@
+{
+    "id": "action_item",
+    "name": "Action Item",
+    "pool": "neutral",
+    "rarity": "tier3",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "card_cast",
+            "filter": {
+                "tag": "Payoff"
+            },
+            "at": "player",
+            "internal_cooldown": 0.0,
+            "effects": [
+                {
+                    "template": "buff",
+                    "params": {
+                        "stat": "damage_mult",
+                        "modifier_type": "multiplicative",
+                        "value": 0.25,
+                        "duration": 4.0
+                    }
+                }
+            ]
+        }
+    ],
+    "rule_text": "Casting a Payoff card gives you +25% damage for 4 s.",
+    "flavor_text": "Assigned to you. Due immediately. Highlighted in red."
+}

@@ -1,0 +1,35 @@
+{
+    "id": "wizard_strongly_worded_ward",
+    "name": "Strongly Worded Ward",
+    "slot_type": "utility",
+    "pool": "wizard",
+    "rarity": "rare",
+    "cooldown_modifier": 0.0,
+    "keywords": [
+        "Keystone",
+        "Primer"
+    ],
+    "flavor_text": "Politely firm. Firmly protective.",
+    "effects": [
+        {
+            "template": "buff",
+            "params": {
+                "stat": "armor",
+                "modifier_type": "additive",
+                "value": 12.0,
+                "duration": 6.0
+            }
+        },
+        {
+            "template": "buff",
+            "params": {
+                "stat": "slot_cooldown_skip.attack_aoe",
+                "modifier_type": "additive",
+                "value": 1,
+                "duration": 6.0,
+                "consume_on_cast": "attack_aoe",
+                "charges": 1
+            }
+        }
+    ]
+}

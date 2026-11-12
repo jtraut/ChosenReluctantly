@@ -1,0 +1,38 @@
+{
+    "id": "fire_scorched_earth",
+    "name": "Scorched Earth Policy",
+    "slot_type": "attack_aoe",
+    "pool": "fire",
+    "rarity": "legendary",
+    "cooldown_modifier": 0.0,
+    "keywords": [
+        "Keystone"
+    ],
+    "flavor_text": "Efficiency drive. Nothing survives to be inefficient.",
+    "effects": [
+        {
+            "template": "zone",
+            "params": {
+                "shape": "circle",
+                "radius": 4.0,
+                "duration": 6.0,
+                "tick_interval": 0.5,
+                "damage": 3,
+                "damage_type": "fire",
+                "max_range": 8.0,
+                "status_id": "burn",
+                "status_duration": 3.0,
+                "status_chance": 1.0
+            }
+        },
+        {
+            "template": "buff",
+            "params": {
+                "stat": "status_max_stacks.burn",
+                "modifier_type": "additive",
+                "value": 2,
+                "duration": 6.0
+            }
+        }
+    ]
+}

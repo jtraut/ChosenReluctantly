@@ -1,0 +1,22 @@
+{
+    "id": "fire_hot_desking",
+    "name": "Hot Desking",
+    "slot_type": "movement",
+    "pool": "fire",
+    "rarity": "rare",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "Nobody keeps a seat warm like you do. Literally.",
+    "effects": [
+        {
+            "template": "dash",
+            "params": {
+                "distance": 5.0,
+                "speed": 16.0,
+                "pass_through": true,
+                "hit_radius": 0.9,
+                "status_id": "burn",
+                "status_duration": 4.0
+            }
+        }
+    ]
+}

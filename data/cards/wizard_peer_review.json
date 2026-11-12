@@ -1,0 +1,40 @@
+{
+    "id": "wizard_peer_review",
+    "name": "Peer Review",
+    "slot_type": "attack_aoe",
+    "pool": "wizard",
+    "rarity": "legendary",
+    "cooldown_modifier": 0.0,
+    "keywords": [
+        "Payoff"
+    ],
+    "flavor_text": "Harsh feedback lands harder when you've been prepared.",
+    "effects": [
+        {
+            "template": "aoe",
+            "params": {
+                "damage": 10,
+                "damage_type": "neutral",
+                "radius": 3.5,
+                "max_range": 8.0,
+                "delay": 0.5,
+                "vfx": false
+            },
+            "condition": {
+                "type": "cast_within",
+                "slot_type": "utility",
+                "seconds": 4.0
+            }
+        },
+        {
+            "template": "aoe",
+            "params": {
+                "damage": 18,
+                "damage_type": "neutral",
+                "radius": 3.5,
+                "max_range": 8.0,
+                "delay": 0.5
+            }
+        }
+    ]
+}

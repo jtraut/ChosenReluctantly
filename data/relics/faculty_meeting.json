@@ -1,0 +1,35 @@
+{
+    "id": "faculty_meeting",
+    "name": "Faculty Meeting",
+    "pool": "wizard",
+    "rarity": "tier3",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "card_cast",
+            "filter": {
+                "slot_type": "utility"
+            },
+            "at": "player",
+            "internal_cooldown": 0.0,
+            "effects": [
+                {
+                    "template": "aoe",
+                    "params": {
+                        "damage": 8,
+                        "damage_type": "neutral",
+                        "radius": 3.0
+                    }
+                }
+            ]
+        }
+    ],
+    "rule_text": "Casting a Utility card releases an 8-damage nova around you (radius 3).",
+    "flavor_text": "Everyone talks. Someone gets hurt."
+}

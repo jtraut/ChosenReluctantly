@@ -1,0 +1,22 @@
+{
+    "id": "ergonomic_chair",
+    "name": "Ergonomic Chair",
+    "pool": "wizard",
+    "rarity": "tier1",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [],
+    "modifiers": [
+        {
+            "stat": "slot_cooldown.utility",
+            "modifier_type": "multiplicative",
+            "value": -0.15
+        }
+    ],
+    "triggers": [],
+    "rule_text": "Your Utility slot recovers 15% faster.",
+    "flavor_text": "Lumbar support for the part of you that casts."
+}

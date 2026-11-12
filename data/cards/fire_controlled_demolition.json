@@ -1,0 +1,31 @@
+{
+    "id": "fire_controlled_demolition",
+    "name": "Controlled Demolition",
+    "slot_type": "attack_aoe",
+    "pool": "fire",
+    "rarity": "rare",
+    "cooldown_modifier": 0.0,
+    "keywords": [
+        "Payoff"
+    ],
+    "rule_exception": "Payoff: most of its damage is the Burn detonation, which the rule does not count.",
+    "flavor_text": "The building was always going to come down. Now it has a schedule.",
+    "effects": [
+        {
+            "template": "aoe",
+            "params": {
+                "damage": 10,
+                "damage_type": "fire",
+                "radius": 2.5,
+                "max_range": 8.0
+            }
+        },
+        {
+            "template": "detonate_status",
+            "params": {
+                "status_id": "burn",
+                "multiplier": 2.0
+            }
+        }
+    ]
+}

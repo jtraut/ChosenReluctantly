@@ -1,0 +1,37 @@
+{
+    "id": "cc_all_staff",
+    "name": "cc: All Staff",
+    "pool": "wizard",
+    "rarity": "tier2",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "card_cast",
+            "filter": {
+                "tag": "Projectile"
+            },
+            "at": "player",
+            "internal_cooldown": 0.0,
+            "effects": [
+                {
+                    "template": "projectile",
+                    "params": {
+                        "damage": 6,
+                        "damage_type": "neutral",
+                        "speed": 20.0,
+                        "max_range": 12.0,
+                        "hit_radius": 0.3
+                    }
+                }
+            ]
+        }
+    ],
+    "rule_text": "Casting a Projectile card also fires a 6-damage bolt.",
+    "flavor_text": "Reply-all is a lifestyle."
+}

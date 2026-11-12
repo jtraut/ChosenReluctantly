@@ -1,0 +1,41 @@
+{
+    "id": "rogue_brawl_clause",
+    "name": "Brawl Clause",
+    "slot_type": "utility",
+    "pool": "rogue",
+    "rarity": "legendary",
+    "cooldown_modifier": 0.0,
+    "keywords": [
+        "Keystone"
+    ],
+    "flavor_text": "Not in the handbook. Not against it either.",
+    "effects": [
+        {
+            "template": "buff",
+            "params": {
+                "stat": "attack_interval.light",
+                "modifier_type": "multiplicative",
+                "value": -0.29,
+                "duration": 8.0
+            }
+        },
+        {
+            "template": "buff",
+            "params": {
+                "stat": "attack_cooldown.heavy",
+                "modifier_type": "multiplicative",
+                "value": -0.5,
+                "duration": 8.0
+            }
+        },
+        {
+            "template": "buff",
+            "params": {
+                "stat": "armor",
+                "modifier_type": "additive",
+                "value": 10.0,
+                "duration": 8.0
+            }
+        }
+    ]
+}

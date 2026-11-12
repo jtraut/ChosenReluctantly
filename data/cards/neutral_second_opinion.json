@@ -1,0 +1,34 @@
+{
+    "id": "neutral_second_opinion",
+    "name": "Second Opinion",
+    "slot_type": "recovery",
+    "pool": "neutral",
+    "rarity": "rare",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "Slightly better than the first one. Costs the same.",
+    "effects": [
+        {
+            "template": "heal",
+            "params": {
+                "amount": 8
+            }
+        },
+        {
+            "template": "apply_status",
+            "params": {
+                "status_id": "regeneration",
+                "duration": 5.0,
+                "target": "self"
+            }
+        },
+        {
+            "template": "buff",
+            "params": {
+                "stat": "armor",
+                "modifier_type": "additive",
+                "value": 6.0,
+                "duration": 4.0
+            }
+        }
+    ]
+}

@@ -1,0 +1,44 @@
+{
+    "id": "the_ivory_tower",
+    "name": "The Ivory Tower",
+    "pool": "wizard",
+    "rarity": "boss",
+    "sources": [
+        "mini_boss"
+    ],
+    "keywords": [],
+    "modifiers": [
+        {
+            "stat": "armor",
+            "modifier_type": "additive",
+            "value": 12.0
+        },
+        {
+            "stat": "move_speed",
+            "modifier_type": "multiplicative",
+            "value": -0.2
+        }
+    ],
+    "triggers": [
+        {
+            "event": "card_cast",
+            "filter": {
+                "slot_type": "utility"
+            },
+            "at": "player",
+            "internal_cooldown": 0.0,
+            "effects": [
+                {
+                    "template": "aoe",
+                    "params": {
+                        "damage": 6,
+                        "damage_type": "neutral",
+                        "radius": 3.0
+                    }
+                }
+            ]
+        }
+    ],
+    "rule_text": "+12 armor. Each Utility cast releases a 6-damage nova (radius 3). Move speed -20%.",
+    "flavor_text": "Very safe up here. Very far from everything."
+}

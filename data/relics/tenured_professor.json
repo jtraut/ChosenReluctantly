@@ -1,0 +1,53 @@
+{
+    "id": "tenured_professor",
+    "name": "Tenured Professor",
+    "pool": "wizard",
+    "rarity": "boss",
+    "sources": [
+        "mini_boss"
+    ],
+    "keywords": [],
+    "modifiers": [
+        {
+            "stat": "slot_cooldown.movement",
+            "modifier_type": "multiplicative",
+            "value": 0.5
+        }
+    ],
+    "triggers": [
+        {
+            "event": "attack_fired",
+            "filter": {
+                "attack_id": "light"
+            },
+            "at": "player",
+            "internal_cooldown": 0.0,
+            "effects": [
+                {
+                    "template": "projectile",
+                    "params": {
+                        "damage": 1.5,
+                        "damage_type": "neutral",
+                        "speed": 20.0,
+                        "max_range": 12.0,
+                        "hit_radius": 0.25,
+                        "yaw_degrees": -15
+                    }
+                },
+                {
+                    "template": "projectile",
+                    "params": {
+                        "damage": 1.5,
+                        "damage_type": "neutral",
+                        "speed": 20.0,
+                        "max_range": 12.0,
+                        "hit_radius": 0.25,
+                        "yaw_degrees": 15
+                    }
+                }
+            ]
+        }
+    ],
+    "rule_text": "Each light attack also fires 2 bolts at 15 degrees either side. Movement cooldown +50%.",
+    "flavor_text": "Cannot be fired. Cannot be hurried."
+}

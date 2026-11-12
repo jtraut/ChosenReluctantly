@@ -1,0 +1,46 @@
+{
+    "id": "closing_argument",
+    "name": "Closing Argument",
+    "pool": "rogue",
+    "rarity": "tier3",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [
+        "Bleed"
+    ],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "hit_landed",
+            "filter": {
+                "origin": "heavy",
+                "target_team": "enemy",
+                "target_has_status": "bleed"
+            },
+            "at": "event_position",
+            "internal_cooldown": 1.0,
+            "effects": [
+                {
+                    "template": "aoe",
+                    "params": {
+                        "damage": 3,
+                        "damage_type": "physical",
+                        "radius": 1.2
+                    }
+                },
+                {
+                    "template": "detonate_status",
+                    "params": {
+                        "status_id": "bleed",
+                        "multiplier": 1.5
+                    }
+                }
+            ]
+        }
+    ],
+    "rule_text": "A heavy hit on a Bleeding enemy cashes in its Bleed (x1.5).",
+    "flavor_text": "In conclusion, you owe them everything. Collected."
+}

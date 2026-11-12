@@ -1,0 +1,44 @@
+{
+    "id": "rogue_arterial_spray",
+    "name": "Arterial Spray",
+    "slot_type": "attack_aoe",
+    "pool": "rogue",
+    "rarity": "rare",
+    "cooldown_modifier": 0.0,
+    "rule_exception": "Payoff: the extra 4 damage on Bleeding enemies is conditional, which the rule does not count.",
+    "flavor_text": "Wide, messy, and technically a performance review.",
+    "effects": [
+        {
+            "template": "cone",
+            "params": {
+                "damage": 4,
+                "damage_type": "physical",
+                "range": 3.0,
+                "half_angle_degrees": 60,
+                "knockback_strength": 1.0,
+                "vfx": false
+            },
+            "condition": {
+                "type": "target_has_status",
+                "status_id": "bleed"
+            }
+        },
+        {
+            "template": "cone",
+            "params": {
+                "damage": 5,
+                "damage_type": "physical",
+                "range": 3.0,
+                "half_angle_degrees": 60,
+                "knockback_strength": 1.0
+            }
+        },
+        {
+            "template": "apply_status",
+            "params": {
+                "status_id": "bleed",
+                "duration": 4.0
+            }
+        }
+    ]
+}

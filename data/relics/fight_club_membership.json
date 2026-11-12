@@ -1,0 +1,46 @@
+{
+    "id": "fight_club_membership",
+    "name": "Fight Club Membership",
+    "pool": "rogue",
+    "rarity": "boss",
+    "sources": [
+        "mini_boss"
+    ],
+    "keywords": [
+        "Bleed"
+    ],
+    "modifiers": [
+        {
+            "stat": "attack_interval.light",
+            "modifier_type": "multiplicative",
+            "value": -0.25
+        },
+        {
+            "stat": "slot_cooldown.attack_single",
+            "modifier_type": "multiplicative",
+            "value": 1.0
+        }
+    ],
+    "triggers": [
+        {
+            "event": "hit_landed",
+            "filter": {
+                "origin": "light",
+                "target_team": "enemy"
+            },
+            "at": "event_target",
+            "internal_cooldown": 0.0,
+            "effects": [
+                {
+                    "template": "apply_status",
+                    "params": {
+                        "status_id": "bleed",
+                        "duration": 3.0
+                    }
+                }
+            ]
+        }
+    ],
+    "rule_text": "Light attacks are 33% faster and make enemies Bleed. Attack: Single cooldown doubles.",
+    "flavor_text": "The first rule is HR already knows."
+}

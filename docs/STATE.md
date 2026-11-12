@@ -209,7 +209,18 @@ Last updated: 2026-11-12 (MAP3b sitting A done; gameplay-dev sitting B in progre
   - OPEN_ITEMS D49, default A, which nothing waits on.
   - Brief review fixes in 81c8e76: common-only pool fill, the stack hard cap, the save round trip, and the verify items.
   - **Sitting A done** (5d5678c..472beb0; triage in DECISIONS "MAP3b sitting A triage"). Suite 2233 / 164; hashes unchanged.
-  - **gameplay-dev sitting B (content) started 2026-11-12.** If cut off, check `git log` after 472beb0 and resume B from the first missing file.
+  - **gameplay-dev sitting B (content), in progress.**
+    - Content committed in 22a9d8f.
+    - Uncommitted when last checked: damage bumps in 3 card files (Arterial Spray, Controlled Demolition, Exsanguinate) and a pool-fill test in `tests/unit/map3b_content_test.gd`. They are gameplay-dev's to commit.
+    - Stale suite and SIM1 runs from 22a9d8f were still running.
+    - Remaining:
+      - commit the bumps;
+      - re-check the hashes;
+      - re-run the suite and the SIM1 gate on the final commit;
+      - fix count pins (`--full-deck` 38 -> 49 Rogue, 28 -> 39 Wizard);
+      - remove `mini_boss` from Pyre Insurance's sources;
+      - then sitting C.
+    - Calls: DECISIONS "MAP3b sitting B interim calls".
   - **Docs pass notes for tech-writer:** gameplay-dev's sitting A hand-back lists the README, ARCHITECTURE and CHANGELOG changes. The old -> new values are: Raider HP 90 -> 120; `card_price` 40 -> `card_prices` 55/85/125; large chest `min_tier` 1 -> 2; new `scatter_min` 3, `rarity_weights`, `mini_boss_rarity`, `stacking.hard_cap` 10, and `blink_*` vfx keys. Classes and functions: `GroundClamp`, `RunState.offer_rarity`, `AttackController.get_damage`, `swap_locked`, `SlotSynergy.detonate_*`, `Player.get_shot_direction`.
   - **For the MAP3b docs pass:** a CHANGELOG process/design note for the design pass, and nothing to archive yet.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.

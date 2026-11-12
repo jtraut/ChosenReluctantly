@@ -2438,3 +2438,19 @@ The content plan is in `docs/BUILD_DEPTH.md` §12, and the sittings are in the R
   - the gate at HEAD, which includes card price 55, chest `min_tier` 2 and the relic aim fix;
   - Cancel at the cap with `--relic-cap=1`;
   - expect more exhausted-pool fallbacks in act 3 until sitting B adds tier 3 relics.
+
+## 2026-11-12 - MAP3b sitting B interim calls (gameplay-dev 22a9d8f + uncommitted bumps; game-lead)
+- **Exsanguinate stays at 21 base damage with the +1.5 cooldown.** gameplay-dev asked; it's game-lead's call, since it's a balance value on a new card.
+  - The slow cooldown keeps the detonate a paced payoff, and the 21 base only clears the `CardDamageRule` floor at the 4.0 s cycle.
+  - qa reports the worst-case detonate at 10 stacks x3; the playtest judges it.
+  - [13 base with no cooldown penalty: a x3 detonate every 2.5 s is the bigger risk.]
+- **Base damage bumps instead of `rule_exception`, accepted:** Arterial Spray 5 -> 8 (unconditional part), Controlled Demolition 10 -> 13. These are new cards, so there are no old shipped values.
+- **gameplay-dev's data deviations, accepted:**
+  - Knuckle Sandwich `reduce_cooldown` is 60 s, the validator maximum;
+  - `tick_interval` 0.5 on Office Hours and Scorched Earth;
+  - Tenured Professor bolts do 1.5 each;
+  - Thousand Memos range is 2.0;
+  - "X% faster" on light attacks uses the rate reading;
+  - stuns follow rank and diminishing-returns rules, so they're halved on elites. The rule text doesn't say so; ux may add it.
+- **Pyre Insurance still lists `mini_boss` in its sources**, left over from MAP3's interim reward. To fix in sitting B or C: remove it, since boss offers draw only rarity `boss`. qa confirms that a tier 1 relic can't count toward the 2 boss relics.
+- **Process:** the sim and suite batches gameplay-dev started before the bumps are stale. Killing the Godot processes was refused by the permission system. game-lead doesn't override that: the batches finish on their own, and gameplay-dev relaunches on the final commit.

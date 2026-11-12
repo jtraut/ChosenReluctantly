@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-11 (MB1 closed; latest tag `playtest-2026-11-11-MB1`)
-**Status:** no decisions waiting. 10 things to look at (55, 54, 53, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. **MB1 (new mini-bosses) is done**, tag `playtest-2026-11-11-MB1`. Next: **MAP3b** (rare and legendary cards, boss relics) -> MAP4 -> 3d -> BD3b.
+Last updated: 2026-11-12 (MAP3b design pass done; latest tag `playtest-2026-11-11-MB1`)
+**Status:** 1 decision waiting (D49, nothing blocks on it). 10 things to look at (55, 54, 53, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. **MB1 (new mini-bosses) is done**, tag `playtest-2026-11-11-MB1`. **MAP3b** (rare and legendary cards, boss relics) is designed: 17 new cards, 15 relics and 8 boss relics, with Bleed and basic attacks getting as many strong rewards as Burn (`docs/BUILD_DEPTH.md` §12). Building starts next. Then MAP4 -> 3d -> BD3b.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -17,9 +17,19 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## Needs your decision
 
-Next new number: D49.
+Next new number: D50.
 
-Nothing waiting. Your last answer, D48 = A (2026-11-11), is recorded: Bleed and physical rares and legendaries come in MAP3b.
+**D49. When you prune or reject cards of one type, should that type show up less afterwards?** This came out of your physical Rogue run, where you kept removing Fire cards and kept being offered more.
+- **What's already in place:**
+  - offers lean toward the statuses your added cards apply (D43);
+  - a card you prune never comes back (D47);
+  - MAP3b's new rare and legendary cards are mostly Bleed and basic-attack, with 1 to 2 Fire per tier.
+- **Options:**
+  - **A (default): no new rule.** See how the above plays in MAP3b first.
+  - **B:** each card you prune or reject lowers its type's offer weight for the rest of the run, for example x0.8 each, never below x0.4.
+  - **C:** as B, but only pruning counts, so rejects stay a free "not now".
+- **My recommendation:** A for now, then revisit after you've played a MAP3b Bleed run. B or C is a small data-driven change at any time.
+- Nothing in MAP3b waits on this.
 
 ## Needs your eyes
 

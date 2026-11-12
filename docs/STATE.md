@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-11 (MB1 closed, tag `playtest-2026-11-11-MB1`; MAP3b next, starting with game-lead's design pass).
+Last updated: 2026-11-12 (MAP3b design pass done; gameplay-dev sitting A next).
 
 ## What's done
 - **MB1 closed 2026-11-11.** Tag `playtest-2026-11-11-MB1`.
@@ -203,24 +203,23 @@ Last updated: 2026-11-11 (MB1 closed, tag `playtest-2026-11-11-MB1`; MAP3b next,
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **MAP3b design pass (game-lead, docs only), started 2026-11-12.** Writing BUILD_DEPTH §12 (rare and legendary cards, tier 3 and boss relics), the ROADMAP MAP3b detailed brief and sittings, DECISIONS "MAP3b design pass", and D49 in OPEN_ITEMS. If cut off: whatever is committed stands; finish the missing pieces, then hand to gameplay-dev sitting A.
+- **MAP3b, in progress.** The design pass is done (game-lead, docs only, 2026-11-12):
+  - BUILD_DEPTH §12 (093450c): 17 rare and legendary cards, 15 tier 1-3 relics, 8 boss relics, the new-code list and the checks;
+  - the ROADMAP MAP3b "Detailed brief", with sittings A (engine), B (content) and C (tuning; may merge into B), plus DECISIONS "MAP3b design pass" (3526e32);
+  - OPEN_ITEMS D49, default A, which nothing waits on.
+  - Nothing has been built yet; the repo is unchanged from the MB1 tag apart from docs.
+  - **For the MAP3b docs pass:** a CHANGELOG process/design note for the design pass, and nothing to archive yet.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step
-1. **MAP3b** (ROADMAP brief). The order:
-   1. game-lead's BUILD_DEPTH design pass (boss-tier and tier 3 relics, rare and legendary cards, Bleed and physical coverage, retag or new);
-   2. gameplay-dev, first applying the MB1 tuning default unless eyes 55 says otherwise;
-   3. ux;
-   4. qa;
-   5. the playtester;
-   6. docs.
+1. **MAP3b: gameplay-dev sitting A** (ROADMAP MAP3b "Detailed brief", items 1-10). It opens with the MB1 tuning default, because eyes 55 is unanswered. Then sitting B (content), C (tuning), ux, qa, the playtester, the docs pass, and close.
 2. Then MAP4, 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D45 answered. D46 = B and D47 = B (2026-11-09). D48 = A (2026-11-11, archived in RESOLVED 2531020). Next free: D49.
+**D-numbers:** D21-D45 answered. D46 = B and D47 = B (2026-11-09). D48 = A (2026-11-11, archived in RESOLVED 2531020). D49 open (prune/reject shrinks offers; default A). Next free: D50.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions open; eyes 55, 54, 53, 52, 51, 50, 49, 48, 47 and 35; the round 2 vision check is due. Answered items are in `docs/RESOLVED.md`.
+All director-facing items are in `docs/OPEN_ITEMS.md`: D49 open (default A); eyes 55, 54, 53, 52, 51, 50, 49, 48, 47 and 35; the round 2 vision check is due. Answered items are in `docs/RESOLVED.md`.

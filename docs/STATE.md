@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-12 (MAP3b gameplay-dev done; ux in progress).
+Last updated: 2026-11-12 (MAP3b ux done; qa in progress).
 
 ## What's done
 - **MB1 closed 2026-11-11.** Tag `playtest-2026-11-11-MB1`.
@@ -232,7 +232,15 @@ Last updated: 2026-11-12 (MAP3b gameplay-dev done; ux in progress).
     - `offer_report` rolls act rarity.
     - No gold or price change.
     - Triage: DECISIONS "MAP3b sittings B and C triage".
-  - **ux in progress** (brief: ROADMAP MAP3b "ux"). Then qa, the playtester, the docs pass, and close.
+  - **ux done** (e596c5a..f59e2c6; DECISIONS "MAP3b ux triage"). Suite 2264; hashes unchanged.
+    - Includes the act 3 floor change `#704840` -> `#8f8060`. Add it to the MAP3b eyes item at close; screenshots are in `screenshots/map3b_ux/act3_floor_*.png`.
+  - **qa in progress.** Then the playtester, the docs pass, and close.
+  - **Doc handoff, ux part:**
+    - new keys: `ui.option.rarity_names`, `ui.relic.boss_title`, `boss_line`, `cost_format`;
+    - `data/ui.json` `run_ui` rarity colours, `hud.detonate_live_stacks` 2, `status_stacks` dim keys;
+    - the `UxCapture` `shop_rarity` mode;
+    - `DamageNumber.live`;
+    - `tests/unit/map3b_ux_test.gd`.
   - **Doc handoff additions:**
     - the README SIM1 baselines are now 27/36, 23/36, 33/36 and 35/36;
     - the README `MerchantPolicy` wording;
@@ -244,7 +252,7 @@ Last updated: 2026-11-12 (MAP3b gameplay-dev done; ux in progress).
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step
-1. **MAP3b: ux**, then qa, the playtester, the docs pass, and close.
+1. **MAP3b: qa**, then qa, the playtester, the docs pass, and close.
 2. Then MAP4, 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.

@@ -2479,3 +2479,16 @@ The content plan is in `docs/BUILD_DEPTH.md` §12, and the sittings are in the R
   - Corporate Buyout came in under baseline (7 and 6).
   - Fight Club won 12/12 for the Rogue.
   - No change before the playtest. Both go to the playtester and qa as watch items; the first knobs are Non-Compete's 0.5 s refund and Corporate Buyout's cooldown cost.
+
+## 2026-11-12 - MAP3b ux triage (ux-designer e596c5a..f59e2c6; game-lead)
+- **Accepted:** suite 2264, 0 orphans; hashes unchanged; all six items done or answered.
+- **Act 3 floor tint `#704840` -> `#8f8060` (sand), accepted for now**, so red chasers stand out. Act identity is the director's (D44 = C), so it goes into the MAP3b eyes item with before and after screenshots. Reverting is a single data value.
+  - [Recolouring the chaser: one colour per element.]
+- **The "comma clipping" nit wasn't reproduced.** A test now fits every name at 10 HUD heights. Closed.
+- **The stun relics' "halved on elites" note:** skipped by ux. It's a `rule_text` data edit, deferred to BD3b housekeeping, since the stun rules apply everywhere and are shown nowhere else either.
+- **For qa and the playtester:**
+  - the Open a Vein glow lit in play (unit-tested only);
+  - stack-label dimming with 3+ enemies;
+  - act 3 telegraph readability on the sand floor;
+  - a real act 3 merchant with a legendary in stock;
+  - the Burnout Syndrome tile.

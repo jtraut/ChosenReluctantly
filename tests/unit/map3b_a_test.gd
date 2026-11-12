@@ -736,3 +736,32 @@ func test_a_reduce_cooldown_card_has_a_readable_tile_and_slot_info() -> void:
 	var line: String = CardSummary.effect_line(card, 1.0, {})
 	assert_str(line).is_not_empty()
 	assert_array(CastPreviewShapes.parts_for_card(card, {"self_ring_enabled": false})).is_not_empty()  # the cone still draws; the reduce effect adds no shape
+
+
+func test_a_boss_offer_that_cannot_be_taken_at_the_cap_still_has_a_way_out() -> void:
+	# --relic-cap=1: act 1's boss relic fills the cap and boss relics can't be given up, so act 2's boss offer could never be taken.
+	var relics: Array = [_boss_relic("b1"), _boss_relic("b2"), _boss_relic("b3"), _boss_relic("b4")]
+	var ctx: Dictionary = _ctx(_cards(6, 3, 3), relics, 1)
+	var state: RunState = _state(2)
+	state.relics = ["b4"] as Array[String]
+	assert_str(RunRelics.open_for_room(state, "mini_boss", false, ctx)).is_equal(RunState.PENDING_RELIC)
+	assert_str(state.offer_rarity).is_equal("boss")
+	var pick: Dictionary = RunChoices.apply(state, "relic:" + state.offer[0], ctx)
+	assert_bool(bool(pick["ok"])).is_false()  # refused: nothing to give up
+	var kinds: Array[String] = []
+	for option: Dictionary in RunChoices.options(state, ctx):
+		kinds.append(String(option["kind"]))
+	assert_bool(kinds.has("relic_skip")).is_true()
+	var skipped: Dictionary = RunChoices.apply(state, "relic_skip", ctx)
+	assert_bool(bool(skipped["finished"])).is_true()
+	assert_str(state.pending).is_equal(RunState.PENDING_NONE)
+	# And the card offer that follows is the legendary one, as on any other mini-boss.
+	assert_str(RunChoices.open_for_room(state, "mini_boss", false, ctx)).is_equal(RunState.PENDING_REWARD)
+	assert_str(state.offer_rarity).is_equal("legendary")
+	# With room (or something giveable) the skip stays gone.
+	var roomy: RunState = _state(1)
+	RunRelics.open_for_room(roomy, "mini_boss", false, _ctx(_cards(6, 0, 0), relics, 5))
+	var roomy_kinds: Array[String] = []
+	for option: Dictionary in RunChoices.options(roomy, _ctx(_cards(6, 0, 0), relics, 5)):
+		roomy_kinds.append(String(option["kind"]))
+	assert_bool(roomy_kinds.has("relic_skip")).is_false()

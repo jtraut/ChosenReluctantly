@@ -196,7 +196,9 @@ static func options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 				var option: Dictionary = relic_option(OPTION_RELIC + ":" + relic_id, OPTION_RELIC, relic_id, ctx)
 				option["needs_swap"] = needs_swap(state, ctx)
 				out.append(option)
-			if not is_boss_offer(state):  # MAP3b: a boss-relic offer has no skip
+			# MAP3b: a boss-relic offer has no skip, except when nothing can be taken (at the cap with only boss relics held: a pick would be refused
+			# for ever, so the screen could never close). Then the skip is the way out.
+			if not is_boss_offer(state) or not RelicOffer.can_take(state.relics, max_owned(ctx), (ctx.get("relics", {}) as Dictionary).get("catalog", [])):
 				var skip: Dictionary = RunChoices.blank_option(OPTION_SKIP, OPTION_SKIP)
 				skip["label"] = String(ui.get("skip_label", ""))
 				skip["detail"] = String(ui.get("skip_detail", ""))

@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-12 (MAP3b sittings A and B done; gameplay-dev sitting C in progress).
+Last updated: 2026-11-12 (MAP3b gameplay-dev done; ux in progress).
 
 ## What's done
 - **MB1 closed 2026-11-11.** Tag `playtest-2026-11-11-MB1`.
@@ -226,11 +226,25 @@ Last updated: 2026-11-12 (MAP3b sittings A and B done; gameplay-dev sitting C in
       - suite 2243, 0 failures, 0 orphans, exit 0;
       - SIM1 at 3da6356, `-Route first`, pooled: human Rogue 29/36, Wizard 22/36 (was 15/36); off 35/36, 34/36 (was 30/36). Floors hold.
       - Bots end with about 750-870 unspent gold and buy 0 relics on `first`: that's sitting C.
-    - **Sitting C, gameplay-dev, in progress:** hashes at HEAD, remove `mini_boss` from Pyre Insurance, gold tuning, the Bleed share, the spread check.
+  - **Sitting C done** (13dcb05..8157c59).
+    - Pyre Insurance loses `mini_boss`.
+    - The merchant bot buys relics on non-relic routes.
+    - `offer_report` rolls act rarity.
+    - No gold or price change.
+    - Triage: DECISIONS "MAP3b sittings B and C triage".
+  - **ux in progress** (brief: ROADMAP MAP3b "ux"). Then qa, the playtester, the docs pass, and close.
+  - **Doc handoff additions:**
+    - the README SIM1 baselines are now 27/36, 23/36, 33/36 and 35/36;
+    - the README `MerchantPolicy` wording;
+    - the `offer_report` act rarity;
+    - the Pyre sources;
+    - the new content list (17 cards, 15 relics, 8 boss relics);
+    - the armor buffs shortened (new cards, so there are no shipped old values);
+    - `--full-deck` counts: Rogue 38 -> 49, Wizard 28 -> 39.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step
-1. **MAP3b: gameplay-dev sitting C (tuning)**, then ux, qa, the playtester, the docs pass, and close.
+1. **MAP3b: ux**, then qa, the playtester, the docs pass, and close.
 2. Then MAP4, 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.

@@ -2454,3 +2454,28 @@ The content plan is in `docs/BUILD_DEPTH.md` §12, and the sittings are in the R
   - stuns follow rank and diminishing-returns rules, so they're halved on elites. The rule text doesn't say so; ux may add it.
 - **Pyre Insurance still lists `mini_boss` in its sources**, left over from MAP3's interim reward. To fix in sitting B or C: remove it, since boss offers draw only rarity `boss`. qa confirms that a tier 1 relic can't count toward the 2 boss relics.
 - **Process:** the sim and suite batches gameplay-dev started before the bumps are stale. Killing the Godot processes was refused by the permission system. game-lead doesn't override that: the batches finish on their own, and gameplay-dev relaunches on the final commit.
+
+## 2026-11-12 - MAP3b sittings B and C triage (gameplay-dev 22a9d8f..8157c59; game-lead)
+- **Accepted:**
+  - suite 2244, 0 orphans;
+  - hashes unchanged;
+  - SIM1 at 8157c59: human Rogue 27/36, Wizard 23/36; off 33/36, 35/36; no-card 0%. All floors hold. Off Rogue is 1 above its floor of 32, so watch it.
+- **Relic targets met with no gold or price change** (three acts, 36 runs per cell, off bot):
+  - `relic` median 15 for both classes;
+  - `safe` median 6.5 for the Rogue, 6 for the Wizard;
+  - max 18, nobody at the cap;
+  - exactly 2 boss relics in every finished run.
+  - D41 = B: income wasn't the limit, so no knob moved.
+- **The merchant bot's change is accepted:** non-relic routes now finish with relics, cheapest first. `safe` missed its target only because the bot never bought a relic. This also moves the `first` baselines, so the SIM1 numbers aren't like-for-like with MB1's.
+  - [Limiting it to `safe`: a rule tied to a route name, which leaves `first` bots hoarding gold.]
+- **Late-offer Bleed share 11.8% against a 12% target: accepted as met.**
+  - The tool doesn't model the mini-boss's fixed rare and legendary offers, so the real share is a little higher.
+  - My 18% estimate assumed the lean multiplies rare draws more than it does.
+  - The playtester's Bleed run is the real check. A further Bleed card is a candidate for BD3b if the playtest says so.
+  - [Adding a card now: one more content loop for a 0.2-point gap inside measurement error.]
+- **The `offer_report` tool now rolls act rarity.** It's a one-line fix to existing tooling, accepted.
+- **Spread check** (n = 12 per cell, reported, not gated):
+  - The Non-Compete Clause won 12/12 for both classes, the clear outlier.
+  - Corporate Buyout came in under baseline (7 and 6).
+  - Fight Club won 12/12 for the Rogue.
+  - No change before the playtest. Both go to the playtester and qa as watch items; the first knobs are Non-Compete's 0.5 s refund and Corporate Buyout's cooldown cost.

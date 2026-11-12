@@ -105,6 +105,10 @@ func test_enemy_stops_targeting_dead_player() -> void:
 	var enemy: Enemy = auto_free((load("res://scenes/enemies/MeleeChaser.tscn") as PackedScene).instantiate())
 	enemy.target = main.player
 	main.add_child(enemy)
+	# MB1 qa: the enemy used to spawn at the origin, inside the player's capsule. Both bodies are solid to each other, so the manual
+	# move_and_slide below sometimes slid the pair apart and left a sideways velocity (2.412 in two full runs) that has nothing to do with
+	# the stand-down branch under test. Start it clear of the player, as a spawner would.
+	enemy.global_position = main.player.global_position + Vector3(4.0, 0.0, 0.0)
 	await get_tree().process_frame
 	assert_bool(enemy._has_live_target()).is_true()
 	main.player.health.take_damage(999.0)
@@ -112,7 +116,9 @@ func test_enemy_stops_targeting_dead_player() -> void:
 	enemy._telegraph_remaining = 0.3
 	enemy._physics_process(0.016)
 	assert_float(enemy._telegraph_remaining).is_equal(0.0)
-	assert_float(Vector2(enemy.velocity.x, enemy.velocity.z).length()).is_less(0.01)
+	assert_float(Vector2(enemy.velocity.x, enemy.velocity.z).length()) \
+			.override_failure_message("a stood-down enemy moved: velocity %s knockback %s enemy at %s player at %s stunned %s" % [enemy.velocity, enemy._knockback_velocity, enemy.global_position, main.player.global_position, enemy.is_stunned()]) \
+			.is_less(0.01)
 
 
 func test_spawner_stops_after_death() -> void:

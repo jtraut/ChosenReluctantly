@@ -2353,3 +2353,18 @@ Review: `docs/reviews/2026-11-11-mb1-qa.md`. No blockers.
   - the Wizard's early-room losses (BD3b).
   - They go to the MAP3b housekeeping list.
 - **Next:** the playtester, with the "soft mini-bosses" question and the ux eyes items.
+
+## 2026-11-11 - MB1 playtest triage (playtester 73e844b; game-lead)
+Report: `docs/playtests/2026-11-11-mb1.md`. The smoke check passed and there's no blocker. The acceptance line ("clearly different from normal enemies, each other and the Guardian") is met on frames. The playtester couldn't hand-play, so the feel judgments are opinion built on bot data and frames.
+- **MB1 closes with the numbers as built.** The tuning goes to the director as eyes item 55, with a default. Both mini-bosses look soft: the duelist is a "speed bump" for a moving Rogue (12-16 s, usually no damage taken), and the brute is soft for the Rogue but fair for the Wizard.
+- **The default, if he doesn't object,** is gameplay-dev's first data step in MAP3b, with a qa re-gate:
+  - the duelist's `max_health` goes 90 -> 120 (act 2: 99 -> 132);
+  - Wet floor's outer discs land at least 3 m from the player, so the safe pockets are real. That's a small code change to the scatter rule.
+  - The brute is unchanged for now. Adds come before HP if it needs more.
+  - [Re-tuning before the tag: it costs a full build -> qa -> playtest loop on bot evidence alone, while his play is the real read for "hits harder".]
+- **Open a Vein glow:** the playtester recommends one (you read the pill once, then ignore it). It's scheduled for MAP3b: gameplay-dev exposes stack counts to the slot view, then ux adds the glow. It isn't asked of the director, since it's cheap and reversible.
+- **"Running low" being rare is as designed.** With the 30% act-start heal and the 50% threshold, it shows only if you arrive at 6 HP or less. No change.
+- **To MAP3b ux:**
+  - stack labels still collide with a neighbour's damage numbers at 2 enemies (the 3+ case is unverified);
+  - slot card names clip at a comma;
+  - red chasers have low contrast on the act 3 floor.

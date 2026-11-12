@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-11 (MB1: build, ux, qa PASS e3835d0 done; playtester next).
+Last updated: 2026-11-11 (MB1: build, ux, qa PASS, playtest 73e844b done; tech-writer docs pass next, then close and tag).
 
 ## What's done
 - **SIM1 closed 2026-11-11 (tooling, no tag, no playtest):** brief ca7cc1d; gameplay-dev d15e691, 85e7d6a, a047b9b; qa FAIL e19ecec/c5202ff (ps1 gate regex), re-check PASS 95aebd7; docs 2531020 (also archived D48 and its changelog entry).
@@ -204,7 +204,10 @@ Last updated: 2026-11-11 (MB1: build, ux, qa PASS e3835d0 done; playtester next)
     - the BD3a carry-overs.
     - Suite 2191. DECISIONS "MB1 ux triage".
   - **qa PASS** (e3835d0): gate 28/15/35/30; suite 2191; hashes unchanged. DECISIONS "MB1 qa PASS".
-  - **Next:** the playtester, then the docs pass, then the close and tag.
+  - **Playtest** (73e844b): no blocker; both mini-bosses look soft. The tuning default goes to MAP3b's first step via eyes item 55. DECISIONS "MB1 playtest triage".
+  - **Next:**
+    1. the tech-writer docs pass;
+    2. game-lead closes: ROADMAP [x], OPEN_ITEMS (status, tag, item 55), tag `playtest-2026-11-11-MB1`.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step

@@ -1347,6 +1347,21 @@ un_offer_report.ps1`.
   - **qa:** each attack's telegraph and damage, the mini-boss scenarios, the 3-act `-Route first` gate (8/12 per class), hashes.
   - **Acceptance:** each mini-boss is clearly different from any normal enemy and from the other (playtester); both classes meet SIM1's three-act floor (the old 8/12 is suspended); scenarios `--scenario=mini_boss_act1` and `mini_boss_act2` exist for the director.
 - [ ] **MAP3b, rarity and boss relics (after BD3a, before MAP4). Full loop. Tag `playtest-YYYY-MM-DD-MAP3b`.** Plan: MAP.md §4.5, BUILD_DEPTH §4. **Added 2026-11-09:** the tier 3 relics, boss-tier relics and rare and legendary cards must cover Bleed and basic attacks as well as Burn (BUILD_DEPTH §9a). **D48 = A (director, 2026-11-11):** no Bleed top-up before SIM1; BD3a closes as it is, and the extra Bleed and physical cards come here as rares and legendaries. Raising the late-offer Bleed share (8.5% at BD3a) is part of this slice's goal.
+  - **From MB1 (2026-11-11; DECISIONS "MB1 playtest triage" and "MB1 qa PASS"):**
+    - **gameplay-dev's first step, unless the director's eyes item 55 says otherwise:**
+      - the duelist's `max_health` 90 -> 120;
+      - Wet floor's outer discs land at least 3 m from the player;
+      - qa re-gates on the SIM1 floors.
+    - **The Open a Vein glow:** gameplay-dev exposes stack counts to the slot view, then ux adds the glow.
+    - **ux:**
+      - stack labels against a neighbour's damage numbers;
+      - slot names clipping at a comma;
+      - red chasers on the act 3 floor.
+    - **Housekeeping:**
+      - co-located solid bodies climb;
+      - the O(n^2) stack-label scan;
+      - an untyped loop variable in `Scenario.gd`;
+      - blink visual constants in code.
   - **First, game-lead, docs only:**
     - **from BD3a's playtest:** a non-Burn heavy-attack relic; a candidate rule where pruning or rejecting a type also shrinks its offers; Bleed share in late offers (8.5%) as a target to raise;
     - a BUILD_DEPTH design pass: about 6 boss-tier relics per class, tier 3 relics, and the rare and legendary card list per pool;

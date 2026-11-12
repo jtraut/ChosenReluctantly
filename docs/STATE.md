@@ -221,6 +221,11 @@ Last updated: 2026-11-12 (MAP3b sitting A done; gameplay-dev sitting B in progre
       - remove `mini_boss` from Pyre Insurance's sources;
       - then sitting C.
     - Calls: DECISIONS "MAP3b sitting B interim calls".
+    - **Later commits:**
+      - f6bbf46: the damage bumps and the pool-fill test.
+      - 3da6356: test and preset pins follow the new content. The armor buffs were shortened to fit under their recast: Brawl Clause 8 -> 3.5 s, Strongly Worded Ward 6 -> 3.5 s, Sabbatical 3 -> 1.4 s. There's also a summary line for `card_damage_mult_vs_status`.
+      - gameplay-dev's final sitting B report never arrived (its second report was refused).
+      - **Next:** a fresh gameplay-dev run checks the suite, the hashes and the SIM1 gate at HEAD, removes `mini_boss` from Pyre Insurance, and then does sitting C.
   - **Docs pass notes for tech-writer:** gameplay-dev's sitting A hand-back lists the README, ARCHITECTURE and CHANGELOG changes. The old -> new values are: Raider HP 90 -> 120; `card_price` 40 -> `card_prices` 55/85/125; large chest `min_tier` 1 -> 2; new `scatter_min` 3, `rarity_weights`, `mini_boss_rarity`, `stacking.hard_cap` 10, and `blink_*` vfx keys. Classes and functions: `GroundClamp`, `RunState.offer_rarity`, `AttackController.get_damage`, `swap_locked`, `SlotSynergy.detonate_*`, `Player.get_shot_direction`.
   - **For the MAP3b docs pass:** a CHANGELOG process/design note for the design pass, and nothing to archive yet.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.

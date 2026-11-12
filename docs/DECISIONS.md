@@ -2409,4 +2409,11 @@ The content plan is in `docs/BUILD_DEPTH.md` §12, and the sittings are in the R
 - **Split:** three gameplay-dev sittings in one tag: A engine, B content, C tuning. C may merge into B. A's tests use fixture content, so A doesn't wait on B.
   - [One sitting: about 40 new data files plus the engine is too much for one sitting.]
   - [Two tags: a playtest of rarity with no rare cards has nothing to judge.]
+- **Follow-ups from game-lead's review of the brief (same day):**
+  - Pool-filled decks take only common cards, so legendaries never land in opening or sim decks, and the SIM1 floors and hashes stay comparable.
+    - [Leaving it to 3d's availability field: sitting B would move every hash and put legendaries into the bot's decks.]
+  - `stacking.hard_cap` 10 for Bleed and Burn.
+    - [No ceiling: Bleed would reach 20+ stacks before an x3 detonate.]
+  - Liquidate Assets stays tier 2.
+  - `CardDamageRule` is a floor, not a ceiling, so rare and legendary power is judged by the sim and the playtest.
 - **D49 (pruning or rejecting shrinks a type's offers) goes to the director.** It changes GDD §9 offer weighting, as D43 did. Default A: no new rule. Nothing in MAP3b waits on it.

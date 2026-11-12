@@ -1393,11 +1393,15 @@ un_offer_report.ps1`.
          - gold;
          - then the boss-relic offer: pick 1 of 3 `boss`-rarity relics, no skip. At the cap, Cancel in the give-up step returns to the offer;
          - then the card offer: rare after act 1, legendary after act 2, with the fall-down rule and normal rejects.
+         - The pending boss offer, the cap-Cancel-returns state and the fixed-rarity card offer round-trip in the save, with `from_dict` robustness as in MAP3.
       4. `merchant.card_prices` by rarity, replacing `card_price` (§12.1): three-act common 55, rare 85, legendary 125; one-act 40/65/95. A validator check that every card price is below its relic tier price.
       5. New stats `attack_damage_mult.light` / `.heavy` (`AttackController`) and `dead_card_swap_locked` (`CardSlotController`; `PlanPolicy` must not attempt a refused swap).
       6. Check that cards may use `reduce_cooldown`, and allow it if `CardSchema` refuses.
       7. Restore the large chest's `min_tier` 2 in `data/map.json`.
       8. Expose stack counts to the slot view, for ux's Open a Vein glow.
+      8a. Pool-filled decks (random starting slots, the arena Player, the bot sim) take only `common` cards. Presets and `--full-deck` keep everything.
+      8b. `stacking.hard_cap` in `data/statuses.json`, 10 for Bleed and Burn.
+      8c. Verify, and fix if needed: a relic-applied primed buff is consumed by a card (Sabbatical Fund), and relic-spawned projectiles follow the aim (Tenured Professor).
       9. Housekeeping:
          - co-located solid bodies climb;
          - the O(n^2) stack-label scan;
@@ -1428,7 +1432,7 @@ un_offer_report.ps1`.
       - save and Continue in the middle of the mini-boss reward;
       - hashes.
     - **Playtester:** fight both mini-bosses and read their rewards; is a boss relic exciting and clearly a different tier? Play one Bleed Rogue run into act 3: does it get enough Bleed?
-    - **Acceptance:** MAP.md §4.5's relic targets and exactly 2 boss relics per finished run; SIM1 floors hold; late Bleed share at least 12%; every class sees at least 5 rare, 4 legendary and 6 boss relics.
+    - **Acceptance:** MAP.md §4.5's relic targets and exactly 2 boss relics per finished run; SIM1 floors hold; late Bleed share at least 12%; every class sees at least 5 rare, 4 legendary and 6 boss relics; no rare or legendary card in any starting or pool-filled deck. Hashes: unchanged after A (the fixture content lives in tests) and after B (pool fill is common only). Any move is a finding, explained before re-baselining.
 - [ ] **MAP4, events (after MAP3, before 3d; D33 = B; widened by the director 2026-11-04). Full loop.** Plan: BUILD_DEPTH §4.7, `docs/MAP.md` §2.
   - **Events:** an `event` ("?") node with data-driven events (`data/events/*.json`; closed outcome list; costs shown plainly; placeholder text). The curse room, buff room and altar (sacrifice) are event kinds.
   - **Curse cards (D38 = A, director 2026-11-04):** card `curse` flag; event outcome `curse_card` shuffles one into a slot; curse cards don't count toward slot minimums, never appear in offers, and are removable at rest, the merchant or by events. Tests: deck rules ignore curses, the swap skips past them.

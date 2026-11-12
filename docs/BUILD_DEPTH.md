@@ -634,6 +634,10 @@ Everything not on this list uses stats, events, templates and conditions that al
 | Stat `attack_damage_mult.<light|heavy>`, read by `AttackController` on the attack's hit | the basic-attack boss relics | Corporate Buyout, The Non-Compete Clause |
 | Stat `dead_card_swap_locked` (above 0 = the swap is refused), read by `CardSlotController`; `PlanPolicy` must not try a refused swap | The Micromanager | The Micromanager |
 | **Verify, then allow if needed:** cards may use the `reduce_cooldown` template (relics already do: Muscle Memory) | two new cards | Knuckle Sandwich, Golden Handshake |
+| **Common only in pool-filled decks.** Random starting slots, the arena Player and the bot sim fill slots from every card in the owned pools (`CardSlotController._owned_card_ids_for_slot`, DECISIONS "BD1-B"). They take only `common` cards. Preset decks that list a card, and `--full-deck` (a debug flag), keep everything. | no legendary in an opening deck; the SIM1 floors and the hashes keep measuring the same decks | every rare and legendary |
+| **Stack ceiling in data:** `stacking.hard_cap` in `data/statuses.json` (10 for Bleed and Burn) clamps the stat-raised cap. | Serrated Excuse +4, Blood Oath +9, Bad Influence and Thousand Memos would add up past 20 Bleed stacks before an x3 Exsanguinate | Blood Oath, Burnout Syndrome |
+| **Verify:** a primed buff applied by a relic is consumed by a later card cast (not shipped yet: primes have only come from cards) | Sabbatical Fund | Sabbatical Fund |
+| **Verify:** projectiles spawned by a relic trigger follow the aim, not the body's facing | Tenured Professor, Endowed Chair, Sinking Fund, cc: All Staff | those four |
 
 **Shipped mechanisms this pass relies on** (no new code):
 - `buff` on any stat with a reader:
@@ -652,7 +656,7 @@ Everything not on this list uses stats, events, templates and conditions that al
 
 ### 12.3 Cards (17 new: 9 rare, 8 legendary)
 
-Starting numbers; `CardDamageRule` gates unconditional damage as usual, and qa reports any card it flags. A rare should beat a common of the same slot; a legendary should change how you play the run.
+Starting numbers. `CardDamageRule` is a **floor** (a damage card must beat the light attack; `src/combat/CardDamageRule.gd`), not a ceiling, so it doesn't hold rares back. Power is checked by the sim floors and the playtest instead, and qa reports any card more than twice the best common of its slot in per-cast damage. A rare should beat a common of the same slot; a legendary should change how you play the run.
 
 **Rogue pool (3 rare, 3 legendary): Bleed and basic attacks.**
 
@@ -739,7 +743,7 @@ Starting numbers; `CardDamageRule` gates unconditional damage as usual, and qa r
 | Office Supplies | 2 | Every 4th Projectile card hit stuns the target for 0.5 s. Paperwork Fire without Burn. | `hit_landed` tag Projectile `every_nth` 4 -> stun at `event_target` | projectiles |
 | Ergonomic Chair | 1 | Utility base cooldown -15%. | modifier `slot_cooldown.utility` | Ward |
 
-All are `sources` `["elite", "relic_room", "merchant"]`. Trigger rules: a reacting trigger needs `allow_relic_origin` only where it must react to another relic's damage; none of these do. Chain depth stays 1.
+All are `sources` `["elite", "relic_room", "merchant"]`. `card_cast` and `player_damaged` carry no position (`RelicSchema.EVENTS`), so every trigger on them uses `at: player` (Red Tape, Action Item, Adrenaline Vial, Faculty Meeting, Sabbatical Fund, cc: All Staff). Trigger rules: a reacting trigger needs `allow_relic_origin` only where it must react to another relic's damage; none of these do. Chain depth stays 1.
 
 **Counts after this pass** (elite, relic room and merchant pool; shop-only excluded):
 
@@ -765,6 +769,8 @@ All are `sources` `["elite", "relic_room", "merchant"]`. Trigger rules: a reacti
 
 - **Fire Rogue sees:** Micromanager, Corporate Buyout, Non-Compete, Burnout, Blood Oath, Fight Club. Burn needs 1 of 6. Bleed 2, basic attacks 3.
 - **Fire Wizard sees:** Micromanager, Corporate Buyout, Non-Compete, Burnout, Tenured Professor, Ivory Tower. Burn needs 1 of 6.
+- `card_cast` and `attack_fired` triggers here (Non-Compete, Tenured Professor, Ivory Tower) use `at: player`.
+- **Liquidate Assets** (shop-only) stays tier 2. That closes §4.7's "re-tier at MAP3" note: tier 2 keeps it stocked in all three acts, and at tier 3 it would never appear in act 1.
 - **RelicPolicy at a boss offer:** take the first relic whose keyword is carried by at least 3 deck cards (shipped rule), else the first one. All eight are bot-safe, so no new bot rule is needed. qa reports the floors with each class's first pick forced once, as a spread check (§12.6).
 
 ### 12.6 Checks (for the ROADMAP brief)
@@ -776,7 +782,9 @@ All are `sources` `["elite", "relic_room", "merchant"]`. Trigger rules: a reacti
 - MAP.md §4.5's relic targets: `relic` route median 14-17, `safe` 6-8, nobody at the cap in the median run.
 - The late-offer Bleed share for a Bleed Rogue in act 3 is at least 12% (from 8.5%).
 - SIM1 floors hold: human Rogue at least 21/36, Wizard at least 9/36; off-bot guards 32/36 and 25/36; no-card at most 25%.
-- Spread check, reported but not gated: the three-act floors with each boss relic forced as the act 1 pick.
+- Spread check, reported but not gated: the three-act floors with each boss relic forced as the act 1 pick, using the shipped `--relics=` start flag (a relic held from room 1 is close enough). If the run sim can't pass that flag through, gameplay-dev says so and the check is skipped; it isn't new tooling.
+- No rare or legendary card in any starting deck or pool-filled sim deck. So the arena and bot-sim hashes **should not move** in sitting B; any move is a finding.
+- Worst-case detonate: qa reports the largest Exsanguinate hit with the stack ceiling.
 
 ## Decided in this doc (game-lead defaults, logged in DECISIONS "2026-11-02 - BD0")
 

@@ -252,7 +252,7 @@ Last updated: 2026-11-12 (MAP3b ux done; qa in progress).
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step
-1. **MAP3b: qa**, then qa, the playtester, the docs pass, and close.
+1. **MAP3b: qa**, then the playtester, the docs pass, and close.
 2. Then MAP4, 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.

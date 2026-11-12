@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-12 (MAP3b design pass done; gameplay-dev sitting A next).
+Last updated: 2026-11-12 (MAP3b design pass done; gameplay-dev sitting A in progress).
 
 ## What's done
 - **MB1 closed 2026-11-11.** Tag `playtest-2026-11-11-MB1`.
@@ -207,7 +207,8 @@ Last updated: 2026-11-12 (MAP3b design pass done; gameplay-dev sitting A next).
   - BUILD_DEPTH §12 (093450c): 17 rare and legendary cards, 15 tier 1-3 relics, 8 boss relics, the new-code list and the checks;
   - the ROADMAP MAP3b "Detailed brief", with sittings A (engine), B (content) and C (tuning; may merge into B), plus DECISIONS "MAP3b design pass" (3526e32);
   - OPEN_ITEMS D49, default A, which nothing waits on.
-  - Nothing has been built yet; the repo is unchanged from the MB1 tag apart from docs.
+  - Brief review fixes in 81c8e76: common-only pool fill, the stack hard cap, the save round trip, and the verify items.
+  - **gameplay-dev sitting A started 2026-11-12.** If cut off, check `git log` for gameplay-dev commits after 81c8e76 and ask gameplay-dev to resume from the first unfinished brief item.
   - **For the MAP3b docs pass:** a CHANGELOG process/design note for the design pass, and nothing to archive yet.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 

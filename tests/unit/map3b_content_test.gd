@@ -79,6 +79,22 @@ func test_boss_relics_are_mini_boss_only_and_rule_text_fits() -> void:
 			assert_array(relic["sources"] as Array).is_equal(["mini_boss"])
 
 
+func test_a_non_boss_relic_is_never_a_boss_relic_or_in_a_boss_offer() -> void:
+	var all_pools: Array[String] = []
+	for relic: Dictionary in RelicDatabase.all_relics():
+		if not all_pools.has(String(relic["pool"])):
+			all_pools.append(String(relic["pool"]))
+		if String(relic["rarity"]) != "boss":
+			assert_bool((relic["sources"] as Array).has("mini_boss")).override_failure_message("%s is not a boss relic but lists mini_boss" % relic["id"]).is_false()
+	var boss_rarities: Array[String] = ["boss"]
+	var drawn: Array[String] = RelicOffer.offer("mini_boss", 50, RandomNumberGenerator.new(), {}, [] as Array[String], [] as Array[String], all_pools, RelicDatabase.all_relics(), boss_rarities)
+	assert_int(drawn.size()).is_greater_equal(8)
+	for id: String in drawn:
+		assert_str(String(RelicDatabase.get_relic(id)["rarity"])).is_equal("boss")
+	var by_source: Array[Dictionary] = RelicOffer.eligible("mini_boss", {}, [] as Array[String], [] as Array[String], all_pools, RelicDatabase.all_relics())
+	assert_int(by_source.size()).is_equal(0)  # default (non-boss) rarities: nothing is offered from the boss source
+
+
 func test_card_trigger_relics_use_the_player() -> void:
 	for relic: Dictionary in RelicDatabase.all_relics():
 		for trigger: Dictionary in (relic["triggers"] as Array):

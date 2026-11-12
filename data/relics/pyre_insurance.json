@@ -3,7 +3,7 @@
     "name": "Pyre Insurance",
     "pool": "fire",
     "rarity": "tier1",
-    "sources": ["elite", "relic_room", "merchant", "mini_boss"],
+    "sources": ["elite", "relic_room", "merchant"],
     "keywords": ["Burn"],
     "modifiers": [],
     "triggers": [

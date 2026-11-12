@@ -562,7 +562,7 @@ Chained Anchor (a tether) stays out because it needs new code.
 
 **Card offers lean toward your build (D43, director's call).** Content alone only takes the Fire share from about 37% to about 29%, because offers draw evenly across pools. The real lever is how offers are weighted, which is GDD §9 design and needs the director. If he picks B or C, it's built in BD3a sitting B.
 
-**MAP3b note:** tier 3 and boss-tier relics, and the rare and legendary cards, must cover Bleed and basic attacks as well as Burn. Fire mustn't be the only route to the strong rewards.
+**MAP3b note:** tier 3 and boss-tier relics, and the rare and legendary cards, must cover Bleed and basic attacks as well as Burn. Fire mustn't be the only route to the strong rewards. **Designed in §12 (2026-11-12).**
 
 ---
 
@@ -597,6 +597,186 @@ No web access was used. "Confident" means I know the mechanic well; "unsure" mea
 - Follow-up **D30 = A** (director, 2026-11-03): rest rooms and card reward screens don't offer relics. He may also remove the rest-room heal altogether (GDD §9); MAP0 proposes what a rest node offers.
 
 ---
+
+## 12. MAP3b: rare and legendary cards, tier 3 and boss-tier relics (game-lead design pass, 2026-11-12) [PROPOSED details]
+
+The content MAP.md §4.5 asks for, written so that **Bleed and basic attacks get as many strong rewards as Burn** (§9a, the director's 2026-11-09 feedback, D48 = A). Every number is a starting value in data. Names and flavour are placeholders until story is active. Logged in DECISIONS "MAP3b design pass".
+
+### 12.1 Rules this pass sets
+
+- **Counting rule.** MAP.md §4.5's "5+ rare and 4+ legendary per class pool" is read as both of these:
+  - **Eligible set:** each class + element (class + Fire + Neutral) sees at least 5 rare cards, at least 4 legendary cards and at least 6 boss relics.
+  - **Class pool first:** at least half of each class's eligible rare and legendary cards come from the class's own pool. Fire alone must never fill a top-tier offer, which is the director's priority.
+- **Retag or new: all new.** No existing card changes rarity. Retagging BD3a's Bleed commons would take them out of act 1 offers, which is the opposite of what the director asked for. Retagging Fire commons would shrink the Fire Wizard's act 1 options before BD3b gives the Wizard anything else. Every common stays common. (The ROADMAP default allowed up to 2 retags per pool. Using none is within it.)
+- **How rarity works with the rules already built:**
+  1. Each offer slot first rolls a rarity from `cards.rarity_weights` for the act (MAP.md §4.5: act 1 common 100; act 2 80/20; act 3 62/30/8).
+  2. It then draws a card of that rarity with today's weights: unowned 4, owned 1, the D43 = B lean, and D47 = B (pruned cards never come back).
+  3. If no eligible card of that rarity is left, the slot falls to the next rarity down (legendary -> rare -> common). It never goes up.
+  - The mini-boss card offer fixes the rarity: rare after act 1, legendary after act 2. It uses the same fall-down rule, and the lean still applies. Rejects work as normal (D35 = A).
+  - Merchant card stock uses the act's rarity weights. Prices come from `merchant.card_prices` (below).
+- **Boss relics:**
+  - pick 1 of 3, **no skip**;
+  - at the cap, the pick goes through the give-one-up step, where Cancel goes back to the boss offer instead of leaving it;
+  - they can't be given up (shipped rule);
+  - the second offer excludes only the relic you own, so the 6 per class leaves 5 to draw 3 from.
+- **Card prices (`merchant.card_prices`), at the three-act relic scale 80/120/170:** common 55, rare 85, legendary 125. Each is below the matching relic tier (tier 1 80, tier 2 120, tier 3 170). The one-act run scales them by the same 0.75 as the relics: 40/65/95, the ROADMAP's proposal. The sim tunes them under D41 = B (income first).
+- **Bot-safe rule (SIM1).** Every relic and card here keeps every slot, both attacks and the dodge usable. No auto-cast, no disabled slot, no dodge loss. That's why Cursed Gauntlet, Quarterly Downsizing, The Unstable Core, Glass Hourglass and Brainstorming Session are **not** taken in this pass: each one needs bot rules, input rules or ux work this slice doesn't have. They stay candidates (§4.5, §4.8).
+
+### 12.2 New code (all in gameplay-dev sitting A)
+
+Everything not on this list uses stats, events, templates and conditions that already ship. The "proof" column names shipped data that already uses it.
+
+| Item | Why | Used by |
+|---|---|---|
+| Card `rarity` (`common` default, `rare`, `legendary`), `cards.rarity_weights` per act, the per-slot roll and fall-down | MAP.md §4.5 | all of §12.3 |
+| The mini-boss reward: boss-relic offer (no skip; Cancel at the cap returns to it), then the fixed-rarity card offer | MAP.md §4.5 | §12.5 |
+| `merchant.card_prices` by rarity, replacing `card_price` | D41 = B | merchant |
+| Stat `attack_damage_mult.<light|heavy>`, read by `AttackController` on the attack's hit | the basic-attack boss relics | Corporate Buyout, The Non-Compete Clause |
+| Stat `dead_card_swap_locked` (above 0 = the swap is refused), read by `CardSlotController`; `PlanPolicy` must not try a refused swap | The Micromanager | The Micromanager |
+| **Verify, then allow if needed:** cards may use the `reduce_cooldown` template (relics already do: Muscle Memory) | two new cards | Knuckle Sandwich, Golden Handshake |
+
+**Shipped mechanisms this pass relies on** (no new code):
+- `buff` on any stat with a reader:
+  - `status_max_stacks.<id>` and `status_tick_rate.<id>`: Bad Influence;
+  - `attack_interval.light` and `attack_cooldown.heavy`: Warm Up;
+  - `move_speed`: Chasing Paper;
+  - `card_damage_mult_vs_status.<id>`: Salt in the Wound;
+  - `damage_mult`: Liquidate Assets;
+  - `armor`: Ward;
+  - `slot_cooldown.<slot>`: ASAP Notice.
+- Primed buffs (`consume_on_cast`, `slot_cooldown_skip.<slot>`): BD1.
+- `detonate_status` after a hitting effect: Open a Vein. A relic can do the same with an `aoe` at `event_position` before it, as Severance Package does with `aoe` then `apply_status`.
+- `apply_status` at `event_target` from a `hit_landed` trigger: Spite Knuckles.
+- `every_nth`, `tag` and `slot_type` filters: Spite Knuckles, Paperwork Fire, BD3a.
+- `stun` status (elite half, boss immune).
+
+### 12.3 Cards (17 new: 9 rare, 8 legendary)
+
+Starting numbers; `CardDamageRule` gates unconditional damage as usual, and qa reports any card it flags. A rare should beat a common of the same slot; a legendary should change how you play the run.
+
+**Rogue pool (3 rare, 3 legendary): Bleed and basic attacks.**
+
+| Card | Rarity | Slot | Sketch | Build |
+|---|---|---|---|---|
+| `rogue_arterial_spray` "Arterial Spray" | rare | Attack: AoE | Cone 120 degrees, range 3, 5 physical. Enemies already Bleeding take 4 more (`target_has_status bleed`, before the apply). Then applies Bleed 4 s. | Bleed |
+| `rogue_hemorrhage_clause` "Hemorrhage Clause" **Keystone, Primer** | rare | Utility | For 8 s: Bleed stacks +2 and your cards deal +20% to Bleeding enemies. | Bleed |
+| `rogue_knuckle_sandwich` "Knuckle Sandwich" | rare | Attack: Single | Cone 7 physical, then your heavy attack is ready at once (`reduce_cooldown` heavy, 99 s). | basic attacks |
+| `rogue_exsanguinate` "Exsanguinate" **Keystone, Payoff** | legendary | Attack: AoE | Disc radius 4 around you (`anchor: caster`), 6 physical, then detonates Bleed on everything hit at x3. Cooldown +1.5. | Bleed |
+| `rogue_thousand_memos` "Death by a Thousand Memos" | legendary | Attack: Single | 6 hits of 1.5 physical, 0.1 s apart, each applying Bleed; and for 6 s your Bleed stacks +4. | Bleed |
+| `rogue_brawl_clause` "Brawl Clause" **Keystone** | legendary | Utility | For 8 s: light attacks 40% faster, heavy cooldown -50%, +10 armor. | basic attacks |
+
+**Wizard pool (3 rare, 3 legendary): no new Fire.** The Wizard's own non-Fire archetypes (Thesis, Ward Battlemage) need BD3b's code. These six use only shipped mechanisms, so they lean on projectiles, armor, the auto bolt and cooldown tricks. **Known gap:** the Wizard's top tier stays thinner than the Rogue's until BD3b.
+
+| Card | Rarity | Slot | Sketch | Build |
+|---|---|---|---|---|
+| `wizard_reply_all` "Reply All" | rare | Attack: Single | 5 bolts in a fan (`yaw_degrees` -20 to 20), 3 neutral each. | projectiles |
+| `wizard_strongly_worded_ward` "Strongly Worded Ward" **Keystone, Primer** | rare | Utility | +12 armor for 6 s, and primes your next Attack: AoE to skip its cooldown. | Ward |
+| `wizard_office_hours` "Office Hours" | rare | Attack: AoE | Neutral zone, radius 2.5, 3 per tick for 5 s. | zones, not Fire |
+| `wizard_tenure` "Tenure" **Keystone** | legendary | Utility | For 8 s: light attacks (the auto bolt) 50% faster, heavy cooldown -50%. | basic attacks |
+| `wizard_peer_review` "Peer Review" **Payoff** | legendary | Attack: AoE | Disc radius 3.5 at the aim point (`max_range` 8, `delay` 0.5), 18 neutral; +10 more if you cast a Utility card in the last 4 s (`cast_within`). | Ward / cooldowns |
+| `wizard_sabbatical` "Sabbatical" | legendary | Movement | Invulnerable blink 6 m, leaving a 10-damage nova (radius 3) where you started, +8 armor for 3 s. | defence |
+
+**Fire pool (2 rare, 1 legendary), shared by both classes.**
+
+| Card | Rarity | Slot | Sketch |
+|---|---|---|---|
+| `fire_controlled_demolition` "Controlled Demolition" **Payoff** | rare | Attack: AoE | Disc radius 2.5 at the aim point, 10 fire, then detonates Burn x2. |
+| `fire_hot_desking` "Hot Desking" | rare | Movement | Dash 5 m with pass-through; every enemy passed through starts Burning (Excuse Me's Fire twin). |
+| `fire_scorched_earth` "Scorched Earth Policy" **Keystone** | legendary | Attack: AoE | Fire zone radius 4 for 6 s, 3 per tick, Burn chance 100%; and for 6 s your Burn stacks +2. |
+
+**Neutral pool (1 rare, 1 legendary), shared.**
+
+| Card | Rarity | Slot | Sketch |
+|---|---|---|---|
+| `neutral_second_opinion` "Second Opinion" | rare | Recovery | Heal 8, then Regeneration, then +6 armor for 4 s. |
+| `neutral_golden_handshake` "Golden Handshake" | legendary | Recovery | Heal 10, and 3 s off every other slot's cooldown (`reduce_cooldown` x4). |
+
+**What each class can be offered:**
+
+| | Rare (Burn-tagged) | Legendary (Burn-tagged) | From the class pool |
+|---|---|---|---|
+| Fire Rogue | 6 (2) | 5 (1) | 6 of 11 |
+| Fire Wizard | 6 (2) | 5 (1) | 6 of 11 |
+
+- **Fire share of top-tier card offers:** 33% of rares and 20% of legendaries, before the lean. For comparison, today 37% of all offers were Fire before BD3a.
+- **Bleed in a Rogue's top tier:** 2 of 6 rares and 2 of 5 legendaries apply or pay off Bleed, and the lean raises that for a Bleed deck.
+- **Late-offer Bleed share, for a Bleed Rogue in act 3 (rarity 62/30/8):** about 0.62 x 8.5% + 0.30 x 33% + 0.08 x 40% = **about 18%**, against 8.5% at BD3a. **Target: at least 12%** in the sim with the Bleed plan bot.
+
+### 12.4 Tier 1-3 relics (15 new)
+
+**Neutral (both classes):**
+
+| Relic | Tier | Rule | Hooks | Covers |
+|---|---|---|---|---|
+| Sinking Fund | 3 | Every 8th light hit also fires a 10-damage bolt forward. | `hit_landed` light `every_nth` 8 -> `projectile` | basic attacks |
+| Bureaucratic Red Tape | 3 | Casting a Keystone card stuns enemies within 3 m for 1.5 s. | `card_cast` tag Keystone -> `aoe` 1 dmg + `apply_status` stun | any build |
+| Action Item | 3 | Casting a Payoff card gives +25% damage for 4 s. | `card_cast` tag Payoff -> `buff damage_mult` | any build |
+| Desk Slam | 2 | A heavy hit sends out a shockwave: 5 physical in a 2 m radius (1 s internal cooldown). **The non-Burn heavy-attack relic** asked for at BD3a. | `hit_landed` heavy -> `aoe` | basic attacks |
+| Adrenaline Vial | 2 | Taking a hit of 5 or more makes your card cooldowns 30% faster for 4 s (20 s internal cooldown). | `player_damaged` `min_amount` 5 -> 5 `buff slot_cooldown.*` | any build |
+
+**Fire (both classes):**
+
+| Relic | Tier | Rule | Hooks |
+|---|---|---|---|
+| Kindling Jar | 3 | Your Burn stacks up to 3. (§4.5 #5.) | modifier `status_max_stacks.burn` +2 |
+
+**Rogue:**
+
+| Relic | Tier | Rule | Hooks | Covers |
+|---|---|---|---|---|
+| Closing Argument | 3 | A heavy hit on a Bleeding enemy detonates its Bleed (x1.5). 1 s internal cooldown. | `hit_landed` heavy + `target_has_status bleed` -> `aoe` (3 dmg, r 1.2, at `event_position`) then `detonate_status` | Bleed + heavy |
+| Synergy Workshop | 3 | Your Bleed ticks 50% faster, and your cards deal +15% to Bleeding enemies. | modifiers `status_tick_rate.bleed`, `card_damage_mult_vs_status.bleed` | Bleed |
+| Hostile Work Environment | 3 | Light hits on a Bleeding enemy add a Bleed stack (only useful above the 1-stack cap, so it pairs with Serrated Excuse, Bad Influence or Blood Oath). | `hit_landed` light + `target_has_status bleed` -> `apply_status` at `event_target` | Bleed + light |
+
+**Wizard:**
+
+| Relic | Tier | Rule | Hooks | Covers |
+|---|---|---|---|---|
+| Faculty Meeting | 3 | Casting a Utility card releases an 8-damage nova around you (radius 3). | `card_cast` `slot_type` utility -> `aoe` | Ward |
+| Endowed Chair | 3 | Every 5th light hit fires a 3-bolt fan. | `hit_landed` light `every_nth` 5 -> 3 `projectile` | basic attacks |
+| Sabbatical Fund | 3 | After a Movement card, your next Attack: Single has no cooldown. | `card_cast` movement -> primed `buff` (`slot_cooldown_skip.attack_single`) | cooldowns |
+| cc: All Staff | 2 | Casting a Projectile card also fires a 6-damage bolt. (§4.8, reworked: an extra projectile per card would be new code.) | `card_cast` tag Projectile -> `projectile` | projectiles |
+| Office Supplies | 2 | Every 4th Projectile card hit stuns the target for 0.5 s. Paperwork Fire without Burn. | `hit_landed` tag Projectile `every_nth` 4 -> stun at `event_target` | projectiles |
+| Ergonomic Chair | 1 | Utility base cooldown -15%. | modifier `slot_cooldown.utility` | Ward |
+
+All are `sources` `["elite", "relic_room", "merchant"]`. Trigger rules: a reacting trigger needs `allow_relic_origin` only where it must react to another relic's damage; none of these do. Chain depth stays 1.
+
+**Counts after this pass** (elite, relic room and merchant pool; shop-only excluded):
+
+| | Before | After | Tier 3 | Tier 3 needing Burn | All needing Burn |
+|---|---|---|---|---|---|
+| Fire Rogue | 14 | 23 | 7 | 1 (14%) | 5 of 23 (22%) |
+| Fire Wizard | 10 | 22 | 7 | 1 (14%) | 7 of 22 (32%; it was 6 of 10, 60%) |
+
+### 12.5 Boss-tier relics (8 new; each class sees 6)
+
+`rarity` `boss`, `sources` `["mini_boss"]`. Each one is a strong upside with a real cost, and each keeps the run bot-safe (§12.1).
+
+| Relic | Pool | Upside | Cost | New code? |
+|---|---|---|---|---|
+| **The Micromanager** | neutral | +25% damage (`damage_mult`). | No dead-card swap. (The "see the next two cards" half is dropped: it's ux work.) | `dead_card_swap_locked` |
+| **Corporate Buyout** | neutral | Light and heavy attacks deal +100%. | Card cooldowns +40% (`slot_cooldown.*` x5). | `attack_damage_mult.*` |
+| **The Non-Compete Clause** | neutral | Each card cast takes 0.5 s off every slot's cooldown. | Light and heavy attacks deal 50% less. Corporate Buyout's mirror. | `attack_damage_mult.*` |
+| **Burnout Syndrome** | fire | Burn ticks twice as fast and stacks to 5. | Recovery cooldown +50%. | no |
+| **Blood Oath** | rogue | Bleed stacks to 10, and your cards deal +25% to Bleeding enemies. | Move speed -10%. | no |
+| **Fight Club Membership** | rogue | Light attacks 33% faster, and every light hit applies Bleed (3 s). | Attack: Single cooldown doubled. | no |
+| **Tenured Professor** | wizard | Each light attack also fires 2 bolts at plus and minus 15 degrees (`attack_fired` light -> 2 `projectile`). | Movement cooldown +50%. | no (verify the extra bolts follow the aim, not the body's facing) |
+| **The Ivory Tower** | wizard | +12 armor for the run, and every Utility cast releases a 6-damage nova (radius 3). | Move speed -20%. | no |
+
+- **Fire Rogue sees:** Micromanager, Corporate Buyout, Non-Compete, Burnout, Blood Oath, Fight Club. Burn needs 1 of 6. Bleed 2, basic attacks 3.
+- **Fire Wizard sees:** Micromanager, Corporate Buyout, Non-Compete, Burnout, Tenured Professor, Ivory Tower. Burn needs 1 of 6.
+- **RelicPolicy at a boss offer:** take the first relic whose keyword is carried by at least 3 deck cards (shipped rule), else the first one. All eight are bot-safe, so no new bot rule is needed. qa reports the floors with each class's first pick forced once, as a spread check (§12.6).
+
+### 12.6 Checks (for the ROADMAP brief)
+
+- The shipped content validators accept every new card and relic.
+- Each class's eligible set meets §12.1 (at least 5 rare, 4 legendary, 6 boss relics, about 22 tier 1-3 relics with 5 or more at tier 3).
+- Every card price is below its relic tier price, in both run lengths.
+- Every finished three-act run has exactly 2 boss relics.
+- MAP.md §4.5's relic targets: `relic` route median 14-17, `safe` 6-8, nobody at the cap in the median run.
+- The late-offer Bleed share for a Bleed Rogue in act 3 is at least 12% (from 8.5%).
+- SIM1 floors hold: human Rogue at least 21/36, Wizard at least 9/36; off-bot guards 32/36 and 25/36; no-card at most 25%.
+- Spread check, reported but not gated: the three-act floors with each boss relic forced as the act 1 pick.
 
 ## Decided in this doc (game-lead defaults, logged in DECISIONS "2026-11-02 - BD0")
 

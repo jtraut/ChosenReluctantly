@@ -348,6 +348,7 @@ const DEFAULT_STATUS_STACKS: Dictionary = {
 	"overlap_pad": 0.06,
 	"number_dim_alpha": 0.25,
 	"number_dim_speed": 8.0,
+	"own_number_radius": 0.5,
 	"lift_speed": 6.0,
 	"burst_radius": 1.1,
 	"boss_gap": 0.5,
@@ -550,7 +551,7 @@ static func status_stacks() -> Dictionary:
 
 static func validate_status_stacks(block: Dictionary) -> Array[String]:
 	var problems: Array[String] = []
-	for key: String in ["font_size", "pixel_size", "outline_size", "height", "detonate_scale", "detonate_word_scale", "detonate_word_height", "burst_radius", "boss_gap", "render_priority", "number_dim_speed"]:
+	for key: String in ["font_size", "pixel_size", "outline_size", "height", "detonate_scale", "detonate_word_scale", "detonate_word_height", "burst_radius", "boss_gap", "render_priority", "number_dim_speed", "own_number_radius"]:
 		if not _is_number(block.get(key)) or float(block[key]) <= 0.0:
 			problems.append("%s must be a number > 0" % key)
 	if not _is_number(block.get("number_dim_alpha")) or float(block["number_dim_alpha"]) < 0.0 or float(block["number_dim_alpha"]) > 1.0:

@@ -75,6 +75,11 @@ static func covers(dx: float, dy: float, half_w: float, half_h: float) -> bool:
 	return absf(dx) < half_w and absf(dy) < half_h
 
 
+## True for a number that belongs to this label's own enemy: it spawned within `own_radius` of it on the ground (numbers rise straight up) and is not a word popup.
+static func is_own_number(flat_distance: float, is_word: bool, own_radius: float) -> bool:
+	return not is_word and flat_distance < own_radius
+
+
 ## One step of the label's alpha: down to `dim` (data number_dim_alpha) while a number covers it, back to 1 after, at `speed` alpha per second.
 static func alpha_step(current: float, covered: bool, dim: float, speed: float, delta: float) -> float:
 	return move_toward(current, dim if covered else 1.0, speed * delta)
@@ -188,11 +193,15 @@ func _process(delta: float) -> void:
 ## True while a live damage number (or a "detonated" word) overlaps this label on screen.
 func _covered_by_number(camera: Camera3D, size: Vector2) -> bool:
 	var mine: Vector3 = global_position
-	for node: Node in get_tree().get_nodes_in_group(DamageNumber.GROUP):
-		var number := node as DamageNumber
-		if number == null or not number.is_inside_tree() or not number.visible:
+	var own_radius: float = float(_cfg["own_number_radius"])
+	for number: DamageNumber in DamageNumber.live:
+		if not is_instance_valid(number) or not number.is_inside_tree() or not number.visible:
 			continue
 		var offset: Vector3 = number.global_position - mine
+		# The enemy's own numbers rise straight up through its label while it is hit: they must not dim the stack count that the player reads in
+		# between hits. Only a neighbour's numbers (and any word popup) count.
+		if is_own_number(Vector2(offset.x, offset.z).length(), number.is_word(), own_radius):
+			continue
 		var number_size: Vector2 = text_size(number.text, number.font_size, number.pixel_size) * number.scale.x
 		if covers(offset.dot(camera.global_transform.basis.x), offset.dot(camera.global_transform.basis.y), (size.x + number_size.x) * 0.5, (size.y + number_size.y) * 0.5):
 			return true

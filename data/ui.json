@@ -241,6 +241,7 @@
         "overlap_pad": 0.06,
         "number_dim_alpha": 0.25,
         "number_dim_speed": 8.0,
+        "own_number_radius": 0.5,
         "lift_speed": 6.0,
         "burst_radius": 1.1,
         "boss_gap": 0.5

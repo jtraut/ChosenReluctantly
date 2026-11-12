@@ -2,7 +2,7 @@ class_name Map3bUxTest
 extends GdUnitTestSuite
 ## MAP3b ux: rarity marks on card tiles, the boss-relic offer, the Open a Vein glow, and the MB1 nits (slot names, stack labels vs damage numbers).
 
-const HEIGHTS: Array[int] = [600, 720, 1080, 1440]
+const HEIGHTS: Array[int] = [540, 600, 720, 768, 800, 900, 1050, 1080, 1200, 1440]
 
 
 func after_test() -> void:
@@ -194,7 +194,9 @@ func test_a_configured_damage_number_joins_the_group_the_labels_read() -> void:
 	number.configure(UiConfig.damage_numbers())
 	add_child(number)
 	auto_free(number)
-	assert_bool(number.is_in_group(DamageNumber.GROUP)).is_true()
+	assert_bool(DamageNumber.live.has(number)).is_true()
+	remove_child(number)
+	assert_bool(DamageNumber.live.has(number)).is_false()
 
 
 func test_the_dim_settings_are_valid_data() -> void:
@@ -218,7 +220,35 @@ static func _contrast(a: Color, b: Color) -> float:
 	return (hi + 0.05) / (lo + 0.05)
 
 
-func test_the_act_3_floor_is_further_from_the_chaser_red_than_the_old_dull_red_one() -> void:
+func test_the_act_3_floor_sits_further_in_hue_from_the_chaser_red_than_the_old_dull_red_one() -> void:
 	var chaser := Color(0.75, 0.15, 0.15)  # scenes/enemies/MeleeChaser.tscn body albedo
 	var floor_now: Color = RunConfig.act_tint(3)["floor"]
-	assert_float(_contrast(chaser, floor_now)).override_failure_message("act 3 floor %s against the chaser" % floor_now.to_html()).is_greater(_contrast(chaser, Color.html("#704840")) + 0.25)
+	var old_floor := Color.html("#704840")
+	var now_gap: float = _hue_gap(chaser, floor_now)
+	assert_float(now_gap).override_failure_message("act 3 floor %s is only %.3f of the hue wheel from the chaser" % [floor_now.to_html(), now_gap]).is_greater(_hue_gap(chaser, old_floor) + 0.05)
+	assert_float(_contrast(chaser, floor_now)).override_failure_message("the luminance contrast must not get worse").is_greater_equal(_contrast(chaser, old_floor))
+
+
+static func _hue_gap(a: Color, b: Color) -> float:
+	var gap: float = absf(a.h - b.h)
+	return minf(gap, 1.0 - gap)
+
+
+func test_an_enemys_own_numbers_never_dim_its_label_but_a_neighbours_and_words_do() -> void:
+	assert_bool(StatusStackLabel.is_own_number(0.2, false, 0.5)).is_true()
+	assert_bool(StatusStackLabel.is_own_number(0.9, false, 0.5)).is_false()  # a neighbour a body away
+	assert_bool(StatusStackLabel.is_own_number(0.2, true, 0.5)).is_false()  # a "detonated" word counts even on its own enemy
+
+
+func test_the_detonate_glow_lights_the_slot_widget_from_two_stacks() -> void:
+	var widget: CardSlotWidget = (load("res://scenes/ui/CardSlotWidget.tscn") as PackedScene).instantiate()
+	add_child(widget)
+	auto_free(widget)
+	await get_tree().process_frame
+	widget.apply_layout(UiConfig.hud(), 1.0)
+	for _i in range(10):
+		widget.update_synergy({"detonate_status": "bleed", "detonate_stacks": 1, "condition_live": false}, 1.0 / 60.0)
+	assert_float(widget.glow_level()).is_equal(0.0)
+	for _i in range(10):
+		widget.update_synergy({"detonate_status": "bleed", "detonate_stacks": 2, "condition_live": false}, 1.0 / 60.0)
+	assert_float(widget.glow_level()).is_greater(0.5)

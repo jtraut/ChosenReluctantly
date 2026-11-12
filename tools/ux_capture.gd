@@ -2,7 +2,7 @@ extends Node
 ## UX capture (P-dodge): hosts the real Main in an oversized SubViewport, drives a HUD state, saves one PNG, quits.
 ## Needs a renderer (not --headless). Run:
 ##   godot --path . res://tools/UxCapture.tscn -- --size=1024x600 --class=rogue --mode=pips_recharge --out=screenshots/ux/a.png
-## Modes: pips (full), pips_recharge (one spent, a pip coming back), pips_empty (all spent), stagger (a boss at its first
+## Modes: shop_rarity (MAP3b: a shop with a legendary, a rare and a common card, fabricated options), pips (full), pips_recharge (one spent, a pip coming back), pips_empty (all spent), stagger (a boss at its first
 ## threshold, mid-stagger), continue_pick (the class pick screen with a saved run), act_heal / act_low / act_resumed (the Act 2 screen, BD3a). The player is made immune and the spawner off, so the shot is only the state being checked.
 
 const BOSS_PATH := "res://scenes/enemies/BossGuardian.tscn"

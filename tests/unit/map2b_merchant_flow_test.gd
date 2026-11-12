@@ -472,7 +472,7 @@ func test_a_merchant_choice_with_no_visit_or_a_bad_swap_is_dropped_on_load_not_t
 
 # --- the bot ---------------------------------------------------------------------------------------
 
-func test_the_bot_buys_relics_first_on_a_relic_route_and_a_removal_then_a_card_on_a_safe_one() -> void:
+func test_the_bot_buys_relics_first_on_a_relic_route_and_a_removal_a_card_then_relics_on_a_safe_one() -> void:
 	var ctx: Dictionary = _ctx()
 	var relic_state: RunState = _shop(1, 600, ctx)
 	var picks: Array[String] = []
@@ -500,8 +500,14 @@ func test_the_bot_buys_relics_first_on_a_relic_route_and_a_removal_then_a_card_o
 			safe_kinds.append(String(safe_result["kind"]))
 		if bool(safe_result["finished"]):
 			break
-	assert_array(safe_kinds).is_equal(["merchant_remove", "merchant_card", "merchant_leave"])
-	assert_int(safe_state.relics.size()).is_equal(0)
+	# MAP3b C: a removal, then a card, then relics with the gold left (cheapest first), then leave.
+	assert_str(safe_kinds[0]).is_equal("merchant_remove")
+	assert_str(safe_kinds[1]).is_equal("merchant_card")
+	assert_str(safe_kinds[safe_kinds.size() - 1]).is_equal("merchant_leave")
+	for index in range(2, safe_kinds.size() - 1):
+		assert_str(safe_kinds[index]).is_equal("merchant_relic")
+	assert_int(safe_state.relics.size()).is_equal(safe_kinds.size() - 3)
+	assert_int(safe_state.relics.size()).is_greater(0)
 
 
 # --- through the real controller -------------------------------------------------------------------

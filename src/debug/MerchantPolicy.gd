@@ -5,8 +5,9 @@ extends RefCounted
 ##
 ## Per route policy (RouteBot):
 ##   relic          relics first (cheapest first, as many as the gold allows), then a card removal, then a card.
-##   anything else  (safe, first, random) a card removal, then a card. No relics: those routes are not relic hunters, and `safe` is the brief's
-##                  "a removal, then a card".
+##   anything else  (safe, first, random) a card removal, then a card, then (MAP3b C) relics with the gold left, cheapest first. Before
+##                  that these routes bought no relics and ended with 600 to 900 gold unspent, so no gold or price number could move their
+##                  relic counts.
 ## A removal or card is bought at most once per visit. The removal picks a card with spare copies first, else any card the deck rules allow.
 
 const RELIC_FIRST := "relic"
@@ -25,7 +26,7 @@ static func choose(choice: String, options: Array, state: RunState, route_policy
 
 
 static func _shop(options: Array, state: RunState, route_policy: String) -> String:
-	var steps: Array[String] = ["removal", "card"]
+	var steps: Array[String] = ["removal", "card", "relic"]
 	if route_policy == RELIC_FIRST:
 		steps = ["relic", "removal", "card"]
 	var leave: String = ""

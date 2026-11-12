@@ -61,8 +61,7 @@ static func lift_over(dx: float, dy: float, half_w: float, half_h: float, pad: f
 ## little leading, and a glyph averages about 0.55 of that wide. Close enough to tell whether two labels touch.
 static func text_size(text: String, font_size: int, pixel_size: float) -> Vector2:
 	var line_m: float = float(font_size) * pixel_size
-	var lines: PackedStringArray = text.split("
-")
+	var lines: PackedStringArray = text.split("\n")
 	var longest: int = 0
 	for line: String in lines:
 		longest = maxi(longest, line.length())

@@ -2331,3 +2331,25 @@ Two items stay open:
 - **The ux "eyes" items go to the playtester, not to OPEN_ITEMS:** act 3 red chasers on the dull-red floor, the "Running low" wording, and stack labels with 3 or more neighbours. They reach the director only if the playtester finds a problem.
 
 **Flake watch:** `player_death_test.test_enemy_stops_targeting_dead_player` failed twice in full runs (enemy velocity 2.4) and passes alone. qa investigates in the MB1 review. ux's added reset may only mask it.
+
+## 2026-11-11 - MB1 qa PASS (qa e3835d0; game-lead)
+Review: `docs/reviews/2026-11-11-mb1-qa.md`. No blockers.
+- **Gate:** the numbers match sitting B cell for cell.
+
+  | Bot | Rogue | Wizard |
+  |---|---|---|
+  | human | 28/36 | 15/36 |
+  | off | 35/36 | 30/36 |
+
+  - 0 losses at rooms 10 and 20 in any cell.
+  - No-card ceiling 0/12 for each class; parity unchanged.
+- **Suite and hashes:** the suite is 2191 / 163, green twice; the hashes are unchanged.
+- **The `player_death_test` flake is a test-setup fragility from before MB1:** the enemy spawned inside the player's capsule. qa moved it to 4 m and added a diagnostic message. It wasn't reproduced, so it's on watch.
+- **Carry-overs, all non-blocking:**
+  - co-located solid bodies climb (gameplay-dev, low priority);
+  - the O(n^2) stack-label scan;
+  - an untyped loop variable in `Scenario.gd`;
+  - blink visual constants in code;
+  - the Wizard's early-room losses (BD3b).
+  - They go to the MAP3b housekeeping list.
+- **Next:** the playtester, with the "soft mini-bosses" question and the ux eyes items.

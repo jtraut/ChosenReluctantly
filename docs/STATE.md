@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-11 (MB1: gameplay-dev A and B, ux done; qa next).
+Last updated: 2026-11-11 (MB1: build, ux, qa PASS e3835d0 done; playtester next).
 
 ## What's done
 - **SIM1 closed 2026-11-11 (tooling, no tag, no playtest):** brief ca7cc1d; gameplay-dev d15e691, 85e7d6a, a047b9b; qa FAIL e19ecec/c5202ff (ps1 gate regex), re-check PASS 95aebd7; docs 2531020 (also archived D48 and its changelog entry).
@@ -203,7 +203,8 @@ Last updated: 2026-11-11 (MB1: gameplay-dev A and B, ux done; qa next).
     - the boss wedges;
     - the BD3a carry-overs.
     - Suite 2191. DECISIONS "MB1 ux triage".
-  - **Next:** qa (the MB1 review and the `player_death_test` flake), then the playtester.
+  - **qa PASS** (e3835d0): gate 28/15/35/30; suite 2191; hashes unchanged. DECISIONS "MB1 qa PASS".
+  - **Next:** the playtester, then the docs pass, then the close and tag.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step

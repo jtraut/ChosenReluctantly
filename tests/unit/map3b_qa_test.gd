@@ -298,3 +298,27 @@ func test_quit_at_the_boss_relic_offer_and_at_the_card_offer_then_continue_gives
 	resumed.run_controller.pick_relic(pick)
 	assert_array(resumed_state.offer).is_equal(card_offer)
 	assert_str(resumed_state.offer_rarity).is_equal("rare")
+
+
+# --- 11. watch item: how often a real act 3 merchant stocks a legendary or a rare card (shipped data, measured) ---
+
+func test_a_real_act_3_merchant_stock_can_hold_a_legendary_and_never_a_card_above_its_act() -> void:
+	for character_id: String in CLASSES:
+		var ctx: Dictionary = _ctx(character_id)
+		var counts: Dictionary = {1: [0, 0, 0], 2: [0, 0, 0], 3: [0, 0, 0]}  # per act: [common, rare, legendary] cards stocked
+		var with_legendary: int = 0
+		for seed_value in range(1, 201):
+			for act in [1, 2, 3]:
+				var state: RunState = _state(character_id, seed_value, act)
+				var stock: Dictionary = Merchant.draw_stock(state, 30 + seed_value % 7, 0, ctx, [] as Array[String], [] as Array[String])
+				var saw_legendary: bool = false
+				for id: String in (stock["cards"] as Array):
+					var rarity: String = CardSchema.rarity_of(CardDatabase.get_card(id))
+					(counts[act] as Array)[["common", "rare", "legendary"].find(rarity)] += 1
+					saw_legendary = saw_legendary or rarity == "legendary"
+				if act == 3 and saw_legendary:
+					with_legendary += 1
+		print("QA merchant card stock by act (common, rare, legendary) for %s: %s; act 3 shops with a legendary: %d of 200" % [character_id, str(counts), with_legendary])
+		assert_int(int((counts[1] as Array)[1]) + int((counts[1] as Array)[2])).is_equal(0)  # act 1 weights are common only
+		assert_int(int((counts[2] as Array)[2])).is_equal(0)  # act 2 has no legendary weight
+		assert_int(int((counts[3] as Array)[2])).is_greater(0)

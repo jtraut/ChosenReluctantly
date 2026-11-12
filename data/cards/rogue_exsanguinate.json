@@ -9,13 +9,12 @@
         "Keystone",
         "Payoff"
     ],
-    "rule_exception": "Legendary payoff on a 4 s cycle: the x3 Bleed detonation is its damage, which the rule does not count.",
     "flavor_text": "Everyone's accounts settled at once. Nobody was consulted.",
     "effects": [
         {
             "template": "aoe",
             "params": {
-                "damage": 6,
+                "damage": 21,
                 "damage_type": "physical",
                 "radius": 4.0,
                 "knockback_strength": 1.5

@@ -106,3 +106,15 @@ func test_card_prices_sit_below_the_matching_relic_tier() -> void:
 	assert_bool(float(cards["rare"]) < float(relics["tier2"])).is_true()
 	assert_bool(float(cards["legendary"]) < float(relics["tier3"])).is_true()
 
+
+
+func test_a_pool_filled_deck_of_the_shipped_data_holds_only_common_cards() -> void:
+	for character_id: String in CLASSES:
+		var caster := Node3D.new()
+		add_child(caster)
+		auto_free(caster)
+		var controller := CardSlotController.new(caster, caster, "player", StatModifiers.new(), _pools(character_id))
+		var ids: Array[String] = controller.owned_card_ids()
+		assert_int(ids.size()).is_greater(20)
+		for id: String in ids:
+			assert_str(CardSchema.rarity_of(CardDatabase.get_card(id))).is_equal("common")

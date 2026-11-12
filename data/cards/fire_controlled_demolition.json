@@ -8,13 +8,12 @@
     "keywords": [
         "Payoff"
     ],
-    "rule_exception": "Payoff: most of its damage is the Burn detonation, which the rule does not count.",
     "flavor_text": "The building was always going to come down. Now it has a schedule.",
     "effects": [
         {
             "template": "aoe",
             "params": {
-                "damage": 10,
+                "damage": 13,
                 "damage_type": "fire",
                 "radius": 2.5,
                 "max_range": 8.0

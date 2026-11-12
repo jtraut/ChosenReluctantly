@@ -5,7 +5,6 @@
     "pool": "rogue",
     "rarity": "rare",
     "cooldown_modifier": 0.0,
-    "rule_exception": "Payoff: the extra 4 damage on Bleeding enemies is conditional, which the rule does not count.",
     "flavor_text": "Wide, messy, and technically a performance review.",
     "effects": [
         {
@@ -26,7 +25,7 @@
         {
             "template": "cone",
             "params": {
-                "damage": 5,
+                "damage": 8,
                 "damage_type": "physical",
                 "range": 3.0,
                 "half_angle_degrees": 60,

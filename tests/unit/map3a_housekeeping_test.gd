@@ -146,6 +146,6 @@ func test_liquidate_assets_refreshes_after_a_card_purchase_not_only_a_relic_purc
 			assert_bool(bool(controller.buy_card(String(item["id"]))["ok"])).is_true()
 			bought += 1
 	assert_int(bought).is_equal(2)
-	assert_int(state.gold_spent_merchant).is_equal(2 * int(RunConfig.get_config()["merchant"]["card_price"]))
-	# 80 gold spent on cards alone is 1% (per 50): live at once, with no relic bought
-	assert_float(main.player.stat_modifiers.apply("damage_mult", 1.0)).is_equal_approx(1.01, 0.00001)
+	assert_int(state.gold_spent_merchant).is_equal(2 * int((RunConfig.get_config()["merchant"]["card_prices"] as Dictionary)["common"]))
+	# 110 gold spent on cards alone is 2% (1% per 50, MAP3b card price 55 each): live at once, with no relic bought
+	assert_float(main.player.stat_modifiers.apply("damage_mult", 1.0)).is_equal_approx(1.0 + 0.01 * float(state.gold_spent_merchant / 50), 0.00001)

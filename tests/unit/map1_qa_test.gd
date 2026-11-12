@@ -494,7 +494,7 @@ func test_the_shipped_data_matches_the_accepted_changes() -> void:
 	assert_int(int((ch["small"] as Dictionary)["weight"])).is_equal(50)
 	assert_int(int((ch["medium"] as Dictionary)["weight"])).is_equal(35)
 	assert_int(int((ch["large"] as Dictionary)["weight"])).is_equal(15)
-	assert_int(int((ch["large"] as Dictionary)["min_tier"])).is_equal(1)
+	assert_int(int((ch["large"] as Dictionary)["min_tier"])).is_equal(2)  # MAP3b restored it (it was 1 in MAP3)
 	assert_int(int(c["rooms"])).is_equal(10)
 	# run.json: the relic-room stopgap is gone, gold ranges as documented
 	var run: Dictionary = RunConfig.get_config()
@@ -514,7 +514,7 @@ func test_chest_tier_rows_follow_the_shipped_data() -> void:
 	assert_float(float(small["tier2"])).is_equal(20.0)
 	assert_float(float(medium["tier2"])).is_equal(70.0)
 	assert_float(float(large["tier3"])).is_equal(70.0)
-	assert_float(float(large["tier1"])).is_equal(5.0)  # min_tier 1: nothing zeroed
+	assert_float(float(large["tier1"])).is_equal(0.0)  # min_tier 2: a large chest never offers tier 1
 	assert_dict(RunNodes.chest_weights("huge", 1, ch, tw)).is_empty()
 	# a min_tier 2 and 3 zero the lower tiers
 	var strict: Dictionary = ch.duplicate(true)

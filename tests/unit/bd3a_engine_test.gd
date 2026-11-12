@@ -40,12 +40,12 @@ func _burn() -> Dictionary:
 # --- stacking -------------------------------------------------------------------------------
 
 func test_burn_and_bleed_do_not_stack_without_a_source() -> void:
-	# D25 = A: the shipped data has no stacking block, so reapplying only refreshes.
+	# D25 = A: the shipped data has no base max_stacks (MAP3b adds only a hard_cap ceiling), so reapplying only refreshes.
 	for status_id: String in ["burn", "bleed"]:
 		var target := _target()
 		var source := _source()
 		var def: Dictionary = StatusDatabase.get_status(status_id)
-		assert_bool(def.has("stacking")).is_false()
+		assert_bool((def.get("stacking", {}) as Dictionary).has("max_stacks")).is_false()
 		for i in range(5):
 			target.status_manager.apply_status(status_id, def, 4.0, source, "card:test")
 		assert_int(target.status_manager.stacks_of(status_id)).is_equal(1)

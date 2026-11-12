@@ -356,7 +356,7 @@ func test_a_reroll_keeps_sold_items_never_stocks_owned_or_given_up_relics_and_ma
 func test_every_price_is_read_from_data_not_hardcoded() -> void:
 	var ctx: Dictionary = _ctx("rogue")
 	var cfg: Dictionary = (ctx["merchant"]["config"] as Dictionary).duplicate()
-	cfg["card_price"] = 77
+	cfg["card_prices"] = {"common": 77, "rare": 78, "legendary": 79}
 	cfg["removal_base"] = 11
 	cfg["removal_step"] = 3
 	ctx["merchant"]["config"] = cfg
@@ -384,7 +384,7 @@ func test_every_price_is_read_from_data_not_hardcoded() -> void:
 	assert_int(state.gold).is_equal(g2 - 14)
 	# the shipped numbers, with the shipped data
 	var shipped: Dictionary = _ctx("rogue")
-	assert_int(Merchant.card_price(shipped)).is_equal(40)
+	assert_int(Merchant.card_price(shipped)).is_equal(55)
 	assert_int(Merchant.removal_price(_state(1, 0), shipped)).is_equal(50)
 	var st: RunState = _state(1, 0)
 	st.merchant_removals = 3
@@ -399,10 +399,12 @@ func test_exact_gold_buys_and_one_short_refuses_and_nothing_goes_negative() -> v
 		var shop: Array = _shop(8, 0, "rogue", true, ctx)
 		var state: RunState = shop[0]
 		var card_id: String = String(state.merchant_visit["cards"][0])
-		state.gold = 40 + gold_delta
+		var card_cost: int = Merchant.card_price(ctx, card_id)
+		state.gold = card_cost + gold_delta
 		var result: Dictionary = Merchant.buy_card(state, card_id, ctx)
 		assert_bool(bool(result["ok"])).is_equal(gold_delta == 0)
-		assert_int(state.gold).is_equal(0 if gold_delta == 0 else 39)
+		assert_int(state.gold).is_equal(0 if gold_delta == 0 else card_cost - 1)
+		state.gold = mini(state.gold, Merchant.removal_price(state, ctx) - 1)  # a card is dearer than the first removal now, so leave the removal one short
 		var removal: Dictionary = Merchant.buy_removal(state, RunChoices.removable_card_ids(state, ctx)[0], ctx)
 		assert_bool(bool(removal["ok"])).is_false()
 		assert_int(state.gold).is_greater_equal(0)
@@ -413,7 +415,7 @@ func test_exact_gold_buys_and_one_short_refuses_and_nothing_goes_negative() -> v
 	assert_bool(bool(Merchant.buy_card(s2, cid, ctx)["ok"])).is_true()
 	var again: Dictionary = Merchant.buy_card(s2, cid, ctx)
 	assert_bool(bool(again["ok"])).is_false()
-	assert_int(s2.gold).is_equal(460)
+	assert_int(s2.gold).is_equal(500 - Merchant.card_price(ctx, cid))
 	var rid: String = String(s2.merchant_visit["relics"][0])
 	assert_bool(bool(Merchant.buy_relic(s2, rid, ctx)["ok"])).is_true()
 	var g: int = s2.gold
@@ -900,12 +902,12 @@ func test_buying_liquidate_assets_makes_the_next_room_hit_harder_after_the_spend
 	var price: int = Merchant.relic_price("liquidate_assets", controller._ctx)
 	assert_bool(bool(controller.buy_relic("liquidate_assets")["ok"])).is_true()
 	assert_int(state.gold_spent_merchant).is_equal(price)
-	# 120 gold spent (tier 2 at the MAP3-B three-act prices): two full 50s, so +2% at once; buying a card (40) takes the total to 160 and the live room sees +3% at once
+	# 120 gold spent (tier 2 at the MAP3-B three-act prices): two full 50s, so +2% at once; buying a card (55, MAP3b) takes the total to 175 and the live room sees +3% at once
 	# (MAP3-A: a card or removal purchase now refreshes the run stats too, it used to take a relic purchase)
 	assert_float(main.player.stat_modifiers.apply("damage_mult", 1.0)).is_equal_approx(1.02, 0.00001)
 	var card_id: String = String(state.merchant_visit["cards"][0])
 	assert_bool(bool(controller.buy_card(card_id)["ok"])).is_true()
-	assert_int(state.gold_spent_merchant).is_equal(price + 40)
+	assert_int(state.gold_spent_merchant).is_equal(price + 55)
 	assert_float(main.player.stat_modifiers.apply("damage_mult", 1.0)).is_equal_approx(1.03, 0.00001)
 	# and a reload rebuilds it from the state
 	var saved: String = state.to_json()

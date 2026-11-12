@@ -583,7 +583,7 @@ func test_the_duelist_matches_the_design_note() -> void:
 	var def: Dictionary = BossConfig.boss(DUELIST_ID)
 	assert_str(String(def["display_name"])).is_equal("The Corporate Raider")
 	assert_bool(bool(def["mini_boss"])).is_true()
-	assert_float(float(def["max_health"])).is_equal(90.0)
+	assert_float(float(def["max_health"])).is_equal(120.0)  # MAP3b: the MB1 tuning default, was 90
 	assert_float(float(def["armor"])).is_equal(10.0)
 	assert_float(float(def["knockback_taken"])).is_equal(0.5)
 	assert_float(float(def["body_radius"])).is_equal(0.55)
@@ -716,7 +716,7 @@ func test_the_duelist_scene_is_a_thin_capsule_with_a_bright_tie_on_its_front() -
 	assert_float(boss.body_radius).is_equal(0.55)
 	assert_bool(boss.is_mini_boss()).is_true()
 	assert_str(boss.tier).is_equal("mini_boss")
-	assert_float(boss.health.max_health).is_equal(90.0)
+	assert_float(boss.health.max_health).is_equal(120.0)
 	var shape: CapsuleShape3D = (boss.get_node("CollisionShape3D") as CollisionShape3D).shape as CapsuleShape3D
 	assert_object(shape).is_not_null()
 	assert_float(shape.radius).is_less_equal(0.5)  # about the player's size, not the Guardian's
@@ -785,7 +785,7 @@ func test_the_mini_boss_act2_scenario_is_valid_and_builds_the_room_with_act_two_
 	assert_int(found.size()).is_equal(1)
 	assert_bool(found[0] is Boss and (found[0] as Boss).is_mini_boss()).is_true()
 	assert_str(found[0].enemy_id).is_equal(DUELIST_ID)
-	assert_float(found[0].health.max_health).is_equal_approx(90.0 * float(RunConfig.act_scale(2)["hp"]), 0.001)
+	assert_float(found[0].health.max_health).is_equal_approx(120.0 * float(RunConfig.act_scale(2)["hp"]), 0.001)
 	assert_float(main.player.health.current_health).is_equal(main.player.health.get_max_health())
 	assert_float(main.player.health.get_max_health()).is_equal(CharacterDatabase.max_hp("rogue"))
 	var floor_color: Color = ((main.get_node("Floor") as CSGBox3D).material as StandardMaterial3D).albedo_color
@@ -819,7 +819,7 @@ func test_killing_the_act_two_mini_boss_ends_the_act_and_never_the_run() -> void
 			boss = child as Boss
 	assert_object(boss).is_not_null()
 	assert_str(boss.enemy_id).is_equal(DUELIST_ID)
-	assert_float(boss.health.max_health).is_equal_approx(90.0 * float(RunConfig.act_scale(2)["hp"]), 0.001)
+	assert_float(boss.health.max_health).is_equal_approx(120.0 * float(RunConfig.act_scale(2)["hp"]), 0.001)
 	boss.debug_set_phase(1)
 	boss.health.take_damage(boss.health.max_health * 100.0, "physical")
 	assert_bool(boss.is_defeated()).is_true()

@@ -57,7 +57,9 @@ func _full_state(seed_value: int = 11, gold: int = 500) -> RunState:
 
 func test_shipped_data_has_the_merchant_block_and_the_relic_prices() -> void:
 	var merchant: Dictionary = RunConfig.get_config()["merchant"]
-	assert_int(int(merchant["card_price"])).is_equal(40)
+	assert_int(int((merchant["card_prices"] as Dictionary)["common"])).is_equal(55)  # MAP3b: by rarity, 55 / 85 / 125 (was a flat 40)
+	assert_int(int((merchant["card_prices"] as Dictionary)["rare"])).is_equal(85)
+	assert_int(int((merchant["card_prices"] as Dictionary)["legendary"])).is_equal(125)
 	assert_int(int(merchant["removal_base"])).is_equal(50)
 	assert_int(int(merchant["removal_step"])).is_equal(25)
 	assert_int(int(merchant["relic_stock"])).is_equal(3)
@@ -76,7 +78,7 @@ func test_merchant_block_is_validated() -> void:
 		var missing: Dictionary = good.duplicate()
 		missing.erase(key)
 		assert_bool(" ".join(MerchantConfig.validate_block(missing)).contains(key)).override_failure_message("missing %s accepted" % key).is_true()
-	for bad: Array in [["card_price", 0], ["card_price", "forty"], ["removal_base", -1], ["removal_step", 1.5], ["relic_stock", 0], ["relic_stock", 10], ["card_stock", -1], ["shop_only_slots", 4], ["bogus", 1]]:
+	for bad: Array in [["card_prices", 0], ["card_prices", "forty"], ["card_prices", {"common": 55}], ["card_price", 40], ["removal_base", -1], ["removal_step", 1.5], ["relic_stock", 0], ["relic_stock", 10], ["card_stock", -1], ["shop_only_slots", 4], ["bogus", 1]]:
 		var broken: Dictionary = good.duplicate()
 		broken[bad[0]] = bad[1]
 		assert_array(MerchantConfig.validate_block(broken)).override_failure_message("%s = %s accepted" % [bad[0], str(bad[1])]).is_not_empty()
@@ -355,17 +357,17 @@ func test_card_removal_goes_through_the_deck_guard_and_the_price_rises_each_time
 
 func test_items_lists_prices_and_the_reason_an_item_cannot_be_bought() -> void:
 	var ctx: Dictionary = _ctx()
-	var state: RunState = _state(7, 45)
+	var state: RunState = _state(7, 60)
 	Merchant.open_visit(state, 20, ctx)
 	var items: Array[Dictionary] = Merchant.items(state, ctx)
 	assert_int(items.size()).is_equal(7)  # 3 relics, 3 cards, removal
 	for item: Dictionary in items:
 		match String(item["kind"]):
-			"relic":  # 45 gold: the relics priced above it (60 or 90 as shipped off, 45 is just enough when the merchant is on) are too expensive
-				assert_bool(bool(item["can_buy"])).is_equal(int(item["price"]) <= 45)
-				assert_str(String(item["reason"])).is_equal("" if int(item["price"]) <= 45 else "too_expensive")
+			"relic":  # 60 gold: the relics priced above it (80 and up as shipped; 60 is enough for a 55 card but no relic when the merchant is on) are too expensive
+				assert_bool(bool(item["can_buy"])).is_equal(int(item["price"]) <= 60)
+				assert_str(String(item["reason"])).is_equal("" if int(item["price"]) <= 60 else "too_expensive")
 			"card":
-				assert_int(int(item["price"])).is_equal(40)
+				assert_int(int(item["price"])).is_equal(55)  # a common card, MAP3b
 				assert_bool(bool(item["can_buy"])).is_true()
 			"removal": assert_str(String(item["reason"])).is_equal("none_removable")  # the starter deck: every card is needed for a slot minimum (MAP2-B)
 	var rich_deck: RunState = _full_state(7, 45)  # a deck with spare cards: only the price is in the way

@@ -227,8 +227,8 @@ func test_a_too_expensive_item_is_greyed_with_the_gold_it_lacks_and_a_sold_one_k
 	var found_short: bool = false
 	for tile in tiles:
 		if String(tile.option.get("kind", "")) == "buy_card":
-			assert_bool(tile.disabled).is_true()  # 40 gold against 35
-			assert_str(tile.reason_label.text).is_equal("Need 5 more gold")
+			assert_bool(tile.disabled).is_true()  # 55 gold against 35
+			assert_str(tile.reason_label.text).is_equal("Need 20 more gold")
 			assert_str(String(tile.option["reason_code"])).is_equal("too_expensive")
 			found_short = true
 	assert_bool(found_short).is_true()

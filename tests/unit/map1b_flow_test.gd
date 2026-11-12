@@ -258,8 +258,8 @@ func test_a_chest_size_picks_its_tier_row() -> void:
 	assert_array([float(small["tier1"]), float(small["tier2"]), float(small["tier3"])]).is_equal([80.0, 20.0, 0.0])
 	var medium: Dictionary = RunNodes.chest_weights("medium", 1, chests, rows)  # the next act's row
 	assert_array([float(medium["tier1"]), float(medium["tier2"]), float(medium["tier3"])]).is_equal([15.0, 70.0, 15.0])
-	var large: Dictionary = RunNodes.chest_weights("large", 1, chests, rows)  # the act 3 row; min_tier 1 now (MAP1), so a thin tier 1 share remains
-	assert_float(float(large["tier1"])).is_equal(5.0)
+	var large: Dictionary = RunNodes.chest_weights("large", 1, chests, rows)  # the act 3 row; min_tier 2 (MAP3b), so tier 1 is zeroed
+	assert_float(float(large["tier1"])).is_equal(0.0)
 	assert_float(float(large["tier2"])).is_equal(25.0)
 	assert_float(float(large["tier3"])).is_equal(70.0)
 	var strict: Dictionary = chests.duplicate(true)  # the min_tier filter itself: a large chest at min_tier 2 never rolls tier 1 (it did before MAP1 ux)
@@ -274,7 +274,7 @@ func test_a_chest_size_picks_its_tier_row() -> void:
 
 
 func test_a_relic_stage_offers_from_its_chest_row() -> void:
-	# A small chest never offers a tier 3 relic. A large one may offer any tier (min_tier 1 as shipped), so it only has to offer something.
+	# A small chest never offers a tier 3 relic. A large one never offers tier 1 (min_tier 2 as shipped), so it only has to offer something.
 	var ctx: Dictionary = _ctx()
 	var by_id: Dictionary = (ctx["relics"] as Dictionary)["by_id"]
 	for chest_size: String in MapConfig.CHEST_SIZES:

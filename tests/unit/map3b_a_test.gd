@@ -718,3 +718,21 @@ func test_a_pool_filled_deck_takes_only_common_cards() -> void:
 	target.erase("rarity")
 	if String(original["rogue_quick_slash"]) != "":
 		target["rarity"] = original["rogue_quick_slash"]
+
+
+func test_a_reduce_cooldown_card_has_a_readable_tile_and_slot_info() -> void:
+	var card: Dictionary = _card("rc", "rare", "attack_single", "rogue")
+	card["effects"] = [
+		{"template": "cone", "params": {"damage": 6.0, "damage_type": "physical", "range": 2.0, "half_angle_degrees": 45.0}},
+		{"template": "reduce_cooldown", "params": {"attack_id": "heavy", "seconds": 1.5}},
+		{"template": "reduce_cooldown", "params": {"slot_type": "movement", "seconds": 0.5}},
+	]
+	var ctx: Dictionary = _ctx([card], [])
+	var option: Dictionary = RunChoices.card_option("card:rc", "card", "rc", ctx)
+	assert_str(String(option["detail"])).contains("1.5")
+	assert_str(String(option["detail"])).contains("Heavy attack cooldown")
+	assert_str(String(option["detail"])).contains("Movement")
+	assert_str(String(option["rarity"])).is_equal("rare")
+	var line: String = CardSummary.effect_line(card, 1.0, {})
+	assert_str(line).is_not_empty()
+	assert_array(CastPreviewShapes.parts_for_card(card, {"self_ring_enabled": false})).is_not_empty()  # the cone still draws; the reduce effect adds no shape

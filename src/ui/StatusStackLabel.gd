@@ -13,6 +13,7 @@ var _base_height: float = 0.0
 var _lift: float = 0.0
 ## MAP3b: the text's size, worked out when the text changes (not per frame per neighbour), and every live label in one array (no per-frame group query).
 var _text_size: Vector2 = Vector2.ZERO
+var _size_text: String = ""
 static var _live: Array[StatusStackLabel] = []
 
 
@@ -117,7 +118,6 @@ func refresh() -> void:
 		if shows(stacks, _cfg):
 			tint = _status_color(def)
 	text = compose(entries, _cfg)
-	_text_size = text_size(text, font_size, pixel_size)
 	modulate = tint
 	visible = text != ""
 	set_process(visible)
@@ -136,6 +136,14 @@ func _exit_tree() -> void:
 	_live.erase(self)
 
 
+## The text size, worked out again only when the text changed (not once per frame per neighbour).
+func cached_size() -> Vector2:
+	if text != _size_text:
+		_size_text = text
+		_text_size = text_size(text, font_size, pixel_size)
+	return _text_size
+
+
 func current_lift() -> float:
 	return _lift
 
@@ -147,7 +155,7 @@ func _process(delta: float) -> void:
 	if camera == null or not visible:
 		return
 	var mine: Vector3 = base_world()
-	var size: Vector2 = _text_size
+	var size: Vector2 = cached_size()
 	var target: float = 0.0
 	var up_in_world: float = maxf(camera.global_transform.basis.y.dot(Vector3.UP), 0.2)
 	for other: StatusStackLabel in _live:
@@ -158,7 +166,7 @@ func _process(delta: float) -> void:
 		if base_delta.dot(camera.global_transform.basis.y) < 0.0:
 			continue  # this one is the lower label: it stays put, the other rises
 		var lifted_delta: Vector3 = mine - (other_base + Vector3(0.0, other.current_lift(), 0.0))
-		var other_size: Vector2 = other._text_size
+		var other_size: Vector2 = other.cached_size()
 		var rise: float = lift_over(lifted_delta.dot(camera.global_transform.basis.x), lifted_delta.dot(camera.global_transform.basis.y), (size.x + other_size.x) * 0.5, (size.y + other_size.y) * 0.5, float(_cfg["overlap_pad"]))
 		target = maxf(target, rise / up_in_world)
 	_lift = move_toward(_lift, target, float(_cfg["lift_speed"]) * delta)

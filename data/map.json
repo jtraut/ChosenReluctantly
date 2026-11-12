@@ -29,7 +29,7 @@
   "chests": {
     "small":  { "weight": 50, "act_offset": 0, "min_tier": 1 },
     "medium": { "weight": 35, "act_offset": 1, "min_tier": 1 },
-    "large":  { "weight": 15, "act": 3,        "min_tier": 1 }
+    "large":  { "weight": 15, "act": 3,        "min_tier": 2 }
   },
   "estimate": {
     "gold_mean": { "combat": 30, "elite": 70, "mini_boss": 100 },

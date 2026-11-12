@@ -589,7 +589,7 @@ func test_a_reload_in_the_shop_reopens_the_same_stock_with_no_second_visit() -> 
 	assert_array(restored.merchant_visit["relics"]).is_equal(stock["relics"])
 	assert_array(restored.merchant_visit["cards"]).is_equal(stock["cards"])
 	assert_array(restored.merchant_visit["sold_cards"]).is_equal([card_id])
-	assert_int(restored.gold).is_equal(360)
+	assert_int(restored.gold).is_equal(400 - 55)  # a common card at the MAP3b price
 	assert_int(restored.history.size()).is_equal(state.history.size())  # the merchant room was recorded once, not again
 	assert_bool(second.run_controller.merchant_open()).is_true()
 	assert_int(models.size()).is_equal(1)  # the reopened choice was announced

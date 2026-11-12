@@ -157,7 +157,7 @@
             },
             "condition_line": "%s: %s"
         },
-        "option": { "unavailable": "Unavailable: %s", "owned": "You own %d", "slot_now": "In slot: %s", "slot_now_max": 3, "slot_now_more": "+%d more", "copies": "x%d", "slot_key": "%s", "slot_label": "%s (%s)", "pick_hint": "Enter to pick", "dodge_hint": "The dodge does not count.", "dodge_slots": ["movement"], "act_hint": "Enter to choose", "remove_hint": "Enter to remove", "list_hint": "Arrow keys move, Enter or click confirms", "remove_list_hint": "Arrow keys move, Enter or click confirms" },
+        "option": { "unavailable": "Unavailable: %s", "owned": "You own %d", "slot_now": "In slot: %s", "slot_now_max": 3, "slot_now_more": "+%d more", "copies": "x%d", "rarity_names": { "rare": "Rare", "legendary": "Legendary" }, "slot_key": "%s", "slot_label": "%s (%s)", "pick_hint": "Enter to pick", "dodge_hint": "The dodge does not count.", "dodge_slots": ["movement"], "act_hint": "Enter to choose", "remove_hint": "Enter to remove", "list_hint": "Arrow keys move, Enter or click confirms", "remove_list_hint": "Arrow keys move, Enter or click confirms" },
         "room_label": "Room %d of %d",
         "type_names": { "combat": "Combat", "elite": "Elite", "rest": "Rest", "boss": "Boss", "relic_room": "Relics", "merchant": "Merchant", "mini_boss": "Mini-boss", "curse_room": "Curse", "buff_room": "Buff" },
         "room_cleared": { "title": "Room cleared", "button": "Continue", "hint": "Enter to continue", "rest_line": "You rest. It helps a little (healed %d).", "rest_full_line": "You rest. Nothing needed healing.", "stat_hp": "HP", "stat_time": "Time", "stat_healed": "Healed" },
@@ -190,6 +190,7 @@
             "swap_title": "Too many relics", "swap_line": "You hold %d relics, the most you can carry. Give one up to take %s.",
             "swap_line_one": "You hold %d relic, the most you can carry. Give it up to take %s.",
             "cancel_label": "Cancel", "none_giveable": "Nothing you hold can be given up.",
+            "boss_title": "Boss relic", "boss_line": "Pick one. Each one has a real upside and a real cost. Read both.", "cost_format": "Cost - %s",
             "label": "Relic", "owned_title": "Relics", "none_owned": "No relics yet.",
             "taking_format": "Taking: %s (%s, %s)", "free_tag": "Free", "pick_hint": "Enter to take", "giveup_hint": "Enter to give this one up", "skip_hint": "Enter to skip",
             "cap_note": "You are at the limit. Taking this asks you to give one up first.", "cell_format": "%s, %s", "locked_label": "Cannot be given up",

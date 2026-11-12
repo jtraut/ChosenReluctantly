@@ -367,7 +367,7 @@ func update_synergy(info: Dictionary, delta: float) -> void:
 	if chip_row != null:
 		chip_row.show_chips(info.get("chips", []))
 	_condition_text = String(info.get("condition_text", ""))
-	_live_target = bool(info.get("condition_live", false))
+	_live_target = bool(info.get("condition_live", false)) or SlotCues.detonate_live(info, int(_cfg.get("detonate_live_stacks", 2)))
 	var before_level: float = float(_glow["level"])
 	_glow = SlotCues.glow_step(_glow, _live_target, delta, float(_cfg.get("live_attack", 0.08)), float(_cfg.get("live_hold", 0.3)), float(_cfg.get("live_release", 0.25)))
 	var primed: bool = bool(info.get("primed", false))

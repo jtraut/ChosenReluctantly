@@ -19,6 +19,9 @@ extends Button
 ## the height from them. The highlight is one state: keyboard focus, and hover moves focus here too.
 ## Not colour alone: the focus is a thick outline plus an "Enter to ..." line, disabled cards say why in words.
 
+const RARITY_RARE: String = "rare"
+const RARITY_LEGENDARY: String = "legendary"
+
 enum Look { CARD, REJECT, ACTION, CELL, BACK, RELIC, RELIC_CELL, SKIP_FREE, SHOP }
 
 var option: Dictionary = {}
@@ -40,6 +43,8 @@ var number_badge: PanelContainer = null
 ## BD2 relic looks: the filled "Relic" band, the cap warning line, and the free-tag pill of the skip tile.
 var relic_band: PanelContainer = null
 var cap_note_label: Label = null
+## MAP3b: a boss relic's cost line ("Cost: Move speed -10%."), null on any other tile.
+var cost_label: Label = null
 ## BD1 carry-over: the note on a Movement-conditional card that the dodge does not count (D39 = A).
 var dodge_note_label: Label = null
 var free_tag: PanelContainer = null
@@ -47,6 +52,8 @@ var free_tag: PanelContainer = null
 var price_tag: PanelContainer = null
 var shop_band: Control = null
 var shop_only_tag: PanelContainer = null
+## MAP3b: the "Rare" / "Legendary" pill (a mark and the word) on a card tile; null for a common card and any non-card look.
+var rarity_tag: PanelContainer = null
 
 var _inner: VBoxContainer = null
 var _width: float = 0.0
@@ -67,6 +74,36 @@ static func slot_key_for(slot_type: String) -> int:
 ## "You own 2" when the player already holds copies of the offered card, else "".
 static func owned_text(count: int, format: String) -> String:
 	return format % count if count > 0 else ""
+
+
+## MAP3b: the rarity a card tile shows: the option's own `rarity` (every card option carries one), else the card's data. "common" for anything else.
+static func rarity_of_option(opt: Dictionary) -> String:
+	var own: String = String(opt.get("rarity", ""))
+	if CardSchema.RARITIES.has(own):
+		return own
+	var card_id: String = String(opt.get("card_id", ""))
+	return CardSchema.rarity_of(CardDatabase.get_card(card_id)) if card_id != "" else CardSchema.RARITY_COMMON
+
+
+## Splits a boss relic's rule text into its upside and its cost: `cost_text` when the relic data gives one (then the rule text is the upside), else the
+## last sentence (BUILD_DEPTH 12.5 writes every boss relic upside first, cost last). A text of one sentence has no cost line: {upside: all, cost: ""}.
+static func split_upside_cost(rule_text: String, cost_text: String = "") -> Dictionary:
+	if cost_text != "":
+		return {"upside": rule_text, "cost": cost_text}
+	var cut: int = rule_text.rfind(". ")
+	if cut < 0:
+		return {"upside": rule_text, "cost": ""}
+	return {"upside": rule_text.substr(0, cut + 1), "cost": rule_text.substr(cut + 2).strip_edges()}
+
+
+## True when this tile is a boss-tier relic (the relic display's `boss` flag).
+func boss_tile() -> bool:
+	return bool(option.get("boss", false)) and (look == Look.RELIC or look == Look.RELIC_CELL)
+
+
+## True when a rarity gets a mark on the tile (common stays as it was).
+static func rarity_marked(rarity: String) -> bool:
+	return rarity == RARITY_RARE or rarity == RARITY_LEGENDARY
 
 
 ## Card names contain commas, so the list is joined with a slash.
@@ -135,6 +172,11 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 	if look == Look.RELIC:
 		relic_band = _relic_band(opt, relic_texts, small_size)
 		_inner.add_child(relic_band)
+	if look == Look.CARD or look == Look.CELL:
+		# MAP3b: a rare or legendary card wears a band across its top (a common card has none).
+		rarity_tag = _rarity_tag(opt, texts, small_size, enabled, true)
+		if rarity_tag != null:
+			_inner.add_child(rarity_tag)
 
 	# Head row: number key (when numbered), name, copy count.
 	var head := HBoxContainer.new()
@@ -182,6 +224,12 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 				chip_row = keyword_chips
 				_inner.add_child(chip_row)
 	var detail: String = keep_units(String(opt.get("detail", "")))
+	var cost_line: String = ""
+	if look == Look.RELIC and boss_tile():
+		# MAP3b: a boss relic is a strong upside with a real cost. The cost gets its own line under a word, so both are read before the pick.
+		var parts: Dictionary = split_upside_cost(String(opt.get("detail", "")), String(opt.get("cost_text", "")))
+		detail = keep_units(String(parts["upside"]))
+		cost_line = keep_units(String(parts["cost"]))
 	var cell_blocked: bool = look == Look.CELL and not enabled and String(opt.get("reason", "")) != ""
 	tooltip_text = String(opt.get("reason", ""))
 	if look == Look.CELL:
@@ -202,6 +250,10 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 ".join(detail_lines.slice(1)), small_size if (look == Look.CELL or look == Look.RELIC_CELL) else body_size, _text_color(enabled, Color.html(String(cfg["option_accent_color"]))), true)
 			condition_label.custom_minimum_size.x = inner_width
 			_inner.add_child(condition_label)
+	if cost_line != "":
+		cost_label = _label(String(relic_texts.get("cost_format", "%s")) % cost_line, body_size, Color.html(String(cfg["option_warn_color"])) if enabled else _text_color(false, Color.WHITE), true)
+		cost_label.custom_minimum_size.x = inner_width
+		_inner.add_child(cost_label)
 	if look == Look.SKIP_FREE:
 		free_tag = _free_tag(String(relic_texts.get("free_tag", "")), small_size)
 		_inner.add_child(free_tag)
@@ -349,6 +401,9 @@ func _build_shop(opt: Dictionary, extra: Dictionary, enabled: bool, inner_width:
 			shop_band = chip
 			chip.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 			band.add_child(chip)
+		rarity_tag = _rarity_tag(opt, extra.get("texts", {}), small_size, enabled, false)
+		if rarity_tag != null:
+			band.add_child(rarity_tag)
 	# One header row: the kind chips, the name (it takes what is left and wraps if it must), the price tag on the right.
 	title_label = _label(name_text, roundi(float(title_size) * 0.86), _text_color(enabled, Color.html("#ffffff")), true)
 	title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -501,6 +556,8 @@ func _relic_band(opt: Dictionary, relic_texts: Dictionary, font_size: int) -> Pa
 	band.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var style := StyleBoxFlat.new()
 	style.bg_color = _relic_accent()
+	if boss_tile():
+		style.bg_color = boss_color()
 	style.content_margin_left = 6.0 * _scale
 	style.content_margin_right = 6.0 * _scale
 	style.content_margin_top = 2.0 * _scale
@@ -512,7 +569,7 @@ func _relic_band(opt: Dictionary, relic_texts: Dictionary, font_size: int) -> Pa
 	band.add_child(row)
 	var dark: Color = Color.html(String(_cfg.get("relic_band_text_color", "#1a1218")))
 	var hex := RunTypeIcon.new()
-	hex.shape = RunIcons.SHAPE_HEX
+	hex.shape = RunIcons.SHAPE_STAR if boss_tile() else RunIcons.SHAPE_HEX  # the star is the boss rank's shape (the tier marker, the map)
 	hex.color = dark
 	hex.custom_minimum_size = Vector2.ONE * float(font_size) * 1.1
 	hex.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -552,6 +609,66 @@ func _relic_chips(opt: Dictionary, width: float, font_px: int) -> ChipRow:
 	row.configure(hud_cfg, font_px, roundf(float(font_px) * 1.45), 6.0 * _scale, 5.0 * _scale, width, int(hud_cfg["chip_max"]), false, 0.0, false)
 	row.show_chips(tags)
 	return row
+
+
+## MAP3b: the rarity mark. Rare: a silver outline, "Rare" and one diamond. Legendary: a gold fill, "Legendary" and two diamonds. The word and the shapes are
+## always there, so the colour is never the only signal. The diamonds, not a star: a star is the Keystone chip's. `full_width` is a band across the top of a
+## card tile (its shape also differs from the keyword chips); false is a small pill for the shop's header row. null for a common card, a non-card tile or a
+## rarity with no word in data.
+func _rarity_tag(opt: Dictionary, texts: Dictionary, font_px: int, enabled: bool, full_width: bool) -> PanelContainer:
+	if frame_card_id() == "":
+		return null
+	var rarity: String = rarity_of_option(opt)
+	var word: String = String((texts.get("rarity_names", {}) as Dictionary).get(rarity, ""))
+	if not rarity_marked(rarity) or word == "":
+		return null
+	var legendary: bool = rarity == RARITY_LEGENDARY
+	var tint: Color = rarity_color(rarity) if enabled else Color.html(String(_cfg["option_disabled_text_color"]))
+	var pill := PanelContainer.new()
+	pill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var style := StyleBoxFlat.new()
+	style.set_corner_radius_all(0)  # square: the keyword chips are rounded
+	style.content_margin_left = 6.0 * _scale
+	style.content_margin_right = 6.0 * _scale
+	style.content_margin_top = 1.0 * _scale
+	style.content_margin_bottom = 1.0 * _scale
+	var text_color: Color = tint
+	if legendary:
+		style.bg_color = tint
+		text_color = Color.html("#1a1218")
+	else:
+		style.bg_color = Color(0.0, 0.0, 0.0, 0.0)
+		style.border_color = tint
+		style.set_border_width_all(maxi(roundi(1.5 * _scale), 1))
+	pill.add_theme_stylebox_override("panel", style)
+	pill.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	pill.size_flags_horizontal = Control.SIZE_FILL if full_width else Control.SIZE_SHRINK_BEGIN
+	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_theme_constant_override("separation", roundi(4.0 * _scale))
+	pill.add_child(row)
+	var word_label: Label = _label(word, font_px, text_color, false)
+	word_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(word_label)
+	for _i in range(2 if legendary else 1):
+		var mark := RunTypeIcon.new()
+		mark.shape = RunIcons.SHAPE_DIAMOND
+		mark.color = text_color
+		mark.custom_minimum_size = Vector2.ONE * float(font_px) * 0.8
+		mark.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		row.add_child(mark)
+	return pill
+
+
+## The tint of a rarity mark (data run_ui.rarity_rare_color / rarity_legendary_color).
+func rarity_color(rarity: String) -> Color:
+	var key: String = "rarity_legendary_color" if rarity == RARITY_LEGENDARY else "rarity_rare_color"
+	return Color.html(String(_cfg.get(key, "#ffc94a" if rarity == RARITY_LEGENDARY else "#9fc4e8")))
+
+
+## The colour of the boss relic tier (data run_ui.relic_boss_color): its band and inner line.
+func boss_color() -> Color:
+	return Color.html(String(_cfg.get("relic_boss_color", "#ff7f50")))
 
 
 ## The "Free" pill on the skip tile.
@@ -693,6 +810,13 @@ func frame_card_id() -> String:
 	return String(option.get("card_id", ""))
 
 
+## The rarity of the card this tile draws; "common" for a relic or any other tile.
+func _card_rarity() -> String:
+	if frame_card_id() == "":
+		return CardSchema.RARITY_COMMON
+	return rarity_of_option(option)
+
+
 ## The frame colour this option's card wears (tests).
 func frame_color() -> Color:
 	if look == Look.RELIC or look == Look.RELIC_CELL or _is_shop_relic():
@@ -731,6 +855,8 @@ func _apply_styles(enabled: bool) -> void:
 	if family:
 		base.set_border_width_all(maxi(roundi(float(_cfg["option_frame_width"]) * _scale), 2))
 		base.border_color = frame_color()
+		if _card_rarity() == RARITY_LEGENDARY and not relic:
+			base.border_color = rarity_color(RARITY_LEGENDARY)  # a gold frame; the family colour moves to the inner line (_draw)
 	var hover := base.duplicate() as StyleBoxFlat
 	hover.bg_color = Color.html(String(_cfg["option_card_hover_color"]))
 	var off := base.duplicate() as StyleBoxFlat
@@ -792,7 +918,17 @@ func _draw() -> void:
 	elif look == Look.RELIC or _is_shop_relic():
 		# The inner line of the double frame: a card has one thick frame, a relic has a second thin one inside it.
 		var inset: float = float(maxi(roundi(float(_cfg["option_frame_width"]) * _scale), 2)) + maxf(2.0 * _scale, 2.0)
-		draw_rect(Rect2(Vector2.ONE * inset, size - Vector2.ONE * inset * 2.0), _relic_accent(), false, maxf(_scale, 1.0))
+		var line_color: Color = boss_color() if boss_tile() else _relic_accent()
+		draw_rect(Rect2(Vector2.ONE * inset, size - Vector2.ONE * inset * 2.0), line_color, false, maxf((2.5 if boss_tile() else 1.0) * _scale, 1.0))
+	elif rarity_marked(_card_rarity()):
+		# MAP3b: an inner line inside the family frame. Legendary: the family colour inside a gold frame, thick. Rare: a thin silver line.
+		var frame_w: float = float(maxi(roundi(float(_cfg["option_frame_width"]) * _scale), 2))
+		var inset_rarity: float = frame_w + maxf(1.0 * _scale, 1.0)
+		var legendary_tile: bool = _card_rarity() == RARITY_LEGENDARY
+		var line_color: Color = frame_color() if legendary_tile else rarity_color(RARITY_RARE)
+		if disabled:
+			line_color = Color(line_color, 0.5)
+		draw_rect(Rect2(Vector2.ONE * inset_rarity, size - Vector2.ONE * inset_rarity * 2.0), line_color, false, maxf((2.0 if legendary_tile else 1.0) * _scale, 1.0))
 	elif look == Look.BACK:
 		return
 

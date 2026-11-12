@@ -81,6 +81,24 @@ func _ready() -> void:
 			await _wait(0.6)
 			RunSession.acts_override = 0
 			RunSave.reset()
+		"shop_rarity":
+			# MAP3b ux: a merchant shop with a legendary, a rare and a common card in stock (a real stock only holds legendaries in act 3). The options are
+			# fabricated (real card ids, rarity and slot from the card data; a stand-in effect line), over the arena; the tiles are the real RunOptionCard.
+			var shop_options: Array[Dictionary] = []
+			var slot_names: Dictionary = {"attack_single": "Attack: Single", "attack_aoe": "Attack: AoE", "utility": "Utility", "movement": "Movement", "recovery": "Recovery"}
+			for card_id: String in ["rogue_brawl_clause", "rogue_arterial_spray", "rogue_drive_by"]:
+				var card: Dictionary = CardDatabase.get_card(card_id)
+				var slot_type: String = String(card.get("slot_type", ""))
+				var price: int = int((RunConfig.get_config()["merchant"]["card_prices"] as Dictionary).get(CardSchema.rarity_of(card), 55))
+				shop_options.append({"id": "buy_card:" + card_id, "kind": "buy_card", "card_id": card_id, "label": String(card.get("name", card_id)), "detail": "Stand-in effect line, 8 physical damage (cone).",
+					"flavor": String(card.get("flavor_text", "")), "slot_type": slot_type, "slot_name": String(slot_names.get(slot_type, slot_type)), "rarity": CardSchema.rarity_of(card),
+					"price": price, "sold": false, "enabled": true, "reason": "", "reason_code": "", "owned": 0})
+			shop_options.append({"id": "merchant_leave", "kind": "back", "label": "Leave", "detail": "", "enabled": true, "reason": ""})
+			var shop_screen: RunPromptScreen = (load("res://scenes/ui/RunPromptScreen.tscn") as PackedScene).instantiate()
+			sub.add_child(shop_screen)
+			shop_screen.show_content({"title": "Merchant", "line": "", "screen": "shop", "merchant": {"gold": 200, "items": []}, "gold": 200, "options": shop_options, "rejects_remaining": 0, "rejects_max": 0, "owned": {}, "relic": {}, "rows": [], "hint": ""})
+			shop_screen.disarm()
+			await _wait(0.6)
 		"act_heal", "act_low", "act_resumed":
 			# BD3a ux: the Act 2 screen with fabricated summaries (the numbers of RunController.act_summary), over the arena: a heal that leaves
 			# HP healthy (act_heal), a heal that leaves it low (act_low: red, "Low HP"), and a resumed act (healed 0: no heal line).

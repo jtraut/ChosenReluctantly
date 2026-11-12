@@ -19,6 +19,15 @@ static func glow_step(state: Dictionary, live: bool, delta: float, attack: float
 	return {"level": level, "hold_left": hold_left}
 
 
+## MAP3b: a card that cashes in a status (`detonate_status`) lights the slot when one enemy in its area carries at least `min_stacks` of it (data
+## ui.hud `detonate_live_stacks`). The card works with one stack, so the glow is for "worth casting now". `info` is a SlotSynergy slot_info; a card
+## without a detonate status, or a threshold under 1, never lights this way. The ordinary condition glow is untouched.
+static func detonate_live(info: Dictionary, min_stacks: int) -> bool:
+	if min_stacks < 1 or String(info.get("detonate_status", "")).is_empty():
+		return false
+	return int(info.get("detonate_stacks", 0)) >= min_stacks
+
+
 ## How much of the primed window is left, 0..1, for the drain bar. No time limit (-1) or no known duration is a full bar.
 static func primed_fraction(time_left: float, duration: float) -> float:
 	if time_left < 0.0 or duration <= 0.0:

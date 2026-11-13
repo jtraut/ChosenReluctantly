@@ -2540,3 +2540,21 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **Starting values (data):** x0.8 per prune or reject, floor x0.4, applied on top of the lean.
 - **A reject counts once per offered card of each status in that offer.**
   - [Once per offer: a reject of three Burn cards would count the same as one.]
+
+## 2026-11-12 - Director feedback on MAP3b: Bleed Rogue, run time, the Raider (game-lead)
+- **His report:**
+  - The Bleed Rogue "feels a lot more put together now", and probably holds up to Fire/Burn.
+  - He finished a full run in a bit under 7 minutes.
+  - He had zero Fire cards left in his deck by the end.
+  - The act 2 Raider seemed "maybe too easy, like died super fast".
+- **Applied as game-lead defaults:**
+  - The Raider gets HP 120 -> 180, and phase 2 `attack_gap` 0.9 -> 0.75 if the bot fight still lasts under 20 s. It's MAP4's first gameplay-dev step.
+  - HP first, because "died super fast" is about time to kill. The gap is the backup knob, because gameplay-dev showed HP alone doesn't add pressure.
+  - [Adding adds to the Raider: MB1 made it a duel by design.]
+- **Escalated as D50:** the 7-minute run against his 30-45 minute target (GDD §9). It contradicts a director decision, and it's costly either way. Default C: no change, measure after MAP4. Recommendation B: about 15-20 min, plus a difficulty bump.
+- **Eyes items resolved:**
+  - 53 (Bleed Rogue: holds up);
+  - the Raider half of 55 ("harder");
+  - 52's timing question (under 7 min);
+  - 56's Bleed question.
+  - Kept: 55 for the brute, and 52's Continue and Act 2 screen checks.

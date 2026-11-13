@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-11-12 (MAP3b closed; latest tag `playtest-2026-11-12-MAP3b`)
-**Status:** no decisions waiting. 11 things to look at (56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. **MB1 (new mini-bosses) is done**, tag `playtest-2026-11-11-MB1`. **MAP3b is done** (rare and legendary cards, boss relics), tag `playtest-2026-11-12-MAP3b`. Next: MAP4 -> 3d -> BD3b.
+**Status:** 1 decision waiting (D50, run length). 10 things to look at (56, 55, 54, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. **MB1 (new mini-bosses) is done**, tag `playtest-2026-11-11-MB1`. **MAP3b is done** (rare and legendary cards, boss relics), tag `playtest-2026-11-12-MAP3b`. Next: MAP4 -> 3d -> BD3b.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -17,9 +17,17 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## Needs your decision
 
-Next new number: D50.
+Next new number: D51.
 
-Nothing waiting. Your last answer, D49 = B (2026-11-12), is recorded in GDD §9 and is built first thing in MAP4.
+**D50. Run length: your run took a bit under 7 minutes, against your 30-45 minute target (GDD §9).**
+- **First, a check:** was that all three acts (30 rooms, ending at the final boss)? If it was only one act, say so, and this mostly goes away.
+- **Why it matters:** if it was three acts, the run is about 5x shorter than the target. Events (MAP4) add a little non-combat time, but nowhere near 5x. You also found the Raider too easy, so the length and the difficulty are probably the same problem: fights end too fast.
+- **Options:**
+  - **A:** keep 30-45 min. Fights get longer and harder: more enemies and waves per room, more HP. This is a big tuning pass, because every room changes.
+  - **B:** lower the target to about 15-20 min. Make fights a bit tougher, mostly for challenge, not length.
+  - **C (default):** no change yet. MAP4 measures human-like run times with events in, and you decide then.
+- **My recommendation: B.** 30 rooms of fast action combat at 1-1.5 min each would mean slow, padded fights. 15-20 min keeps the fights snappy, and the difficulty bump fixes "too easy" directly.
+- Nothing in MAP4 waits on this, but A would reshape the next slice after it.
 
 ## Needs your eyes
 
@@ -35,43 +43,21 @@ Reply with the number and a word or two.
       - then a rare card offer (after act 1) or a legendary one (after act 2).
     - **Rare cards show up in normal offers from act 2, and legendaries from act 3.** They have silver and gold bands.
     - **Do the boss relics feel like big, build-changing choices?** Is each cost something you actually feel? The Non-Compete Clause wins every bot run. **Default if you don't object:** its cooldown refund goes from 0.5 s to 0.3 s at the start of MAP4. Say "56 leave" to keep it.
-    - **Does a Bleed Rogue finally get enough Bleed late?** Your D49 = B (pruning and rejecting push a type away) arrives in MAP4.
     - **The act 3 floor changed from dull red to sand,** so the red chasers stand out. Keep it, or "56 old floor"?
     - **Look for:**
       - Open a Vein's slot glowing when an enemy in range has 2 or more Bleed stacks;
       - Exsanguinate (legendary) on a fully stacked enemy. It can one-shot a boss with a deep build. Fun, or too much?
 
-55. **Fight the two new mini-bosses (MB1), tag `playtest-2026-11-11-MB1` or main.** Try each as both the Rogue and the Wizard (`-- --class=wizard`).
-    - **How to get there:**
-      - Act 1, "Head of Facilities": `godot --path . -- --scenario=mini_boss_act1`.
-      - Act 2, "The Corporate Raider", your small, quick, hard-hitting example: `-- --scenario=mini_boss_act2`.
-      - Both use your real HP, not 9999.
-      - Or meet them in a run at rooms 10 and 20.
-    - **Real act-ending fights, or speed bumps?** The test bot never lost to either one. The playtester thinks the Raider is a speed bump for a Rogue who keeps moving.
-    - **If you don't say otherwise, MAP3b starts by:**
-      - raising the Raider's HP from 90 to 120;
-      - spreading the Head of Facilities' "Wet floor" circles so there are real gaps to stand in.
-      - Say "55 leave" to keep them as they are, or "55 harder" or "55 easier".
-    - **Update 2026-11-12:** that default is now on main. It didn't change anything for the test bot: it still wins the same runs, and both fights still cost it almost no HP. If you want them harder, it'll take new pressure (more adds, faster attacks), not just more HP.
-    - **Look for:**
-      - the "Act 1 Mini-boss" line under the name;
-      - the cyan ring where the Raider will teleport (it isn't a damage zone);
-      - "(1/2)" and "(2/2)" on the dash combo;
-      - the floor colour changing each act.
-
-53. **Play a physical Rogue (BD3a), tag `playtest-2026-11-09-BD3a` or main.** `godot --path .` as the Rogue.
-    - **Try to go Bleed from the start.** Take Bleed cards, remove Fire ones at rests and the merchant (removed cards no longer come back, your D47), and see if the run gives you enough.
-    - **Harder or easier than your MAP3 run?** Enemies are unchanged since MAP3. Your 30% heal at each act start is the only difficulty change. The test bot can't tell us any more (see 54), so your answer is the measure.
-    - **Look for:** "Bleed x3" over enemies (stacks need Bad Influence or the Serrated Excuse relic), the big "!" number when Open a Vein detonates, the act screen's heal line, and the mini-boss's named bar.
-    - **Shortcuts:** `-- --deck=rogue-bleed-out` and `-- --deck=rogue-grudge-brawler` (add `--relics=spite_knuckles+muscle_memory+overtime_unpaid+heavy_sigh` for the brawler's full plan).
+55. **The act 1 mini-boss, "Head of Facilities" (MB1).** `godot --path . -- --scenario=mini_boss_act1`, or room 10 of a run.
+    - **A real act-ending fight, or a speed bump?** Its "Wet floor" circles now leave gaps to stand in.
+    - Say "55 leave", "55 harder" or "55 easier".
+    - You've already answered for the act 2 Raider ("too easy, died super fast"): it gets tougher at the start of MAP4.
 
 54. **FYI: the test bot was half-blind until today.** In every headless sim the bot aimed without turning, so cones, knives and dashes missed. Your own play was never affected. Fixed, it wins almost every run, so every old bot number (the H1/H2 dodge-off results, the MAP1-MAP3 run baselines) was measured with a weaker bot than we thought. No shipped value changes because of this. **SIM1 (done 2026-11-11)** added a "human" bot setting (0.2 s reaction delay, 25 degree aim error). On it the Rogue wins 26/36 three-act runs and the Wizard 15/36, so the Wizard is clearly harder for the bot; that goes to BD3b. These are only bot numbers: your own three-act runs (53) set the real bar. Reply "ok" when you've read this.
 
-52. **Play a three-act run (MAP3), with a clock running.** `godot --path .` (a run is now 30 rooms in 3 acts).
-    - **How long did it take on the clock?** The target is 30-45 min. The bots take about 13.5 min of sim time, and the playtester guesses 20-30 min for a person.
+52. **Two small checks from MAP3, next time you play.** (You've answered the run-time question: see D50.)
     - **Quit mid-run, relaunch and press Enter.** Continue should be highlighted on the class pick and resume your run. Quitting during a fight restarts that room.
     - **Click through the Act 2 screen** after the act 1 mini-boss.
-    - Relics now cost 80/120/170 in a three-act run (60/90/130 with `-- --acts=1`).
 
 51. **Visit the merchant (MAP2).** `godot --path .`, and pick a route through the coin square.
     - Buy two things, then leave. Is it clear what you can afford, and why something is greyed out?

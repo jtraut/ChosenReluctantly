@@ -70,6 +70,7 @@ func _draw() -> void:
 	else:
 		draw_polyline(outline, dark, maxf(radius * 0.14, 1.5), true)
 	_draw_pips(centre, alpha)
+	RunIcons.draw_mark(self, RunIcons.shape_for(String(info.get("type", ""))), centre, radius, Color(0.1, 0.06, 0.04, alpha))
 	if String(info.get("type", "")) == "merchant":
 		# A coin in the square: the merchant is where gold goes, and it must read at a glance even when it is dimmed.
 		var coin := Color(0.1, 0.06, 0.04, alpha)

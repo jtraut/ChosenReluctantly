@@ -120,3 +120,13 @@ func test_the_end_of_run_and_room_cleared_time_rows_say_fight_time() -> void:
 	var ui: Dictionary = RunConfig.ui()
 	assert_str(String(ui["room_cleared"]["stat_time"])).is_equal("Fight time")
 	assert_str(String(ui["win"]["stat_time"])).is_equal("Fight time")
+
+
+func test_the_event_node_is_a_bubble_with_its_own_shape() -> void:
+	assert_str(RunIcons.shape_for("event")).is_equal(RunIcons.SHAPE_BUBBLE)
+	for type_id: String in ["combat", "elite", "rest", "boss", "relic_room", "merchant", "mini_boss"]:
+		assert_str(RunIcons.shape_for(type_id)).is_not_equal(RunIcons.SHAPE_BUBBLE)
+	var pts: PackedVector2Array = RunIcons.polygon(RunIcons.SHAPE_BUBBLE, 10.0)
+	assert_int(pts.size()).is_greater_equal(16)
+	for p: Vector2 in pts:
+		assert_float(p.length()).is_less_equal(10.0 * 1.4)

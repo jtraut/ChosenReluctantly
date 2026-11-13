@@ -34,6 +34,7 @@ func _draw() -> void:
 	var outline := moved.duplicate()
 	outline.append(moved[0])
 	draw_polyline(outline, Color(0.05, 0.03, 0.04, 1.0), maxf(radius * 0.14, 1.0), true)
+	RunIcons.draw_mark(self, shape, size * 0.5, radius, Color(0.1, 0.06, 0.04, 1.0))
 	if coin:
 		var coin_colour := Color(0.1, 0.06, 0.04, 1.0)
 		draw_arc(size * 0.5, radius * 0.45, 0.0, TAU, 20, coin_colour, maxf(radius * 0.14, 2.0), true)

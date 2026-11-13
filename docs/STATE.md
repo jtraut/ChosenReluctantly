@@ -28,6 +28,8 @@ Last updated: 2026-11-13. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds on
   - D51 (in 6dec638);
   - eyes 53 plus the answered parts of 55, 52 and 56, with his words (in b0222f9).
 - **MAP4 sitting A (6cd1c44..b2ae51b), from gameplay-dev's hand-back:** MAP.md §11.3 already updated by game-lead. README: suite 2281, `run_tests.ps1` about 18 min, SIM1 numbers above, the `offer_report` line mentions D49. CHANGELOG: Raider `max_health` 120 -> 180 and phase 2 gap 0.9 -> 0.75; Non-Compete refund 0.5 -> 0.3 s (eyes-56 default); D49 built with the shares above; Knuckle Sandwich text; the `-RelicCap` and forced `--relic-offer` fixes.
+- **RESOLVED (eyes 57, text in 69c8b0d `docs/OPEN_ITEMS.md`):** director 2026-11-13: "I don't like that dynamic, so let's try rejecting only pushes away cards not currently in your deck". Recorded in GDD §9 (D49 refinement); built at the start of MAP4 B2.
+- **CHANGELOG `[Director decision]`:** D49 refined: a reject discounts only offered cards not already in your deck (was every offered card).
 - **CHANGELOG:**
   - `[Director decision]` D49: pruning or rejecting had no effect on offers; now each one multiplies that status's offer weight by 0.8, floor 0.4.
   - `[Director decision]` D50: target run length 30-45 min -> about 15-20 min of real time, decisions included.

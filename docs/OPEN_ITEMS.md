@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-11-13 (MAP4 sitting A done; latest tag `playtest-2026-11-12-MAP3b`)
-**Status:** 0 decisions waiting. 11 things to look at (57, 56, 55, 54, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. **MB1 (new mini-bosses) is done**, tag `playtest-2026-11-11-MB1`. **MAP3b is done** (rare and legendary cards, boss relics), tag `playtest-2026-11-12-MAP3b`. **MAP4 (events) is being built** (5 sittings; the first is done). Next: MAP4 -> DF1 (difficulty bump) -> 3d -> BD3b.
+**Status:** 0 decisions waiting. 10 things to look at (56, 55, 54, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. **MB1 (new mini-bosses) is done**, tag `playtest-2026-11-11-MB1`. **MAP3b is done** (rare and legendary cards, boss relics), tag `playtest-2026-11-12-MAP3b`. **MAP4 (events) is being built** (5 sittings; the first is done). Next: MAP4 -> DF1 (difficulty bump) -> 3d -> BD3b.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -24,9 +24,6 @@ Nothing right now.
 ## Needs your eyes
 
 Reply with the number and a word or two. **Each item has a default. If it's still unanswered when the slice after the one that added it closes, the default applies and it moves to `docs/RESOLVED.md` (your rule, 2026-11-12).** Everything below expires at **MAP4's close**.
-
-57. **FYI: your D49 rule (pruning or rejecting pushes a status away) is in, on main.** For a Bleed Rogue in late offers, it pushes Fire down from 31.3% to 22.8% and Burn from 19.9% to 9.9%, but Bleed barely rises (11.8% -> 12.2%). That's because rejecting an offer also pushes away the Bleed cards in it that you already own. That matches what you chose. If you also want Bleed offers to rise, that would be a new rule, so it's your call. Reply "57 ok", or "57 boost Bleed". **Default:** no change. Expires at DF1's close.
-    - Also in: the Raider has 180 HP (was 120) and attacks a bit faster in its second phase (gap 0.75 s, was 0.9). The bot now loses to it more than to anything else. You'll get a tag to play it at MAP4's close.
 
 56. **Play MAP3b: rare and legendary cards, boss relics. Tag `playtest-2026-11-12-MAP3b`.**
     - **How to get there:**

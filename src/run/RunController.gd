@@ -728,6 +728,8 @@ func relic_swap_state() -> Dictionary:
 	return {
 		"active": active, "incoming": RunRelics.display(_state.relic_incoming, _ctx) if active else {}, "giveable": giveable,
 		"owned_count": _state.relics.size() if _state != null else 0, "max_owned": RunRelics.max_owned(_ctx),
+		# MAP4-B2: a sacrifice_cost relic's step: how many to give up (0 = the plain cap swap) and the picks so far (nothing is given up until `confirm_relic_giveup`)
+		"sacrifice_cost": RunRelics.cost_for(_state.relic_incoming, _ctx) if active else 0, "picks": _state.sacrifice_picks.duplicate() if active else [] as Array[String],
 	}
 
 
@@ -753,6 +755,11 @@ func skip_relic_offer() -> Dictionary:
 ## Gives up an owned relic to take the one being swapped in.
 func give_up_relic(relic_id: String) -> Dictionary:
 	return choose(RunRelics.OPTION_GIVEUP + ":" + relic_id)
+
+
+## MAP4-B2: the one confirm of a sacrifice_cost relic's step (every relic to give up picked first, with `give_up_relic` toggling each pick). Enabled only with all picked.
+func confirm_relic_giveup() -> Dictionary:
+	return choose(RunRelics.OPTION_CONFIRM)
 
 
 ## Backs out of the give-up step: everything is kept and the offer is shown again.
@@ -880,6 +887,11 @@ func reroll_merchant() -> Dictionary:
 ## In the give-up step: gives up an owned relic to take the one being bought.
 func give_up_for_purchase(relic_id: String) -> Dictionary:
 	return choose(RunMerchant.OPTION_GIVEUP + ":" + relic_id)
+
+
+## MAP4-B2: the one confirm of a sacrifice_cost relic bought at the shop (the gold is charged now). `give_up_for_purchase` toggles each pick first.
+func confirm_purchase_giveup() -> Dictionary:
+	return choose(RunMerchant.OPTION_CONFIRM)
 
 
 ## Backs out of the give-up step; nothing is charged.

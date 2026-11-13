@@ -2640,3 +2640,16 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **The eyes-57 result isn't a new eyes item.** The refined rule moves late Bleed only 12.2% -> 12.5%, because the Bleed bot rarely rejects an offer holding an owned Bleed card. The director's change was about owned cards not being punished, and it does that. The number goes in the end-of-session report, not OPEN_ITEMS.
   - [A new eyes item: it would ask him to re-judge a rule he just set, on a bot measure.]
 - **qa at MAP4:** add a test of the pending event sacrifice through `RunSave.read_state` (the B2 test goes through `to_json`/`from_json` only).
+
+## 2026-11-13 - MAP4 sitting C triage (game-lead)
+- **Accepted as built** (5b85aad..eeae97c). gameplay-dev's calls stand:
+  - curses are left out of the deck rules' slot map, so they count toward no minimum and never block a removal;
+  - a removed curse counts a cleanse but isn't a prune: no `removed_cards` entry, no D49 discount;
+  - removing a curse at the merchant costs the normal removal price and raises the step;
+  - an event choice whose removal can't happen is greyed rather than charged first; the event removal pick has no Cancel;
+  - a random `gain_curse` is uniform over sorted ids from a salted seeded stream;
+  - the Dig is the additive stat `rest_dig`; its offer uses source `relic_room` at the act's odds (event-only relics stay out); skipping it still ends the rest; it isn't a save boundary (a reload redraws the same seeded offer);
+  - the bot removes a curse first everywhere, and takes the Dig over a removal at 70% HP or more.
+- **Watch: a curse cast fires `card_cast` and uses up primed buffs like any card.** Losing a primed buff is a fair curse cost. It also means a curse can satisfy a `cast_within` payoff, which is a small free benefit. Left as is; qa reports whether any shipped payoff makes it worth exploiting, and it's excluded later if so.
+  - [Excluding curses from `card_cast` now: more special cases in the relay for an edge no player has hit.]
+- **ux must look at the rest's Dig, the event removal grid, and a curse with no effect line** in the slot HUD and the deck lists before players see them (ux sitting after D).

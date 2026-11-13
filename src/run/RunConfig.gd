@@ -132,6 +132,11 @@ static func _validate_rewards(value: Variant) -> Array[String]:
 		errors.append("rewards.status_lean_max must be a number in [1, 100]")
 	if r.has("status_lean_skip_starter") and typeof(r["status_lean_skip_starter"]) != TYPE_BOOL:
 		errors.append("rewards.status_lean_skip_starter must be true or false")
+	# D49 = B: pruning or rejecting a card multiplies its statuses' offer weight by the factor, down to the floor. Both optional (absent = no effect).
+	if r.has("prune_reject_factor") and (not _is_number(r["prune_reject_factor"]) or float(r["prune_reject_factor"]) <= 0.0 or float(r["prune_reject_factor"]) > 1.0):
+		errors.append("rewards.prune_reject_factor must be a number in (0, 1]")
+	if r.has("prune_reject_floor") and (not _is_number(r["prune_reject_floor"]) or float(r["prune_reject_floor"]) <= 0.0 or float(r["prune_reject_floor"]) > 1.0):
+		errors.append("rewards.prune_reject_floor must be a number in (0, 1]")
 	errors.append_array(validate_rarity_rewards(r))
 	if _is_number(r.get("unowned_weight")) and _is_number(r.get("owned_weight")) and float(r["unowned_weight"]) + float(r["owned_weight"]) <= 0.0:
 		errors.append("rewards: unowned_weight and owned_weight cannot both be 0")

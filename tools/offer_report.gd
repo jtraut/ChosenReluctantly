@@ -149,6 +149,17 @@ func _matrix(seeds: int, offers: int, character: String) -> void:
 	_card_report("bleed-old", 0.25, seeds, offers, character)
 
 
+## D49 = B: the same rule as RunState.discount_card_types, on a plain dictionary.
+func _discount(weights: Dictionary, card_id: String, rewards: Dictionary) -> void:
+	var factor: float = float(rewards.get("prune_reject_factor", 1.0))
+	var floor_value: float = float(rewards.get("prune_reject_floor", 0.0))
+	if factor >= 1.0:
+		return
+	for status_id: String in CardSummary.status_ids(_by_id[card_id] as Dictionary):
+		var current: float = float(weights.get(status_id, 1.0))
+		weights[status_id] = minf(current, maxf(current * factor, floor_value))
+
+
 func _card_report(bot: String, lean: float, seeds: int, offers: int, character: String) -> void:
 	var rewards: Dictionary = _rewards.duplicate()
 	rewards["status_lean"] = lean
@@ -166,8 +177,9 @@ func _card_report(bot: String, lean: float, seeds: int, offers: int, character: 
 		var deck: Array = CharacterDatabase.starting_deck(character).duplicate()
 		var removed: Array[String] = []  # the real D47 rule: ids pruned this run are never offered again (bleed-old plays without it)
 		var rejects: int = RunConfig.rejects_per_run()
+		var weights: Dictionary = {}  # D49 = B: status id -> offer multiplier from pruned/rejected cards (bleed-old plays without it too)
 		for index in range(offers):
-			var offered: Array[String] = RewardOffer.generate(run_seed, index, deck, _cards, _pools, _pool_defs, rewards, starter, [] if bot == "bleed-old" else removed, mini(1 + index * 3 / offers, 3))
+			var offered: Array[String] = RewardOffer.generate(run_seed, index, deck, _cards, _pools, _pool_defs, rewards, starter, [] if bot == "bleed-old" else removed, mini(1 + index * 3 / offers, 3), "", {} if (bot == "bleed-old") else weights)
 			for phase_index in range(PHASES.size()):
 				var phase: Array = PHASES[phase_index]
 				if index < int(phase[1]) or index >= int(phase[2]):
@@ -196,10 +208,13 @@ func _card_report(bot: String, lean: float, seeds: int, offers: int, character: 
 					bleed_picked += 1 if wanted == "bleed" else 0
 				elif rejects > 0:
 					rejects -= 1
+					for id: String in offered:
+						_discount(weights, id, rewards)
 				if (index + 1) % PRUNE_EVERY == 0:
 					for id: String in deck:
 						if _applies(id, pruned) and DeckRules.can_remove(deck, id, DeckRules.shipped_config(), _slot_of, SlotTypeDatabase.known_ids()).is_empty():
 							deck.erase(id)
+							_discount(weights, id, rewards)
 							if not removed.has(id):
 								removed.append(id)
 							break

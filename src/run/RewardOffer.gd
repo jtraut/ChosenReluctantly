@@ -27,12 +27,13 @@ static func offer_seed(run_seed: int, room_index: int) -> int:
 ## `cards`: all card dicts. `deck`: card ids owned. `pools`: owned pool ids. `pool_defs`: pool id -> definition
 ## (for element status sources). `rewards`: the run.json `rewards` block. Returns up to offer_size distinct ids.
 ## `starter`: the run's starting deck. Only read when `rewards.status_lean_skip_starter` is true (see `added_cards`).
+## `status_weights` (D49 = B): RunState.offer_weights.
 ## `removed`: card ids pruned from the deck this run (D47 = B, GDD 9): never offered again, even when a copy is still in the deck. If that
 ## leaves fewer than offer_size candidates the offer is just shorter, and an empty one means no reward screen (see RunChoices.open_for_room).
 ## MAP3b: each slot first rolls a rarity from `rewards.rarity_weights[act]` (its own seeded stream, so a config with no weight above common never
 ## touches the card draw), then draws among the candidates of that rarity; an empty rarity falls down (legendary -> rare -> common), never up. A non-empty
 ## `fixed_rarity` (the mini-boss's offer) skips the roll and starts every slot at that rarity, with the same fall-down.
-static func generate(run_seed: int, room_index: int, deck: Array, cards: Array, pools: Array, pool_defs: Dictionary, rewards: Dictionary, starter: Array = [], removed: Array = [], act: int = 1, fixed_rarity: String = "") -> Array[String]:
+static func generate(run_seed: int, room_index: int, deck: Array, cards: Array, pools: Array, pool_defs: Dictionary, rewards: Dictionary, starter: Array = [], removed: Array = [], act: int = 1, fixed_rarity: String = "", status_weights: Dictionary = {}) -> Array[String]:
 	var by_id: Dictionary = {}
 	for card: Variant in cards:
 		by_id[String((card as Dictionary).get("id", ""))] = card
@@ -59,6 +60,10 @@ static func generate(run_seed: int, room_index: int, deck: Array, cards: Array, 
 		for id: String in candidates:
 			if not deck.has(id):
 				lean_factor[id] = lean_for(by_id[id], owned_by_status, lean, lean_max)
+	var prune_factor: Dictionary = {}
+	for id: String in candidates:
+		if not status_weights.is_empty():
+			prune_factor[id] = prune_factor_for(by_id[id], status_weights)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = offer_seed(run_seed, room_index)
 	var out: Array[String] = []
@@ -76,7 +81,7 @@ static func generate(run_seed: int, room_index: int, deck: Array, cards: Array, 
 		var weights: Array[float] = []
 		var total: float = 0.0
 		for id: String in slot_candidates:
-			var w: float = maxf(owned_weight if deck.has(id) else unowned_weight, 0.0) * float(lean_factor.get(id, 1.0))
+			var w: float = maxf(owned_weight if deck.has(id) else unowned_weight, 0.0) * float(lean_factor.get(id, 1.0)) * float(prune_factor.get(id, 1.0))
 			weights.append(w)
 			total += w
 		if total <= 0.0:
@@ -179,6 +184,18 @@ static func status_counts(deck_cards: Array[Dictionary]) -> Dictionary:
 				seen[status_id] = true
 				counts[status_id] = int(counts.get(status_id, 0)) + 1
 	return counts
+
+
+## D49 = B: the weight factor of a card from the run's pruned/rejected multipliers (`status_weights`, status id -> multiplier). The best (largest)
+## multiplier among the statuses the card applies, so a two-status card is only cut as far as its least-cut status; 1.0 when it applies none.
+static func prune_factor_for(card: Dictionary, status_weights: Dictionary) -> float:
+	var ids: Array[String] = CardSummary.status_ids(card)
+	if ids.is_empty():
+		return 1.0
+	var best: float = 0.0
+	for status_id: String in ids:
+		best = maxf(best, float(status_weights.get(status_id, 1.0)))
+	return best
 
 
 ## The weight factor of one unowned candidate: the best of 1 + lean x n_S over the statuses it applies, capped at lean_max (1.0 when it applies none).

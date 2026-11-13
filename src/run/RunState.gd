@@ -44,6 +44,9 @@ var rejects_remaining: int = 0
 ## merchant's stock. Ids only, no duplicates. An old save without the key loads as empty. Nothing erases an entry: a removed card can still be
 ## re-added by a debug path (`--full-deck`, a forced `--run-offer`), and then it simply sits in the deck while staying out of offers.
 var removed_cards: Array[String] = []
+## D49 = B: status id -> the offer weight multiplier earned by pruning or rejecting cards that apply it (1.0 = untouched; an absent key is 1.0).
+## Each prune or reject multiplies by `rewards.prune_reject_factor`, never below `rewards.prune_reject_floor`. Read by RewardOffer.generate.
+var offer_weights: Dictionary = {}
 ## One entry per finished room: {index, type, wave_id, hp_end, seconds}.
 var history: Array[Dictionary] = []
 ## "" while the run is going, then "won" or "lost".
@@ -254,6 +257,7 @@ func to_dict() -> Dictionary:
 		"max_hp": max_hp,
 		"deck": deck.duplicate(),
 		"removed_cards": removed_cards.duplicate(),
+		"offer_weights": offer_weights.duplicate(),
 		"rejects_remaining": rejects_remaining,
 		"history": history.duplicate(true),
 		"outcome": outcome,
@@ -364,6 +368,7 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.relics = _id_list(data.get("relics", []), "relics")
 	state.removed_cards = _id_list(data.get("removed_cards", []), "removed_cards")  # D47: a missing key (an old save) is empty
 	state.relics_given_up = _id_list(data.get("relics_given_up", []), "relics_given_up")
+	state.offer_weights = _offer_weights_of(data.get("offer_weights", {}))  # D49: a missing key (an old save) is empty
 	var relic_problem: String = _relic_problem(state)
 	if not relic_problem.is_empty():
 		push_error("RunState.from_dict: %s" % relic_problem)
@@ -616,6 +621,34 @@ static func _id_list(value: Variant, label: String) -> Array[String]:
 func record_removal(card_id: String) -> void:
 	if not card_id.is_empty() and not removed_cards.has(card_id):
 		removed_cards.append(card_id)
+
+
+## D49 = B: a pruned or rejected card makes the statuses it applies rarer in later offers. `rewards` is the run.json block
+## (`prune_reject_factor`, `prune_reject_floor`); a missing or 1.0 factor does nothing. A card with no status changes nothing.
+func discount_card_types(card_id: String, rewards: Dictionary) -> void:
+	var factor: float = float(rewards.get("prune_reject_factor", 1.0))
+	var floor_value: float = float(rewards.get("prune_reject_floor", 0.0))
+	if factor >= 1.0 or not CardDatabase.has_card(card_id):
+		return
+	for status_id: String in CardSummary.status_ids(CardDatabase.get_card(card_id)):
+		var current: float = float(offer_weights.get(status_id, 1.0))
+		offer_weights[status_id] = minf(current, maxf(current * factor, floor_value))
+
+
+## Reads a saved `offer_weights`: status id -> a finite number in (0, 1]. Anything else is dropped with an error (the run keeps going).
+static func _offer_weights_of(value: Variant) -> Dictionary:
+	var out: Dictionary = {}
+	if typeof(value) != TYPE_DICTIONARY:
+		if value != null:
+			push_error("RunState.from_dict: 'offer_weights' must be an object; using none")
+		return out
+	for key: Variant in (value as Dictionary).keys():
+		var entry: Variant = (value as Dictionary)[key]
+		if typeof(key) == TYPE_STRING and not String(key).is_empty() and _is_number(entry) and not is_nan(float(entry)) and not is_inf(float(entry)) and float(entry) > 0.0 and float(entry) <= 1.0:
+			out[String(key)] = float(entry)
+		else:
+			push_error("RunState.from_dict: 'offer_weights' entry '%s' is not a status id with a weight in (0, 1]; dropped" % str(key))
+	return out
 
 
 ## True when the run holds this relic.

@@ -1,0 +1,10 @@
+{
+    "id": "c_curse_idle",
+    "name": "Idle Curse",
+    "slot_type": "attack_single",
+    "pool": "neutral",
+    "cooldown_modifier": 2.0,
+    "flavor_text": "Casting it does nothing.",
+    "curse": true,
+    "effects": []
+}

@@ -1,0 +1,16 @@
+{
+    "id": "c_util3",
+    "name": "Util 3",
+    "slot_type": "utility",
+    "pool": "neutral",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "Fixture.",
+    "effects": [
+        {
+            "template": "heal",
+            "params": {
+                "amount": 3
+            }
+        }
+    ]
+}

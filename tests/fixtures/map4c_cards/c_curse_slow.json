@@ -1,0 +1,20 @@
+{
+    "id": "c_curse_slow",
+    "name": "Slow Curse",
+    "slot_type": "utility",
+    "pool": "neutral",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "Casting it hurts.",
+    "curse": true,
+    "effects": [
+        {
+            "template": "buff",
+            "params": {
+                "stat": "move_speed",
+                "modifier_type": "multiplicative",
+                "value": -0.3,
+                "duration": 3.0
+            }
+        }
+    ]
+}

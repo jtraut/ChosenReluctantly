@@ -1,0 +1,19 @@
+{
+    "id": "c_att3",
+    "name": "Att 3",
+    "slot_type": "attack_single",
+    "pool": "neutral",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "Fixture.",
+    "effects": [
+        {
+            "template": "cone",
+            "params": {
+                "damage": 6,
+                "damage_type": "physical",
+                "range": 2.0,
+                "half_angle_degrees": 45
+            }
+        }
+    ]
+}

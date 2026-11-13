@@ -2,6 +2,41 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
+## 2026-11-12 (Slice MAP3b: rarity, rare and legendary cards, tier 3 and boss relics)
+
+Commit range b14cfa2..d6aab3c. game-lead design pass 093450c, 3526e32, 8ef7637, 81c8e76 (`docs/BUILD_DEPTH.md` section 12); gameplay-dev sitting A 5d5678c..472beb0 (engine), B 22a9d8f, f6bbf46, 3da6356 (content), C 13dcb05, c891d70, 8157c59 (tuning); ux e596c5a..f59e2c6; qa 7ed9fc0..02ed622 (PASS, `docs/reviews/2026-11-12-map3b-qa.md`); playtest bffaf3a (`docs/playtests/2026-11-12-map3b.md`, no blocker, smoke only: the playtester cannot hand-play); game-lead triage commits. One tag, three gameplay-dev sittings: A engine, B content, C tuning. Calls: `docs/DECISIONS.md` entries dated 2026-11-12.
+
+### Added
+- **Card rarity** (bef0d27): each card has `rarity` (`common`, `rare`, `legendary`). Every card-offer slot rolls a rarity from `data/run.json` `rewards.rarity_weights` for the act (act 1: common only; act 2: common 80 / rare 20; act 3: common 62 / rare 30 / legendary 8). A rarity with no eligible card falls down to the next one. Starting decks and pool-filled decks take common cards only; `--full-deck` keeps every card (Rogue 38 -> 49, Wizard 28 -> 39).
+- **17 new cards, all data** (22a9d8f, f6bbf46): 9 rare and 8 legendary, in `data/cards/`; list and design: `docs/BUILD_DEPTH.md` section 12.3. The payoff cards pass the damage floor on base damage (Arterial Spray 8, Controlled Demolition 13, Exsanguinate 21).
+- **15 tier 1 to 3 relics and 8 boss relics** (22a9d8f), in `data/relics/` (section 12.4 and 12.5). Boss relics have rarity `boss`, each with a real upside and a real cost, and can't be given up.
+- **New mini-boss reward** (bef0d27, 472beb0): gold, then a boss relic pick (1 of 3, no Skip tile; every won three-act run holds exactly 2 boss relics, 189 of 189 in qa's sims), then a card offer of fixed rarity (`rewards.mini_boss_rarity`: rare after act 1, legendary after act 2). At the relic cap, Cancel on the give-one-up step returns to the boss offer; if nothing held can be given up the Skip tile appears, so there is no deadlock. `RunState.offer_rarity` is saved. Quitting inside this reward resumes at the room start and replays the fight with the same offers; a boss relic already taken is lost (by design: saves are at room boundaries only).
+- **Engine keys:** the stats `attack_damage_mult.light` / `.heavy` and `dead_card_swap_locked` (with `PlanPolicy.swap_locked`); `stacking.hard_cap` 10 on Bleed and Burn; boss aoe `scatter_min`; `SlotSynergy` `detonate_status` / `detonate_stacks`; `AttackController.get_damage`; `GroundClamp` (stops two bodies on one spot climbing without limit); `blink_*` look keys moved into `data/vfx.json`.
+- **UX** (e596c5a..f59e2c6): rarity bands and chips on card tiles ("Rare", and "Legendary" with a gold frame); the boss-relic tile and offer screen; the Open a Vein slot glows when the target has at least 2 Bleed stacks (`data/ui.json` `hud.detonate_live_stacks`); stack labels dim under a damage number that covers them (`DamageNumber.live`); slot views show stack counts. New keys: `ui.option.rarity_names`, `ui.relic.boss_title`, `boss_line`, `cost_format`, the `run_ui` rarity colours. New `UxCapture` mode `shop_rarity`.
+- **Tests:** `map3b_a_test`, `map3b_content_test`, `map3b_ux_test`, `map3b_qa_test`.
+
+### Changed
+- **Balance and design (old -> new):**
+  - Raider (`boss_duelist`) `max_health` 90 -> 120 (5d5678c). The MB1 eyes-55 default, applied with no director answer yet.
+  - Wet floor gets `scatter_min` 3.0: the outer discs are at least 3 m from the player (5d5678c). Same eyes-55 default, same note.
+  - Card price 40 flat -> `merchant.card_prices`: common 55 / rare 85 / legendary 125, in both run lengths (bef0d27). A one-act 40 / 65 / 95 scale was planned and dropped. The old `card_price` key is now refused. Gold income and relic prices are unchanged.
+  - Large chest `min_tier` 1 -> 2 (6ca2c5c).
+  - Act 3 floor tint `#704840` -> `#8f8060` (39a7ba2, 9645396): it was too close to the red chasers (contrast 1.31 -> 1.67). This is also in the director's eyes list.
+  - Armor buffs on the new cards were shortened under their recast: Brawl Clause 8 -> 3.5 s, Strongly Worded Ward 6 -> 3.5 s, Sabbatical 3 -> 1.4 s (3da6356; new cards, so no shipped old values).
+- **Pyre Insurance no longer lists `mini_boss` as a relic source** (13dcb05): boss offers hold boss relics only.
+- **The sim's merchant bot** (8157c59): on non-relic routes it now buys relics with leftover gold after the removal and card (the `safe` route used to end with 600+ gold and 0 relics). Relic medians on the off bot: `relic` route 15 (qa 15), `safe` 6.5 (qa 6.5). `offer_report` now rolls the act's rarity (c891d70).
+- **Measured:** late Bleed share in card offers 11.8% (8.5% before; target 12%, accepted by game-lead). SIM1 `-Route first`, pooled seeds 1/13/25: human Rogue 27/36, Wizard 23/36; off Rogue 33/36, Wizard 35/36 (SIM1: 26, 15, 35, 29). Not like for like with MB1, because the merchant bot changed. Sim hashes unchanged: 3172486861 / 916264160 / `-Plan` 1317880580 / bot 3476063471. Suite 2273 cases, 1 skipped, 0 orphans.
+- **Quick-look findings, left as is** (DECISIONS "MAP3b qa PASS" and "playtest triage"): Exsanguinate's worst case is 480 raw, 1332 with every amplifier at 10 Bleed stacks; The Non-Compete Clause is strong (12/12 for both classes in qa's cells); fire still crowds a Bleed Rogue late (31% Fire against 12% Bleed).
+
+### Fixed
+- Stack-label size cache and `StatusStackLabel.text_size` splitting on an escaped rather than a literal newline (6ca2c5c, f59e2c6); a `reduce_cooldown` tile text fix (6ca2c5c).
+- Not fixed, open: at `-RelicCap 1` with a boss relic held, the sim bot picks a relic it cannot take and the wave sim fails. Debug flag only; the game is fine. qa's regression test is committed skipped (7ed9fc0).
+
+### Docs and process
+- game-lead's design pass wrote BUILD_DEPTH section 12 and a ROADMAP brief before any code (093450c, 3526e32).
+- Open for the director: D49 (pruning or rejecting a card type shrinks its offers; default A, game-lead now recommends B), eyes 55 (its defaults were applied above with no answer) and eyes 56 (a proposed Non-Compete refund 0.5 s -> 0.3 s, applied in MAP4). No `[Director decision]` this slice.
+- README, ARCHITECTURE updated: card prices, rarity, mini-boss reward, SIM1 baselines, suite count, the `-RelicCap 1` note.
+
 ## 2026-11-11 (Slices MB1 and SIM1; MB1 mini-boss and act identity, D44 = C; SIM1 is tooling only, no tag, D48 = A)
 
 ### Slice MB1: mini-boss and act identity

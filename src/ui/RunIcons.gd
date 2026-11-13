@@ -24,8 +24,7 @@ const BY_ID: Dictionary = {
 	"relic_room": SHAPE_HEX,
 	"merchant": SHAPE_SQUARE,
 	"mini_boss": SHAPE_TRIANGLE,
-	"curse_room": SHAPE_X,
-	"buff_room": SHAPE_ARROW,
+	"event": SHAPE_X,  # placeholder until ux restyles the event node
 }
 
 

@@ -7,7 +7,7 @@ extends RefCounted
 ## cell, so a lane keeps its place from room to room and the lines between nodes stay short and straight.
 
 ## Legend order: the types a map can hold, then the boss.
-const TYPE_ORDER: Array[String] = ["combat", "elite", "relic_room", "rest", "merchant", "mini_boss", "curse_room", "buff_room", "boss"]
+const TYPE_ORDER: Array[String] = ["combat", "elite", "relic_room", "rest", "merchant", "mini_boss", "event", "boss"]
 
 const STATE_CURRENT := "current"
 const STATE_TAKEN := "taken"

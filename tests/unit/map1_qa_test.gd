@@ -185,7 +185,7 @@ func _check(map: Dictionary, cfg: Dictionary, run: Dictionary) -> String:
 		var elite: int = int(f[2]) + (1 if (t == "elite" or t == "mini_boss") else 0)
 		var rest: int = int(f[3]) + (1 if t == "rest" else 0)
 		var merch: int = int(f[4]) + (1 if t == "merchant" else 0)
-		var relics: int = int(f[5]) + (1 if (t == "elite" or t == "relic_room" or t == "mini_boss" or t == "curse_room" or t == "buff_room") else 0)
+		var relics: int = int(f[5]) + (1 if (t == "elite" or t == "relic_room" or t == "mini_boss") else 0)
 		if t == "merchant":
 			# MAP2-B: this checker's own copy of the estimate. A merchant counts what the expected gold on arrival buys, cheapest slot first.
 			var left: float = float(f[7])
@@ -241,7 +241,7 @@ func test_independent_sweep_of_a_thousand_other_seeds() -> void:
 	assert_array(failures).override_failure_message("\n".join(failures.slice(0, 8))).is_empty()
 	assert_int(worst).is_less(int(cfg["max_attempts"]))
 	# weight-0 types never show up in shipped data
-	for t: String in ["mini_boss", "curse_room", "buff_room"]:
+	for t: String in ["mini_boss", "event"]:
 		assert_int(int(type_count.get(t, 0))).is_equal(0)
 	if MerchantSwitch.shipped_is_on():  # MAP2-B: with the merchant switched on it must show up; off it must not
 		assert_int(int(type_count.get("merchant", 0))).is_greater(0)
@@ -487,7 +487,7 @@ func test_the_shipped_data_matches_the_accepted_changes() -> void:
 	assert_int(int((t["relic_room"] as Dictionary)["weight"])).is_equal(14)
 	assert_int(int((t["rest"] as Dictionary)["weight"])).is_equal(25)  # MAP2-A: was 10, raised so every path can hold a rest (D40)
 	assert_array(((t["relic_room"] as Dictionary)["rooms"] as Array).map(func(v: Variant) -> int: return int(v))).is_equal([3, 8])
-	for zero: String in ["mini_boss", "curse_room", "buff_room"]:
+	for zero: String in ["mini_boss", "event"]:
 		assert_int(int((t[zero] as Dictionary)["weight"])).is_equal(0)
 	assert_int(int((t["merchant"] as Dictionary)["weight"])).is_equal(8 if merchant_on else 0)
 	var ch: Dictionary = c["chests"]

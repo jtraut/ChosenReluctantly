@@ -9,7 +9,7 @@ extends RefCounted
 
 const SYMBOLS: Dictionary = {
 	"combat": "C", "elite": "E", "relic_room": "R*", "rest": "Rs", "merchant": "M",
-	"mini_boss": "MB", "curse_room": "Cu", "buff_room": "Bu", "boss": "BOSS",
+	"mini_boss": "MB", "event": "?", "boss": "BOSS",
 }
 
 

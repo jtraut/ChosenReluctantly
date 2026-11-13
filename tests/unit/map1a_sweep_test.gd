@@ -141,7 +141,7 @@ func _check_map(map: Dictionary, cfg: Dictionary, rules: Dictionary, estimate: D
 					if spare >= price:
 						spare -= price
 						relics += 1
-			elif type_id in ["elite", "relic_room", "mini_boss", "curse_room", "buff_room"]:
+			elif type_id in ["elite", "relic_room", "mini_boss"]:
 				relics += 1
 			gold += float((estimate["gold_mean"] as Dictionary).get(type_id, 0.0))
 		if fights < int(rules["min_fights"]):

@@ -7,14 +7,14 @@ extends RefCounted
 
 const PATH := "res://data/map.json"
 ## Node types a `types` entry may name (MAP.md section 2). `boss` is not one: it is only ever a `fixed` entry.
-const NODE_TYPES: Array[String] = ["combat", "elite", "relic_room", "rest", "merchant", "mini_boss", "curse_room", "buff_room"]
+const NODE_TYPES: Array[String] = ["combat", "elite", "relic_room", "rest", "merchant", "mini_boss", "event"]
 const BOSS := "boss"
 ## Node types that start a fight (they get a wave id). The boss counts as a fight for the path rule `min_fights`.
 const FIGHT_TYPES: Array[String] = ["combat", "elite", "mini_boss", "boss"]
 ## Elite-like nodes for `max_elite_like` (MAP.md section 3.3).
 const ELITE_LIKE_TYPES: Array[String] = ["elite", "mini_boss"]
 ## Node types the relic estimate counts as one relic each (MAP.md section 4.1). The merchant is counted from gold instead.
-const RELIC_TYPES: Array[String] = ["elite", "relic_room", "mini_boss", "curse_room", "buff_room"]
+const RELIC_TYPES: Array[String] = ["elite", "relic_room", "mini_boss"]
 const TOP_KEYS: Array[String] = ["enabled", "rooms", "columns", "walks", "max_attempts", "fixed", "types", "path_rules", "estimate"]
 ## Keys a map file may leave out (MAP1-B): `chests`, the relic stage's chest sizes. Without it relic stages carry no chest and play as small.
 ## MAP3-B: `acts` (how many acts a run has, 1 when absent: plays as MAP2) and `multi_act`, the rule changes that apply only when acts is above 1

@@ -65,7 +65,7 @@ func _four_lane_seed() -> int:
 
 ## A hand-made map: `rooms` rooms of `lanes` nodes, types cycling through every type, one chest size per relic stage. Worst case for the layout.
 func _full_grid(rooms: int, lanes: int, reachable_room: int) -> Dictionary:
-	var types: Array[String] = ["combat", "elite", "relic_room", "rest", "merchant", "mini_boss", "curse_room", "buff_room"]
+	var types: Array[String] = ["combat", "elite", "relic_room", "rest", "merchant", "mini_boss", "event"]
 	var chests: Array[String] = ["small", "medium", "large"]
 	var nodes: Array = []
 	var infos: Array[Dictionary] = []

@@ -13,8 +13,7 @@
     "rest":       { "weight": 25, "rooms": [5, 9], "no_repeat": true },
     "merchant":   { "weight": 8,  "rooms": [4, 9], "no_repeat": true },
     "mini_boss":  { "weight": 0,  "rooms": [5, 8], "no_repeat": true },
-    "curse_room": { "weight": 0,  "rooms": [3, 8], "no_repeat": true },
-    "buff_room":  { "weight": 0,  "rooms": [3, 8], "no_repeat": true }
+    "event":      { "weight": 0,  "rooms": [3, 9], "no_repeat": true }
   },
   "path_rules": {
     "min_fights": 6,

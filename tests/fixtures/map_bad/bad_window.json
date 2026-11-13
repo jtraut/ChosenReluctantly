@@ -57,15 +57,7 @@
       ],
       "no_repeat": true
     },
-    "curse_room": {
-      "weight": 0,
-      "rooms": [
-        3,
-        8
-      ],
-      "no_repeat": true
-    },
-    "buff_room": {
+    "event": {
       "weight": 0,
       "rooms": [
         3,

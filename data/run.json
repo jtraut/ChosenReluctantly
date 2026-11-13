@@ -161,7 +161,7 @@
         },
         "option": { "unavailable": "Unavailable: %s", "owned": "You own %d", "slot_now": "In slot: %s", "slot_now_max": 3, "slot_now_more": "+%d more", "copies": "x%d", "rarity_names": { "rare": "Rare", "legendary": "Legendary" }, "slot_key": "%s", "slot_label": "%s (%s)", "pick_hint": "Enter to pick", "dodge_hint": "The dodge does not count.", "dodge_slots": ["movement"], "act_hint": "Enter to choose", "remove_hint": "Enter to remove", "list_hint": "Arrow keys move, Enter or click confirms", "remove_list_hint": "Arrow keys move, Enter or click confirms" },
         "room_label": "Room %d of %d",
-        "type_names": { "combat": "Combat", "elite": "Elite", "rest": "Rest", "boss": "Boss", "relic_room": "Relics", "merchant": "Merchant", "mini_boss": "Mini-boss", "curse_room": "Curse", "buff_room": "Buff" },
+        "type_names": { "combat": "Combat", "elite": "Elite", "rest": "Rest", "boss": "Boss", "relic_room": "Relics", "merchant": "Merchant", "mini_boss": "Mini-boss", "event": "Event" },
         "room_cleared": { "title": "Room cleared", "button": "Continue", "hint": "Enter to continue", "rest_line": "You rest. It helps a little (healed %d).", "rest_full_line": "You rest. Nothing needed healing.", "stat_hp": "HP", "stat_time": "Time", "stat_healed": "Healed" },
         "next_line": "Next: Room %d of %d - %s",
         "reward": { "title": "Room cleared", "line": "Pick a card, or reject the offer.", "skip_label": "Reject the offer", "skip_detail": "Spends one reject. Rejects left: %d of %d", "skip_disabled": "No rejects left. Pick a card.", "rejects_label": "Rejects left" },
@@ -219,8 +219,7 @@
                 "rest": "Rest: heal {heal}% or remove a card",
                 "merchant": "Merchant: spend gold on relics, cards or a card removal",
                 "mini_boss": "Mini-boss: ends the act. A tough fight, a relic, {gold} gold",
-                "curse_room": "Curse room: a risky deal",
-                "buff_room": "Buff room: a free boost",
+                "event": "Event: something happens, and you choose how to answer",
                 "boss": "Boss: the end of the run"
             }
         }

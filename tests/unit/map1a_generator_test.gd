@@ -229,9 +229,9 @@ func test_merchant_stock_caps_the_estimate_and_gold_floors() -> void:
 	assert_int(MapRules.merchant_relics(100000.0, estimate)).is_equal(3)
 
 
-func test_relic_node_types_count_one_each_and_the_boss_counts_zero() -> void:
-	var map: Dictionary = _lane(["combat", "combat", "curse_room", "buff_room", "mini_boss", "rest", "combat", "combat", "combat", "boss"])
-	assert_int(MapRules.relic_estimate(map, MapGraph.first_route(map), MapConfig.get_config())).is_equal(3)
+func test_relic_node_types_count_one_each_and_the_boss_and_an_event_count_zero() -> void:
+	var map: Dictionary = _lane(["combat", "combat", "event", "relic_room", "mini_boss", "rest", "combat", "combat", "combat", "boss"])
+	assert_int(MapRules.relic_estimate(map, MapGraph.first_route(map), MapConfig.get_config())).is_equal(2)
 
 
 func test_path_stats_counts_fights_elite_like_rest_and_merchants() -> void:

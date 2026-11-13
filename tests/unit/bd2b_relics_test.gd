@@ -6,7 +6,7 @@ extends GdUnitTestSuite
 const MAIN_SCENE_PATH := "res://scenes/main/Main.tscn"
 ## The original six (BD2-B). MAP2-B adds seven more (map2b_relics_test); every relic of both sets is listed here, sorted as the loader sorts them.
 const SHIPPED: Array[String] = ["heavy_sigh", "lingering_embers", "pyre_insurance", "second_wind_unwillingly", "smoldering_grudge", "spite_knuckles"]
-const ALL_SHIPPED: Array[String] = ["action_item", "adrenaline_vial", "as_per_the_attached_document", "asap_notice", "blood_oath", "bureaucratic_red_tape", "burnout_syndrome", "cc_all_staff", "chasing_paper", "closing_argument", "corporate_buyout", "desk_slam", "endowed_chair", "ergonomic_chair", "faculty_meeting", "fight_club_membership", "grading_curve", "heavy_sigh", "hostile_work_environment", "kindling_jar", "lingering_embers", "liquidate_assets", "muscle_memory", "office_supplies", "overtime_unpaid", "paperwork_fire", "per_my_last_email", "pyre_insurance", "request_for_quotation", "sabbatical_fund", "salt_in_the_wound", "second_wind_unwillingly", "serrated_excuse", "severance_package", "sinking_fund", "smoldering_grudge", "spite_knuckles", "synergy_workshop", "tenured_professor", "the_ivory_tower", "the_micromanager", "the_non_compete_clause"]
+const ALL_SHIPPED: Array[String] = ["action_item", "adrenaline_vial", "as_per_the_attached_document", "asap_notice", "asset_stripping", "bleeding_edge", "blood_oath", "brain_drain", "bureaucratic_red_tape", "burnout_syndrome", "cc_all_staff", "chasing_paper", "closing_argument", "corporate_buyout", "desk_slam", "endowed_chair", "ergonomic_chair", "faculty_meeting", "fight_club_membership", "golden_handcuffs", "golden_parachute", "grading_curve", "gravediggers_spade", "heavy_sigh", "hostile_takeover", "hostile_work_environment", "kindling_jar", "lingering_embers", "liquidate_assets", "muscle_memory", "off_the_books", "office_supplies", "open_plan_office", "overtime_unpaid", "paperwork_fire", "per_my_last_email", "pyre_insurance", "request_for_quotation", "sabbatical_fund", "salt_in_the_wound", "second_wind_unwillingly", "serrated_excuse", "severance_package", "sinking_fund", "smoldering_grudge", "spite_knuckles", "synergy_workshop", "tenured_professor", "the_ivory_tower", "the_micromanager", "the_non_compete_clause", "unpaid_intern"]
 
 
 func before_test() -> void:
@@ -72,7 +72,7 @@ func test_the_shipped_relics_load_clean_and_follow_the_brief() -> void:
 	for relic: Dictionary in RelicDatabase.all_relics():
 		assert_bool(["tier1", "tier2", "tier3", "boss"].has(String(relic["rarity"]))).is_true()  # MAP3b B added tier 3 and the boss tier
 		assert_str(String(relic["rule_text"])).is_not_empty()
-		if not Merchant.is_shop_only(relic) and String(relic["rarity"]) != "boss":  # the shop-only relics (MAP2-B) are sold by the merchant alone; boss relics come from the mini-boss
+		if not Merchant.is_shop_only(relic) and String(relic["rarity"]) != "boss" and not (relic["sources"] as Array).has("event"):  # MAP4-D: the event-only relics come from events alone  # the shop-only relics (MAP2-B) are sold by the merchant alone; boss relics come from the mini-boss
 			assert_bool((relic["sources"] as Array).has("elite") and (relic["sources"] as Array).has("relic_room")).is_true()
 		assert_bool(not (relic["sources"] as Array).has("boss")).is_true()
 

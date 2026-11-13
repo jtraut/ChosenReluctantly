@@ -203,9 +203,9 @@ func test_the_schema_knows_all_fourteen_outcomes_and_three_requirements() -> voi
 func test_a_missing_or_empty_events_folder_means_no_events() -> void:
 	assert_array(EventDatabase.load_all("res://tests/fixtures/events_does_not_exist")).is_empty()
 	assert_bool(EventDatabase.is_empty()).is_true()
-	assert_array(EventDatabase.load_all()).is_empty()  # the shipped data/events folder does not exist yet in B1
-	assert_bool(EventDatabase.is_empty()).is_true()
-	assert_bool(DirAccess.dir_exists_absolute("res://data/events")).is_false()
+	assert_array(EventDatabase.load_all()).is_empty()  # no problems: MAP4-D ships the 8 events of BUILD_DEPTH 13.3 in data/events
+	assert_bool(EventDatabase.is_empty()).is_false()
+	assert_int(EventDatabase.ids().size()).is_equal(8)
 
 
 func test_the_loader_reports_bad_files_and_keeps_going() -> void:
@@ -218,11 +218,12 @@ func test_the_loader_reports_bad_files_and_keeps_going() -> void:
 
 # --- the node swap ---------------------------------------------------------------------------------
 
-func test_the_event_node_replaces_curse_and_buff_rooms_and_ships_at_weight_zero() -> void:
+func test_the_event_node_replaces_curse_and_buff_rooms_and_ships_switched_on() -> void:
 	var types: Dictionary = MapConfig.get_config()["types"]
 	assert_bool(types.has("curse_room")).is_false()
 	assert_bool(types.has("buff_room")).is_false()
-	assert_float(float((types["event"] as Dictionary)["weight"])).is_equal(0.0)
+	assert_float(float((types["event"] as Dictionary)["weight"])).is_greater(0.0)  # MAP4-D: events ship on
+	assert_float(float((types["mini_boss"] as Dictionary)["weight"])).is_equal(0.0)  # in-act mini-bosses stay deferred
 	assert_array((types["event"] as Dictionary)["rooms"]).is_equal([3.0, 9.0])
 	assert_bool(bool((types["event"] as Dictionary)["no_repeat"])).is_true()
 	assert_bool(MapConfig.NODE_TYPES.has("event")).is_true()
@@ -261,11 +262,15 @@ func test_a_map_with_events_switched_on_stays_valid_over_a_seed_sweep() -> void:
 	assert_int(with_events).is_greater(20)
 
 
-func test_the_shipped_map_makes_no_event_nodes() -> void:
+func test_the_shipped_map_makes_event_nodes_in_rooms_3_to_9() -> void:
+	var events: int = 0
 	for seed_value in range(1, 40):
 		var map: Dictionary = MapGenerator.generate(seed_value)
 		for entry: Dictionary in (map["nodes"] as Array):
-			assert_str(String(entry["type"])).is_not_equal("event")
+			if String(entry["type"]) == "event":
+				events += 1
+				assert_int(int(entry["room"])).is_between(3, 9)
+	assert_int(events).is_greater(10)  # MAP4-D: events ship on
 
 
 # --- the draw --------------------------------------------------------------------------------------
@@ -524,13 +529,14 @@ func test_two_relic_offers_in_one_event_open_one_after_the_other() -> void:
 	assert_array(state.relics).is_equal([picked])
 
 
-func test_a_gain_curse_with_no_curse_card_in_the_data_is_skipped_loudly_and_the_event_goes_on() -> void:
+func test_a_gain_curse_with_the_shipped_curses_adds_one_and_the_event_goes_on() -> void:
 	var ctx: Dictionary = _ctx()
 	var state: RunState = _state()
-	_adhoc(state, ctx, [{"type": "gain_curse"}, {"type": "gain_gold", "amount": 5}])  # MAP4-C built the curse outcomes; the shipped data has no curse card yet, so this one finds nothing to give
+	_adhoc(state, ctx, [{"type": "gain_curse"}, {"type": "gain_gold", "amount": 5}])  # MAP4-D shipped the three curse cards
 	var result: Dictionary = _pick(state, ctx)
 	assert_bool(bool(result["finished"])).is_true()
 	assert_int(state.gold).is_equal(55)
+	assert_int(RunChoices.curse_ids(state, ctx).size()).is_equal(1)
 
 
 func test_a_relic_offer_with_nothing_to_offer_is_skipped_and_the_event_goes_on() -> void:

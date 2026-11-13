@@ -1,0 +1,23 @@
+{
+    "id": "hostile_takeover",
+    "name": "Hostile Takeover",
+    "pool": "neutral",
+    "rarity": "tier3",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [],
+    "modifiers": [
+        {
+            "stat": "damage_mult",
+            "modifier_type": "multiplicative",
+            "value": 0.35
+        }
+    ],
+    "triggers": [],
+    "rule_text": "You deal 35% more damage. Give up 2 relics to take it.",
+    "flavor_text": "Your relics are now an asset of the new entity.",
+    "sacrifice_cost": 2
+}

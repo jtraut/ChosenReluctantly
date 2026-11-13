@@ -452,7 +452,7 @@ func test_full_deck_flag_starts_a_run_with_every_pool_card_and_is_off_by_default
 	var actual := full.deck.duplicate()
 	actual.sort()
 	assert_array(actual).is_equal(expected)
-	assert_int(expected.size()).is_equal(CardDatabase.all_cards().size() - CardDatabase.cards_for_pool("wizard").size())  # the Rogue's pools: every card but the Wizard's
+	assert_int(expected.size()).is_equal(CardDatabase.all_cards().size() - CardDatabase.cards_for_pool("wizard").size() - CardDatabase.all_cards().filter(func(c: Dictionary) -> bool: return CardSchema.is_curse(c)).size())  # the Rogue's pools: every card but the Wizard's
 	assert_array(DeckRules.check_shipped(full.deck).problems).is_empty()
 	RunSession.full_deck = false
 	assert_int(RunSession.begin_new_run(4).deck.size()).is_equal(15)

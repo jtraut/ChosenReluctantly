@@ -110,6 +110,7 @@ const DEFAULT_TEXT: Dictionary = {
 	"cooldown": "Cooldown %s s",
 	"slot_cooldown": "%s cooldown %s s",
 	"armor": "%s armor",
+	"move_speed": "Move speed %s",
 	"for": "for %s s",
 	"within": "%s, within %s s",
 	"buff_stats": {"slot_cooldown_skip": "Next %s cast has no cooldown", "status_damage_mult": "%s you apply deals %s damage", "card_damage_mult_vs_status": "Cards deal %s to enemies with %s"},
@@ -228,6 +229,8 @@ static func buff_text(params: Dictionary, text: Dictionary = {}) -> String:
 		head = String(_word(text, "attack_interval" if stat.begins_with("attack_interval.") else "attack_cooldown")) % [stat.get_slice(".", 1).capitalize(), _percent(value)]
 	elif stat.begins_with("slot_cooldown.") and not multiplicative:
 		head = String(_word(text, "slot_cooldown")) % [_slot_name(stat.get_slice(".", 1), text), amount]
+	elif stat == "move_speed" and multiplicative:
+		head = String(_word(text, "move_speed")) % _percent(value)  # MAP4-D: "Move speed -30%", for the Reply-All Storm curse
 	elif stat == "armor" and not multiplicative:
 		head = String(_word(text, "armor")) % amount  # "+25 armor": the number says what it is
 	else:

@@ -1,0 +1,28 @@
+{
+    "id": "brain_drain",
+    "name": "Brain Drain",
+    "pool": "wizard",
+    "rarity": "tier3",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [],
+    "modifiers": [
+        {
+            "stat": "attack_damage_mult.light",
+            "modifier_type": "multiplicative",
+            "value": 0.4
+        },
+        {
+            "stat": "attack_interval.light",
+            "modifier_type": "multiplicative",
+            "value": -0.15
+        }
+    ],
+    "triggers": [],
+    "rule_text": "Your light attacks deal 40% more and fire 15% faster. Give up 1 relic to take it.",
+    "flavor_text": "The knowledge is still in there. Just not for you.",
+    "sacrifice_cost": 1
+}

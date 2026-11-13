@@ -1,0 +1,20 @@
+{
+    "id": "curse_mandatory_training",
+    "name": "Mandatory Training Module",
+    "slot_type": "utility",
+    "pool": "neutral",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "Please complete before continuing. Progress is not saved.",
+    "curse": true,
+    "effects": [
+        {
+            "template": "buff",
+            "params": {
+                "stat": "slot_cooldown.movement",
+                "modifier_type": "additive",
+                "value": 3.0,
+                "duration": 8.0
+            }
+        }
+    ]
+}

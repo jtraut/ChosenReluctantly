@@ -1,0 +1,20 @@
+{
+    "id": "curse_reply_all_storm",
+    "name": "Reply-All Storm",
+    "slot_type": "attack_aoe",
+    "pool": "neutral",
+    "cooldown_modifier": 0.0,
+    "flavor_text": "Four hundred recipients, and every one of them is typing.",
+    "curse": true,
+    "effects": [
+        {
+            "template": "buff",
+            "params": {
+                "stat": "move_speed",
+                "modifier_type": "multiplicative",
+                "value": -0.3,
+                "duration": 3.0
+            }
+        }
+    ]
+}

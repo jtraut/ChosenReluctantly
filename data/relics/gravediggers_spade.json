@@ -1,0 +1,20 @@
+{
+    "id": "gravediggers_spade",
+    "name": "Gravedigger's Spade",
+    "pool": "neutral",
+    "rarity": "tier2",
+    "sources": [
+        "event"
+    ],
+    "keywords": [],
+    "modifiers": [
+        {
+            "stat": "rest_dig",
+            "modifier_type": "additive",
+            "value": 1
+        }
+    ],
+    "triggers": [],
+    "rule_text": "Resting gets a third action, Dig: pick 1 of 3 relics (or skip). It replaces the heal and the removal.",
+    "flavor_text": "Somebody buried it. Somebody should have asked first."
+}

@@ -24,7 +24,7 @@ func test_shipped_damage_cards_are_found() -> void:
 	CardDatabase.load_all()
 	var count := 0
 	for card: Dictionary in CardDatabase.all_cards():
-		if CardDamageRule.is_damage_card(card):
+		if CardDamageRule.is_damage_card(card) and not CardSchema.is_curse(card):
 			count += 1
 	assert_int(count).is_equal(33)  # MAP3b B: + 9 rare and legendary attack cards; BD1-B: + Fan the Flames, Heat Sink, Slow Burn, Drive-By, Well, Actually; BD3a: + Open a Vein, Paper Cuts, Cutting Corners, The Knife Drawer
 

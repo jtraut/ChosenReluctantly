@@ -1,0 +1,54 @@
+{
+    "id": "performance_altar",
+    "name": "The Performance Evaluation Altar",
+    "flavor": "Something here is measured, scored and, if you are lucky, rated Meets Expectations.",
+    "acts": [
+        1,
+        2,
+        3
+    ],
+    "choices": [
+        {
+            "label": "Offer a relic",
+            "requires": {
+                "owns_relic": {}
+            },
+            "outcomes": [
+                {
+                    "type": "sacrifice_relic",
+                    "select": "pick"
+                },
+                {
+                    "type": "gain_relic",
+                    "tier": "sacrificed_plus_one",
+                    "count": 3,
+                    "skip": false
+                }
+            ]
+        },
+        {
+            "label": "Restructuring Plan",
+            "requires": {
+                "owns_relic": {
+                    "min_tier": 1,
+                    "max_tier": 1
+                }
+            },
+            "outcomes": [
+                {
+                    "type": "sacrifice_relic",
+                    "select": "pick",
+                    "min_tier": 1,
+                    "max_tier": 1
+                },
+                {
+                    "type": "remove_card"
+                }
+            ]
+        },
+        {
+            "label": "Leave",
+            "outcomes": []
+        }
+    ]
+}

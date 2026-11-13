@@ -1,0 +1,46 @@
+{
+    "id": "internal_audit",
+    "name": "The Internal Audit",
+    "flavor": "An auditor with a ledger asks you to account for everything you own.",
+    "acts": [
+        2,
+        3
+    ],
+    "choices": [
+        {
+            "label": "Declare your best asset",
+            "requires": {
+                "owns_relic": {}
+            },
+            "outcomes": [
+                {
+                    "type": "sacrifice_relic",
+                    "select": "highest"
+                },
+                {
+                    "type": "merchant_discount",
+                    "fraction": 0.5
+                }
+            ]
+        },
+        {
+            "label": "Pay the fine",
+            "requires": {
+                "gold_at_least": 30
+            },
+            "outcomes": [
+                {
+                    "type": "lose_gold",
+                    "amount": 30
+                },
+                {
+                    "type": "remove_card"
+                }
+            ]
+        },
+        {
+            "label": "Leave",
+            "outcomes": []
+        }
+    ]
+}

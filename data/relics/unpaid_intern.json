@@ -1,0 +1,25 @@
+{
+    "id": "unpaid_intern",
+    "name": "Unpaid Intern",
+    "pool": "neutral",
+    "rarity": "tier1",
+    "sources": [
+        "event"
+    ],
+    "keywords": [],
+    "modifiers": [
+        {
+            "stat": "slot_cooldown.utility",
+            "modifier_type": "multiplicative",
+            "value": -0.2
+        },
+        {
+            "stat": "move_speed",
+            "modifier_type": "multiplicative",
+            "value": -0.05
+        }
+    ],
+    "triggers": [],
+    "rule_text": "Your Utility slot's cooldown is 20% shorter. You move 5% slower.",
+    "flavor_text": "Eager. Underfed. Carrying six coffees."
+}

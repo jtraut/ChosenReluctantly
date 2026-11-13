@@ -1,0 +1,40 @@
+{
+    "id": "sympathetic_coworker",
+    "name": "The Sympathetic Coworker",
+    "flavor": "They slide a coffee across the desk and lower their voice.",
+    "acts": [
+        1,
+        2,
+        3
+    ],
+    "choices": [
+        {
+            "label": "Ask for help with a curse",
+            "requires": {
+                "has_curse": true
+            },
+            "outcomes": [
+                {
+                    "type": "remove_curse"
+                }
+            ]
+        },
+        {
+            "label": "Ask for help with your deck",
+            "outcomes": [
+                {
+                    "type": "remove_card"
+                }
+            ]
+        },
+        {
+            "label": "Take a break",
+            "outcomes": [
+                {
+                    "type": "heal",
+                    "fraction": 0.25
+                }
+            ]
+        }
+    ]
+}

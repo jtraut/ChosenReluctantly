@@ -68,7 +68,7 @@ func test_each_class_sees_six_boss_relics_and_about_22_standard_relics() -> void
 		var standard: int = 0
 		for rarity: String in ["tier1", "tier2", "tier3"]:
 			standard += _relics(character_id, rarity, "elite").size()
-		assert_int(standard).is_between(21, 25)
+		assert_int(standard).is_between(21, 26)  # MAP4-D: + the 3 sacrifice relics each class can see
 		assert_int(_relics(character_id, "tier3", "elite").size()).is_greater_equal(5)
 
 

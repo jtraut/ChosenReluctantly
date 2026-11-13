@@ -1,0 +1,58 @@
+{
+    "id": "broken_vending_machine",
+    "name": "The Broken Vending Machine",
+    "flavor": "It hums, flickers, and holds something in the coil. The sign says EXACT CHANGE.",
+    "acts": [
+        1,
+        2,
+        3
+    ],
+    "choices": [
+        {
+            "label": "Insert coins",
+            "requires": {
+                "gold_at_least": 40
+            },
+            "outcomes": [
+                {
+                    "type": "lose_gold",
+                    "amount": 40
+                },
+                {
+                    "type": "chance",
+                    "p": 0.5,
+                    "win": [
+                        {
+                            "type": "gain_relic",
+                            "tier": 2,
+                            "count": 3
+                        }
+                    ],
+                    "lose": []
+                }
+            ]
+        },
+        {
+            "label": "Shake it",
+            "outcomes": [
+                {
+                    "type": "lose_max_hp",
+                    "fraction": 0.1
+                },
+                {
+                    "type": "gain_relic",
+                    "tier": 2,
+                    "count": 3
+                },
+                {
+                    "type": "gain_curse",
+                    "id": "curse_property_damage"
+                }
+            ]
+        },
+        {
+            "label": "Leave",
+            "outcomes": []
+        }
+    ]
+}

@@ -62,6 +62,8 @@ func test_every_card_in_data_previews_with_the_vfx_sizing_of_its_hit_params() ->
 	var config := CastPreviewConfig.get_config()
 	var checked := 0
 	for card: Dictionary in CardDatabase.all_cards():
+		if CardSchema.is_curse(card) and (card["effects"] as Array).is_empty():
+			continue  # MAP4-D: a curse with no effects (Property Damage) has nothing to preview
 		var parts := CastPreviewShapes.parts_for_card(card, config)
 		var aimed: Array[Dictionary] = []
 		for effect: Dictionary in card["effects"]:

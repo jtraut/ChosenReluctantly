@@ -1,0 +1,45 @@
+{
+    "id": "supply_closet",
+    "name": "The Misplaced Supply Closet",
+    "flavor": "The door is ajar. Everything inside is labelled, and none of the labels agree.",
+    "acts": [
+        2,
+        3
+    ],
+    "choices": [
+        {
+            "label": "Take the good shelf",
+            "outcomes": [
+                {
+                    "type": "gain_relic",
+                    "tier": 3,
+                    "count": 3,
+                    "skip": false
+                },
+                {
+                    "type": "gain_curse"
+                }
+            ]
+        },
+        {
+            "label": "Pay for the key",
+            "requires": {
+                "gold_at_least": 40
+            },
+            "outcomes": [
+                {
+                    "type": "lose_gold",
+                    "amount": 40
+                },
+                {
+                    "type": "heal",
+                    "fraction": 1.0
+                }
+            ]
+        },
+        {
+            "label": "Leave",
+            "outcomes": []
+        }
+    ]
+}

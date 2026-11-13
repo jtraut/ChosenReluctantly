@@ -1,0 +1,48 @@
+{
+    "id": "exit_interview",
+    "name": "The Mandatory Exit Interview",
+    "flavor": "A chair, a clipboard, and a question about your five-year plan.",
+    "acts": [
+        1,
+        2,
+        3
+    ],
+    "choices": [
+        {
+            "label": "Answer honestly",
+            "outcomes": [
+                {
+                    "type": "lose_hp",
+                    "fraction": 0.2
+                },
+                {
+                    "type": "gain_relic",
+                    "tier": "act",
+                    "count": 3
+                }
+            ]
+        },
+        {
+            "label": "Demand a rematch",
+            "outcomes": [
+                {
+                    "type": "start_fight",
+                    "tier": "elite"
+                },
+                {
+                    "type": "gain_relic",
+                    "tier": "next_act",
+                    "count": 3
+                },
+                {
+                    "type": "gain_gold",
+                    "amount": 40
+                }
+            ]
+        },
+        {
+            "label": "Leave",
+            "outcomes": []
+        }
+    ]
+}

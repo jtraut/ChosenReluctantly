@@ -1,0 +1,43 @@
+{
+    "id": "golden_parachute",
+    "name": "Golden Parachute",
+    "pool": "neutral",
+    "rarity": "tier3",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [],
+    "modifiers": [
+        {
+            "stat": "slot_cooldown.attack_single",
+            "modifier_type": "multiplicative",
+            "value": -0.1
+        },
+        {
+            "stat": "slot_cooldown.attack_aoe",
+            "modifier_type": "multiplicative",
+            "value": -0.1
+        },
+        {
+            "stat": "slot_cooldown.utility",
+            "modifier_type": "multiplicative",
+            "value": -0.1
+        },
+        {
+            "stat": "slot_cooldown.movement",
+            "modifier_type": "multiplicative",
+            "value": -0.1
+        },
+        {
+            "stat": "slot_cooldown.recovery",
+            "modifier_type": "multiplicative",
+            "value": -0.1
+        }
+    ],
+    "triggers": [],
+    "rule_text": "Every slot's cooldown is 10% shorter. Give up 1 relic to take it.",
+    "flavor_text": "A soft landing, for someone. It was you.",
+    "sacrifice_cost": 1
+}

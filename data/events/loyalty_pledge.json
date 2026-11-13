@@ -1,0 +1,30 @@
+{
+    "id": "loyalty_pledge",
+    "name": "The Loyalty Pledge",
+    "flavor": "Sign here. Initial here. Date here. The pen is attached by a short chain.",
+    "acts": [
+        1,
+        2,
+        3
+    ],
+    "weight": 0.5,
+    "choices": [
+        {
+            "label": "Pay the dues",
+            "outcomes": [
+                {
+                    "type": "lose_gold",
+                    "amount": 50
+                }
+            ]
+        },
+        {
+            "label": "Sign in blood",
+            "outcomes": [
+                {
+                    "type": "gain_curse"
+                }
+            ]
+        }
+    ]
+}

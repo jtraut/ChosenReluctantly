@@ -1,0 +1,30 @@
+{
+    "id": "asset_stripping",
+    "name": "Asset Stripping",
+    "pool": "rogue",
+    "rarity": "tier3",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [
+        "Bleed"
+    ],
+    "modifiers": [
+        {
+            "stat": "attack_damage_mult.heavy",
+            "modifier_type": "multiplicative",
+            "value": 0.5
+        },
+        {
+            "stat": "status_max_stacks.bleed",
+            "modifier_type": "additive",
+            "value": 2
+        }
+    ],
+    "triggers": [],
+    "rule_text": "Your heavy attacks deal 50% more, and Bleed can stack 2 higher. Give up 1 relic to take it.",
+    "flavor_text": "Sell off the parts. Keep the edge.",
+    "sacrifice_cost": 1
+}

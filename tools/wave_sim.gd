@@ -159,6 +159,11 @@ var _act_records: Array[Dictionary] = []
 var _damage_run: Dictionary = {}
 ## qa MAP2: relic id -> how many times its triggers fired this run (counted from the controller's relic_triggered signal; output only).
 var _trigger_run: Dictionary = {}
+## MAP4-D event report: this run's event visits ("event_id:option_id"), sacrifice relics offered, and the all-run tallies.
+var _event_run: Array[String] = []
+var _sac_offered_run: int = 0
+var _event_tally: Dictionary = {}
+var _event_stats: Array[Dictionary] = []
 var _damage_all: Dictionary = {}
 var _damage_by_run: Array[Dictionary] = []
 ## 3b: the reward bot's own stream (seeded per run, so the picks repeat from --seed and never touch the combat bot).
@@ -966,6 +971,8 @@ func _run_whole(run_seed: int) -> void:
 		return
 	_damage_run = {}
 	_trigger_run = {}
+	_event_run = []
+	_sac_offered_run = 0
 	var relay: CombatEventsRelay = CombatLink.events()
 	var tally := _on_hit_for_tally
 	if relay != null:
@@ -1070,6 +1077,19 @@ func _run_whole(run_seed: int) -> void:
 	result["sim_s"] = run_sim_total
 	result["hp_end"] = snappedf(RunSession.current.hp, 0.1) if RunSession.current != null else -1.0
 	_record_deck_and_hp(result)
+	var final_state: RunState = RunSession.current
+	var curses_now: int = 0
+	var sac_taken: int = 0
+	if final_state != null:
+		for card_id: String in final_state.deck:
+			if CardSchema.is_curse(CardDatabase.get_card(card_id)):
+				curses_now += 1
+		for relic_id: String in final_state.relics:
+			if int(RelicDatabase.get_relic(relic_id).get("sacrifice_cost", 0)) > 0:
+				sac_taken += 1
+	var cleansed: int = final_state.cleanses if final_state != null else 0
+	_event_stats.append({"visits": _event_run.size(), "curses_gained": curses_now + cleansed, "cleansed": cleansed, "sac_offered": _sac_offered_run, "sac_taken": sac_taken})
+	print("    events: %d visit(s) %s | curses gained %d, cleansed %d, in deck at the end %d | sacrifice relics offered %d (picks), taken %d" % [_event_run.size(), str(_event_run), curses_now + cleansed, cleansed, curses_now, _sac_offered_run, sac_taken])
 	Engine.time_scale = 1.0
 	_release_all()
 	Player.default_rng_seed = -1
@@ -1126,6 +1146,9 @@ func _policy_choose(controller: RunController) -> String:
 			var pool: Array[Dictionary] = unowned if not unowned.is_empty() else cards
 			return String(pool[_policy_rng.randi_range(0, pool.size() - 1)]["id"])
 		RunState.PENDING_RELIC:
+			for relic_option: Variant in options:
+				if String((relic_option as Dictionary).get("kind", "")) == "relic" and int(RelicDatabase.get_relic(String((relic_option as Dictionary)["id"])).get("sacrifice_cost", 0)) > 0:
+					_sac_offered_run += 1
 			return RelicPolicy.offer_choice(options, state.deck)
 		RunState.PENDING_RELIC_SWAP:
 			return RelicPolicy.giveup_choice(options)
@@ -1134,7 +1157,11 @@ func _policy_choose(controller: RunController) -> String:
 		RunState.PENDING_MERCHANT, RunState.PENDING_MERCHANT_REMOVE, RunState.PENDING_MERCHANT_SWAP:
 			return MerchantPolicy.choose(String(model["choice"]), options, state, _route_policy)  # no random draws: the other seeded choices do not shift
 		RunState.PENDING_EVENT:
-			return RouteBot.event_choice(options, _route_policy, state.hp_fraction())  # MAP4-B1: no random draws
+			var event_pick: String = RouteBot.event_choice(options, _route_policy, state.hp_fraction())  # MAP4-B1: no random draws
+			var event_key: String = "%s:%s" % [state.event_id, event_pick]
+			_event_run.append(event_key)
+			_event_tally[event_key] = int(_event_tally.get(event_key, 0)) + 1
+			return event_pick
 		RunState.PENDING_EVENT_SACRIFICE:
 			return RouteBot.sacrifice_choice(options)  # MAP4-B2: the lowest-tier relic goes; no random draws
 		RunState.PENDING_EVENT_REMOVE:
@@ -1575,6 +1602,20 @@ func _print_route_summary() -> void:
 				visits += 1 if _visited_merchant(result) else 0
 		print("  MERCHANT SUMMARY (%s, %s): %d of %d run(s) visited the merchant | gold spent per run mean %.1f median %.1f | relics bought per run mean %.2f median %.1f | removals per run mean %.2f | cards bought per run mean %.2f" % [
 			_route_policy, _sim_class if _sim_class != "" else CharacterDatabase.DEFAULT_ID, visits, _run_results.size(), _mean(spent), _median(spent), _mean(bought), _median(bought), _mean(removed), _mean(cards)])
+	var visit_counts: Array[float] = []
+	var gained: Array[float] = []
+	var cleansed_all: Array[float] = []
+	var offered: Array[float] = []
+	var taken: Array[float] = []
+	for stat: Dictionary in _event_stats:
+		visit_counts.append(float(stat["visits"]))
+		gained.append(float(stat["curses_gained"]))
+		cleansed_all.append(float(stat["cleansed"]))
+		offered.append(float(stat["sac_offered"]))
+		taken.append(float(stat["sac_taken"]))
+	print("  EVENT SUMMARY (%s, %s): event visits per run median %.1f mean %.2f (min %.0f max %.0f) | curses gained per run mean %.2f, cleansed mean %.2f | sacrifice relic offered (picks) per run mean %.2f, runs that took one %d of %d | choices taken %s" % [
+		_route_policy, _sim_class if _sim_class != "" else CharacterDatabase.DEFAULT_ID, _median(visit_counts), _mean(visit_counts), (visit_counts.min() if not visit_counts.is_empty() else 0.0), (visit_counts.max() if not visit_counts.is_empty() else 0.0),
+		_mean(gained), _mean(cleansed_all), _mean(offered), taken.filter(func(v: float) -> bool: return v > 0.0).size(), taken.size(), str(_event_tally)])
 	print("  MAP.md section 8 checks (informational): the %s route's median relics %.1f (the estimate for relic routes is %s); clear rate %d%%" % [
 		_route_policy, _median(relics), str(MapConfig.get_config()["path_rules"]["relic_route"]), roundi(100.0 * float(wins) / maxf(float(_run_results.size()), 1.0))])
 

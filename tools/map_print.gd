@@ -138,6 +138,11 @@ func _sweep(count: int, base_cfg: Dictionary, first_seed: int = 1, route_stats: 
 			for policy: String in ["first", "relic", "safe"]:
 				var route: Array[int] = RouteBot.plan(result["map"], policy, cfg, seed_value)
 				var stats: Dictionary = MapRules.path_stats(result["map"], route, cfg)
+				var event_nodes: int = 0  # MAP4-D: the events on the route (path_stats does not count them)
+				for node_id: int in route:
+					if String(MapGraph.node(result["map"], node_id)["type"]) == "event":
+						event_nodes += 1
+				stats["events"] = event_nodes
 				var rows: Array = per_policy.get(policy, [])
 				rows.append(stats)
 				per_policy[policy] = rows
@@ -149,13 +154,13 @@ func _sweep(count: int, base_cfg: Dictionary, first_seed: int = 1, route_stats: 
 	for policy: String in per_policy.keys():
 		var rows: Array = per_policy[policy]
 		var estimates: Array[int] = []
-		var sums: Dictionary = {"fights": 0, "elite_like": 0, "merchants": 0, "rest": 0}
+		var sums: Dictionary = {"fights": 0, "elite_like": 0, "merchants": 0, "rest": 0, "events": 0}
 		for stats: Dictionary in rows:
 			estimates.append(int(stats["relics"]))
 			for key: String in sums.keys():
 				sums[key] = int(sums[key]) + int(stats[key])
 		estimates.sort()
-		print("route %-5s: relic estimate median %d (min %d, max %d) | mean per route: fights %.1f, elite-like %.2f, merchants %.2f, rests %.2f" % [
+		print("route %-5s: relic estimate median %d (min %d, max %d) | mean per route: fights %.1f, elite-like %.2f, merchants %.2f, rests %.2f, events %.2f" % [
 			policy, estimates[estimates.size() / 2], estimates[0], estimates[estimates.size() - 1], float(sums["fights"]) / float(rows.size()),
-			float(sums["elite_like"]) / float(rows.size()), float(sums["merchants"]) / float(rows.size()), float(sums["rest"]) / float(rows.size())])
+			float(sums["elite_like"]) / float(rows.size()), float(sums["merchants"]) / float(rows.size()), float(sums["rest"]) / float(rows.size()), float(sums["events"]) / float(rows.size())])
 	return 0 if failures == 0 else 1

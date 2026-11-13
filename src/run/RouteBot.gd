@@ -23,7 +23,12 @@ static func plan(map: Dictionary, policy: String, cfg: Dictionary, seed_value: i
 		"first":
 			return MapGraph.first_route(map)
 		"relic":
-			return _best(map, func(path: Array) -> Array[int]: return [MapRules.relic_estimate(map, path, cfg)] as Array[int])
+			return _best(map, func(path: Array) -> Array[int]:
+				var events: int = 0  # MAP4-D: among equal relic estimates, a relic route takes the path with more events (E1-E4 can pay a relic; the estimate counts an event as 0)
+				for id: Variant in path:
+					if String(MapGraph.node(map, int(id)).get("type", "")) == "event":
+						events += 1
+				return [MapRules.relic_estimate(map, path, cfg), events] as Array[int])
 		"safe":
 			return _best(map, func(path: Array) -> Array[int]:
 				var elite_like: int = 0

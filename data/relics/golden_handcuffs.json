@@ -1,0 +1,25 @@
+{
+    "id": "golden_handcuffs",
+    "name": "Golden Handcuffs",
+    "pool": "neutral",
+    "rarity": "tier2",
+    "sources": [
+        "event"
+    ],
+    "keywords": [],
+    "modifiers": [
+        {
+            "stat": "damage_mult",
+            "modifier_type": "multiplicative",
+            "value": 0.2
+        },
+        {
+            "stat": "move_speed",
+            "modifier_type": "multiplicative",
+            "value": -0.1
+        }
+    ],
+    "triggers": [],
+    "rule_text": "You deal 20% more damage. You move 10% slower.",
+    "flavor_text": "The retention bonus is generous. Leaving is not."
+}

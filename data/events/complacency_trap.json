@@ -1,0 +1,38 @@
+{
+    "id": "complacency_trap",
+    "name": "The Complacency Trap",
+    "flavor": "A comfortable chair, a warm lamp, and no reason to hurry.",
+    "acts": [
+        1,
+        2,
+        3
+    ],
+    "choices": [
+        {
+            "label": "Settle in",
+            "outcomes": [
+                {
+                    "type": "lose_max_hp",
+                    "fraction": 0.1
+                },
+                {
+                    "type": "stat_mod",
+                    "stat": "slot_cooldown.recovery",
+                    "modifier_type": "multiplicative",
+                    "value": -0.2
+                }
+            ]
+        },
+        {
+            "label": "Stretch your legs",
+            "outcomes": [
+                {
+                    "type": "stat_mod",
+                    "stat": "move_speed",
+                    "modifier_type": "multiplicative",
+                    "value": 0.05
+                }
+            ]
+        }
+    ]
+}

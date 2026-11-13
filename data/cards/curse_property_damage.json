@@ -1,0 +1,10 @@
+{
+    "id": "curse_property_damage",
+    "name": "Property Damage",
+    "slot_type": "attack_single",
+    "pool": "neutral",
+    "cooldown_modifier": 2.0,
+    "flavor_text": "Somebody will be billed for this. It will be you.",
+    "curse": true,
+    "effects": []
+}

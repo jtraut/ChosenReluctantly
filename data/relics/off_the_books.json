@@ -1,0 +1,30 @@
+{
+    "id": "off_the_books",
+    "name": "Off the Books",
+    "pool": "neutral",
+    "rarity": "tier3",
+    "sources": [
+        "event"
+    ],
+    "keywords": [],
+    "modifiers": [
+        {
+            "stat": "slot_cooldown.attack_single",
+            "modifier_type": "additive",
+            "value": -1.0
+        },
+        {
+            "stat": "slot_cooldown.attack_aoe",
+            "modifier_type": "additive",
+            "value": -1.0
+        },
+        {
+            "stat": "slot_cooldown.recovery",
+            "modifier_type": "additive",
+            "value": 3.0
+        }
+    ],
+    "triggers": [],
+    "rule_text": "Attack: Single and AoE base cooldowns are 1 s shorter. Your Recovery base cooldown is 3 s longer.",
+    "flavor_text": "Nobody saw the invoice. Nobody will ask about the deductible."
+}

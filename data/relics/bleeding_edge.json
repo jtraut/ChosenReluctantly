@@ -1,0 +1,27 @@
+{
+    "id": "bleeding_edge",
+    "name": "Bleeding Edge",
+    "pool": "rogue",
+    "rarity": "tier2",
+    "sources": [
+        "event"
+    ],
+    "keywords": [
+        "Bleed"
+    ],
+    "modifiers": [
+        {
+            "stat": "status_max_stacks.bleed",
+            "modifier_type": "additive",
+            "value": 2
+        },
+        {
+            "stat": "slot_cooldown.recovery",
+            "modifier_type": "additive",
+            "value": 2.0
+        }
+    ],
+    "triggers": [],
+    "rule_text": "Bleed can stack 2 higher. Your Recovery slot's base cooldown is 2 s longer.",
+    "flavor_text": "Cutting-edge, in the literal sense."
+}

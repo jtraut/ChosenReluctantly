@@ -1,0 +1,25 @@
+{
+    "id": "open_plan_office",
+    "name": "Open Plan Office",
+    "pool": "wizard",
+    "rarity": "tier2",
+    "sources": [
+        "event"
+    ],
+    "keywords": [],
+    "modifiers": [
+        {
+            "stat": "zone_duration_mult",
+            "modifier_type": "multiplicative",
+            "value": 0.3
+        },
+        {
+            "stat": "attack_interval.light",
+            "modifier_type": "multiplicative",
+            "value": 0.15
+        }
+    ],
+    "triggers": [],
+    "rule_text": "Zones you place last 30% longer. Your light attacks fire 15% slower.",
+    "flavor_text": "Nothing is ever really switched off in here."
+}

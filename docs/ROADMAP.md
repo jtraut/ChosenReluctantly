@@ -1460,6 +1460,16 @@ un_offer_report.ps1`.
   - **Size:** probably two sittings. Split at MAP3's close; this pushes 3d later.
   - Brief detailed at MAP3's close.
   - **Run length is settled (D50 = B, director 2026-11-12):** about 15-20 min of real time, decisions included (GDD §9). His ~7 min of fight time is already about 15 min real time, so MAP4 adds no length pass; the challenge part of B is the Raider carry-over and eyes 55. Events add some decision time, which is fine inside the range.
+  - **Detailed brief (game-lead, 2026-11-13). Tag: `safe to chain`.** The director has played MAP3b and MB1; the Raider change and the eyes-56 refund are his answers or expiring defaults, and nothing here tunes a slice he hasn't played. Design: BUILD_DEPTH §13 (written after sitting A's brief). **Size: about five gameplay-dev sittings, not two.** Each one is one agent session of under about 150 tool calls. Order: A -> B1 -> B2 -> C -> D -> ux -> qa -> playtest -> docs. One tag at the end, `playtest-YYYY-MM-DD-MAP4`.
+    - **gameplay-dev sitting A, carry-overs (no event code):**
+      1. **The Raider (director, 2026-11-12: "died super fast"):** `max_health` 120 -> 180 (act 2: 198). Measure the bot's Raider fight time; if it's still under 20 s, phase 2 `attack_gap` 0.9 -> 0.75. Telegraphs stay at 0.6 s or more.
+      2. **Eyes-56 default:** The Non-Compete Clause's cooldown refund 0.5 -> 0.3 s. (If the director answers "56 leave" before A starts, skip this.)
+      3. **D49 = B (director, 2026-11-12):** each pruned or rejected card multiplies its type's offer weight by `rewards.prune_reject_factor` 0.8 for the run, floored at `rewards.prune_reject_floor` 0.4 (both in `data/run.json`). "Type" is the statuses the card applies, the same key as the D43 lean, so cards that apply no status aren't affected. The multipliers live in RunState and round-trip in the save. Report the late Fire and Bleed shares for a Bleed Rogue with `run_offer_report`, before and after (was Fire 31.3%, Bleed 11.8%).
+      4. Knuckle Sandwich's "60 s" rule text.
+      5. The `-RelicCap 1` bot finding; un-skip the qa test that waits on it.
+      6. A forced `--relic-offer` must not skip the boss-relic branch.
+      7. Run the SIM1 three-act gate and report it with the hashes. The Raider change will move the human-bot win rate and probably the hashes: list each move and why, for qa to re-baseline. DF1 does the overall difficulty bump later, so don't tune anything else to compensate.
+    - **Sittings B1, B2, C, D, ux, qa:** see below, written from BUILD_DEPTH §13. **Pending until §13 is committed.**
 
 - [ ] **Milestone 3 close (after BD3b).** playtester runs the milestone playtest (playtester.md "Milestone playtest"): a full three-act run per class, judged against the three pillars. No earlier milestone report exists, so this one is the baseline. Then game-lead reviews the report and the screenshots itself, in a fresh session, before writing the Milestone 4 brief.
 

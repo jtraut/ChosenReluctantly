@@ -6,11 +6,11 @@
 Last updated: 2026-11-12. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- Nothing. MAP3b closed 2026-11-12. The repo runs.
+- **MAP4 brief, 2026-11-13.** Sitting A (carry-overs) is written in ROADMAP MAP4 and ready to launch. game-lead is writing the event design pass as BUILD_DEPTH §13; sittings B1, B2, C, D, ux and qa get their briefs from it. The repo runs.
 
 ## Exact next step
-1. **MAP4 (events). game-lead writes the detailed brief** in the ROADMAP MAP4 entry, split into sittings of one agent session each (under about 150 tool calls), and tags it `safe to chain` or `needs your play first`. Expected tag: `safe to chain`. Its tuning (Raider, D49) comes from the director's own MAP3b play.
-2. **gameplay-dev, first sitting:** the MAP3b carry-overs (ROADMAP MAP3b "Carry-overs to MAP4"): Raider HP 120 -> 180, the eyes-56 default, D49 = B, the small fixes. Run length is settled (D50 = B), so there's no length pass.
+1. **game-lead finishes BUILD_DEPTH §13** and the B1-D briefs in ROADMAP MAP4. If cut off, sitting A can start anyway: it doesn't depend on §13.
+2. **gameplay-dev, sitting A** (ROADMAP MAP4 "sitting A"): Raider HP 120 -> 180, the eyes-56 default, D49 = B, the small fixes, SIM1 gate. Run length is settled (D50 = B), so there's no length pass.
 3. Then DF1 (difficulty bump, D51 = C; ROADMAP), then 3d, then BD3b, then the Milestone 3 close: the milestone playtest, then game-lead's own review of the report and screenshots (ROADMAP).
 
 **Next role:** game-lead (the MAP4 brief), then gameplay-dev.

@@ -9,17 +9,17 @@ Last updated: 2026-11-13. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds on
 - **MAP4 (events), briefed 2026-11-13** in ROADMAP MAP4 and BUILD_DEPTH §13 (design pass). Tag `safe to chain`. Five gameplay-dev sittings: A -> B1 -> B2 -> C -> D, then ux, qa, playtest, docs. Nothing built yet. The repo runs.
 
 ## Exact next step
-1. **gameplay-dev, sitting A** (ROADMAP MAP4 "sitting A"): Raider HP 120 -> 180, the eyes-56 default, D49 = B, the small fixes, SIM1 gate. No length pass (D50 = B).
-2. Then B1 (event engine), B2, C, D, each a fresh agent, then ux, qa, playtest, tech-writer, close.
+1. **Sitting A done** (6cd1c44..b2ae51b). **gameplay-dev, sitting B1** (event engine; ROADMAP MAP4, BUILD_DEPTH §13).
+2. Then B2, C, D, each a fresh agent, then ux, qa, playtest, tech-writer, close.
 3. Then DF1 (difficulty bump, D51 = C; ROADMAP), then 3d, then BD3b, then the Milestone 3 close: the milestone playtest, then game-lead's own review of the report and screenshots (ROADMAP).
 
-**Next role:** gameplay-dev (MAP4 sitting A).
+**Next role:** gameplay-dev (MAP4 sitting B1).
 
-## Current baselines (MAP3b close)
-- Suite 2273 (1 skipped: the open `-RelicCap` qa test), 0 orphans.
-- Hashes 3172486861 / 916264160 / 1317880580 / 3476063471.
-- SIM1 `-Route first`: human Rogue 27/36, Wizard 23/36; off 33/36, 35/36.
-- Relic medians `relic` 15/15, `safe` 6.5/6. Exactly 2 boss relics per won run. Late Bleed share 11.8% (Fire 31.3%).
+## Current baselines (MAP4 sitting A, 2026-11-13; qa re-gates at MAP4's qa)
+- Suite 2281, 0 skipped, 0 orphans (about 18 min).
+- Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 (unchanged).
+- SIM1 `-Route first`: human Rogue 25/36, Wizard 26/36; off 35/36, 35/36 (moves from D49, within noise; the Raider alone moved none).
+- Relic medians `relic` 15/15, `safe` 6.5/6 (MAP3b). Exactly 2 boss relics per won run. Late shares for a Bleed Rogue with D49: Bleed 12.2%, Fire 22.8%, Burn 9.9%.
 
 ## Pending for the next docs pass (tech-writer, MAP4)
 - **RESOLVED:**
@@ -27,6 +27,7 @@ Last updated: 2026-11-13. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds on
   - D50 (in e038fa5);
   - D51 (in 6dec638);
   - eyes 53 plus the answered parts of 55, 52 and 56, with his words (in b0222f9).
+- **MAP4 sitting A (6cd1c44..b2ae51b), from gameplay-dev's hand-back:** MAP.md §11.3 already updated by game-lead. README: suite 2281, `run_tests.ps1` about 18 min, SIM1 numbers above, the `offer_report` line mentions D49. CHANGELOG: Raider `max_health` 120 -> 180 and phase 2 gap 0.9 -> 0.75; Non-Compete refund 0.5 -> 0.3 s (eyes-56 default); D49 built with the shares above; Knuckle Sandwich text; the `-RelicCap` and forced `--relic-offer` fixes.
 - **CHANGELOG:**
   - `[Director decision]` D49: pruning or rejecting had no effect on offers; now each one multiplies that status's offer weight by 0.8, floor 0.4.
   - `[Director decision]` D50: target run length 30-45 min -> about 15-20 min of real time, decisions included.

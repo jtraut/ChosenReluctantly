@@ -2601,3 +2601,16 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
   - [A greyed tile: a dead slot in a 3-card offer.]
 - **An event relic offer reserves one slot for an event-only relic,** like the merchant's shop-only slot, so the 6 event-only relics actually show up.
 - **Gold numbers are scaled to today's income** (40-50, against combat 24-36), not §4.8's 75-150.
+
+## 2026-11-13 - MAP4 sitting A triage (game-lead)
+- **Accepted as built** (6cd1c44..b2ae51b). gameplay-dev's calls stand:
+  - a reject discounts every card in the offer, per status (two Bleed cards in one rejected offer: 0.64);
+  - a multi-status card is weighted by the largest of its statuses' multipliers, like the D43 lean's "best of";
+  - the weights apply to owned cards and to merchant stock too, and a merchant removal counts as a prune;
+  - every prune counts, even of a card id pruned before;
+  - a `reduce_cooldown` of 30 s or more reads "ready again" (Knuckle Sandwich);
+  - the `-RelicCap` fix lives in the model (the option shows disabled with a reason), not the bot;
+  - a forced `--relic-offer` at a mini-boss stays a boss offer.
+- **The "Raider fight at least 20 s" check becomes report-only.** With 180 HP and the 0.75 gap, the off-bot median is about 15 s, and the human bot's 15 s (Rogue) and 31 s (Wizard). The Raider is now the human bot's biggest single killer (6 Rogue and 5 Wizard losses of 36). The bot dodges and bursts better than its fight time suggests, so the director's own play is the check, and DF1 follows.
+  - [More HP to reach 20 s: tuning past what he asked for, on bot numbers, right before DF1 retunes enemies anyway.]
+- **D49's effect goes to the director as an eyes item, not a decision.** It pushes Fire (31.3% -> 22.8%) and Burn (19.9% -> 9.9%) away hard but barely raises Bleed (11.8% -> 12.2%), because rejects also discount owned Bleed cards. That's what he chose ("push a status away"); raising Bleed would be a new rule, so it's his call. Default: no change.

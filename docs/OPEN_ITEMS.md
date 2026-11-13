@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-12 (D50 = B recorded; latest tag `playtest-2026-11-12-MAP3b`)
-**Status:** 0 decisions waiting. 10 things to look at (56, 55, 54, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. **MB1 (new mini-bosses) is done**, tag `playtest-2026-11-11-MB1`. **MAP3b is done** (rare and legendary cards, boss relics), tag `playtest-2026-11-12-MAP3b`. Next: MAP4 -> DF1 (difficulty bump) -> 3d -> BD3b.
+Last updated: 2026-11-13 (MAP4 sitting A done; latest tag `playtest-2026-11-12-MAP3b`)
+**Status:** 0 decisions waiting. 11 things to look at (57, 56, 55, 54, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. **MB1 (new mini-bosses) is done**, tag `playtest-2026-11-11-MB1`. **MAP3b is done** (rare and legendary cards, boss relics), tag `playtest-2026-11-12-MAP3b`. **MAP4 (events) is being built** (5 sittings; the first is done). Next: MAP4 -> DF1 (difficulty bump) -> 3d -> BD3b.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -25,6 +25,9 @@ Nothing right now.
 
 Reply with the number and a word or two. **Each item has a default. If it's still unanswered when the slice after the one that added it closes, the default applies and it moves to `docs/RESOLVED.md` (your rule, 2026-11-12).** Everything below expires at **MAP4's close**.
 
+57. **FYI: your D49 rule (pruning or rejecting pushes a status away) is in, on main.** For a Bleed Rogue in late offers, it pushes Fire down from 31.3% to 22.8% and Burn from 19.9% to 9.9%, but Bleed barely rises (11.8% -> 12.2%). That's because rejecting an offer also pushes away the Bleed cards in it that you already own. That matches what you chose. If you also want Bleed offers to rise, that would be a new rule, so it's your call. Reply "57 ok", or "57 boost Bleed". **Default:** no change. Expires at DF1's close.
+    - Also in: the Raider has 180 HP (was 120) and attacks a bit faster in its second phase (gap 0.75 s, was 0.9). The bot now loses to it more than to anything else. You'll get a tag to play it at MAP4's close.
+
 56. **Play MAP3b: rare and legendary cards, boss relics. Tag `playtest-2026-11-12-MAP3b`.**
     - **How to get there:**
       - beat the act 1 mini-boss: `godot --path . -- --run-room=10`;
@@ -34,7 +37,7 @@ Reply with the number and a word or two. **Each item has a default. If it's stil
       - a boss relic: pick 1 of 3, each with an upside and a cost, no skip;
       - then a rare card offer (after act 1) or a legendary one (after act 2).
     - **Rare cards show up in normal offers from act 2, and legendaries from act 3.** They have silver and gold bands.
-    - **Do the boss relics feel like big, build-changing choices?** Is each cost something you actually feel? The Non-Compete Clause wins every bot run. **Default if you don't object:** its cooldown refund goes from 0.5 s to 0.3 s at the start of MAP4. Say "56 leave" to keep it.
+    - **Do the boss relics feel like big, build-changing choices?** Is each cost something you actually feel? The Non-Compete Clause wins every bot run. **Done on main (2026-11-13, the default):** its cooldown refund went from 0.5 s to 0.3 s. Say "56 leave" to put it back to 0.5 s.
     - **The act 3 floor changed from dull red to sand,** so the red chasers stand out. Keep it, or "56 old floor"?
     - **Default:** refund 0.3 s, sand floor kept, Exsanguinate left as is.
     - **Look for:**

@@ -1042,6 +1042,39 @@
         "burn_duration": 60.0,
         "late_hit": {"at": 0.6, "indices": [0], "amount": 5000.0}
     },
+    "map4ux_bleed4": {
+        "_note": "MAP4 ux capture: four Bleed-stacked chasers in a 2x2 block (Arterial Spray twice with Serrated Excuse), to check that the stack labels clear each other and the Open a Vein slot glows and dims. Shots at 1.2 s (stacked) and 2.3 s (after Open a Vein).",
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "freeze_aim": true,
+        "aim_preview_distance": 5.0,
+        "enemy_max_health": 2000,
+        "enemies_idle": true,
+        "disable_auto_attack": true,
+        "deck": ["rogue_arterial_spray", "rogue_open_a_vein", "rogue_quick_slash"],
+        "relics": ["serrated_excuse"],
+        "origin_offset": [-0.7, 0.0, -1.5],
+        "spacing": [1.4, -1.5],
+        "columns": 2,
+        "groups": [{"scene": "res://scenes/enemies/MeleeChaser.tscn", "count": 4}],
+        "casts": [
+            {"at": 0.3, "slot": "attack_aoe", "card": "rogue_arterial_spray"},
+            {"at": 0.9, "slot": "attack_aoe", "card": "rogue_arterial_spray"},
+            {"at": 2.0, "slot": "attack_single", "card": "rogue_open_a_vein"}
+        ]
+    },
+    "map4ux_sand_telegraphs": {
+        "_note": "MAP4 ux capture: act 3's sand floor and light with a Fire-Resistant Golem and a chaser winding up beside the player, to judge the golem and pink telegraph contrast. Shots at 0.6 s and 1.0 s.",
+        "disable_spawner": true,
+        "act": 3,
+        "player_max_health": 9999,
+        "enemy_max_health": 2000,
+        "disable_auto_attack": true,
+        "origin_offset": [1.2, 0.0, -0.5],
+        "spacing": [1.8, 1.8],
+        "columns": 2,
+        "groups": [{"scene": "res://scenes/enemies/FireResistantGolem.tscn", "count": 1}, {"scene": "res://scenes/enemies/MeleeChaser.tscn", "count": 1}]
+    },
     "bd3a_stacks": {
         "_note": "BD3a ux capture: Paper Cuts (4 Bleed applications per cast) with Serrated Excuse (max 5) stacks Bleed on two chasers: counts at 0.8 s and 1.4 s, then Open a Vein detonates at 1.9 s (burst, big number, 'Bleed detonated').",
         "disable_spawner": true,

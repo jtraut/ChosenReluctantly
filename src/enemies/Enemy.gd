@@ -444,7 +444,7 @@ func _update_wedge() -> void:
 		_wedge.name = "TelegraphWedge"
 		add_child(_wedge)
 		var color: Color = ElementVisuals.visual_for_team(attack_damage_type, "enemy")["color"]
-		_wedge.setup(VfxSizing.lateral_reach_vs_player(attack_range), EnemyConfig.melee_half_angle_degrees(), color)
+		_wedge.setup(VfxSizing.lateral_reach_vs_player(attack_range), EnemyConfig.melee_half_angle_degrees(), color, AttackArcVisual.ENEMY_EDGE_THICKNESS, true)  # MAP4 ux: a dark band under the edge, so it reads on act 3 sand
 	_wedge.show_windup(1.0 - _telegraph_remaining / telegraph_duration)
 
 

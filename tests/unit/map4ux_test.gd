@@ -257,3 +257,13 @@ func test_the_run_mod_lines_list_modifiers_and_the_waiting_discount() -> void:
 	add_child(host)
 	assert_array(controller.run_mod_lines()).is_empty()  # no run state yet
 	host.queue_free()
+
+
+func test_an_enemy_wedge_has_a_thicker_edge_than_the_players_arc_and_a_dark_band() -> void:
+	assert_float(AttackArcVisual.ENEMY_EDGE_THICKNESS).is_greater(AttackArcVisual.EDGE_THICKNESS)
+	assert_float(AttackArcVisual.ENEMY_EDGE_THICKNESS).is_less_equal(AttackArcVisual.BOSS_EDGE_THICKNESS)
+	var wedge := AttackArcVisual.new()
+	add_child(wedge)
+	auto_free(wedge)
+	wedge.setup(1.8, 60.0, Color.RED, AttackArcVisual.ENEMY_EDGE_THICKNESS, true)
+	assert_bool(wedge.has_backing()).is_true()

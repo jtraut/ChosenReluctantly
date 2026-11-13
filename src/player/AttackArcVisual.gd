@@ -26,6 +26,9 @@ const ON_TOP_PRIORITY := 10
 ## MB1 ux: a boss's telegraph edge is thicker and sits on a dark band, so the pale outline reads on a pale or blue-grey floor and
 ## under an act tint. The player's own arc keeps EDGE_THICKNESS and no band.
 const BOSS_EDGE_THICKNESS := 0.24
+## MAP4 ux: the same for an ordinary enemy's wedge (a golem's or a chaser's), a little thinner than a boss's: on act 3's sand a pink or orange outline alone
+## was lost, so every enemy wedge now sits on the dark band too.
+const ENEMY_EDGE_THICKNESS := 0.16
 const BACKING_THICKNESS_SCALE := 1.7
 const BACKING_COLOR := Color(0.05, 0.03, 0.05)
 const BACKING_ALPHA := 0.7

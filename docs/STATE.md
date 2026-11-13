@@ -31,15 +31,16 @@ Last updated: 2026-11-12. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds on
   - `[Director decision]` D50: target run length 30-45 min -> about 15-20 min of real time, decisions included.
   - The director-feedback entry for MAP3b (Bleed Rogue holds up, run under 7 min of fight time, Raider too easy).
   - The Raider change, old -> new, once built.
+  - `[Director decision]` game modes and difficulty, 2026-11-12 (GDD §9a, §8): a hard campaign (3-5 tries average, 2-3 advanced, 1-2 pro), endless mode unlocked by the first final-boss clear, an account-wide power layer with minor player-level scaling, and the tier ladder Normal -> ... -> Torment II-X (was Normal, Hard, Torment).
   - `[Director decision]` process, 2026-11-12 (c5f5879): sessions stop at about 150 tool calls with a `Remaining:` list, smaller briefs, `safe to chain` / `needs your play first` tags, eyes items expire one slice later at their default, each answer is recorded once, STATE trimmed; plus the milestone playtest and game-lead review at each milestone boundary, and the playtester's pacing target fixed from 30-60 min to about 15-20 min (later commit, same day).
 
 ## Known issues
 - Wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D50 answered (D49 = B, D50 = B on 2026-11-12). Next free: D51.
+**D-numbers:** D21-D50 answered (D49 = B, D50 = B on 2026-11-12). D51 open (campaign difficulty; default A, recommend C). Next free: D52.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths. A role that stops with a `Remaining:` list gets a fresh agent, never a resumed one.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions open; eyes 56, 55, 54, 52, 51, 50, 49, 48, 47 and 35, all expiring at MAP4's close; the round 2 vision check.
+All director-facing items are in `docs/OPEN_ITEMS.md`: D51 open; eyes 56, 55, 54, 52, 51, 50, 49, 48, 47 and 35, all expiring at MAP4's close; the round 2 vision check.

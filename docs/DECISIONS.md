@@ -2573,3 +2573,10 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **The eyes expiry clock starts now:** every current eyes item expires at MAP4's close. Items that had no stated default got one, usually "no change".
   - [Expiring the items older than one slice immediately: he'd lose the chance to answer 47-55 without notice.]
 - **The `Remaining:` list goes in the stop commit's body and the hand-back,** not in STATE, which game-lead owns. The three role files no longer tell those roles to edit STATE.
+
+## 2026-11-12 - Recording game modes and difficulty (game-lead)
+- **The modes block (MD0-MD2) goes after Milestone 4's meta layer.** Endless needs an account save, curses (MAP4) and the player level, and the tries target needs between-run upgrades to measure.
+  - [Scheduling it before Milestone 4: there would be nothing to scale or unlock against.]
+- **MAP4's curse cards are built to stack and to have limited cleanses,** so endless can reuse them. It costs nothing now.
+- **Only D51 goes to the director.** The other details (tier unlocks, the player-level formula, endless curses, rewards, the account save) are [OPEN] in GDD §14 item 14, for MD0. No [PROPOSED] values yet: nothing needs one.
+- **D51 folds in the Easy-tier question** instead of opening a separate D-number. Its default keeps the 2026-10-30 Easy tier.

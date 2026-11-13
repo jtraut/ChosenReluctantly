@@ -282,7 +282,8 @@ func show_content(content: Dictionary) -> void:
 	# several things in a row) and the highlight stays where it was.
 	var screen: String = String(content.get("screen", ""))
 	var was_open: bool = visible and not _shown.is_empty()
-	var refresh: bool = was_open and screen != "" and String(_shown.get("screen", "")) == screen
+	var giveup_toggle: bool = was_open and is_giveup_refill(content, _shown)
+	var refresh: bool = (was_open and screen != "" and String(_shown.get("screen", "")) == screen) or giveup_toggle
 	var came_from: String = String(_shown.get("screen", "")) if was_open else ""
 	var old_ids: Array[String] = _option_ids()
 	var old_focus: int = _last_focus
@@ -303,8 +304,26 @@ func show_content(content: Dictionary) -> void:
 		# Only the shop keeps or restores a highlight. The give-one-up step opens on Cancel and the removal list on its first card whatever had the focus
 		# before (a reflexive Enter must never give a relic away: BD2).
 		_last_focus = focus_after_refill(old_ids, old_focus, _option_ids(), _enabled_flags(), came_from, screen) if was_open and screen == "shop" else _default_focus()
+		if giveup_toggle:
+			# MAP4 ux: a pick in a multi-give-up step refills the same screen: the highlight stays on the relic just toggled (a keyboard player picks
+			# several in a row), or goes to Cancel when that relic can no longer be pressed. Never to Confirm by default.
+			var kept: int = _option_ids().find(old_ids[old_focus]) if old_focus >= 0 and old_focus < old_ids.size() else -1
+			if kept >= 0 and bool(_options[kept].get("enabled", true)) and String(_options[kept].get("kind", "")) != "giveup_confirm":
+				_last_focus = kept
 		_focus_option(_last_focus)
 		_debug_auto_choose()
+
+
+## MAP4 ux (pure): true when `fresh` is the same give-up step as `old` with a pick toggled: both are a relic give-up step (the relic room's or the merchant's swap) for
+## the same incoming relic. Then the panel refills in place (no new arm delay, no re-dim) and keeps the highlight on the relic just toggled.
+static func is_giveup_refill(fresh: Dictionary, old: Dictionary) -> bool:
+	var fresh_relic: Dictionary = fresh.get("relic", {})
+	var old_relic: Dictionary = old.get("relic", {})
+	if String(fresh_relic.get("choice", "")) != "giveup" or String(old_relic.get("choice", "")) != "giveup":
+		return false
+	var fresh_in: Dictionary = fresh_relic.get("incoming", {})
+	var old_in: Dictionary = old_relic.get("incoming", {})
+	return not fresh_in.is_empty() and String(fresh_in.get("name", "")) == String(old_in.get("name", "")) and String(fresh_in.get("name", "")) != ""
 
 
 func is_open() -> bool:
@@ -839,7 +858,7 @@ func _place_grid(cfg: Dictionary, s: float, texts: Dictionary) -> void:
 		var cursed: Array = []
 		var plain: Array = []
 		for index: int in (by_slot[slot_type] as Array):
-			(cursed if bool(_options[index].get("curse", false)) else plain).append(index)  # a partition, so the order inside each part stays as the model made it
+			(cursed if RunOptionCard.is_curse_option(_options[index]) else plain).append(index)  # a partition, so the order inside each part stays as the model made it
 		by_slot[slot_type] = cursed + plain
 	options_box.columns = maxi(slot_types.size(), 1)
 	var cell_w: float = float(cfg["option_cell_width"]) * s

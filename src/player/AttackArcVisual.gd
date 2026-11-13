@@ -24,7 +24,7 @@ const FILL_ALPHA := 0.3
 const EDGE_PULSE_CYCLES := 3.0
 const ON_TOP_PRIORITY := 10
 ## MB1 ux: a boss's telegraph edge is thicker and sits on a dark band, so the pale outline reads on a pale or blue-grey floor and
-## under an act tint. The player's own arc keeps EDGE_THICKNESS and no band.
+## under an act tint. The player's own arc keeps EDGE_THICKNESS and no band (an ordinary enemy's wedge now has both too: ENEMY_EDGE_THICKNESS).
 const BOSS_EDGE_THICKNESS := 0.24
 ## MAP4 ux: the same for an ordinary enemy's wedge (a golem's or a chaser's), a little thinner than a boss's: on act 3's sand a pink or orange outline alone
 ## was lost, so every enemy wedge now sits on the dark band too.
@@ -40,7 +40,7 @@ var _fill := MeshInstance3D.new()
 var _edge := MeshInstance3D.new()
 var _fill_material := StandardMaterial3D.new()
 var _edge_material := StandardMaterial3D.new()
-## The dark band under a boss's edge: built only by setup(..., backed = true), so the player's arc and an enemy's wedge allocate nothing for it.
+## The dark band under a boss's or an enemy's edge: built only by setup(..., backed = true), so the player's arc allocates nothing for it.
 var _backing: MeshInstance3D = null
 var _backing_material: StandardMaterial3D = null
 var _edge_thickness: float = EDGE_THICKNESS

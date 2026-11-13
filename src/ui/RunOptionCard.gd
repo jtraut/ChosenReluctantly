@@ -104,6 +104,15 @@ static func split_upside_cost(rule_text: String, cost_text: String = "") -> Dict
 	return {"upside": rule_text.substr(0, cut + 1), "cost": rule_text.substr(cut + 2).strip_edges()}
 
 
+## MAP4 ux: true when an option is a curse card: the option's own `curse` flag (RunChoices.card_option sets it), else the card's data, so a list built by any other
+## path (the merchant's removal entries) still shows the band and the curse frame.
+static func is_curse_option(opt: Dictionary) -> bool:
+	if bool(opt.get("curse", false)):
+		return true
+	var card_id: String = String(opt.get("card_id", ""))
+	return card_id != "" and CardSchema.is_curse(CardDatabase.get_card(card_id))
+
+
 ## True when this tile is a boss-tier relic (the relic display's `boss` flag).
 func boss_tile() -> bool:
 	return bool(option.get("boss", false)) and (look == Look.RELIC or look == Look.RELIC_CELL)
@@ -185,7 +194,7 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 		rarity_tag = _rarity_tag(opt, texts, small_size, enabled, true)
 		if rarity_tag != null:
 			_inner.add_child(rarity_tag)
-		if bool(opt.get("curse", false)):
+		if is_curse_option(opt):
 			curse_band = _curse_band(String(texts.get("curse_tag", "")), small_size, enabled)  # MAP4 ux: a curse says so in a band across its top
 			_inner.add_child(curse_band)
 
@@ -239,7 +248,7 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 				chip_row = keyword_chips
 				_inner.add_child(chip_row)
 	var detail: String = keep_units(String(opt.get("detail", "")))
-	if detail == "" and bool(opt.get("curse", false)):
+	if detail == "" and is_curse_option(opt):
 		detail = String(texts.get("curse_no_effect", ""))  # a curse with no effect line must not look empty
 	var event_lines: Array = opt.get("line_parts", []) if (look == Look.ACTION and String(opt.get("kind", "")) == "event_choice") else []
 	var cost_line: String = ""
@@ -991,7 +1000,7 @@ func _card_rarity() -> String:
 func frame_color() -> Color:
 	if look == Look.RELIC or look == Look.RELIC_CELL or _is_shop_relic():
 		return PoolDatabase.frame_color_for_pool(String(option.get("pool", "")))
-	if frame_card_id() != "" and bool(option.get("curse", false)):
+	if frame_card_id() != "" and is_curse_option(option):
 		return Color.html(String(_cfg.get("curse_frame_color", "#b04fd0")))
 	return PoolDatabase.frame_color_for_card(frame_card_id()) if frame_card_id() != "" else Color.html(String(_cfg["option_card_border_color"]))
 

@@ -249,14 +249,35 @@ func test_a_run_modifier_reads_as_stat_and_signed_amount() -> void:
 	assert_str(EventEngine.mod_text({"stat": "status_max_stacks.bleed", "modifier_type": "additive", "value": 1}, ctx)).is_equal("Bleed max stacks +1")
 
 
-func test_the_run_mod_lines_list_modifiers_and_the_waiting_discount() -> void:
-	var host := Node.new()
+func test_the_run_mod_lines_are_empty_with_no_run_state() -> void:
 	var controller := RunController.new()
-	controller.name = "RunController"
-	host.add_child(controller)
-	add_child(host)
-	assert_array(controller.run_mod_lines()).is_empty()  # no run state yet
-	host.queue_free()
+	add_child(controller)
+	assert_array(controller.run_mod_lines()).is_empty()
+	controller.queue_free()
+
+
+func test_a_chance_line_wears_the_chance_glyph() -> void:
+	var ctx: Dictionary = RunChoices.shipped_context(["neutral"])
+	var chance: Dictionary = {"type": "chance", "p": 0.5, "win": [{"type": "gain_gold", "amount": 30}], "lose": [{"type": "lose_hp", "fraction": 0.1}]}
+	var parts: Array[Dictionary] = EventEngine.line_parts([chance], _state(), ctx)
+	assert_str(String(parts[0]["kind"])).is_equal("chance")
+	var text: String = RunOptionCard.event_line_bbcode(parts[0], RunConfig.ui()["event"]["glyphs"], UiConfig.run_ui(), Color.WHITE, true)
+	assert_str(text).contains("[b]?[/b]").contains("50%: ")
+
+
+func test_a_curse_is_recognised_from_the_card_data_when_the_option_has_no_flag() -> void:
+	assert_bool(RunOptionCard.is_curse_option({"card_id": "curse_property_damage"})).is_true()
+	assert_bool(RunOptionCard.is_curse_option({"card_id": "neutral_deep_sigh"})).is_false()
+	assert_bool(RunOptionCard.is_curse_option({"card_id": "x", "curse": true})).is_true()
+	assert_bool(RunOptionCard.is_curse_option({})).is_false()
+
+
+func test_a_toggled_give_up_step_is_a_refill_of_the_same_screen() -> void:
+	var step: Dictionary = {"relic": {"choice": "giveup", "incoming": {"name": "Hostile Takeover"}}}
+	assert_bool(RunPromptScreen.is_giveup_refill(step, step)).is_true()
+	assert_bool(RunPromptScreen.is_giveup_refill(step, {"relic": {"choice": "offer"}})).is_false()  # the first step opens fresh (arm delay, Cancel focus)
+	assert_bool(RunPromptScreen.is_giveup_refill(step, {"relic": {"choice": "giveup", "incoming": {"name": "Other"}}})).is_false()
+	assert_bool(RunPromptScreen.is_giveup_refill(step, {})).is_false()
 
 
 func test_an_enemy_wedge_has_a_thicker_edge_than_the_players_arc_and_a_dark_band() -> void:

@@ -388,6 +388,8 @@ static func outcome_kind(outcome: Dictionary, ctx: Dictionary) -> String:
 
 
 static func _dominant_kind(segments: Array[Dictionary]) -> String:
+	if not segments.is_empty() and String(segments[0]["kind"]) == "chance":
+		return "chance"  # a gamble wears its own glyph, not the gain's or the cost's: it is neither for sure
 	var found: String = "neutral"
 	for segment: Dictionary in segments:
 		var kind: String = String(segment["kind"])

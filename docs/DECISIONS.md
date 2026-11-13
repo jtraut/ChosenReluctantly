@@ -2580,3 +2580,7 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **MAP4's curse cards are built to stack and to have limited cleanses,** so endless can reuse them. It costs nothing now.
 - **Only D51 goes to the director.** The other details (tier unlocks, the player-level formula, endless curses, rewards, the account save) are [OPEN] in GDD §14 item 14, for MD0. No [PROPOSED] values yet: nothing needs one.
 - **D51 folds in the Easy-tier question** instead of opening a separate D-number. Its default keeps the 2026-10-30 Easy tier.
+
+## 2026-11-12 - DF1 scope (game-lead)
+- **DF1 tunes enemy knobs only** (health, damage, act scaling). It doesn't touch player stats or cards, so the bump can't hide inside build balance, and it's easy to undo.
+  - [Also slowing the player or weakening cards: that would mix two changes and make his play report harder to read.]

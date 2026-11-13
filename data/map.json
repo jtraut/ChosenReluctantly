@@ -35,7 +35,7 @@
     "merchant_prices": [60, 60, 90]
   },
   "multi_act": {
-    "types": { "event": { "weight": 28 } },
+    "types": { "event": { "weight": 28 }, "relic_room": { "weight": 18 } },
     "path_rules": { "relic_route": [4, 6], "max_relic_rooms": 2 },
     "estimate": { "merchant_prices": [80, 80, 120] }
   }

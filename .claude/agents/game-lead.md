@@ -41,7 +41,7 @@ Run roles one at a time, never in parallel, to conserve the director's usage lim
 - The director may hit a usage cutoff at any time. Before any long task and at the end of every session, update docs/STATE.md with: what is in progress, the exact next step, which role goes next, and open questions. STATE holds no slice history: closed slices live in ROADMAP and CHANGELOG.
 - Always leave the repo in a state that runs. If something is half done, say so in STATE.md.
 - Scope tasks small enough to finish and commit in one sitting: a sitting is one agent session under about 150 tool calls. MAP3b's sittings A, B and C were each too big; split smaller than that.
-- When a role stops early with a `Remaining:` list, start a fresh agent with that list. Never resume or extend the old session.
+- When a role stops early with a `Remaining:` list, first copy the list and its commit hash into STATE "In progress" and commit, so a cutoff can't lose it. Then start a fresh agent with that list. Never resume or extend the old session.
 - Tag every slice brief **`safe to chain`** (it doesn't tune the feel or balance of a slice the director hasn't played) or **`needs your play first`** (it does: wait for his playtest of that slice before starting).
 
 ## How you run

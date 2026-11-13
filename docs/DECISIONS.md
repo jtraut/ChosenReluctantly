@@ -2614,3 +2614,17 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **The "Raider fight at least 20 s" check becomes report-only.** With 180 HP and the 0.75 gap, the off-bot median is about 15 s, and the human bot's 15 s (Rogue) and 31 s (Wizard). The Raider is now the human bot's biggest single killer (6 Rogue and 5 Wizard losses of 36). The bot dodges and bursts better than its fight time suggests, so the director's own play is the check, and DF1 follows.
   - [More HP to reach 20 s: tuning past what he asked for, on bot numbers, right before DF1 retunes enemies anyway.]
 - **D49's effect goes to the director as an eyes item, not a decision.** It pushes Fire (31.3% -> 22.8%) and Burn (19.9% -> 9.9%) away hard but barely raises Bleed (11.8% -> 12.2%), because rejects also discount owned Bleed cards. That's what he chose ("push a status away"); raising Bleed would be a new rule, so it's his call. Default: no change.
+
+## 2026-11-13 - MAP4 sitting B1 triage (game-lead)
+- **Accepted as built** (6c49bd0..7fecaae). gameplay-dev's calls stand:
+  - an event offer's normal slots draw from source `relic_room` (every `elite` relic also lists `relic_room` today, so it's cosmetic);
+  - the reserved event-only slot needs an offer of 2 or more, sits at a seeded position, and uses the act's tier odds, so a tier 3 event-only relic never shows in act 1;
+  - a fixed tier falls down only when the whole offer would be empty;
+  - HP amounts use `roundi`, minimum 1, the same function for the shown line and the change; the schema caps `lose_max_hp` at 0.9;
+  - `requires` holds exactly one key;
+  - outcomes not built yet are valid data, skipped with an error;
+  - the draw is seeded from the run seed and room, `events_seen` spans acts, and an empty catalog ends the room with an error instead of soft-locking;
+  - the bot's cost set is `lose_hp`, `lose_max_hp`, `lose_gold`, `gain_curse`, `start_fight`, `sacrifice_relic`;
+  - a missing `data/events` folder means no events.
+- **The save boundary now includes the event choice screen and the relic offer a choice opened** (`RunSave.choice_is_savable`). Without it, quitting after paying would refund the cost. Other open choices still don't save. This is the right reading of §13.1 "costs already paid stay paid".
+- **For D:** tripwire tests assert there are no events (map4b1 three tests, `map1_qa_test` two places, `map1a_sweep_test`); D flips them when content ships. The `relic` route planner scores an event as 0, so its event visits may sit under §13.7's 2-4; D tunes the weight.

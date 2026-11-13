@@ -208,8 +208,8 @@ func test_decisions_balance_table_matches_the_data_files() -> void:
 	assert_float(float(light["damage"]) / float(light["interval"])).is_equal_approx(5.0, 0.001)
 	var seen := 0
 	for card: Dictionary in CardDatabase.all_cards():
-		if not CardDamageRule.is_damage_card(card):
-			continue
+		if not CardDamageRule.is_damage_card(card) or CardSchema.is_curse(card):
+			continue  # MAP4-D: a curse sits in an attack slot but deals no damage and is not in the balance table
 		seen += 1
 		var id := String(card["id"])
 		assert_bool(table.has(id)).override_failure_message("card %s is a damage card but is not in the DECISIONS table" % id).is_true()

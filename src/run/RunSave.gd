@@ -6,7 +6,8 @@ extends RefCounted
 ## Tests turn the file on with `persist_override = true` and a `user://tests/...` path, and call `reset()` afterwards.
 ##
 ## What is saved: the RunState (`RunState.to_dict`) wrapped as {save_version, run}. A boundary is (a) the pick-next-node choice (the map screen) and
-## (b) the start of a room, right after a node was picked. So quitting mid-fight and resuming restarts that room from its start and cannot re-pick
+## (b) the start of a room, right after a node was picked, and (MAP4-B1) (c) an event node's choice screen and the relic offer (or its give-one-up step) a choice
+## opened, so quitting there cannot refund what the choice already cost. No other open choice is saved. So quitting mid-fight and resuming restarts that room from its start and cannot re-pick
 ## the node. A run is never saved before its first room (nothing to resume), and straight (no-map) runs are not saved. The one exception is the
 ## start of act 2 and later (MAP3-B): the act's map is made and no room is picked yet, and that map screen is a boundary too, so quitting right after an act ends resumes there.
 ##
@@ -55,7 +56,8 @@ static func reset() -> void:
 
 # ---- writing ----
 
-## True when `state` is at a boundary worth saving: a live map run with at least one room picked, at the map screen or at a room's start.
+## True when `state` is at a boundary worth saving: a live map run with at least one room picked, at the map screen, at a room's start, or (MAP4-B1) on an
+## event's choice screen or its relic offer.
 static func is_boundary(state: RunState) -> bool:
 	if state == null or state.is_over() or not RunNodes.active(state) or (state.path.is_empty() and state.act <= 1):
 		return false

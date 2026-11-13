@@ -1074,7 +1074,7 @@ func _run_whole(run_seed: int) -> void:
 	_run_results.append(result)
 	var type_letters: Array[String] = []
 	for t: String in (result["types"] as Array):
-		type_letters.append("R" if t == RunConfig.RELIC_ROOM else t.substr(0, 1))  # "r" is the rest room
+		type_letters.append("R" if t == RunConfig.RELIC_ROOM else ("?" if t == RunConfig.EVENT_ROOM else t.substr(0, 1)))  # "r" is the rest room
 	print("  run seed %d: %s | rooms reached %d of %d | sim %.0f s in %.1f s wall | types %s | room seconds %s | lowest HP in each room %s | HP at last room clear %s" % [
 		run_seed, String(result["outcome"]).to_upper(), int(result["rooms_reached"]), int(result["rooms_total"]), float(result["sim_s"]), float(result["wall_ms"]) / 1000.0, ",".join(type_letters), str(result["room_s"]), str(result["room_min_hp"]), str(result["hp_end"])])
 	print("    HP at each room end %s (max %s) | deck %d cards %s | picks %d, rejects used %d, removals %d, rest heals %d" % [

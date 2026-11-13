@@ -965,3 +965,88 @@ func test_a_reload_on_the_event_choice_shows_the_same_event() -> void:
 	assert_int(models.size()).is_equal(1)  # the reopened choice was announced
 	assert_str(String(models[0]["title"])).is_equal("Fixture: The Toll")
 	assert_int(restored.history.size()).is_equal(state.history.size())  # the event room was recorded once, not again
+
+
+func _kinds_of(model: Dictionary) -> Array[String]:
+	var kinds: Array[String] = []
+	for option: Dictionary in (model["options"] as Array):
+		kinds.append(String(option["kind"]))
+	return kinds
+
+
+func test_the_controller_runs_an_event_into_a_paid_relic_offer_and_then_the_outcomes_after_it() -> void:
+	var state: RunState = _state_on_event(1)
+	RunSession.current = state
+	RunSession.forced_event = "fx_paid"
+	var main := _spawn()
+	await _frames()
+	var controller: RunController = main.run_controller
+	var max_hp: float = main.player.health.max_health
+	assert_str(state.event_id).is_equal("fx_paid")
+	var opened: Dictionary = controller.choose("event_choice:0")
+	assert_bool(bool(opened["ok"])).is_true()
+	assert_bool(bool(opened["finished"])).is_false()  # the paid relic offer is open
+	assert_float(main.player.health.current_health).is_equal(max_hp)  # the lose_hp after the relic has not run
+	var model: Dictionary = controller.current_choice()
+	assert_str(String(model["title"])).is_equal("Take your pick")
+	assert_bool(bool(model["event_offer"])).is_true()
+	assert_bool(_kinds_of(model).has("relic_skip")).is_false()  # no skip: the player has paid
+	assert_bool(controller.has_choice()).is_true()
+	var relic_id: String = state.offer[0]
+	var picked: Dictionary = controller.pick_relic(relic_id)
+	assert_bool(bool(picked["ok"]) and bool(picked["finished"])).is_true()
+	assert_array(state.relics).is_equal([relic_id])
+	assert_object(controller.relic_manager()).is_not_null()
+	assert_bool(controller.relic_manager().has_relic(relic_id)).is_true()  # live at once
+	var expected: float = max_hp - float(EventEngine.hp_amount(0.1, max_hp))
+	assert_float(main.player.health.current_health).is_equal(expected)  # fx_paid's lose_hp ran after the pick, on the live player
+	assert_float(state.hp).is_equal(expected)
+	assert_str(state.pending).is_equal(RunState.PENDING_NODE)
+	assert_str(state.event_id).is_empty()
+	assert_bool(state.event_queue.is_empty()).is_true()
+
+
+func test_a_reload_on_a_paid_event_offer_reopens_it_with_no_skip_and_the_bill_still_to_come() -> void:
+	var state: RunState = _state_on_event(1)
+	RunSession.current = state
+	RunSession.forced_event = "fx_paid"
+	var first := _spawn()
+	await _frames()
+	first.run_controller.choose("event_choice:0")
+	var offered: Array[String] = state.offer.duplicate()
+	var saved: String = state.to_json()
+	first.queue_free()
+	await _frames()
+	var restored: RunState = RunState.from_json(saved)
+	assert_object(restored).is_not_null()
+	RunSession.current = restored
+	var second := _spawn()
+	var models: Array[Dictionary] = []
+	second.run_controller.choice_requested.connect(func(m: Dictionary) -> void: models.append(m))
+	await _frames()
+	assert_str(restored.pending).is_equal(RunState.PENDING_RELIC)
+	assert_array(restored.offer).is_equal(offered)
+	assert_int(models.size()).is_equal(1)
+	assert_bool(_kinds_of(models[0]).has("relic_skip")).is_false()
+	assert_str(String(models[0]["title"])).is_equal("Take your pick")
+	var max_hp: float = second.player.health.max_health
+	second.run_controller.pick_relic(offered[0])
+	assert_float(second.player.health.current_health).is_equal(max_hp - float(EventEngine.hp_amount(0.1, max_hp)))
+
+
+func test_the_event_text_in_run_json_is_validated_when_present() -> void:
+	var config: Dictionary = RunConfig.get_config().duplicate(true)
+	assert_array(RunConfig.validate(config, EnemyConfig.enemy_ids(), [])).is_empty()
+	var renamed: Dictionary = config.duplicate(true)
+	((renamed["ui"] as Dictionary)["event"]["lines"] as Dictionary).erase("lose_hp")
+	assert_bool(RunConfig.validate(renamed, EnemyConfig.enemy_ids(), []).any(func(e: String) -> bool: return e.contains("ui.event.lines.lose_hp"))).is_true()
+	var wrong_format: Dictionary = config.duplicate(true)
+	((wrong_format["ui"] as Dictionary)["event"]["lines"] as Dictionary)["lose_hp"] = "Lose some HP"
+	assert_bool(RunConfig.validate(wrong_format, EnemyConfig.enemy_ids(), []).any(func(e: String) -> bool: return e.contains("lose_hp"))).is_true()
+	var no_floor: Dictionary = config.duplicate(true)
+	(no_floor["events"] as Dictionary)["min_max_hp"] = 0
+	assert_bool(RunConfig.validate(no_floor, EnemyConfig.enemy_ids(), []).any(func(e: String) -> bool: return e.contains("min_max_hp"))).is_true()
+	var without: Dictionary = config.duplicate(true)
+	without.erase("events")
+	(without["ui"] as Dictionary).erase("event")
+	assert_array(RunConfig.validate(without, EnemyConfig.enemy_ids(), [])).is_empty()  # both are optional (a config without them plays with the defaults)

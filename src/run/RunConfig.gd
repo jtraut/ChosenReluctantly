@@ -463,9 +463,53 @@ static func _validate_ui(ui_value: Variant) -> Array[String]:
 	errors.append_array(_validate_relic_text(u.get("relic")))
 	errors.append_array(_validate_map_text(u.get("map")))
 	errors.append_array(_validate_merchant_text(u.get("merchant")))
+	if u.has("event"):
+		errors.append_array(_validate_event_text(u["event"]))
 	errors.append_array(_validate_effect_text(u.get("effect")))
 	if typeof(u.get("next_line")) != TYPE_STRING or String(u["next_line"]).count("%d") != 2 or String(u["next_line"]).count("%s") != 1:
 		errors.append("ui.next_line must be a format string with two %d and one %s")
+	return errors
+
+
+## ui.event (MAP4-B1): the strings of the event screen and the generated cost lines, with the number of %d and %s each format takes. Checked when the block is present.
+const EVENT_TEXT_KEYS: Array[String] = ["relic_title", "relic_line", "relic_line_noskip", "leave_line", "line_join"]
+const EVENT_LINE_FORMATS: Dictionary = {
+	"lose_hp": [1, 0], "lose_max_hp": [1, 0], "heal": [1, 0], "gain_gold": [1, 0], "lose_gold": [1, 0], "gain_relic_act": [1, 0], "gain_relic_next_act": [1, 0],
+	"gain_relic_tier": [2, 0], "gain_relic_plus_one": [1, 0], "no_skip": [0, 0], "gain_curse_random": [0, 0], "gain_curse": [0, 1], "remove_curse": [0, 0],
+	"remove_card": [0, 0], "sacrifice_pick": [0, 0], "sacrifice_highest": [0, 0], "start_fight": [0, 0], "chance": [1, 1], "chance_otherwise": [0, 1],
+	"stat_mod": [0, 2], "merchant_discount": [1, 0],
+}
+
+
+static func _validate_event_text(value: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(value) != TYPE_DICTIONARY:
+		errors.append("ui.event must be an object")
+		return errors
+	var e: Dictionary = value
+	for key: String in EVENT_TEXT_KEYS:
+		if typeof(e.get(key)) != TYPE_STRING:
+			errors.append("ui.event.%s must be a string" % key)
+	var lines: Variant = e.get("lines")
+	if typeof(lines) != TYPE_DICTIONARY:
+		errors.append("ui.event.lines must be an object")
+	else:
+		for key: String in EVENT_LINE_FORMATS.keys():
+			var text: Variant = (lines as Dictionary).get(key)
+			var expected: Array = EVENT_LINE_FORMATS[key]
+			if typeof(text) != TYPE_STRING:
+				errors.append("ui.event.lines.%s must be a string" % key)
+			elif String(text).replace("%%", "").count("%d") != int(expected[0]) or String(text).replace("%%", "").count("%s") != int(expected[1]):
+				errors.append("ui.event.lines.%s must be a format string with %d %%d and %d %%s" % [key, int(expected[0]), int(expected[1])])
+	var reasons: Variant = e.get("reasons")
+	if typeof(reasons) != TYPE_DICTIONARY:
+		errors.append("ui.event.reasons must be an object")
+	else:
+		for key: String in ["gold", "unsupported", "offer_empty"]:
+			if typeof((reasons as Dictionary).get(key)) != TYPE_STRING:
+				errors.append("ui.event.reasons.%s must be a string" % key)
+		if typeof((reasons as Dictionary).get("gold")) == TYPE_STRING and String((reasons as Dictionary)["gold"]).count("%d") != 2:
+			errors.append("ui.event.reasons.gold must be a format string with two %d")
 	return errors
 
 

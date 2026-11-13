@@ -2568,3 +2568,8 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
   - [A broad enemy HP or count retune now: GDD §9 says base-game challenge comes from the difficulty tiers, apart from the director's pressure-pass exception. A wide retune would need its own director call.]
 - **The "Time" label becomes "Fight time"** (ux carry-over in MAP4, data text only), so later run reports don't mix up the two clocks.
   - [Also showing the total wall-clock run time: needs a new timer across screens and saves; can come later if he wants it.]
+
+## 2026-11-12 - Applying the director's cost controls (game-lead)
+- **The eyes expiry clock starts now:** every current eyes item expires at MAP4's close. Items that had no stated default got one, usually "no change".
+  - [Expiring the items older than one slice immediately: he'd lose the chance to answer 47-55 without notice.]
+- **The `Remaining:` list goes in the stop commit's body and the hand-back,** not in STATE, which game-lead owns. The three role files no longer tell those roles to edit STATE.

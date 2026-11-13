@@ -23,7 +23,7 @@ Nothing right now.
 
 ## Needs your eyes
 
-Reply with the number and a word or two.
+Reply with the number and a word or two. **Each item has a default. If it's still unanswered when the slice after the one that added it closes, the default applies and it moves to `docs/RESOLVED.md` (your rule, 2026-11-12).** Everything below expires at **MAP4's close**.
 
 56. **Play MAP3b: rare and legendary cards, boss relics. Tag `playtest-2026-11-12-MAP3b`.**
     - **How to get there:**
@@ -36,25 +36,28 @@ Reply with the number and a word or two.
     - **Rare cards show up in normal offers from act 2, and legendaries from act 3.** They have silver and gold bands.
     - **Do the boss relics feel like big, build-changing choices?** Is each cost something you actually feel? The Non-Compete Clause wins every bot run. **Default if you don't object:** its cooldown refund goes from 0.5 s to 0.3 s at the start of MAP4. Say "56 leave" to keep it.
     - **The act 3 floor changed from dull red to sand,** so the red chasers stand out. Keep it, or "56 old floor"?
+    - **Default:** refund 0.3 s, sand floor kept, Exsanguinate left as is.
     - **Look for:**
       - Open a Vein's slot glowing when an enemy in range has 2 or more Bleed stacks;
       - Exsanguinate (legendary) on a fully stacked enemy. It can one-shot a boss with a deep build. Fun, or too much?
 
 55. **The act 1 mini-boss, "Head of Facilities" (MB1).** `godot --path . -- --scenario=mini_boss_act1`, or room 10 of a run.
     - **A real act-ending fight, or a speed bump?** Its "Wet floor" circles now leave gaps to stand in.
-    - Say "55 leave", "55 harder" or "55 easier".
+    - Say "55 leave", "55 harder" or "55 easier". **Default:** leave.
     - You've already answered for the act 2 Raider ("too easy, died super fast"): it gets tougher at the start of MAP4.
 
-54. **FYI: the test bot was half-blind until today.** In every headless sim the bot aimed without turning, so cones, knives and dashes missed. Your own play was never affected. Fixed, it wins almost every run, so every old bot number (the H1/H2 dodge-off results, the MAP1-MAP3 run baselines) was measured with a weaker bot than we thought. No shipped value changes because of this. **SIM1 (done 2026-11-11)** added a "human" bot setting (0.2 s reaction delay, 25 degree aim error). On it the Rogue wins 26/36 three-act runs and the Wizard 15/36, so the Wizard is clearly harder for the bot; that goes to BD3b. These are only bot numbers: your own three-act runs (53) set the real bar. Reply "ok" when you've read this.
+54. **FYI: the test bot was half-blind until today.** In every headless sim the bot aimed without turning, so cones, knives and dashes missed. Your own play was never affected. Fixed, it wins almost every run, so every old bot number (the H1/H2 dodge-off results, the MAP1-MAP3 run baselines) was measured with a weaker bot than we thought. No shipped value changes because of this. **SIM1 (done 2026-11-11)** added a "human" bot setting (0.2 s reaction delay, 25 degree aim error). On it the Rogue wins 26/36 three-act runs and the Wizard 15/36, so the Wizard is clearly harder for the bot; that goes to BD3b. These are only bot numbers: your own three-act runs (53) set the real bar. Reply "ok" when you've read this. **Default:** counts as read.
 
 52. **Two small checks from MAP3, next time you play.** (You've answered the run-time question: D50 = B, GDD §9.)
     - **Quit mid-run, relaunch and press Enter.** Continue should be highlighted on the class pick and resume your run. Quitting during a fight restarts that room.
     - **Click through the Act 2 screen** after the act 1 mini-boss.
+    - **Default:** no change.
 
 51. **Visit the merchant (MAP2).** `godot --path .`, and pick a route through the coin square.
     - Buy two things, then leave. Is it clear what you can afford, and why something is greyed out?
     - **The shop opens with the first relic highlighted**, so Enter buys it. There's a short delay that stops a held Enter from the map. Is that fine, or should Leave be highlighted first?
     - Try the free reroll: `-- --relics=request_for_quotation`.
+    - **Default:** no change; the first relic stays highlighted.
     - Relics on main now cost 80/120/170 over three acts (your D41 = B, with more gold). Cards priced by rarity come in MAP3b, when cards get a rarity.
 
 50. **Play a run on the map (MAP1).** `godot --path .`, one run per class if you can.
@@ -62,6 +65,7 @@ Reply with the number and a word or two.
     - **Is the map clear at a glance?** Where you are, what you can pick, and the chest sizes (1-3 dots). Pause -> Map shows it view-only.
     - **Try an elite-and-chest route and a cautious one.** The bots won every relic route. From MAP2, every route has a rest (your D40 = A).
     - **Gold** shows on the HUD with "+N". There's nothing to spend it on until MAP2's merchant.
+    - **Default:** no change; the map generator stays as it is.
     - **Known and scheduled for MAP2:** the chest size isn't shown on the chest's reward screen; room 9 has a pointless one-choice pick before the boss; small legend text.
 
 49. **Two relic details, when you next play** (you said 2026-11-05 that relics feel fun and builds are getting more exciting; recorded). No rush. Without an answer I keep both as they are.
@@ -75,6 +79,7 @@ Reply with the number and a word or two.
     - **rogue-kindling:** does Burn feel like a plan?
     - **A plain run:** your random starting slots can now roll the new cards. Does that confuse you?
     - **What to look for:** does the yellow glow read at a glance mid-fight? Do you notice the small cyan bolt when a slot is primed? Does a Keystone offer on the reward screen feel exciting? The playtester thinks the primed marker and Keystone chip are too quiet; ux fixed those in BD2 (see 49).
+    - **Default:** no change.
     - **A correction:** I called them "8 new Fire cards" earlier. By pool they're 4 Fire, 2 Rogue and 2 Wizard.
 
 47. **My numbers for your relic and card tiers** (`docs/MAP.md` §4.5). Say if any feel off; they're all data.
@@ -82,9 +87,10 @@ Reply with the number and a word or two.
     - Card odds per offer slot: act 2 20% rare; act 3 30% rare and 8% legendary.
     - The boss-relic pick can't be skipped, and you can't give up a boss relic at the cap, so you always end with 2.
     - Mini-bosses still give gold, and their rare/legendary card offer can be rejected with a reject token.
+    - **Default:** these numbers stay.
     - Ballpark: a relic hunter ends with about 14-17 relics, a route that ignores relics with about 6-8 (both include the 2 boss relics).
     - Cost to know about: this needs about 6 boss relics, 5 rare and 4 legendary cards per class. So MAP3 is split (2026-11-07): MAP3 builds the three acts and save/resume, and MAP3b adds this content. Until MAP3b, a mini-boss gives gold and a normal relic offer and card offer.
-35. **Builds (BD2 is in, so this can be played now; whenever you have time).** Build the same class and element twice with different plans. Do the two runs feel different? Does removing a keystone card hurt?
+35. **Builds (BD2 is in, so this can be played now; whenever you have time).** Build the same class and element twice with different plans. Do the two runs feel different? Does removing a keystone card hurt? **Default:** no change.
 
 ## Later, optional
 

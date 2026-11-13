@@ -1,270 +1,45 @@
 # Handoff State
 
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
-> **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
+> **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-12 (D50 = B recorded; MAP3b closed, tag `playtest-2026-11-12-MAP3b`; MAP4 next, starting with game-lead's brief).
-
-## What's done
-- **MAP3b closed 2026-11-12.** Tag `playtest-2026-11-12-MAP3b`.
-  - **Commits:**
-    - design 093450c..81c8e76;
-    - gameplay-dev 5d5678c..8157c59 (sittings A, B, C);
-    - ux e596c5a..f59e2c6;
-    - qa PASS 02ed622;
-    - playtest bffaf3a;
-    - docs adff02a.
-  - **Shipped:**
-    - card rarity, with rare from act 2 and legendary from act 3;
-    - 17 rare and legendary cards, 15 tier 1-3 relics, 8 boss relics (42 relics, 65 cards);
-    - the mini-boss reward (a boss relic, then rare or legendary cards);
-    - card prices 55/85/125;
-    - stack hard cap 10;
-    - the act 3 floor in sand.
-  - **Baselines now:**
-    - suite 2273 (1 skipped: the open `-RelicCap` qa test), 0 orphans;
-    - hashes unchanged (3172486861 / 916264160 / 1317880580 / 3476063471);
-    - SIM1 `-Route first`: human Rogue 27/36, Wizard 23/36; off 33/36, 35/36. These moved with the merchant bot change; the floors are unchanged;
-    - relic medians `relic` 15/15, `safe` 6.5/6;
-    - exactly 2 boss relics per won run;
-    - late Bleed share 11.8%.
-  - **Carry-overs:** ROADMAP MAP3b "Carry-overs to MAP4".
-  - **New director items:** eyes 56, and D49 updated (recommend B).
-- **Director feedback recorded 2026-11-12 (game-lead, docs only):**
-  - **His report:**
-    - the Bleed Rogue is "a lot more put together", and probably holds up to Fire;
-    - a full run took under 7 minutes, with no Fire cards by the end;
-    - the Raider is too easy.
-  - **Where recorded:**
-    - DECISIONS "Director feedback on MAP3b";
-    - the ROADMAP MAP4 first step (Raider HP 120 -> 180, gap backup);
-    - OPEN_ITEMS new D50 (run length; default C, recommend B).
-  - **Eyes items resolved:** 53 removed; 55 trimmed to the brute; 52 trimmed to Continue and the Act 2 screen; 56's Bleed question removed.
-  - **Pending for tech-writer (MAP4 docs pass):**
-    - archive eyes 53 in RESOLVED, plus the answered parts of 55, 52 and 56, with his words (the text is in commit b0222f9, `docs/OPEN_ITEMS.md`);
-    - a CHANGELOG director-feedback entry;
-    - the Raider change, old -> new, when it's built.
-- **D50 = B recorded 2026-11-12 (game-lead, docs only):**
-  - **His answer:** lower the run target to about 15-20 min. His 6:56 was the game's end-of-run time, which counts fights only; with good, tough build decisions a run is "more like 15 minutes real-time".
-  - **Where recorded:** GDD §2 and §9, MAP.md §1, the ROADMAP MAP4 entry (no length pass) and a ux carry-over ("Time" -> "Fight time"), DECISIONS "Applying D50 = B", and OPEN_ITEMS (removed).
-  - **Pending for tech-writer (MAP4 docs pass):**
-    - archive D50 in RESOLVED with his answer; the question text is in commit e038fa5, `docs/OPEN_ITEMS.md`;
-    - a CHANGELOG `[Director decision]` entry: target run length 30-45 min -> about 15-20 min of real time, decisions included.
-- **D49 = B recorded 2026-11-12 (game-lead, docs only):**
-  - **His answer:** each pruned or rejected card lowers its type's offer weight for the run.
-  - **Where recorded:** GDD §9, the ROADMAP MAP3b carry-overs (MAP4 gameplay-dev's first step), DECISIONS "Applying D49 = B", and OPEN_ITEMS (removed).
-  - **Pending for tech-writer (MAP4 docs pass):**
-    - archive D49 in RESOLVED; the question text is in commit 5b412e5, `docs/OPEN_ITEMS.md`;
-    - a CHANGELOG `[Director decision]` entry: pruning or rejecting had no effect on offers, and now each one multiplies that status's offer weight by 0.8, never below 0.4.
-- **MB1 closed 2026-11-11.** Tag `playtest-2026-11-11-MB1`.
-  - **Commits:**
-    - design 5ecbbf9 (MAP.md §11);
-    - gameplay-dev 5991616..f0fbdc3 (A: the brute, mini-boss marker, act tint, multi-disc aoe), a284270..8dae255 (B: the duelist, `chain`, `blink`);
-    - ux 1b3fe3a..7897d66;
-    - qa PASS e3835d0;
-    - playtest 73e844b;
-    - docs 46ea683.
-  - **Baselines now:**
-    - suite 2191 (163 suites, 0 orphans);
-    - hashes unchanged (arena 3172486861 / 916264160 / `-Plan` 1317880580; bot 3476063471);
-    - SIM1 three-act `-Route first` pooled: human Rogue 28/36, Wizard 15/36; off 35/36, 30/36;
-    - 0 losses at rooms 10 and 20.
-  - **Carry-overs to MAP3b** (ROADMAP "From MB1"):
-    - the tuning default, duelist HP 90 -> 120 and Wet floor gaps (eyes 55);
-    - the Open a Vein glow;
-    - the ux nits;
-    - the housekeeping items.
-  - **New director item:** eyes 55 (fight both mini-boss scenarios: real fights or speed bumps?).
-- **SIM1 closed 2026-11-11 (tooling, no tag, no playtest):** brief ca7cc1d; gameplay-dev d15e691, 85e7d6a, a047b9b; qa FAIL e19ecec/c5202ff (ps1 gate regex), re-check PASS 95aebd7; docs 2531020 (also archived D48 and its changelog entry).
-  - **Shipped:** `data/bot_presets.json` (off, human = 0.2 s delay / 25 deg aim error), `--bot-preset=` / `-BotPreset`, sweep overrides, a case-sensitive engine-error gate in the sim wrappers.
-  - **Baselines now:** suite 2100 (160 suites, exit 0, 0 orphans); hashes unchanged (arena 3172486861 / 916264160 / `-Plan` 1317880580; bot sim 3476063471). Three-act pooled `-Route first`, off / human: Rogue 35/36 / 26/36, Wizard 29/36 / 15/36. Full table in `docs/reviews/2026-11-11-sim1-qa.md`.
-  - **Floors (from MB1):** human three-act Rogue at least 21/36, Wizard at least 9/36; off-bot guards 32/36, 25/36; no-card at most 25% (off); parity 70-130%; fingerprint at least 0.6 (off, with relics). DECISIONS "SIM1 qa FAIL triage and the floors".
-  - **BD3b findings:** the Wizard gap (human 42% vs Rogue 72%), human Wizard `-Route safe` 0/12.
-- **D48 = A recorded 2026-11-11 (game-lead, docs only):**
-  - **His answer:** close BD3a as it is; no Bleed top-up sitting. Bleed and physical rare and legendary cards come in MAP3b, as planned. This was the default, so the run order is unchanged.
-  - **Where recorded:** ROADMAP MAP3b entry and the BD3a playtest line; OPEN_ITEMS (removed).
-  - **Pending for tech-writer (SIM1 docs pass):** archive D48 in RESOLVED with his answer and where it's recorded (the question text is in commit 76f1302, `docs/OPEN_ITEMS.md`). CHANGELOG `[Director decision]` entry: D48 = A, Bleed content timing: no top-up now; late-offer Bleed share stays about 8.5% until MAP3b adds Bleed and physical rares and legendaries.
-- **BD3a closed 2026-11-09:** physical Rogue: stacking, detonate, 8 Rogue cards, 6 relics, Spite Knuckles -> Bleed, D43 lean + D46 = B, D47 = B, D45 heal, mini-boss bar.
-  - **Commits:**
-    - gameplay-dev 7625eee..6f57756 (A), 4afe5b9..f48e696 (B), a41dfd0, 49f3f3e, 7b81933..29da9bf (D47), e4ef264..bf0d44c (fixes, including the sim aim bug a9d56fc);
-    - ux aa02650..cff56aa, a614f76, e51981e;
-    - qa FAIL 4477c95..39ef43a, re-check FAIL 8e8c3bc, PASS 4b97a61;
-    - playtest 2034c6e (no blocker; not harder than MAP3);
-    - docs 71119f8..d139723.
-  - Tag `playtest-2026-11-09-BD3a`.
-  - **Baselines now:** suite 2083 (157 suites, exit 0, 0 orphans); arena 3172486861 / 916264160 / `-Plan -Seed 1 -Seconds 30` 1317880580; bot sim 3476063471. Every bot run number before a9d56fc is stale; SIM1 re-baselines. Fixed-bot info: Rogue three-act 35/36, Wizard 29/36.
-  - **New director items:** D48 (Bleed content now or MAP3b; default A), eyes 53 (play a physical Rogue: harder or easier?), 54 (the bot FYI).
-  - **Carry-overs:** MB1 ux (label overlaps, the "Act 2 Mini-boss" bar, doubled "HP", the Open a Vein cue, the `!is_inside_tree()` log); MAP3b (non-Burn heavy relic, a prune or reject shrink rule, late Bleed share 8.5%); SIM1 (`--run-room=30` headless not exiting).
-  - **Doc fixes from the docs pass:** D44 isn't in ROADMAP BD3a item 10, and MAP.md §2 holds only D44. That's fine as recorded; tech-writer used the right places.
-- **D46 = B, D47 = B recorded 2026-11-09 (game-lead, docs only):**
-  - **His answers:** D46 = B: the lean counts only cards you've added, not the starting deck. That's already shipped in 49f3f3e as `rewards.status_lean_skip_starter: true`. D47 = B: a pruned card is never offered again that run. gameplay-dev builds it after ux.
-  - **Where recorded:** GDD §9 (the lean bullet, plus a new "Pruned cards stay gone" bullet), the ROADMAP BD3a D47 item, and OPEN_ITEMS (removed).
-  - **Pending for tech-writer (BD3a docs pass):** archive D46 and D47 in RESOLVED (the question text is in commit eb6322a). Add CHANGELOG `[Director decision]` entries: D46 (the lean counted every owned card, now only added cards: a neutral Fire Rogue's Fire offers go 38% -> 30%); D47 (pruned cards came back at full weight, now never offered again that run: the Bleed bot's late Fire share 39% -> about 32%).
-- **D44 = C, D45 = B recorded 2026-11-09 (game-lead, docs only):**
-  - **His answers:** D44 = C: the mini-bosses especially get their own attacks and behaviours (his example: one smaller, less HP, quicker and hitting harder, rogue-style), plus the visible changes. D45 = B: a partial heal at each act's start, easy to change back if runs get too easy.
-  - **Where recorded:** GDD §9; MAP.md §2 (mini-boss line marked superseded); ROADMAP new slice MB1 (after BD3a, before MAP3b) and BD3a sitting A item 10 (30% heal, `acts.start_heal`); DECISIONS "Applying D44 = C and D45 = B".
-  - **Pending for tech-writer (BD3a docs pass):** archive D44 and D45 in RESOLVED (question text in commit 40d64ee) and add CHANGELOG `[Director decision]` entries: D44 (mini-boss = existing enemy + mini-boss tier, no new AI -> own attacks and behaviours, new slice MB1, per-act visual changes); D45 (no heal between acts -> 30% of max HP at the start of acts 2 and 3, a data value).
-- **MAP3 closed 2026-11-09:** three acts of 10 rooms, act-end mini-bosses, act scaling, save and Continue.
-  - **Commits:** gameplay-dev 239c856..da739de (A), 5d85ee4..cd17992 (B); ux 5a75570..96bbdeb; qa PASS with carry-overs 890c9eb; playtest 02a8c5f (no blocker), triage 40d64ee; docs 969f3b1. Tag `playtest-2026-11-09-MAP3`.
-  - **Baselines now:** suite 1954 (149 suites, 1 skipped bug probe); arena 1897787086 / 4207041509 / `-Plan` 1160207333; bot sim 846850403; `-NoMap` 12/12 57.5 s / 12/12 63.3 s; three acts `-Route first` Rogue 9/12, Wizard 10/12 (relic and safe in ROADMAP's MAP3 qa note).
-  - **New director items:** D44 (act identity), D45 (heal between acts), eyes 52 (a timed three-act run, Continue, the Act 2 screen).
-  - **Carry-overs:** BD3a sitting A items 7-9 and its ux list; MAP3b (relic counts 11/5 against 14-17/6-8, gold hoarding, a log of which room kills the bot).
-  - The "pending for tech-writer (MAP3 docs pass)" notes below were done in 969f3b1.
-- **Director feedback 2026-11-09, planned (game-lead, docs only):**
-  - **His report:** he played a three-act physical/Bleed Rogue run. "It felt good mostly." The problems:
-    - far too few physical and Bleed cards;
-    - about half his relics were Fire/Burn and pointless to his build;
-    - he kept "rejecting (and pruning) fire/burn options";
-    - he felt "trapped into doing a fire/burn focus".
-    - He wants this to be a priority.
-  - **The data:**
-    - 1 card applies Bleed;
-    - about 37% of a Fire Rogue's card offers are Fire;
-    - 5 of the 8 elite and relic-room relics it can see need Burn, including the Rogue's own Spite Knuckles.
-  - **Plan:**
-    - BD3 is split. **BD3a, physical Rogue** (stacking, `detonate_status`, 8 Rogue cards, 6 relics, the Spite Knuckles retheme) runs after MAP3 and before MAP3b. **BD3b** (Wizard depth) stays after 3d.
-    - Where it's written: BUILD_DEPTH §9a, the ROADMAP BD3a brief and run order, DECISIONS "BD3a placement and scope", and OPEN_ITEMS D43 (should offers lean toward your build; default A, recommended B).
-  - **Answered 2026-11-09:**
-    - **D43 = B:** offers lean toward the statuses your deck applies. Recorded in GDD §9, the ROADMAP BD3a sitting B step 7, and DECISIONS (starting numbers). Built in BD3a.
-    - **No "no element" option:** class + element is a dual-class system, and players lean either way or stay hybrid. Recorded in GDD §5 "Character creation".
-    - **Not answered:** whether the Wizard's BD3b should follow BD3a directly. Default: it stays after 3d.
-  - **Pending for tech-writer (MAP3 docs pass):**
-    - archive D43 in RESOLVED with his answer and where it's recorded (the question's text is in commit 962fe50);
-    - CHANGELOG `[Director decision]` entries: D43 = B (offers: even draw across pools -> a lean toward owned statuses), and dual-class (no "no element" option; lean either side or stay hybrid);
-    - the feedback as a CHANGELOG director-feedback entry;
-    - the reprioritisation as `[Director decision]` (non-Fire build variety is a priority; BD3a runs before MAP3b);
-    - his "felt good mostly" on the three-act run as MAP3 playtest input.
-- **MAP3 brief and split 2026-11-07 (game-lead, docs only):** ROADMAP MAP3 "Detailed brief" plus a new MAP3b item; DECISIONS "MAP3 split and the detailed brief"; OPEN_ITEMS status line, items 47 and 51. Reason: 13 relics, tier 1-2 only, no boss relics, no card rarity, so the relic targets and the mini-boss reward can't be built yet. Interim calls: the mini-boss gives gold plus a normal relic offer and card offer; an exhausted pool keeps BD2's card-offer fallback; no free heal between acts; the bot 30-45 min gate is replaced by 8/12 wins and per-act time within ±30% of act 1 (human length goes to the playtest). **For tech-writer at the MAP3 docs pass:** a CHANGELOG process note on the split and the restated acceptance.
-- **D41 = B, D42 = A recorded 2026-11-06 (game-lead, docs only):**
-  - **His answers:**
-    - D41 = B: keep relic prices 60/90/130 and raise gold income instead. Cards are tiered by rarity too, and a card is always cheaper than the equivalent relic tier.
-    - D42 = A: no merchant guarantee on a route.
-  - **Where recorded:** GDD §4a and §9, MAP.md §3/§4.4/§4.5, ROADMAP MAP3 fold-ins, DECISIONS "Applying D41 = B and D42 = A".
-  - **Built in MAP3,** as gameplay-dev's first step. Until then main and the MAP2 tag still sell relics at 30/45/65.
-  - **Pending for tech-writer (MAP3 docs pass):**
-    - Archive D41 and D42 in RESOLVED with his answers and where they're recorded. The old OPEN_ITEMS text is in commit e6908f2.
-    - Add CHANGELOG `[Director decision]` entries:
-      - D41: relic prices, shipped 30/45/65 -> 60/90/130 with more gold income (values from the MAP3 sim); card price 40 flat -> tiered by rarity, always below the matching relic tier.
-      - D42: no merchant guarantee, unchanged from the shipped default.
-- **MAP2 closed 2026-11-06:** split into MAP2-A and MAP2-B (DECISIONS "MAP2 split").
-  - **Commits:**
-    - gameplay-dev 66ba317..9321820 (A), 5801fe7..6a3e780 (B);
-    - ux 8897701..accf46f (shop panel; turned the merchant on in 8994863);
-    - qa PASS with carry-overs bbac2e0..38f20bd;
-    - playtest d503d36 (no blocker);
-    - docs 05b7999.
-  - Tag `playtest-2026-11-06-MAP2`.
-  - **Shipped:** the merchant (3 relics with a shop-only slot, cards at 40, removal 50 +25), 7 new relics (13 total), and D40 = A (`min_rest` 1).
-  - **Baselines now:**
-    - suite 1843 (143 suites, 2 skipped MAP3 carry-overs);
-    - arena 1897787086 / 4207041509 / `-Plan` 1160207333;
-    - bot sim 846850403;
-    - `-NoMap` 12/12 57.5 s / 12/12 63.3 s;
-    - map-on route table (relic median 6, at the floor): ROADMAP MAP2 qa note.
-  - **Carry-overs:** MAP3 (housekeeping list, ux polish, D42); BD3 (Request for Quotation dominance, Liquidate Assets weak/hidden, Paperwork Fire rarely fires, Severance chains, Rogue safe 10/12).
-  - **Answered 2026-11-06:** D41 = B and D42 = A (see the entry above).
-- **MAP1 closed 2026-11-05:** split into MAP1-A and MAP1-B (DECISIONS "MAP1 split").
-  - **Commits:**
-    - gameplay-dev afdf30d..ed4e2aa (MAP1-A), 2181b9b..3a2d9d8 (MAP1-B) and 3841b41..0226ec9 (post-flip test fixes);
-    - ux a1a4155..ac7baa2 (the map screen; turned the map on);
-    - qa PASS with carry-overs 19272da..e1c7c5d;
-    - playtest e1e31b5 (no blocker);
-    - docs c4bda37.
-  - Tag `playtest-2026-11-05-MAP1`. The map ships on; `--no-map` gives the old straight run.
-  - **Baselines now:**
-    - suite 1737 (137 suites, 3 skipped carry-over tests);
-    - arena 1897787086 / 4207041509 / `-Plan` 1160207333;
-    - bot sim 846850403;
-    - run sim `-Run -Seed 1 -Runs 12` (first route): Rogue 12/12 66.2 s, Wizard 10/12 60.6 s;
-    - `-Route relic`: 12/12 52.1 s, 11/12 63.2 s;
-    - `-Route safe`: 12/12 58.4 s, 12/12 65.0 s;
-    - `-NoMap`: 12/12 57.3 s, 12/12 62.5 s.
-  - **Carry-overs:**
-    - MAP2 (gameplay-dev and ux lists, folded into the MAP2 brief);
-    - MAP3 save robustness (`from_dict` node-pending soft lock, negative gold, the large chest `min_tier` 2 back once tier 3 relics exist);
-    - BD3 (the Wizard on elite-heavy routes).
-  - **New director question D40:** a rest on every route (answered A on 2026-11-06).
-  - **Director feedback 2026-11-05:** "relics feel fun so far, builds are starting to get more exciting". It's recorded in the CHANGELOG, and item 49 is archived in RESOLVED; c4bda37 did both.
-- **BD2 closed 2026-11-05:** split into two gameplay-dev sittings (DECISIONS "BD2 split").
-  - **Commits:**
-    - gameplay-dev 3b1ac07..fe051cc (BD2-A, engine) and 673db13..1af42c5 (BD2-B, content and run flow);
-    - ux 4040259..92e4a31, plus fix 9901776 (Cancel focused on give-one-up);
-    - qa PASS with carry-overs 9f9a241..1d9d3b9, plus addendum 1b53f62;
-    - playtest 87116a8 (no blocker);
-    - docs 3a75162.
-  - Tag `playtest-2026-11-05-BD2`. 6 relics shipped; Exit Strategy moved to BD3.
-  - **Baselines now:**
-    - suite 1591/1591 (130 suites);
-    - arena 30 s seed 1 = 1897787086, 90 s = 4207041509, `-Plan` 1160207333;
-    - bot sim `-Rooms 20 -Seed 3` = 846850403 (unchanged; the bot sim builds no rooms, so it can't see relics);
-    - relic run baselines: `run_wave_sim.ps1 -Run -Seed 1 -Runs 12 -Class rogue|wizard`, 12/12 won each, boss medians 57.3 s / 62.5 s.
-  - **Carry-overs** are under the BD2 brief in ROADMAP:
-    - MAP1 gameplay-dev: the `rooms.relic_room` stopgap, and checking whether the bot sim `-Swap` is a no-op;
-    - MAP1 ux: the playtest readability items and the pause list showing the scene through it;
-    - MAP1 qa: the c1e flake;
-    - MAP3: save robustness, moved from 3d 6a;
-    - BD3: chain depth on delayed relic spawns, Exit Strategy, and the Controlled Burn-with-relics balance.
-  - **Relic room placement:** MAP1's relic-node rules take the playtester's "by room 7" note, plus the director's answer to item 49.
-- **GDD §15 note 2026-11-04 (game-lead, docs only):** the free-to-play, cosmetics-only idea, from a playtester (the director's brother). The director isn't on board: it's single player. CHANGELOG "director note, not a decision" entry added in 3a75162.
-- **BD1 closed 2026-11-04:** gameplay-dev a141865..7c5a66b (BD1-A, engine) and 3e297d5..49b117b (BD1-B, content and tooling), ux b61c388..1d3cbda, qa PASS with carry-overs 2796aa4, playtest 433ca0b (no blocker), docs e254881. Tag `playtest-2026-11-04-BD1`.
-  - **Baselines now:** suite 1413/1413 (121 suites); arena 30 s seed 1 = 1897787086, 90 s = 4207041509; bot sim `-Rooms 20 -Seed 3` = 846850403. These were rebaselined because the new pool cards fill the sim slots (DECISIONS "BD1-B"). The plan baselines are in the same entry.
-  - **Carry-overs** are listed under the BD1 brief in ROADMAP. Do the gameplay-dev and ux items with BD2's steps, and the balance items with BD3.
-  - The tech-writer backlog (D34-D39, items 39-42, the corporate idea) is archived in RESOLVED and CHANGELOG in e254881.
-  - **Process lesson (tech-writer):** Bash heredocs turned `\r` in `tools\run_wave_sim.ps1` into a carriage return in README twice. Write edit scripts with the Write tool instead.
-- **D37 = A, D38 = A recorded 2026-11-04 (game-lead, docs only):**
-  - **His answers:** D37 = A, a dig relic adds a rest Dig action that replaces both heal and removal. D38 = A, curses are cards you swap past; they don't count toward slot minimums and are removed like any card.
-  - **Where recorded:** GDD §4a, BUILD_DEPTH §4.7, ROADMAP MAP4.
-  - **Pending for tech-writer (BD1 docs pass):** archive D37 and D38 in RESOLVED (the text is in commit 863b15b), plus CHANGELOG `[Director decision]` entries for both.
-- **Relic candidates 2026-11-04 (game-lead, docs only):** the director's two Gemini lists are adapted in BUILD_DEPTH §4.5 (round 1) and §4.8 (round 2: 20 relics, 6 boss, 6 starters, 6 events). They're unscheduled; slices pick from them. New D38 (curse cards).
-- **Relic sources recorded 2026-11-04, third pass (game-lead, docs only):**
-  - **His direction:** the relic sources from Slay the Spire and The Last Flame. The follow-up: a starter relic is chosen in the loadout from the unlocked tier 1 starter relics, with no random opening.
-  - **Where recorded:** GDD §4a; the plan in BUILD_DEPTH §4.7; MAP.md §2/§9; ROADMAP (BD2 reserves values, MAP1 chests, MAP2 shop-only slot, MAP4 = events, 3d starter relic slot); DECISIONS "All relic sources and starter relics in the loadout".
-  - **New:** D37 (rest dig vs D30). Item 47 is still open.
-  - **Pending for tech-writer (BD1 docs pass):** CHANGELOG `[Director decision]` entries for the relic sources direction and for starter relics in the loadout (no RNG restarts).
-- **Director replies recorded 2026-11-04, second pass (game-lead, docs only):**
-  - **Item 42:** "tiers" confirmed as acts 2-3, then D34 revised. Relic tiers are 1/2/3/boss, with odds rising per act. Elites always give a relic and never cards. Act-end mini-bosses are the only source of boss-tier relics (2 per run); act 1's also offers 3 rare cards, act 2's 3 legendary. Rare cards come from act 2, legendary from act 3.
-  - **Where recorded:** GDD §4a/§9, MAP.md §2/§4.4/§4.5/§10, BUILD_DEPTH §4.1/§4.2/§4.6/§11, ROADMAP (BD2 gets the relic tier values; MAP3 gets rarity and boss relics, with a possible MAP3b split) and DECISIONS "Applying the director's revised relic and card tiers".
-  - **His other replies** (he renumbered them 43-46): 41 knockback fix good ("always found it strange to be flung across the room"); 40 the 1-dodge Wizard still seemed fine; 39 boss length fine; 35 not played yet, he may circle back.
-  - **OPEN_ITEMS:** 39, 40, 41 and 42 removed; new 47 (my numbers).
-  - **Pending for tech-writer (BD1 docs pass):**
-    - Archive items 39, 40, 41 and 42 with his answers in RESOLVED. The old text is in commit 648dbd4.
-    - Add CHANGELOG `[Director decision]` entries for:
-      - relic tiers 1/2/3/boss with odds per act;
-      - elites relic-only;
-      - boss relics only from mini-bosses (2 per run);
-      - mini-boss rare/legendary card offers;
-      - card rarity by act;
-      - knockback fix confirmed.
-- **Director answers recorded 2026-11-04 (game-lead, docs only):** D34 = C (his own option: relics grow with the run, hard cap 20 and hard to reach, swap at the cap, no duplicates, mini-bosses always give gold + a rare card offer, elites in later acts a smaller chance of a rare card offer too), D35 = A (3 rejects per run), D36 = A (volley stays). Recorded in GDD §4a/§5/§9/§14, MAP.md §2/§4.4/§4.5/§10, BUILD_DEPTH §4.1/§11, ROADMAP BD2/MAP2/MAP3 (BD2 now builds the at-cap swap, cap 20), DECISIONS "2026-11-04 - Applying D34 = C, D35 = A, D36 = A". New eyes item 42 (check my reading of D34). **Pending for tech-writer (BD1 docs pass):** archive D34, D35, D36 in RESOLVED (old OPEN_ITEMS text is in commit 81ff8e4) and add CHANGELOG `[Director decision]` entries: relic cap 10 -> 20 over three acts, at-cap fallback "card offer instead" -> "give a relic up", rejects 3 per run kept, volley unchanged.
-- **PL3 closed 2026-11-04:** gameplay-dev 9a86757/fbfd86c, ux da418aa, qa PASS 16387bf/e38bdd2, playtest 7f21afb, docs e03c4b8 (also archived D31-D33 in RESOLVED). Tag `playtest-2026-11-04-PL3`. **Baselines now: suite 1289/1289 (111 suites); arena 30 s seed 1 = 2333565009, 90 s = 1212800; bot sim `-Rooms 20 -Seed 3` = 2281795515.** Carry-overs listed under the PL3 brief (do with BD1). New director items: D36 (volley up close), 41 (knockback feel + PL3 visuals).
-- **Director answers recorded 2026-11-04 (game-lead, docs only):** D31 = A, D32 = A + three acts of 10 rooms (mini-bosses end acts 1-2, final boss act 3; 30-45 min; save and return later), D33 = B. GDD §9, MAP.md §1/§2/§4.5/§8/§9/§10, BUILD_DEPTH §4.1, ROADMAP (MAP3 = acts + save/resume, new MAP4 = curse/buff; run order), DECISIONS "2026-11-04". New D34 (relics over 30 rooms), D35 (rejects). Archived in RESOLVED and CHANGELOG by tech-writer (e03c4b8).
-- **MAP0 closed 2026-11-03 (docs only, no tag):** game-lead ee38ac0, e77653d, adf6468; docs 2762144. `docs/MAP.md` (game-lead owns it); GDD §9 [PROPOSED]; ROADMAP MAP1/MAP2/MAP3; questions D31-D33 (defaults A). Director's H3 Rogue feedback in CHANGELOG; old item 38 merged into 40.
-- **H3 closed 2026-11-03:** gameplay-dev cee653d..3dc74fb, ux 6f89eea, qa PASS 44eff31/f1a3f88, playtest 305b13b (no blocker), docs 8700a4d (incl. D30 in CHANGELOG/RESOLVED). Tag `playtest-2026-11-03-H3`. **Baselines now: suite 1244/1244 (108 suites); arena 30 s seed 1 = 2333565009, 90 s = 819020947; bot sim `-Rooms 20 -Seed 3` = 2281795515.** Playtest findings -> PL3 items 11-13 (volley gaps, pip flash, is the volley fair to the Wizard). OPEN_ITEMS 40 asks the director to play it.
-- **D30 = A recorded 2026-11-03 (game-lead, docs only):** 98efccd (GDD §4a bullet, GDD §9 director note on maybe removing the rest heal, BUILD_DEPTH §4.1/§11, ROADMAP BD2 wording + MAP0 rest-node question). OPEN_ITEMS: D30 removed. Archived in RESOLVED and CHANGELOG by tech-writer (8700a4d).
-- **Director answers recorded 2026-11-02 (game-lead, docs only):** a6c33e6 (GDD §3/§4a/§5/§9/§14), 803c42b (BUILD_DEPTH §3.4, §4.1, §8, §9, §11), 6bd0f70 (ROADMAP: H3 + MAP0 briefs, BD1/BD2 edits, PL3 item 6 -> H3), c065762 (DECISIONS "Applying the director's answers"), plus OPEN_ITEMS/STATE. D22 = C (merchant, relic stage, elites; 6-8 for a relic hunter, cap 10), D24 = A, D25 = A (+ passive nodes), D26 = A, D28 = A, D29 = B (dodge on Space, Rogue 2 / Wizard 1, Movement on Ctrl, enemies and boss volley a bit faster). New D30 (rest/reward relics; default A = no).
-- **BD0 closed 2026-11-02 (docs only, no tag):** game-lead 81fb65e..0ddd630, docs 995befe. New `docs/BUILD_DEPTH.md` (game-lead owns it). GDD §4a [PROPOSED] summary. ROADMAP: BD1 rewritten, BD2 (relics) and BD3 added. DECISIONS "2026-11-02 - BD0". The director said "continue" without answering D29, so BD0 assumed D29 = A (dodge off); BUILD_DEPTH §8 says what changes for B/C. New questions D22, D24, D25 (defaults A).
-- **H2 closed 2026-11-02 (dodge-off trial):** gameplay-dev 120bfef..dacc680, ux e155c3e/ff3ef4f, qa PASS 4aa7141, playtest ebde769, docs edef5c0/0e47a70. Tag `playtest-2026-11-02-H2`. Dodge off (`data/player.json` `dodge.enabled`), Movement Space, Utility F, Wizard 22 HP, game-over arm delay. Bot standard clears with the dodge off: Rogue 3/16, Wizard kite 8/16, no-kite 7/16 (16/16 each with it on); not retuned. D29 asks whether the dodge stays off. **Baselines now: suite 1220/1220 (105 suites); arena 30 s seed 1 = 2591372848, 90 s = 4009010406 (dodge-on copies still give H1's 2816045921 / 3667433295); bot sim `-Rooms 20 -Seed 3` = 2281795515.**
-- **H1 closed 2026-11-02 (gates met, goal missed):** 0c834a0..e4f4cbe, qa PASS 42cdb13, playtest a8123b5, housekeeping 642d546/c3f5ac1/98595d4 (D21 = B; no renormalisation needed, index already LF), docs f8238c1 (incl. new `docs/RESOLVED.md`). Tag `playtest-2026-11-02-H1`. (H1 baselines, superseded by H2's above.)
-- Milestone 2, Post-milestone polish 1, C1, 3a, 3b, 3c, A1, T-decks, W1 (W1a + W1b), PL2, F1, P-dodge (tags `playtest-2026-10-29-C1`, `-3a`, `-3b`, `-3c`, `-A1`, `-T-decks`, `playtest-2026-10-30-W1a`, `-PL2`, `-F1`, `-P-dodge`, `playtest-2026-11-02-W1b`, `playtest-2026-11-02-K1`).
-- **K1 closed 2026-11-02:** gameplay-dev 04ac813/7f4b136, ux 6204f2a/81abc85, qa PASS 8752a1c, playtest 2c0d185, docs 9e77aae. The UI's key text now comes from `InputLabels` (live InputMap), Recovery is on R, and a duplicate binding errors at startup. The reward prompt no longer lets slot keys cast behind it. Playtest findings went to PL3 items 7-10. DECISIONS "2026-11-02 - K1".
-- **W1b closed 2026-11-02:** content aaa933a .. playtest d74e0df; docs ab00c50 + d6a449a. The director's keybind commit 24530e4 left 3 stale input tests failing; qa fixed them test-only in 0119999 (tests now read slot keys from the InputMap). Carry-overs: kiting Wizard nearly unhurt in rooms 1-9 (H1); Fan of regrets telegraph added to PL3 as item 6.
-- Director answers D1-D18 and checklist items 11-24 are recorded and built.
-- **2026-11-02, Part 0 of the director's 10/31-11/2 notes (docs only, game-lead):** GDD §1, §3, §4, new §4a, §8, §9, §14 items 11-12; ROADMAP briefs for K1, H1, BD0, BD1, PL3 housekeeping, 3d changes A-F; OPEN_ITEMS updates; human playtest entries; DECISIONS "2026-11-02 - Recording the director's 10/31-11/2 notes". All 2026-11-02 director decisions are in the CHANGELOG (ab00c50).
-- The repo runs. Baselines: see the H2 line above.
+Last updated: 2026-11-12. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- Nothing in progress. MAP3b closed 2026-11-12.
-- Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
+- Nothing. MAP3b closed 2026-11-12. The repo runs.
 
 ## Exact next step
-1. **MAP4 (events).** First, game-lead details the brief: the ROADMAP MAP4 entry says "Brief detailed at MAP3's close". Probably two sittings. gameplay-dev's first step is the MAP3b carry-overs: the Raider (HP 120 -> 180), the eyes-56 default, D49 = B, and the small fixes. Run length is settled (D50 = B): no length pass.
-2. Then 3d, BD3b.
+1. **MAP4 (events). game-lead writes the detailed brief** in the ROADMAP MAP4 entry, split into sittings of one agent session each (under about 150 tool calls), and tags it `safe to chain` or `needs your play first`. Expected tag: `safe to chain`. Its tuning (Raider, D49) comes from the director's own MAP3b play.
+2. **gameplay-dev, first sitting:** the MAP3b carry-overs (ROADMAP MAP3b "Carry-overs to MAP4"): Raider HP 120 -> 180, the eyes-56 default, D49 = B, the small fixes. Run length is settled (D50 = B), so there's no length pass.
+3. Then 3d, then BD3b.
 
-Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
+**Next role:** game-lead (the MAP4 brief), then gameplay-dev.
 
-**D-numbers:** D21-D45 answered. D46 = B and D47 = B (2026-11-09). D48 = A (2026-11-11, archived in RESOLVED 2531020). D49 = B (2026-11-12). D50 = B (2026-11-12). Next free: D51.
+## Current baselines (MAP3b close)
+- Suite 2273 (1 skipped: the open `-RelicCap` qa test), 0 orphans.
+- Hashes 3172486861 / 916264160 / 1317880580 / 3476063471.
+- SIM1 `-Route first`: human Rogue 27/36, Wizard 23/36; off 33/36, 35/36.
+- Relic medians `relic` 15/15, `safe` 6.5/6. Exactly 2 boss relics per won run. Late Bleed share 11.8% (Fire 31.3%).
 
-**Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
+## Pending for the next docs pass (tech-writer, MAP4)
+- **RESOLVED:**
+  - D49 (the question text is in 5b412e5, `docs/OPEN_ITEMS.md`);
+  - D50 (in e038fa5);
+  - eyes 53 plus the answered parts of 55, 52 and 56, with his words (in b0222f9).
+- **CHANGELOG:**
+  - `[Director decision]` D49: pruning or rejecting had no effect on offers; now each one multiplies that status's offer weight by 0.8, floor 0.4.
+  - `[Director decision]` D50: target run length 30-45 min -> about 15-20 min of real time, decisions included.
+  - The director-feedback entry for MAP3b (Bleed Rogue holds up, run under 7 min of fight time, Raider too easy).
+  - The Raider change, old -> new, once built.
+  - `[Director decision]` process, 2026-11-12 (c5f5879): sessions stop at about 150 tool calls with a `Remaining:` list, smaller briefs, `safe to chain` / `needs your play first` tags, eyes items expire one slice later at their default, each answer is recorded once, STATE trimmed.
+
+## Known issues
+- Wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
+- Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
+
+**D-numbers:** D21-D50 answered (D49 = B, D50 = B on 2026-11-12). Next free: D51.
+
+**Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths. A role that stops with a `Remaining:` list gets a fresh agent, never a resumed one.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions open; eyes 56, 55, 54, 52, 51, 50, 49, 48, 47 and 35; the round 2 vision check is due. Answered items are in `docs/RESOLVED.md`.
+All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions open; eyes 56, 55, 54, 52, 51, 50, 49, 48, 47 and 35, all expiring at MAP4's close; the round 2 vision check.

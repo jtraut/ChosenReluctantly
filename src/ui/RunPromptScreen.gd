@@ -624,9 +624,15 @@ func _fill_options(options: Array, content: Dictionary = {}) -> void:
 		_place_shop(in_footer, shop_width * s)
 	elif _layout == "cells":
 		options_box.columns = clampi(_option_buttons.size() - in_footer.size(), 1, int(cfg.get("relic_cell_columns", 4)))
+		var cells: Array[Button] = []
+		var cell_footer: Array[Button] = []
 		for i in range(_option_buttons.size()):
 			if not in_footer.has(i):
 				options_box.add_child(_option_buttons[i])
+				cells.append(_option_buttons[i])
+			else:
+				cell_footer.append(_option_buttons[i])
+		_wire_cells_focus(cells, cell_footer, options_box.columns)
 	else:
 		options_box.columns = maxi(numbered, 1)
 		for i in range(_option_buttons.size()):
@@ -750,6 +756,24 @@ func _wire_shop_focus(relics: Array[Button], cards: Array[Button], footer: Array
 			up_tile = last_usable[0] if last_usable[0] != null else last_usable[1]
 		if up_tile != null:
 			usable[i].focus_neighbor_top = usable[i].get_path_to(up_tile)
+
+
+## MAP4 ux: the arrow keys in the give-up step. The footer (Confirm, Cancel) is wired by hand like the shop's: left and right along it (a greyed Confirm
+## keeps the highlight, so its "Pick N more" reason can be read), up from it to the last row of relics, down from the last row to it. Without this the
+## engine's search sent Up from Cancel to Confirm and never into the relics.
+func _wire_cells_focus(cells: Array[Button], footer: Array[Button], columns: int) -> void:
+	if cells.is_empty() or footer.is_empty():
+		return
+	var last_row_start: int = int((cells.size() - 1) / maxi(columns, 1)) * maxi(columns, 1)
+	for i in range(footer.size()):
+		var button: Button = footer[i]
+		button.focus_neighbor_left = button.get_path_to(footer[maxi(i - 1, 0)])
+		button.focus_neighbor_right = button.get_path_to(footer[mini(i + 1, footer.size() - 1)])
+		button.focus_neighbor_bottom = button.get_path_to(button)
+		button.focus_neighbor_top = button.get_path_to(cells[mini(last_row_start + i, cells.size() - 1)])
+	for i in range(cells.size()):
+		if i + columns >= cells.size():  # nothing below this relic: down goes to the footer
+			cells[i].focus_neighbor_bottom = cells[i].get_path_to(footer[mini(i % maxi(columns, 1), footer.size() - 1)])
 
 
 ## The removal list: one column per HUD slot (same order and keys as the bottom bar), a header per column, cards

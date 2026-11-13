@@ -225,7 +225,7 @@
             "cancel_label": "Cancel", "none_giveable": "Nothing you hold can be given up.",
             "sacrifice_title": "Give up relics", "sacrifice_line": "%s asks you to give up %d of your relics. Picked %d of %d. Nothing is lost until you confirm.",
             "sacrifice_short": "Needs %d relics you can give up", "sacrifice_full": "You have picked enough. Unpick one first.", "sacrifice_pick_more": "Pick %d more",
-            "confirm_label": "Give these up and take it", "sacrifice_cost_note": "Asks you to give up %d relic(s)", "picked_tag": "Picked", "unpick_hint": "Enter to unpick", "pick_one_hint": "Enter to pick",
+            "confirm_label": "Give these up and take it", "picked_tag": "Picked", "unpick_hint": "Enter to unpick", "pick_one_hint": "Enter to pick",
             "sacrifice_cost_one": "Give up 1 relic", "sacrifice_cost_many": "Give up %d relics",
             "boss_title": "Boss relic", "boss_line": "Pick one. Each one has a real upside and a real cost. Read both.", "cost_format": "Cost - %s",
             "label": "Relic", "owned_title": "Relics", "none_owned": "No relics yet.",

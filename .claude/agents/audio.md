@@ -18,7 +18,7 @@ Until the director explicitly starts the audio milestone, produce no audio and c
 2. **Combat feel sounds:** hits, crits, kills, dodge, basic attack, each card slot activation, cooldown ready cues, status ticks (Burn and later others), pickups, reward accept and reject, and enemy telegraph warnings. Sounds are a major part of game feel and of readability: an important enemy attack must be audible before it lands.
 3. **Element audio language:** a consistent sonic identity per element, built from variations of shared sounds instead of unique sounds per card.
 4. **UI sounds:** hover, click, confirm, cancel, error, with ux-designer.
-5. **Music:** simple loops per area and for boss fights, with a plan for layered or adaptive intensity if cheap to do in Godot. Short runs mean music must not wear out in 30 to 60 minutes.
+5. **Music:** simple loops per area and for boss fights, with a plan for layered or adaptive intensity if cheap to do in Godot. Short runs mean music must not wear out over a run of about 15-20 minutes, or over many runs back to back.
 6. **Mix:** priority rules so critical feedback (player damage, telegraphs) always cuts through, with bus structure (master, music, sfx, ui, ambience) and a volume setting for each exposed in the settings menu.
 7. **Spam control:** randomized pitch and variation, and limits on simultaneous voices so fast combat does not become noise.
 

@@ -11,7 +11,7 @@ Last updated: 2026-11-12. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds on
 ## Exact next step
 1. **MAP4 (events). game-lead writes the detailed brief** in the ROADMAP MAP4 entry, split into sittings of one agent session each (under about 150 tool calls), and tags it `safe to chain` or `needs your play first`. Expected tag: `safe to chain`. Its tuning (Raider, D49) comes from the director's own MAP3b play.
 2. **gameplay-dev, first sitting:** the MAP3b carry-overs (ROADMAP MAP3b "Carry-overs to MAP4"): Raider HP 120 -> 180, the eyes-56 default, D49 = B, the small fixes. Run length is settled (D50 = B), so there's no length pass.
-3. Then 3d, then BD3b.
+3. Then 3d, then BD3b, then the Milestone 3 close: the milestone playtest, then game-lead's own review of the report and screenshots (ROADMAP).
 
 **Next role:** game-lead (the MAP4 brief), then gameplay-dev.
 
@@ -31,7 +31,7 @@ Last updated: 2026-11-12. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds on
   - `[Director decision]` D50: target run length 30-45 min -> about 15-20 min of real time, decisions included.
   - The director-feedback entry for MAP3b (Bleed Rogue holds up, run under 7 min of fight time, Raider too easy).
   - The Raider change, old -> new, once built.
-  - `[Director decision]` process, 2026-11-12 (c5f5879): sessions stop at about 150 tool calls with a `Remaining:` list, smaller briefs, `safe to chain` / `needs your play first` tags, eyes items expire one slice later at their default, each answer is recorded once, STATE trimmed.
+  - `[Director decision]` process, 2026-11-12 (c5f5879): sessions stop at about 150 tool calls with a `Remaining:` list, smaller briefs, `safe to chain` / `needs your play first` tags, eyes items expire one slice later at their default, each answer is recorded once, STATE trimmed; plus the milestone playtest and game-lead review at each milestone boundary, and the playtester's pacing target fixed from 30-60 min to about 15-20 min (later commit, same day).
 
 ## Known issues
 - Wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.

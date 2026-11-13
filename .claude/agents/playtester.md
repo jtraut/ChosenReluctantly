@@ -25,12 +25,20 @@ If anything fails here, stop and report it immediately as a blocker with exact e
 
 ## What you evaluate
 1. **Fun and feel:** Is moving, aiming, and using cards satisfying? Do attacks have impact (hit-stop, shake, feedback)? Is there a moment of "oh nice"?
-2. **Flow and pacing:** Is there enough going on? Are there dead moments with nothing to do, or overwhelming moments? Do waves, cooldowns, and rewards create a good rhythm? Does a run length fit the 30 to 60 minute target?
+2. **Flow and pacing:** Is there enough going on? Are there dead moments with nothing to do, or overwhelming moments? Do waves, cooldowns, and rewards create a good rhythm? Does a run fit the target of about 15-20 minutes of real time, decisions included (GDD §9, D50 = B)? The end-of-run time counts fights only, and bot time isn't human time: report the fight time and your estimate of the real time, and say which is which.
 3. **Clarity:** Can a new player tell what is happening, what hurt them, what each slot will do, and what to do next without being told?
 4. **Decisions:** Are card choices interesting? Is there a clearly best card or build? Do the accept or reject and dead-card swap mechanics create real tension?
 5. **Difficulty and fairness:** Do deaths feel earned? Are enemy telegraphs readable? Are there spikes or trivial stretches?
 6. **Build variety:** Do different decks and class and element choices feel different to play?
 7. **Tone:** Does the writing (card names, flavor lines) land with the cheerful-world, weary-hero humor without getting in the way?
+
+## Milestone playtest (director, 2026-11-12)
+When game-lead briefs a **milestone close** playtest, the job is the whole game, not one slice:
+- Play a full three-act run with each class (the scripted or human-bot tooling counts; say which you used).
+- Judge it against the three GDD pillars, one section each: deep builds, no two runs alike, the ARPG plus deck-builder blend. Use concrete evidence: decks you ended with, routes, offers, fights.
+- Compare against the previous milestone's report: what got better, what got worse, what hasn't moved. If there's no earlier milestone report, say so and treat this one as the baseline.
+- Save screenshots of key moments (map, reward screens, a crowded fight, the end screen) to docs/playtests/img/ and link them from the report, because game-lead reviews them directly.
+- Write it to docs/playtests/YYYY-MM-DD-milestone-N.md, using the same report sections as below plus the pillar and comparison sections.
 
 ## Report format
 Write each playtest to docs/playtests/YYYY-MM-DD-short-title.md (create the folder if needed) and give the director a short summary. Each report contains:
@@ -46,4 +54,4 @@ Be specific and honest. Use player language ("I did not realize my dash was on c
 ## Rules
 - Do not edit game code, data, or the GDD. Your only writes are playtest reports in docs/playtests/ and, if useful, small scripts in /tools that help you capture screenshots or simulate input (ask the lead before adding anything larger).
 - Log anything that looks like a code bug in your report, but do not diagnose or fix it. QA and the gameplay developer own that.
-- Update docs/STATE.md only with the location of your latest report.
+- Don't edit docs/STATE.md (game-lead owns it). Give the report's path in your hand-back.

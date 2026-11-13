@@ -1461,6 +1461,8 @@ un_offer_report.ps1`.
   - Brief detailed at MAP3's close.
   - **Run length is settled (D50 = B, director 2026-11-12):** about 15-20 min of real time, decisions included (GDD §9). His ~7 min of fight time is already about 15 min real time, so MAP4 adds no length pass; the challenge part of B is the Raider carry-over and eyes 55. Events add some decision time, which is fine inside the range.
 
+- [ ] **Milestone 3 close (after BD3b).** playtester runs the milestone playtest (playtester.md "Milestone playtest"): a full three-act run per class, judged against the three pillars. No earlier milestone report exists, so this one is the baseline. Then game-lead reviews the report and the screenshots itself, in a fresh session, before writing the Milestone 4 brief.
+
 ## Milestone 4 — Second class/element, subclasses, passive tree prototype, balance sim
 Not started. Per GDD §13: Wizard + Water added, 2 subclasses each for Rogue/Wizard/Fire/Water, first passive tree prototype (30-40 nodes), headless balance simulation grown out.
 

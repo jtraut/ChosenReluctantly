@@ -48,6 +48,7 @@ This file governs how work happens in this repo. It applies to the main session 
   - **Playtest gate.** Every slice brief is tagged `safe to chain` or `needs your play first`. A slice that tunes the feel or balance of a slice the director hasn't played waits for his playtest.
   - **Eyes items expire.** Every "Needs your eyes" item states its default. If it isn't answered by the close of the slice after the one that added it, the default applies and game-lead moves it to the RESOLVED handoff as "expired, default kept".
   - **Record each answer once.** A director answer goes where it applies (GDD or CLAUDE.md), leaves OPEN_ITEMS, and gets one line in STATE's pending docs-pass list. ROADMAP changes only if a brief changes; DECISIONS only for game-lead's own judgment calls.
+  - **Milestone boundary review.** At each milestone close, game-lead briefs a milestone playtest: a full three-act run per class, judged against the GDD pillars, compared with the previous milestone's report, with screenshots in `docs/playtests/img/`. game-lead then reads the report and looks at the screenshots itself, in a fresh session, before writing the next milestone's brief.
   - **STATE.md is short:** in progress, the exact next step, current baselines, pending docs-pass items, known issues and open questions. No slice history: that's ROADMAP and CHANGELOG.
 
 ## Engine and language

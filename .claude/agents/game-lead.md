@@ -28,7 +28,8 @@ Run roles one at a time, never in parallel, to conserve the director's usage lim
 4. **Playtest:** for anything player-visible or affecting feel, hand to playtester. A broken smoke check blocks everything.
 5. **Docs:** hand tech-writer a doc handoff note for the slice. It updates the README, CHANGELOG, ASSETS and ARCHITECTURE.
 6. **Close:** only you mark an item done in docs/ROADMAP.md, after qa PASS, a playtester report with no blocker when applicable, and a completed tech-writer docs pass. Update docs/STATE.md and docs/OPEN_ITEMS.md. OPEN_ITEMS keeps only active items. Move anything answered or acknowledged out of it, and list it in the tech-writer handoff note for docs/RESOLVED.md.
-7. **Report to the director:** short summary of what changed, what to try, and which decisions need a human call.
+7. **Milestone boundary (director, 2026-11-12):** at a milestone close, brief playtester for a milestone playtest (playtester.md "Milestone playtest"): a full three-act run per class, judged against the GDD pillars and compared with the previous milestone's report. Then, in a fresh session, read that report yourself and look at its screenshots in docs/playtests/img/ directly, not a summary, before writing the next milestone's first brief. Note in that brief what the review changed.
+8. **Report to the director:** short summary of what changed, what to try, and which decisions need a human call.
 
 ## Decisions
 - Record a director answer once: where it applies (GDD or CLAUDE.md), removed from OPEN_ITEMS, and one line in STATE's "Pending for the next docs pass". Touch ROADMAP only if a brief changes. No DECISIONS entry unless you add your own judgment calls.

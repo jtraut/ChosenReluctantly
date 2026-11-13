@@ -786,6 +786,131 @@ All are `sources` `["elite", "relic_room", "merchant"]`. `card_cast` and `player
 - No rare or legendary card in any starting deck or pool-filled sim deck. So the arena and bot-sim hashes **should not move** in sitting B; any move is a finding.
 - Worst-case detonate: qa reports the largest Exsanguinate hit with the stack ceiling.
 
+## 13. MAP4: events, curses, event-only and sacrifice relics, the Dig (game-lead design pass, 2026-11-13) [PROPOSED details]
+
+The MAP4 content listed in §4.7 and §4.8, MAP.md §2 and GDD §9 (D37 = A, D38 = A). Every number is a starting value in data. Names and text are placeholders until story is active. The text stays neutral: GDD's "friends" and "corporate loyalists" framing waits for the director's story decision, so no event is written as one of those factions. Logged in DECISIONS "MAP4 design pass".
+
+### 13.1 Rules
+
+- **The node.** `event` ("?"), rooms 3-9, `no_repeat`, and it isn't a fight, so it counts against `min_fights` like a rest. It replaces the never-generated `curse_room` and `buff_room` node types, which are removed from `data/map.json`, `MapConfig` and the map UI lists. The relic source ids `curse_room` and `buff_room` stay valid in `RelicSchema`, because no shipped relic uses them. **The weight stays 0 until sitting D** (content). D starts it at 12 and tunes it to the checks in §13.7. The validator's relic estimate (MAP.md §4.1) counts an event as 0 relics; the sim measures the real count.
+- **In-act `mini_boss` nodes are deferred** (weight stays 0). The only cheap build is MAP3's interim, existing enemies with tier multipliers. D44 = C (GDD §9) replaced exactly that, because the director wants mini-bosses with their own attacks. They come back when there's a third bespoke mini-boss design, or not at all.
+- **Drawing an event.** When the player enters an event node, one event is drawn with the run rng from `data/events/*.json`. Only events whose `acts` include the current act are eligible, and each event's `weight` (default 1) applies. There are no repeats within a run until every eligible event has been seen; after that, repeats are allowed. The drawn id is stored in RunState, so resume shows the same event.
+- **Choices.** Each event has 2-3 choices, and each choice is a label, an optional `requires` and a list of outcomes. **At least one choice has no `requires`**, so every event can be finished. A choice whose requirement fails is shown greyed with the reason, as at the merchant.
+- **Costs shown plainly.** The detail line under each choice is **generated from its outcomes** with format strings in `data/run.json` ("Lose 6 HP", "Gain a tier 2 relic (pick 1 of 3)", "Gain a random curse", "50%: a tier 2 relic"). HP fractions show as this character's actual HP. Authored text is only the event's flavour and the choice label, so the text can't hide a cost.
+- **Requirements (closed set):** `gold_at_least` N, `has_curse`, `owns_relic` {`min_tier`, `max_tier`} (non-boss relics only).
+- **Outcome order.** Outcomes run in list order. Everything before a `start_fight` applies when the choice is confirmed. Everything after it applies only after the fight is won (losing the fight ends the run, as anywhere). An event's fight gives only the event's listed rewards, not an elite room's gold and relic offer. Follow-ups that need a pick (a relic offer, a card removal, a relic sacrifice) become pending choices, saved like today's pending offers.
+- **Safety floors:**
+  - `lose_hp` never takes you below 1 HP;
+  - `lose_max_hp` never takes max HP below `events.min_max_hp` (10), and current HP is clamped to the new max;
+  - `lose_gold` clamps at 0, so "pay 50 gold" with 30 takes 30. A choice that should need the full amount uses `gold_at_least`.
+- **Event relic offers** (`gain_relic`) draw from the act's normal relic pool plus the event-only relics (`sources` `["event"]`). **One of the 3 slots is reserved for an event-only relic** while one is eligible, mirroring the merchant's shop-only slot. Tier modes: `act` (the act's tier odds), `next_act` (the next act's row; act 3 uses its own row), a fixed tier 1-3 (falls down a tier when empty, like card rarity), and `sacrificed_plus_one` (the tier of the relic just given up, plus 1, capped at 3). `skip` is true unless the event says otherwise. The cap-20 give-up step applies as everywhere.
+- **Save and resume.** The drawn event, a confirmed choice's pending follow-ups, a pending "fight, then these rewards", run modifiers (`stat_mod`), the merchant discount, the cleanse counter and curse cards all round-trip, with MAP3's `from_dict` robustness (wrong types are rejected, not crashed on). Quitting during an event's fight restarts that fight (shipped rule); the costs already paid stay paid.
+- **Bot policy** (`RouteBot`): `relic` takes the first available choice with a `gain_relic` while HP is at least 50%, otherwise a choice with no cost; `safe` takes a choice with no `lose_hp`, `lose_max_hp`, `gain_curse` or `start_fight`; `first` takes the first available choice. A choice "with no cost" can always be found, because the no-`requires` choice exists; if that choice has a cost, the bot takes it.
+- **A debug flag** `-- --event=<id>` makes the next event node draw that event, for playtests and scenarios.
+
+### 13.2 Outcomes (closed set; each one is used by a shipped event)
+
+| Outcome | Params | Used by |
+|---|---|---|
+| `lose_hp` | `fraction` of max HP | E1 |
+| `lose_max_hp` | `fraction` of max HP | E2, E5 |
+| `heal` | `fraction` of max HP | E4, E7 |
+| `gain_gold` | `amount` | E1 |
+| `lose_gold` | `amount` | E4, E6, E8 |
+| `gain_relic` | `tier`, `count` (3), `skip` | E1, E2, E3, E4 |
+| `gain_curse` | `id`, or none for a random curse | E2, E4, E8 |
+| `remove_curse` | (pick one of your curses) | E7 |
+| `remove_card` | (pick one card, through `can_remove`) | E3, E6, E7 |
+| `sacrifice_relic` | `select` `pick` or `highest`, `min_tier`, `max_tier` (non-boss only) | E3, E6 |
+| `start_fight` | `tier` `elite` (an elite wave of the current act) | E1 |
+| `chance` | `p`, `win` and `lose` outcome lists (not nested) | E2 |
+| `stat_mod` | `stat`, `modifier_type`, `value`: a permanent modifier for the run, applied like a relic's | E5 |
+| `merchant_discount` | `fraction` off relic and card prices at the next merchant visit (not removal); doesn't stack, the larger one is kept | E6 |
+
+**Dropped from §4.8's list,** each because no event below needs it: `gain_max_hp`, `rooms_buff`, `next_room_add`, and the "ambush at mini-boss strength" fight (the same interim problem as the in-act mini-boss). `leave` isn't an outcome: it's a choice with an empty list.
+
+### 13.3 Events (8)
+
+| # | Event | Acts | Choices |
+|---|---|---|---|
+| E1 | The Mandatory Exit Interview | 1-3 | **a)** lose 20% HP, then a relic at the act's odds. **b)** fight an elite, then a relic at the next act's odds and 40 gold. **c)** leave. |
+| E2 | The Broken Vending Machine | 1-3 | **a)** (needs 40 gold) pay 40 gold: 50% chance of a tier 2 relic, otherwise nothing. **b)** lose 10% max HP: a tier 2 relic and the curse Property Damage. **c)** leave. |
+| E3 | The Performance Evaluation Altar (the altar) | 1-3 | **a)** (needs a non-boss relic) give up a relic you pick: pick 1 of 3 at its tier + 1, **no skip** (you've paid). **b)** "Restructuring Plan" (needs a tier 1 relic): give up a tier 1 relic you pick, then remove a card. **c)** leave. |
+| E4 | The Misplaced Supply Closet (the curse room) | 2-3 | **a)** a tier 3 relic (pick 1 of 3, no skip) and a random curse. **b)** (needs 40 gold) pay 40 gold: heal to full. **c)** leave. |
+| E5 | The Complacency Trap (the buff room) | 1-3 | **a)** lose 10% max HP: Recovery slot cooldown -20% for the run. **b)** move speed +5% for the run. (No leave: b is free.) |
+| E6 | The Internal Audit | 2-3 | **a)** (needs a non-boss relic) give up your highest-tier non-boss relic (you pick among ties): 50% off at the next merchant. **b)** (needs 30 gold) pay 30 gold: remove a card. **c)** leave. |
+| E7 | The Sympathetic Coworker | 1-3 | **a)** (needs a curse) remove a curse. **b)** remove a card. **c)** heal 25%. |
+| E8 | The Loyalty Pledge | 1-3, weight 0.5 | **a)** pay 50 gold (or all you have). **b)** take a random curse. (No leave: it's a toll.) |
+
+- E5 and E7 are the "only buff" rooms GDD §9 mentions; E4 is "a strong relic with a curse".
+- E3 and E6 make the rule from §4.7 5b concrete: sacrificed relics count as given up, and never come back.
+- The gold amounts are set against today's income (combat 24-36, elite 60-80). §4.8's 75/100/150 would be two to five fights' worth.
+
+### 13.4 Curse cards (D38 = A)
+
+| Curse | Slot | When cast |
+|---|---|---|
+| Property Damage | Attack: Single | Nothing. Its cooldown modifier is +2 s, so casting it costs more than swapping it. |
+| Reply-All Storm | Attack: AoE | You're slowed: `move_speed` -30% for 3 s. |
+| Mandatory Training Module | Utility | Your Movement slot's cooldown is +3 s for 8 s. |
+
+**Rules:**
+- A curse is a card with `"curse": true`, `pool` `neutral`, its own fixed `slot_type`, and an empty or self-harming effect list (`CardSchema` allows empty effects only on a curse). A random `gain_curse` picks uniformly among the curses.
+- **Excluded by the flag everywhere a card is offered or filled:** reward offers, the mini-boss offer, merchant stock, pool-filled decks and random starting slots. qa tests every path.
+- **Deck rules ignore curses:** they don't count toward a slot's minimums, and `can_remove` always allows removing one.
+- **Curses stack** (built for endless, GDD §9a): any number, including several copies of the same curse in one slot. Nothing assumes a curse is rare.
+- **A curse is castable,** and casting one uses the slot like any card: it starts the cooldown and draws the next card. This matters for **The Micromanager** (`dead_card_swap_locked`): with no swap, you cast the curse to move on, so the slot is never bricked.
+- **The swap works on a curse as on any card** (it discards it and draws the next). That's how "you swap past it" in GDD §9 is read. There's no special skip: if the next card is also a curse, you swap again.
+- **Cleanses are counted.** RunState counts every removed curse (rest removal, merchant removal, `remove_curse`, and `remove_card` when it picks a curse). `run.json` `curses.max_cleanses` (default -1, unlimited) caps them for endless later. At the cap, removing a curse is greyed with a reason.
+- **The bot** (`PlanPolicy`): a curse as the current card is swapped away; if swaps are locked, it's cast when the slot is ready. SIM1 must not stall on a cursed slot.
+- **Disabled slots:** no shipped relic disables a slot (§12.1 kept Quarterly Downsizing out). If one ever ships, `gain_curse` skips disabled slots.
+
+### 13.5 Relics
+
+**Event-only relics (6; `sources` `["event"]`).** Each class sees 5. Each has an upside and a cost, except the Spade, whose cost is the rest it uses.
+
+| Relic | Pool, tier | Rule |
+|---|---|---|
+| Gravedigger's Spade | neutral, t2 | Rests get a third action, **Dig**: pick 1 of 3 relics at the act's odds, skip allowed. It replaces both the heal and the removal at that rest (D37 = A). New code. |
+| Unpaid Intern | neutral, t1 | Utility slot cooldown -20%. Move speed -5%. |
+| Golden Handcuffs | neutral, t2 | +20% damage. Move speed -10%. |
+| Off the Books | neutral, t3 | Attack: Single and Attack: AoE base cooldowns -1 s. Recovery base cooldown +3 s. |
+| Bleeding Edge | rogue, t2 | Bleed max stacks +2. Recovery base cooldown +2 s. |
+| Open Plan Office | wizard, t2 | Zones last 30% longer. Light attacks fire 15% slower. |
+
+**Sacrifice relics (4; `sacrifice_cost`; sources: elite, relic_room, merchant).**
+
+| Relic | Pool, tier, cost | Rule |
+|---|---|---|
+| Hostile Takeover | neutral, t3, give up 2 | +35% damage. |
+| Golden Parachute | neutral, t3, give up 1 | Every slot's cooldown -10%. |
+| Asset Stripping | rogue, t3, give up 1 | Heavy attacks deal +50%. Bleed max stacks +2. |
+| Brain Drain | wizard, t3, give up 1 | Light attacks deal +40% and fire 15% faster. |
+
+**Sacrifice rules** (on top of the shipped `RelicSchema` check that the cost is 1 or 2):
+- A sacrifice relic is **left out of an offer** (any source) while you own fewer eligible relics than its cost. Eligible means non-boss: boss relics can't be given up (shipped rule).
+- Taking one opens the give-up step `cost` times. You pick every relic first, then confirm once; Cancel at any point cancels the whole take and nothing is lost. At the merchant, the gold is charged on confirm.
+- The given-up relics count as given up and never come back.
+- **Cap 20:** the cap is checked after the sacrifice. A cost-1 relic at the cap needs no extra give-up; a cost-2 relic lowers your count.
+
+### 13.6 New code, by sitting
+
+- **B1, the event engine:** the `event` node and the removal of `curse_room`/`buff_room`; `data/events/*.json` with a loader and an `EventSchema` validator; the draw; requirements; the outcomes `lose_hp`, `lose_max_hp`, `heal`, `gain_gold`, `lose_gold` and `gain_relic` (tier modes `act`, `next_act` and fixed, plus the reserved event-only slot); the generated cost lines; wiring onto the existing `RunPromptScreen`; save and resume; the `RouteBot` policy; the `--event=` flag. Tests use fixture events. Weight 0.
+- **B2, the rest of the outcomes:** `start_fight` (with rewards after the win), `chance`, `stat_mod` (run modifiers in RunState, applied each room like a relic), `merchant_discount`, `sacrifice_relic` with `owns_relic` and the `sacrificed_plus_one` tier, and `sacrifice_cost` relics across every source (the offer filter, the multi-give-up step, the merchant). All of it saved. Fixtures only.
+- **C, curses and the Dig:** the card `curse` flag and its schema; the exclusions; deck rules; `gain_curse`, `remove_curse`, `has_curse`, `remove_card`; the cleanse counter and cap; `PlanPolicy`; the Micromanager test; the rest's Dig action and its stat or flag. Fixtures only.
+- **D, content and tuning (data only, plus fixes it finds):** the 8 events, 3 curses, 6 event-only and 4 sacrifice relics; the event weight on; the §13.7 checks.
+
+### 13.7 Checks (for the ROADMAP brief)
+
+- Every event validates; every event has a choice with no `requires`; every outcome type in the set is used by a shipped event.
+- A sweep over seeds and all three bot routes: every event node resolves, nothing soft-locks, and no curse ever appears in an offer, the merchant or a filled deck.
+- **Event visits:** median 2-4 per three-act run on each route. Tune the weight, not the path rules.
+- **MAP.md §4.5's relic targets still hold** with events and sacrifices: `relic` route median 14-17, `safe` 6-8, exactly 2 boss relics per finished run, nobody at the cap in the median run.
+- SIM1 floors at the values qa re-gates after sitting A.
+- Save and Continue at each event step (the choice screen, a pending relic offer, a pending removal, a pending sacrifice, and between paying for a fight and finishing it) gives the same run.
+- The Micromanager plus a curse: the slot keeps cycling.
+- Hashes don't move in B1, B2 or C (weight 0, fixtures in tests). D moves them; each move is explained before qa re-baselines.
+
 ## Decided in this doc (game-lead defaults, logged in DECISIONS "2026-11-02 - BD0")
 
 - Conditional and scaled damage doesn't count toward `CardDamageRule`; payoffs pass on base damage.

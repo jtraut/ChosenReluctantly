@@ -3,17 +3,17 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-12. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-13. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **MAP4 brief, 2026-11-13.** Sitting A (carry-overs) is written in ROADMAP MAP4 and ready to launch. game-lead is writing the event design pass as BUILD_DEPTH §13; sittings B1, B2, C, D, ux and qa get their briefs from it. The repo runs.
+- **MAP4 (events), briefed 2026-11-13** in ROADMAP MAP4 and BUILD_DEPTH §13 (design pass). Tag `safe to chain`. Five gameplay-dev sittings: A -> B1 -> B2 -> C -> D, then ux, qa, playtest, docs. Nothing built yet. The repo runs.
 
 ## Exact next step
-1. **game-lead finishes BUILD_DEPTH §13** and the B1-D briefs in ROADMAP MAP4. If cut off, sitting A can start anyway: it doesn't depend on §13.
-2. **gameplay-dev, sitting A** (ROADMAP MAP4 "sitting A"): Raider HP 120 -> 180, the eyes-56 default, D49 = B, the small fixes, SIM1 gate. Run length is settled (D50 = B), so there's no length pass.
+1. **gameplay-dev, sitting A** (ROADMAP MAP4 "sitting A"): Raider HP 120 -> 180, the eyes-56 default, D49 = B, the small fixes, SIM1 gate. No length pass (D50 = B).
+2. Then B1 (event engine), B2, C, D, each a fresh agent, then ux, qa, playtest, tech-writer, close.
 3. Then DF1 (difficulty bump, D51 = C; ROADMAP), then 3d, then BD3b, then the Milestone 3 close: the milestone playtest, then game-lead's own review of the report and screenshots (ROADMAP).
 
-**Next role:** game-lead (the MAP4 brief), then gameplay-dev.
+**Next role:** gameplay-dev (MAP4 sitting A).
 
 ## Current baselines (MAP3b close)
 - Suite 2273 (1 skipped: the open `-RelicCap` qa test), 0 orphans.

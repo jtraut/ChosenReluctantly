@@ -35,8 +35,8 @@ C combat · E elite · R* relic stage · M merchant · Rs rest · (mini-boss and
 | `rest` | no | Today's rest: heal 30% or remove a card (**D31 = A**, director 2026-11-04) | 5-9 | MAP1 |
 | `merchant` | no | Spend gold: **several relics at once** if you can afford them, card removal, cards (§4.3) | 4-9 | MAP2 |
 | **act-end mini-boss** (`mini_boss`, fixed) | yes, new `mini_boss` tier | Gold 60, a **boss-tier relic** offer (the only source), then a card offer: **3 rare** (act 1) or **3 legendary** (act 2) (director 2026-11-04, §4.5) | 10 of acts 1-2 | MAP3 |
-| `mini_boss` (optional node inside an act) | yes, `mini_boss` tier | Gold and a relic offer using the next act's tier odds; **no boss-tier relic** (those come only from act-end mini-bosses) | 5-8 | MAP4, low weight |
-| `event` ("?") | no (some choices start a fight) | A text event with 2-3 choices and trade-offs; event-only relics; the curse room, buff room and altar are event kinds (BUILD_DEPTH §4.7, director 2026-11-04) | 3-9 | MAP4 |
+| `mini_boss` (optional node inside an act) | yes, `mini_boss` tier | Gold and a relic offer using the next act's tier odds; **no boss-tier relic** (those come only from act-end mini-bosses) | 5-8 | **Deferred at MAP4** (2026-11-13, BUILD_DEPTH §13.1): weight stays 0 until there's a bespoke design (D44 = C) |
+| `event` ("?") | no (some choices start a fight) | A text event with 2-3 choices and trade-offs; event-only relics; the curse room, buff room and altar are event kinds (BUILD_DEPTH §4.7, director 2026-11-04). Design: BUILD_DEPTH §13 | 3-9 | MAP4 |
 | ~~`curse_room`, `buff_room`~~ | | Folded into `event` (2026-11-04) | | |
 | `boss` | yes | Ends the run, as today (act 3's final boss from MAP3) | 10 | MAP1 |
 

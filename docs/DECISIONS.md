@@ -2584,3 +2584,20 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 ## 2026-11-12 - DF1 scope (game-lead)
 - **DF1 tunes enemy knobs only** (health, damage, act scaling). It doesn't touch player stats or cards, so the bump can't hide inside build balance, and it's easy to undo.
   - [Also slowing the player or weakening cards: that would mix two changes and make his play report harder to read.]
+
+## 2026-11-13 - MAP4 design pass and brief (game-lead)
+- **MAP4 is five gameplay-dev sittings (A carry-overs, B1 event engine, B2 outcomes and sacrifice, C curses and Dig, D content), not two.** The cost-control rule caps a sitting at one session, and the event engine alone is bigger than any MAP3b sitting. DF1, 3d and BD3b move back accordingly.
+  - [Two big sittings, as the old note guessed: MAP3b's sittings of that size were too big.]
+- **The `event` weight stays 0 until sitting D,** and the engine sittings test with fixtures, so hashes and SIM1 don't move until the content lands (MAP3b's precedent).
+- **In-act `mini_boss` nodes are deferred** (weight 0). The only cheap build is MAP3's interim, which D44 = C replaced because the director wants mini-bosses with their own attacks.
+  - [Shipping them as stat-inflated existing enemies: that's what he rejected.]
+- **The outcome set holds only what the 8 events use.** Dropped from BUILD_DEPTH §4.8: `gain_max_hp`, `rooms_buff`, `next_room_add`, the mini-boss-strength ambush.
+  - [Building all of §4.8's outcomes: unused code paths to test and save.]
+- **Costs are generated from outcomes,** not written by hand, so text can't hide a cost. HP costs are fractions of max HP, so they're fair to the Rogue (30) and the Wizard (22).
+- **Event text is neutral.** GDD §16's friends and loyalists wait for the director's story decision; the mechanics fit them later.
+- **Curses have a fixed slot each, are castable, and are swapped like any card.** "The swap skips past them" (old MAP4 note) is read as "you can swap a curse away", per GDD §9. Castable means The Micromanager (no swap) can't brick a slot.
+  - [A curse whose slot is rolled when gained: deck entries are plain card ids today, so a per-entry slot would change the save format for little gain.]
+- **Sacrifice relics are left out of offers while you can't pay,** instead of shown greyed.
+  - [A greyed tile: a dead slot in a 3-card offer.]
+- **An event relic offer reserves one slot for an event-only relic,** like the merchant's shop-only slot, so the 6 event-only relics actually show up.
+- **Gold numbers are scaled to today's income** (40-50, against combat 24-36), not §4.8's 75-150.

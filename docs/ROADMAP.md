@@ -1469,7 +1469,31 @@ un_offer_report.ps1`.
       5. The `-RelicCap 1` bot finding; un-skip the qa test that waits on it.
       6. A forced `--relic-offer` must not skip the boss-relic branch.
       7. Run the SIM1 three-act gate and report it with the hashes. The Raider change will move the human-bot win rate and probably the hashes: list each move and why, for qa to re-baseline. DF1 does the overall difficulty bump later, so don't tune anything else to compensate.
-    - **Sittings B1, B2, C, D, ux, qa:** see below, written from BUILD_DEPTH §13. **Pending until §13 is committed.**
+    - **Sittings B1-D implement BUILD_DEPTH §13** (rules in §13.1, outcomes §13.2, code by sitting §13.6, checks §13.7). Read §13 first; it decides the details this list doesn't repeat. **Hashes and SIM1 must not move in B1, B2 or C:** the `event` weight stays 0 and tests use fixture events, curses and relics.
+    - **gameplay-dev sitting B1, the event engine:**
+      1. The `event` node type (rooms 3-9, `no_repeat`, a non-fight, weight 0). Remove the `curse_room` and `buff_room` node types from `data/map.json`, `MapConfig` and the map UI lists; keep them as relic source ids.
+      2. `data/events/*.json`, a loader and an `EventSchema` validator. It checks 2-3 choices, at least one with no `requires`, outcomes from the closed set, and params.
+      3. The seeded draw (acts filter, weights, no repeat until exhausted), stored in RunState.
+      4. Requirements: `gold_at_least` only in B1 (the rest come in B2 and C).
+      5. Outcomes `lose_hp`, `lose_max_hp`, `heal`, `gain_gold`, `lose_gold`, `gain_relic` (tier modes `act`, `next_act` and fixed; the reserved event-only slot; skip; cap 20), with the §13.1 safety floors.
+      6. The generated cost lines (format strings in `data/run.json`).
+      7. A working event screen on the existing `RunPromptScreen` and `RunOptionCard` (ux restyles it later).
+      8. Save and resume: the drawn event and a pending relic offer.
+      9. The `RouteBot` event policy (§13.1). The `-- --event=<id>` flag.
+    - **gameplay-dev sitting B2, the rest of the outcomes:** `start_fight` (elite; outcomes after it apply only after the win; an event fight gives only the event's rewards), `chance`, `stat_mod` (run modifiers in RunState, applied each room like a relic's), `merchant_discount`, `sacrifice_relic` with the `owns_relic` requirement and the `sacrificed_plus_one` tier, and `sacrifice_cost` relics from every source (§13.5: left out of offers while you can't pay, multi-give-up with one confirm, the merchant). Every new pending state round-trips in the save.
+    - **gameplay-dev sitting C, curses and the Dig:** the card `curse` flag (`CardSchema` allows empty effects only on a curse); curses excluded from reward offers, mini-boss offers, merchant stock, pool-filled decks and random starting slots; deck rules ignore curses and `can_remove` always allows them; `gain_curse`, `remove_curse`, `has_curse`, `remove_card`; the cleanse counter on all removal paths and `curses.max_cleanses` (-1); `PlanPolicy` swaps a curse away, or casts it when swaps are locked; a test that The Micromanager plus a curse keeps the slot cycling; the rest's **Dig** action for the dig relic (D37 = A).
+    - **gameplay-dev sitting D, content and tuning (data only, plus fixes it finds):** the 8 events (§13.3), 3 curses (§13.4), 6 event-only and 4 sacrifice relics (§13.5). Then set the `event` weight to 12 and tune it to §13.7: median 2-4 event visits per three-act run on each route; relic medians `relic` 14-17 and `safe` 6-8; exactly 2 boss relics; SIM1 floors. Report the hash moves with reasons.
+    - **ux (after D; one session, or stop with `Remaining:`):**
+      - the event screen: flavour text, choices with costs in one colour and gains in another, greyed choices with their reason, a `chance` shown as a percentage;
+      - the "?" map icon and legend entry;
+      - curse cards: a clear look in the slot widget and in the deck, removal and merchant lists;
+      - a relic's sacrifice cost on offer and merchant tiles, and the multi-give-up flow;
+      - the Dig option at rest; the merchant discount; run modifiers from events listed where the player can check them (for example the pause screen);
+      - MAP3b carry-overs: the end-of-run and room-cleared "Time" label becomes "Fight time" (`ui.stat_time`); stack labels overlapping at 2 enemies; a 4-enemy Bleed scenario to check the dimming and the Open a Vein glow; golem and pink telegraph contrast on the act 3 sand floor.
+      - Check at 1280x720 and 1024x600.
+    - **qa:** BUILD_DEPTH §13.7, plus: the seed sweep with no soft-lock and no curse in any offer; every requirement greys correctly; the safety floors; save and Continue at every event step; Cancel during a multi-give-up loses nothing; sacrifice relics absent when you can't pay; the cleanse counter on all paths; the Micromanager curse test; the README commands; hashes.
+    - **Playtester:** one run per class that visits at least 3 events. Are the trade-offs clear before you click? Did any choice feel like a trap you couldn't have read? Does a curse feel like a real cost, and is swapping past it clear? Was the Raider an act-ending fight this time?
+    - **Acceptance:** BUILD_DEPTH §13.7; SIM1 floors as re-gated after A; the Raider fight lasts at least 20 s for the bot; late Bleed share reported (not gated); the D49 = B before-and-after shares reported.
 
 - [ ] **Milestone 3 close (after BD3b).** playtester runs the milestone playtest (playtester.md "Milestone playtest"): a full three-act run per class, judged against the three pillars. No earlier milestone report exists, so this one is the baseline. Then game-lead reviews the report and the screenshots itself, in a fresh session, before writing the Milestone 4 brief.
 

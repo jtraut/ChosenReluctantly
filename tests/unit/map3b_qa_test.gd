@@ -221,6 +221,25 @@ func test_worst_case_exsanguinate_detonate_at_the_bleed_hard_cap() -> void:
 	assert_float(dealt).is_equal_approx(float(ticks) * 1.0 * 10.0 * 3.0, 0.001)
 	assert_float(dealt).is_less(1000.0)
 	assert_bool(is_finite(dealt)).is_true()
+	# Composed: the detonate is a card hit (origin card:...), so the source's card_damage_mult_vs_status.bleed (Blood Oath +25%, Salt in the Wound
+	# +25%, Synergy Workshop +15%, Hemorrhage Clause +20%) and damage_mult (The Micromanager +25%, Action Item +25%) multiply it in Health.take_damage.
+	source.stat_modifiers.add_modifier("card_damage_mult_vs_status.bleed", "oath", StatModifiers.MULTIPLICATIVE, 0.25)
+	source.stat_modifiers.add_modifier("card_damage_mult_vs_status.bleed", "salt", StatModifiers.MULTIPLICATIVE, 0.25)
+	source.stat_modifiers.add_modifier("card_damage_mult_vs_status.bleed", "workshop", StatModifiers.MULTIPLICATIVE, 0.15)
+	source.stat_modifiers.add_modifier("card_damage_mult_vs_status.bleed", "hemorrhage", StatModifiers.MULTIPLICATIVE, 0.20)
+	source.stat_modifiers.add_modifier("damage_mult", "micromanager", StatModifiers.MULTIPLICATIVE, 0.25)
+	source.stat_modifiers.add_modifier("damage_mult", "action_item", StatModifiers.MULTIPLICATIVE, 0.25)
+	var victim := RelayTarget.new("enemy", 100000.0)
+	add_child(victim)
+	auto_free(victim)
+	for i in range(30):
+		victim.status_manager.apply_status("bleed", bleed, 4.0, source, "card:test")
+	var hp_before: float = victim.health.current_health
+	victim.status_manager.detonate_status("bleed", 3.0, source, "card:rogue_exsanguinate")
+	var composed: float = hp_before - victim.health.current_health
+	print("QA worst-case Exsanguinate detonate with every shipped damage amplifier (+85%% vs Bleeding, +50%% damage_mult): %.1f HP removed (before armor)" % composed)
+	assert_float(composed).is_greater(dealt)
+	assert_bool(is_finite(composed)).is_true()
 
 
 # --- 7. save and Continue in the middle of the mini-boss reward ---

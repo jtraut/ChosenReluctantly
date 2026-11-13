@@ -1463,8 +1463,13 @@ un_offer_report.ps1`.
 
 - [ ] **Milestone 3 close (after BD3b).** playtester runs the milestone playtest (playtester.md "Milestone playtest"): a full three-act run per class, judged against the three pillars. No earlier milestone report exists, so this one is the baseline. Then game-lead reviews the report and the screenshots itself, in a fresh session, before writing the Milestone 4 brief.
 
+## DF1, difficulty bump (D51 = C, director 2026-11-12; after MAP4, before 3d)
+- [ ] **DF1. Full loop, one gameplay-dev sitting, `safe to chain`.** Goal: a modest bump toward GDD §9a's hard campaign, with final calibration in Milestone 4. Tune only the existing enemy health and damage data knobs (plus act scaling if needed). No new code, and no player or card changes.
+  - **Acceptance:** SIM1 human-bot three-act win rate about 40-50% for both classes (was Rogue 27/36, Wizard 23/36); no-card gate and telegraph floors hold; old -> new values listed for the changelog.
+  - The director's own run is the real check: tag `playtest-YYYY-MM-DD-DF1`.
+
 ## Modes and difficulty (director 2026-11-12, GDD §9a; unscheduled, after Milestone 4's meta layer)
-- [ ] **MD0, design pass (game-lead, docs only).** The tier ladder and per-tier multipliers, tier unlock rules, the player-level scaling and the global power layer (with §8), endless rules (per-act growth, shuffled bosses every 10th stage, curse arrival and limited cleanses, rewards, the ~110 wall), and the account save for unlocks. Brings the GDD §14 item 14 questions to the director.
+- [ ] **MD0, design pass (game-lead, docs only).** The tier ladder and per-tier multipliers (unlocks are set: start on Normal, next tier after clearing the highest unlocked one, never lower), the player-level scaling and the global power layer (with §8), endless rules (per-act growth, shuffled bosses every 10th stage, curse arrival and limited cleanses, rewards, the ~110 wall), and the account save for unlocks. Brings the GDD §14 item 14 questions to the director.
 - [ ] **MD1, difficulty tiers and the hard campaign** (the tries targets in §9a). Needs between-run upgrades to measure.
 - [ ] **MD2, endless mode** (unlocks after the first final-boss clear). Needs MAP4's curses, an account save and MD1.
 

@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-11-12 (D50 = B recorded; latest tag `playtest-2026-11-12-MAP3b`)
-**Status:** 1 decision waiting (D51, campaign difficulty). 10 things to look at (56, 55, 54, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. **MB1 (new mini-bosses) is done**, tag `playtest-2026-11-11-MB1`. **MAP3b is done** (rare and legendary cards, boss relics), tag `playtest-2026-11-12-MAP3b`. Next: MAP4 -> 3d -> BD3b.
+**Status:** 0 decisions waiting. 10 things to look at (56, 55, 54, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. **MB1 (new mini-bosses) is done**, tag `playtest-2026-11-11-MB1`. **MAP3b is done** (rare and legendary cards, boss relics), tag `playtest-2026-11-12-MAP3b`. Next: MAP4 -> DF1 (difficulty bump) -> 3d -> BD3b.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -19,13 +19,7 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 Next new number: D52.
 
-**D51. How hard is the campaign now, before between-run upgrades exist?** Your new direction (GDD §9a) says beating the final boss should take an average player 3-5 tries, with upgrades between runs, and a pro needs near-perfect play to win run 1. Today the human-like test bot wins about 3 in 4 Rogue runs and 2 in 3 Wizard runs with no upgrades, and you won a full run in 7 minutes of fight time. That clashes with two things on record: GDD §9 (2026-10-30, "today's tuning is the lowest tier, Easy; don't retune the base game until tiers exist"), and my D50 note from earlier today ("no broad retune"). Your message reopens both.
-- **A (default, no change):** keep today's tuning for now. Retune to the 3-5 tries target in Milestone 4, once the passive tree exists, because "tries" depends on upgrades. The planned Raider bump still happens.
-- **B: retune now** (a short tuning slice after MAP4): an un-upgraded run becomes a near-perfect-play win. Until upgrades exist, nearly every run, yours and your family's, ends in a loss, and it gets retuned again when upgrades arrive.
-- **C: a modest bump now, final calibration with upgrades.** A short tuning slice after MAP4 with enemy health and damage knobs (all data). Bot win rate goes from about 70% to about 40-50%; Milestone 4 then sets the real target.
-- **My recommendation: C.** You find it too easy today and it's cheap to reverse. The real 3-5 tries target can't be measured until upgrades exist.
-- **Also: is there still an "Easy" tier?** In 2026-10-30 you called today's tuning "Easy"; your new ladder starts at Normal. Default: keep an Easy tier below Normal for new or casual players (your family), so today's tuning would end up as Easy. Say "D51 no easy" to drop it.
-- MAP4 stays `safe to chain` whatever you pick. B or C would be a short slice between MAP4 and 3d.
+Nothing right now.
 
 ## Needs your eyes
 

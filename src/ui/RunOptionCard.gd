@@ -52,6 +52,10 @@ var free_tag: PanelContainer = null
 var event_block: VBoxContainer = null
 ## MAP4 ux: the "Curse" band across the top of a curse card's tile or list cell (null on any other tile).
 var curse_band: PanelContainer = null
+## MAP4 ux: the "Cost - Give up N relics" line of a sacrifice relic's tile (null on any other tile).
+var sacrifice_label: Label = null
+## MAP4 ux: the "Picked" word of a relic cell that is toggled on in a multi-give-up step (null otherwise).
+var picked_label: Label = null
 ## MAP2 shop tile parts (null on any other look): the price (or Sold / Free) tag, the band with the kind, and the "Only sold here" tag.
 var price_tag: PanelContainer = null
 var shop_band: Control = null
@@ -225,6 +229,10 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 			_inner.add_child(chip_row)
 	if look == Look.RELIC or look == Look.RELIC_CELL:
 		_inner.add_child(_relic_pool_row(opt, relic_texts, small_size, body_color))
+		if look == Look.RELIC_CELL and bool(opt.get("selected", false)):
+			# MAP4 ux: a picked relic says so in words and a check mark (the green frame is the third cue), so the toggle is never colour alone.
+			picked_label = _label(String(relic_texts.get("picked_tag", "")), small_size, Color.html(String(_cfg["option_accent_color"])), false)
+			_inner.add_child(picked_label)
 		if look == Look.RELIC:
 			var keyword_chips: ChipRow = _relic_chips(opt, inner_width, small_size)
 			if keyword_chips != null:
@@ -268,6 +276,8 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 		cost_label = _label(String(relic_texts.get("cost_format", "%s")) % cost_line, body_size, Color.html(String(cfg["option_warn_color"])) if enabled else _text_color(false, Color.WHITE), true)
 		cost_label.custom_minimum_size.x = inner_width
 		_inner.add_child(cost_label)
+	if look == Look.RELIC and sacrifice_cost_of(opt) > 0:
+		_inner.add_child(_sacrifice_line(sacrifice_cost_of(opt), relic_texts, body_size, inner_width, enabled))
 	if look == Look.SKIP_FREE:
 		free_tag = _free_tag(String(relic_texts.get("free_tag", "")), small_size)
 		_inner.add_child(free_tag)
@@ -314,6 +324,8 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 			hint_text = String(relic_texts.get("pick_hint", hint_text))
 		elif look == Look.RELIC_CELL:
 			hint_text = String(relic_texts.get("giveup_hint", hint_text))
+			if opt.has("selected"):  # a multi-give-up step toggles picks, nothing is given up until the confirm
+				hint_text = String(relic_texts.get("unpick_hint" if bool(opt["selected"]) else "pick_one_hint", hint_text))
 		elif look == Look.SKIP_FREE:
 			hint_text = String(relic_texts.get("skip_hint", hint_text))
 		hint_label = _label(hint_text, small_size, Color.html(String(cfg["option_focus_color"])), false)
@@ -413,9 +425,11 @@ static func shop_price_state(opt: Dictionary, gold: int, texts: Dictionary) -> D
 	if String(opt.get("kind", "")) == "reroll":
 		return {"text": String(texts.get("free_tag", "Free")), "mode": "free" if bool(opt.get("enabled", true)) else "sold"}  # used up: the tag goes grey
 	var text: String = String(texts.get("price_format", "%d")) % price
+	# MAP4 ux: an event's discount made the price lower than the base price: the old one comes back as `was_text` (struck through on the tile).
+	var was_text: String = String(texts.get("price_format", "%d")) % int(opt.get("base_price", price)) if int(opt.get("base_price", price)) > price else ""
 	if String(opt.get("reason_code", "")) == "too_expensive":
-		return {"text": text, "mode": "short"}
-	return {"text": text, "mode": "price"}
+		return {"text": text, "mode": "short", "was_text": was_text}
+	return {"text": text, "mode": "price", "was_text": was_text}
 
 
 ## The line under a shop tile's rule that says why it cannot be bought, "" when it can. "Need 15 more gold" beats "Not enough gold"; a sold tile
@@ -441,7 +455,7 @@ func _build_shop(opt: Dictionary, extra: Dictionary, enabled: bool, inner_width:
 	var body_color: Color = _text_color(enabled, Color.html(String(_cfg["prompt_text_color"])))
 	var name_text: String = String(extra.get("shop_name", opt.get("label", "")))
 	tooltip_text = _shop_tooltip(opt, name_text)
-	var tag: PanelContainer = _price_tag(String(state["text"]), String(state["mode"]), small_size)
+	var tag: PanelContainer = _price_tag(String(state["text"]), String(state["mode"]), small_size, String(state.get("was_text", "")))
 	price_tag = tag
 	# The kind chips: a relic's hexagon, tier and "Only sold here"; a card's slot key and slot. A service has none.
 	var band := HBoxContainer.new()
@@ -525,6 +539,8 @@ func _build_shop(opt: Dictionary, extra: Dictionary, enabled: bool, inner_width:
 			condition_label = _label("\n".join(lines.slice(1)), body_size, _text_color(enabled, Color.html(String(_cfg["option_accent_color"]))), true)
 			condition_label.custom_minimum_size.x = inner_width
 			_inner.add_child(condition_label)
+	if kind == "buy_relic" and sacrifice_cost_of(opt) > 0:
+		_inner.add_child(_sacrifice_line(sacrifice_cost_of(opt), extra.get("relic_texts", {}), small_size, inner_width, enabled))
 	if reason_text == "" and enabled and bool(opt.get("needs_swap", false)):
 		cap_note_label = _label(String(texts.get("swap_note", "")), small_size, Color.html(String(_cfg["option_warn_color"])), true)
 		cap_note_label.custom_minimum_size.x = inner_width
@@ -557,7 +573,7 @@ func _shop_tooltip(opt: Dictionary, name_text: String) -> String:
 
 ## A small pill: gold with the price, green "Free", a red-brown outline when it costs too much, a grey outline "Sold". The word or number is always
 ## there, so the colour is never the only signal.
-func _price_tag(word: String, mode: String, font_px: int) -> PanelContainer:
+func _price_tag(word: String, mode: String, font_px: int, was_word: String = "") -> PanelContainer:
 	var pill := PanelContainer.new()
 	pill.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var style := StyleBoxFlat.new()
@@ -595,6 +611,12 @@ func _price_tag(word: String, mode: String, font_px: int) -> PanelContainer:
 		coin.custom_minimum_size = Vector2.ONE * float(font_px) * 0.75
 		coin.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		row.add_child(coin)
+	if was_word != "" and (mode == "price" or mode == "short"):
+		# MAP4 ux: a discounted price shows the old one struck through beside the new one (a line, not only a colour).
+		var was_color := Color(text_color, 0.7)
+		var was: Label = _label(was_word, roundi(float(font_px) * 0.85), was_color, false)
+		was.draw.connect(func() -> void: was.draw_line(Vector2(0.0, was.size.y * 0.55), Vector2(was.size.x, was.size.y * 0.55), was_color, maxf(2.0 * _scale, 1.5), true))
+		row.add_child(was)
 	row.add_child(_label(word, font_px, text_color, false))
 	return pill
 
@@ -739,6 +761,42 @@ func _rarity_tag(opt: Dictionary, texts: Dictionary, font_px: int, enabled: bool
 		mark.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		row.add_child(mark)
 	return pill
+
+
+## MAP4 ux: how many relics taking this relic asks you to give up: the option's own `sacrifice_cost` (an offer tile), else the relic's data (a shop tile). 0 for none.
+static func sacrifice_cost_of(opt: Dictionary) -> int:
+	if opt.has("sacrifice_cost"):
+		return int(opt["sacrifice_cost"])
+	var relic_id: String = String(opt.get("relic_id", ""))
+	return int(RelicDatabase.get_relic(relic_id).get("sacrifice_cost", 0)) if relic_id != "" else 0
+
+
+## "Give up 2 relics" (data ui.relic.sacrifice_cost_one / sacrifice_cost_many); "" when the relic asks for nothing.
+static func sacrifice_cost_text(count: int, relic_texts: Dictionary) -> String:
+	if count <= 0:
+		return ""
+	if count == 1:
+		return String(relic_texts.get("sacrifice_cost_one", ""))
+	return String(relic_texts.get("sacrifice_cost_many", "")) % count
+
+
+## The cost line of a sacrifice relic, drawn as a warning line with an X in front ("Cost - Give up 2 relics"), so it is read before the pick.
+func _sacrifice_line(count: int, relic_texts: Dictionary, font_px: int, width: float, enabled: bool) -> Control:
+	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_theme_constant_override("separation", roundi(5.0 * _scale))
+	var color: Color = Color.html(String(_cfg["option_warn_color"])) if enabled else _text_color(false, Color.WHITE)
+	var mark := RunTypeIcon.new()
+	mark.shape = RunIcons.SHAPE_X
+	mark.color = color
+	mark.custom_minimum_size = Vector2.ONE * float(font_px) * 1.0
+	mark.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(mark)
+	var label: Label = _label(String(relic_texts.get("cost_format", "%s")) % sacrifice_cost_text(count, relic_texts), font_px, color, true)
+	label.custom_minimum_size.x = width - float(font_px) * 1.4
+	row.add_child(label)
+	sacrifice_label = label
+	return row
 
 
 ## MAP4 ux: the band of a curse card: a filled bar in the curse colour with an X and the word (data run_ui.curse_color; words ui.option.curse_tag).
@@ -963,6 +1021,13 @@ func _apply_styles(enabled: bool) -> void:
 	var family: bool = frame_card_id() != "" or relic
 	if relic:
 		base.set_corner_radius_all(0)  # square: a card is rounded
+	if look == Look.ACTION and String(option.get("kind", "")) == "dig":
+		base.border_color = _relic_accent()
+		base.set_border_width_all(maxi(roundi(3.0 * _scale), 2))
+	if look == Look.RELIC_CELL and bool(option.get("selected", false)):
+		base.border_color = Color.html(String(_cfg["option_accent_color"]))
+		base.set_border_width_all(maxi(roundi(4.0 * _scale), 3))
+		base.bg_color = Color.html(String(_cfg.get("relic_picked_color", "#1f3a26")))
 	if look == Look.SKIP_FREE:
 		base.set_corner_radius_all(roundi(2.0 * _scale))
 		base.border_color = Color.html(String(_cfg["option_accent_color"]))
@@ -1014,6 +1079,14 @@ func _draw() -> void:
 		draw_colored_polygon(moved, color)
 		moved.append(moved[0])
 		draw_polyline(moved, outline, maxf(1.0, _scale), true)
+	elif look == Look.ACTION and kind == "dig":
+		# MAP4 ux: the Dig gives a relic, so it wears the relic's hexagon and violet frame (see _apply_styles), never the plain action look.
+		var dig_hex := PackedVector2Array()
+		for p in RunIcons.polygon(RunIcons.SHAPE_HEX, size_px * 0.6):
+			dig_hex.append(p + center)
+		draw_colored_polygon(dig_hex, color if disabled else _relic_accent())
+		dig_hex.append(dig_hex[0])
+		draw_polyline(dig_hex, outline, maxf(1.0, _scale), true)
 	elif look == Look.ACTION and kind == "remove":
 		var warn: Color = Color.html(String(_cfg["option_warn_color"])) if not disabled else color
 		draw_rect(Rect2(center + Vector2(-0.5, -0.12) * size_px, Vector2(size_px, size_px * 0.24)), warn)
@@ -1028,7 +1101,15 @@ func _draw() -> void:
 		var hex_moved := PackedVector2Array()
 		for p in pts_hex:
 			hex_moved.append(p + center)
-		draw_colored_polygon(hex_moved, _relic_accent())
+		if bool(option.get("selected", false)):
+			# Picked: a green disc with a dark check where the hexagon sits.
+			draw_circle(center, size_px * 0.62, Color.html(String(_cfg["option_accent_color"])))
+			var check := PackedVector2Array()
+			for p in RunIcons.polygon(RunIcons.SHAPE_CHECK, size_px * 0.42):
+				check.append(p + center)
+			draw_colored_polygon(check, Color(0.05, 0.03, 0.04, 1.0))
+		else:
+			draw_colored_polygon(hex_moved, _relic_accent())
 	elif look == Look.RELIC or _is_shop_relic():
 		# The inner line of the double frame: a card has one thick frame, a relic has a second thin one inside it.
 		var inset: float = float(maxi(roundi(float(_cfg["option_frame_width"]) * _scale), 2)) + maxf(2.0 * _scale, 2.0)

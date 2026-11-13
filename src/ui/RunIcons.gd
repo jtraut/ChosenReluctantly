@@ -14,6 +14,7 @@ const SHAPE_SQUARE := "square"
 const SHAPE_TRIANGLE := "triangle"
 const SHAPE_X := "x"
 const SHAPE_ARROW := "arrow"
+const SHAPE_CHECK := "check"  # MAP4 ux: a picked relic in the multi-give-up list
 const SHAPE_BUBBLE := "bubble"  # MAP4 ux: the event node, a speech bubble with a "?" drawn in it (`draw_mark`)
 
 const BY_ID: Dictionary = {
@@ -60,6 +61,10 @@ static func polygon(shape: String, radius: float) -> PackedVector2Array:
 				Vector2(0, -radius), Vector2(radius * 0.92, -radius * 0.02), Vector2(radius * 0.42, -radius * 0.02), Vector2(radius * 0.42, radius * 0.9),
 				Vector2(-radius * 0.42, radius * 0.9), Vector2(-radius * 0.42, -radius * 0.02), Vector2(-radius * 0.92, -radius * 0.02),
 			])
+		SHAPE_CHECK:
+			pts.append_array([
+				Vector2(-0.9, 0.08), Vector2(-0.58, -0.24), Vector2(-0.22, 0.14), Vector2(0.58, -0.7), Vector2(0.9, -0.38), Vector2(-0.22, 0.78),
+			].map(func(v: Vector2) -> Vector2: return v * radius))
 		SHAPE_BUBBLE:
 			# A round body with a small tail at the lower left: the one rounded shape that is not a plain circle (combat), so it reads without colour.
 			for i in 16:

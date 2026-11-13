@@ -594,7 +594,7 @@ func _fill_options(options: Array, content: Dictionary = {}) -> void:
 	var in_footer: Array[int] = []
 	for i in range(_option_buttons.size()):
 		var footer_kind: String = String(_options[i].get("kind", ""))
-		if footer_kind == "back" or (_layout == "shop" and shop_row_of(footer_kind) == "service"):  # the shop's services sit beside Leave: always on screen
+		if footer_kind == "back" or footer_kind == "giveup_confirm" or (_layout == "shop" and shop_row_of(footer_kind) == "service"):  # the shop's services sit beside Leave: always on screen
 			_option_buttons[i].size_flags_vertical = Control.SIZE_SHRINK_CENTER  # the footer's buttons keep their own height, not the tallest one's
 			footer_box.add_child(_option_buttons[i])
 			in_footer.append(i)
@@ -621,6 +621,11 @@ func _fill_options(options: Array, content: Dictionary = {}) -> void:
 		hint_count = 2
 	if _layout == "shop":
 		hint_count = 0  # the highlight and the Leave button explain themselves; the height goes to the stock
+		# MAP4 ux: a discounted visit says why the prices are lower (and that removal is not discounted); the struck old price is on each tile.
+		var discount: float = float((content.get("merchant", {}) as Dictionary).get("discount", 0.0))
+		if discount > 0.0:
+			keys_label.text = String(merchant_texts.get("discount_note", "")) % roundi(discount * 100.0)
+			hint_count = 2
 	keys_label.visible = keys_label.text != "" and hint_count > 1
 
 

@@ -27,6 +27,8 @@ static var forced_offer: Array[String] = []
 static var start_relics: Array[String] = []
 ## `--run-curses=<id>+<id>` (MAP4-D, capture tooling): new runs start with these curse cards added to the deck. Sticky for the launch.
 static var start_curses: Array[String] = []
+## `--run-discount=<0..1>` (MAP4 ux, capture tooling): new runs start with this fraction off the next merchant visit, as an event's `merchant_discount` would give. Sticky for the launch.
+static var start_discount: float = 0.0
 ## `--relic-offer=<id>+<id>` (capture tooling): the relic offer of the FIRST relic choice, instead of the seeded draw. Consumed by that one offer.
 static var forced_relic_offer: Array[String] = []
 ## `--relic-cap=N` (capture and test tooling): replaces `relics.max_owned` for this launch (0 = use the data), so the give-one-up step
@@ -93,6 +95,7 @@ static func begin_new_run(seed_value: int = -1, character: String = "") -> RunSt
 		current.add_relic(relic_id)
 	for curse_id: String in start_curses:
 		current.deck.append(curse_id)
+	current.merchant_discount = start_discount
 	if map_on():
 		# The map is made once, from the run seed, and kept in the state. The run opens on the pick of a room-1 node. (A map that fails to
 		# generate has already reported itself loudly; the run is then the straight run.)

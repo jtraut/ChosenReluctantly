@@ -345,6 +345,7 @@
         "option_flavor_color": "#c9bcc4",
         "option_accent_color": "#8fe388",
         "option_warn_color": "#ffb08a",
+        "relic_picked_color": "#1f3a26",
         "curse_color": "#7a2f8f",
         "curse_border_color": "#f0d7ff",
         "curse_frame_color": "#b04fd0",

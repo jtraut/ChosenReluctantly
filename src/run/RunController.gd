@@ -417,6 +417,11 @@ func _apply_relic_args(args: PackedStringArray, tree: SceneTree) -> bool:
 				if not CardSchema.is_curse(CardDatabase.get_card(curse_id)):
 					problems.append("--run-curses: '%s' is not a curse card" % curse_id)
 			RunSession.start_curses = cursed
+		elif arg.begins_with("--run-discount="):
+			if not arg.substr(15).is_valid_float() or arg.substr(15).to_float() < 0.0 or arg.substr(15).to_float() >= 1.0:
+				problems.append("--run-discount needs a fraction from 0 to below 1, as --run-discount=0.25")
+			else:
+				RunSession.start_discount = arg.substr(15).to_float()
 		elif arg.begins_with("--relic-offer="):
 			var offered: Array[String] = RelicArgs.parse_ids(arg.substr(14))
 			problems.append_array(RelicArgs.id_problems("--relic-offer", offered, RelicConfig.offer_count()))

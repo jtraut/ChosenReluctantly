@@ -175,3 +175,66 @@ func test_a_curse_option_gets_a_band_the_curse_frame_and_a_line_even_with_no_eff
 	assert_object(plain.curse_band).is_null()
 	card.queue_free()
 	plain.queue_free()
+
+
+# --- relics, the shop ------------------------------------------------------------------------------
+
+func test_a_sacrifice_relic_cost_reads_give_up_n_relics() -> void:
+	var texts: Dictionary = RunConfig.ui()["relic"]
+	assert_str(RunOptionCard.sacrifice_cost_text(0, texts)).is_empty()
+	assert_str(RunOptionCard.sacrifice_cost_text(1, texts)).is_equal("Give up 1 relic")
+	assert_str(RunOptionCard.sacrifice_cost_text(2, texts)).is_equal("Give up 2 relics")
+
+
+func test_the_cost_comes_from_the_option_or_the_relics_data() -> void:
+	RelicDatabase.load_all()
+	assert_int(RunOptionCard.sacrifice_cost_of({"sacrifice_cost": 2})).is_equal(2)
+	assert_int(RunOptionCard.sacrifice_cost_of({"relic_id": "hostile_takeover"})).is_equal(2)  # a shop tile has no `sacrifice_cost` key
+	assert_int(RunOptionCard.sacrifice_cost_of({"relic_id": "heavy_sigh"})).is_equal(0)
+	assert_int(RunOptionCard.sacrifice_cost_of({})).is_equal(0)
+
+
+func test_a_sacrifice_offer_tile_shows_its_cost_and_a_picked_cell_says_picked() -> void:
+	var cfg: Dictionary = UiConfig.run_ui()
+	var relic_texts: Dictionary = RunConfig.ui()["relic"]
+	var tile := RunOptionCard.new()
+	add_child(tile)
+	tile.setup({"id": "relic:x", "kind": "relic", "label": "X", "detail": "Rule.", "sacrifice_cost": 2, "enabled": true, "pool": "neutral", "tier_name": "Tier 3"},
+			RunOptionCard.Look.RELIC, 268.0, cfg, 1.0, {"relic_texts": relic_texts, "texts": RunConfig.ui()["option"]})
+	assert_object(tile.sacrifice_label).is_not_null()
+	assert_str(tile.sacrifice_label.text).contains("Give up 2 relics")
+	var cell := RunOptionCard.new()
+	add_child(cell)
+	cell.setup({"id": "giveup:x", "kind": "giveup", "label": "X", "detail": "Rule.", "selected": true, "enabled": true, "pool": "neutral", "tier_name": "Tier 1"},
+			RunOptionCard.Look.RELIC_CELL, 290.0, cfg, 1.0, {"relic_texts": relic_texts, "texts": RunConfig.ui()["option"]})
+	assert_object(cell.picked_label).is_not_null()
+	assert_str(cell.picked_label.text).is_equal("Picked")
+	assert_str(cell.hint_label.text).is_equal(String(relic_texts["unpick_hint"]))
+	var plain := RunOptionCard.new()
+	add_child(plain)
+	plain.setup({"id": "giveup:y", "kind": "giveup", "label": "Y", "detail": "Rule.", "enabled": true, "pool": "neutral", "tier_name": "Tier 1"},
+			RunOptionCard.Look.RELIC_CELL, 290.0, cfg, 1.0, {"relic_texts": relic_texts, "texts": RunConfig.ui()["option"]})
+	assert_object(plain.picked_label).is_null()  # the plain cap swap has no toggle
+	assert_str(plain.hint_label.text).is_equal(String(relic_texts["giveup_hint"]))
+	for node: Node in [tile, cell, plain]:
+		node.queue_free()
+
+
+func test_the_confirm_of_a_give_up_step_sits_in_the_footer_with_cancel() -> void:
+	assert_str(RunPromptScreen.layout_for([{"kind": "giveup"}, {"kind": "giveup_confirm"}, {"kind": "back"}])).is_equal("cells")
+
+
+func test_a_discounted_shop_price_keeps_the_old_one_to_strike_through() -> void:
+	var texts: Dictionary = RunConfig.ui()["merchant"]
+	var cut: Dictionary = RunOptionCard.shop_price_state({"kind": "buy_relic", "price": 60, "base_price": 80, "enabled": true}, 200, texts)
+	assert_str(String(cut["was_text"])).is_equal("80 gold")
+	assert_str(String(cut["text"])).is_equal("60 gold")
+	var plain: Dictionary = RunOptionCard.shop_price_state({"kind": "buy_relic", "price": 80, "base_price": 80, "enabled": true}, 200, texts)
+	assert_str(String(plain["was_text"])).is_empty()
+	var no_base: Dictionary = RunOptionCard.shop_price_state({"kind": "buy_card", "price": 41, "enabled": true}, 200, texts)
+	assert_str(String(no_base["was_text"])).is_empty()
+
+
+func test_the_check_shape_stays_in_its_circle() -> void:
+	for p: Vector2 in RunIcons.polygon(RunIcons.SHAPE_CHECK, 10.0):
+		assert_float(p.length()).is_less_equal(10.0 * 1.2)

@@ -39,7 +39,7 @@ static func generate(run_seed: int, room_index: int, deck: Array, cards: Array, 
 		by_id[String((card as Dictionary).get("id", ""))] = card
 	var deck_cards: Array[Dictionary] = []
 	for card_id: Variant in deck:
-		if by_id.has(String(card_id)):
+		if by_id.has(String(card_id)) and not CardSchema.is_curse(by_id[String(card_id)]):  # MAP4-C: a curse in the deck sets up no status and fills no slot requirement
 			deck_cards.append(by_id[String(card_id)])
 	var candidates: Array[String] = candidate_ids(cards, pools, deck_cards, pool_defs)
 	for gone: Variant in removed:

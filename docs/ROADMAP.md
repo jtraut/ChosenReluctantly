@@ -1354,7 +1354,18 @@ un_offer_report.ps1`.
   - **ux:** the mini-boss name and bar (building on BD3a's), attack telegraph readability, the act tint checked at 1280x720 and 1024x600.
   - **qa:** each attack's telegraph and damage, the mini-boss scenarios, the 3-act `-Route first` gate (8/12 per class), hashes.
   - **Acceptance:** each mini-boss is clearly different from any normal enemy and from the other (playtester); both classes meet SIM1's three-act floor (the old 8/12 is suspended); scenarios `--scenario=mini_boss_act1` and `mini_boss_act2` exist for the director.
-- [ ] **MAP3b, rarity and boss relics (after BD3a, before MAP4). Full loop. Tag `playtest-YYYY-MM-DD-MAP3b`.** Plan: MAP.md §4.5, BUILD_DEPTH §4. **Added 2026-11-09:** the tier 3 relics, boss-tier relics and rare and legendary cards must cover Bleed and basic attacks as well as Burn (BUILD_DEPTH §9a). **D48 = A (director, 2026-11-11):** no Bleed top-up before SIM1; BD3a closes as it is, and the extra Bleed and physical cards come here as rares and legendaries. Raising the late-offer Bleed share (8.5% at BD3a) is part of this slice's goal.
+- [x] **MAP3b, rarity and boss relics (after BD3a, before MAP4). Full loop. Tag `playtest-2026-11-12-MAP3b`.**
+  - **Done 2026-11-12:**
+    - design 093450c..81c8e76;
+    - gameplay-dev A 5d5678c..472beb0, B 22a9d8f..3da6356, C 13dcb05..8157c59;
+    - ux e596c5a..f59e2c6;
+    - qa PASS 7ed9fc0..02ed622;
+    - playtest bffaf3a (no blocker);
+    - docs adff02a.
+  - **Carry-overs to MAP4** (DECISIONS "MAP3b qa PASS" and "MAP3b playtest triage"):
+    - gameplay-dev, first step: the eyes-56 default (The Non-Compete Clause's refund 0.5 -> 0.3 s); D49 if it's answered B or C; Knuckle Sandwich's "60 s" text; the `-RelicCap 1` bot finding (un-skip the qa test); forced `--relic-offer` skipping the boss branch.
+    - ux: stack labels overlapping at 2 enemies; a 4-enemy Bleed scenario to verify the dimming and the Open a Vein glow; golem and pink telegraph contrast on the act 3 sand floor.
+    - BD3b: the Wizard's act 1 losses; the plan bot undervaluing rare and legendary Bleed cards; the stun relics' "halved on elites" note. Plan: MAP.md §4.5, BUILD_DEPTH §4. **Added 2026-11-09:** the tier 3 relics, boss-tier relics and rare and legendary cards must cover Bleed and basic attacks as well as Burn (BUILD_DEPTH §9a). **D48 = A (director, 2026-11-11):** no Bleed top-up before SIM1; BD3a closes as it is, and the extra Bleed and physical cards come here as rares and legendaries. Raising the late-offer Bleed share (8.5% at BD3a) is part of this slice's goal.
   - **From MB1 (2026-11-11; DECISIONS "MB1 playtest triage" and "MB1 qa PASS"):**
     - **gameplay-dev's first step, unless the director's eyes item 55 says otherwise:**
       - the duelist's `max_health` 90 -> 120;

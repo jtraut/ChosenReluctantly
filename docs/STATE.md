@@ -3,9 +3,33 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-12 (MAP3b playtest done; docs pass in progress).
+Last updated: 2026-11-12 (MAP3b closed, tag `playtest-2026-11-12-MAP3b`; MAP4 next, starting with game-lead's brief).
 
 ## What's done
+- **MAP3b closed 2026-11-12.** Tag `playtest-2026-11-12-MAP3b`.
+  - **Commits:**
+    - design 093450c..81c8e76;
+    - gameplay-dev 5d5678c..8157c59 (sittings A, B, C);
+    - ux e596c5a..f59e2c6;
+    - qa PASS 02ed622;
+    - playtest bffaf3a;
+    - docs adff02a.
+  - **Shipped:**
+    - card rarity, with rare from act 2 and legendary from act 3;
+    - 17 rare and legendary cards, 15 tier 1-3 relics, 8 boss relics (42 relics, 65 cards);
+    - the mini-boss reward (a boss relic, then rare or legendary cards);
+    - card prices 55/85/125;
+    - stack hard cap 10;
+    - the act 3 floor in sand.
+  - **Baselines now:**
+    - suite 2273 (1 skipped: the open `-RelicCap` qa test), 0 orphans;
+    - hashes unchanged (3172486861 / 916264160 / 1317880580 / 3476063471);
+    - SIM1 `-Route first`: human Rogue 27/36, Wizard 23/36; off 33/36, 35/36. These moved with the merchant bot change; the floors are unchanged;
+    - relic medians `relic` 15/15, `safe` 6.5/6;
+    - exactly 2 boss relics per won run;
+    - late Bleed share 11.8%.
+  - **Carry-overs:** ROADMAP MAP3b "Carry-overs to MAP4".
+  - **New director items:** eyes 56, and D49 updated (recommend B).
 - **MB1 closed 2026-11-11.** Tag `playtest-2026-11-11-MB1`.
   - **Commits:**
     - design 5ecbbf9 (MAP.md §11);
@@ -203,64 +227,12 @@ Last updated: 2026-11-12 (MAP3b playtest done; docs pass in progress).
 - The repo runs. Baselines: see the H2 line above.
 
 ## In progress
-- **MAP3b, in progress.** The design pass is done (game-lead, docs only, 2026-11-12):
-  - BUILD_DEPTH §12 (093450c): 17 rare and legendary cards, 15 tier 1-3 relics, 8 boss relics, the new-code list and the checks;
-  - the ROADMAP MAP3b "Detailed brief", with sittings A (engine), B (content) and C (tuning; may merge into B), plus DECISIONS "MAP3b design pass" (3526e32);
-  - OPEN_ITEMS D49, default A, which nothing waits on.
-  - Brief review fixes in 81c8e76: common-only pool fill, the stack hard cap, the save round trip, and the verify items.
-  - **Sitting A done** (5d5678c..472beb0; triage in DECISIONS "MAP3b sitting A triage"). Suite 2233 / 164; hashes unchanged.
-  - **gameplay-dev sitting B (content), in progress.**
-    - Content committed in 22a9d8f.
-    - Uncommitted when last checked: damage bumps in 3 card files (Arterial Spray, Controlled Demolition, Exsanguinate) and a pool-fill test in `tests/unit/map3b_content_test.gd`. They are gameplay-dev's to commit.
-    - Stale suite and SIM1 runs from 22a9d8f were still running.
-    - Remaining:
-      - commit the bumps;
-      - re-check the hashes;
-      - re-run the suite and the SIM1 gate on the final commit;
-      - fix count pins (`--full-deck` 38 -> 49 Rogue, 28 -> 39 Wizard);
-      - remove `mini_boss` from Pyre Insurance's sources;
-      - then sitting C.
-    - Calls: DECISIONS "MAP3b sitting B interim calls".
-    - **Later commits:** f6bbf46 (the damage bumps), 3da6356 (pins, and the armor buffs shortened under their recast: Brawl Clause 8 -> 3.5 s, Strongly Worded Ward 6 -> 3.5 s, Sabbatical 3 -> 1.4 s).
-    - **Results game-lead read from gameplay-dev's output** (its final report was refused):
-      - suite 2243, 0 failures, 0 orphans, exit 0;
-      - SIM1 at 3da6356, `-Route first`, pooled: human Rogue 29/36, Wizard 22/36 (was 15/36); off 35/36, 34/36 (was 30/36). Floors hold.
-      - Bots end with about 750-870 unspent gold and buy 0 relics on `first`: that's sitting C.
-  - **Sitting C done** (13dcb05..8157c59).
-    - Pyre Insurance loses `mini_boss`.
-    - The merchant bot buys relics on non-relic routes.
-    - `offer_report` rolls act rarity.
-    - No gold or price change.
-    - Triage: DECISIONS "MAP3b sittings B and C triage".
-  - **ux done** (e596c5a..f59e2c6; DECISIONS "MAP3b ux triage"). Suite 2264; hashes unchanged.
-    - Includes the act 3 floor change `#704840` -> `#8f8060`. Add it to the MAP3b eyes item at close; screenshots are in `screenshots/map3b_ux/act3_floor_*.png`.
-  - **qa PASS** (02ed622 and later; DECISIONS "MAP3b qa PASS"). Suite 2273 (1 skipped, the open-finding test); hashes unchanged; SIM1 27, 23, 33 and 35 of 36.
-  - **Playtest done** (bffaf3a, no blocker; DECISIONS "MAP3b playtest triage"). OPEN_ITEMS: eyes 56 added, D49 updated (recommend B).
-  - **The docs pass (tech-writer) is in progress.** Then close: ROADMAP done, tag `playtest-2026-11-12-MAP3b`, STATE.
-  - **Doc handoff, qa part:**
-    - README line 97 (flat card price) and its stale SIM1 baselines and suite count;
-    - ARCHITECTURE §6 `card_price` -> `card_prices`;
-    - the "0 skipped" wording;
-    - the `-RelicCap` note.
-  - **Doc handoff, ux part:**
-    - new keys: `ui.option.rarity_names`, `ui.relic.boss_title`, `boss_line`, `cost_format`;
-    - `data/ui.json` `run_ui` rarity colours, `hud.detonate_live_stacks` 2, `status_stacks` dim keys;
-    - the `UxCapture` `shop_rarity` mode;
-    - `DamageNumber.live`;
-    - `tests/unit/map3b_ux_test.gd`.
-  - **Doc handoff additions:**
-    - the README SIM1 baselines are now 27/36, 23/36, 33/36 and 35/36;
-    - the README `MerchantPolicy` wording;
-    - the `offer_report` act rarity;
-    - the Pyre sources;
-    - the new content list (17 cards, 15 relics, 8 boss relics);
-    - the armor buffs shortened (new cards, so there are no shipped old values);
-    - `--full-deck` counts: Rogue 38 -> 49, Wizard 28 -> 39.
+- Nothing in progress. MAP3b closed 2026-11-12.
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step
-1. **MAP3b: the tech-writer docs pass**, then close (tag `playtest-2026-11-12-MAP3b`). MAP4's first steps are the eyes-56 default (Non-Compete refund 0.5 -> 0.3 s), D49 if it's answered B or C, and the MAP3b carry-overs.
-2. Then MAP4, 3d, BD3b.
+1. **MAP4 (events).** First, game-lead details the brief: the ROADMAP MAP4 entry says "Brief detailed at MAP3's close". Probably two sittings. gameplay-dev's first step is the MAP3b carry-overs: the eyes-56 default, D49 if it's answered B or C, and the small fixes.
+2. Then 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 

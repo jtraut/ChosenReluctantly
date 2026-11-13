@@ -1,13 +1,13 @@
 # Director open items
 
-Last updated: 2026-11-12 (MAP3b design pass done; latest tag `playtest-2026-11-11-MB1`)
-**Status:** 1 decision waiting (D49, nothing blocks on it). 11 things to look at (56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. **MB1 (new mini-bosses) is done**, tag `playtest-2026-11-11-MB1`. **MAP3b is done** (rare and legendary cards, boss relics), and the tag is coming after the docs pass. Next: MAP4 -> 3d -> BD3b.
+Last updated: 2026-11-12 (MAP3b closed; latest tag `playtest-2026-11-12-MAP3b`)
+**Status:** 1 decision waiting (D49, nothing blocks on it). 11 things to look at (56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. **MB1 (new mini-bosses) is done**, tag `playtest-2026-11-11-MB1`. **MAP3b is done** (rare and legendary cards, boss relics), tag `playtest-2026-11-12-MAP3b`. Next: MAP4 -> 3d -> BD3b.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
 ## How to playtest
 
-- **Latest known-good build:** `git checkout playtest-2026-11-11-MB1`, play, then `git checkout main`. The one before it is `playtest-2026-11-09-BD3a`. Older tags are in `docs/RESOLVED.md`.
+- **Latest known-good build:** `git checkout playtest-2026-11-12-MAP3b`, play, then `git checkout main`. The one before it is `playtest-2026-11-11-MB1`. Older tags are in `docs/RESOLVED.md`.
 - **Relics:** `-- --relics=pyre_insurance+heavy_sigh` starts with relics; `-- --relic-cap=1` tries the give-one-up step.
 - **Normal run:** `godot --path .` (three acts of 10 rooms on a branching map; Continue on the class pick resumes a saved run). Extras: `-- --run-seed=5`, `-- --run-room=10` (act 1 mini-boss), `-- --run-room=30` (final boss), `-- --acts=1` (the old one-act run), `-- --no-map` (straight run), `-- --class=wizard`.
 - **Preset decks:** `godot --path . -- --list-decks`, then for example `-- --deck=fire-heavy-rogue --full-deck --run-room=10`.

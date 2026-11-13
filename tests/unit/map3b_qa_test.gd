@@ -343,13 +343,13 @@ func test_a_real_act_3_merchant_stock_can_hold_a_legendary_and_never_a_card_abov
 		assert_int(int((counts[3] as Array)[2])).is_greater(0)
 
 
-# --- regression (qa finding, open): the sim bot at a lowered cap with only a boss relic held ---
+# --- regression (qa finding, fixed in MAP4-A): the sim bot at a lowered cap with only a boss relic held ---
 
 ## `run_wave_sim.ps1 -Run -Seed 1 -Runs 2 -Class rogue -Route first -RelicCap 1` crashes in act 2 ("the bot choice 'relic:...' was refused: Nothing
 ## you hold can be given up"). A boss relic can't be given up, so at a cap of 1 with one held, a normal relic offer can't be taken, but the model still
 ## lists its relic options as enabled and `RelicPolicy.offer_choice` picks the first. The fix is either in the policy (skip when nothing can be
-## taken) or in the model (mark the option disabled). Remove `do_skip` when it is fixed: this test fails until then (verified before it was skipped).
-func test_the_bot_never_picks_a_relic_it_cannot_take_at_the_cap_with_only_a_boss_relic_held(do_skip := true, skip_reason := "open qa finding: RelicPolicy at -RelicCap 1 with a boss relic held (MAP3b review 2026-11-12)") -> void:
+## taken) or in the model (mark the option disabled). Fixed in MAP4-A: the model marks the option disabled (reason "Nothing you hold can be given up") and the bot takes the skip.
+func test_the_bot_never_picks_a_relic_it_cannot_take_at_the_cap_with_only_a_boss_relic_held() -> void:
 	var ctx: Dictionary = _ctx("rogue", 1)
 	var state: RunState = _state("rogue", 5, 2)
 	state.relics = ["the_micromanager"] as Array[String]

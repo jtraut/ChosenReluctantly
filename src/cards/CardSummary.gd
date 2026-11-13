@@ -98,6 +98,7 @@ const DEFAULT_TEXT: Dictionary = {
 	"detonate": "Detonate %s: %s%% of its remaining damage at once",
 	"reduce_cooldown": "Take %s s off your %s cooldown",
 	"reduce_cooldown_attack": "%s attack",
+	"reduce_cooldown_ready": "Your %s cooldown is ready again",
 	"stack_cap": "%s can stack %s more times",
 	"tick_rate": "%s ticks %s faster",
 	"attack_interval": "%s attack delay %s",
@@ -165,6 +166,8 @@ static func _effect_part(template: String, params: Dictionary, text: Dictionary 
 			return String(_word(text, "pass_through")) % _num(float(params.get("duration", 0.0)))
 		"reduce_cooldown":
 			var what: String = String(_word(text, "reduce_cooldown_attack")) % String(params.get("attack_id", "")).capitalize() if params.has("attack_id") 					else String((text.get("slot_names", {}) as Dictionary).get(String(params.get("slot_type", "")), String(params.get("slot_type", "")).replace("_", " ")))
+			if float(params.get("seconds", 0.0)) >= READY_SECONDS:
+				return String(_word(text, "reduce_cooldown_ready")) % what  # "60 s" reads as a number to wait out; it means "ready"
 			return String(_word(text, "reduce_cooldown")) % [_num(float(params.get("seconds", 0.0))), what]
 		"detonate_status":
 			return String(_word(text, "detonate")) % [_status_name(String(params.get("status_id", "")), text), str(roundi(float(params.get("multiplier", 1.0)) * 100.0))]
@@ -256,6 +259,10 @@ static func _num(value: float) -> String:
 
 
 ## Status ids a card can apply (apply_status and zone effects), for the `requires.status_sources` hook.
+## A reduce_cooldown of at least this many seconds is worded as "ready again" (no cooldown in the game is longer than the cap, 60 s).
+const READY_SECONDS := 30.0
+
+
 static func status_ids(card: Dictionary) -> Array[String]:
 	var out: Array[String] = []
 	for effect: Variant in (card.get("effects", []) as Array):

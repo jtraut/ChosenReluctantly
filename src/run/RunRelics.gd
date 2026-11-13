@@ -79,18 +79,20 @@ static func open_for_room(state: RunState, room_type: String, is_last_room: bool
 		pools.append(String(pool_id))
 	var ids: Array[String] = []
 	var boss_offer: bool = false
-	if room_type == "mini_boss" and RunSession.forced_relic_offer.is_empty():
+	if room_type == "mini_boss":
 		# MAP3b: the act-end mini-boss offers boss-tier relics: pick 1 of `offer_count`, no skip, drawn uniformly among the unowned boss relics of
 		# the run's pools. With none left (or none in the data yet) it falls back to the interim elite-tier offer below, skip allowed.
 		var boss_rarities: Array[String] = [RelicOffer.BOSS_RARITY]
 		ids = RelicOffer.offer(RelicSchema.BOSS_SOURCE, int(relics["offer_count"]), offer_rng(state.seed_value, state.stream_index()), {}, state.relics,
 				state.relics_given_up, pools, relics["catalog"], boss_rarities)
 		boss_offer = not ids.is_empty()
-	if not ids.is_empty():
-		pass
-	elif not RunSession.forced_relic_offer.is_empty():
-		ids = RunSession.forced_relic_offer.duplicate()  # --relic-offer (capture tooling): used by this one offer only
+	if not RunSession.forced_relic_offer.is_empty():
+		# --relic-offer (capture tooling): replaces the ids for this one offer only. The mini-boss branch above still ran, so a forced offer
+		# at a mini-boss keeps the boss-relic rules (no skip, boss title): `boss_offer` stays as that branch set it.
+		ids = RunSession.forced_relic_offer.duplicate()
 		RunSession.forced_relic_offer = []
+	elif not ids.is_empty():
+		pass
 	else:
 		var weights: Dictionary = weights_for(state, relics, 1 if room_type == "mini_boss" else 0)
 		var chest_weights: Dictionary = RunNodes.weights_for_current_room(state, ctx)  # a map's relic stage: its chest size sets the tier odds
@@ -195,6 +197,11 @@ static func options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 			for relic_id: String in state.offer:
 				var option: Dictionary = relic_option(OPTION_RELIC + ":" + relic_id, OPTION_RELIC, relic_id, ctx)
 				option["needs_swap"] = needs_swap(state, ctx)
+				if option["needs_swap"] and giveable_ids(state, ctx).is_empty():
+					# At the cap with nothing that can be given up (only boss relics held): a pick would be refused, so the option is disabled
+					# and the skip below is the way out. The bot (RelicPolicy) skips disabled options.
+					option["enabled"] = false
+					option["reason"] = String(ui.get("none_giveable", ""))
 				out.append(option)
 			# MAP3b: a boss-relic offer has no skip, except when nothing can be taken (at the cap with only boss relics held: a pick would be refused
 			# for ever, so the screen could never close). Then the skip is the way out.

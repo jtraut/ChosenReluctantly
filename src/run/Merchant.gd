@@ -56,6 +56,10 @@ static func open_visit(state: RunState, node_id: int, ctx: Dictionary) -> Dictio
 		"sold_cards": [] as Array[String],
 		"rerolls_used": 0,
 	}
+	if state.merchant_discount > 0.0:
+		# MAP4-B2: an event's `merchant_discount` applies to this visit and is used up by it (the visit holds it, so a reload keeps the same prices).
+		state.merchant_visit["discount"] = state.merchant_discount
+		state.merchant_discount = 0.0
 	return state.merchant_visit
 
 
@@ -103,10 +107,11 @@ static func _draw_relics(state: RunState, node_id: int, reroll_index: int, ctx: 
 	var shop_only_catalog: Array = catalog.filter(func(r: Variant) -> bool: return is_shop_only(r))
 	var needed: int = maxi(total - kept.size(), 0)
 	var shop_slots: int = mini(maxi(int(cfg.get("shop_only_slots", 1)) - kept_shop_only, 0), needed)
-	var shop_picks: Array[String] = RelicOffer.offer("merchant", shop_slots, rng, weights, excluded, state.relics_given_up, pools, shop_only_catalog)
+	var can_give: int = RunRelics.giveable_count(state, ctx)  # MAP4-B2: a sacrifice_cost relic is not stocked while you can't pay its cost
+	var shop_picks: Array[String] = RelicOffer.offer("merchant", shop_slots, rng, weights, excluded, state.relics_given_up, pools, shop_only_catalog, RelicOffer.DEFAULT_RARITIES, can_give)
 	var taken: Array[String] = excluded.duplicate()
 	taken.append_array(shop_picks)
-	var normal_picks: Array[String] = RelicOffer.offer("merchant", needed - shop_picks.size(), rng, weights, taken, state.relics_given_up, pools, catalog)
+	var normal_picks: Array[String] = RelicOffer.offer("merchant", needed - shop_picks.size(), rng, weights, taken, state.relics_given_up, pools, catalog, RelicOffer.DEFAULT_RARITIES, can_give)
 	var result: Array[String] = normal_picks.duplicate()
 	result.append_array(shop_picks)
 	return result
@@ -152,6 +157,27 @@ static func card_price(ctx: Dictionary, card_id: String = "") -> int:
 	return int(prices.get(rarity, 0))
 
 
+## MAP4-B2: the open visit's discount (a fraction off relic and card prices; 0 when none). Removal is never discounted.
+static func discount_of(state: RunState) -> float:
+	return float(state.merchant_visit.get("discount", 0.0)) if has_visit(state) else 0.0
+
+
+## `price` with a fraction off, rounded to a whole gold, never below 1 (a free item would hide a price). A price of 0 or below, or no discount, comes back unchanged.
+static func discounted(price: int, fraction: float) -> int:
+	if price <= 0 or fraction <= 0.0:
+		return price
+	return maxi(roundi(float(price) * (1.0 - fraction)), 1)
+
+
+## What a relic costs in this visit (the base price less the visit's discount); -1 when not for sale. The shop line and the charge both come from here.
+static func relic_price_now(state: RunState, relic_id: String, ctx: Dictionary) -> int:
+	return discounted(relic_price(relic_id, ctx), discount_of(state))
+
+
+static func card_price_now(state: RunState, ctx: Dictionary, card_id: String = "") -> int:
+	return discounted(card_price(ctx, card_id), discount_of(state))
+
+
 ## The price of the next removal: removal_base + removal_step x removals already bought.
 static func removal_price(state: RunState, ctx: Dictionary) -> int:
 	var cfg: Dictionary = (ctx.get("merchant", {}) as Dictionary).get("config", {})
@@ -161,7 +187,7 @@ static func removal_price(state: RunState, ctx: Dictionary) -> int:
 # --- buying ----------------------------------------------------------------------------------------
 
 static func blank_result(kind: String, id: String) -> Dictionary:
-	return {"ok": false, "kind": kind, "id": id, "price": 0, "reason": "", "needs_giveup": false, "giveable": [] as Array[String], "gave_up": ""}
+	return {"ok": false, "kind": kind, "id": id, "price": 0, "reason": "", "needs_giveup": false, "giveable": [] as Array[String], "gave_up": "", "gave_up_all": [] as Array[String], "sacrifice_cost": 0}
 
 
 static func _refuse(result: Dictionary, reason: String) -> Dictionary:
@@ -171,7 +197,7 @@ static func _refuse(result: Dictionary, reason: String) -> Dictionary:
 
 ## Buys a relic from the stock. At the relic cap it returns ok false with `needs_giveup` true and the giveable relic ids (nothing charged);
 ## call again with `give_up_id` (one of them) to swap: that relic is given up, the new one taken and the gold paid in one step.
-static func buy_relic(state: RunState, relic_id: String, ctx: Dictionary, give_up_id: String = "") -> Dictionary:
+static func buy_relic(state: RunState, relic_id: String, ctx: Dictionary, give_up_id: String = "", give_up_ids: Array[String] = []) -> Dictionary:
 	var result: Dictionary = blank_result(KIND_RELIC, relic_id)
 	if not has_visit(state):
 		return _refuse(result, "no_visit")
@@ -181,13 +207,39 @@ static func buy_relic(state: RunState, relic_id: String, ctx: Dictionary, give_u
 		return _refuse(result, "sold")
 	if not ((ctx.get("relics", {}) as Dictionary).get("by_id", {}) as Dictionary).has(relic_id):
 		return _refuse(result, "unknown_relic")  # a stocked id the data no longer has (an old save): not buyable
-	var price: int = relic_price(relic_id, ctx)
+	var price: int = relic_price_now(state, relic_id, ctx)
 	if price < 0:
 		return _refuse(result, "not_for_sale")
 	result["price"] = price
 	if price > state.gold:
 		return _refuse(result, "too_expensive")
-	if RelicOffer.needs_swap(state.relics.size(), RunRelics.max_owned(ctx)):
+	var cost: int = RunRelics.cost_for(relic_id, ctx)
+	if cost > 0:
+		# MAP4-B2 (BUILD_DEPTH 13.5): a sacrifice_cost relic gives up `cost` relics instead of the plain cap swap (the cost frees the slot). The gold is charged here, on
+		# the confirm that passes all the picks; a call with none returns needs_giveup and charges nothing.
+		var can_give: Array[String] = RunRelics.giveable_ids(state, ctx)
+		result["giveable"] = can_give
+		result["sacrifice_cost"] = cost
+		if can_give.size() < cost:
+			return _refuse(result, "none_giveable")
+		var picks: Array[String] = give_up_ids.duplicate()
+		if picks.is_empty() and not give_up_id.is_empty():
+			picks.append(give_up_id)
+		if picks.is_empty():
+			result["needs_giveup"] = true
+			return _refuse(result, "needs_giveup")
+		var distinct: Array[String] = []
+		for pick: String in picks:
+			if not can_give.has(pick) or distinct.has(pick):
+				return _refuse(result, "bad_giveup")
+			distinct.append(pick)
+		if picks.size() != cost:
+			return _refuse(result, "bad_giveup")
+		for pick: String in picks:
+			state.give_up_relic(pick)
+		result["gave_up"] = picks[0]
+		result["gave_up_all"] = picks
+	elif RelicOffer.needs_swap(state.relics.size(), RunRelics.max_owned(ctx)):
 		var giveable: Array[String] = RunRelics.giveable_ids(state, ctx)
 		result["giveable"] = giveable
 		if giveable.is_empty():
@@ -215,7 +267,7 @@ static func buy_card(state: RunState, card_id: String, ctx: Dictionary) -> Dicti
 		return _refuse(result, "not_in_stock")
 	if (state.merchant_visit["sold_cards"] as Array).has(card_id):
 		return _refuse(result, "sold")
-	var price: int = card_price(ctx, card_id)
+	var price: int = card_price_now(state, ctx, card_id)
 	result["price"] = price
 	if price > state.gold:
 		return _refuse(result, "too_expensive")
@@ -319,7 +371,7 @@ static func items(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 		return out
 	var visit: Dictionary = state.merchant_visit
 	for relic_id: String in _ids(visit["relics"]):
-		var price: int = relic_price(relic_id, ctx)
+		var price: int = relic_price_now(state, relic_id, ctx)
 		var sold: bool = (visit["sold_relics"] as Array).has(relic_id)
 		var reason: String = ""
 		if sold:
@@ -329,25 +381,27 @@ static func items(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 		elif price > state.gold:
 			reason = "too_expensive"
 		var at_cap: bool = RelicOffer.needs_swap(state.relics.size(), RunRelics.max_owned(ctx))
-		if reason.is_empty() and at_cap and RunRelics.giveable_ids(state, ctx).is_empty():
-			reason = "none_giveable"  # at the cap with nothing that can be given up (boss relics can't): the same refusal buy_relic gives
-		out.append({"kind": KIND_RELIC, "id": relic_id, "name": String(RunRelics.display(relic_id, ctx)["name"]), "price": price, "sold": sold,
-				"can_buy": reason.is_empty(), "reason": reason, "needs_giveup": reason.is_empty() and at_cap})
+		var sacrifice: int = RunRelics.cost_for(relic_id, ctx)
+		var giveable_now: int = RunRelics.giveable_ids(state, ctx).size()
+		if reason.is_empty() and (giveable_now < sacrifice or (sacrifice == 0 and at_cap and giveable_now == 0)):
+			reason = "none_giveable"  # at the cap with nothing that can be given up (boss relics can't), or fewer to give up than the relic asks: the refusal buy_relic gives
+		out.append({"kind": KIND_RELIC, "id": relic_id, "name": String(RunRelics.display(relic_id, ctx)["name"]), "price": price, "base_price": relic_price(relic_id, ctx), "sold": sold,
+				"can_buy": reason.is_empty(), "reason": reason, "needs_giveup": reason.is_empty() and (at_cap or sacrifice > 0), "sacrifice_cost": sacrifice})
 	for card_id: String in _ids(visit["cards"]):
-		var card_cost: int = card_price(ctx, card_id)
+		var card_cost: int = card_price_now(state, ctx, card_id)
 		var card_sold: bool = (visit["sold_cards"] as Array).has(card_id)
 		var card_reason: String = "sold" if card_sold else ("too_expensive" if card_cost > state.gold else "")
 		var card: Dictionary = (ctx["by_id"] as Dictionary).get(card_id, {})
-		out.append({"kind": KIND_CARD, "id": card_id, "name": String(card.get("name", card_id)), "rarity": CardSchema.rarity_of(card), "price": card_cost, "sold": card_sold,
-				"can_buy": card_reason.is_empty(), "reason": card_reason, "needs_giveup": false})
+		out.append({"kind": KIND_CARD, "id": card_id, "name": String(card.get("name", card_id)), "rarity": CardSchema.rarity_of(card), "price": card_cost, "base_price": card_price(ctx, card_id),
+				"sold": card_sold, "can_buy": card_reason.is_empty(), "reason": card_reason, "needs_giveup": false, "sacrifice_cost": 0})
 	var removal: int = removal_price(state, ctx)
 	var removal_reason: String = ""
 	if RunChoices.removable_card_ids(state, ctx).is_empty():
 		removal_reason = "none_removable"  # no gold helps: every card is needed for a slot minimum (the list says which, per card)
 	elif removal > state.gold:
 		removal_reason = "too_expensive"
-	out.append({"kind": KIND_REMOVAL, "id": "", "name": "", "price": removal, "sold": false, "can_buy": removal_reason.is_empty(),
-			"reason": removal_reason, "needs_giveup": false})
+	out.append({"kind": KIND_REMOVAL, "id": "", "name": "", "price": removal, "base_price": removal, "sold": false, "can_buy": removal_reason.is_empty(),
+			"reason": removal_reason, "needs_giveup": false, "sacrifice_cost": 0})
 	return out
 
 

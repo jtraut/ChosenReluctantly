@@ -1,0 +1,10 @@
+{
+  "id": "fx_fight",
+  "name": "Fixture: The Fight",
+  "flavor": "Pay, fight, then collect.",
+  "acts": [1, 2, 3],
+  "choices": [
+    { "label": "Fight", "outcomes": [ { "type": "lose_hp", "fraction": 0.1 }, { "type": "start_fight", "tier": "elite" }, { "type": "gain_gold", "amount": 25 }, { "type": "gain_relic", "tier": 2, "count": 3, "skip": false } ] },
+    { "label": "Leave", "outcomes": [] }
+  ]
+}

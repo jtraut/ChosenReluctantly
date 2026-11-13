@@ -22,6 +22,8 @@ const OPTION_RELIC := "relic"
 const OPTION_SKIP := "relic_skip"
 const OPTION_GIVEUP := "giveup"
 const OPTION_CANCEL := "giveup_cancel"
+## MAP4-B2: the one confirm of a multi-give-up step (a `sacrifice_cost` relic): kind "giveup_confirm". Picking a relic there toggles it; nothing is given up until this.
+const OPTION_CONFIRM := "giveup_confirm"
 ## The straight run is one act. Tier odds come from this act's row (RelicConfig.tier_weights_for_act).
 const STRAIGHT_RUN_ACT := 1
 
@@ -89,7 +91,7 @@ static func open_for_room(state: RunState, room_type: String, is_last_room: bool
 		# the run's pools. With none left (or none in the data yet) it falls back to the interim elite-tier offer below, skip allowed.
 		var boss_rarities: Array[String] = [RelicOffer.BOSS_RARITY]
 		ids = RelicOffer.offer(RelicSchema.BOSS_SOURCE, int(relics["offer_count"]), offer_rng(state.seed_value, state.stream_index()), {}, state.relics,
-				state.relics_given_up, pools, relics["catalog"], boss_rarities)
+				state.relics_given_up, pools, relics["catalog"], boss_rarities, giveable_count(state, ctx))
 		boss_offer = not ids.is_empty()
 	if not RunSession.forced_relic_offer.is_empty():
 		# --relic-offer (capture tooling): replaces the ids for this one offer only. The mini-boss branch above still ran, so a forced offer
@@ -104,7 +106,7 @@ static func open_for_room(state: RunState, room_type: String, is_last_room: bool
 		if not chest_weights.is_empty():
 			weights = chest_weights
 		ids = RelicOffer.offer(String(SOURCE_BY_ROOM[room_type]), int(relics["offer_count"]), offer_rng(state.seed_value, state.stream_index()),
-				weights, state.relics, state.relics_given_up, pools, relics["catalog"])
+				weights, state.relics, state.relics_given_up, pools, relics["catalog"], RelicOffer.DEFAULT_RARITIES, giveable_count(state, ctx))
 	state.pending = RunState.PENDING_NONE
 	state.offer = []
 	state.relic_incoming = ""
@@ -144,6 +146,7 @@ static func display(relic_id: String, ctx: Dictionary) -> Dictionary:
 		"keywords": keywords,
 		"boss": tier == RelicOffer.BOSS_RARITY,
 		"giveable": relic.is_empty() or RelicOffer.can_give_up(relic),
+		"sacrifice_cost": int(relic.get("sacrifice_cost", 0)),
 	}
 
 
@@ -173,6 +176,33 @@ static func max_owned(ctx: Dictionary) -> int:
 	return int((ctx.get("relics", {}) as Dictionary).get("max_owned", 20))
 
 
+# --- sacrifice_cost (MAP4-B2, BUILD_DEPTH 13.5) ---------------------------------------------------
+
+## How many relics taking this relic asks you to give up (0 = none): its `sacrifice_cost`.
+static func cost_in_catalog(relic_id: String, catalog: Array) -> int:
+	for entry: Variant in catalog:
+		if String((entry as Dictionary).get("id", "")) == relic_id:
+			return int((entry as Dictionary).get("sacrifice_cost", 0))
+	return 0
+
+
+static func cost_for(relic_id: String, ctx: Dictionary) -> int:
+	var relic: Dictionary = ((ctx.get("relics", {}) as Dictionary).get("by_id", {}) as Dictionary).get(relic_id, {})
+	return int(relic.get("sacrifice_cost", 0))
+
+
+## How many owned relics may be given up now (the number a `sacrifice_cost` relic is checked against). -1 when the context has no relics, so nothing is filtered.
+static func giveable_count(state: RunState, ctx: Dictionary) -> int:
+	if not ctx.has("relics"):
+		return -1
+	return RelicOffer.giveable(state.relics, (ctx["relics"] as Dictionary).get("catalog", [])).size()
+
+
+## True while the open give-up step belongs to a `sacrifice_cost` relic (pick all, then confirm once) rather than the plain cap swap.
+static func is_sacrifice_step(state: RunState, ctx: Dictionary) -> bool:
+	return state.pending == RunState.PENDING_RELIC_SWAP and cost_for(state.relic_incoming, ctx) > 0
+
+
 ## True when taking one more relic now needs a give-up first.
 static func needs_swap(state: RunState, ctx: Dictionary) -> bool:
 	return RelicOffer.needs_swap(state.relics.size(), max_owned(ctx))
@@ -183,6 +213,9 @@ static func needs_swap(state: RunState, ctx: Dictionary) -> bool:
 ## Title and line of the open relic choice, from `ui.relic`.
 static func title_and_line(state: RunState, ctx: Dictionary, room_type: String = "") -> Dictionary:
 	var ui: Dictionary = (ctx.get("relics", {}) as Dictionary).get("ui", {})
+	if is_sacrifice_step(state, ctx):
+		var cost: int = cost_for(state.relic_incoming, ctx)
+		return {"title": String(ui.get("sacrifice_title", "")), "line": String(ui.get("sacrifice_line", "")) % [String(display(state.relic_incoming, ctx)["name"]), cost, state.sacrifice_picks.size(), cost]}
 	if state.pending == RunState.PENDING_RELIC_SWAP:
 		var incoming: Dictionary = display(state.relic_incoming, ctx)
 		var line_key: String = "swap_line_one" if (state.relics.size() == 1 and ui.has("swap_line_one")) else "swap_line"  # singular text for a cap of 1
@@ -206,7 +239,12 @@ static func options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 			for relic_id: String in state.offer:
 				var option: Dictionary = relic_option(OPTION_RELIC + ":" + relic_id, OPTION_RELIC, relic_id, ctx)
 				option["needs_swap"] = needs_swap(state, ctx)
-				if option["needs_swap"] and giveable_ids(state, ctx).is_empty():
+				var cost: int = int(option["sacrifice_cost"])
+				if cost > 0 and giveable_count(state, ctx) < cost:
+					# A forced offer (or a relic given up since the offer was drawn) can leave a sacrifice relic nobody can pay for: greyed, with the reason.
+					option["enabled"] = false
+					option["reason"] = String(ui.get("sacrifice_short", "")) % cost
+				elif option["needs_swap"] and cost == 0 and giveable_ids(state, ctx).is_empty():
 					# At the cap with nothing that can be given up (only boss relics held): a pick would be refused, so the option is disabled
 					# and the skip below is the way out. The bot (RelicPolicy) skips disabled options.
 					option["enabled"] = false
@@ -220,9 +258,23 @@ static func options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 				skip["detail"] = String(ui.get("skip_detail", ""))
 				out.append(skip)
 		RunState.PENDING_RELIC_SWAP:
+			var sacrifice: bool = is_sacrifice_step(state, ctx)
+			var cost: int = cost_for(state.relic_incoming, ctx)
 			for relic_id: String in giveable_ids(state, ctx):
 				var option: Dictionary = relic_option(OPTION_GIVEUP + ":" + relic_id, OPTION_GIVEUP, relic_id, ctx)
+				if sacrifice:
+					option["selected"] = state.sacrifice_picks.has(relic_id)
+					if not bool(option["selected"]) and state.sacrifice_picks.size() >= cost:
+						option["enabled"] = false
+						option["reason"] = String(ui.get("sacrifice_full", ""))
 				out.append(option)
+			if sacrifice:
+				var confirm: Dictionary = RunChoices.blank_option(OPTION_CONFIRM, "giveup_confirm")
+				confirm["label"] = String(ui.get("confirm_label", ""))
+				if state.sacrifice_picks.size() != cost:
+					confirm["enabled"] = false
+					confirm["reason"] = String(ui.get("sacrifice_pick_more", "")) % (cost - state.sacrifice_picks.size())
+				out.append(confirm)
 			var cancel: Dictionary = RunChoices.blank_option(OPTION_CANCEL, "back")
 			cancel["label"] = String(ui.get("cancel_label", ""))
 			out.append(cancel)
@@ -239,6 +291,7 @@ static func relic_option(option_id: String, kind: String, relic_id: String, ctx:
 	for key: Variant in shown.keys():
 		option[key] = shown[key]
 	option["needs_swap"] = false
+	option["selected"] = false
 	return option
 
 
@@ -255,6 +308,8 @@ static func model_extras(state: RunState, ctx: Dictionary) -> Dictionary:
 		"relic_max_owned": max_owned(ctx),
 		"incoming": display(state.relic_incoming, ctx) if swapping else {},
 		"giveable": [] as Array[Dictionary],
+		"sacrifice_cost": cost_for(state.relic_incoming, ctx) if swapping else 0,
+		"sacrifice_picks": state.sacrifice_picks.duplicate(),
 	}
 	if swapping:
 		var list: Array[Dictionary] = []
@@ -281,11 +336,16 @@ static func apply(state: RunState, option_id: String, ctx: Dictionary) -> Dictio
 	var relic_id: String = String(found.get("relic_id", ""))
 	match String(found["kind"]):
 		OPTION_RELIC:
-			if needs_swap(state, ctx):
+			if not bool(found["enabled"]):
+				result["reason"] = String(found["reason"])
+				return result
+			var take_cost: int = cost_for(relic_id, ctx)
+			if take_cost > 0 or needs_swap(state, ctx):
 				if giveable_ids(state, ctx).is_empty():
 					var ui: Dictionary = (ctx["relics"] as Dictionary).get("ui", {})
 					result["reason"] = String(ui.get("none_giveable", ""))
 					return result
+				state.sacrifice_picks = []
 				state.pending = RunState.PENDING_RELIC_SWAP
 				state.relic_incoming = relic_id
 				result["kind"] = "relic_swap_open"
@@ -304,17 +364,46 @@ static func apply(state: RunState, option_id: String, ctx: Dictionary) -> Dictio
 			result["finished"] = true
 		OPTION_GIVEUP:
 			var incoming: String = state.relic_incoming
-			state.give_up_relic(relic_id)
-			state.add_relic(incoming)
-			state.log_choice("relic_swap", incoming)
+			if is_sacrifice_step(state, ctx):
+				# MAP4-B2: a sacrifice relic's step toggles a pick; nothing is given up until the confirm.
+				if not bool(found["enabled"]):
+					result["reason"] = String(found["reason"])
+					return result
+				if state.sacrifice_picks.has(relic_id):
+					state.sacrifice_picks.erase(relic_id)
+				else:
+					state.sacrifice_picks.append(relic_id)
+				result["kind"] = "relic_giveup_pick"
+				result["relic_id"] = incoming
+			else:
+				state.give_up_relic(relic_id)
+				state.add_relic(incoming)
+				state.log_choice("relic_swap", incoming)
+				RunChoices.close(state)
+				result["kind"] = "relic_swap"
+				result["relic_id"] = incoming
+				result["gave_up"] = relic_id
+				result["finished"] = true
+		OPTION_CONFIRM:
+			if not bool(found["enabled"]):
+				result["reason"] = String(found["reason"])
+				return result
+			var taken: String = state.relic_incoming
+			var given: Array[String] = state.sacrifice_picks.duplicate()
+			for sacrificed: String in given:
+				state.give_up_relic(sacrificed)
+			state.add_relic(taken)
+			state.log_choice("relic_swap", taken)
 			RunChoices.close(state)
 			result["kind"] = "relic_swap"
-			result["relic_id"] = incoming
-			result["gave_up"] = relic_id
+			result["relic_id"] = taken
+			result["gave_up"] = given[0] if not given.is_empty() else ""
+			result["gave_up_all"] = given
 			result["finished"] = true
 		"back":
 			state.pending = RunState.PENDING_RELIC
 			state.relic_incoming = ""
+			state.sacrifice_picks = []
 			result["kind"] = "relic_cancel"
 	result["ok"] = true
 	return result

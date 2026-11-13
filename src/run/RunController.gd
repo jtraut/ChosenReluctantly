@@ -93,11 +93,15 @@ func begin(main: Main) -> void:
 	player.card_slots.set_deck(_state.deck)
 	_ctx = RunChoices.shipped_context(player.owned_pools)
 	_setup_relics(main)
+	_apply_run_mods()
 	player.player_died.connect(_on_player_died, CONNECT_ONE_SHOT)
 	var room: Dictionary = current_room()
 	ActTint.apply(main, _state.act)  # MB1: the act's own floor and light colour
 	var spawner: EnemySpawner = main.enemy_spawner
-	if _state.has_pending():
+	if not _state.event_fight.is_empty():
+		# MAP4-B2: an event's start_fight (a fresh scene after the choice, or a reload mid-fight: the fight restarts and the costs paid before it stay paid).
+		_begin_event_fight(config, spawner)
+	elif _state.has_pending():
 		# A reload mid-choice: the room is already won and recorded, so do not fight it again; reopen the choice.
 		spawner.process_mode = Node.PROCESS_MODE_DISABLED
 		_cleared = true
@@ -107,12 +111,7 @@ func begin(main: Main) -> void:
 		spawner.process_mode = Node.PROCESS_MODE_DISABLED  # no fight: the room is over at once and its choice opens
 		_start_rest.call_deferred()
 	else:
-		var variant: Dictionary = RunConfig.variant_by_id(config, String(room["type"]), String(room["wave_id"]))
-		spawner.tier_configs = (config["tiers"] as Dictionary).duplicate(true)
-		spawner.act_scale = RunConfig.act_scale(_state.act)
-		spawner.enemy_spawned.connect(_on_enemy_spawned)
-		spawner.configure_room(RunConfig.room_wave_config(variant, WaveConfig.get_config()), room_spawn_seed(_state.seed_value, _state.stream_index()))
-		set_process(true)
+		_setup_fight(config, spawner, RunConfig.variant_by_id(config, String(room["type"]), String(room["wave_id"])))
 	room_started.emit(_state.room_index, _rooms.size(), String(room["type"]))
 	if not _fresh_launch:
 		RunSave.autosave(_state)  # MAP3-A: a room's start is a save point (resuming restarts the room; the first scene of a launch never overwrites a save)
@@ -121,6 +120,36 @@ func begin(main: Main) -> void:
 		relay.notify_room_started(_state.room_index, String(room["type"]))
 	if _launch_clear_after >= 0.0 and fresh_launch:
 		get_tree().create_timer(_launch_clear_after).timeout.connect(_debug_clear_room)
+
+
+## Hands the spawner a fight room's wave table (the tiers, the act's scaling, the seeded spawns) and starts watching for the room being won.
+func _setup_fight(config: Dictionary, spawner: EnemySpawner, variant: Dictionary) -> void:
+	spawner.tier_configs = (config["tiers"] as Dictionary).duplicate(true)
+	spawner.act_scale = RunConfig.act_scale(_state.act)
+	spawner.enemy_spawned.connect(_on_enemy_spawned)
+	spawner.configure_room(RunConfig.room_wave_config(variant, WaveConfig.get_config()), room_spawn_seed(_state.seed_value, _state.stream_index()))
+	set_process(true)
+
+
+## MAP4-B2: starts the elite fight of an event's `start_fight` (the exact elite path of an elite room: same wave lists, tiers and act scaling). The wave was picked when the
+## choice was confirmed and is kept in the RunState, so a reload fights the same one. With no elite wave list at all the fight is skipped as won, loudly.
+func _begin_event_fight(config: Dictionary, spawner: EnemySpawner) -> void:
+	var wave_id: String = String(_state.event_fight.get("wave_id", ""))
+	if wave_id.is_empty():
+		wave_id = EventEngine.pick_fight_wave(_state, config)
+		_state.event_fight["wave_id"] = wave_id
+	var variant: Dictionary = RunConfig.variant_by_id(config, String(_state.event_fight.get("tier", "elite")), wave_id)
+	if variant.is_empty():
+		push_error("RunController: the event fight has no wave list ('%s'); it counts as won" % wave_id)
+		spawner.process_mode = Node.PROCESS_MODE_DISABLED
+		_finish_event_fight.call_deferred()
+		return
+	_setup_fight(config, spawner, variant)
+
+
+## Whether this room is an event's fight (so a screen can say "Fight!" instead of the event's room type). True from the confirm that started it until it is won.
+func event_fight_active() -> bool:
+	return _state != null and not _state.event_fight.is_empty()
 
 
 ## The room list the run walks. A straight run: RunGenerator's list. A map run: one entry per room of the map, filled from the path so far
@@ -422,6 +451,9 @@ func _resume_choice() -> void:
 
 
 func _finish_room(healed: float) -> void:
+	if not _state.event_fight.is_empty():
+		_finish_event_fight()
+		return
 	_cleared = true
 	_healed = healed
 	var health: Health = _main.player.health
@@ -457,6 +489,81 @@ func _finish_room(healed: float) -> void:
 		room_cleared.emit(_summary)
 
 
+## MAP4-B2: the event's fight was won. The room was already recorded when the event opened, so nothing is recorded or paid again (no room gold, no second room_cleared
+## relay); the outcomes that waited for the win run now, and what they leave open (a relic offer, a sacrifice step) is the next choice.
+func _finish_event_fight() -> void:
+	if _cleared:
+		return
+	_cleared = true
+	var health: Health = _main.player.health
+	health.damage_immune = true
+	_state.hp = health.current_health
+	_state.max_hp = health.max_health
+	var seconds: float = _room_seconds
+	if not _state.history.is_empty():
+		var last: Dictionary = _state.history[_state.history.size() - 1]
+		last["hp_end"] = health.current_health
+		last["seconds"] = float(last["seconds"]) + seconds
+	var room: Dictionary = current_room()
+	_summary = {
+		"index": int(room["index"]), "type": String(room["type"]), "wave_id": String(_state.event_fight.get("wave_id", "")),
+		"hp": health.current_health, "max_hp": health.max_health, "healed": 0.0, "seconds": seconds, "gold": 0, "node_id": int(room.get("node_id", -1)), "event_fight": true,
+	}
+	var gold_before: int = _state.gold
+	var result: Dictionary = EventEngine.fight_won(_state, _ctx)
+	_after_event_result(result, gold_before)
+	if _state.has_pending():
+		choice_requested.emit(current_choice())
+		RunSave.autosave(_state)
+	else:
+		room_cleared.emit(_summary)
+
+
+## What an event result changed in the live room: HP and max HP, the run modifiers, the relics held, and gold (as the usual signal).
+func _after_event_result(result: Dictionary, gold_before: int) -> void:
+	if bool(result.get("event_state_changed", false)):
+		_push_state_hp_to_player()
+	if bool(result.get("run_mods_changed", false)):
+		_apply_run_mods()
+	if bool(result.get("relics_changed", false)):
+		_sync_relics()
+	if _state.gold != gold_before:
+		gold_changed.emit(_state.gold, _state.gold - gold_before)
+
+
+## Puts the run's event modifiers (`stat_mod`) on the player through the same StatModifiers path a relic's modifiers use. Ids "run_mod:<n>", so applying twice replaces.
+func _apply_run_mods() -> void:
+	if _main == null or _main.player == null:
+		return
+	for i in range(_state.run_mods.size()):
+		var entry: Dictionary = _state.run_mods[i]
+		_main.player.stat_modifiers.add_modifier(String(entry["stat"]), "run_mod:%d" % i, String(entry["modifier_type"]), float(entry["value"]))
+
+
+## The choice that was just confirmed started an event fight: pick the wave, save (the costs paid so far must stay paid), and swap in the fight as a fresh scene.
+func _launch_event_fight(result: Dictionary, gold_before: int) -> Dictionary:
+	var wave_id: String = EventEngine.pick_fight_wave(_state, RunConfig.get_config())
+	_state.event_fight["wave_id"] = wave_id
+	_state.hp = _main.player.health.current_health
+	_state.max_hp = _main.player.health.max_health
+	if wave_id.is_empty():
+		push_error("RunController: no elite wave list for the event fight; it counts as won")
+		var won: Dictionary = EventEngine.fight_won(_state, _ctx)
+		_after_event_result(won, gold_before)
+		choice_resolved.emit(result)
+		if _state.has_pending():
+			choice_requested.emit(current_choice())
+			RunSave.autosave(_state)
+		else:
+			continue_to_next_room()
+		return result
+	RunSave.autosave(_state)
+	choice_resolved.emit(result)
+	_active = false
+	_main.swap_to_fresh_scene()
+	return result
+
+
 ## Resolves one option of the open choice (by its `id`). When it finishes the choice the next room loads at once.
 ## Returns RunChoices.apply's dict; `ok` is false (and nothing changes) for a disabled or unknown option.
 func choose(option_id: String) -> Dictionary:
@@ -469,12 +576,16 @@ func choose(option_id: String) -> Dictionary:
 		return result
 	if bool(result.get("event_state_changed", false)):
 		_push_state_hp_to_player()  # MAP4-B1: an event moved HP or max HP in the RunState; the live player must follow before the HP is read back below
-	if ["relic_pick", "relic_swap", "merchant_relic"].has(String(result["kind"])):
+	if bool(result.get("run_mods_changed", false)):
+		_apply_run_mods()
+	if ["relic_pick", "relic_swap", "merchant_relic"].has(String(result["kind"])) or bool(result.get("relics_changed", false)):
 		_sync_relics()
 	elif _state.gold_spent_merchant != spent_before and _relics != null:
 		_relics.set_run_stats(_run_stats())  # any merchant purchase (a card, a removal) moves the run stats a relic scales by (Liquidate Assets)
 	if _state.gold != gold_before:
 		gold_changed.emit(_state.gold, _state.gold - gold_before)  # a merchant purchase: a negative delta
+	if bool(result.get("start_fight", false)):
+		return _launch_event_fight(result, gold_before)
 	if bool(result["finished"]) and ["relic_pick", "relic_swap", "relic_skip"].has(String(result["kind"])) and room_type() == "mini_boss":
 		# MAP3b: the act-end mini-boss pays a relic offer (boss-tier when the data has boss relics, else the interim elite-tier one) and then a card offer (rare after act 1, legendary after act 2).
 		if RunChoices.open_for_room(_state, "mini_boss", false, _ctx) != RunState.PENDING_NONE:

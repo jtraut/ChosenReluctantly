@@ -29,6 +29,8 @@ const OPTION_LEAVE := "merchant_leave"
 const OPTION_BACK := "merchant_back"
 const OPTION_GIVEUP := "merchant_giveup"
 const OPTION_CANCEL := "merchant_cancel"
+## MAP4-B2: the one confirm of a sacrifice relic's give-up step at the shop (kind "giveup_confirm"); the gold is charged on it.
+const OPTION_CONFIRM := "merchant_giveup_confirm"
 ## The relic modifier stat that grants free rerolls of the stock per visit (Request for Quotation).
 const FREE_REROLLS_STAT := "merchant.free_rerolls"
 
@@ -95,6 +97,9 @@ static func title_and_line(state: RunState, ctx: Dictionary) -> Dictionary:
 		RunState.PENDING_MERCHANT_SWAP:
 			var relic_ui: Dictionary = (ctx.get("relics", {}) as Dictionary).get("ui", {})
 			var incoming: Dictionary = RunRelics.display(state.relic_incoming, ctx)
+			var cost: int = RunRelics.cost_for(state.relic_incoming, ctx)
+			if cost > 0:
+				return {"title": String(relic_ui.get("sacrifice_title", "")), "line": String(relic_ui.get("sacrifice_line", "")) % [String(incoming["name"]), cost, state.sacrifice_picks.size(), cost]}
 			var line_key: String = "swap_line_one" if (state.relics.size() == 1 and relic_ui.has("swap_line_one")) else "swap_line"
 			return {"title": String(relic_ui.get("swap_title", "")), "line": String(relic_ui.get(line_key, "")) % [state.relics.size(), String(incoming["name"])]}
 	return {"title": String(ui.get("title", "")), "line": String(ui.get("line", "")) % state.gold}
@@ -124,10 +129,12 @@ static func _shop_options(state: RunState, ctx: Dictionary) -> Array[Dictionary]
 			Merchant.KIND_RELIC:
 				option = RunRelics.relic_option(OPTION_BUY_RELIC + ":" + String(item["id"]), OPTION_BUY_RELIC, String(item["id"]), ctx)
 				option["needs_swap"] = bool(item["needs_giveup"])
+				option["base_price"] = int(item["base_price"])
 				option["label"] = String(ui.get("item_format", "%s - %d")) % [String(option["label"]), int(item["price"])]
 			Merchant.KIND_CARD:
 				option = RunChoices.card_option(OPTION_BUY_CARD + ":" + String(item["id"]), OPTION_BUY_CARD, String(item["id"]), ctx)
 				option["owned"] = state.deck.count(String(item["id"]))
+				option["base_price"] = int(item["base_price"])
 				option["label"] = String(ui.get("item_format", "%s - %d")) % [String(option["label"]), int(item["price"])]
 			_:
 				option = RunChoices.blank_option(OPTION_REMOVE_MENU, "buy_removal")
@@ -178,8 +185,24 @@ static func _removal_options(state: RunState, ctx: Dictionary) -> Array[Dictiona
 
 static func _swap_options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
+	var cost: int = RunRelics.cost_for(state.relic_incoming, ctx)
+	var relic_ui: Dictionary = (ctx.get("relics", {}) as Dictionary).get("ui", {})
 	for relic_id: String in RunRelics.giveable_ids(state, ctx):
-		out.append(RunRelics.relic_option(OPTION_GIVEUP + ":" + relic_id, "giveup", relic_id, ctx))
+		var option: Dictionary = RunRelics.relic_option(OPTION_GIVEUP + ":" + relic_id, "giveup", relic_id, ctx)
+		if cost > 0:
+			option["selected"] = state.sacrifice_picks.has(relic_id)
+			if not bool(option["selected"]) and state.sacrifice_picks.size() >= cost:
+				option["enabled"] = false
+				option["reason"] = String(relic_ui.get("sacrifice_full", ""))
+		out.append(option)
+	if cost > 0:
+		var confirm: Dictionary = RunChoices.blank_option(OPTION_CONFIRM, "giveup_confirm")
+		confirm["label"] = String(relic_ui.get("confirm_label", ""))
+		confirm["price"] = Merchant.relic_price_now(state, state.relic_incoming, ctx)
+		if state.sacrifice_picks.size() != cost:
+			confirm["enabled"] = false
+			confirm["reason"] = String(relic_ui.get("sacrifice_pick_more", "")) % (cost - state.sacrifice_picks.size())
+		out.append(confirm)
 	var cancel: Dictionary = RunChoices.blank_option(OPTION_CANCEL, "back")
 	cancel["label"] = String(((ctx.get("relics", {}) as Dictionary).get("ui", {}) as Dictionary).get("cancel_label", ""))
 	out.append(cancel)
@@ -226,7 +249,9 @@ static func view(state: RunState, ctx: Dictionary) -> Dictionary:
 			"reason_text": String(removal_entry.get("reason_text", "")), "entries": Merchant.removal_entries(state, ctx),
 		},
 		"rerolls": {"granted": granted, "left": Merchant.rerolls_left(state, ctx), "used": int(state.merchant_visit.get("rerolls_used", 0)) if open else 0},
-		"swap": {"active": swapping, "incoming": RunRelics.display(state.relic_incoming, ctx) if swapping else {}, "giveable": giveable},
+		"swap": {"active": swapping, "incoming": RunRelics.display(state.relic_incoming, ctx) if swapping else {}, "giveable": giveable,
+				"sacrifice_cost": RunRelics.cost_for(state.relic_incoming, ctx) if swapping else 0, "picks": state.sacrifice_picks.duplicate()},
+		"discount": Merchant.discount_of(state),
 	}
 
 
@@ -270,8 +295,24 @@ static func apply(state: RunState, option_id: String, ctx: Dictionary) -> Dictio
 	if not Merchant.has_visit(state):
 		return _refused(result, "no_visit", ctx)
 	if pending == RunState.PENDING_MERCHANT_SWAP:
+		var sacrifice_cost: int = RunRelics.cost_for(state.relic_incoming, ctx)
 		match head:
 			OPTION_GIVEUP:
+				if sacrifice_cost > 0:
+					# MAP4-B2: toggles a pick; the gold is charged and the relics given up only on the confirm.
+					if state.sacrifice_picks.has(tail):
+						state.sacrifice_picks.erase(tail)
+					elif not RunRelics.giveable_ids(state, ctx).has(tail):
+						return _refused(result, "bad_giveup", ctx)
+					elif state.sacrifice_picks.size() >= sacrifice_cost:
+						result["reason"] = String(((ctx.get("relics", {}) as Dictionary).get("ui", {}) as Dictionary).get("sacrifice_full", ""))
+						return result
+					else:
+						state.sacrifice_picks.append(tail)
+					result["kind"] = "merchant_giveup_pick"
+					result["relic_id"] = state.relic_incoming
+					result["ok"] = true
+					return result
 				var swapped: Dictionary = Merchant.buy_relic(state, state.relic_incoming, ctx, tail)
 				if not bool(swapped["ok"]):
 					return _refused(result, String(swapped["reason"]), ctx)
@@ -283,8 +324,26 @@ static func apply(state: RunState, option_id: String, ctx: Dictionary) -> Dictio
 				result["amount"] = float(swapped["price"])
 				result["ok"] = true
 				return result
+			OPTION_CONFIRM:
+				if sacrifice_cost <= 0:
+					result["reason"] = "no such option '%s' in the %s choice" % [option_id, pending]
+					return result
+				var confirmed: Dictionary = Merchant.buy_relic(state, state.relic_incoming, ctx, "", state.sacrifice_picks.duplicate())
+				if not bool(confirmed["ok"]):
+					return _refused(result, String(confirmed["reason"]), ctx)
+				state.relic_incoming = ""
+				state.sacrifice_picks = []
+				state.pending = RunState.PENDING_MERCHANT
+				result["kind"] = "merchant_relic"
+				result["relic_id"] = String(confirmed["id"])
+				result["gave_up"] = String(confirmed["gave_up"])
+				result["gave_up_all"] = confirmed["gave_up_all"]
+				result["amount"] = float(confirmed["price"])
+				result["ok"] = true
+				return result
 			OPTION_CANCEL:
 				state.relic_incoming = ""
+				state.sacrifice_picks = []
 				state.pending = RunState.PENDING_MERCHANT
 				result["kind"] = "merchant_cancel"
 				result["ok"] = true
@@ -299,6 +358,7 @@ static func apply(state: RunState, option_id: String, ctx: Dictionary) -> Dictio
 			var bought: Dictionary = Merchant.buy_relic(state, tail, ctx)
 			if bool(bought["needs_giveup"]):
 				state.relic_incoming = tail
+				state.sacrifice_picks = []
 				state.pending = RunState.PENDING_MERCHANT_SWAP
 				result["kind"] = "merchant_swap_open"
 				result["relic_id"] = tail

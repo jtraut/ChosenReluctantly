@@ -112,6 +112,22 @@ static func event_choice(options: Array, policy: String, hp_fraction: float) -> 
 	return String(available[0]["id"])
 
 
+## The bot's pick for an event's give-up step (`event_sacrifice`): the lowest-tier relic on offer, the first of equal tiers (so it gives up what hurts least). `options` are the
+## model's options; "" when none can be taken. Pure, no random draws.
+static func sacrifice_choice(options: Array) -> String:
+	var best: String = ""
+	var best_tier: int = 1 << 30
+	for option: Variant in options:
+		var entry: Dictionary = option
+		if not bool(entry.get("enabled", false)):
+			continue
+		var tier: int = EventEngine.tier_of({"rarity": String(entry.get("tier", ""))})
+		if best == "" or tier < best_tier:
+			best = String(entry["id"])
+			best_tier = tier
+	return best
+
+
 ## The first available choice whose outcomes hold none of `blocked`; else the choice with no `requires`; else the first available one.
 static func _event_without(available: Array[Dictionary], blocked: Array[String]) -> String:
 	for option: Dictionary in available:

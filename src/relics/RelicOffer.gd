@@ -22,11 +22,11 @@ const BOSS_RARITY := "boss"
 ## The pure core. `catalog` is an array of relic dictionaries (RelicDatabase.all_relics()), `weights` the act's
 ## {tier1, tier2, tier3} row (RelicConfig.tier_weights_for_act). Returns up to `count` relic ids in the order drawn.
 static func offer(source: String, count: int, rng: RandomNumberGenerator, weights: Dictionary, owned: Array[String], given_up: Array[String],
-		pools: Array[String], catalog: Array, rarities: Array[String] = DEFAULT_RARITIES) -> Array[String]:
+		pools: Array[String], catalog: Array, rarities: Array[String] = DEFAULT_RARITIES, giveable_count: int = -1) -> Array[String]:
 	var result: Array[String] = []
 	if count <= 0:
 		return result
-	var candidates: Array[Dictionary] = eligible(source, weights, owned, given_up, pools, catalog, rarities)
+	var candidates: Array[Dictionary] = eligible(source, weights, owned, given_up, pools, catalog, rarities, giveable_count)
 	var pool_weights: Array[float] = []
 	for relic: Dictionary in candidates:
 		pool_weights.append(_weight_of(relic, weights))
@@ -50,7 +50,7 @@ static func offer(source: String, count: int, rng: RandomNumberGenerator, weight
 
 ## The relics `offer` may draw from, sorted by id. Exposed so tests and the UI can ask "is anything left to offer".
 static func eligible(source: String, weights: Dictionary, owned: Array[String], given_up: Array[String], pools: Array[String],
-		catalog: Array, rarities: Array[String] = DEFAULT_RARITIES) -> Array[Dictionary]:
+		catalog: Array, rarities: Array[String] = DEFAULT_RARITIES, giveable_count: int = -1) -> Array[Dictionary]:
 	var found: Array[Dictionary] = []
 	for entry: Variant in catalog:
 		var relic: Dictionary = entry
@@ -65,6 +65,9 @@ static func eligible(source: String, weights: Dictionary, owned: Array[String], 
 		if not rarities.has(rarity):
 			continue
 		if _weight_of(relic, weights) <= 0.0:
+			continue
+		# MAP4-B2 (BUILD_DEPTH 13.5): a relic that asks you to give up N relics is left out while you hold fewer than N you may give up. -1 = not checked.
+		if giveable_count >= 0 and int(relic.get("sacrifice_cost", 0)) > giveable_count:
 			continue
 		found.append(relic)
 	found.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return String(a["id"]) < String(b["id"]))

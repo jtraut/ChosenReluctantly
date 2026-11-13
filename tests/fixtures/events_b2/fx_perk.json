@@ -1,0 +1,10 @@
+{
+  "id": "fx_perk",
+  "name": "Fixture: The Perk",
+  "flavor": "Permanent, and a coupon.",
+  "acts": [1, 2, 3],
+  "choices": [
+    { "label": "Take both", "outcomes": [ { "type": "stat_mod", "stat": "move_speed", "modifier_type": "multiplicative", "value": 0.05 }, { "type": "merchant_discount", "fraction": 0.5 } ] },
+    { "label": "Leave", "outcomes": [] }
+  ]
+}

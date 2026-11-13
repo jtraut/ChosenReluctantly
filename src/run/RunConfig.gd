@@ -472,12 +472,12 @@ static func _validate_ui(ui_value: Variant) -> Array[String]:
 
 
 ## ui.event (MAP4-B1): the strings of the event screen and the generated cost lines, with the number of %d and %s each format takes. Checked when the block is present.
-const EVENT_TEXT_KEYS: Array[String] = ["relic_title", "relic_line", "relic_line_noskip", "leave_line", "line_join"]
+const EVENT_TEXT_KEYS: Array[String] = ["relic_title", "relic_line", "relic_line_noskip", "leave_line", "line_join", "sacrifice_title", "sacrifice_line"]
 const EVENT_LINE_FORMATS: Dictionary = {
 	"lose_hp": [1, 0], "lose_max_hp": [1, 0], "heal": [1, 0], "gain_gold": [1, 0], "lose_gold": [1, 0], "gain_relic_act": [1, 0], "gain_relic_next_act": [1, 0],
 	"gain_relic_tier": [2, 0], "gain_relic_plus_one": [1, 0], "no_skip": [0, 0], "gain_curse_random": [0, 0], "gain_curse": [0, 1], "remove_curse": [0, 0],
 	"remove_card": [0, 0], "sacrifice_pick": [0, 0], "sacrifice_highest": [0, 0], "start_fight": [0, 0], "chance": [1, 1], "chance_otherwise": [0, 1],
-	"stat_mod": [0, 2], "merchant_discount": [1, 0],
+	"stat_mod": [0, 2], "merchant_discount": [1, 0], "sacrifice_pick_tier": [0, 1], "sacrifice_highest_tier": [0, 1], "after_fight": [0, 1],
 }
 
 

@@ -31,8 +31,10 @@ const MERCHANT_PENDING: Array[String] = [PENDING_MERCHANT, PENDING_MERCHANT_REMO
 ## MAP4-B1: an event node's choice screen. It needs `event_id`. The relic offer an event choice opens is an ordinary PENDING_RELIC with offer_rarity
 ## "event" or "event_noskip" (see EventEngine), and the outcomes still to run after it wait in `event_queue`.
 const PENDING_EVENT := "event"
+## MAP4-B2: an event's "give up a relic" step (`sacrifice_relic` outcome). The outcome sits at the head of `event_queue` (so its params are saved and checked on load).
+const PENDING_EVENT_SACRIFICE := "event_sacrifice"
 const PENDING_VALUES: Array[String] = [PENDING_NONE, PENDING_REWARD, PENDING_REST, PENDING_REST_REMOVE, PENDING_RELIC, PENDING_RELIC_SWAP, PENDING_NODE,
-		PENDING_MERCHANT, PENDING_MERCHANT_REMOVE, PENDING_MERCHANT_SWAP, PENDING_EVENT]
+		PENDING_MERCHANT, PENDING_MERCHANT_REMOVE, PENDING_MERCHANT_SWAP, PENDING_EVENT, PENDING_EVENT_SACRIFICE]
 ## `offer_rarity` values of an event's relic offer: skip allowed ("event") and no skip ("event_noskip", the player has paid for it).
 const OFFER_EVENT := "event"
 const OFFER_EVENT_NOSKIP := "event_noskip"
@@ -94,6 +96,18 @@ var merchant_visit: Dictionary = {}
 var event_id: String = ""
 var events_seen: Array[String] = []
 var event_queue: Array[Dictionary] = []
+## MAP4-B2: an event's `start_fight` waiting to be fought or being fought: {tier, wave_id} ({} when none). While it is set the room is the event's elite fight (pending is
+## none), `event_queue` holds the outcomes that run after the win, and a save restarts the fight (the costs paid before it stay paid).
+var event_fight: Dictionary = {}
+## MAP4-B2: permanent run modifiers from events (`stat_mod`): [{stat, modifier_type, value}], applied each room through the same StatModifiers path as a relic's.
+var run_mods: Array[Dictionary] = []
+## MAP4-B2: the fraction off relic and card prices at the NEXT merchant visit (`merchant_discount`); the visit copies it and this resets to 0 (used up by that visit).
+var merchant_discount: float = 0.0
+## MAP4-B2: the relics picked so far in a multi-give-up step (a `sacrifice_cost` relic being taken or bought: PENDING_RELIC_SWAP / PENDING_MERCHANT_SWAP). Nothing is
+## given up until the one confirm; Cancel clears it.
+var sacrifice_picks: Array[String] = []
+## MAP4-B2: the tier (1-3) of the relic an event just made you give up, for `gain_relic` tier `sacrificed_plus_one`; 0 = none.
+var sacrificed_tier: int = 0
 ## MAP3-B: the act the run is in (1-based) and how many acts the run has. `map`, `path` and `room_index` always describe the CURRENT act (room_index
 ## 0-9 inside it), so everything that reads them keeps working. A finished act's map and path move to `past_acts` ({map, path}, act 1 first), which
 ## makes `act_map(n)` / `act_path(n)` answer for any act. A one-act run (and every straight run) is act 1 of 1 with no past acts.
@@ -289,6 +303,11 @@ func to_dict() -> Dictionary:
 		"event_id": event_id,
 		"events_seen": events_seen.duplicate(),
 		"event_queue": event_queue.duplicate(true),
+		"event_fight": event_fight.duplicate(true),
+		"run_mods": run_mods.duplicate(true),
+		"merchant_discount": merchant_discount,
+		"sacrifice_picks": sacrifice_picks.duplicate(),
+		"sacrificed_tier": sacrificed_tier,
 		"act": act,
 		"acts_total": acts_total,
 		"past_acts": past_acts.duplicate(true),
@@ -395,12 +414,21 @@ static func from_dict(data: Dictionary) -> RunState:
 		push_error("RunState.from_dict: pending 'node' but the map is unusable; no choice is open")
 		state.pending = PENDING_NONE
 	_read_merchant_fields(state, data)
+	_read_run_fields(state, data)
 	_read_event_fields(state, data)
 	if state.pending == PENDING_EVENT and not _event_choice_fits(state):
 		push_error("RunState.from_dict: pending 'event' has no usable event ('%s'); no choice is open" % state.event_id)
 		state.pending = PENDING_NONE
 		state.event_id = ""
 		dropped_choice = true
+	if state.pending == PENDING_EVENT_SACRIFICE and not _event_sacrifice_fits(state):
+		push_error("RunState.from_dict: pending 'event_sacrifice' has no sacrifice outcome waiting or no relic to give up; no choice is open")
+		state.pending = PENDING_NONE
+		state.event_queue = []
+		dropped_choice = true
+	if not state.sacrifice_picks.is_empty() and not _sacrifice_picks_fit(state):
+		push_error("RunState.from_dict: 'sacrifice_picks' does not fit the open choice; dropped")
+		state.sacrifice_picks = []
 	if MERCHANT_PENDING.has(state.pending) and not _merchant_choice_fits(state):
 		# A merchant screen with no visit behind it (or a swap for a relic that is not for sale) cannot be shown: drop the choice like any other.
 		push_error("RunState.from_dict: pending '%s' has no usable merchant visit; no choice is open" % state.pending)
@@ -575,6 +603,11 @@ static func _read_merchant_fields(state: RunState, data: Dictionary) -> void:
 		"sold_cards": _plain_ids(v["sold_cards"]),
 		"rerolls_used": maxi(int(v["rerolls_used"]), 0),
 	}
+	var discount: Variant = v.get("discount", 0.0)  # MAP4-B2: an event's discount this visit holds (absent in old saves and in an undiscounted visit)
+	if _is_number(discount) and not is_nan(float(discount)) and not is_inf(float(discount)) and float(discount) > 0.0 and float(discount) < 1.0:
+		state.merchant_visit["discount"] = float(discount)
+	elif v.has("discount") and not (_is_number(discount) and float(discount) == 0.0):
+		push_error("RunState.from_dict: 'merchant_visit.discount' must be a number from 0 to below 1; no discount")
 
 
 ## True when an event pending value has what it needs: an event id the data still has.
@@ -602,10 +635,71 @@ static func _read_event_fields(state: RunState, data: Dictionary) -> void:
 			push_error("RunState.from_dict: 'event_queue' holds a bad outcome (%s); queue dropped" % "; ".join(problems))
 			return
 		rebuilt.append(EventSchema.normalize_outcome(entry as Dictionary))
-	if not rebuilt.is_empty() and not [PENDING_RELIC, PENDING_RELIC_SWAP].has(state.pending):
-		push_error("RunState.from_dict: 'event_queue' has no open event offer to wait for; queue dropped")
+	if not rebuilt.is_empty() and not ([PENDING_RELIC, PENDING_RELIC_SWAP, PENDING_EVENT_SACRIFICE].has(state.pending) or not state.event_fight.is_empty()):
+		push_error("RunState.from_dict: 'event_queue' has no open event choice or fight to wait for; queue dropped")
 		return
 	state.event_queue = rebuilt
+
+
+## True when an event sacrifice step has what it needs: a `sacrifice_relic` outcome at the head of the queue and at least one owned relic it may take.
+static func _event_sacrifice_fits(state: RunState) -> bool:
+	if state.event_queue.is_empty() or String(state.event_queue[0].get("type", "")) != "sacrifice_relic":
+		return false
+	return not EventEngine.sacrifice_candidates(state.relics, state.event_queue[0], RelicDatabase.all_relics()).is_empty()
+
+
+## True when the saved multi-give-up picks belong to an open give-up step: every pick is an owned relic, none twice, at most the incoming relic's cost.
+static func _sacrifice_picks_fit(state: RunState) -> bool:
+	if not [PENDING_RELIC_SWAP, PENDING_MERCHANT_SWAP].has(state.pending) or state.relic_incoming.is_empty():
+		return false
+	for relic_id: String in state.sacrifice_picks:
+		if not state.relics.has(relic_id):
+			return false
+	return state.sacrifice_picks.size() <= RunRelics.cost_in_catalog(state.relic_incoming, RelicDatabase.all_relics())
+
+
+## The MAP4-B2 run fields of saved data (event fight, run modifiers, merchant discount, give-up picks, sacrificed tier). Old dicts have none and load empty. Wrong
+## types are rejected loudly and fall back to empty; run modifiers are rebuilt with floats in a fixed key order (equals compares JSON text).
+static func _read_run_fields(state: RunState, data: Dictionary) -> void:
+	var fight: Variant = data.get("event_fight", {})
+	if typeof(fight) == TYPE_DICTIONARY and not (fight as Dictionary).is_empty():
+		var f: Dictionary = fight
+		if typeof(f.get("tier")) == TYPE_STRING and EventSchema.FIGHT_TIERS.has(String(f["tier"])) and typeof(f.get("wave_id")) == TYPE_STRING:
+			state.event_fight = {"tier": String(f["tier"]), "wave_id": String(f["wave_id"])}
+		else:
+			push_error("RunState.from_dict: 'event_fight' needs a known tier and a wave_id; no fight is waiting")
+	elif typeof(fight) != TYPE_DICTIONARY:
+		push_error("RunState.from_dict: 'event_fight' must be an object; no fight is waiting")
+	var mods: Variant = data.get("run_mods", [])
+	if typeof(mods) == TYPE_ARRAY:
+		for entry: Variant in (mods as Array):
+			if _run_mod_is_valid(entry):
+				var mod: Dictionary = entry
+				state.run_mods.append({"stat": String(mod["stat"]), "modifier_type": String(mod["modifier_type"]), "value": float(mod["value"])})
+			else:
+				push_error("RunState.from_dict: 'run_mods' holds a bad modifier; dropped")
+	else:
+		push_error("RunState.from_dict: 'run_mods' must be an array; using none")
+	var discount: Variant = data.get("merchant_discount", 0.0)
+	if _is_number(discount) and not is_nan(float(discount)) and not is_inf(float(discount)) and float(discount) >= 0.0 and float(discount) < 1.0:
+		state.merchant_discount = float(discount)
+	else:
+		push_error("RunState.from_dict: 'merchant_discount' must be a number from 0 to below 1; using 0")
+	state.sacrifice_picks = _id_list(data.get("sacrifice_picks", []), "sacrifice_picks")
+	var tier: Variant = data.get("sacrificed_tier", 0)
+	if _is_whole_number(tier) and int(tier) >= 0 and int(tier) <= 3:
+		state.sacrificed_tier = int(tier)
+	else:
+		push_error("RunState.from_dict: 'sacrificed_tier' must be 0 to 3; using 0")
+
+
+static func _run_mod_is_valid(entry: Variant) -> bool:
+	if typeof(entry) != TYPE_DICTIONARY:
+		return false
+	var mod: Dictionary = entry
+	return typeof(mod.get("stat")) == TYPE_STRING and not String(mod["stat"]).is_empty() \
+			and typeof(mod.get("modifier_type")) == TYPE_STRING and [StatModifiers.ADDITIVE, StatModifiers.MULTIPLICATIVE].has(String(mod["modifier_type"])) \
+			and _is_number(mod.get("value")) and not is_nan(float(mod["value"])) and not is_inf(float(mod["value"]))
 
 
 ## Ids kept as they are, duplicates and all (a card id may repeat in a list of sold cards).

@@ -1,0 +1,10 @@
+{
+  "id": "fx_gamble",
+  "name": "Fixture: The Gamble",
+  "flavor": "Heads you win.",
+  "acts": [1, 2, 3],
+  "choices": [
+    { "label": "Gamble", "outcomes": [ { "type": "chance", "p": 0.5, "win": [ { "type": "gain_gold", "amount": 40 } ], "lose": [ { "type": "lose_hp", "fraction": 0.2 } ] }, { "type": "gain_gold", "amount": 1 } ] },
+    { "label": "Leave", "outcomes": [] }
+  ]
+}

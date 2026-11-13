@@ -30,7 +30,7 @@ extends RefCounted
 ## "relic", "relic_skip" and "giveup" belong to the relic choices (RunRelics); the model then carries the relic keys too.
 ## "node" is the pick-next-node choice of a map run (RunNodes).
 ## MAP2-B: "buy_relic", "buy_card", "buy_removal" and "reroll" belong to the merchant choices (RunMerchant); its Leave is a "back" option with the id "merchant_leave".
-const KINDS: Array[String] = ["card", "remove", "heal", "skip", "back", "relic", "relic_skip", "giveup", "node", "buy_relic", "buy_card", "buy_removal", "reroll", "event_choice"]
+const KINDS: Array[String] = ["card", "remove", "heal", "skip", "back", "relic", "relic_skip", "giveup", "node", "buy_relic", "buy_card", "buy_removal", "reroll", "event_choice", "giveup_confirm"]
 
 
 ## The shipped databases and data as one context. Tests build their own with fixtures.
@@ -337,6 +337,7 @@ static func close(state: RunState) -> void:
 	state.offer = []
 	state.relic_incoming = ""
 	state.offer_rarity = ""
+	state.sacrifice_picks = []
 
 
 ## The result dict of `apply` before anything happened. Relic results add `relic_id` (and `gave_up` on a swap).

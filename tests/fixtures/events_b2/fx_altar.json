@@ -1,0 +1,10 @@
+{
+  "id": "fx_altar",
+  "name": "Fixture: The Altar",
+  "flavor": "Give one up, get a better one.",
+  "acts": [1, 2, 3],
+  "choices": [
+    { "label": "Give one up", "requires": { "owns_relic": { "min_tier": 1, "max_tier": 2 } }, "outcomes": [ { "type": "sacrifice_relic", "select": "pick", "min_tier": 1, "max_tier": 2 }, { "type": "gain_relic", "tier": "sacrificed_plus_one", "count": 3, "skip": false } ] },
+    { "label": "Leave", "outcomes": [] }
+  ]
+}

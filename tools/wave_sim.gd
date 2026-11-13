@@ -1056,8 +1056,11 @@ func _run_whole(run_seed: int) -> void:
 					break
 		if act_ended and next_room_index != 0:
 			_fail("run %d: the act ended but the bot did not move on to the next one" % run_seed)
+		var event_fight_next: bool = run_state.outcome == "" and not run_state.event_fight.is_empty()
+		if event_fight_next:
+			next_room_index = room_index  # MAP4-B2: an event's start_fight swapped in the same room as a fight: it is played as that room again, not as the next one
 		room_index = next_room_index
-		rooms_played += 1
+		rooms_played += 0 if event_fight_next else 1
 	if relay != null and relay.hit_landed.is_connected(tally):
 		relay.hit_landed.disconnect(tally)
 	_damage_by_run.append(_damage_run)
@@ -1132,6 +1135,8 @@ func _policy_choose(controller: RunController) -> String:
 			return MerchantPolicy.choose(String(model["choice"]), options, state, _route_policy)  # no random draws: the other seeded choices do not shift
 		RunState.PENDING_EVENT:
 			return RouteBot.event_choice(options, _route_policy, state.hp_fraction())  # MAP4-B1: no random draws
+		RunState.PENDING_EVENT_SACRIFICE:
+			return RouteBot.sacrifice_choice(options)  # MAP4-B2: the lowest-tier relic goes; no random draws
 		RunState.PENDING_REST:
 			var heal_id: String = ""
 			var menu_id: String = ""

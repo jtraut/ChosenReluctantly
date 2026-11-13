@@ -88,12 +88,17 @@ static func offer_choice(options: Array, deck: Array[String]) -> String:
 	return first if first != "" else skip
 
 
-## The option id to answer a PENDING_RELIC_SWAP choice with: the first relic that may be given up (the cancel option when none).
+## The option id to answer a PENDING_RELIC_SWAP choice with: the first relic that may be given up (the cancel option when none). A sacrifice relic's step (MAP4-B2) has a
+## confirm: the bot picks the first relics not yet picked, then confirms.
 static func giveup_choice(options: Array) -> String:
 	var cancel: String = ""
 	for option: Variant in options:
 		var entry: Dictionary = option
-		if String(entry.get("kind", "")) == "giveup" and bool(entry.get("enabled", true)):
+		if String(entry.get("kind", "")) == "giveup_confirm" and bool(entry.get("enabled", false)):
+			return String(entry["id"])
+	for option: Variant in options:
+		var entry: Dictionary = option
+		if String(entry.get("kind", "")) == "giveup" and bool(entry.get("enabled", true)) and not bool(entry.get("selected", false)):
 			return String(entry["id"])
 		elif String(entry.get("kind", "")) == "back":
 			cancel = String(entry["id"])

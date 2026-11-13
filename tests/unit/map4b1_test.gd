@@ -524,10 +524,10 @@ func test_two_relic_offers_in_one_event_open_one_after_the_other() -> void:
 	assert_array(state.relics).is_equal([picked])
 
 
-func test_an_outcome_b1_does_not_run_is_skipped_loudly_and_the_event_goes_on() -> void:
+func test_an_outcome_still_to_be_built_is_skipped_loudly_and_the_event_goes_on() -> void:
 	var ctx: Dictionary = _ctx()
 	var state: RunState = _state()
-	_adhoc(state, ctx, [{"type": "start_fight", "tier": "elite"}, {"type": "gain_gold", "amount": 5}])
+	_adhoc(state, ctx, [{"type": "gain_curse"}, {"type": "gain_gold", "amount": 5}])  # curse outcomes are sitting C's
 	var result: Dictionary = _pick(state, ctx)
 	assert_bool(bool(result["finished"])).is_true()
 	assert_int(state.gold).is_equal(55)

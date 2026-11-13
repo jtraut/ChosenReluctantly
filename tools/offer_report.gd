@@ -209,7 +209,8 @@ func _card_report(bot: String, lean: float, seeds: int, offers: int, character: 
 				elif rejects > 0:
 					rejects -= 1
 					for id: String in offered:
-						_discount(weights, id, rewards)
+						if not deck.has(id):  # D49 refinement (eyes 57): owned cards in a rejected offer keep their weight
+							_discount(weights, id, rewards)
 				if (index + 1) % PRUNE_EVERY == 0:
 					for id: String in deck:
 						if _applies(id, pruned) and DeckRules.can_remove(deck, id, DeckRules.shipped_config(), _slot_of, SlotTypeDatabase.known_ids()).is_empty():

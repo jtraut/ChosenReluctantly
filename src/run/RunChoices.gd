@@ -300,7 +300,8 @@ static func apply(state: RunState, option_id: String, ctx: Dictionary) -> Dictio
 		"skip":
 			state.rejects_remaining -= 1
 			for rejected: String in state.offer:
-				state.discount_card_types(rejected, ctx["rewards"])  # D49 = B
+				if not state.deck.has(rejected):  # D49 refinement (eyes 57): a card you already own keeps its weight
+					state.discount_card_types(rejected, ctx["rewards"])
 			state.log_choice("reject")
 			_close(state)
 			result["finished"] = true

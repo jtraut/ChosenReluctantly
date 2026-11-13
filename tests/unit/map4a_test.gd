@@ -43,15 +43,36 @@ func test_a_card_with_no_status_or_an_absent_factor_changes_nothing() -> void:
 	assert_dict(state.offer_weights).is_empty()
 
 
-func test_a_reject_discounts_every_offered_card_and_a_prune_the_removed_one() -> void:
+func test_a_reject_discounts_only_offered_cards_not_in_the_deck() -> void:
 	var ctx: Dictionary = _ctx()
 	var state: RunState = _state()
 	state.pending = RunState.PENDING_REWARD
 	state.offer = [BLEED_CARD, PLAIN_CARD, "rogue_cut_corners"] as Array[String]
 	var result: Dictionary = RunChoices.apply(state, "skip", ctx)
 	assert_bool(bool(result["ok"])).is_true()
-	assert_float(float(state.offer_weights["bleed"])).is_less(0.7)  # two bleed cards in the offer: 0.8 x 0.8
+	assert_float(float(state.offer_weights["bleed"])).is_less(0.7)  # two bleed cards in the offer, neither owned: 0.8 x 0.8
 	assert_bool(state.offer_weights.has("burn")).is_false()
+
+
+func test_a_reject_leaves_owned_cards_at_full_weight() -> void:
+	var ctx: Dictionary = _ctx()
+	var state: RunState = _state()
+	state.deck.append(BLEED_CARD)
+	state.pending = RunState.PENDING_REWARD
+	state.offer = [BLEED_CARD, PLAIN_CARD, "rogue_cut_corners"] as Array[String]
+	RunChoices.apply(state, "skip", ctx)
+	var only_other: RunState = _state()
+	only_other.pending = RunState.PENDING_REWARD
+	only_other.offer = ["rogue_cut_corners"] as Array[String]
+	RunChoices.apply(only_other, "skip", ctx)
+	assert_dict(state.offer_weights).is_equal(only_other.offer_weights)
+	var owned_only: RunState = _state()
+	owned_only.deck.append(BLEED_CARD)
+	owned_only.pending = RunState.PENDING_REWARD
+	owned_only.offer = [BLEED_CARD] as Array[String]
+	RunChoices.apply(owned_only, "skip", ctx)
+	assert_dict(owned_only.offer_weights).is_empty()
+	assert_int(owned_only.rejects_remaining).is_equal(2)  # the reject is still spent
 
 
 func test_the_weights_round_trip_and_a_bad_save_value_is_dropped() -> void:

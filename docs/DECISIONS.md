@@ -2513,3 +2513,22 @@ Review: `docs/reviews/2026-11-12-map3b-qa.md`.
   - "Corporate Buyout is weak" isn't confirmed (11/12 and 12/12 in qa's cells).
   - Both go to the playtest.
 - **Wizard act 1 losses** (5 of 13 human losses in rooms 2-4) go to BD3b.
+
+## 2026-11-12 - MAP3b playtest triage (playtester bffaf3a; game-lead)
+Report: `docs/playtests/2026-11-12-map3b.md`.
+- **Results:** smoke PASS, no blocker. The playtester can't hand-play, so feel calls are theory based on bots and frames.
+- **MAP3b closes as built.** Tuning goes to the director as eyes item 56, with defaults that become MAP4 gameplay-dev's first step (as MB1 did):
+  - **The Non-Compete Clause's refund goes 0.5 s -> 0.3 s.** Its cost (half basic-attack damage) barely bites a card-heavy deck, and it went 12/12 in the sims.
+  - The other boss relics stay as built.
+  - [Re-tuning before the tag: it costs a full loop on bot evidence, and his play is the real read.]
+- **"Every boss relic needs a cost you feel often":** game-lead's design target from BUILD_DEPTH §12.5, not a GDD rule. It's reviewed after the director has played; not asked separately.
+- **Fire still crowds a Bleed Rogue late: 31% Fire against 12% Bleed** (the offer tool; the mini-boss offers aren't modelled). Content alone hasn't fixed the director's priority, so D49 is updated with this data, and game-lead now recommends B (pruning or rejecting a type lowers its offers). The default stays A until he answers.
+- **Rare and legendary Bleed cards are rarely cast by the plan bot,** which likely undervalues them. Watched in BD3b's bot work; no change now.
+- **Burnout Syndrome turning up in both offers is expected.** It's 1 of 6 eligible, so it's in about half of all 3-card offers. A smarter draw is not worth code now.
+- **Carry-overs to MAP4:**
+  - gameplay-dev: Knuckle Sandwich's tile reads "Take 60 s off your Heavy attack cooldown"; make it read as a reset. Also the `-RelicCap 1` bot finding.
+  - ux:
+    - stack labels overlapping at 2 enemies;
+    - a 4-enemy Bleed scenario to verify the dimming and the Open a Vein glow;
+    - golem and pink telegraph contrast on the act 3 sand floor.
+- **Exsanguinate's worst case:** left as is. Watch for one-cast boss kills in the director's play.

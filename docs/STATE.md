@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-12 (MAP3b qa PASS; playtester in progress).
+Last updated: 2026-11-12 (MAP3b playtest done; docs pass in progress).
 
 ## What's done
 - **MB1 closed 2026-11-11.** Tag `playtest-2026-11-11-MB1`.
@@ -235,7 +235,8 @@ Last updated: 2026-11-12 (MAP3b qa PASS; playtester in progress).
   - **ux done** (e596c5a..f59e2c6; DECISIONS "MAP3b ux triage"). Suite 2264; hashes unchanged.
     - Includes the act 3 floor change `#704840` -> `#8f8060`. Add it to the MAP3b eyes item at close; screenshots are in `screenshots/map3b_ux/act3_floor_*.png`.
   - **qa PASS** (02ed622 and later; DECISIONS "MAP3b qa PASS"). Suite 2273 (1 skipped, the open-finding test); hashes unchanged; SIM1 27, 23, 33 and 35 of 36.
-  - **The playtester is in progress.** Then the docs pass and close.
+  - **Playtest done** (bffaf3a, no blocker; DECISIONS "MAP3b playtest triage"). OPEN_ITEMS: eyes 56 added, D49 updated (recommend B).
+  - **The docs pass (tech-writer) is in progress.** Then close: ROADMAP done, tag `playtest-2026-11-12-MAP3b`, STATE.
   - **Doc handoff, qa part:**
     - README line 97 (flat card price) and its stale SIM1 baselines and suite count;
     - ARCHITECTURE §6 `card_price` -> `card_prices`;
@@ -258,7 +259,7 @@ Last updated: 2026-11-12 (MAP3b qa PASS; playtester in progress).
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step
-1. **MAP3b: the playtester**, then the docs pass, and close.
+1. **MAP3b: the tech-writer docs pass**, then close (tag `playtest-2026-11-12-MAP3b`). MAP4's first steps are the eyes-56 default (Non-Compete refund 0.5 -> 0.3 s), D49 if it's answered B or C, and the MAP3b carry-overs.
 2. Then MAP4, 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.

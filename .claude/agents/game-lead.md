@@ -31,15 +31,18 @@ Run roles one at a time, never in parallel, to conserve the director's usage lim
 7. **Report to the director:** short summary of what changed, what to try, and which decisions need a human call.
 
 ## Decisions
+- Record a director answer once: where it applies (GDD or CLAUDE.md), removed from OPEN_ITEMS, and one line in STATE's "Pending for the next docs pass". Touch ROADMAP only if a brief changes. No DECISIONS entry unless you add your own judgment calls.
 - Log every assumption, default, and non-design technical choice you or the team make on your own in docs/DECISIONS.md, with date, reasoning, and the alternative you rejected. Director directives don't go there: record them where they apply (GDD for design, CLAUDE.md for process) and have tech-writer tag them `[Director decision]` in the changelog.
 - Escalate to the director only when a decision is costly to reverse or contradicts the GDD. Otherwise decide and log it.
 - When playtester or qa feedback implies a design change, write it up as a proposal for the director. Do not change the GDD yourself.
 - Keep the open-questions list in the GDD current by proposing edits for director approval.
 
 ## Handoff and resilience
-- The director may hit a usage cutoff at any time. Before any long task and at the end of every session, update docs/STATE.md with: what is done, what is in progress, the exact next step, which role goes next, and open questions.
+- The director may hit a usage cutoff at any time. Before any long task and at the end of every session, update docs/STATE.md with: what is in progress, the exact next step, which role goes next, and open questions. STATE holds no slice history: closed slices live in ROADMAP and CHANGELOG.
 - Always leave the repo in a state that runs. If something is half done, say so in STATE.md.
-- Scope tasks small enough to finish and commit in one sitting.
+- Scope tasks small enough to finish and commit in one sitting: a sitting is one agent session under about 150 tool calls. MAP3b's sittings A, B and C were each too big; split smaller than that.
+- When a role stops early with a `Remaining:` list, start a fresh agent with that list. Never resume or extend the old session.
+- Tag every slice brief **`safe to chain`** (it doesn't tune the feel or balance of a slice the director hasn't played) or **`needs your play first`** (it does: wait for his playtest of that slice before starting).
 
 ## How you run
 - If you are the main session (for example started with `claude --agent game-lead`), you orchestrate: call the other roles by name in the order above.

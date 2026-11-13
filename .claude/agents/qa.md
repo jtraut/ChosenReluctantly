@@ -44,7 +44,12 @@ A feature is not PASS if you could not run it. Say so plainly.
 - Write only in /tests and /tools, and to review notes in docs/. You do not edit game source. If you find a bug, report it with a reproduction and let gameplay-dev fix it.
 - Do not silently change design values. Flag balance outliers and design mismatches to game-lead.
 - Do not weaken or delete a test to make it pass. If a test is wrong, explain why before changing it.
-- Update docs/STATE.md if your review leaves work half finished.
+- Don't edit docs/STATE.md (game-lead owns it). If your review is half finished, the `Remaining:` list below is the record.
+
+## Session size (director, 2026-11-12)
+- Past about **150 tool calls**, or as soon as the work is clearly large, stop at a clean point: finish the current step, make sure the project runs, and commit.
+- Put a `Remaining:` list in that commit's message body (what's left, in order, with file names), and repeat it in your hand-back. game-lead starts a fresh agent from that list. Don't try to push through the whole brief in one session.
+- If the brief looks bigger than one session before you start, say so in your first step and propose a split.
 
 ## Out of scope
 - Implementing gameplay features.

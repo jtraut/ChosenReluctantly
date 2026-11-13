@@ -2492,3 +2492,24 @@ The content plan is in `docs/BUILD_DEPTH.md` §12, and the sittings are in the R
   - act 3 telegraph readability on the sand floor;
   - a real act 3 merchant with a legendary in stock;
   - the Burnout Syndrome tile.
+
+## 2026-11-12 - MAP3b qa PASS (qa 02ed622 and later; game-lead)
+Review: `docs/reviews/2026-11-12-map3b-qa.md`.
+- **Results:**
+  - suite 2273, 1 skipped (qa's open-finding test), 0 orphans;
+  - hashes unchanged;
+  - SIM1 27, 23, 33 and 35 of 36, no-card 0%;
+  - 189 of 189 won runs have exactly 2 boss relics;
+  - §12.6 met.
+- **Exsanguinate's worst case** (1332 before armor, with 10 stacks and six amplifiers) is left to the playtest. It needs a deep, deliberate build inside a 4 s window, and a broken late combo is part of the genre's fun.
+  - [A cap on detonate damage: new code, and it limits the Bleed payoff the director asked for.]
+- **Quitting inside the mini-boss reward drops a boss relic already taken, by design.** Saves happen only at room boundaries (MAP.md §8), and the replay gives the identical offers, so you just pick again.
+  - [Saving mid-reward: a second save point for one screen.]
+- **Carry-overs to MAP4 gameplay-dev housekeeping:**
+  - the sim bot picks an untakeable relic at `-RelicCap 1` (un-skip the qa test);
+  - a forced `--relic-offer` skips the boss branch (capture tooling only).
+- **Watch items:**
+  - The Non-Compete Clause is confirmed strong: 12/12 for both classes.
+  - "Corporate Buyout is weak" isn't confirmed (11/12 and 12/12 in qa's cells).
+  - Both go to the playtest.
+- **Wizard act 1 losses** (5 of 13 human losses in rooms 2-4) go to BD3b.

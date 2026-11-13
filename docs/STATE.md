@@ -6,14 +6,19 @@
 Last updated: 2026-11-13. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **MAP4 (events), briefed 2026-11-13** in ROADMAP MAP4 and BUILD_DEPTH §13 (design pass). Tag `safe to chain`. Five gameplay-dev sittings: A -> B1 -> B2 -> C -> D, then ux, qa, playtest, docs. Nothing built yet. The repo runs.
+- **MAP4 (events), briefed 2026-11-13** in ROADMAP MAP4 and BUILD_DEPTH §13. Tag `safe to chain`. Build sittings A-D done; events are live in three-act runs. The repo runs.
+- **MAP4 ux stopped early at 6f8f516** (range 6bc84d9..6f8f516; its full-suite run was killed for low memory at about 1465 cases). `Remaining:`
+  1. Run the full suite again (`tools/run_tests.ps1`; expected 2451) and re-check the four hashes. **-> qa does this.**
+  2. Keyboard-check the multi-give-up flow in `src/ui/RunPromptScreen.gd` (`show_content` and `is_giveup_refill`).
+  3. Capture the cleanse counter with a capped `curses.max_cleanses`, the event remove-curse list, and the "Nothing you hold can be given up" state.
+  4. Remove the unused `sacrifice_cost_note` key in `data/run.json`.
 
 ## Exact next step
-1. **Sittings A (6cd1c44..b2ae51b), B1 (6c49bd0..7fecaae) B2 (866ac63..fc444cd), C (5b85aad..eeae97c) and D (fa94a97..33eff21) done; events are live in three-act runs.** **ux-designer, MAP4 ux** (ROADMAP MAP4 "ux").
-2. Then each a fresh agent, then ux, qa, playtest, tech-writer, close.
+1. **A fresh ux-designer agent for Remaining 2-4** above (small). Item 1 goes to qa.
+2. Then qa (full MAP4 review, ROADMAP MAP4 "qa", plus the full suite and hashes), playtester, tech-writer, close.
 3. Then DF1 (difficulty bump, D51 = C; ROADMAP), then 3d, then BD3b, then the Milestone 3 close: the milestone playtest, then game-lead's own review of the report and screenshots (ROADMAP).
 
-**Next role:** ux-designer (MAP4 ux).
+**Next role:** ux-designer (MAP4 ux Remaining 2-4), then qa.
 
 ## Current baselines (MAP4 sitting A, 2026-11-13; qa re-gates at MAP4's qa)
 - Suite 2425 after D (one test fixed after the last full run; qa re-runs), 0 skipped, 0 orphans (about 18 min).

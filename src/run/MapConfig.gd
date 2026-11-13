@@ -18,7 +18,7 @@ const RELIC_TYPES: Array[String] = ["elite", "relic_room", "mini_boss"]
 const TOP_KEYS: Array[String] = ["enabled", "rooms", "columns", "walks", "max_attempts", "fixed", "types", "path_rules", "estimate"]
 ## Keys a map file may leave out (MAP1-B): `chests`, the relic stage's chest sizes. Without it relic stages carry no chest and play as small.
 ## MAP3-B: `acts` (how many acts a run has, 1 when absent: plays as MAP2) and `multi_act`, the rule changes that apply only when acts is above 1
-## ({path_rules: {relic_route, max_relic_rooms}, estimate: {gold_mean, merchant_prices}}, each part optional).
+## ({path_rules: {relic_route, max_relic_rooms}, estimate: {gold_mean, merchant_prices}, types: {type: {weight}}}, each part optional).
 const OPTIONAL_KEYS: Array[String] = ["chests", "acts", "multi_act"]
 const MULTI_ACT_RULE_KEYS: Array[String] = ["relic_route", "max_relic_rooms"]
 const CHEST_KEYS: Array[String] = ["weight", "act_offset", "act", "min_tier"]
@@ -170,7 +170,9 @@ static func _validate_multi_act(value: Variant, rooms: int, errors: Array[String
 		errors.append("map.multi_act must be an object {path_rules, estimate}")
 		return
 	var m: Dictionary = value
-	_unknown_keys(m, ["path_rules", "estimate"], "map.multi_act", errors)
+	_unknown_keys(m, ["path_rules", "estimate", "types"], "map.multi_act", errors)
+	if m.has("types"):
+		_validate_multi_act_types(m["types"], errors)
 	if m.has("path_rules"):
 		if typeof(m["path_rules"]) != TYPE_DICTIONARY:
 			errors.append("map.multi_act.path_rules must be an object")
@@ -194,6 +196,25 @@ static func _validate_multi_act(value: Variant, rooms: int, errors: Array[String
 			_validate_estimate(partial, inner)
 			for problem: String in inner:
 				errors.append(problem.replace("map.estimate", "map.multi_act.estimate"))
+
+
+## MAP4-D: `multi_act.types` is {type_id: {weight}}, a weight that replaces the top-level one when a run has several acts. Only `weight` can be overridden. The event node uses it:
+## its weight is 0 for the one-act run (the old MAP2 maps and their hashes) and above 0 in the three-act run, because one-act path rules cannot fill a map that holds events.
+static func _validate_multi_act_types(value: Variant, errors: Array[String]) -> void:
+	if typeof(value) != TYPE_DICTIONARY:
+		errors.append("map.multi_act.types must be an object {type: {weight}}")
+		return
+	for type_id: Variant in (value as Dictionary).keys():
+		var entry: Variant = (value as Dictionary)[type_id]
+		if not NODE_TYPES.has(String(type_id)):
+			errors.append("map.multi_act.types: unknown node type '%s'" % str(type_id))
+		elif typeof(entry) != TYPE_DICTIONARY:
+			errors.append("map.multi_act.types.%s must be an object {weight}" % str(type_id))
+		else:
+			_unknown_keys(entry as Dictionary, ["weight"], "map.multi_act.types.%s" % str(type_id), errors)
+			var weight: Variant = (entry as Dictionary).get("weight")
+			if not _is_number(weight) or float(weight) < 0.0 or float(weight) > 1000.0:
+				errors.append("map.multi_act.types.%s.weight must be a number from 0 to 1000" % str(type_id))
 
 
 static func _validate_estimate(estimate: Variant, errors: Array[String]) -> void:
@@ -274,6 +295,9 @@ static func for_act(config: Dictionary, act_number: int, acts_total: int) -> Dic
 		(out["path_rules"] as Dictionary)[key] = (multi["path_rules"] as Dictionary)[key]
 	for key: Variant in (multi.get("estimate", {}) as Dictionary).keys():
 		(out["estimate"] as Dictionary)[key] = (multi["estimate"] as Dictionary)[key]
+	for type_id: Variant in (multi.get("types", {}) as Dictionary).keys():
+		if (out["types"] as Dictionary).has(type_id):
+			((out["types"] as Dictionary)[type_id] as Dictionary)["weight"] = ((multi["types"] as Dictionary)[type_id] as Dictionary)["weight"]
 	if act_number < acts_total:
 		(out["fixed"] as Dictionary)[str(int(config["rooms"]))] = "mini_boss"
 	return out

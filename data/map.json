@@ -4,7 +4,7 @@
   "rooms": 10,
   "columns": 4,
   "walks": 4,
-  "max_attempts": 5000,
+  "max_attempts": 1000,
   "fixed": { "1": "combat", "2": "combat", "10": "boss" },
   "types": {
     "combat":     { "weight": 40, "rooms": [1, 9] },
@@ -13,7 +13,7 @@
     "rest":       { "weight": 25, "rooms": [5, 9], "no_repeat": true },
     "merchant":   { "weight": 8,  "rooms": [4, 9], "no_repeat": true },
     "mini_boss":  { "weight": 0,  "rooms": [5, 8], "no_repeat": true },
-    "event":      { "weight": 28,  "rooms": [3, 9], "no_repeat": true }
+    "event":      { "weight": 0,   "rooms": [3, 9], "no_repeat": true }
   },
   "path_rules": {
     "min_fights": 6,
@@ -35,6 +35,7 @@
     "merchant_prices": [60, 60, 90]
   },
   "multi_act": {
+    "types": { "event": { "weight": 28 } },
     "path_rules": { "relic_route": [4, 6], "max_relic_rooms": 2 },
     "estimate": { "merchant_prices": [80, 80, 120] }
   }

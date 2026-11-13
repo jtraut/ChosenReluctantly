@@ -936,7 +936,7 @@ func test_the_shipped_data_has_the_merchant_fully_on() -> void:
 	assert_bool(MerchantSwitch.shipped_is_on()).is_true()
 	assert_array(MerchantSwitch.shipped_problems()).is_empty()
 	assert_float(float(map["types"]["rest"]["weight"])).is_equal(25.0)
-	assert_int(int(map["max_attempts"])).is_equal(5000)  # MAP4-D: raised from 1000 so the event weight leaves headroom (the sweep test wants the worst seed under 80%)
+	assert_int(int(map["max_attempts"])).is_equal(1000)
 
 
 # ---- 12. relic behaviour spot checks that go beyond the dev's: a dense Severance chain and a real Movement cast ----

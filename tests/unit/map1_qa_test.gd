@@ -240,9 +240,9 @@ func test_independent_sweep_of_a_thousand_other_seeds() -> void:
 			type_count[String(n["type"])] = int(type_count.get(String(n["type"]), 0)) + 1
 	assert_array(failures).override_failure_message("\n".join(failures.slice(0, 8))).is_empty()
 	assert_int(worst).is_less(int(cfg["max_attempts"]))
-	# weight-0 types never show up in shipped data; MAP4-D: events ship on and must show up
-	assert_int(int(type_count.get("mini_boss", 0))).is_equal(0)
-	assert_int(int(type_count.get("event", 0))).is_greater(0)
+	# weight-0 types never show up in shipped data (MAP4-D: the one-act run has no events either; the three-act run does, map4b1 checks that)
+	for t: String in ["mini_boss", "event"]:
+		assert_int(int(type_count.get(t, 0))).is_equal(0)
 	if MerchantSwitch.shipped_is_on():  # MAP2-B: with the merchant switched on it must show up; off it must not
 		assert_int(int(type_count.get("merchant", 0))).is_greater(0)
 	else:
@@ -487,8 +487,8 @@ func test_the_shipped_data_matches_the_accepted_changes() -> void:
 	assert_int(int((t["relic_room"] as Dictionary)["weight"])).is_equal(14)
 	assert_int(int((t["rest"] as Dictionary)["weight"])).is_equal(25)  # MAP2-A: was 10, raised so every path can hold a rest (D40)
 	assert_array(((t["relic_room"] as Dictionary)["rooms"] as Array).map(func(v: Variant) -> int: return int(v))).is_equal([3, 8])
-	assert_int(int((t["mini_boss"] as Dictionary)["weight"])).is_equal(0)
-	assert_int(int((t["event"] as Dictionary)["weight"])).is_greater(0)  # MAP4-D: events ship on
+	for zero: String in ["mini_boss", "event"]:
+		assert_int(int((t[zero] as Dictionary)["weight"])).is_equal(0)  # MAP4-D: the event weight is 28 in multi_act.types, for the three-act run only
 	assert_int(int((t["merchant"] as Dictionary)["weight"])).is_equal(8 if merchant_on else 0)
 	var ch: Dictionary = c["chests"]
 	assert_int(int((ch["small"] as Dictionary)["weight"])).is_equal(50)

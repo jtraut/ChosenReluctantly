@@ -162,6 +162,7 @@ var _trigger_run: Dictionary = {}
 ## MAP4-D event report: this run's event visits ("event_id:option_id"), sacrifice relics offered, and the all-run tallies.
 var _event_run: Array[String] = []
 var _sac_offered_run: int = 0
+var _sac_seen_run: Dictionary = {}
 var _event_tally: Dictionary = {}
 var _event_stats: Array[Dictionary] = []
 var _damage_all: Dictionary = {}
@@ -973,6 +974,7 @@ func _run_whole(run_seed: int) -> void:
 	_trigger_run = {}
 	_event_run = []
 	_sac_offered_run = 0
+	_sac_seen_run = {}
 	var relay: CombatEventsRelay = CombatLink.events()
 	var tally := _on_hit_for_tally
 	if relay != null:
@@ -1084,12 +1086,20 @@ func _run_whole(run_seed: int) -> void:
 		for card_id: String in final_state.deck:
 			if CardSchema.is_curse(CardDatabase.get_card(card_id)):
 				curses_now += 1
-		for relic_id: String in final_state.relics:
+		var ever_held: Array[String] = final_state.relics.duplicate()
+		ever_held.append_array(final_state.relics_given_up)
+		for relic_id: String in ever_held:
 			if int(RelicDatabase.get_relic(relic_id).get("sacrifice_cost", 0)) > 0:
-				sac_taken += 1
+				sac_taken += 1  # taken at some point, even if given up since
 	var cleansed: int = final_state.cleanses if final_state != null else 0
-	_event_stats.append({"visits": _event_run.size(), "curses_gained": curses_now + cleansed, "cleansed": cleansed, "sac_offered": _sac_offered_run, "sac_taken": sac_taken})
-	print("    events: %d visit(s) %s | curses gained %d, cleansed %d, in deck at the end %d | sacrifice relics offered %d (picks), taken %d" % [_event_run.size(), str(_event_run), curses_now + cleansed, cleansed, curses_now, _sac_offered_run, sac_taken])
+	var boss_held: int = 0
+	var held_total: int = final_state.relics.size() if final_state != null else 0
+	if final_state != null:
+		for relic_id: String in final_state.relics:
+			if String(RelicDatabase.get_relic(relic_id).get("rarity", "")) == "boss":
+				boss_held += 1
+	_event_stats.append({"boss": boss_held, "held": held_total, "won": String(result["outcome"]) == "won", "visits": _event_run.size(), "curses_gained": curses_now + cleansed, "cleansed": cleansed, "sac_offered": _sac_offered_run, "sac_taken": sac_taken})
+	print("    events: %d visit(s) %s | curses gained %d, cleansed %d, in deck at the end %d | sacrifice relics offered %d (distinct per room), taken %d" % [_event_run.size(), str(_event_run), curses_now + cleansed, cleansed, curses_now, _sac_offered_run, sac_taken])
 	Engine.time_scale = 1.0
 	_release_all()
 	Player.default_rng_seed = -1
@@ -1129,6 +1139,7 @@ func _policy_choose(controller: RunController) -> String:
 	var model: Dictionary = controller.current_choice()
 	var options: Array = model["options"]
 	var state: RunState = controller.state()
+	_scan_offer(options, state.room_index)
 	match String(model["choice"]):
 		RunState.PENDING_REWARD:
 			var skip_id: String = ""
@@ -1146,9 +1157,6 @@ func _policy_choose(controller: RunController) -> String:
 			var pool: Array[Dictionary] = unowned if not unowned.is_empty() else cards
 			return String(pool[_policy_rng.randi_range(0, pool.size() - 1)]["id"])
 		RunState.PENDING_RELIC:
-			for relic_option: Variant in options:
-				if String((relic_option as Dictionary).get("kind", "")) == "relic" and int(RelicDatabase.get_relic(String((relic_option as Dictionary)["id"])).get("sacrifice_cost", 0)) > 0:
-					_sac_offered_run += 1
 			return RelicPolicy.offer_choice(options, state.deck)
 		RunState.PENDING_RELIC_SWAP:
 			return RelicPolicy.giveup_choice(options)
@@ -1198,6 +1206,22 @@ func _policy_choose(controller: RunController) -> String:
 						best = String(option["id"])
 			return best if best != "" else (any if any != "" else back_id)
 	return ""
+
+
+## MAP4-D, the BUILD_DEPTH 13.7 sweep: a curse card in any card offer or the merchant's stock is an ERROR (so this script fails), and a sacrifice relic in an offer or in stock is counted.
+func _scan_offer(options: Array, room: int) -> void:
+	for scan: Variant in options:
+		var entry: Dictionary = scan
+		var kind: String = String(entry.get("kind", ""))
+		if (kind == "card" or kind == "buy_card") and (bool(entry.get("curse", false)) or CardSchema.is_curse(CardDatabase.get_card(String(entry.get("card_id", ""))))):
+			push_error("MAP4-D: the curse card '%s' is in an offer (kind %s)" % [str(entry.get("card_id", "")), kind])
+		elif kind == "relic" or kind == "buy_relic":
+			var option_id: String = String(entry.get("id", ""))
+			if int(RelicDatabase.get_relic(option_id.get_slice(":", option_id.count(":"))).get("sacrifice_cost", 0)) > 0:
+				var seen_key: String = "%s@%d" % [option_id, room]  # once per relic per room, however many times the screen is read
+				if not _sac_seen_run.has(seen_key):
+					_sac_seen_run[seen_key] = true
+					_sac_offered_run += 1
 
 
 ## Run end report data: HP at each room end, the final deck size and per-slot composition, and what the policy did.
@@ -1613,7 +1637,16 @@ func _print_route_summary() -> void:
 		cleansed_all.append(float(stat["cleansed"]))
 		offered.append(float(stat["sac_offered"]))
 		taken.append(float(stat["sac_taken"]))
-	print("  EVENT SUMMARY (%s, %s): event visits per run median %.1f mean %.2f (min %.0f max %.0f) | curses gained per run mean %.2f, cleansed mean %.2f | sacrifice relic offered (picks) per run mean %.2f, runs that took one %d of %d | choices taken %s" % [
+	var boss_counts: Array[float] = []
+	var at_cap: int = 0
+	var cap: int = RelicConfig.max_owned()
+	for stat: Dictionary in _event_stats:
+		if bool(stat["won"]):
+			boss_counts.append(float(stat["boss"]))
+		at_cap += 1 if int(stat["held"]) >= cap else 0
+	print("  BOSS RELICS (%s, %s): per won run median %.1f min %.0f max %.0f | runs at the relic cap (%d) at the end: %d of %d" % [
+		_route_policy, _sim_class if _sim_class != "" else CharacterDatabase.DEFAULT_ID, _median(boss_counts), (boss_counts.min() if not boss_counts.is_empty() else 0.0), (boss_counts.max() if not boss_counts.is_empty() else 0.0), cap, at_cap, _event_stats.size()])
+	print("  EVENT SUMMARY (%s, %s): event visits per run median %.1f mean %.2f (min %.0f max %.0f) | curses gained per run mean %.2f, cleansed mean %.2f | sacrifice relic offers (distinct per room) per run mean %.2f, runs that took one %d of %d | choices taken %s" % [
 		_route_policy, _sim_class if _sim_class != "" else CharacterDatabase.DEFAULT_ID, _median(visit_counts), _mean(visit_counts), (visit_counts.min() if not visit_counts.is_empty() else 0.0), (visit_counts.max() if not visit_counts.is_empty() else 0.0),
 		_mean(gained), _mean(cleansed_all), _mean(offered), taken.filter(func(v: float) -> bool: return v > 0.0).size(), taken.size(), str(_event_tally)])
 	print("  MAP.md section 8 checks (informational): the %s route's median relics %.1f (the estimate for relic routes is %s); clear rate %d%%" % [

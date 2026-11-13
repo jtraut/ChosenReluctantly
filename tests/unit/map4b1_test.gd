@@ -218,11 +218,12 @@ func test_the_loader_reports_bad_files_and_keeps_going() -> void:
 
 # --- the node swap ---------------------------------------------------------------------------------
 
-func test_the_event_node_replaces_curse_and_buff_rooms_and_ships_switched_on() -> void:
+func test_the_event_node_replaces_curse_and_buff_rooms_and_ships_on_for_three_acts() -> void:
 	var types: Dictionary = MapConfig.get_config()["types"]
 	assert_bool(types.has("curse_room")).is_false()
 	assert_bool(types.has("buff_room")).is_false()
-	assert_float(float((types["event"] as Dictionary)["weight"])).is_greater(0.0)  # MAP4-D: events ship on
+	assert_float(float((types["event"] as Dictionary)["weight"])).is_equal(0.0)  # MAP4-D: the one-act run stays without events (its path rules cannot fill a map that holds them)
+	assert_float(float((MapConfig.for_act(MapConfig.get_config(), 1, 3)["types"]["event"] as Dictionary)["weight"])).is_greater(0.0)  # and the three-act run has them
 	assert_float(float((types["mini_boss"] as Dictionary)["weight"])).is_equal(0.0)  # in-act mini-bosses stay deferred
 	assert_array((types["event"] as Dictionary)["rooms"]).is_equal([3.0, 9.0])
 	assert_bool(bool((types["event"] as Dictionary)["no_repeat"])).is_true()
@@ -262,10 +263,12 @@ func test_a_map_with_events_switched_on_stays_valid_over_a_seed_sweep() -> void:
 	assert_int(with_events).is_greater(20)
 
 
-func test_the_shipped_map_makes_event_nodes_in_rooms_3_to_9() -> void:
+func test_the_shipped_three_act_map_makes_event_nodes_in_rooms_3_to_9_and_the_one_act_map_none() -> void:
 	var events: int = 0
 	for seed_value in range(1, 40):
-		var map: Dictionary = MapGenerator.generate(seed_value)
+		var map: Dictionary = (MapGenerator.build(seed_value, MapConfig.get_config(), {}, 1, 3)["map"] as Dictionary)
+		for entry: Dictionary in (MapGenerator.generate(seed_value)["nodes"] as Array):
+			assert_str(String(entry["type"])).is_not_equal("event")  # the one-act run has none
 		for entry: Dictionary in (map["nodes"] as Array):
 			if String(entry["type"]) == "event":
 				events += 1

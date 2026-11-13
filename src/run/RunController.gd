@@ -103,7 +103,7 @@ func begin(main: Main) -> void:
 		_cleared = true
 		player.health.damage_immune = true
 		_resume_choice.call_deferred()
-	elif String(room["type"]) == "rest" or String(room["type"]) == RunConfig.RELIC_ROOM or String(room["type"]) == RunConfig.MERCHANT_ROOM:
+	elif String(room["type"]) == "rest" or String(room["type"]) == RunConfig.RELIC_ROOM or String(room["type"]) == RunConfig.MERCHANT_ROOM or String(room["type"]) == RunConfig.EVENT_ROOM:
 		spawner.process_mode = Node.PROCESS_MODE_DISABLED  # no fight: the room is over at once and its choice opens
 		_start_rest.call_deferred()
 	else:
@@ -251,6 +251,7 @@ func confirm_class_pick(character: String) -> bool:
 ## preset deck from data/debug_decks (its `starter`, or its `full` with `--full-deck`) and `--list-decks` prints them and quits.
 ## `--run-node=N` (map runs, MAP2-B): start in map node N (the path runs back to room 1 along first predecessors); `--run-gold=N` starts with N gold. Both are for captures
 ## (for example the merchant: `--merchant --run-seed=54 --run-node=<its id> --run-gold=200`; the map print tool with -Merchant lists the ids).
+## `--event=<id>` makes the next event node draw that event (MAP4-B1; refused when the id is not in data/events).
 ## `--merchant` turns the merchant on for this launch (MerchantSwitch: data/merchant_on.json merged into the map and run config; the shipped data already has it on, so this is redundant).
 ## `--class=<rogue|wizard>` plays the run as that character (a `--deck` preset names its class, and a `--class` that disagrees is refused).
 ## Returns false when the launch must not go on: it has asked the tree to quit (exit 0 for --list-decks, 2 for bad args).
@@ -312,6 +313,8 @@ func _apply_launch_args(tree: SceneTree) -> bool:
 		printerr("Launch refused: " + room_problem)
 		tree.quit(2)
 		return false
+	if not _apply_event_arg(args, tree):
+		return false
 	if not _apply_relic_args(args, tree):
 		return false
 	if String(launch["deck"]) != "":
@@ -329,6 +332,20 @@ func _apply_launch_args(tree: SceneTree) -> bool:
 			_launch_room_set = true
 		elif arg.begins_with("--run-clear-after=") and arg.substr(18).is_valid_float():
 			_launch_clear_after = maxf(arg.substr(18).to_float(), 0.0)
+	return true
+
+
+## `--event=<id>` (MAP4-B1): the next event node draws that event. An id that is not in data/events is refused (exit 2) like a bad `--relic-offer`.
+func _apply_event_arg(args: PackedStringArray, tree: SceneTree) -> bool:
+	for arg: String in args:
+		if not arg.begins_with("--event="):
+			continue
+		var wanted: String = arg.substr(8)
+		if not EventDatabase.has_event(wanted):
+			printerr("Launch refused: --event=%s is not an event (known: %s)" % [wanted, ", ".join(EventDatabase.ids()) if not EventDatabase.is_empty() else "none yet"])
+			tree.quit(2)
+			return false
+		RunSession.forced_event = wanted
 	return true
 
 
@@ -435,6 +452,7 @@ func _finish_room(healed: float) -> void:
 		return
 	if RunRelics.open_for_room(_state, String(room["type"]), false, _ctx) != RunState.PENDING_NONE:
 		choice_requested.emit(current_choice())
+		RunSave.autosave(_state)  # MAP4-B1: an event's choice screen is a save point (the other choices are not, see RunSave.is_boundary)
 	else:
 		room_cleared.emit(_summary)
 
@@ -449,6 +467,8 @@ func choose(option_id: String) -> Dictionary:
 	var result: Dictionary = RunChoices.apply(_state, option_id, _ctx)
 	if not bool(result["ok"]):
 		return result
+	if bool(result.get("event_state_changed", false)):
+		_push_state_hp_to_player()  # MAP4-B1: an event moved HP or max HP in the RunState; the live player must follow before the HP is read back below
 	if ["relic_pick", "relic_swap", "merchant_relic"].has(String(result["kind"])):
 		_sync_relics()
 	elif _state.gold_spent_merchant != spent_before and _relics != null:
@@ -478,7 +498,18 @@ func choose(option_id: String) -> Dictionary:
 		continue_to_next_room()
 	else:
 		choice_requested.emit(current_choice())
+		RunSave.autosave(_state)  # MAP4-B1: the event's relic offer is a save point too (a no-op for every other unfinished choice)
 	return result
+
+
+## Puts the RunState's HP and max HP on the live player (an event changed them). Max HP first, so the current HP fits.
+func _push_state_hp_to_player() -> void:
+	if _main == null or _main.player == null:
+		return
+	var health: Health = _main.player.health
+	health.max_health = _state.max_hp
+	health.current_health = clampf(_state.hp, 1.0, _state.max_hp)
+	health.health_changed.emit(health.current_health, health.max_health)
 
 
 ## The Continue button: advance the room index and swap in a fresh Main for the next room.

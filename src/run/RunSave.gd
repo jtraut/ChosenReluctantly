@@ -16,7 +16,7 @@ extends RefCounted
 const DEFAULT_PATH := "user://run_save.json"
 const SAVE_VERSION := 1
 ## Launch flags that change the run into a debug run: their runs never save (or delete) the player's file.
-const DEBUG_FLAG_PREFIXES: Array[String] = ["--run-room", "--run-node", "--run-gold", "--run-clear-after", "--run-offer", "--full-deck", "--deck", "--relics", "--relic-offer", "--relic-cap", "--acts", "--scenario", "--sim-"]
+const DEBUG_FLAG_PREFIXES: Array[String] = ["--run-room", "--run-node", "--run-gold", "--run-clear-after", "--run-offer", "--full-deck", "--deck", "--relics", "--relic-offer", "--relic-cap", "--event", "--acts", "--scenario", "--sim-"]
 
 static var path: String = DEFAULT_PATH
 ## Tests set this to true/false to force file use on or off; null = decide from how the game was launched.
@@ -59,7 +59,13 @@ static func reset() -> void:
 static func is_boundary(state: RunState) -> bool:
 	if state == null or state.is_over() or not RunNodes.active(state) or (state.path.is_empty() and state.act <= 1):
 		return false
-	return state.pending == RunState.PENDING_NODE or state.pending == RunState.PENDING_NONE
+	# MAP4-B1: an event's choice screen and the relic offer a choice opened are boundaries too, so quitting there cannot refund what the choice already cost.
+	return choice_is_savable(state)
+
+
+## True when the open choice (if any) may be saved: the map screen, no choice, or (MAP4-B1) an event's choice screen or the relic offer it opened.
+static func choice_is_savable(state: RunState) -> bool:
+	return state.pending == RunState.PENDING_NODE or state.pending == RunState.PENDING_NONE or state.pending == RunState.PENDING_EVENT or EventEngine.is_event_offer(state)
 
 
 ## Writes the save when persistence is on and the state is at a boundary. False when nothing was written.
@@ -197,7 +203,7 @@ static func _state_problem(state: RunState) -> String:
 		return "the map did not load"
 	if (state.path.is_empty() and state.act <= 1) or not RunNodes.consistent(state):
 		return "the path does not fit the room"
-	if state.pending != RunState.PENDING_NODE and state.pending != RunState.PENDING_NONE:
+	if not choice_is_savable(state):
 		return "saved with a choice open"
 	if state.deck.is_empty():
 		return "empty deck"

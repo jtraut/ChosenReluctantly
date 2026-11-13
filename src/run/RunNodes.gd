@@ -159,6 +159,8 @@ static func node_info(state: RunState, node_id: int, ctx: Dictionary) -> Diction
 
 ## Opens the pick-next-node choice (nothing else may be pending). Returns the pending value.
 static func open(state: RunState) -> String:
+	state.event_id = ""  # MAP4-B1: an event never outlives its node
+	state.event_queue = []
 	state.offer = []
 	state.offer_rarity = ""
 	state.relic_incoming = ""

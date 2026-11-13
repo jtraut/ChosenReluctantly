@@ -1,0 +1,11 @@
+{
+  "id": "fx_pay",
+  "name": "Fixture: The Toll",
+  "flavor": "A fixture that costs and rewards.",
+  "acts": [1, 2, 3],
+  "choices": [
+    { "label": "Pay up", "requires": { "gold_at_least": 40 }, "outcomes": [ { "type": "lose_gold", "amount": 40 }, { "type": "heal", "fraction": 0.25 } ] },
+    { "label": "Take the hit", "outcomes": [ { "type": "lose_hp", "fraction": 0.2 }, { "type": "gain_relic", "tier": "act", "count": 3 } ] },
+    { "label": "Leave", "outcomes": [] }
+  ]
+}

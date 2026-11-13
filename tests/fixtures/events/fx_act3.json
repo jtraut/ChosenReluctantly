@@ -1,0 +1,10 @@
+{
+  "id": "fx_act3",
+  "name": "Fixture: Act Three Only",
+  "flavor": "Only in act 3.",
+  "acts": [3],
+  "choices": [
+    { "label": "Jackpot", "outcomes": [ { "type": "gain_relic", "tier": "next_act" } ] },
+    { "label": "Leave", "outcomes": [] }
+  ]
+}

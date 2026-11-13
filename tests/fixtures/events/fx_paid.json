@@ -1,0 +1,10 @@
+{
+  "id": "fx_paid",
+  "name": "Fixture: Paid Offer",
+  "flavor": "A relic with no skip, then a bill.",
+  "acts": [1],
+  "choices": [
+    { "label": "Pay for it", "outcomes": [ { "type": "gain_relic", "tier": 2, "count": 3, "skip": false }, { "type": "lose_hp", "fraction": 0.1 } ] },
+    { "label": "Leave", "outcomes": [] }
+  ]
+}

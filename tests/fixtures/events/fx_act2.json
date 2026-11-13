@@ -1,0 +1,11 @@
+{
+  "id": "fx_act2",
+  "name": "Fixture: Act Two Only",
+  "flavor": "Only in act 2, and three times as likely.",
+  "acts": [2],
+  "weight": 3,
+  "choices": [
+    { "label": "Bargain", "outcomes": [ { "type": "gain_gold", "amount": 30 }, { "type": "lose_max_hp", "fraction": 0.1 } ] },
+    { "label": "Leave", "outcomes": [] }
+  ]
+}

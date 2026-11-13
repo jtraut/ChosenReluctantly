@@ -28,8 +28,14 @@ const PENDING_MERCHANT := "merchant"
 const PENDING_MERCHANT_REMOVE := "merchant_remove"
 const PENDING_MERCHANT_SWAP := "merchant_swap"
 const MERCHANT_PENDING: Array[String] = [PENDING_MERCHANT, PENDING_MERCHANT_REMOVE, PENDING_MERCHANT_SWAP]
+## MAP4-B1: an event node's choice screen. It needs `event_id`. The relic offer an event choice opens is an ordinary PENDING_RELIC with offer_rarity
+## "event" or "event_noskip" (see EventEngine), and the outcomes still to run after it wait in `event_queue`.
+const PENDING_EVENT := "event"
 const PENDING_VALUES: Array[String] = [PENDING_NONE, PENDING_REWARD, PENDING_REST, PENDING_REST_REMOVE, PENDING_RELIC, PENDING_RELIC_SWAP, PENDING_NODE,
-		PENDING_MERCHANT, PENDING_MERCHANT_REMOVE, PENDING_MERCHANT_SWAP]
+		PENDING_MERCHANT, PENDING_MERCHANT_REMOVE, PENDING_MERCHANT_SWAP, PENDING_EVENT]
+## `offer_rarity` values of an event's relic offer: skip allowed ("event") and no skip ("event_noskip", the player has paid for it).
+const OFFER_EVENT := "event"
+const OFFER_EVENT_NOSKIP := "event_noskip"
 
 var seed_value: int = 0
 ## The character (data/characters.json id) this run is played as (W1a). Fixed for the whole run.
@@ -83,6 +89,11 @@ var gold_spent_merchant: int = 0
 ## MAP2-A: the open merchant visit (see Merchant): {node, relics, cards, sold_relics, sold_cards, rerolls_used}, or {} when none is open.
 ## It holds the stock, so restoring a save mid-visit gives the same shop.
 var merchant_visit: Dictionary = {}
+## MAP4-B1: the event drawn for the event node the run is in ("" when none is open), the events this run has met (no repeats until every eligible one
+## was seen), and the outcomes of the confirmed choice that still wait for the open event relic offer to be answered (EventSchema outcome dictionaries).
+var event_id: String = ""
+var events_seen: Array[String] = []
+var event_queue: Array[Dictionary] = []
 ## MAP3-B: the act the run is in (1-based) and how many acts the run has. `map`, `path` and `room_index` always describe the CURRENT act (room_index
 ## 0-9 inside it), so everything that reads them keeps working. A finished act's map and path move to `past_acts` ({map, path}, act 1 first), which
 ## makes `act_map(n)` / `act_path(n)` answer for any act. A one-act run (and every straight run) is act 1 of 1 with no past acts.
@@ -275,6 +286,9 @@ func to_dict() -> Dictionary:
 		"merchant_removals": merchant_removals,
 		"gold_spent_merchant": gold_spent_merchant,
 		"merchant_visit": merchant_visit.duplicate(true),
+		"event_id": event_id,
+		"events_seen": events_seen.duplicate(),
+		"event_queue": event_queue.duplicate(true),
 		"act": act,
 		"acts_total": acts_total,
 		"past_acts": past_acts.duplicate(true),
@@ -381,6 +395,12 @@ static func from_dict(data: Dictionary) -> RunState:
 		push_error("RunState.from_dict: pending 'node' but the map is unusable; no choice is open")
 		state.pending = PENDING_NONE
 	_read_merchant_fields(state, data)
+	_read_event_fields(state, data)
+	if state.pending == PENDING_EVENT and not _event_choice_fits(state):
+		push_error("RunState.from_dict: pending 'event' has no usable event ('%s'); no choice is open" % state.event_id)
+		state.pending = PENDING_NONE
+		state.event_id = ""
+		dropped_choice = true
 	if MERCHANT_PENDING.has(state.pending) and not _merchant_choice_fits(state):
 		# A merchant screen with no visit behind it (or a swap for a relic that is not for sale) cannot be shown: drop the choice like any other.
 		push_error("RunState.from_dict: pending '%s' has no usable merchant visit; no choice is open" % state.pending)
@@ -429,6 +449,7 @@ static func _offer_rarity_for(pending_value: String, saved: Variant) -> String:
 		return ""
 	var fits: bool = typeof(saved) == TYPE_STRING and (
 			([PENDING_RELIC, PENDING_RELIC_SWAP].has(pending_value) and String(saved) == "boss")
+			or ([PENDING_RELIC, PENDING_RELIC_SWAP].has(pending_value) and [OFFER_EVENT, OFFER_EVENT_NOSKIP].has(String(saved)))
 			or (pending_value == PENDING_REWARD and ["rare", "legendary"].has(String(saved))))
 	if not fits:
 		push_error("RunState.from_dict: offer_rarity %s does not fit the open choice '%s'; using a normal offer" % [str(saved), pending_value])
@@ -554,6 +575,37 @@ static func _read_merchant_fields(state: RunState, data: Dictionary) -> void:
 		"sold_cards": _plain_ids(v["sold_cards"]),
 		"rerolls_used": maxi(int(v["rerolls_used"]), 0),
 	}
+
+
+## True when an event pending value has what it needs: an event id the data still has.
+static func _event_choice_fits(state: RunState) -> bool:
+	return not state.event_id.is_empty() and EventDatabase.has_event(state.event_id)
+
+
+## The event fields of saved data (MAP4-B1). Old dicts have none and load as no event. Wrong types are rejected loudly and fall back to empty. The queue's
+## outcomes are checked with EventSchema and rebuilt with whole numbers (a JSON round trip turns every number into a float and `equals` compares text).
+static func _read_event_fields(state: RunState, data: Dictionary) -> void:
+	var saved_id: Variant = data.get("event_id", "")
+	if typeof(saved_id) == TYPE_STRING:
+		state.event_id = String(saved_id)
+	else:
+		push_error("RunState.from_dict: 'event_id' must be a string; using none")
+	state.events_seen = _id_list(data.get("events_seen", []), "events_seen")
+	var queue: Variant = data.get("event_queue", [])
+	if typeof(queue) != TYPE_ARRAY:
+		push_error("RunState.from_dict: 'event_queue' must be an array; using none")
+		return
+	var rebuilt: Array[Dictionary] = []
+	for entry: Variant in (queue as Array):
+		var problems: Array[String] = EventSchema.validate_outcome(entry)
+		if not problems.is_empty():
+			push_error("RunState.from_dict: 'event_queue' holds a bad outcome (%s); queue dropped" % "; ".join(problems))
+			return
+		rebuilt.append(EventSchema.normalize_outcome(entry as Dictionary))
+	if not rebuilt.is_empty() and not [PENDING_RELIC, PENDING_RELIC_SWAP].has(state.pending):
+		push_error("RunState.from_dict: 'event_queue' has no open event offer to wait for; queue dropped")
+		return
+	state.event_queue = rebuilt
 
 
 ## Ids kept as they are, duplicates and all (a card id may repeat in a list of sold cards).

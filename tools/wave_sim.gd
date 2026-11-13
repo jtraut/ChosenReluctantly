@@ -1130,6 +1130,8 @@ func _policy_choose(controller: RunController) -> String:
 			return "node:%d" % _route[state.path.size()]  # the route bot follows its planned route (RouteBot); a new act's path is empty, so its first pick is route[0]
 		RunState.PENDING_MERCHANT, RunState.PENDING_MERCHANT_REMOVE, RunState.PENDING_MERCHANT_SWAP:
 			return MerchantPolicy.choose(String(model["choice"]), options, state, _route_policy)  # no random draws: the other seeded choices do not shift
+		RunState.PENDING_EVENT:
+			return RouteBot.event_choice(options, _route_policy, state.hp_fraction())  # MAP4-B1: no random draws
 		RunState.PENDING_REST:
 			var heal_id: String = ""
 			var menu_id: String = ""

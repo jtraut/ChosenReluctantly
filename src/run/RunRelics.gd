@@ -55,6 +55,11 @@ static func is_boss_offer(state: RunState) -> bool:
 	return state.has_relic_choice() and state.offer_rarity == RelicOffer.BOSS_RARITY
 
 
+## True while the open relic choice has no skip: the mini-boss's boss-relic offer and an event offer the player has paid for (MAP4-B1).
+static func is_noskip_offer(state: RunState) -> bool:
+	return is_boss_offer(state) or (state.has_relic_choice() and state.offer_rarity == RunState.OFFER_EVENT_NOSKIP)
+
+
 static func enabled(ctx: Dictionary) -> bool:
 	return ctx.has("relics") and bool((ctx["relics"] as Dictionary).get("enabled", false))
 
@@ -184,6 +189,10 @@ static func title_and_line(state: RunState, ctx: Dictionary, room_type: String =
 		return {"title": String(ui.get("swap_title", "")), "line": String(ui.get(line_key, "")) % [state.relics.size(), String(incoming["name"])]}
 	if is_boss_offer(state) and ui.has("boss_title"):
 		return {"title": String(ui.get("boss_title", "")), "line": String(ui.get("boss_line", ""))}
+	if EventEngine.is_event_offer(state):
+		var event_ui: Dictionary = (ctx.get("events", {}) as Dictionary).get("ui", {})
+		return {"title": String(event_ui.get("relic_title", ui.get("title", ""))),
+				"line": String(event_ui.get("relic_line_noskip" if is_noskip_offer(state) else "relic_line", ui.get("line", "")))}
 	if room_type == "relic_room":
 		return {"title": String(ui.get("room_title", "")), "line": String(ui.get("room_line", ""))}
 	return {"title": String(ui.get("title", "")), "line": String(ui.get("line", ""))}
@@ -205,7 +214,7 @@ static func options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 				out.append(option)
 			# MAP3b: a boss-relic offer has no skip, except when nothing can be taken (at the cap with only boss relics held: a pick would be refused
 			# for ever, so the screen could never close). Then the skip is the way out.
-			if not is_boss_offer(state) or not RelicOffer.can_take(state.relics, max_owned(ctx), (ctx.get("relics", {}) as Dictionary).get("catalog", [])):
+			if not is_noskip_offer(state) or not RelicOffer.can_take(state.relics, max_owned(ctx), (ctx.get("relics", {}) as Dictionary).get("catalog", [])):
 				var skip: Dictionary = RunChoices.blank_option(OPTION_SKIP, OPTION_SKIP)
 				skip["label"] = String(ui.get("skip_label", ""))
 				skip["detail"] = String(ui.get("skip_detail", ""))
@@ -240,6 +249,7 @@ static func model_extras(state: RunState, ctx: Dictionary) -> Dictionary:
 	var extras: Dictionary = {
 		"relic_choice": "giveup" if swapping else "offer",
 		"boss_offer": is_boss_offer(state),
+			"event_offer": EventEngine.is_event_offer(state),
 		"relics_owned": owned_display(state, ctx),
 		"relics_given_up": given_up_display(state, ctx),
 		"relic_max_owned": max_owned(ctx),

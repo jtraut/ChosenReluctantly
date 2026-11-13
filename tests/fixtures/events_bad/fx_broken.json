@@ -1,0 +1,1 @@
+{ "id": "fx_broken", "name": "Broken", "flavor": "x", "acts": [1], "choices": [ { "label": "Only", "outcomes": [] } ] }

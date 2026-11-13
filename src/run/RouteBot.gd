@@ -82,6 +82,51 @@ static func _random(map: Dictionary, seed_value: int) -> Array[int]:
 	return route
 
 
+## The bot's answer to an event choice (MAP4-B1, BUILD_DEPTH 13.1). Pure over the choice model's options (each carries `outcome_types`, `has_requires` and `enabled`),
+## the route policy and the HP fraction, and it draws no random numbers.
+##   relic   the first available choice with a `gain_relic` while HP is at least `EVENT_RELIC_MIN_HP` (50%), otherwise a choice with no cost.
+##   safe    a choice with no `lose_hp`, `lose_max_hp`, `gain_curse` or `start_fight`.
+##   first   the first available choice. `random` (not in 13.1) plays like `first`, and so does no policy at all.
+## A choice with no cost can always be found because the no-`requires` choice exists; if that choice has a cost, the bot takes it. "" when nothing can be taken.
+const EVENT_RELIC_MIN_HP := 0.5
+const EVENT_COSTS: Array[String] = ["lose_hp", "lose_max_hp", "lose_gold", "gain_curse", "start_fight", "sacrifice_relic"]
+const EVENT_SAFE_BLOCKS: Array[String] = ["lose_hp", "lose_max_hp", "gain_curse", "start_fight"]
+
+
+static func event_choice(options: Array, policy: String, hp_fraction: float) -> String:
+	var available: Array[Dictionary] = []
+	for option: Variant in options:
+		if bool((option as Dictionary).get("enabled", false)):
+			available.append(option as Dictionary)
+	if available.is_empty():
+		return ""
+	match policy:
+		"relic":
+			if hp_fraction >= EVENT_RELIC_MIN_HP:
+				for option: Dictionary in available:
+					if (option.get("outcome_types", []) as Array).has("gain_relic"):
+						return String(option["id"])
+			return _event_without(available, EVENT_COSTS)
+		"safe":
+			return _event_without(available, EVENT_SAFE_BLOCKS)
+	return String(available[0]["id"])
+
+
+## The first available choice whose outcomes hold none of `blocked`; else the choice with no `requires`; else the first available one.
+static func _event_without(available: Array[Dictionary], blocked: Array[String]) -> String:
+	for option: Dictionary in available:
+		var clean: bool = true
+		for type_id: Variant in (option.get("outcome_types", []) as Array):
+			if blocked.has(String(type_id)):
+				clean = false
+		if clean:
+			return String(option["id"])
+	for option: Dictionary in available:
+		if not bool(option.get("has_requires", false)):
+			return String(option["id"])
+	return String(available[0]["id"])
+
+
 ## What a route is worth reporting: {fights, elites, relic_nodes, rest, chests: [sizes in order]}. Counts the boss as a fight.
 static func summary(map: Dictionary, route: Array[int]) -> Dictionary:
 	var fights: int = 0

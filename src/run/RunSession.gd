@@ -30,6 +30,8 @@ static var forced_relic_offer: Array[String] = []
 ## `--relic-cap=N` (capture and test tooling): replaces `relics.max_owned` for this launch (0 = use the data), so the give-one-up step
 ## can be reached in a short run. Sticky for the launch.
 static var relic_cap: int = 0
+## `--event=<id>` (MAP4-B1, capture and playtest tooling): the next event node draws this event. Consumed by that one draw.
+static var forced_event: String = ""
 
 
 ## `--map` / `--no-map` (MAP1-B): -1 uses data/map.json `enabled`, 1 forces the branching map on, 0 forces the straight run. Sticky for the launch

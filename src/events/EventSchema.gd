@@ -58,6 +58,31 @@ static func validate(data: Variant, expected_id: String = "") -> Array[String]:
 	return errors
 
 
+## Problems with one outcome dictionary on its own (RunState checks the saved queue with this).
+static func validate_outcome(value: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	_validate_outcome(value, "outcome", false, errors)
+	return errors
+
+
+## A copy of a valid outcome with its whole-number params as ints (and the same inside a chance's lists). JSON round trips and data files hand back floats;
+## the run save compares JSON text, so every outcome that enters RunState goes through here.
+static func normalize_outcome(outcome: Dictionary) -> Dictionary:
+	var out: Dictionary = {}
+	for key: Variant in outcome.keys():
+		var value: Variant = outcome[key]
+		if ["amount", "count", "min_tier", "max_tier", "tier"].has(String(key)) and _is_whole(value):
+			out[String(key)] = int(value)
+		elif ["win", "lose"].has(String(key)) and typeof(value) == TYPE_ARRAY:
+			var branch: Array = []
+			for inner: Variant in (value as Array):
+				branch.append(normalize_outcome(inner as Dictionary) if typeof(inner) == TYPE_DICTIONARY else inner)
+			out[String(key)] = branch
+		else:
+			out[String(key)] = value
+	return out
+
+
 static func _validate_acts(event: Dictionary, errors: Array[String]) -> void:
 	var acts: Variant = event.get("acts")
 	if typeof(acts) != TYPE_ARRAY or (acts as Array).is_empty():

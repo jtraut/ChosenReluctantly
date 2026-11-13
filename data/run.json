@@ -33,6 +33,7 @@
         }
     },
     "merchant": { "card_prices": { "common": 55, "rare": 85, "legendary": 125 }, "removal_base": 50, "removal_step": 25, "relic_stock": 3, "shop_only_slots": 1, "card_stock": 3 },
+    "events": { "min_max_hp": 10 },
     "gold": { "combat": [24, 36], "elite": [60, 80], "mini_boss": [90, 110] },
     "tiers": {
         "elite": { "hp_multiplier": 2.0, "armor": 17.0, "resistance_floor": 0.25, "resistance_cap": 0.5, "rank": "elite", "scale": 1.0, "marker_color": "#ffd23f", "marker_size": 0.26, "marker_height": 2.85 },
@@ -183,6 +184,20 @@
                 "not_in_stock": "Not in stock", "unknown_relic": "This relic no longer exists", "none_giveable": "Nothing you hold can be given up",
                 "bad_giveup": "That relic can't be given up", "not_in_deck": "You don't have that card"
             }
+        },
+        "event": {
+            "relic_title": "Take your pick", "relic_line": "Pick a relic to keep for this run, or skip.", "relic_line_noskip": "Pick one. You have already paid for it.",
+            "leave_line": "Walk away. Nothing happens.", "line_join": "\n", "choice_hint": "Arrow keys move, Enter or click confirms",
+            "lines": {
+                "lose_hp": "Lose %d HP", "lose_max_hp": "Lose %d max HP", "heal": "Heal %d HP", "gain_gold": "Gain %d gold", "lose_gold": "Lose %d gold",
+                "gain_relic_act": "Gain a relic (pick 1 of %d)", "gain_relic_next_act": "Gain a relic at the next act's odds (pick 1 of %d)",
+                "gain_relic_tier": "Gain a tier %d relic (pick 1 of %d)", "gain_relic_plus_one": "Gain a relic one tier above the one you gave up (pick 1 of %d)",
+                "no_skip": "no skip",
+                "gain_curse_random": "Gain a random curse", "gain_curse": "Gain the curse %s", "remove_curse": "Remove one of your curses", "remove_card": "Remove a card",
+                "sacrifice_pick": "Give up a relic you pick", "sacrifice_highest": "Give up your highest-tier relic", "start_fight": "Fight an elite",
+                "chance": "%d%%: %s", "chance_otherwise": "otherwise %s", "stat_mod": "%s %s for this run", "merchant_discount": "%d%% off at the next merchant"
+            },
+            "reasons": { "gold": "Needs %d gold (you have %d)", "unsupported": "Not available yet", "offer_empty": "No relic is left to offer" }
         },
         "slot_condition": { "target_has_status": "Needs %s", "cast_within_slot": "After %s", "cast_within_slot_key": "After %s (%s)", "cast_within_tag": "After %s", "zone_active": "Needs zone", "detonate_status": "Wants %s stacks", "slot_short": { "movement": "Move" } },
         "relic": {

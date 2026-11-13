@@ -14,6 +14,8 @@ const FIGHT_TYPES: Array[String] = ["combat", "elite", "boss", "mini_boss"]
 const RELIC_ROOM := "relic_room"
 ## The merchant node of a map run (MAP2-B): no fight either. Only the map makes one, so it is not in ALL_ROOM_TYPES.
 const MERCHANT_ROOM := "merchant"
+## The event node of a map run (MAP4-B1): no fight either. Only the map makes one.
+const EVENT_ROOM := "event"
 ## Every room type a generated run can hold (ROOM_TYPES plus the relic room).
 const ALL_ROOM_TYPES: Array[String] = ["combat", "elite", "rest", "boss", "relic_room"]
 const TIER_IDS: Array[String] = ["elite", "boss"]
@@ -63,6 +65,8 @@ static func validate(config: Dictionary, known_enemies: Array[String], _known_ca
 	errors.append_array(_validate_rewards(config.get("rewards")))
 	errors.append_array(_validate_gold(config.get("gold")))
 	errors.append_array(MerchantConfig.validate_block(config.get("merchant")))
+	if config.has("events"):
+		errors.append_array(_validate_events_block(config["events"]))
 	errors.append_array(_validate_tiers(config.get("tiers")))
 	if config.has("acts"):
 		errors.append_array(_validate_act_scale(config["acts"]))
@@ -71,6 +75,21 @@ static func validate(config: Dictionary, known_enemies: Array[String], _known_ca
 	errors.append_array(RelicConfig.validate_block(config.get("relics")))
 	if typeof(config.get("merchant")) == TYPE_DICTIONARY and typeof(config.get("relics")) == TYPE_DICTIONARY:
 		errors.append_array(MerchantConfig.validate_card_vs_relic_prices((config["merchant"] as Dictionary).get("card_prices"), (config["relics"] as Dictionary).get("prices")))
+	return errors
+
+
+## `events` (MAP4-B1): {min_max_hp} the floor max HP never goes below.
+static func _validate_events_block(value: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(value) != TYPE_DICTIONARY:
+		errors.append("'events' must be an object {min_max_hp}")
+		return errors
+	for key: Variant in (value as Dictionary).keys():
+		if String(key) != "min_max_hp":
+			errors.append("events: unknown key '%s'" % str(key))
+	var floor_value: Variant = (value as Dictionary).get("min_max_hp")
+	if not _is_whole(floor_value) or int(floor_value) < 1 or int(floor_value) > 1000:
+		errors.append("events.min_max_hp must be a whole number in [1, 1000]")
 	return errors
 
 

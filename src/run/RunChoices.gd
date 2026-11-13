@@ -30,7 +30,7 @@ extends RefCounted
 ## "relic", "relic_skip" and "giveup" belong to the relic choices (RunRelics); the model then carries the relic keys too.
 ## "node" is the pick-next-node choice of a map run (RunNodes).
 ## MAP2-B: "buy_relic", "buy_card", "buy_removal" and "reroll" belong to the merchant choices (RunMerchant); its Leave is a "back" option with the id "merchant_leave".
-const KINDS: Array[String] = ["card", "remove", "heal", "skip", "back", "relic", "relic_skip", "giveup", "node", "buy_relic", "buy_card", "buy_removal", "reroll"]
+const KINDS: Array[String] = ["card", "remove", "heal", "skip", "back", "relic", "relic_skip", "giveup", "node", "buy_relic", "buy_card", "buy_removal", "reroll", "event_choice"]
 
 
 ## The shipped databases and data as one context. Tests build their own with fixtures.
@@ -67,6 +67,7 @@ static func shipped_context(pools: Array) -> Dictionary:
 		"slot_names": DeckRules.slot_names_from_database(),
 		"nodes": RunNodes.shipped_context(),
 		"merchant": MerchantConfig.shipped_context(),
+		"events": EventEngine.shipped_context(),
 	}
 
 
@@ -102,6 +103,8 @@ static func open_for_room(state: RunState, room_type: String, is_last_room: bool
 		room_type = "combat"
 	if room_type == "merchant":
 		RunMerchant.open_for_room(state, ctx)  # MAP2-B: a merchant node is a room with no fight; its choice is the shop
+	elif room_type == RunConfig.EVENT_ROOM:
+		EventEngine.open_for_room(state, ctx)  # MAP4-B1: an event node is a room with no fight; its choice is the drawn event
 	elif room_type == "rest":
 		state.pending = RunState.PENDING_REST
 	elif not is_last_room and (RunConfig.ROOM_TYPES.has(room_type) and ((ctx["rewards"] as Dictionary).get("reward_room_types", []) as Array).has(room_type)):
@@ -160,6 +163,11 @@ static func model(state: RunState, ctx: Dictionary, room_type: String = "") -> D
 		model["title"] = merchant_texts["title"]
 		model["line"] = merchant_texts["line"]
 		model.merge(RunMerchant.model_extras(state, ctx))
+	elif EventEngine.owns(state.pending):
+		var event_texts: Dictionary = EventEngine.title_and_line(state, ctx)
+		model["title"] = event_texts["title"]
+		model["line"] = event_texts["line"]
+		model.merge(EventEngine.model_extras(state, ctx))
 	elif state.pending == RunState.PENDING_NODE:
 		var node_texts: Dictionary = RunNodes.title_and_line(ctx)
 		model["title"] = node_texts["title"]
@@ -198,6 +206,8 @@ static func options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 		return RunRelics.options(state, ctx)
 	if RunMerchant.owns(state.pending):
 		return RunMerchant.options(state, ctx)
+	if EventEngine.owns(state.pending):
+		return EventEngine.options(state, ctx)
 	if state.pending == RunState.PENDING_NODE:
 		return RunNodes.options(state, ctx)
 	var ui: Dictionary = ctx["ui"]
@@ -256,9 +266,15 @@ static func options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 ## A disabled or unknown option changes nothing and returns ok = false with a `reason`.
 static func apply(state: RunState, option_id: String, ctx: Dictionary) -> Dictionary:
 	if state.has_relic_choice():
-		return RunRelics.apply(state, option_id, ctx)
+		var from_event: bool = EventEngine.is_event_offer(state)
+		var relic_result: Dictionary = RunRelics.apply(state, option_id, ctx)
+		if from_event and bool(relic_result["ok"]) and bool(relic_result["finished"]):
+			EventEngine.resume(state, ctx, relic_result)  # MAP4-B1: the outcomes that waited for this offer run now (or the next offer opens)
+		return relic_result
 	if RunMerchant.owns(state.pending):
 		return RunMerchant.apply(state, option_id, ctx)
+	if EventEngine.owns(state.pending):
+		return EventEngine.apply(state, option_id, ctx)
 	if state.pending == RunState.PENDING_NODE:
 		return RunNodes.apply(state, option_id, ctx)
 	var result: Dictionary = blank_result()

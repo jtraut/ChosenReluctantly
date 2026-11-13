@@ -74,7 +74,7 @@
         "boss_duelist": {
             "mini_boss": true,
             "display_name": "The Corporate Raider",
-            "max_health": 120.0,
+            "max_health": 180.0,
             "resistance": 0.17,
             "armor": 10.0,
             "knockback_taken": 0.5,
@@ -99,7 +99,7 @@
             "phases": [
                 { "name": "Due diligence", "enters_at": 1.0, "move_speed": 5.0, "attack_gap": 1.2, "windup_scale": 1.0,
                     "attacks": [ { "id": "hostile_takeover", "weight": 3 }, { "id": "leveraged_dash", "weight": 2 }, { "id": "golden_parachute", "weight": 1 } ] },
-                { "name": "Aggressive restructuring", "enters_at": 0.5, "move_speed": 5.6, "attack_gap": 0.9, "windup_scale": 1.0,
+                { "name": "Aggressive restructuring", "enters_at": 0.5, "move_speed": 5.6, "attack_gap": 0.75, "windup_scale": 1.0,
                     "attacks": [ { "id": "hostile_takeover", "weight": 2 }, { "id": "leveraged_dash", "weight": 2 }, { "id": "golden_parachute", "weight": 2 } ] }
             ]
         }

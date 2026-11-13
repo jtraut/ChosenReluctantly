@@ -759,5 +759,5 @@ func test_wet_floor_outer_discs_land_at_least_3_m_from_the_player() -> void:
 				assert_float(Vector2(centers[index].x - spot.x, centers[index].z - spot.z).length()).is_greater_equal(3.0 - 0.001)
 
 
-func test_the_raider_has_120_health() -> void:
-	assert_float(float(BossConfig.boss("boss_duelist")["max_health"])).is_equal(120.0)
+func test_the_raider_has_180_health() -> void:
+	assert_float(float(BossConfig.boss("boss_duelist")["max_health"])).is_equal(180.0)

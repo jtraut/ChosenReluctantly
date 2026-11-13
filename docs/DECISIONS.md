@@ -2653,3 +2653,15 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **Watch: a curse cast fires `card_cast` and uses up primed buffs like any card.** Losing a primed buff is a fair curse cost. It also means a curse can satisfy a `cast_within` payoff, which is a small free benefit. Left as is; qa reports whether any shipped payoff makes it worth exploiting, and it's excluded later if so.
   - [Excluding curses from `card_cast` now: more special cases in the relay for an edge no player has hit.]
 - **ux must look at the rest's Dig, the event removal grid, and a curse with no effect line** in the slot HUD and the deck lists before players see them (ux sitting after D).
+
+## 2026-11-13 - MAP4 sitting D triage (game-lead)
+- **Accepted as built** (fa94a97..33eff21). gameplay-dev's calls stand:
+  - **events are on only in the three-act run,** through a new `multi_act.types` weight override (event 28, relic_room 14 -> 18). A plain event weight blew up the one-act generator's worst case (weight 12 failed a seed at 1000 attempts). The one-act run is a debug mode now, so it keeps its old maps and hashes;
+  - the `relic` route planner breaks relic-estimate ties toward events, or it averaged under 0.5 events per act;
+  - every event `gain_relic` is pick 1 of 3, including E2's;
+  - the standard-relic range test widens to 21-26 (sacrifice relics are elite-sourced);
+  - `--run-curses=id+id` for captures; the "Move speed -30%" text; two shortened rule texts.
+- **The `safe` route's relic target becomes 5-8 (was 6-8; MAP.md §4.5).** Measured 5.0 / 5.5. The safe bot never takes an event relic, by design, and events take nodes it used to visit. Lowering the event weight to about 8 would bring it back but break the 2-4 event-visit target, and events are the slice. A human playing safe can still take the cheap event relics. This was my target, not the director's, so it's my call.
+  - [Teaching the safe bot to take event relics: it would stop measuring the "ignore relics" floor the target is for.]
+- **SIM1 human Rogue 21/36 sits on the §12.6 floor (21); Wizard 20/36.** Within the ±3 noise D measured. Not tuned: DF1, next, re-gates the floors for a harder campaign anyway. qa notes it.
+- **E1b (the elite fight) is never taken by any bot.** That leaves `start_fight` covered only by tests in sims. qa adds a forced-choice sim or scenario run of E1b.

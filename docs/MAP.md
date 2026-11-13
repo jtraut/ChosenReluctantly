@@ -191,7 +191,7 @@ Starting values below are game-lead proposals (DECISIONS 2026-11-04), all data, 
   - If a pool runs short, an offer shows what's left. With none left, a relic source gives a card offer.
 - **Run totals are checked by the bot sim:**
   - median `relic` route 14-17;
-  - `safe` route 6-8;
+  - `safe` route 6-8 (**5-8 from MAP4, 2026-11-13:** the safe bot never takes an event relic, by policy, and events take nodes it used; measured 5.0 / 5.5; game-lead, DECISIONS "MAP4 sitting D triage");
   - every finished 3-act run has exactly 2 boss relics;
   - nobody hits the cap in the median run.
 

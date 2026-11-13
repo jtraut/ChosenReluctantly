@@ -9,17 +9,17 @@ Last updated: 2026-11-13. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds on
 - **MAP4 (events), briefed 2026-11-13** in ROADMAP MAP4 and BUILD_DEPTH §13 (design pass). Tag `safe to chain`. Five gameplay-dev sittings: A -> B1 -> B2 -> C -> D, then ux, qa, playtest, docs. Nothing built yet. The repo runs.
 
 ## Exact next step
-1. **Sittings A (6cd1c44..b2ae51b), B1 (6c49bd0..7fecaae) B2 (866ac63..fc444cd) and C (5b85aad..eeae97c) done.** **gameplay-dev, sitting D** (content and tuning; ROADMAP MAP4, BUILD_DEPTH §13.3-13.7).
+1. **Sittings A (6cd1c44..b2ae51b), B1 (6c49bd0..7fecaae) B2 (866ac63..fc444cd), C (5b85aad..eeae97c) and D (fa94a97..33eff21) done; events are live in three-act runs.** **ux-designer, MAP4 ux** (ROADMAP MAP4 "ux").
 2. Then each a fresh agent, then ux, qa, playtest, tech-writer, close.
 3. Then DF1 (difficulty bump, D51 = C; ROADMAP), then 3d, then BD3b, then the Milestone 3 close: the milestone playtest, then game-lead's own review of the report and screenshots (ROADMAP).
 
-**Next role:** gameplay-dev (MAP4 sitting D).
+**Next role:** ux-designer (MAP4 ux).
 
 ## Current baselines (MAP4 sitting A, 2026-11-13; qa re-gates at MAP4's qa)
-- Suite 2413 after C, 0 skipped, 0 orphans (about 18 min).
+- Suite 2425 after D (one test fixed after the last full run; qa re-runs), 0 skipped, 0 orphans (about 18 min).
 - Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 (unchanged).
-- SIM1 `-Route first` (after B2 step 0): human Rogue 24/36, Wizard 25/36; off 36/36, 36/36 (moves from D49, within noise; the Raider alone moved none).
-- Relic medians `relic` 15/15, `safe` 6.5/6 (MAP3b). Exactly 2 boss relics per won run. Late shares for a Bleed Rogue with D49 as refined: Bleed 12.5%, Fire 22.8%, Burn 10.0%.
+- SIM1 `-Route first` (after D, events on): human Rogue 21/36, Wizard 20/36; off 36/36, 35/36. Losses cluster in rooms 13-15 (act 2 start and the Raider).
+- Relic medians (after D) `relic` 14/14.5, `safe` 5/5.5, `first` 9/8.5; event visits median 2-3 per route. Exactly 2 boss relics per won run. Late shares for a Bleed Rogue with D49 as refined: Bleed 12.5%, Fire 22.8%, Burn 10.0%.
 
 ## Pending for the next docs pass (tech-writer, MAP4)
 - **RESOLVED:**
@@ -33,6 +33,7 @@ Last updated: 2026-11-13. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds on
 - **MAP4 sitting B1 (6c49bd0..7fecaae):** README: suite 2334, `--event=<id>` (refused until D ships events; never saves), the save-boundary rule now includes the event choice screen and its relic offer, the `event` node (rooms 3-9, weight 0, `?`) replacing curse/buff rooms, `data/events` and the event format. ARCHITECTURE: `src/events/` (EventSchema, EventDatabase, EventEngine), new RunState fields, `RunSave.choice_is_savable`. CHANGELOG: event node and engine, off at weight 0.
 - **MAP4 sitting B2 (866ac63..fc444cd):** README: suite 2374, SIM1 numbers, the `offer_report` line for the D49 refinement (shares 12.2/22.8/9.9 -> 12.5/22.8/10.0), the new outcomes and sacrifice flow, save boundaries now include the event give-up step and an event fight's start. ARCHITECTURE: RunState `event_fight`, `run_mods`, `merchant_discount`, `sacrifice_picks`, `sacrificed_tier`; controller `event_fight_active()`, `confirm_relic_giveup()`, `confirm_purchase_giveup()`; EventEngine `fight_won`, `pick_fight_wave`, `sacrifice_candidates`. CHANGELOG: B2 outcomes, sacrifice relics (none shipped yet).
 - **MAP4 sitting C (5b85aad..eeae97c):** README: suite 2413, the curse card format, the `rest_dig` stat, `curses.max_cleanses`. ARCHITECTURE: `RunState.cleanses`, `PENDING_EVENT_REMOVE`; `RunChoices` `is_curse_id`, `curse_ids`, `cleanses_left`, `cleanses_at_cap`, `remove_from_deck`, `dig_enabled`, `dig_offer_ids`; `EventEngine` `outcome_block_reason`, `curse_pool`; `CardSchema.is_curse`, `DeckRules.slot_map_of`, `RouteBot.removal_choice`. CHANGELOG: curses and the Dig built (none shipped until D).
+- **MAP4 sitting D (fa94a97..33eff21):** README: suite 2425, `--run-curses=id+id`, `multi_act.types` in map.json, `run_map_print -Routes` events column, `run_wave_sim` EVENT SUMMARY / BOSS RELICS lines and curse-offer ERROR scan, capture presets `event_screen`, `event_screen_requires`, `rest_dig`, `curse_hud`, the event table, SIM1 numbers. ARCHITECTURE: `MapConfig.for_act` `multi_act.types`, `RouteBot.plan` relic tie-break toward events, `RunSession.start_curses`. CHANGELOG: events on (three-act only: event weight 0 -> 28, relic_room 14 -> 18), the 8 events, 3 curses, 6 event-only and 4 sacrifice relics; safe-route relic target 6-8 -> 5-8. MAP.md already updated by game-lead. Assets: none.
 - **CHANGELOG:**
   - `[Director decision]` D49: pruning or rejecting had no effect on offers; now each one multiplies that status's offer weight by 0.8, floor 0.4.
   - `[Director decision]` D50: target run length 30-45 min -> about 15-20 min of real time, decisions included.

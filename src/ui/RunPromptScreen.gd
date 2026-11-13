@@ -151,7 +151,7 @@ func show_choice(model: Dictionary) -> void:
 	show_content({
 		"title": _titled(model, room_type),
 		"subtitle": "%s  -  %s" % [ActText.model_room_label(model), String(model.get("room_type_name", ""))],
-		"line": merchant_line(model),
+		"line": with_cleanses(merchant_line(model), model),
 		"screen": String(model.get("merchant_screen", "")),
 		"merchant": merchant,
 		"gold": int(merchant.get("gold", -1)) if not merchant.is_empty() else -1,
@@ -185,6 +185,23 @@ static func chest_title(title: String, chest: String) -> String:
 	if chest == "" or chest_name == "" or format == "":
 		return title
 	return format % [title, chest_name.to_lower()]
+
+
+## MAP4 ux: a card-removal list says how many curse removals are left, but only when a cap applies (`cleanses_left` -1 = no limit: nothing shown) and the deck
+## holds a curse (the counter is about curses, and a removal that takes a plain card never spends it). Words: ui.option.cleanses_left.
+static func with_cleanses(line: String, model: Dictionary) -> String:
+	var left: int = int(model.get("cleanses_left", -1))
+	if left < 0 or int(model.get("curse_count", 0)) <= 0:
+		return line
+	var is_removal_list: bool = false
+	for option: Variant in (model.get("options", []) as Array):
+		if String((option as Dictionary).get("kind", "")) == "remove" and String((option as Dictionary).get("card_id", "")) != "":
+			is_removal_list = true
+	if not is_removal_list:
+		return line
+	var words: String = String((RunConfig.ui().get("option", {}) as Dictionary).get("cleanses_left", "")) % left
+	return words if line == "" else line + "
+" + words
 
 
 ## The line under a merchant screen's title. In the give-one-up step it also says what the relic costs and that Cancel is free (the plain relic
@@ -812,6 +829,13 @@ func _place_grid(cfg: Dictionary, s: float, texts: Dictionary) -> void:
 		var ka: int = RunOptionCard.slot_key_for(a)
 		var kb: int = RunOptionCard.slot_key_for(b)
 		return (ka if ka > 0 else 99) < (kb if kb > 0 else 99))
+	# MAP4 ux: a curse is the card you most likely came to remove, so it leads its column instead of sitting wherever its name sorts.
+	for slot_type: String in slot_types:
+		var cursed: Array = []
+		var plain: Array = []
+		for index: int in (by_slot[slot_type] as Array):
+			(cursed if bool(_options[index].get("curse", false)) else plain).append(index)  # a partition, so the order inside each part stays as the model made it
+		by_slot[slot_type] = cursed + plain
 	options_box.columns = maxi(slot_types.size(), 1)
 	var cell_w: float = float(cfg["option_cell_width"]) * s
 	for slot_type: String in slot_types:

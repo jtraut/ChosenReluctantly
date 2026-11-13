@@ -365,7 +365,8 @@ func update_from_slot(slot: CardSlot) -> void:
 ## is a bolt plus a drain bar. Redraws only when something it draws has changed.
 func update_synergy(info: Dictionary, delta: float) -> void:
 	if chip_row != null:
-		chip_row.show_chips(info.get("chips", []))
+		# MAP4 ux: a curse card has no tags, so its slot would show no chip row at all. It wears the data's curse chip instead (an X and "Curse").
+		chip_row.show_chips([String(_cfg.get("curse_chip_text", ""))] if _is_curse(_card_id) else info.get("chips", []))
 	_condition_text = String(info.get("condition_text", ""))
 	_live_target = bool(info.get("condition_live", false)) or SlotCues.detonate_live(info, int(_cfg.get("detonate_live_stacks", 2)))
 	var before_level: float = float(_glow["level"])
@@ -430,10 +431,22 @@ func _set_frames(card_id: String, next_id: String) -> void:
 		return
 	_card_id = card_id
 	_next_id = next_id
-	_frame_color = PoolDatabase.frame_color_for_card(card_id)
+	_frame_color = _frame_color_of(card_id)
 	_has_next = next_id != ""
-	_next_color = PoolDatabase.frame_color_for_card(next_id)
+	_next_color = _frame_color_of(next_id)
 	_redraw_frame()
+
+
+## True when the card id is a curse (card data `curse` flag); false for "" and unknown ids.
+func _is_curse(card_id: String) -> bool:
+	return card_id != "" and card_id != UNSET and CardSchema.is_curse(CardDatabase.get_card(card_id))
+
+
+## The frame colour of a card: its family colour, or the data's curse colour for a curse (so a curse is picked out by colour, the chip says it in words).
+func _frame_color_of(card_id: String) -> Color:
+	if _is_curse(card_id):
+		return Color.html(String(_cfg.get("slot_curse_frame_color", "#b04fd0"))) if not _cfg.is_empty() else Color.GRAY
+	return PoolDatabase.frame_color_for_card(card_id)
 
 
 func _set_name(text: String) -> void:

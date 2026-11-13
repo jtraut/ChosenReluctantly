@@ -45,7 +45,9 @@ static func texts_for(chips: Array, keywords_only: bool = false) -> Dictionary:
 	var texts: Array[String] = []
 	var flags: Array[bool] = []
 	var strong: Array[bool] = []
+	var curse: Array[bool] = []
 	var hud: Dictionary = UiConfig.hud()
+	var curse_text: String = String(hud.get("curse_chip_text", ""))
 	var strong_id: String = String(hud.get("chip_strong_keyword", ""))
 	var merge_ids: Array = hud.get("chip_merge_keywords", [])
 	var as_strings: Array[String] = []
@@ -59,8 +61,9 @@ static func texts_for(chips: Array, keywords_only: bool = false) -> Dictionary:
 	for tag: String in as_strings:
 		if merged.has(tag):
 			continue  # shown inside the strong chip
-		var is_keyword: bool = KeywordDatabase.has(tag)
-		if keywords_only and not is_keyword:
+		var is_curse: bool = curse_text != "" and tag == curse_text  # MAP4 ux: a curse card's own chip (an X and the word), never a keyword
+		var is_keyword: bool = KeywordDatabase.has(tag) and not is_curse
+		if keywords_only and not is_keyword and not is_curse:
 			continue
 		var shown: String = KeywordDatabase.display_name(tag) if is_keyword else tag
 		if tag == strong_id and is_keyword:
@@ -69,7 +72,8 @@ static func texts_for(chips: Array, keywords_only: bool = false) -> Dictionary:
 		texts.append(shown)
 		flags.append(is_keyword)
 		strong.append(is_keyword and tag == strong_id)
-	return {"texts": texts, "flags": flags, "strong": strong}
+		curse.append(is_curse)
+	return {"texts": texts, "flags": flags, "strong": strong, "curse": curse}
 
 
 ## `px` values are already scaled. `cfg` is the data/ui.json hud block (colours and counts).
@@ -108,12 +112,15 @@ func _refit() -> void:
 		return
 	var parts: Dictionary = texts_for(_source, _keywords_only)
 	var leads: Array[float] = []
-	for is_strong: bool in (parts["strong"] as Array[bool]):
-		leads.append(float(_font_size) * 1.0 if is_strong else 0.0)
+	var curse_flags: Array[bool] = parts["curse"]
+	var strong_in: Array[bool] = parts["strong"]
+	for i in range(strong_in.size()):
+		leads.append(float(_font_size) * 1.0 if (strong_in[i] or curse_flags[i]) else 0.0)
 	_chips = fit(parts["texts"], parts["flags"], get_theme_default_font(), _font_size, custom_minimum_size.x - 2.0 * _side_margin, _max_count, _pad, _gap, leads)
 	var strong_flags: Array[bool] = parts["strong"]
 	for i in range(_chips.size()):
 		_chips[i]["strong"] = strong_flags[i]
+		_chips[i]["curse"] = curse_flags[i]
 	queue_redraw()
 
 
@@ -134,6 +141,20 @@ func _draw() -> void:
 		box.set_corner_radius_all(maxi(2, roundi(h * 0.22)))
 		var text_color: Color
 		var text_x: float = x + _pad
+		if bool(chip.get("curse", false)):
+			# MAP4 ux: a curse card. A purple fill, a light outline and an X in front of the word: a different shape from the Keystone star.
+			box.bg_color = Color.html(String(_cfg.get("chip_curse_color", "#7a2f8f")))
+			box.border_color = Color.html(String(_cfg.get("chip_curse_border_color", "#f0d7ff")))
+			box.set_border_width_all(maxi(int(line), 1))
+			text_color = Color.html(String(_cfg.get("chip_curse_text_color", "#ffffff")))
+			draw_style_box(box, rect)
+			var x_mark := PackedVector2Array()
+			for p: Vector2 in RunIcons.polygon(RunIcons.SHAPE_X, float(_font_size) * 0.4):
+				x_mark.append(p + Vector2(x + _pad + float(_font_size) * 0.4, h * 0.5))
+			draw_colored_polygon(x_mark, text_color)
+			draw_string(font, Vector2(x + _pad + float(chip["lead"]), baseline), String(chip["text"]), HORIZONTAL_ALIGNMENT_LEFT, -1.0, _font_size, text_color)
+			x += float(chip["width"]) + _gap
+			continue
 		if bool(chip.get("strong", false)):
 			# Keystone: the loudest chip. Gold fill, a heavy dark outline, a star in front of the word.
 			box.bg_color = Color.html(String(_cfg.get("chip_keystone_color", "#ffc94a")))

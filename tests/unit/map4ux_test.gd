@@ -130,3 +130,48 @@ func test_the_event_node_is_a_bubble_with_its_own_shape() -> void:
 	assert_int(pts.size()).is_greater_equal(16)
 	for p: Vector2 in pts:
 		assert_float(p.length()).is_less_equal(10.0 * 1.4)
+
+
+# --- curses ----------------------------------------------------------------------------------------
+
+func _removal_model(left: int, curses: int) -> Dictionary:
+	return {"cleanses_left": left, "curse_count": curses, "options": [{"kind": "remove", "card_id": "x"}]}
+
+
+func test_the_cleanse_counter_shows_only_when_a_cap_applies_and_a_curse_is_held() -> void:
+	assert_str(RunPromptScreen.with_cleanses("Pick.", _removal_model(-1, 2))).is_equal("Pick.")  # no limit: hidden
+	assert_str(RunPromptScreen.with_cleanses("Pick.", _removal_model(2, 0))).is_equal("Pick.")  # no curse held: nothing to count
+	assert_str(RunPromptScreen.with_cleanses("Pick.", _removal_model(2, 1))).contains("2")
+	assert_str(RunPromptScreen.with_cleanses("Pick.", _removal_model(0, 1))).contains("0")
+	var not_a_list: Dictionary = {"cleanses_left": 2, "curse_count": 1, "options": [{"kind": "heal"}, {"kind": "remove", "card_id": ""}]}
+	assert_str(RunPromptScreen.with_cleanses("Rest.", not_a_list)).is_equal("Rest.")
+
+
+func test_a_curse_chip_is_its_own_chip_with_the_data_word() -> void:
+	var word: String = String(UiConfig.hud()["curse_chip_text"])
+	assert_str(word).is_not_empty()
+	var parts: Dictionary = ChipRow.texts_for([word])
+	assert_array(parts["texts"]).is_equal([word])
+	assert_array(parts["curse"]).is_equal([true])
+	assert_array(parts["flags"]).is_equal([false])  # not a keyword
+	assert_array(ChipRow.texts_for(["Burn"])["curse"]).is_equal([false])
+
+
+func test_a_curse_option_gets_a_band_the_curse_frame_and_a_line_even_with_no_effect() -> void:
+	var cfg: Dictionary = UiConfig.run_ui()
+	var texts: Dictionary = RunConfig.ui()["option"]
+	var card := RunOptionCard.new()
+	add_child(card)
+	card.setup({"id": "remove:c", "kind": "remove", "card_id": "curse_property_damage", "label": "Property Damage", "detail": "", "curse": true, "enabled": true},
+			RunOptionCard.Look.CELL, 214.0, cfg, 1.0, {"texts": texts})
+	assert_object(card.curse_band).is_not_null()
+	assert_object(card.detail_label).is_not_null()
+	assert_str(card.detail_label.text).is_equal(String(texts["curse_no_effect"]))
+	assert_bool(card.frame_color().is_equal_approx(Color.html(String(cfg["curse_frame_color"])))).is_true()
+	var plain := RunOptionCard.new()
+	add_child(plain)
+	plain.setup({"id": "remove:d", "kind": "remove", "card_id": "neutral_deep_sigh", "label": "Deep Sigh", "detail": "Buff.", "curse": false, "enabled": true},
+			RunOptionCard.Look.CELL, 214.0, cfg, 1.0, {"texts": texts})
+	assert_object(plain.curse_band).is_null()
+	card.queue_free()
+	plain.queue_free()

@@ -50,6 +50,8 @@ var dodge_note_label: Label = null
 var free_tag: PanelContainer = null
 ## MAP4 ux: an event choice's coloured outcome lines (null on any other tile).
 var event_block: VBoxContainer = null
+## MAP4 ux: the "Curse" band across the top of a curse card's tile or list cell (null on any other tile).
+var curse_band: PanelContainer = null
 ## MAP2 shop tile parts (null on any other look): the price (or Sold / Free) tag, the band with the kind, and the "Only sold here" tag.
 var price_tag: PanelContainer = null
 var shop_band: Control = null
@@ -179,6 +181,9 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 		rarity_tag = _rarity_tag(opt, texts, small_size, enabled, true)
 		if rarity_tag != null:
 			_inner.add_child(rarity_tag)
+		if bool(opt.get("curse", false)):
+			curse_band = _curse_band(String(texts.get("curse_tag", "")), small_size, enabled)  # MAP4 ux: a curse says so in a band across its top
+			_inner.add_child(curse_band)
 
 	# Head row: number key (when numbered), name, copy count.
 	var head := HBoxContainer.new()
@@ -226,6 +231,8 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 				chip_row = keyword_chips
 				_inner.add_child(chip_row)
 	var detail: String = keep_units(String(opt.get("detail", "")))
+	if detail == "" and bool(opt.get("curse", false)):
+		detail = String(texts.get("curse_no_effect", ""))  # a curse with no effect line must not look empty
 	var event_lines: Array = opt.get("line_parts", []) if (look == Look.ACTION and String(opt.get("kind", "")) == "event_choice") else []
 	var cost_line: String = ""
 	if look == Look.RELIC and boss_tile():
@@ -734,6 +741,37 @@ func _rarity_tag(opt: Dictionary, texts: Dictionary, font_px: int, enabled: bool
 	return pill
 
 
+## MAP4 ux: the band of a curse card: a filled bar in the curse colour with an X and the word (data run_ui.curse_color; words ui.option.curse_tag).
+func _curse_band(word: String, font_px: int, enabled: bool) -> PanelContainer:
+	var tint: Color = Color.html(String(_cfg.get("curse_color", "#7a2f8f"))) if enabled else Color.html(String(_cfg["option_disabled_color"]))
+	var text_color: Color = Color.html("#ffffff") if enabled else Color.html(String(_cfg["option_disabled_text_color"]))
+	var pill := PanelContainer.new()
+	pill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var style := StyleBoxFlat.new()
+	style.set_corner_radius_all(0)
+	style.bg_color = tint
+	style.border_color = Color.html(String(_cfg.get("curse_border_color", "#f0d7ff")))
+	style.set_border_width_all(maxi(roundi(1.5 * _scale), 1))
+	style.content_margin_left = 6.0 * _scale
+	style.content_margin_right = 6.0 * _scale
+	style.content_margin_top = 1.0 * _scale
+	style.content_margin_bottom = 1.0 * _scale
+	pill.add_theme_stylebox_override("panel", style)
+	pill.size_flags_horizontal = Control.SIZE_FILL
+	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_theme_constant_override("separation", roundi(5.0 * _scale))
+	pill.add_child(row)
+	var mark := RunTypeIcon.new()
+	mark.shape = RunIcons.SHAPE_X
+	mark.color = text_color
+	mark.custom_minimum_size = Vector2.ONE * float(font_px) * 0.85
+	mark.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(mark)
+	row.add_child(_label(word, font_px, text_color, false))
+	return pill
+
+
 ## The tint of a rarity mark (data run_ui.rarity_rare_color / rarity_legendary_color).
 func rarity_color(rarity: String) -> Color:
 	var key: String = "rarity_legendary_color" if rarity == RARITY_LEGENDARY else "rarity_rare_color"
@@ -895,6 +933,8 @@ func _card_rarity() -> String:
 func frame_color() -> Color:
 	if look == Look.RELIC or look == Look.RELIC_CELL or _is_shop_relic():
 		return PoolDatabase.frame_color_for_pool(String(option.get("pool", "")))
+	if frame_card_id() != "" and bool(option.get("curse", false)):
+		return Color.html(String(_cfg.get("curse_frame_color", "#b04fd0")))
 	return PoolDatabase.frame_color_for_card(frame_card_id()) if frame_card_id() != "" else Color.html(String(_cfg["option_card_border_color"]))
 
 

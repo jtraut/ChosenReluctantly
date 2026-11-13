@@ -9,17 +9,17 @@ Last updated: 2026-11-13. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds on
 - **MAP4 (events), briefed 2026-11-13** in ROADMAP MAP4 and BUILD_DEPTH §13 (design pass). Tag `safe to chain`. Five gameplay-dev sittings: A -> B1 -> B2 -> C -> D, then ux, qa, playtest, docs. Nothing built yet. The repo runs.
 
 ## Exact next step
-1. **Sittings A (6cd1c44..b2ae51b) and B1 (6c49bd0..7fecaae) done.** **gameplay-dev, sitting B2** (the eyes-57 reject change first, then the rest of the outcomes and sacrifice; ROADMAP MAP4, BUILD_DEPTH §13).
-2. Then C, D, each a fresh agent, then ux, qa, playtest, tech-writer, close.
+1. **Sittings A (6cd1c44..b2ae51b), B1 (6c49bd0..7fecaae) and B2 (866ac63..fc444cd) done.** **gameplay-dev, sitting C** (curses and the Dig; ROADMAP MAP4, BUILD_DEPTH §13.4-13.6).
+2. Then D, each a fresh agent, then ux, qa, playtest, tech-writer, close.
 3. Then DF1 (difficulty bump, D51 = C; ROADMAP), then 3d, then BD3b, then the Milestone 3 close: the milestone playtest, then game-lead's own review of the report and screenshots (ROADMAP).
 
-**Next role:** gameplay-dev (MAP4 sitting B2).
+**Next role:** gameplay-dev (MAP4 sitting C).
 
 ## Current baselines (MAP4 sitting A, 2026-11-13; qa re-gates at MAP4's qa)
-- Suite 2334 after B1, 0 skipped, 0 orphans (about 18 min).
+- Suite 2374 after B2, 0 skipped, 0 orphans (about 18 min).
 - Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 (unchanged).
-- SIM1 `-Route first`: human Rogue 25/36, Wizard 26/36; off 35/36, 35/36 (moves from D49, within noise; the Raider alone moved none).
-- Relic medians `relic` 15/15, `safe` 6.5/6 (MAP3b). Exactly 2 boss relics per won run. Late shares for a Bleed Rogue with D49: Bleed 12.2%, Fire 22.8%, Burn 9.9%.
+- SIM1 `-Route first` (after B2 step 0): human Rogue 24/36, Wizard 25/36; off 36/36, 36/36 (moves from D49, within noise; the Raider alone moved none).
+- Relic medians `relic` 15/15, `safe` 6.5/6 (MAP3b). Exactly 2 boss relics per won run. Late shares for a Bleed Rogue with D49 as refined: Bleed 12.5%, Fire 22.8%, Burn 10.0%.
 
 ## Pending for the next docs pass (tech-writer, MAP4)
 - **RESOLVED:**
@@ -31,6 +31,7 @@ Last updated: 2026-11-13. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds on
 - **RESOLVED (eyes 57, text in 69c8b0d `docs/OPEN_ITEMS.md`):** director 2026-11-13: "I don't like that dynamic, so let's try rejecting only pushes away cards not currently in your deck". Recorded in GDD §9 (D49 refinement); built at the start of MAP4 B2.
 - **CHANGELOG `[Director decision]`:** D49 refined: a reject discounts only offered cards not already in your deck (was every offered card).
 - **MAP4 sitting B1 (6c49bd0..7fecaae):** README: suite 2334, `--event=<id>` (refused until D ships events; never saves), the save-boundary rule now includes the event choice screen and its relic offer, the `event` node (rooms 3-9, weight 0, `?`) replacing curse/buff rooms, `data/events` and the event format. ARCHITECTURE: `src/events/` (EventSchema, EventDatabase, EventEngine), new RunState fields, `RunSave.choice_is_savable`. CHANGELOG: event node and engine, off at weight 0.
+- **MAP4 sitting B2 (866ac63..fc444cd):** README: suite 2374, SIM1 numbers, the `offer_report` line for the D49 refinement (shares 12.2/22.8/9.9 -> 12.5/22.8/10.0), the new outcomes and sacrifice flow, save boundaries now include the event give-up step and an event fight's start. ARCHITECTURE: RunState `event_fight`, `run_mods`, `merchant_discount`, `sacrifice_picks`, `sacrificed_tier`; controller `event_fight_active()`, `confirm_relic_giveup()`, `confirm_purchase_giveup()`; EventEngine `fight_won`, `pick_fight_wave`, `sacrifice_candidates`. CHANGELOG: B2 outcomes, sacrifice relics (none shipped yet).
 - **CHANGELOG:**
   - `[Director decision]` D49: pruning or rejecting had no effect on offers; now each one multiplies that status's offer weight by 0.8, floor 0.4.
   - `[Director decision]` D50: target run length 30-45 min -> about 15-20 min of real time, decisions included.

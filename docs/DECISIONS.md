@@ -2628,3 +2628,15 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
   - a missing `data/events` folder means no events.
 - **The save boundary now includes the event choice screen and the relic offer a choice opened** (`RunSave.choice_is_savable`). Without it, quitting after paying would refund the cost. Other open choices still don't save. This is the right reading of §13.1 "costs already paid stay paid".
 - **For D:** tripwire tests assert there are no events (map4b1 three tests, `map1_qa_test` two places, `map1a_sweep_test`); D flips them when content ships. The `relic` route planner scores an event as 0, so its event visits may sit under §13.7's 2-4; D tunes the weight.
+
+## 2026-11-13 - MAP4 sitting B2 triage (game-lead)
+- **Accepted as built** (866ac63..fc444cd). gameplay-dev's calls stand:
+  - a reject checks the deck at the moment of the reject (eyes 57);
+  - a sacrifice with no eligible relic is skipped loudly, and a `sacrificed_plus_one` offer after it doesn't open; `sacrificed_plus_one` falls down tiers like a fixed tier;
+  - an event fight folds into the event's one history entry, gives no room gold, and re-fires `room_started` (type `event`) but not `room_cleared`. No shipped relic triggers on those; D checks any new one that does;
+  - the merchant discount is capped at 0.95, rounds with `roundi` (minimum price 1), and is used up when the visit opens, even if nothing is bought;
+  - an event's `pick` sacrifice has no Cancel (the choice is already confirmed); a sacrifice relic's multi-give-up does have Cancel;
+  - the bot gives up its lowest tier.
+- **The eyes-57 result isn't a new eyes item.** The refined rule moves late Bleed only 12.2% -> 12.5%, because the Bleed bot rarely rejects an offer holding an owned Bleed card. The director's change was about owned cards not being punished, and it does that. The number goes in the end-of-session report, not OPEN_ITEMS.
+  - [A new eyes item: it would ask him to re-judge a rule he just set, on a bot measure.]
+- **qa at MAP4:** add a test of the pending event sacrifice through `RunSave.read_state` (the B2 test goes through `to_json`/`from_json` only).

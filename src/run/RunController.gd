@@ -772,6 +772,20 @@ func owned_relics() -> Array[Dictionary]:
 	return RunRelics.owned_display(_state, _ctx) if _state != null else ([] as Array[Dictionary])
 
 
+## MAP4 ux (read-only): what events have changed for the rest of this run, one short line each: the permanent stat modifiers ("Utility cooldown -20%") and the
+## discount waiting for the next merchant. Empty when there are none. For the pause screen.
+func run_mod_lines() -> Array[String]:
+	var lines: Array[String] = []
+	if _state == null:
+		return lines
+	var ctx: Dictionary = {"events": EventEngine.shipped_context()}
+	for mod: Dictionary in _state.run_mods:
+		lines.append(EventEngine.mod_text(mod, ctx))
+	if _state.merchant_discount > 0.0:
+		lines.append(String((RunConfig.ui().get("event", {}) as Dictionary).get("mods_discount", "")) % roundi(_state.merchant_discount * 100.0))
+	return lines
+
+
 func given_up_relics() -> Array[Dictionary]:
 	return RunRelics.given_up_display(_state, _ctx) if _state != null else ([] as Array[Dictionary])
 

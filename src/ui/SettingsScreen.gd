@@ -39,6 +39,8 @@ var relic_header: Label = null
 var relic_scroll: ScrollContainer = null
 var relic_list: VBoxContainer = null
 var relic_given_up_label: Label = null
+## MAP4 ux: the run modifiers events have left on this run (a title and one entry each), under the relic list. Hidden when there are none.
+var run_mods_label: Label = null
 ## MAP1: a solid plate behind the panel in a run (the room stays visible around it, never through it), the row holding Resume and Map, and the
 ## Map button that opens the view-only map.
 var plate: PanelContainer = null
@@ -235,6 +237,12 @@ func _build_relic_section() -> void:
 	relic_given_up_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	relic_given_up_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	relic_section.add_child(relic_given_up_label)
+	run_mods_label = Label.new()
+	run_mods_label.name = "RunMods"
+	run_mods_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	run_mods_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	run_mods_label.visible = false
+	relic_section.add_child(run_mods_label)
 
 
 ## The run in progress, or null (the arena and the class pick have none).
@@ -288,6 +296,10 @@ func refresh_relics() -> void:
 		for shown: Dictionary in given_up:
 			names.append(String(shown["name"]))
 		relic_given_up_label.text = "%s: %s" % [String(texts.get("pause_given_up", "")), ", ".join(names)]
+	var mod_lines: Array[String] = controller.run_mod_lines()
+	run_mods_label.visible = not mod_lines.is_empty()
+	if not mod_lines.is_empty():
+		run_mods_label.text = "%s: %s" % [String((RunConfig.ui().get("event", {}) as Dictionary).get("mods_title", "")), ", ".join(mod_lines)]
 	_style_relic_section(cfg, s)
 	relic_section.update_minimum_size()
 	_keep_clear_of_slots()
@@ -375,6 +387,9 @@ func _style_relic_section(cfg: Dictionary, s: float) -> void:
 	relic_given_up_label.add_theme_font_size_override("font_size", roundi(float(cfg["relic_rule_font_size"]) * s))
 	relic_given_up_label.add_theme_color_override("font_color", Color.html(String(cfg["relic_flavor_color"])))
 	relic_given_up_label.custom_minimum_size.x = width
+	run_mods_label.add_theme_font_size_override("font_size", roundi(float(cfg["relic_rule_font_size"]) * s))
+	run_mods_label.add_theme_color_override("font_color", Color.html(String(cfg["title_color"])))
+	run_mods_label.custom_minimum_size.x = width
 	relic_list.custom_minimum_size.x = width
 	# The list is as tall as its entries, up to the data ceiling and up to the room left above the slot bar; beyond that it scrolls. (BD2 playtest:
 	# a fixed 150 px showed 2 of 3 relics in a short box while there was room for more.)

@@ -305,17 +305,28 @@ static func _line(outcome: Dictionary, state: RunState, ctx: Dictionary) -> Stri
 				text += ", " + String(texts.get("chance_otherwise", "")) % _lowered(", ".join(lines_for(outcome["lose"] as Array, state, ctx)))
 			return text
 		"stat_mod":
-			var amount_text: String = ""
-			if String(outcome["modifier_type"]) == StatModifiers.MULTIPLICATIVE:
-				amount_text = ("+" if float(outcome["value"]) >= 0.0 else "") + "%d%%" % roundi(float(outcome["value"]) * 100.0)
-			else:
-				amount_text = ("+" if float(outcome["value"]) >= 0.0 else "") + str(outcome["value"])
-			var stat_id: String = String(outcome["stat"])
-			var stat_name: String = String((_ui(ctx).get("stat_names", {}) as Dictionary).get(stat_id, stat_id))  # a stat with no display name shows its id (loud, not hidden)
-			return String(texts.get("stat_mod", "")) % [stat_name, amount_text]
+			return String(texts.get("stat_mod", "")) % [stat_name_of(outcome, ctx), stat_amount_text(outcome)]
 		"merchant_discount":
 			return String(texts.get("merchant_discount", "")) % roundi(float(outcome["fraction"]) * 100.0)
 	return ""
+
+
+## The display name of a `stat_mod`'s stat (a stat with no display name shows its id: loud, not hidden), and its amount as text ("+5%", "-20%", "+3").
+static func stat_name_of(outcome: Dictionary, ctx: Dictionary) -> String:
+	var stat_id: String = String(outcome["stat"])
+	return String((_ui(ctx).get("stat_names", {}) as Dictionary).get(stat_id, stat_id))
+
+
+static func stat_amount_text(outcome: Dictionary) -> String:
+	var sign_text: String = "+" if float(outcome["value"]) >= 0.0 else ""
+	if String(outcome["modifier_type"]) == StatModifiers.MULTIPLICATIVE:
+		return sign_text + "%d%%" % roundi(float(outcome["value"]) * 100.0)
+	return sign_text + str(outcome["value"])
+
+
+## MAP4 ux: one run modifier (a RunState.run_mods entry: stat, modifier_type, value) as a short line for the pause screen, "Utility cooldown -20%".
+static func mod_text(mod: Dictionary, ctx: Dictionary) -> String:
+	return "%s %s" % [stat_name_of(mod, ctx), stat_amount_text(mod)]
 
 
 static func _relic_line(outcome: Dictionary, ctx: Dictionary) -> String:

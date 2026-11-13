@@ -193,7 +193,7 @@
                 "remove_curse": "gain", "remove_card": "gain", "merchant_discount": "gain", "start_fight": "risk", "chance": "chance" },
             "lower_is_better": ["slot_cooldown.", "attack_interval."],
             "glyphs": { "cost": "-", "gain": "+", "risk": "!", "chance": "?", "neutral": "" },
-            "after_fight_header": "If you win:",
+            "after_fight_header": "If you win:", "mods_title": "Changed by events", "mods_discount": "Next merchant: %d%% off relics and cards",
             "lines": {
                 "lose_hp": "Lose %d HP", "lose_max_hp": "Lose %d max HP", "heal": "Heal %d HP", "gain_gold": "Gain %d gold", "lose_gold": "Lose %d gold",
                 "gain_relic_act": "Gain a relic (pick 1 of %d)", "gain_relic_next_act": "Gain a relic at the next act's odds (pick 1 of %d)",

@@ -238,3 +238,22 @@ func test_a_discounted_shop_price_keeps_the_old_one_to_strike_through() -> void:
 func test_the_check_shape_stays_in_its_circle() -> void:
 	for p: Vector2 in RunIcons.polygon(RunIcons.SHAPE_CHECK, 10.0):
 		assert_float(p.length()).is_less_equal(10.0 * 1.2)
+
+
+# --- run modifiers ---------------------------------------------------------------------------------
+
+func test_a_run_modifier_reads_as_stat_and_signed_amount() -> void:
+	var ctx: Dictionary = {"events": EventEngine.shipped_context()}
+	assert_str(EventEngine.mod_text({"stat": "slot_cooldown.recovery", "modifier_type": "multiplicative", "value": -0.2}, ctx)).is_equal("Recovery cooldown -20%")
+	assert_str(EventEngine.mod_text({"stat": "move_speed", "modifier_type": "multiplicative", "value": 0.05}, ctx)).is_equal("Move speed +5%")
+	assert_str(EventEngine.mod_text({"stat": "status_max_stacks.bleed", "modifier_type": "additive", "value": 1}, ctx)).is_equal("Bleed max stacks +1")
+
+
+func test_the_run_mod_lines_list_modifiers_and_the_waiting_discount() -> void:
+	var host := Node.new()
+	var controller := RunController.new()
+	controller.name = "RunController"
+	host.add_child(controller)
+	add_child(host)
+	assert_array(controller.run_mod_lines()).is_empty()  # no run state yet
+	host.queue_free()

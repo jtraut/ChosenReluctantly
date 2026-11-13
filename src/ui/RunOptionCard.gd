@@ -436,9 +436,10 @@ static func shop_price_state(opt: Dictionary, gold: int, texts: Dictionary) -> D
 	var text: String = String(texts.get("price_format", "%d")) % price
 	# MAP4 ux: an event's discount made the price lower than the base price: the old one comes back as `was_text` (struck through on the tile).
 	var was_text: String = String(texts.get("price_format", "%d")) % int(opt.get("base_price", price)) if int(opt.get("base_price", price)) > price else ""
-	if String(opt.get("reason_code", "")) == "too_expensive":
-		return {"text": text, "mode": "short", "was_text": was_text}
-	return {"text": text, "mode": "price", "was_text": was_text}
+	var state: Dictionary = {"text": text, "mode": "short" if String(opt.get("reason_code", "")) == "too_expensive" else "price"}
+	if was_text != "":
+		state["was_text"] = was_text  # only a discounted tile carries the key
+	return state
 
 
 ## The line under a shop tile's rule that says why it cannot be bought, "" when it can. "Need 15 more gold" beats "Not enough gold"; a sold tile

@@ -230,9 +230,9 @@ func test_a_discounted_shop_price_keeps_the_old_one_to_strike_through() -> void:
 	assert_str(String(cut["was_text"])).is_equal("80 gold")
 	assert_str(String(cut["text"])).is_equal("60 gold")
 	var plain: Dictionary = RunOptionCard.shop_price_state({"kind": "buy_relic", "price": 80, "base_price": 80, "enabled": true}, 200, texts)
-	assert_str(String(plain["was_text"])).is_empty()
+	assert_bool(plain.has("was_text")).is_false()
 	var no_base: Dictionary = RunOptionCard.shop_price_state({"kind": "buy_card", "price": 41, "enabled": true}, 200, texts)
-	assert_str(String(no_base["was_text"])).is_empty()
+	assert_bool(no_base.has("was_text")).is_false()
 
 
 func test_the_check_shape_stays_in_its_circle() -> void:

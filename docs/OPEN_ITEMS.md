@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-12 (MAP3b closed; latest tag `playtest-2026-11-12-MAP3b`)
-**Status:** 1 decision waiting (D50, run length). 10 things to look at (56, 55, 54, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. **MB1 (new mini-bosses) is done**, tag `playtest-2026-11-11-MB1`. **MAP3b is done** (rare and legendary cards, boss relics), tag `playtest-2026-11-12-MAP3b`. Next: MAP4 -> 3d -> BD3b.
+Last updated: 2026-11-12 (D50 = B recorded; latest tag `playtest-2026-11-12-MAP3b`)
+**Status:** 0 decisions waiting. 10 things to look at (56, 55, 54, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. **MB1 (new mini-bosses) is done**, tag `playtest-2026-11-11-MB1`. **MAP3b is done** (rare and legendary cards, boss relics), tag `playtest-2026-11-12-MAP3b`. Next: MAP4 -> 3d -> BD3b.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -19,15 +19,7 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 Next new number: D51.
 
-**D50. Run length: your run took a bit under 7 minutes, against your 30-45 minute target (GDD §9).**
-- **First, a check:** was that all three acts (30 rooms, ending at the final boss)? If it was only one act, say so, and this mostly goes away.
-- **Why it matters:** if it was three acts, the run is about 5x shorter than the target. Events (MAP4) add a little non-combat time, but nowhere near 5x. You also found the Raider too easy, so the length and the difficulty are probably the same problem: fights end too fast.
-- **Options:**
-  - **A:** keep 30-45 min. Fights get longer and harder: more enemies and waves per room, more HP. This is a big tuning pass, because every room changes.
-  - **B:** lower the target to about 15-20 min. Make fights a bit tougher, mostly for challenge, not length.
-  - **C (default):** no change yet. MAP4 measures human-like run times with events in, and you decide then.
-- **My recommendation: B.** 30 rooms of fast action combat at 1-1.5 min each would mean slow, padded fights. 15-20 min keeps the fights snappy, and the difficulty bump fixes "too easy" directly.
-- Nothing in MAP4 waits on this, but A would reshape the next slice after it.
+Nothing right now.
 
 ## Needs your eyes
 
@@ -55,7 +47,7 @@ Reply with the number and a word or two.
 
 54. **FYI: the test bot was half-blind until today.** In every headless sim the bot aimed without turning, so cones, knives and dashes missed. Your own play was never affected. Fixed, it wins almost every run, so every old bot number (the H1/H2 dodge-off results, the MAP1-MAP3 run baselines) was measured with a weaker bot than we thought. No shipped value changes because of this. **SIM1 (done 2026-11-11)** added a "human" bot setting (0.2 s reaction delay, 25 degree aim error). On it the Rogue wins 26/36 three-act runs and the Wizard 15/36, so the Wizard is clearly harder for the bot; that goes to BD3b. These are only bot numbers: your own three-act runs (53) set the real bar. Reply "ok" when you've read this.
 
-52. **Two small checks from MAP3, next time you play.** (You've answered the run-time question: see D50.)
+52. **Two small checks from MAP3, next time you play.** (You've answered the run-time question: D50 = B, GDD §9.)
     - **Quit mid-run, relaunch and press Enter.** Continue should be highlighted on the class pick and resume your run. Quitting during a fight restarts that room.
     - **Click through the Act 2 screen** after the act 1 mini-boss.
 

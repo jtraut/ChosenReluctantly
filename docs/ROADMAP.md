@@ -1364,7 +1364,7 @@ un_offer_report.ps1`.
     - docs adff02a.
   - **Carry-overs to MAP4** (DECISIONS "MAP3b qa PASS" and "MAP3b playtest triage"):
     - gameplay-dev, first step: **the Raider is too easy (director, 2026-11-12: "died super fast"): `max_health` 120 -> 180 (act 2: 198). If the bot's Raider fight still lasts under 20 s, phase 2 `attack_gap` 0.9 -> 0.75. Telegraphs stay at 0.6 s or more. qa re-gates the SIM1 floors.** The eyes-56 default (The Non-Compete Clause's refund 0.5 -> 0.3 s); **D49 = B (director, 2026-11-12): each pruned or rejected card multiplies its type's offer weight by `rewards.prune_reject_factor` 0.8 for the run, floored at `rewards.prune_reject_floor` 0.4. "Type" means the statuses the card applies, the same key as the D43 lean, so cards with no status aren't affected. Report the late Fire and Bleed shares for a Bleed Rogue with `run_offer_report` before and after (was Fire 31.3%, Bleed 11.8%).** Knuckle Sandwich's "60 s" text; the `-RelicCap 1` bot finding (un-skip the qa test); forced `--relic-offer` skipping the boss branch.
-    - ux: stack labels overlapping at 2 enemies; a 4-enemy Bleed scenario to verify the dimming and the Open a Vein glow; golem and pink telegraph contrast on the act 3 sand floor.
+    - ux: **the end-of-run and room-cleared "Time" label becomes "Fight time"** (`data/run.json` `ui.stat_time`; it adds up room time only, which mixed up the D50 run-length read; game-lead default, DECISIONS "Applying D50 = B"); stack labels overlapping at 2 enemies; a 4-enemy Bleed scenario to verify the dimming and the Open a Vein glow; golem and pink telegraph contrast on the act 3 sand floor.
     - BD3b: the Wizard's act 1 losses; the plan bot undervaluing rare and legendary Bleed cards; the stun relics' "halved on elites" note. Plan: MAP.md §4.5, BUILD_DEPTH §4. **Added 2026-11-09:** the tier 3 relics, boss-tier relics and rare and legendary cards must cover Bleed and basic attacks as well as Burn (BUILD_DEPTH §9a). **D48 = A (director, 2026-11-11):** no Bleed top-up before SIM1; BD3a closes as it is, and the extra Bleed and physical cards come here as rares and legendaries. Raising the late-offer Bleed share (8.5% at BD3a) is part of this slice's goal.
   - **From MB1 (2026-11-11; DECISIONS "MB1 playtest triage" and "MB1 qa PASS"):**
     - **gameplay-dev's first step, unless the director's eyes item 55 says otherwise:**
@@ -1459,6 +1459,7 @@ un_offer_report.ps1`.
   - **Content:** about 6 event-only relics, 2-3 curse cards, about 3 sacrifice relics; optional `mini_boss` nodes inside acts at low weight.
   - **Size:** probably two sittings. Split at MAP3's close; this pushes 3d later.
   - Brief detailed at MAP3's close.
+  - **Run length is settled (D50 = B, director 2026-11-12):** about 15-20 min of real time, decisions included (GDD §9). His ~7 min of fight time is already about 15 min real time, so MAP4 adds no length pass; the challenge part of B is the Raider carry-over and eyes 55. Events add some decision time, which is fine inside the range.
 
 ## Milestone 4 — Second class/element, subclasses, passive tree prototype, balance sim
 Not started. Per GDD §13: Wizard + Water added, 2 subclasses each for Rogue/Wizard/Fire/Water, first passive tree prototype (30-40 nodes), headless balance simulation grown out.

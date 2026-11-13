@@ -4,7 +4,7 @@ Owner: game-lead. Status: **[PROPOSED]**, written 2026-11-03 for GDD §9 "Branch
 
 ## 1. Shape of the map
 
-- **Three acts of 10 rooms: 30 rooms per run [DIRECTOR DECISION, 2026-11-04, with D32 = A].** Each act is its own map with the shape below. **Act 1 and act 2 end in a mini-boss; act 3 ends in the final boss.** Target: **30-45 minutes** per run, and the player can **save and come back later** (§8). Rooms are counted 1-30 overall ("Room 14 of 30", "Act 2").
+- **Three acts of 10 rooms: 30 rooms per run [DIRECTOR DECISION, 2026-11-04, with D32 = A].** Each act is its own map with the shape below. **Act 1 and act 2 end in a mini-boss; act 3 ends in the final boss.** Target: **about 15-20 minutes of real time** per run (D50 = B, 2026-11-12; was 30-45), and the player can **save and come back later** (§8). Rooms are counted 1-30 overall ("Room 14 of 30", "Act 2").
 - **MAP1 and MAP2 build one act** (10 rooms, ending in today's boss) with the numbers below. **MAP3 adds acts 2 and 3**, the mini-bosses, act scaling and save/resume; at that point the per-act numbers in §4.5 replace the single-act ones.
 - Everything below describes **one act**.
 

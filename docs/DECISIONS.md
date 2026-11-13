@@ -2558,3 +2558,13 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
   - 52's timing question (under 7 min);
   - 56's Bleed question.
   - Kept: 55 for the brute, and 52's Continue and Act 2 screen checks.
+
+## 2026-11-12 - Applying D50 = B (game-lead)
+- **The director chose B:** the run target drops from 30-45 min to about 15-20 min. He added that the 6:56 he reported was the game's end-of-run time, not wall-clock time, and that with good, tough build decisions a run would take "more like 15 minutes real-time". Recorded in GDD §2 and §9 and MAP.md §1.
+- **The code agrees with him:** `RunPromptRows.win_rows` sums only each room's `seconds`, so map, reward, merchant, relic and rest screens aren't counted.
+- **The target is real time, decisions included.** His ~15 min real-time run is already at the bottom of the range, so no length pass is scheduled. Events (MAP4) add some decision time, which fits.
+  - [Measuring the target in fight time: it would read his run as half the target and push for padded fights, the thing B was chosen to avoid.]
+- **"A bit tougher, for challenge" means the work already planned:** the Raider bump (MAP4 first step) and the brute question (eyes 55). Nothing new.
+  - [A broad enemy HP or count retune now: GDD §9 says base-game challenge comes from the difficulty tiers, apart from the director's pressure-pass exception. A wide retune would need its own director call.]
+- **The "Time" label becomes "Fight time"** (ux carry-over in MAP4, data text only), so later run reports don't mix up the two clocks.
+  - [Also showing the total wall-clock run time: needs a new timer across screens and saves; can come later if he wants it.]

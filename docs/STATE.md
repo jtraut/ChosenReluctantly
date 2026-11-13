@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **Project history in plain language: `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`.**
 
-Last updated: 2026-11-12 (MAP3b closed, tag `playtest-2026-11-12-MAP3b`; MAP4 next, starting with game-lead's brief).
+Last updated: 2026-11-12 (D50 = B recorded; MAP3b closed, tag `playtest-2026-11-12-MAP3b`; MAP4 next, starting with game-lead's brief).
 
 ## What's done
 - **MAP3b closed 2026-11-12.** Tag `playtest-2026-11-12-MAP3b`.
@@ -44,6 +44,12 @@ Last updated: 2026-11-12 (MAP3b closed, tag `playtest-2026-11-12-MAP3b`; MAP4 ne
     - archive eyes 53 in RESOLVED, plus the answered parts of 55, 52 and 56, with his words (the text is in commit b0222f9, `docs/OPEN_ITEMS.md`);
     - a CHANGELOG director-feedback entry;
     - the Raider change, old -> new, when it's built.
+- **D50 = B recorded 2026-11-12 (game-lead, docs only):**
+  - **His answer:** lower the run target to about 15-20 min. His 6:56 was the game's end-of-run time, which counts fights only; with good, tough build decisions a run is "more like 15 minutes real-time".
+  - **Where recorded:** GDD §2 and §9, MAP.md §1, the ROADMAP MAP4 entry (no length pass) and a ux carry-over ("Time" -> "Fight time"), DECISIONS "Applying D50 = B", and OPEN_ITEMS (removed).
+  - **Pending for tech-writer (MAP4 docs pass):**
+    - archive D50 in RESOLVED with his answer; the question text is in commit e038fa5, `docs/OPEN_ITEMS.md`;
+    - a CHANGELOG `[Director decision]` entry: target run length 30-45 min -> about 15-20 min of real time, decisions included.
 - **D49 = B recorded 2026-11-12 (game-lead, docs only):**
   - **His answer:** each pruned or rejected card lowers its type's offer weight for the run.
   - **Where recorded:** GDD §9, the ROADMAP MAP3b carry-overs (MAP4 gameplay-dev's first step), DECISIONS "Applying D49 = B", and OPEN_ITEMS (removed).
@@ -251,14 +257,14 @@ Last updated: 2026-11-12 (MAP3b closed, tag `playtest-2026-11-12-MAP3b`; MAP4 ne
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step
-1. **MAP4 (events).** First, game-lead details the brief: the ROADMAP MAP4 entry says "Brief detailed at MAP3's close". Probably two sittings. gameplay-dev's first step is the MAP3b carry-overs: the Raider (HP 120 -> 180), the eyes-56 default, D49 = B, and the small fixes. D50 (run length) may reshape what follows MAP4.
+1. **MAP4 (events).** First, game-lead details the brief: the ROADMAP MAP4 entry says "Brief detailed at MAP3's close". Probably two sittings. gameplay-dev's first step is the MAP3b carry-overs: the Raider (HP 120 -> 180), the eyes-56 default, D49 = B, and the small fixes. Run length is settled (D50 = B): no length pass.
 2. Then 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D45 answered. D46 = B and D47 = B (2026-11-09). D48 = A (2026-11-11, archived in RESOLVED 2531020). D49 = B (2026-11-12). D50 open (run length; default C). Next free: D51.
+**D-numbers:** D21-D45 answered. D46 = B and D47 = B (2026-11-09). D48 = A (2026-11-11, archived in RESOLVED 2531020). D49 = B (2026-11-12). D50 = B (2026-11-12). Next free: D51.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: D50 open; eyes 56, 55, 54, 52, 51, 50, 49, 48, 47 and 35; the round 2 vision check is due. Answered items are in `docs/RESOLVED.md`.
+All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions open; eyes 56, 55, 54, 52, 51, 50, 49, 48, 47 and 35; the round 2 vision check is due. Answered items are in `docs/RESOLVED.md`.

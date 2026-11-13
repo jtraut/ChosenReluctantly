@@ -342,6 +342,86 @@ static func _lowered(text: String) -> String:
 	return text if text.is_empty() else text.substr(0, 1).to_lower() + text.substr(1)
 
 
+# --- text parts (MAP4 ux) -----------------------------------------------------------------------
+
+## MAP4 ux: the same lines as `lines_for`, with each one split into coloured segments, so a screen colours by what an outcome DOES and never parses text.
+## One entry per line: {kind (the dominant kind of the line), conditional (it only happens if the fight is won), segments [{text, kind}]}. Kinds (data/run.json
+## ui.event.kinds): "cost", "gain", "risk" (a fight), "chance" (the "50%:" tag) and "neutral" (joiners, the leave line). The joined segment texts equal the
+## `lines_for` line, minus the "If you win: " prefix of a conditional line (the `conditional` flag carries that; ui.event.after_fight_header names it).
+static func line_parts(outcomes: Array, state: RunState, ctx: Dictionary) -> Array[Dictionary]:
+	var lines: Array[Dictionary] = []
+	var after_fight: bool = false
+	for outcome: Variant in outcomes:
+		var segments: Array[Dictionary] = _segments(outcome as Dictionary, state, ctx)
+		if not segments.is_empty():
+			lines.append({"kind": _dominant_kind(segments), "conditional": after_fight, "segments": segments})
+		if String((outcome as Dictionary)["type"]) == "start_fight":
+			after_fight = true
+	if lines.is_empty():
+		lines.append({"kind": "neutral", "conditional": false, "segments": [{"text": String(_ui(ctx).get("leave_line", "")), "kind": "neutral"}] as Array[Dictionary]})
+	return lines
+
+
+## The kind of one outcome (see `line_parts`). A `stat_mod` is a gain when it moves the stat the good way: a cooldown or an interval is better LOWER (data: ui.event.lower_is_better).
+static func outcome_kind(outcome: Dictionary, ctx: Dictionary) -> String:
+	var type_id: String = String(outcome["type"])
+	var kinds: Dictionary = (_ui(ctx).get("kinds", {}) as Dictionary)
+	if type_id == "stat_mod":
+		var lower_better: bool = false
+		for prefix: Variant in (_ui(ctx).get("lower_is_better", []) as Array):
+			if String(outcome["stat"]).begins_with(String(prefix)):
+				lower_better = true
+		var rises: bool = float(outcome["value"]) >= 0.0
+		return "gain" if rises != lower_better else "cost"
+	return String(kinds.get(type_id, "neutral"))
+
+
+static func _dominant_kind(segments: Array[Dictionary]) -> String:
+	var found: String = "neutral"
+	for segment: Dictionary in segments:
+		var kind: String = String(segment["kind"])
+		if kind == "cost" or kind == "risk":
+			return kind
+		if kind == "gain":
+			found = "gain"
+	return found
+
+
+static func _segments(outcome: Dictionary, state: RunState, ctx: Dictionary) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	if String(outcome["type"]) != "chance":
+		var text: String = _line(outcome, state, ctx)
+		if not text.is_empty():
+			out.append({"text": text, "kind": outcome_kind(outcome, ctx)})
+		return out
+	var texts: Dictionary = _ui(ctx).get("lines", {})
+	var percent: int = roundi(float(outcome["p"]) * 100.0)
+	out.append({"text": String(texts.get("chance", "")).get_slice("%s", 0) % percent, "kind": "chance"})
+	out.append_array(_branch_segments(outcome["win"] as Array, state, ctx))
+	if not (outcome["lose"] as Array).is_empty():
+		out.append({"text": ", " + String(texts.get("chance_otherwise", "")).get_slice("%s", 0), "kind": "chance"})
+		out.append_array(_branch_segments(outcome["lose"] as Array, state, ctx))
+	return out
+
+
+## One chance branch: its lines joined with ", ", the first letter lowered (as `_line` does for the text).
+static func _branch_segments(branch: Array, state: RunState, ctx: Dictionary) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	if branch.is_empty():
+		return out
+	var first: bool = true
+	for line: Dictionary in line_parts(branch, state, ctx):
+		if not first:
+			out.append({"text": ", ", "kind": "neutral"})
+		for segment: Dictionary in (line["segments"] as Array[Dictionary]):
+			var copy: Dictionary = segment.duplicate()
+			if first:
+				copy["text"] = _lowered(String(copy["text"]))
+				first = false
+			out.append(copy)
+	return out
+
+
 ## Every outcome type in a list, chance branches included.
 static func outcome_types(outcomes: Array) -> Array[String]:
 	var types: Array[String] = []
@@ -386,6 +466,7 @@ static func options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 		var lines: Array[String] = lines_for(outcomes, state, ctx)
 		option["label"] = String(choice["label"])
 		option["lines"] = lines
+		option["line_parts"] = line_parts(outcomes, state, ctx)  # MAP4 ux: the same lines as coloured segments (new key; `lines` and `detail` are unchanged)
 		option["detail"] = String(ui.get("line_join", "\n")).join(lines)
 		option["outcome_types"] = outcome_types(outcomes)
 		option["has_requires"] = choice.has("requires")

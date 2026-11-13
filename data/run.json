@@ -164,7 +164,7 @@
         "option": { "unavailable": "Unavailable: %s", "owned": "You own %d", "slot_now": "In slot: %s", "slot_now_max": 3, "slot_now_more": "+%d more", "copies": "x%d", "rarity_names": { "rare": "Rare", "legendary": "Legendary" }, "slot_key": "%s", "slot_label": "%s (%s)", "pick_hint": "Enter to pick", "dodge_hint": "The dodge does not count.", "dodge_slots": ["movement"], "act_hint": "Enter to choose", "remove_hint": "Enter to remove", "list_hint": "Arrow keys move, Enter or click confirms", "remove_list_hint": "Arrow keys move, Enter or click confirms" },
         "room_label": "Room %d of %d",
         "type_names": { "combat": "Combat", "elite": "Elite", "rest": "Rest", "boss": "Boss", "relic_room": "Relics", "merchant": "Merchant", "mini_boss": "Mini-boss", "event": "Event" },
-        "room_cleared": { "title": "Room cleared", "button": "Continue", "hint": "Enter to continue", "rest_line": "You rest. It helps a little (healed %d).", "rest_full_line": "You rest. Nothing needed healing.", "stat_hp": "HP", "stat_time": "Time", "stat_healed": "Healed" },
+        "room_cleared": { "title": "Room cleared", "button": "Continue", "hint": "Enter to continue", "rest_line": "You rest. It helps a little (healed %d).", "rest_full_line": "You rest. Nothing needed healing.", "stat_hp": "HP", "stat_time": "Fight time", "stat_healed": "Healed" },
         "next_line": "Next: Room %d of %d - %s",
         "reward": { "title": "Room cleared", "line": "Pick a card, or reject the offer.", "skip_label": "Reject the offer", "skip_detail": "Spends one reject. Rejects left: %d of %d", "skip_disabled": "No rejects left. Pick a card.", "rejects_label": "Rejects left" },
         "rest": { "title": "Rest", "line": "Heal a little, or get rid of a card.", "heal_label": "Rest and heal", "heal_detail": "Heal %d HP (%d%% of max)", "heal_full_detail": "HP is already full", "remove_label": "Remove a card", "remove_detail": "Take one card out of your deck", "remove_none": "Every card is needed to meet the deck minimums. Add a card first.", "remove_locked": "Get another card for the %s slot first (minimum %d different)", "remove_locked_group": "Get another card for %s first", "remove_title": "Remove which card?", "remove_line": "Pick a card to remove. Greyed cards would break a deck minimum.", "remove_option": "Remove %s", "cleanse_cap": "You can't remove any more curses this run", "dig_label": "Dig", "dig_detail": "Pick 1 of 3 relics, or skip. Takes the place of the heal and the removal.", "dig_none": "Nothing left to dig up", "dig_title": "Dig", "dig_line": "Pick a relic to keep for this run, or skip. This rest is spent either way.", "copies": "x%d", "back_label": "Back" },
@@ -189,6 +189,11 @@
         "event": {
             "relic_title": "Take your pick", "relic_line": "Pick a relic to keep for this run, or skip.", "relic_line_noskip": "Pick one. You have already paid for it.",
             "leave_line": "Walk away. Nothing happens.", "line_join": "\n", "choice_hint": "Arrow keys move, Enter or click confirms",
+            "kinds": { "lose_hp": "cost", "lose_max_hp": "cost", "lose_gold": "cost", "gain_curse": "cost", "sacrifice_relic": "cost", "heal": "gain", "gain_gold": "gain", "gain_relic": "gain",
+                "remove_curse": "gain", "remove_card": "gain", "merchant_discount": "gain", "start_fight": "risk", "chance": "chance" },
+            "lower_is_better": ["slot_cooldown.", "attack_interval."],
+            "glyphs": { "cost": "-", "gain": "+", "risk": "!", "chance": "?", "neutral": "" },
+            "after_fight_header": "If you win:",
             "lines": {
                 "lose_hp": "Lose %d HP", "lose_max_hp": "Lose %d max HP", "heal": "Heal %d HP", "gain_gold": "Gain %d gold", "lose_gold": "Lose %d gold",
                 "gain_relic_act": "Gain a relic (pick 1 of %d)", "gain_relic_next_act": "Gain a relic at the next act's odds (pick 1 of %d)",
@@ -229,7 +234,7 @@
             "tier_names": { "tier1": "Tier 1", "tier2": "Tier 2", "tier3": "Tier 3", "boss": "Boss" }
         },
         "act": { "label": "Act %d of %d", "title": "Act %d", "run_room_label": "Room %d of %d", "summary": "HP %d of %d, %d gold, relics: %d", "flavor": "Another act. Same hero, same reluctance.", "button": "Continue", "hint": "Enter to continue", "heal": "You recover %d HP. Rests are on the map.", "low_hp_fraction": 0.5, "low_hp_tag": "Running low", "low_hp_color": "#ff6b6b" },
-        "win": { "title": "Run complete", "line": "Somehow, you finished. Nobody is more surprised than you.", "button": "New run", "hint": "Enter to start over", "stat_rooms": "Rooms cleared", "stat_time": "Total time", "stat_hp": "HP left" },
+        "win": { "title": "Run complete", "line": "Somehow, you finished. Nobody is more surprised than you.", "button": "New run", "hint": "Enter to start over", "stat_rooms": "Rooms cleared", "stat_time": "Fight time", "stat_hp": "HP left" },
         "lose": { "run_line": "Reached room %d of %d." },
         "map": {
             "title": "Choose your path", "line": "Pick the next room. Every route ends at the boss.",

@@ -48,6 +48,8 @@ var cost_label: Label = null
 ## BD1 carry-over: the note on a Movement-conditional card that the dodge does not count (D39 = A).
 var dodge_note_label: Label = null
 var free_tag: PanelContainer = null
+## MAP4 ux: an event choice's coloured outcome lines (null on any other tile).
+var event_block: VBoxContainer = null
 ## MAP2 shop tile parts (null on any other look): the price (or Sold / Free) tag, the band with the kind, and the "Only sold here" tag.
 var price_tag: PanelContainer = null
 var shop_band: Control = null
@@ -224,6 +226,7 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 				chip_row = keyword_chips
 				_inner.add_child(chip_row)
 	var detail: String = keep_units(String(opt.get("detail", "")))
+	var event_lines: Array = opt.get("line_parts", []) if (look == Look.ACTION and String(opt.get("kind", "")) == "event_choice") else []
 	var cost_line: String = ""
 	if look == Look.RELIC and boss_tile():
 		# MAP3b: a boss relic is a strong upside with a real cost. The cost gets its own line under a word, so both are read before the pick.
@@ -238,7 +241,11 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 	var rules: String = keyword_rules_text(String(opt.get("card_id", "")))
 	if look == Look.RELIC_CELL:
 		tooltip_text = detail + "\n" + String(opt.get("flavor", ""))
-	if detail != "" and look != Look.BACK and not cell_blocked:  # a greyed list cell gives the room to its reason
+	if not event_lines.is_empty():
+		# MAP4 ux: an event choice colours each line by what it does (cost, gain, risk) and puts a glyph in front, so colour is never the only cue.
+		event_block = _event_block(event_lines, extra.get("event_texts", {}), inner_width, body_size, small_size, enabled)
+		_inner.add_child(event_block)
+	elif detail != "" and look != Look.BACK and not cell_blocked:  # a greyed list cell gives the room to its reason
 		# BD1: CardSummary puts each condition on its own line after the plain effects; those lines wear the accent colour.
 		var detail_lines: PackedStringArray = detail.split("
 ") if look in [Look.CARD, Look.CELL] else PackedStringArray([detail])
@@ -306,6 +313,73 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 		hint_label.modulate.a = 0.0
 		_inner.add_child(hint_label)
 	_connect_signals()
+
+
+# --- MAP4 ux: the event choice's outcome lines --------------------------------------------------------------
+
+## The colour of an outcome kind (data/ui.json run_ui `event_<kind>_color`); a kind with no colour (neutral) takes the body text colour.
+static func event_kind_color(kind: String, cfg: Dictionary, body: Color) -> Color:
+	var key: String = "event_%s_color" % kind
+	return Color.html(String(cfg[key])) if cfg.has(key) else body
+
+
+## One line of an event choice as BBCode: the glyph of its kind (data: run.json ui.event.glyphs) and then its segments, each wearing its own kind's colour
+## (a `chance` line holds a gain and a cost side by side). Pure, unit-tested. `enabled` false paints the whole line in the disabled grey (the words stay).
+static func event_line_bbcode(line: Dictionary, glyphs: Dictionary, cfg: Dictionary, body: Color, enabled: bool) -> String:
+	var grey: String = String(cfg["option_disabled_text_color"])
+	var out: String = ""
+	var kind: String = String(line.get("kind", "neutral"))
+	var glyph: String = String(glyphs.get(kind, ""))
+	if glyph != "":
+		out += "[color=%s][b]%s[/b][/color] " % [event_kind_color(kind, cfg, body).to_html(false) if enabled else grey, glyph]
+	for segment: Variant in (line.get("segments", []) as Array):
+		var seg: Dictionary = segment
+		var color: String = event_kind_color(String(seg.get("kind", "neutral")), cfg, body).to_html(false) if enabled else grey
+		out += "[color=%s]%s[/color]" % [color, String(seg.get("text", "")).replace("[", "[lb]")]
+	return out
+
+
+## The outcome lines of an event choice. Lines that only happen if the fight is won sit under one "If you win:" header, indented, so the condition is read once
+## and clearly. `event_texts` is run.json ui.event.
+func _event_block(lines: Array, event_texts: Dictionary, inner_width: float, body_size: int, small_size: int, enabled: bool) -> VBoxContainer:
+	var box := VBoxContainer.new()
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_theme_constant_override("separation", roundi(3.0 * _scale))
+	var glyphs: Dictionary = event_texts.get("glyphs", {})
+	var body: Color = Color.html(String(_cfg["prompt_text_color"]))
+	var indent: float = float(body_size) * 1.1
+	var conditional_open: bool = false
+	for line_value: Variant in lines:
+		var line: Dictionary = line_value
+		var conditional: bool = bool(line.get("conditional", false))
+		if conditional and not conditional_open:
+			conditional_open = true
+			var header: Label = _label(String(event_texts.get("after_fight_header", "")), small_size, _text_color(enabled, Color.html(String(_cfg["event_risk_color"]))), true)
+			header.custom_minimum_size.x = inner_width
+			box.add_child(header)
+		var width: float = inner_width - (indent if conditional else 0.0)
+		var rich := RichTextLabel.new()
+		rich.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		rich.bbcode_enabled = true
+		rich.fit_content = true
+		rich.scroll_active = false
+		rich.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		rich.add_theme_font_size_override("normal_font_size", body_size)
+		rich.add_theme_font_size_override("bold_font_size", body_size)
+		rich.text = event_line_bbcode(line, glyphs, _cfg, body, enabled)
+		rich.custom_minimum_size.x = width
+		if conditional:
+			var row := HBoxContainer.new()
+			row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			var gap := Control.new()
+			gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			gap.custom_minimum_size.x = indent
+			row.add_child(gap)
+			row.add_child(rich)
+			box.add_child(row)
+		else:
+			box.add_child(rich)
+	return box
 
 
 func _connect_signals() -> void:

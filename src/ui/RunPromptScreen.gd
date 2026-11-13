@@ -568,6 +568,7 @@ func _fill_options(options: Array, content: Dictionary = {}) -> void:
 			"shop_texts": merchant_texts, "gold": int(content.get("gold", 0)),
 			"shop_name": _shop_name(option, content, merchant_texts) if look == RunOptionCard.Look.SHOP else "",
 			"shop_only": _is_shop_only(option) if look == RunOptionCard.Look.SHOP else false,
+			"event_texts": RunConfig.ui().get("event", {}),
 		})
 		var option_id: String = String(option.get("id", ""))
 		card.pressed.connect(_on_option_pressed.bind(option_id))

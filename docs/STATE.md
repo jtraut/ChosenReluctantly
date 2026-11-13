@@ -30,6 +30,12 @@ Last updated: 2026-11-12 (MAP3b closed, tag `playtest-2026-11-12-MAP3b`; MAP4 ne
     - late Bleed share 11.8%.
   - **Carry-overs:** ROADMAP MAP3b "Carry-overs to MAP4".
   - **New director items:** eyes 56, and D49 updated (recommend B).
+- **D49 = B recorded 2026-11-12 (game-lead, docs only):**
+  - **His answer:** each pruned or rejected card lowers its type's offer weight for the run.
+  - **Where recorded:** GDD §9, the ROADMAP MAP3b carry-overs (MAP4 gameplay-dev's first step), DECISIONS "Applying D49 = B", and OPEN_ITEMS (removed).
+  - **Pending for tech-writer (MAP4 docs pass):**
+    - archive D49 in RESOLVED; the question text is in commit 5b412e5, `docs/OPEN_ITEMS.md`;
+    - a CHANGELOG `[Director decision]` entry: pruning or rejecting had no effect on offers, and now each one multiplies that status's offer weight by 0.8, never below 0.4.
 - **MB1 closed 2026-11-11.** Tag `playtest-2026-11-11-MB1`.
   - **Commits:**
     - design 5ecbbf9 (MAP.md §11);
@@ -231,14 +237,14 @@ Last updated: 2026-11-12 (MAP3b closed, tag `playtest-2026-11-12-MAP3b`; MAP4 ne
 - Known: wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 
 ## Exact next step
-1. **MAP4 (events).** First, game-lead details the brief: the ROADMAP MAP4 entry says "Brief detailed at MAP3's close". Probably two sittings. gameplay-dev's first step is the MAP3b carry-overs: the eyes-56 default, D49 if it's answered B or C, and the small fixes.
+1. **MAP4 (events).** First, game-lead details the brief: the ROADMAP MAP4 entry says "Brief detailed at MAP3's close". Probably two sittings. gameplay-dev's first step is the MAP3b carry-overs: the eyes-56 default, D49 = B, and the small fixes.
 2. Then 3d, BD3b.
 
 Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D45 answered. D46 = B and D47 = B (2026-11-09). D48 = A (2026-11-11, archived in RESOLVED 2531020). D49 open (prune/reject shrinks offers; default A). Next free: D50.
+**D-numbers:** D21-D45 answered. D46 = B and D47 = B (2026-11-09). D48 = A (2026-11-11, archived in RESOLVED 2531020). D49 = B (2026-11-12). Next free: D50.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: D49 open (default A); eyes 55, 54, 53, 52, 51, 50, 49, 48, 47 and 35; the round 2 vision check is due. Answered items are in `docs/RESOLVED.md`.
+All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions open; eyes 55, 54, 53, 52, 51, 50, 49, 48, 47 and 35; the round 2 vision check is due. Answered items are in `docs/RESOLVED.md`.

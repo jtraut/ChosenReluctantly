@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-11-12 (MAP3b closed; latest tag `playtest-2026-11-12-MAP3b`)
-**Status:** 1 decision waiting (D49, nothing blocks on it). 11 things to look at (56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. **MB1 (new mini-bosses) is done**, tag `playtest-2026-11-11-MB1`. **MAP3b is done** (rare and legendary cards, boss relics), tag `playtest-2026-11-12-MAP3b`. Next: MAP4 -> 3d -> BD3b.
+**Status:** no decisions waiting. 11 things to look at (56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. **MB1 (new mini-bosses) is done**, tag `playtest-2026-11-11-MB1`. **MAP3b is done** (rare and legendary cards, boss relics), tag `playtest-2026-11-12-MAP3b`. Next: MAP4 -> 3d -> BD3b.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -19,18 +19,7 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 Next new number: D50.
 
-**D49. When you prune or reject cards of one type, should that type show up less afterwards?** This came out of your physical Rogue run, where you kept removing Fire cards and kept being offered more.
-- **What's already in place:**
-  - offers lean toward the statuses your added cards apply (D43);
-  - a card you prune never comes back (D47);
-  - MAP3b's new rare and legendary cards are mostly Bleed and basic-attack, with 1 to 2 Fire per tier.
-- **Options:**
-  - **A (default): no new rule.** See how the above plays in MAP3b first.
-  - **B:** each card you prune or reject lowers its type's offer weight for the rest of the run, for example x0.8 each, never below x0.4.
-  - **C:** as B, but only pruning counts, so rejects stay a free "not now".
-- **Update 2026-11-12, after MAP3b's playtest:** the new content isn't enough by itself. Late in a Bleed Rogue's run, Fire is still about 31% of card offers and Bleed about 12%. That's better than the 8.5% before, but Fire still crowds out Bleed.
-- **My recommendation is now B.** It's a small, data-driven change, and I'd build it at the start of MAP4. Until you answer, A stays the default.
-- Nothing in MAP3b waits on this.
+Nothing waiting. Your last answer, D49 = B (2026-11-12), is recorded in GDD §9 and is built first thing in MAP4.
 
 ## Needs your eyes
 
@@ -46,7 +35,7 @@ Reply with the number and a word or two.
       - then a rare card offer (after act 1) or a legendary one (after act 2).
     - **Rare cards show up in normal offers from act 2, and legendaries from act 3.** They have silver and gold bands.
     - **Do the boss relics feel like big, build-changing choices?** Is each cost something you actually feel? The Non-Compete Clause wins every bot run. **Default if you don't object:** its cooldown refund goes from 0.5 s to 0.3 s at the start of MAP4. Say "56 leave" to keep it.
-    - **Does a Bleed Rogue finally get enough Bleed late?** See D49.
+    - **Does a Bleed Rogue finally get enough Bleed late?** Your D49 = B (pruning and rejecting push a type away) arrives in MAP4.
     - **The act 3 floor changed from dull red to sand,** so the red chasers stand out. Keep it, or "56 old floor"?
     - **Look for:**
       - Open a Vein's slot glowing when an enemy in range has 2 or more Bleed stacks;

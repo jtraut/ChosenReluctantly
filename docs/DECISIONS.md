@@ -2532,3 +2532,11 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
     - a 4-enemy Bleed scenario to verify the dimming and the Open a Vein glow;
     - golem and pink telegraph contrast on the act 3 sand floor.
 - **Exsanguinate's worst case:** left as is. Watch for one-cast boss kills in the director's play.
+
+## 2026-11-12 - Applying D49 = B (game-lead)
+- **The director chose B.** It's recorded in GDD §9 and is MAP4 gameplay-dev's first step.
+- **"Type" means the statuses a card applies (Burn, Bleed),** the same key the D43 lean uses. So a pruned Fire/Burn card lowers every Burn card's offer weight, and statusless cards are untouched.
+  - [The card's pool (Fire, Rogue): that would also push away statusless Fire cards and the class's own Bleed cards when a Rogue Bleed card is rejected.]
+- **Starting values (data):** x0.8 per prune or reject, floor x0.4, applied on top of the lean.
+- **A reject counts once per offered card of each status in that offer.**
+  - [Once per offer: a reject of three Burn cards would count the same as one.]

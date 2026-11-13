@@ -2594,7 +2594,7 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **The outcome set holds only what the 8 events use.** Dropped from BUILD_DEPTH §4.8: `gain_max_hp`, `rooms_buff`, `next_room_add`, the mini-boss-strength ambush.
   - [Building all of §4.8's outcomes: unused code paths to test and save.]
 - **Costs are generated from outcomes,** not written by hand, so text can't hide a cost. HP costs are fractions of max HP, so they're fair to the Rogue (30) and the Wizard (22).
-- **Event text is neutral.** GDD §16's friends and loyalists wait for the director's story decision; the mechanics fit them later.
+- **Event text is neutral.** GDD §15's friends and loyalists wait for the director's story decision; the mechanics fit them later.
 - **Curses have a fixed slot each, are castable, and are swapped like any card.** "The swap skips past them" (old MAP4 note) is read as "you can swap a curse away", per GDD §9. Castable means The Micromanager (no swap) can't brick a slot.
   - [A curse whose slot is rolled when gained: deck entries are plain card ids today, so a per-entry slot would change the save format for little gain.]
 - **Sacrifice relics are left out of offers while you can't pay,** instead of shown greyed.

@@ -17,6 +17,15 @@ static func rarity_of(card_data: Variant) -> String:
 	return String(value) if typeof(value) == TYPE_STRING and RARITIES.has(String(value)) else RARITY_COMMON
 
 
+## MAP4-C: a curse card (`"curse": true`, BUILD_DEPTH 13.4). It sits in its own fixed slot type, belongs to the neutral pool, may have no effects at all, and
+## is never offered or filled in by a pool (RewardOffer, the merchant, the pool-filled deck). Anything that is not exactly `true` is not a curse.
+const CURSE_POOL := "neutral"
+
+
+static func is_curse(card_data: Variant) -> bool:
+	return typeof(card_data) == TYPE_DICTIONARY and typeof((card_data as Dictionary).get("curse", false)) == TYPE_BOOL and bool((card_data as Dictionary).get("curse", false))
+
+
 static func validate(card_data: Dictionary) -> Array[String]:
 	var errors: Array[String] = []
 
@@ -28,6 +37,11 @@ static func validate(card_data: Dictionary) -> Array[String]:
 	_validate_cooldown_modifier(card_data, errors)
 	if card_data.has("rarity") and (typeof(card_data["rarity"]) != TYPE_STRING or not RARITIES.has(String(card_data["rarity"]))):
 		errors.append("rarity must be one of %s" % [RARITIES])
+	if card_data.has("curse"):
+		if typeof(card_data["curse"]) != TYPE_BOOL:
+			errors.append("curse must be true or false")
+		elif bool(card_data["curse"]) and card_data.get("pool") != CURSE_POOL:
+			errors.append("a curse card must be in the '%s' pool" % CURSE_POOL)
 	_validate_effects(card_data, errors)
 	errors.append_array(CardTags.validate_keywords(card_data))
 	if card_data.has("requires"):
@@ -68,8 +82,10 @@ static func _validate_cooldown_modifier(card_data: Dictionary, errors: Array[Str
 
 static func _validate_effects(card_data: Dictionary, errors: Array[String]) -> void:
 	var effects: Variant = card_data.get("effects")
+	if typeof(effects) == TYPE_ARRAY and (effects as Array).is_empty() and is_curse(card_data):
+		return  # MAP4-C: only a curse may do nothing when cast
 	if typeof(effects) != TYPE_ARRAY or (effects as Array).is_empty():
-		errors.append("effects must be a non-empty array")
+		errors.append("effects must be a non-empty array (only a curse card may be empty)")
 		return
 	var effects_array: Array = effects
 	for i in range(effects_array.size()):

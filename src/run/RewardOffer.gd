@@ -213,6 +213,8 @@ static func candidate_ids(cards: Array, pools: Array, deck_cards: Array[Dictiona
 		var c: Dictionary = card
 		if not pools.has(String(c.get("pool", ""))):
 			continue
+		if CardSchema.is_curse(c):
+			continue  # MAP4-C: a curse is never offered (rewards, the mini-boss offer and the merchant's card stock all come through here)
 		if not meets_requires(c.get("requires", {}), pools, deck_cards, pool_defs):
 			continue
 		out.append(String(c.get("id", "")))

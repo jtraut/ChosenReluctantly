@@ -14,7 +14,11 @@ extends RefCounted
 ## (RunController then pushes the state to the live player).
 
 const OPTION_CHOICE := "event_choice"
-const IMPLEMENTED: Array[String] = ["lose_hp", "lose_max_hp", "heal", "gain_gold", "lose_gold", "gain_relic", "chance", "stat_mod", "merchant_discount", "sacrifice_relic", "start_fight"]
+const IMPLEMENTED: Array[String] = ["lose_hp", "lose_max_hp", "heal", "gain_gold", "lose_gold", "gain_relic", "chance", "stat_mod", "merchant_discount", "sacrifice_relic", "start_fight",
+		"gain_curse", "remove_curse", "remove_card"]
+## MAP4-C: the salt of the random curse stream, and the option id prefix of the removal pick.
+const CURSE_SALT := 0xC0E5E
+const OPTION_REMOVE := "event_remove"
 ## MAP4-B2: salts of the seeded streams (a chance roll, the elite wave an event fight uses).
 const CHANCE_SALT := 0xC4A9CE
 const FIGHT_SALT := 0xF16E7
@@ -40,7 +44,7 @@ static func shipped_context() -> Dictionary:
 
 
 static func owns(pending: String) -> bool:
-	return pending == RunState.PENDING_EVENT or pending == RunState.PENDING_EVENT_SACRIFICE
+	return pending == RunState.PENDING_EVENT or pending == RunState.PENDING_EVENT_SACRIFICE or pending == RunState.PENDING_EVENT_REMOVE
 
 
 ## True while the open relic choice (the offer or its give-up step) is an event's relic offer.
@@ -146,8 +150,7 @@ static func open_for_room(state: RunState, ctx: Dictionary) -> String:
 
 # --- requirements -------------------------------------------------------------------------------
 
-## "" when the requirement is met (or there is none), else the words for why not. Knows `gold_at_least` and `owns_relic` (B2); `has_curse` is valid data that reads as
-## unmet ("Not available yet") until sitting C.
+## "" when the requirement is met (or there is none), else the words for why not. Knows `gold_at_least`, `owns_relic` (B2) and `has_curse` (C).
 static func requirement_reason(requires: Variant, state: RunState, ctx: Dictionary) -> String:
 	if typeof(requires) != TYPE_DICTIONARY or (requires as Dictionary).is_empty():
 		return ""
@@ -163,7 +166,26 @@ static func requirement_reason(requires: Variant, state: RunState, ctx: Dictiona
 		if not owned_in_tiers(state.relics, bounds, catalog).is_empty():
 			return ""
 		return String(reasons.get("relic", "Needs a tier %s relic you can give up")) % tier_range_text(bounds)
+	if (requires as Dictionary).has("has_curse"):
+		if not RunChoices.curse_ids(state, ctx).is_empty():
+			return ""
+		return String(reasons.get("no_curse", "Needs a curse"))
 	return String(reasons.get("unsupported", "Not available yet"))
+
+
+## MAP4-C: "" when the outcomes of a choice can all be carried out, else why not. A choice that would charge you and then find nothing to remove is greyed instead:
+## `remove_curse` needs a curse you may still remove (the cleanse cap), `remove_card` needs a card the deck rules let go.
+static func outcome_block_reason(outcomes: Array, state: RunState, ctx: Dictionary) -> String:
+	var types: Array[String] = outcome_types(outcomes)
+	var reasons: Dictionary = _ui(ctx).get("reasons", {})
+	if types.has("remove_curse"):
+		if RunChoices.curse_ids(state, ctx).is_empty():
+			return String(reasons.get("no_curse", "Needs a curse"))
+		if RunChoices.cleanses_at_cap(state, ctx):
+			return String(reasons.get("cleanse_cap", "You can't remove any more curses"))
+	if types.has("remove_card") and RunChoices.removable_card_ids(state, ctx).is_empty():
+		return String(reasons.get("none_removable", "No card can be removed"))
+	return ""
 
 
 # --- relics you can give up ------------------------------------------------------------------------
@@ -336,6 +358,9 @@ static func outcome_types(outcomes: Array) -> Array[String]:
 
 
 static func title_and_line(state: RunState, ctx: Dictionary) -> Dictionary:
+	if state.pending == RunState.PENDING_EVENT_REMOVE:
+		var curse_only: bool = not state.event_queue.is_empty() and String(state.event_queue[0].get("type", "")) == "remove_curse"
+		return {"title": String(_ui(ctx).get("remove_title", "")), "line": String(_ui(ctx).get("remove_curse_line" if curse_only else "remove_line", ""))}
 	if state.pending == RunState.PENDING_EVENT_SACRIFICE:
 		return {"title": String(_ui(ctx).get("sacrifice_title", "")), "line": String(_ui(ctx).get("sacrifice_line", ""))}
 	var event: Dictionary = event_of(state, ctx)
@@ -350,6 +375,8 @@ static func options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 		for relic_id: String in _pending_candidates(state, ctx):
 			out.append(RunRelics.relic_option("%s:%s" % [OPTION_SACRIFICE, relic_id], "giveup", relic_id, ctx))
 		return out
+	if state.pending == RunState.PENDING_EVENT_REMOVE:
+		return _remove_options(state, ctx)
 	var ui: Dictionary = _ui(ctx)
 	var choices: Array = event_of(state, ctx).get("choices", [])
 	for i in range(choices.size()):
@@ -363,6 +390,8 @@ static func options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 		option["outcome_types"] = outcome_types(outcomes)
 		option["has_requires"] = choice.has("requires")
 		var reason: String = requirement_reason(choice.get("requires"), state, ctx)
+		if reason.is_empty():
+			reason = outcome_block_reason(outcomes, state, ctx)
 		if not reason.is_empty():
 			option["enabled"] = false
 			option["reason"] = reason
@@ -376,13 +405,35 @@ static func model_extras(state: RunState, ctx: Dictionary) -> Dictionary:
 	var extras: Dictionary = {
 		"event": {"id": state.event_id, "name": String(event.get("name", state.event_id)), "flavor": String(event.get("flavor", ""))},
 		"gold": state.gold, "hp": state.hp, "max_hp": state.max_hp,
-		"event_screen": "sacrifice" if state.pending == RunState.PENDING_EVENT_SACRIFICE else "choice",
+		"event_screen": "sacrifice" if state.pending == RunState.PENDING_EVENT_SACRIFICE else ("remove" if state.pending == RunState.PENDING_EVENT_REMOVE else "choice"),
 	}
+	if state.pending == RunState.PENDING_EVENT_REMOVE:
+		extras["remove_kind"] = String(state.event_queue[0].get("type", "")) if not state.event_queue.is_empty() else ""
 	if state.pending == RunState.PENDING_EVENT_SACRIFICE:
 		extras["relics_owned"] = RunRelics.owned_display(state, ctx)
 		extras["relics_given_up"] = RunRelics.given_up_display(state, ctx)
 		extras["relic_max_owned"] = RunRelics.max_owned(ctx)
 	return extras
+
+
+## MAP4-C: the removal pick of a `remove_card` / `remove_curse` outcome: one option per distinct card the outcome may take (`remove_curse`: the curses only), greyed with the
+## reason when the deck rules or the cleanse cap forbid it. No cancel: the choice that led here is already paid for.
+static func _remove_options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	if state.event_queue.is_empty():
+		return out
+	var curse_only: bool = String(state.event_queue[0].get("type", "")) == "remove_curse"
+	for card_id: String in RunChoices.unique_deck_ids(state, ctx):
+		if curse_only and not RunChoices.is_curse_id(card_id, ctx):
+			continue
+		var option: Dictionary = RunChoices.card_option("%s:%s" % [OPTION_REMOVE, card_id], "remove", card_id, ctx)
+		option["count"] = state.deck.count(card_id)
+		var problems: Array[String] = RunChoices.removal_problems(state, card_id, ctx)
+		if not problems.is_empty():
+			option["enabled"] = false
+			option["reason"] = RunChoices.removal_reason(state, card_id, problems, ctx)
+		out.append(option)
+	return out
 
 
 ## The relic ids the open event sacrifice step offers (the waiting `sacrifice_relic` outcome's candidates).
@@ -400,6 +451,8 @@ static func apply(state: RunState, option_id: String, ctx: Dictionary) -> Dictio
 	var found: Dictionary = {}
 	if state.pending == RunState.PENDING_EVENT_SACRIFICE:
 		return _apply_sacrifice(state, option_id, ctx, result)
+	if state.pending == RunState.PENDING_EVENT_REMOVE:
+		return _apply_remove(state, option_id, ctx, result)
 	for option: Dictionary in options(state, ctx):
 		if String(option["id"]) == option_id:
 			found = option
@@ -448,6 +501,33 @@ static func _apply_sacrifice(state: RunState, option_id: String, ctx: Dictionary
 	_give_up(state, relic_id, ctx, result)
 	result["kind"] = "event_sacrifice"
 	result["relic_id"] = relic_id
+	result["ok"] = true
+	_run(state, ctx, waiting, result)
+	return result
+
+
+## MAP4-C: the player picked the card to remove (the `event_remove` step): it leaves the deck (a curse counts as a cleanse) and the outcomes after it run.
+static func _apply_remove(state: RunState, option_id: String, ctx: Dictionary, result: Dictionary) -> Dictionary:
+	var found: Dictionary = {}
+	for option: Dictionary in options(state, ctx):
+		if String(option["id"]) == option_id:
+			found = option
+	if found.is_empty() or option_id.get_slice(":", 0) != OPTION_REMOVE:
+		result["reason"] = "no such option '%s' in the %s choice" % [option_id, state.pending]
+		return result
+	if not bool(found["enabled"]):
+		result["reason"] = String(found["reason"])
+		return result
+	var card_id: String = String(found["card_id"])
+	var waiting: Array = state.event_queue.duplicate(true)
+	waiting.pop_front()  # the removal outcome itself
+	state.event_queue = []
+	state.pending = RunState.PENDING_NONE
+	RunChoices.remove_from_deck(state, card_id, ctx)
+	state.log_choice("event_remove", card_id)
+	result["kind"] = "event_remove"
+	result["card_id"] = card_id
+	result["deck_changed"] = true
 	result["ok"] = true
 	_run(state, ctx, waiting, result)
 	return result
@@ -566,6 +646,31 @@ static func _run(state: RunState, ctx: Dictionary, outcomes: Array, result: Dict
 				state.pending = RunState.PENDING_EVENT_SACRIFICE
 				result["finished"] = false
 				return
+			"gain_curse":
+				var curse_id: String = _curse_to_gain(state, ctx, outcome, queue.size())
+				if curse_id.is_empty():
+					push_error("EventEngine: gain_curse found no curse card to give (data has none, or '%s' is not a curse); skipped" % String(outcome.get("id", "")))
+					continue
+				state.deck.append(curse_id)
+				state.log_choice("event_curse", curse_id)
+				result["deck_changed"] = true
+				var gained: Array = result.get("curses_gained", []) as Array
+				gained.append(curse_id)
+				result["curses_gained"] = gained
+			"remove_curse", "remove_card":
+				var pick_queue: Array[Dictionary] = [outcome]
+				pick_queue.append_array(_rest_of(queue))
+				state.event_queue = pick_queue
+				if _remove_options_open(state, ctx).is_empty():
+					push_error("EventEngine: %s found no card that can be removed (a choice with this outcome is greyed first); skipped" % type_id)
+					state.event_queue = []
+					continue
+				state.offer = []
+				state.relic_incoming = ""
+				state.offer_rarity = ""
+				state.pending = RunState.PENDING_EVENT_REMOVE
+				result["finished"] = false
+				return
 			"start_fight":
 				# MAP4-B2: the room becomes the event's elite fight. Everything after it waits in the queue until the win (a loss ends the run as anywhere).
 				state.event_queue = _rest_of(queue)
@@ -577,6 +682,37 @@ static func _run(state: RunState, ctx: Dictionary, outcomes: Array, result: Dict
 				return
 	finish(state)
 	result["finished"] = true
+
+
+## The enabled removal options an open `remove_*` outcome at the head of the queue would show now (empty = nothing could be picked).
+static func _remove_options_open(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
+	var live: Array[Dictionary] = []
+	for option: Dictionary in _remove_options(state, ctx):
+		if bool(option["enabled"]):
+			live.append(option)
+	return live
+
+
+## Every curse card id of the context, sorted (the pool a random `gain_curse` draws from).
+static func curse_pool(ctx: Dictionary) -> Array[String]:
+	var ids: Array[String] = []
+	for card: Variant in (ctx.get("cards", []) as Array):
+		if CardSchema.is_curse(card):
+			ids.append(String((card as Dictionary).get("id", "")))
+	ids.sort()
+	return ids
+
+
+## The curse a `gain_curse` outcome hands over: its `id` (when that is a curse card), else a uniform pick from the seeded stream of this run, room and outcome. "" when none.
+static func _curse_to_gain(state: RunState, ctx: Dictionary, outcome: Dictionary, outcomes_left: int) -> String:
+	var pool: Array[String] = curse_pool(ctx)
+	if outcome.has("id"):
+		return String(outcome["id"]) if pool.has(String(outcome["id"])) else ""
+	if pool.is_empty():
+		return ""
+	var rng := RandomNumberGenerator.new()
+	rng.seed = ((state.seed_value & RunState.SEED_LIMIT) * 6151 + state.stream_index() * 104729 + CURSE_SALT + outcomes_left * 15485863) & RunState.SEED_LIMIT
+	return pool[rng.randi_range(0, pool.size() - 1)]
 
 
 ## Ends the event: no event, no waiting outcomes, no open choice.

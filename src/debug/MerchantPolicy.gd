@@ -101,6 +101,8 @@ static func _removal(options: Array) -> String:
 				back = String(entry["id"])
 			"remove":
 				if bool(entry.get("enabled", false)):
+					if bool(entry.get("curse", false)):
+						return String(entry["id"])  # MAP4-C: a curse goes first
 					if any == "":
 						any = String(entry["id"])
 					if spare == "" and int(entry.get("count", 0)) > 1:

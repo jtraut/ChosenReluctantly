@@ -105,8 +105,8 @@ static func check_card(card: Dictionary, slot_base_cooldown: float, light: Dicti
 static func check_all(cards: Array, slot_types: Dictionary, light: Dictionary, statuses: Dictionary) -> Array[String]:
 	var problems: Array[String] = []
 	for card: Dictionary in cards:
-		if not is_damage_card(card):
-			continue
+		if CardSchema.is_curse(card) or not is_damage_card(card):
+			continue  # MAP4-C: a curse is not a damage card (it may deal nothing)
 		var slot: Dictionary = slot_types.get(String(card["slot_type"]), {})
 		problems.append_array(check_card(card, float(slot.get("base_cooldown", 0.0)), light, statuses))
 	return problems

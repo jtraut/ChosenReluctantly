@@ -1137,14 +1137,21 @@ func _policy_choose(controller: RunController) -> String:
 			return RouteBot.event_choice(options, _route_policy, state.hp_fraction())  # MAP4-B1: no random draws
 		RunState.PENDING_EVENT_SACRIFICE:
 			return RouteBot.sacrifice_choice(options)  # MAP4-B2: the lowest-tier relic goes; no random draws
+		RunState.PENDING_EVENT_REMOVE:
+			return RouteBot.removal_choice(options)  # MAP4-C: a curse first, else the usual removal logic; no random draws
 		RunState.PENDING_REST:
 			var heal_id: String = ""
 			var menu_id: String = ""
+			var dig_id: String = ""
 			for option: Dictionary in options:
+				if String(option["kind"]) == "dig" and bool(option["enabled"]):
+					dig_id = String(option["id"])  # MAP4-C: a Dig (only with the Spade) replaces the removal once HP is fine
 				if String(option["kind"]) == "heal":
 					heal_id = String(option["id"])
 				elif bool(option["opens_list"]) and bool(option["enabled"]):
 					menu_id = String(option["id"])
+			if state.hp_fraction() >= HEAL_BELOW_FRACTION and dig_id != "":
+				return dig_id
 			if state.hp_fraction() >= HEAL_BELOW_FRACTION and menu_id != "":
 				return menu_id
 			return heal_id
@@ -1156,6 +1163,8 @@ func _policy_choose(controller: RunController) -> String:
 				if String(option["kind"]) == "back":
 					back_id = String(option["id"])
 				elif String(option["kind"]) == "remove" and bool(option["enabled"]):
+					if bool(option.get("curse", false)):
+						return String(option["id"])  # MAP4-C: a curse goes first
 					if any == "":
 						any = String(option["id"])
 					if best == "" and int(option["count"]) > 1:
@@ -1837,7 +1846,7 @@ func _print_pick_rates() -> void:
 	for slot_type: String in CardSlotController.SLOT_TYPE_ORDER:
 		var ids: Array[String] = []
 		for card: Variant in CardDatabase.cards_for_slot_type(slot_type):
-			if played_pools.has(String((card as Dictionary).get("pool", ""))):
+			if played_pools.has(String((card as Dictionary).get("pool", ""))) and not CardSchema.is_curse(card):
 				ids.append(String((card as Dictionary)["id"]))
 		var in_slot: int = 0
 		for card_id: String in ids:

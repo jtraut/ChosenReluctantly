@@ -34,6 +34,7 @@
     },
     "merchant": { "card_prices": { "common": 55, "rare": 85, "legendary": 125 }, "removal_base": 50, "removal_step": 25, "relic_stock": 3, "shop_only_slots": 1, "card_stock": 3 },
     "events": { "min_max_hp": 10 },
+    "curses": { "max_cleanses": -1 },
     "gold": { "combat": [24, 36], "elite": [60, 80], "mini_boss": [90, 110] },
     "tiers": {
         "elite": { "hp_multiplier": 2.0, "armor": 17.0, "resistance_floor": 0.25, "resistance_cap": 0.5, "rank": "elite", "scale": 1.0, "marker_color": "#ffd23f", "marker_size": 0.26, "marker_height": 2.85 },
@@ -166,7 +167,7 @@
         "room_cleared": { "title": "Room cleared", "button": "Continue", "hint": "Enter to continue", "rest_line": "You rest. It helps a little (healed %d).", "rest_full_line": "You rest. Nothing needed healing.", "stat_hp": "HP", "stat_time": "Time", "stat_healed": "Healed" },
         "next_line": "Next: Room %d of %d - %s",
         "reward": { "title": "Room cleared", "line": "Pick a card, or reject the offer.", "skip_label": "Reject the offer", "skip_detail": "Spends one reject. Rejects left: %d of %d", "skip_disabled": "No rejects left. Pick a card.", "rejects_label": "Rejects left" },
-        "rest": { "title": "Rest", "line": "Heal a little, or get rid of a card.", "heal_label": "Rest and heal", "heal_detail": "Heal %d HP (%d%% of max)", "heal_full_detail": "HP is already full", "remove_label": "Remove a card", "remove_detail": "Take one card out of your deck", "remove_none": "Every card is needed to meet the deck minimums. Add a card first.", "remove_locked": "Get another card for the %s slot first (minimum %d different)", "remove_locked_group": "Get another card for %s first", "remove_title": "Remove which card?", "remove_line": "Pick a card to remove. Greyed cards would break a deck minimum.", "remove_option": "Remove %s", "copies": "x%d", "back_label": "Back" },
+        "rest": { "title": "Rest", "line": "Heal a little, or get rid of a card.", "heal_label": "Rest and heal", "heal_detail": "Heal %d HP (%d%% of max)", "heal_full_detail": "HP is already full", "remove_label": "Remove a card", "remove_detail": "Take one card out of your deck", "remove_none": "Every card is needed to meet the deck minimums. Add a card first.", "remove_locked": "Get another card for the %s slot first (minimum %d different)", "remove_locked_group": "Get another card for %s first", "remove_title": "Remove which card?", "remove_line": "Pick a card to remove. Greyed cards would break a deck minimum.", "remove_option": "Remove %s", "cleanse_cap": "You can't remove any more curses this run", "dig_label": "Dig", "dig_detail": "Pick 1 of 3 relics, or skip. Takes the place of the heal and the removal.", "dig_none": "Nothing left to dig up", "dig_title": "Dig", "dig_line": "Pick a relic to keep for this run, or skip. This rest is spent either way.", "copies": "x%d", "back_label": "Back" },
         "merchant": {
             "title": "Merchant", "line": "Spend your gold, then leave. You have %d gold.",
             "item_format": "%s - %d gold", "removal_format": "Remove a card - %d gold", "removal_name": "Remove a card", "removal_detail": "Each removal costs %d more.",
@@ -204,7 +205,9 @@
                 "attack_damage_mult.light": "Light attack damage", "attack_damage_mult.heavy": "Heavy attack damage", "attack_interval.light": "Light attack interval",
                 "status_max_stacks.bleed": "Bleed max stacks", "status_max_stacks.burn": "Burn max stacks", "zone_duration_mult": "Zone duration", "armor": "Armor"
             },
-            "reasons": { "gold": "Needs %d gold (you have %d)", "relic": "Needs a tier %s relic you can give up", "unsupported": "Not available yet", "offer_empty": "No relic is left to offer" },
+            "reasons": { "gold": "Needs %d gold (you have %d)", "relic": "Needs a tier %s relic you can give up", "unsupported": "Not available yet", "offer_empty": "No relic is left to offer",
+                "no_curse": "You have no curse", "cleanse_cap": "You can't remove any more curses this run", "none_removable": "No card can be removed (the deck minimums hold them all)" },
+            "remove_title": "Remove which card?", "remove_line": "Pick a card to remove. Greyed cards would break a deck minimum.", "remove_curse_line": "Pick a curse to remove.",
             "sacrifice_title": "Give up a relic", "sacrifice_line": "This is the price. Pick the relic you give up; it never comes back."
         },
         "slot_condition": { "target_has_status": "Needs %s", "cast_within_slot": "After %s", "cast_within_slot_key": "After %s (%s)", "cast_within_tag": "After %s", "zone_active": "Needs zone", "detonate_status": "Wants %s stacks", "slot_short": { "movement": "Move" } },

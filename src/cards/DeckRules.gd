@@ -179,13 +179,22 @@ static func validate_shipped_content() -> Array[String]:
 		pools[pool_id] = PoolDatabase.get_definition(String(pool_id))
 	var pool_of: Dictionary = {}
 	for card: Variant in CardDatabase.all_cards():
-		pool_of[(card as Dictionary)["id"]] = (card as Dictionary).get("pool", "")
+		if not CardSchema.is_curse(card):
+			pool_of[(card as Dictionary)["id"]] = (card as Dictionary).get("pool", "")
 	return validate_content(shipped_config(), pools, pool_of, slot_map_from_database(), SlotTypeDatabase.known_ids(), slot_names_from_database())
 
 
+## card id -> slot type for the unique-card rules. MAP4-C: a curse is left out on purpose, so it counts toward no slot minimum and removing one is never blocked
+## (a card with no slot here touches no rule). Use `slot_map_of` to build the same map from any card list.
 static func slot_map_from_database() -> Dictionary:
+	return slot_map_of(CardDatabase.all_cards())
+
+
+static func slot_map_of(cards: Array) -> Dictionary:
 	var map: Dictionary = {}
-	for card: Variant in CardDatabase.all_cards():
+	for card: Variant in cards:
+		if CardSchema.is_curse(card):
+			continue
 		map[(card as Dictionary)["id"]] = (card as Dictionary).get("slot_type", "")
 	return map
 

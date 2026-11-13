@@ -56,6 +56,11 @@ func decide(slot_type: String, slot: CardSlot, slots: Dictionary, view: Dictiona
 		return WAIT
 	var enemies: Array = view.get("enemies", [])
 	var now: float = float(view.get("now", 0.0))
+	if CardSchema.is_curse(card):
+		# MAP4-C: a curse is swapped away. With swaps locked (The Micromanager), or a slot holding nothing but curses, it is cast as soon as the slot is ready instead, because
+		# casting is the only way the slot moves on (the cooldown starts and the next card is drawn).
+		_holding.erase(slot_type)
+		return SWAP if (not swap_locked and _has_other_real_card(slot)) else CAST
 	if SlotSynergy.conditional_effects(card).size() > 0:
 		return _decide_payoff(slot_type, slot, card, slots, view, now, enemies)
 	_holding.erase(slot_type)
@@ -139,6 +144,14 @@ func _another_card_soon(slots: Dictionary, own_slot_type: String, matches: Calla
 func _has_other_card(slot: CardSlot) -> bool:
 	for card_id: String in slot.owned_card_ids:
 		if card_id != slot.current_card_id:
+			return true
+	return false
+
+
+## True when the slot holds a card that is not a curse, so swapping a curse away can reach something worth casting.
+func _has_other_real_card(slot: CardSlot) -> bool:
+	for card_id: String in slot.owned_card_ids:
+		if not CardSchema.is_curse(CardDatabase.get_card(card_id)):
 			return true
 	return false
 

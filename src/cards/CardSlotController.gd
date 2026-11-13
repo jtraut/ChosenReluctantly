@@ -169,6 +169,6 @@ func _cast_card(card_data: Dictionary) -> void:
 func _owned_card_ids_for_slot(slot_type: String, owned_pools: Array[String]) -> Array[String]:
 	var ids: Array[String] = []
 	for card_data: Dictionary in CardDatabase.cards_for_slot_type(slot_type):
-		if owned_pools.has(card_data.get("pool", "")) and CardSchema.rarity_of(card_data) == CardSchema.RARITY_COMMON:  # MAP3b: a pool-filled deck takes only common cards
+		if owned_pools.has(card_data.get("pool", "")) and CardSchema.rarity_of(card_data) == CardSchema.RARITY_COMMON and not CardSchema.is_curse(card_data):  # MAP3b: a pool-filled deck takes only common cards
 			ids.append(card_data["id"])
 	return ids

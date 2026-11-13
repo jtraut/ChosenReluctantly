@@ -293,9 +293,7 @@ static func buy_removal(state: RunState, card_id: String, ctx: Dictionary) -> Di
 		return _refuse(result, "removal_blocked")
 	if price > state.gold:
 		return _refuse(result, "too_expensive")
-	state.deck.erase(card_id)  # one copy
-	state.record_removal(card_id)
-	state.discount_card_types(card_id, ctx["rewards"])  # D49 = B
+	RunChoices.remove_from_deck(state, card_id, ctx)  # one copy; a curse counts as a cleanse (MAP4-C), a card is remembered and discounts as D49 says
 	# D47: a copy of the pruned card already on the shelf (unsold) goes too, so it can't be bought straight back in the same visit.
 	if not (state.merchant_visit["sold_cards"] as Array).has(card_id):
 		(state.merchant_visit["cards"] as Array).erase(card_id)

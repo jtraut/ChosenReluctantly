@@ -147,6 +147,29 @@ func _begin_event_fight(config: Dictionary, spawner: EnemySpawner) -> void:
 	_setup_fight(config, spawner, variant)
 
 
+## MAP4-C getters for the screens. The curse cards in the deck now (copies counted), the curses removed so far, how many more may be (-1 = no limit), and whether this run's
+## rests offer the Dig (the Gravedigger's Spade; the rest choice's `dig` option carries the label and the reason it is greyed).
+func curse_count() -> int:
+	var count: int = 0
+	if _state != null:
+		for card_id: String in _state.deck:
+			if RunChoices.is_curse_id(card_id, _ctx):
+				count += 1
+	return count
+
+
+func cleanses() -> int:
+	return _state.cleanses if _state != null else 0
+
+
+func cleanses_left() -> int:
+	return RunChoices.cleanses_left(_state, _ctx) if _state != null else -1
+
+
+func dig_available() -> bool:
+	return _state != null and RunChoices.dig_enabled(_state, _ctx)
+
+
 ## Whether this room is an event's fight (so a screen can say "Fight!" instead of the event's room type). True from the confirm that started it until it is won.
 func event_fight_active() -> bool:
 	return _state != null and not _state.event_fight.is_empty()

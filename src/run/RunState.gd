@@ -33,11 +33,15 @@ const MERCHANT_PENDING: Array[String] = [PENDING_MERCHANT, PENDING_MERCHANT_REMO
 const PENDING_EVENT := "event"
 ## MAP4-B2: an event's "give up a relic" step (`sacrifice_relic` outcome). The outcome sits at the head of `event_queue` (so its params are saved and checked on load).
 const PENDING_EVENT_SACRIFICE := "event_sacrifice"
+## MAP4-C: an event's "pick a card to remove" step (`remove_card` / `remove_curse`). The outcome sits at the head of `event_queue`, as with the sacrifice.
+const PENDING_EVENT_REMOVE := "event_remove"
 const PENDING_VALUES: Array[String] = [PENDING_NONE, PENDING_REWARD, PENDING_REST, PENDING_REST_REMOVE, PENDING_RELIC, PENDING_RELIC_SWAP, PENDING_NODE,
-		PENDING_MERCHANT, PENDING_MERCHANT_REMOVE, PENDING_MERCHANT_SWAP, PENDING_EVENT, PENDING_EVENT_SACRIFICE]
+		PENDING_MERCHANT, PENDING_MERCHANT_REMOVE, PENDING_MERCHANT_SWAP, PENDING_EVENT, PENDING_EVENT_SACRIFICE, PENDING_EVENT_REMOVE]
 ## `offer_rarity` values of an event's relic offer: skip allowed ("event") and no skip ("event_noskip", the player has paid for it).
 const OFFER_EVENT := "event"
 const OFFER_EVENT_NOSKIP := "event_noskip"
+## MAP4-C: the relic offer of a rest's Dig (skip allowed; not a save boundary, since nothing was paid).
+const OFFER_DIG := "dig"
 
 var seed_value: int = 0
 ## The character (data/characters.json id) this run is played as (W1a). Fixed for the whole run.
@@ -108,6 +112,8 @@ var merchant_discount: float = 0.0
 var sacrifice_picks: Array[String] = []
 ## MAP4-B2: the tier (1-3) of the relic an event just made you give up, for `gain_relic` tier `sacrificed_plus_one`; 0 = none.
 var sacrificed_tier: int = 0
+## MAP4-C: how many curses this run has removed, on every path (rest, merchant, `remove_curse`, `remove_card` that picked a curse). Capped by data/run.json `curses.max_cleanses`.
+var cleanses: int = 0
 ## MAP3-B: the act the run is in (1-based) and how many acts the run has. `map`, `path` and `room_index` always describe the CURRENT act (room_index
 ## 0-9 inside it), so everything that reads them keeps working. A finished act's map and path move to `past_acts` ({map, path}, act 1 first), which
 ## makes `act_map(n)` / `act_path(n)` answer for any act. A one-act run (and every straight run) is act 1 of 1 with no past acts.
@@ -308,6 +314,7 @@ func to_dict() -> Dictionary:
 		"merchant_discount": merchant_discount,
 		"sacrifice_picks": sacrifice_picks.duplicate(),
 		"sacrificed_tier": sacrificed_tier,
+		"cleanses": cleanses,
 		"act": act,
 		"acts_total": acts_total,
 		"past_acts": past_acts.duplicate(true),
@@ -441,6 +448,12 @@ static func from_dict(data: Dictionary) -> RunState:
 			push_error("RunState.from_dict: 'deck' holds a value that is not a card id")
 			return null
 		state.deck.append(String(card_id))
+	if state.pending == PENDING_EVENT_REMOVE and not _event_remove_fits(state):
+		# The deck is read above on purpose: the check needs it.
+		push_error("RunState.from_dict: pending 'event_remove' has no removal outcome waiting or nothing it may remove; no choice is open")
+		state.pending = PENDING_NONE
+		state.event_queue = []
+		dropped_choice = true
 	for entry: Variant in (data["history"] as Array):
 		if typeof(entry) != TYPE_DICTIONARY:
 			push_error("RunState.from_dict: history entries must be objects")
@@ -477,7 +490,7 @@ static func _offer_rarity_for(pending_value: String, saved: Variant) -> String:
 		return ""
 	var fits: bool = typeof(saved) == TYPE_STRING and (
 			([PENDING_RELIC, PENDING_RELIC_SWAP].has(pending_value) and String(saved) == "boss")
-			or ([PENDING_RELIC, PENDING_RELIC_SWAP].has(pending_value) and [OFFER_EVENT, OFFER_EVENT_NOSKIP].has(String(saved)))
+			or ([PENDING_RELIC, PENDING_RELIC_SWAP].has(pending_value) and [OFFER_EVENT, OFFER_EVENT_NOSKIP, OFFER_DIG].has(String(saved)))
 			or (pending_value == PENDING_REWARD and ["rare", "legendary"].has(String(saved))))
 	if not fits:
 		push_error("RunState.from_dict: offer_rarity %s does not fit the open choice '%s'; using a normal offer" % [str(saved), pending_value])
@@ -635,7 +648,7 @@ static func _read_event_fields(state: RunState, data: Dictionary) -> void:
 			push_error("RunState.from_dict: 'event_queue' holds a bad outcome (%s); queue dropped" % "; ".join(problems))
 			return
 		rebuilt.append(EventSchema.normalize_outcome(entry as Dictionary))
-	if not rebuilt.is_empty() and not ([PENDING_RELIC, PENDING_RELIC_SWAP, PENDING_EVENT_SACRIFICE].has(state.pending) or not state.event_fight.is_empty()):
+	if not rebuilt.is_empty() and not ([PENDING_RELIC, PENDING_RELIC_SWAP, PENDING_EVENT_SACRIFICE, PENDING_EVENT_REMOVE].has(state.pending) or not state.event_fight.is_empty()):
 		push_error("RunState.from_dict: 'event_queue' has no open event choice or fight to wait for; queue dropped")
 		return
 	state.event_queue = rebuilt
@@ -646,6 +659,25 @@ static func _event_sacrifice_fits(state: RunState) -> bool:
 	if state.event_queue.is_empty() or String(state.event_queue[0].get("type", "")) != "sacrifice_relic":
 		return false
 	return not EventEngine.sacrifice_candidates(state.relics, state.event_queue[0], RelicDatabase.all_relics()).is_empty()
+
+
+## True when an event removal step has what it needs: a `remove_card` or `remove_curse` outcome at the head of the queue and a card it may take (for a curse: one
+## in the deck while the cleanse cap, if any, is not used up).
+static func _event_remove_fits(state: RunState) -> bool:
+	if state.event_queue.is_empty():
+		return false
+	var head: String = String(state.event_queue[0].get("type", ""))
+	if head == "remove_card":
+		return not state.deck.is_empty()
+	if head != "remove_curse":
+		return false
+	var cap: int = RunConfig.max_cleanses()
+	if cap >= 0 and state.cleanses >= cap:
+		return false
+	for card_id: String in state.deck:
+		if CardSchema.is_curse(CardDatabase.get_card(card_id)):
+			return true
+	return false
 
 
 ## True when the saved multi-give-up picks belong to an open give-up step: every pick is an owned relic, none twice, at most the incoming relic's cost.
@@ -691,6 +723,11 @@ static func _read_run_fields(state: RunState, data: Dictionary) -> void:
 		state.sacrificed_tier = int(tier)
 	else:
 		push_error("RunState.from_dict: 'sacrificed_tier' must be 0 to 3; using 0")
+	var cleansed: Variant = data.get("cleanses", 0)
+	if _is_whole_number(cleansed) and int(cleansed) >= 0:
+		state.cleanses = int(cleansed)
+	else:
+		push_error("RunState.from_dict: 'cleanses' must be a whole number from 0; using 0")
 
 
 static func _run_mod_is_valid(entry: Variant) -> bool:

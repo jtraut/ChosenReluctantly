@@ -128,6 +128,24 @@ static func sacrifice_choice(options: Array) -> String:
 	return best
 
 
+## The bot's pick for any removal list (an event's `remove_card` / `remove_curse` step, the rest list, the merchant's list): a curse first, otherwise the card with spare copies,
+## otherwise the first card it may remove. `options` are the model's options of kind "remove" (enabled ones only); "" when none can be taken. Pure, no random draws.
+static func removal_choice(options: Array) -> String:
+	var spare: String = ""
+	var any: String = ""
+	for option: Variant in options:
+		var entry: Dictionary = option
+		if String(entry.get("kind", "")) != "remove" or not bool(entry.get("enabled", false)):
+			continue
+		if bool(entry.get("curse", false)):
+			return String(entry["id"])
+		if any == "":
+			any = String(entry["id"])
+		if spare == "" and int(entry.get("count", 0)) > 1:
+			spare = String(entry["id"])
+	return spare if spare != "" else any
+
+
 ## The first available choice whose outcomes hold none of `blocked`; else the choice with no `requires`; else the first available one.
 static func _event_without(available: Array[Dictionary], blocked: Array[String]) -> String:
 	for option: Dictionary in available:

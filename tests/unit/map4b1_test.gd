@@ -379,13 +379,13 @@ func test_gold_at_least_greys_a_choice_with_its_reason() -> void:
 	assert_bool(bool(RunChoices.options(state, ctx)[0]["enabled"])).is_true()
 
 
-func test_requirements_b1_does_not_run_read_as_unmet() -> void:
+func test_has_curse_reads_as_unmet_while_the_deck_holds_no_curse() -> void:
 	var ctx: Dictionary = _ctx()
 	var state: RunState = _state()
 	_adhoc(state, ctx, [], {"has_curse": true})
 	var option: Dictionary = RunChoices.options(state, ctx)[0]
 	assert_bool(bool(option["enabled"])).is_false()
-	assert_str(String(option["reason"])).is_equal("Not available yet")
+	assert_str(String(option["reason"])).is_equal("You have no curse")
 
 
 func test_cost_and_gain_lines_are_generated_from_the_outcomes_with_the_characters_hp() -> void:
@@ -524,10 +524,10 @@ func test_two_relic_offers_in_one_event_open_one_after_the_other() -> void:
 	assert_array(state.relics).is_equal([picked])
 
 
-func test_an_outcome_still_to_be_built_is_skipped_loudly_and_the_event_goes_on() -> void:
+func test_a_gain_curse_with_no_curse_card_in_the_data_is_skipped_loudly_and_the_event_goes_on() -> void:
 	var ctx: Dictionary = _ctx()
 	var state: RunState = _state()
-	_adhoc(state, ctx, [{"type": "gain_curse"}, {"type": "gain_gold", "amount": 5}])  # curse outcomes are sitting C's
+	_adhoc(state, ctx, [{"type": "gain_curse"}, {"type": "gain_gold", "amount": 5}])  # MAP4-C built the curse outcomes; the shipped data has no curse card yet, so this one finds nothing to give
 	var result: Dictionary = _pick(state, ctx)
 	assert_bool(bool(result["finished"])).is_true()
 	assert_int(state.gold).is_equal(55)

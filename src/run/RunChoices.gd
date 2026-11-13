@@ -30,7 +30,7 @@ extends RefCounted
 ## "relic", "relic_skip" and "giveup" belong to the relic choices (RunRelics); the model then carries the relic keys too.
 ## "node" is the pick-next-node choice of a map run (RunNodes).
 ## MAP2-B: "buy_relic", "buy_card", "buy_removal" and "reroll" belong to the merchant choices (RunMerchant); its Leave is a "back" option with the id "merchant_leave".
-const KINDS: Array[String] = ["card", "remove", "heal", "skip", "back", "relic", "relic_skip", "giveup", "node", "buy_relic", "buy_card", "buy_removal", "reroll", "event_choice", "giveup_confirm"]
+const KINDS: Array[String] = ["card", "remove", "heal", "skip", "back", "relic", "relic_skip", "giveup", "node", "buy_relic", "buy_card", "buy_removal", "reroll", "event_choice", "giveup_confirm", "dig"]
 
 
 ## The shipped databases and data as one context. Tests build their own with fixtures.
@@ -68,6 +68,7 @@ static func shipped_context(pools: Array) -> Dictionary:
 		"nodes": RunNodes.shipped_context(),
 		"merchant": MerchantConfig.shipped_context(),
 		"events": EventEngine.shipped_context(),
+		"max_cleanses": RunConfig.max_cleanses(),
 	}
 
 
@@ -152,6 +153,9 @@ static func model(state: RunState, ctx: Dictionary, room_type: String = "") -> D
 		"owned": owned_counts(state),
 		"next_room_type": "",
 		"offer_rarity": state.offer_rarity,
+		"cleanses": state.cleanses,
+		"cleanses_left": cleanses_left(state, ctx),
+		"curse_count": state.deck.filter(func(card_id: String) -> bool: return is_curse_id(card_id, ctx)).size(),
 	}
 	if state.has_relic_choice():
 		var texts: Dictionary = RunRelics.title_and_line(state, ctx, room_type)
@@ -246,6 +250,15 @@ static func options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 				menu["enabled"] = false
 				menu["reason"] = _locked_menu_reason(state, ctx, String(t["remove_none"]))
 			out.append(menu)
+			if dig_enabled(state, ctx):
+				# MAP4-C (D37 = A): the Gravedigger's Spade adds a third action that takes the place of the heal and the removal at this rest.
+				var dig: Dictionary = _blank(DIG_OPTION, "dig")
+				dig["label"] = String(t.get("dig_label", ""))
+				dig["detail"] = String(t.get("dig_detail", ""))
+				if dig_offer_ids(state, ctx).is_empty():
+					dig["enabled"] = false
+					dig["reason"] = String(t.get("dig_none", ""))
+				out.append(dig)
 		RunState.PENDING_REST_REMOVE:
 			for card_id: String in unique_deck_ids(state, ctx):
 				var option: Dictionary = card_option("remove:" + card_id, "remove", card_id, ctx)
@@ -312,12 +325,17 @@ static func apply(state: RunState, option_id: String, ctx: Dictionary) -> Dictio
 			result["amount"] = amount
 			_close(state)
 			result["finished"] = true
+		"dig":
+			state.offer = dig_offer_ids(state, ctx)
+			state.offer_rarity = RunState.OFFER_DIG
+			state.relic_incoming = ""
+			state.pending = RunState.PENDING_RELIC
+			state.log_choice("dig")
+			result["kind"] = "dig"
 		"remove_menu":
 			state.pending = RunState.PENDING_REST_REMOVE
 		"remove":
-			state.deck.remove_at(state.deck.find(String(found["card_id"])))
-			state.record_removal(String(found["card_id"]))
-			state.discount_card_types(String(found["card_id"]), ctx["rewards"])  # D49 = B
+			remove_from_deck(state, String(found["card_id"]), ctx)
 			state.log_choice("remove", String(found["card_id"]))
 			_close(state)
 			result["finished"] = true
@@ -372,12 +390,14 @@ static func _locked_menu_reason(state: RunState, ctx: Dictionary, fallback: Stri
 ## card for that slot (never "own N copies"). A block from a slot group says so with `remove_locked_group`.
 static func removal_reason(state: RunState, card_id: String, problems: Array[String], ctx: Dictionary) -> String:
 	var t: Dictionary = (ctx["ui"] as Dictionary)["rest"]
+	if is_curse_id(card_id, ctx):
+		return String(t.get("cleanse_cap", "")) if (not problems.is_empty() and cleanses_at_cap(state, ctx)) else ""
 	var slot_type: String = String(((ctx["by_id"] as Dictionary).get(card_id, {}) as Dictionary).get("slot_type", ""))
 	var slot_name: String = String((ctx["slot_names"] as Dictionary).get(slot_type, slot_type))
 	var minimum: int = DeckRules.min_for_slot(ctx["deck_rules"], slot_type)
 	var distinct: Array[String] = []
 	for owned_id: String in state.deck:
-		if String(((ctx["by_id"] as Dictionary).get(owned_id, {}) as Dictionary).get("slot_type", "")) == slot_type and not distinct.has(owned_id):
+		if String(((ctx["by_id"] as Dictionary).get(owned_id, {}) as Dictionary).get("slot_type", "")) == slot_type and not distinct.has(owned_id) and not is_curse_id(owned_id, ctx):
 			distinct.append(owned_id)
 	if problems.is_empty():
 		return ""
@@ -388,6 +408,14 @@ static func removal_reason(state: RunState, card_id: String, problems: Array[Str
 
 ## Deck-rule shortfalls that removing one copy of the card would cause (empty = allowed).
 static func removal_problems(state: RunState, card_id: String, ctx: Dictionary) -> Array[String]:
+	if is_curse_id(card_id, ctx):
+		# MAP4-C: a curse is never held by a deck minimum; only the cleanse cap can stop its removal.
+		var blocked: Array[String] = []
+		if not state.deck.has(card_id):
+			blocked.append("Card '%s' is not in the deck" % card_id)
+		elif cleanses_at_cap(state, ctx):
+			blocked.append("the cleanse cap is reached")
+		return blocked
 	return DeckRules.can_remove(state.deck, card_id, ctx["deck_rules"], ctx["slot_of"], ctx["known_slots"], ctx["slot_names"])
 
 
@@ -397,6 +425,78 @@ static func removable_card_ids(state: RunState, ctx: Dictionary) -> Array[String
 		if removal_problems(state, card_id, ctx).is_empty():
 			out.append(card_id)
 	return out
+
+
+## MAP4-C (D37 = A): the stat a relic (or an event's `stat_mod`) sets to give rests the third action, Dig. Additive: any total above 0 turns it on.
+const DIG_STAT := "rest_dig"
+const DIG_OPTION := "dig"
+const DIG_SALT := 0xD16
+
+
+## True when the run holds a Dig: the sum of the additive `rest_dig` modifiers of its relics and run modifiers is above 0.
+static func dig_enabled(state: RunState, ctx: Dictionary) -> bool:
+	var total: float = 0.0
+	var by_id: Dictionary = (ctx.get("relics", {}) as Dictionary).get("by_id", {})
+	for relic_id: String in state.relics:
+		for modifier: Variant in ((by_id.get(relic_id, {}) as Dictionary).get("modifiers", []) as Array):
+			if String((modifier as Dictionary).get("stat", "")) == DIG_STAT and String((modifier as Dictionary).get("modifier_type", "")) == StatModifiers.ADDITIVE:
+				total += float((modifier as Dictionary).get("value", 0.0))
+	for mod: Dictionary in state.run_mods:
+		if String(mod.get("stat", "")) == DIG_STAT and String(mod.get("modifier_type", "")) == StatModifiers.ADDITIVE:
+			total += float(mod.get("value", 0.0))
+	return total > 0.0
+
+
+## The relics a Dig offers: `offer_count` of them at this act's tier odds, drawn like any relic pick-1 (source `relic_room`, so event-only and shop-only relics stay out), from the
+## seeded stream of this run and room. [] when relics are off or nothing is eligible. The cap-20 give-up step and the sacrifice-cost filter apply as everywhere.
+static func dig_offer_ids(state: RunState, ctx: Dictionary) -> Array[String]:
+	if not RunRelics.enabled(ctx):
+		return [] as Array[String]
+	var relics: Dictionary = ctx["relics"]
+	var pools: Array[String] = []
+	for pool_id: Variant in (ctx.get("pools", []) as Array):
+		pools.append(String(pool_id))
+	return RelicOffer.offer("relic_room", int(relics["offer_count"]), RunRelics.offer_rng(state.seed_value ^ DIG_SALT, state.stream_index()), RunRelics.weights_for(state, relics, 0),
+			state.relics, state.relics_given_up, pools, relics["catalog"], RelicOffer.DEFAULT_RARITIES, RunRelics.giveable_count(state, ctx))
+
+
+## MAP4-C: true when the card is a curse (`curse` flag in the context's card data).
+static func is_curse_id(card_id: String, ctx: Dictionary) -> bool:
+	return CardSchema.is_curse((ctx.get("by_id", {}) as Dictionary).get(card_id, {}))
+
+
+## The ids of the curses in the deck, distinct, in deck order.
+static func curse_ids(state: RunState, ctx: Dictionary) -> Array[String]:
+	var ids: Array[String] = []
+	for card_id: String in state.deck:
+		if not ids.has(card_id) and is_curse_id(card_id, ctx):
+			ids.append(card_id)
+	return ids
+
+
+## The curse removals still allowed this run (-1 = no limit).
+static func cleanses_left(state: RunState, ctx: Dictionary) -> int:
+	var cap: int = int(ctx.get("max_cleanses", -1))
+	return -1 if cap < 0 else maxi(cap - state.cleanses, 0)
+
+
+static func cleanses_at_cap(state: RunState, ctx: Dictionary) -> bool:
+	return cleanses_left(state, ctx) == 0
+
+
+## Takes one copy of a card out of the deck, the one way every removal path does it (rest, merchant, an event pick). A curse counts as a cleanse; a real card is
+## also remembered as removed (never offered again) and discounts the statuses it applies (D49). Returns false when the deck has no such card.
+static func remove_from_deck(state: RunState, card_id: String, ctx: Dictionary) -> bool:
+	var index: int = state.deck.find(card_id)
+	if index < 0:
+		return false
+	state.deck.remove_at(index)
+	if is_curse_id(card_id, ctx):
+		state.cleanses += 1
+	else:
+		state.record_removal(card_id)
+		state.discount_card_types(card_id, ctx["rewards"])  # D49 = B
+	return true
 
 
 ## Distinct deck ids, in slot order then name, for the removal list.
@@ -426,6 +526,7 @@ static func card_option(option_id: String, kind: String, card_id: String, ctx: D
 	option["slot_type"] = slot_type
 	option["slot_name"] = String((ctx["slot_names"] as Dictionary).get(slot_type, slot_type))
 	option["rarity"] = CardSchema.rarity_of(card)
+	option["curse"] = CardSchema.is_curse(card)
 	var effect_text: Dictionary = ((ctx["ui"] as Dictionary).get("effect", {}) as Dictionary).duplicate()
 	effect_text["slot_names"] = ctx["slot_names"]
 	effect_text["statuses"] = ctx.get("statuses", {})

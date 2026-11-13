@@ -222,6 +222,9 @@ static func title_and_line(state: RunState, ctx: Dictionary, room_type: String =
 		return {"title": String(ui.get("swap_title", "")), "line": String(ui.get(line_key, "")) % [state.relics.size(), String(incoming["name"])]}
 	if is_boss_offer(state) and ui.has("boss_title"):
 		return {"title": String(ui.get("boss_title", "")), "line": String(ui.get("boss_line", ""))}
+	if state.has_relic_choice() and state.offer_rarity == RunState.OFFER_DIG:
+		var rest_ui: Dictionary = (ctx.get("ui", {}) as Dictionary).get("rest", {})
+		return {"title": String(rest_ui.get("dig_title", ui.get("title", ""))), "line": String(rest_ui.get("dig_line", ui.get("line", "")))}
 	if EventEngine.is_event_offer(state):
 		var event_ui: Dictionary = (ctx.get("events", {}) as Dictionary).get("ui", {})
 		return {"title": String(event_ui.get("relic_title", ui.get("title", ""))),

@@ -67,9 +67,9 @@ static func is_boundary(state: RunState) -> bool:
 
 ## True when the open choice (if any) may be saved: the map screen, no choice, or (MAP4-B1) an event's choice screen or the relic offer it opened.
 static func choice_is_savable(state: RunState) -> bool:
-	# MAP4-B2: an event's give-up step is one too (the costs before it are paid), and so is the start of an event fight (pending none, `event_fight` set).
+	# MAP4-C: so is an event's removal pick (the cost before it is paid). MAP4-B2: an event's give-up step is one too (the costs before it are paid), and so is the start of an event fight (pending none, `event_fight` set).
 	return state.pending == RunState.PENDING_NODE or state.pending == RunState.PENDING_NONE or state.pending == RunState.PENDING_EVENT \
-			or state.pending == RunState.PENDING_EVENT_SACRIFICE or EventEngine.is_event_offer(state)
+			or state.pending == RunState.PENDING_EVENT_SACRIFICE or state.pending == RunState.PENDING_EVENT_REMOVE or EventEngine.is_event_offer(state)
 
 
 ## Writes the save when persistence is on and the state is at a boundary. False when nothing was written.

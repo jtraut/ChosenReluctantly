@@ -67,6 +67,8 @@ static func validate(config: Dictionary, known_enemies: Array[String], _known_ca
 	errors.append_array(MerchantConfig.validate_block(config.get("merchant")))
 	if config.has("events"):
 		errors.append_array(_validate_events_block(config["events"]))
+	if config.has("curses"):
+		errors.append_array(_validate_curses_block(config["curses"]))
 	errors.append_array(_validate_tiers(config.get("tiers")))
 	if config.has("acts"):
 		errors.append_array(_validate_act_scale(config["acts"]))
@@ -76,6 +78,29 @@ static func validate(config: Dictionary, known_enemies: Array[String], _known_ca
 	if typeof(config.get("merchant")) == TYPE_DICTIONARY and typeof(config.get("relics")) == TYPE_DICTIONARY:
 		errors.append_array(MerchantConfig.validate_card_vs_relic_prices((config["merchant"] as Dictionary).get("card_prices"), (config["relics"] as Dictionary).get("prices")))
 	return errors
+
+
+## `curses` (MAP4-C): {max_cleanses}: how many curses a run may remove in total (-1 = no limit).
+static func _validate_curses_block(value: Variant) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(value) != TYPE_DICTIONARY:
+		errors.append("'curses' must be an object {max_cleanses}")
+		return errors
+	for key: Variant in (value as Dictionary).keys():
+		if String(key) != "max_cleanses":
+			errors.append("curses: unknown key '%s'" % str(key))
+	var cap: Variant = (value as Dictionary).get("max_cleanses")
+	if not _is_whole(cap) or int(cap) < -1 or int(cap) > 1000:
+		errors.append("curses.max_cleanses must be a whole number from -1 (no limit) to 1000")
+	return errors
+
+
+## The most curses a run may remove (data/run.json `curses.max_cleanses`); -1 = no limit.
+static func max_cleanses() -> int:
+	var block: Variant = get_config().get("curses", {})
+	if typeof(block) != TYPE_DICTIONARY:
+		return -1
+	return int((block as Dictionary).get("max_cleanses", -1))
 
 
 ## `events` (MAP4-B1): {min_max_hp} the floor max HP never goes below.
@@ -472,7 +497,7 @@ static func _validate_ui(ui_value: Variant) -> Array[String]:
 
 
 ## ui.event (MAP4-B1): the strings of the event screen and the generated cost lines, with the number of %d and %s each format takes. Checked when the block is present.
-const EVENT_TEXT_KEYS: Array[String] = ["relic_title", "relic_line", "relic_line_noskip", "leave_line", "line_join", "sacrifice_title", "sacrifice_line"]
+const EVENT_TEXT_KEYS: Array[String] = ["relic_title", "relic_line", "relic_line_noskip", "leave_line", "line_join", "sacrifice_title", "sacrifice_line", "remove_title", "remove_line", "remove_curse_line"]
 const EVENT_LINE_FORMATS: Dictionary = {
 	"lose_hp": [1, 0], "lose_max_hp": [1, 0], "heal": [1, 0], "gain_gold": [1, 0], "lose_gold": [1, 0], "gain_relic_act": [1, 0], "gain_relic_next_act": [1, 0],
 	"gain_relic_tier": [2, 0], "gain_relic_plus_one": [1, 0], "no_skip": [0, 0], "gain_curse_random": [0, 0], "gain_curse": [0, 1], "remove_curse": [0, 0],
@@ -505,7 +530,7 @@ static func _validate_event_text(value: Variant) -> Array[String]:
 	if typeof(reasons) != TYPE_DICTIONARY:
 		errors.append("ui.event.reasons must be an object")
 	else:
-		for key: String in ["gold", "unsupported", "offer_empty"]:
+		for key: String in ["gold", "unsupported", "offer_empty", "no_curse", "cleanse_cap", "none_removable"]:
 			if typeof((reasons as Dictionary).get(key)) != TYPE_STRING:
 				errors.append("ui.event.reasons.%s must be a string" % key)
 		if typeof((reasons as Dictionary).get("gold")) == TYPE_STRING and String((reasons as Dictionary)["gold"]).count("%d") != 2:
@@ -725,6 +750,8 @@ static func cards_in_pools(pool_ids: Array) -> Array[String]:
 	for pool_id: Variant in pool_ids:
 		for card: Variant in CardDatabase.cards_for_pool(String(pool_id)):
 			var id: String = String((card as Dictionary)["id"])
+			if CardSchema.is_curse(card):
+				continue  # MAP4-C: a curse is not part of any pool's card list (the full deck, reward candidates)
 			if not out.has(id):
 				out.append(id)
 	out.sort()

@@ -261,4 +261,4 @@ Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: D50 open; eyes 55, 54, 53, 52, 51, 50, 49, 48, 47 and 35; the round 2 vision check is due. Answered items are in `docs/RESOLVED.md`.
+All director-facing items are in `docs/OPEN_ITEMS.md`: D50 open; eyes 56, 55, 54, 52, 51, 50, 49, 48, 47 and 35; the round 2 vision check is due. Answered items are in `docs/RESOLVED.md`.

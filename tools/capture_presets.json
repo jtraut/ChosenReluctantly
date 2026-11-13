@@ -1,136 +1,359 @@
 {
     "reward_screen": {
         "description": "The card reward screen after room 1 (3 seeded offers). Run mode.",
-        "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--acts=1", "--run-seed=3", "--run-room=1", "--run-clear-after=1"]
+        "class": "rogue",
+        "scenario": "",
+        "after": "3.0",
+        "extra": [
+            "--acts=1",
+            "--run-seed=3",
+            "--run-room=1",
+            "--run-clear-after=1"
+        ]
     },
     "removal_screen": {
         "description": "The rest-room removal grid (the full deck, so removal is allowed). Run mode; seed 1 has its rest room at room 6.",
-        "class": "rogue", "scenario": "", "after": "4.0",
-        "extra": ["--no-map", "--run-seed=1", "--run-room=6", "--full-deck", "--run-auto-choose=remove_menu"]
+        "class": "rogue",
+        "scenario": "",
+        "after": "4.0",
+        "extra": [
+            "--no-map",
+            "--run-seed=1",
+            "--run-room=6",
+            "--full-deck",
+            "--run-auto-choose=remove_menu"
+        ]
     },
     "boss_smash": {
         "description": "The boss winding up its smash (cone) and landing it: shots 0.3 s and 0.6 s after the wind-up starts. Run mode, boss room.",
-        "class": "rogue", "scenario": "", "after": "0.3,0.6", "at_boss_attack": "smash",
-        "extra": ["--acts=1", "--run-seed=1", "--run-room=10"]
+        "class": "rogue",
+        "scenario": "",
+        "after": "0.3,0.6",
+        "at_boss_attack": "smash",
+        "extra": [
+            "--acts=1",
+            "--run-seed=1",
+            "--run-room=10"
+        ]
     },
     "bd1_reward_keystone": {
         "description": "BD1: a Rogue reward screen offering Fan the Flames and Drive-By (Keystones) and Kindling (Primer).",
-        "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--acts=1", "--run-seed=3", "--run-room=1", "--run-clear-after=1", "--run-offer=fire_fan_the_flames+rogue_drive_by+fire_kindling"]
+        "class": "rogue",
+        "scenario": "",
+        "after": "3.0",
+        "extra": [
+            "--acts=1",
+            "--run-seed=3",
+            "--run-room=1",
+            "--run-clear-after=1",
+            "--run-offer=fire_fan_the_flames+rogue_drive_by+fire_kindling"
+        ]
     },
     "bd1_reward_keystone_wizard": {
         "description": "BD1: a Wizard reward screen offering Heat Sink and Parting Gift (Keystones) and Well, Actually (Payoff).",
-        "class": "wizard", "scenario": "", "after": "3.0",
-        "extra": ["--acts=1", "--run-seed=3", "--run-room=1", "--run-clear-after=1", "--run-offer=fire_heat_sink+wizard_parting_gift+wizard_well_actually"]
+        "class": "wizard",
+        "scenario": "",
+        "after": "3.0",
+        "extra": [
+            "--acts=1",
+            "--run-seed=3",
+            "--run-room=1",
+            "--run-clear-after=1",
+            "--run-offer=fire_heat_sink+wizard_parting_gift+wizard_well_actually"
+        ]
     },
     "bd1_glow_target": {
         "description": "BD1: a lit condition. Fan the Flames in the Attack: AoE slot with Burning enemies in its area (arena scenario, fixed deck).",
-        "class": "rogue", "scenario": "bd1_glow_target", "after": "1.0"
+        "class": "rogue",
+        "scenario": "bd1_glow_target",
+        "after": "1.0"
     },
     "bd1_primed": {
         "description": "BD1: a primed slot and a lit one. Momentum cast at 0.3 s primes Attack: Single and lights Drive-By (arena scenario, fixed deck).",
-        "class": "rogue", "scenario": "bd1_primed", "after": "0.8,1.5"
+        "class": "rogue",
+        "scenario": "bd1_primed",
+        "after": "0.8,1.5"
     },
     "pl3_heavy_bolt": {
         "description": "Overqualified Bolt cast by the Wizard (fixed deck, so the slot really holds it).",
-        "class": "wizard", "scenario": "pl3_heavy_bolt", "after": "0.7,0.9,1.1"
+        "class": "wizard",
+        "scenario": "pl3_heavy_bolt",
+        "after": "0.7,0.9,1.1"
     },
     "bd2_relic_elite": {
         "description": "BD2: the relic offer after an elite room (3 relics and Skip; the elite replaces its card offer). Run mode, seed 1 has its elite at room 4; a fixed offer.",
-        "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--no-map", "--run-seed=1", "--run-room=4", "--run-clear-after=1", "--relic-offer=pyre_insurance+smoldering_grudge+heavy_sigh"]
+        "class": "rogue",
+        "scenario": "",
+        "after": "3.0",
+        "extra": [
+            "--no-map",
+            "--run-seed=1",
+            "--run-room=4",
+            "--run-clear-after=1",
+            "--relic-offer=pyre_insurance+smoldering_grudge+heavy_sigh"
+        ]
     },
     "bd2_relic_room": {
         "description": "BD2: the relic room (no fight; the offer opens at once). Run mode, seed 1 has its relic room at room 9; the player already holds Spite Knuckles.",
-        "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--no-map", "--run-seed=1", "--run-room=9", "--relics=spite_knuckles", "--relic-offer=lingering_embers+second_wind_unwillingly+heavy_sigh"]
+        "class": "rogue",
+        "scenario": "",
+        "after": "3.0",
+        "extra": [
+            "--no-map",
+            "--run-seed=1",
+            "--run-room=9",
+            "--relics=spite_knuckles",
+            "--relic-offer=lingering_embers+second_wind_unwillingly+heavy_sigh"
+        ]
     },
     "bd2_relic_swap": {
         "description": "BD2: the give-one-up step at a relic cap of 2. The player holds Pyre Insurance and Heavy Sigh and picks Lingering Embers in the relic room (seed 1, room 9); the second screen lists the two relics that can be given up and Cancel.",
-        "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--no-map", "--run-seed=1", "--run-room=9", "--relics=pyre_insurance+heavy_sigh", "--relic-cap=2", "--relic-offer=lingering_embers+second_wind_unwillingly+smoldering_grudge", "--run-auto-choose=relic:lingering_embers"]
+        "class": "rogue",
+        "scenario": "",
+        "after": "3.0",
+        "extra": [
+            "--no-map",
+            "--run-seed=1",
+            "--run-room=9",
+            "--relics=pyre_insurance+heavy_sigh",
+            "--relic-cap=2",
+            "--relic-offer=lingering_embers+second_wind_unwillingly+smoldering_grudge",
+            "--run-auto-choose=relic:lingering_embers"
+        ]
     },
     "map_start": {
         "description": "MAP1-B: the map at run start. The map screen with the room-1 nodes pickable and the legend, with the branching map forced on (--map; data/map.json now ships it on, so the flag is explicit rather than needed). Run mode, seed 1.",
-        "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--map", "--acts=1", "--run-seed=1"]
+        "class": "rogue",
+        "scenario": "",
+        "after": "3.0",
+        "extra": [
+            "--map",
+            "--acts=1",
+            "--run-seed=1"
+        ]
     },
     "map_mid": {
         "description": "MAP1-B: mid-run. Seed 54 along the first route, room 7 cleared (gold paid), its card offer rejected, so the map screen is open to pick the next node with 6 nodes already walked (a medium chest relic stage sits at room 6).",
-        "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--map", "--acts=1", "--run-seed=54", "--run-room=7", "--run-clear-after=1", "--run-auto-choose=skip"]
+        "class": "rogue",
+        "scenario": "",
+        "after": "3.0",
+        "extra": [
+            "--map",
+            "--acts=1",
+            "--run-seed=54",
+            "--run-room=7",
+            "--run-clear-after=1",
+            "--run-auto-choose=skip"
+        ]
     },
     "map_room9": {
         "description": "MAP1-B: room 9. Seed 54, room 9 (an elite) cleared and its relic offer skipped; the only way on is the boss.",
-        "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--map", "--acts=1", "--run-seed=54", "--run-room=9", "--run-clear-after=1", "--run-auto-choose=skip"]
+        "class": "rogue",
+        "scenario": "",
+        "after": "3.0",
+        "extra": [
+            "--map",
+            "--acts=1",
+            "--run-seed=54",
+            "--run-room=9",
+            "--run-clear-after=1",
+            "--run-auto-choose=skip"
+        ]
     },
     "map_chest_large": {
         "description": "MAP1-B: a large chest relic stage (seed 157, room 5, first route). No fight, the offer opens at once. A large chest draws from the act 3 row (tier 1 5, tier 2 25, tier 3 70 as shipped, min_tier 1).",
-        "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--map", "--acts=1", "--run-seed=157", "--run-room=5"]
+        "class": "rogue",
+        "scenario": "",
+        "after": "3.0",
+        "extra": [
+            "--map",
+            "--acts=1",
+            "--run-seed=157",
+            "--run-room=5"
+        ]
     },
     "map_chest_medium": {
         "description": "MAP1-B: a medium chest relic stage (seed 54, room 6, first route).",
-        "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--map", "--acts=1", "--run-seed=54", "--run-room=6"]
+        "class": "rogue",
+        "scenario": "",
+        "after": "3.0",
+        "extra": [
+            "--map",
+            "--acts=1",
+            "--run-seed=54",
+            "--run-room=6"
+        ]
     },
     "merchant_shop": {
         "description": "MAP2 (qa): the merchant's shop. Seed 54, map node 33 (the room 9 merchant), 200 gold, starter deck (the removal entry is greyed with its reason). Re-check the node id with tools\\run_map_print.ps1 -Seed 54 if the generator changes.",
-        "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--map", "--acts=1", "--run-seed=54", "--run-node=33", "--run-gold=200"]
+        "class": "rogue",
+        "scenario": "",
+        "after": "3.0",
+        "extra": [
+            "--map",
+            "--acts=1",
+            "--run-seed=54",
+            "--run-node=33",
+            "--run-gold=200"
+        ]
     },
     "merchant_shop_poor": {
         "description": "MAP2 (qa): the same shop with 20 gold, so every item shows its 'Need N more gold' reason.",
-        "class": "rogue", "scenario": "", "after": "3.0",
-        "extra": ["--map", "--acts=1", "--run-seed=54", "--run-node=33", "--run-gold=20"]
+        "class": "rogue",
+        "scenario": "",
+        "after": "3.0",
+        "extra": [
+            "--map",
+            "--acts=1",
+            "--run-seed=54",
+            "--run-node=33",
+            "--run-gold=20"
+        ]
     },
     "merchant_removal": {
         "description": "MAP2 (qa): the merchant's card removal list with a full deck and 200 gold (the opening option id is merchant_remove_menu).",
-        "class": "rogue", "scenario": "", "after": "4.0",
-        "extra": ["--map", "--acts=1", "--run-seed=54", "--run-node=33", "--run-gold=200", "--full-deck", "--run-auto-choose=merchant_remove_menu"]
+        "class": "rogue",
+        "scenario": "",
+        "after": "4.0",
+        "extra": [
+            "--map",
+            "--acts=1",
+            "--run-seed=54",
+            "--run-node=33",
+            "--run-gold=200",
+            "--full-deck",
+            "--run-auto-choose=merchant_remove_menu"
+        ]
     },
     "mini_boss_act1": {
         "description": "MB1: the act 1 mini-boss (room 10 of a three-act run): the brute, Head of Facilities, alone (its chasers come from its phases). Run mode, seed 1.",
-        "class": "rogue", "scenario": "", "after": "4.0",
-        "extra": ["--run-seed=1", "--run-room=10"]
+        "class": "rogue",
+        "scenario": "",
+        "after": "4.0",
+        "extra": [
+            "--run-seed=1",
+            "--run-room=10"
+        ]
     },
     "act_transition": {
         "description": "MAP3 ux: the act transition screen. The act 1 mini-boss (room 10) is cleared at 1 s, the relic and the card offers are skipped, and the Act 2 screen opens over the new map. Run mode, seed 1.",
-        "class": "rogue", "scenario": "", "after": "6.0",
-        "extra": ["--run-seed=1", "--run-room=10", "--run-clear-after=1", "--run-auto-choose=relic_skip+skip"]
+        "class": "rogue",
+        "scenario": "",
+        "after": "6.0",
+        "extra": [
+            "--run-seed=1",
+            "--run-room=10",
+            "--run-clear-after=1",
+            "--run-auto-choose=relic_skip+skip"
+        ]
     },
     "mini_boss_act2": {
         "description": "MB1: the act 2 mini-boss (room 20 of a three-act run): the Corporate Raider alone, act 2 scaling and tint. Run mode, seed 1.",
-        "class": "rogue", "scenario": "", "after": "4.0",
-        "extra": ["--run-seed=1", "--run-room=20"]
+        "class": "rogue",
+        "scenario": "",
+        "after": "4.0",
+        "extra": [
+            "--run-seed=1",
+            "--run-room=20"
+        ]
     },
     "mini_boss_blink": {
         "description": "MB1: the Raider's Golden parachute (blink): shots at 0.1 s (landing marker just drawn), 0.45 s (marker filling), 0.9 s (it has landed and the backstab winds up). Needs a renderer.",
-        "class": "rogue", "scenario": "mini_boss_blink", "after": "0.1,0.45,0.9", "at_boss_attack": "golden_parachute"
+        "class": "rogue",
+        "scenario": "mini_boss_blink",
+        "after": "0.1,0.45,0.9",
+        "at_boss_attack": "golden_parachute"
     },
     "mini_boss_dash_combo": {
         "description": "MB1: the Raider's Leveraged dash combo: shots 0.3 s into the first wind-up, and 0.3 s into the second link's wind-up (about 1.4 s in).",
-        "class": "rogue", "scenario": "mini_boss_dash_combo", "after": "0.3,1.45", "at_boss_attack": "leveraged_dash"
+        "class": "rogue",
+        "scenario": "mini_boss_dash_combo",
+        "after": "0.3,1.45",
+        "at_boss_attack": "leveraged_dash"
     },
     "map_mini_boss": {
         "description": "MAP3 ux: act 1's map with the mini-boss as the only way on (seed 1, room 9 (an elite) cleared and its relic offer skipped). Three acts: the HUD shows Act 1 of 3 and Room 9 of 30 behind the screen.",
-        "class": "rogue", "scenario": "", "after": "4.0",
-        "extra": ["--run-seed=1", "--run-room=9", "--run-clear-after=1", "--run-auto-choose=relic_skip+skip"]
+        "class": "rogue",
+        "scenario": "",
+        "after": "4.0",
+        "extra": [
+            "--run-seed=1",
+            "--run-room=9",
+            "--run-clear-after=1",
+            "--run-auto-choose=relic_skip+skip"
+        ]
     },
     "map_act2": {
         "description": "MAP3 ux: act 2's map after room 14 (seed 1): the column numbers read 11 to 20, the title says Act 2 of 3, the hover says Room 15 and the line says every route ends at the mini-boss. Run mode.",
-        "class": "rogue", "scenario": "", "after": "4.0",
-        "extra": ["--run-seed=1", "--run-room=14", "--run-clear-after=1", "--run-auto-choose=skip+relic_skip"]
+        "class": "rogue",
+        "scenario": "",
+        "after": "4.0",
+        "extra": [
+            "--run-seed=1",
+            "--run-room=14",
+            "--run-clear-after=1",
+            "--run-auto-choose=skip+relic_skip"
+        ]
     },
     "final_boss_act3": {
         "description": "MAP3-B: the final boss (room 30 of a three-act run), with act 3's enemy scaling. Run mode, seed 1.",
-        "class": "rogue", "scenario": "", "after": "4.0",
-        "extra": ["--run-seed=1", "--run-room=30"]
+        "class": "rogue",
+        "scenario": "",
+        "after": "4.0",
+        "extra": [
+            "--run-seed=1",
+            "--run-room=30"
+        ]
     },
     "bd2_pyre_explosion": {
         "description": "BD2: a Pyre Insurance explosion. Arena scenario, fixed deck: a Burning enemy dies at 0.6 s and its Burn bursts over the three beside it.",
-        "class": "rogue", "scenario": "bd2_pyre_explosion", "after": "0.7,1.0"
+        "class": "rogue",
+        "scenario": "bd2_pyre_explosion",
+        "after": "0.7,1.0"
+    },
+    "event_screen": {
+        "description": "MAP4-D: an event choice screen (The Mandatory Exit Interview, with a fight, a relic offer and a leave). Seed 3, act 1's event node 8 (room 3), 60 gold. Re-check the node id with tools\run_map_print.ps1 -Seed 3 if the generator changes.",
+        "class": "rogue",
+        "scenario": "",
+        "after": "3.0",
+        "extra": [
+            "--run-seed=3",
+            "--run-node=8",
+            "--event=exit_interview",
+            "--run-gold=60"
+        ]
+    },
+    "event_screen_requires": {
+        "description": "MAP4-D: an event with greyed choices (The Performance Evaluation Altar with no relic held, so both give-up choices show their reason).",
+        "class": "rogue",
+        "scenario": "",
+        "after": "3.0",
+        "extra": [
+            "--run-seed=3",
+            "--run-node=8",
+            "--event=performance_altar"
+        ]
+    },
+    "rest_dig": {
+        "description": "MAP4-D: a rest with the Gravedigger's Spade, so the Dig shows beside the heal and removal. Seed 3, act 1's rest node 16 (room 5).",
+        "class": "rogue",
+        "scenario": "",
+        "after": "3.0",
+        "extra": [
+            "--run-seed=3",
+            "--run-node=16",
+            "--relics=gravediggers_spade"
+        ]
+    },
+    "curse_hud": {
+        "description": "MAP4-D: the slot HUD holding curse cards. Seed 3, room 4 (a fight), with --run-curses adding Property Damage twice and the other two curses once (so one is likely the current card of its slot); take several -After times. A curse is also gained in play through an event (The Loyalty Pledge, Sign in blood).",
+        "class": "rogue",
+        "scenario": "",
+        "after": "5.0",
+        "extra": [
+            "--run-seed=3",
+            "--run-room=4",
+            "--run-curses=curse_property_damage+curse_reply_all_storm+curse_mandatory_training"
+        ]
     }
 }

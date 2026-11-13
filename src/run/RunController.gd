@@ -411,6 +411,12 @@ func _apply_relic_args(args: PackedStringArray, tree: SceneTree) -> bool:
 			var held: Array[String] = RelicArgs.parse_ids(arg.substr(9))
 			problems.append_array(RelicArgs.id_problems("--relics", held, 0))
 			RunSession.start_relics = held
+		elif arg.begins_with("--run-curses="):
+			var cursed: Array[String] = RelicArgs.parse_ids(arg.substr(13))
+			for curse_id: String in cursed:
+				if not CardSchema.is_curse(CardDatabase.get_card(curse_id)):
+					problems.append("--run-curses: '%s' is not a curse card" % curse_id)
+			RunSession.start_curses = cursed
 		elif arg.begins_with("--relic-offer="):
 			var offered: Array[String] = RelicArgs.parse_ids(arg.substr(14))
 			problems.append_array(RelicArgs.id_problems("--relic-offer", offered, RelicConfig.offer_count()))

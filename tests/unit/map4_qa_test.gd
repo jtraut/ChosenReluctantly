@@ -605,3 +605,37 @@ func test_the_micromanager_with_a_shipped_curse_never_bricks_the_slot() -> void:
 		else:
 			assert_str(slot.use_card(0.0, modifiers)).is_equal(current)
 	assert_int(curse_casts).is_greater(5)
+
+
+# --- sacrifice relics are absent from every source while you can't pay (shipped relics) ------------------------------------------
+
+func test_no_shipped_sacrifice_relic_is_offered_anywhere_while_you_cannot_pay() -> void:
+	var costs: Dictionary = {}
+	for relic: Dictionary in RelicDatabase.all_relics():
+		if relic.has("sacrifice_cost"):
+			costs[String(relic["id"])] = int(relic["sacrifice_cost"])
+	assert_int(costs.size()).is_equal(4)
+	var tier1: String = _plain_relics("tier1", 1)[0]
+	for character: String in ["rogue", "wizard"]:
+		var ctx: Dictionary = RunChoices.shipped_context(CharacterDatabase.pools(character))
+		for run_seed in range(1, 121):
+			for held_count in [0, 1]:
+				var state: RunState = RunState.new_run(run_seed, CharacterDatabase.full_deck(character), 3, character)
+				state.act = 3
+				state.hp = 30.0
+				state.max_hp = 30.0
+				if held_count == 1:
+					state.relics.append(tier1)
+				var offers: Array[String] = []
+				for room_type: String in ["elite", "relic_room", "mini_boss"]:
+					var probe: RunState = RunState.from_json(state.to_json())
+					RunRelics.open_for_room(probe, room_type, false, ctx)
+					offers.append_array(probe.offer)
+				var shop: Dictionary = Merchant.draw_stock(state, 5, 0, ctx, [] as Array[String], [] as Array[String])
+				for id: Variant in (shop["relics"] as Array):
+					offers.append(String(id))
+				for tier in [1, 2, 3]:
+					offers.append_array(EventEngine.offer_ids(state, ctx, {"type": "gain_relic", "tier": tier, "count": 3}))
+				for id: String in offers:
+					if costs.has(id):
+						assert_int(held_count).override_failure_message("%s (give up %d) was offered to a %s holding %d eligible relic(s), seed %d" % [id, int(costs[id]), character, held_count, run_seed]).is_greater_equal(int(costs[id]))

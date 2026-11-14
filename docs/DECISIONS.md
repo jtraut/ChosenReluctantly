@@ -2670,3 +2670,13 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **Accepted as built** (6bc84d9..000d63b). ux's calls stand: the cleanse counter shows only when a cap applies and a curse is held; curses lead their removal column; a chance line has its own colour, not gain or cost; the enemy wedge thickness is a code constant, like the boss one; a greyed Confirm stays focusable so its reason can be read; the cleanse counter spacing is left as is.
 - **The director's small look-items go into the MAP4 play item at close,** not as separate eyes items, each kept as built by default: the sacrifice rule text repeating "Give up N relics", curse purple next to relic violet, the cluttered 4-enemy Bleed block, the give-up step with a real keyboard.
   - [Four separate eyes items: noise for small calls with clear defaults.]
+
+## 2026-11-13 - MAP4 qa PASS (game-lead)
+- **qa PASS** (`docs/reviews/2026-11-13-map4-qa.md`). Its findings, triaged:
+  - **The map generator's headroom shrank** (act 3 worst 751 of 1000 attempts), and a failure at an act change ends the run as a win. That's not a soft-lock, but it's wrong, and DF1 or 3d touching weights could tip it. **Fixed at the start of DF1's sitting:** more headroom (raise `max_attempts` for three-act runs, or trim the event weight) and a failure that isn't a win.
+    - [Leaving it: no seed fails today, but the margin is thin and the failure mode rewards the player.]
+  - **Curse casts stop firing `card_cast`** (also at DF1's start). Mandatory Training satisfying Peer Review and triggering three relics turns a curse into a small Wizard bonus, against GDD §9 ("useless or harmful"). Primed buffs are still used up, which is a fair cost. This replaces the sitting C "watch" note.
+    - [Leaving it as a small trade: a curse should never be worth keeping.]
+  - **`RunSession.clear()` keeping `--run-curses` and `--run-discount` is fine:** they're launch flags and sticky like `--relics`, as the code says. My brief's wording was wrong; no change.
+  - **9 of 17 event choices are never taken by any bot policy.** qa's forced-choice sweep covers them for correctness. A random-choice sim mode can come with a later sim pass; not scheduled.
+  - **Medians on the lower edge** (`relic` 14, `safe` 5) and **human Rogue on its 21 floor:** watched at DF1, not tuned now.

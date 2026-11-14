@@ -2665,3 +2665,8 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
   - [Teaching the safe bot to take event relics: it would stop measuring the "ignore relics" floor the target is for.]
 - **SIM1 human Rogue 21/36 sits on the §12.6 floor (21); Wizard 20/36.** Within the ±3 noise D measured. Not tuned: DF1, next, re-gates the floors for a harder campaign anyway. qa notes it.
 - **E1b (the elite fight) is never taken by any bot.** That leaves `start_fight` covered only by tests in sims. qa adds a forced-choice sim or scenario run of E1b.
+
+## 2026-11-13 - MAP4 ux triage (game-lead)
+- **Accepted as built** (6bc84d9..000d63b). ux's calls stand: the cleanse counter shows only when a cap applies and a curse is held; curses lead their removal column; a chance line has its own colour, not gain or cost; the enemy wedge thickness is a code constant, like the boss one; a greyed Confirm stays focusable so its reason can be read; the cleanse counter spacing is left as is.
+- **The director's small look-items go into the MAP4 play item at close,** not as separate eyes items, each kept as built by default: the sacrifice rule text repeating "Give up N relics", curse purple next to relic violet, the cluttered 4-enemy Bleed block, the give-up step with a real keyboard.
+  - [Four separate eyes items: noise for small calls with clear defaults.]

@@ -138,3 +138,25 @@ func test_cancel_after_picking_reports_cancel_only_and_gives_nothing_up() -> voi
 	await _press(&"ui_accept")
 	assert_str(_log[_log.size() - 1]).is_equal("giveup_cancel")
 	assert_array(_log.filter(func(entry: String) -> bool: return entry == "giveup_confirm")).is_empty()
+
+
+func test_a_greyed_relic_tile_gives_its_reason_and_not_the_contradicting_cap_note() -> void:
+	var cfg: Dictionary = UiConfig.run_ui()
+	var extra: Dictionary = {"relic_texts": RunConfig.ui()["relic"], "texts": RunConfig.ui()["option"]}
+	var base: Dictionary = {"id": "relic:x", "kind": "relic", "label": "X", "detail": "Rule.", "needs_swap": true, "pool": "neutral", "tier_name": "Tier 1"}
+	var open := RunOptionCard.new()
+	add_child(open)
+	var live: Dictionary = base.duplicate()
+	live["enabled"] = true
+	open.setup(live, RunOptionCard.Look.RELIC, 268.0, cfg, 1.0, extra)
+	assert_object(open.cap_note_label).is_not_null()  # takeable at the cap: says a give-up comes first
+	var grey := RunOptionCard.new()
+	add_child(grey)
+	var off: Dictionary = base.duplicate()
+	off["enabled"] = false
+	off["reason"] = "Nothing you hold can be given up"
+	grey.setup(off, RunOptionCard.Look.RELIC, 268.0, cfg, 1.0, extra)
+	assert_object(grey.cap_note_label).is_null()
+	assert_object(grey.reason_label).is_not_null()
+	for node: Node in [open, grey]:
+		node.queue_free()

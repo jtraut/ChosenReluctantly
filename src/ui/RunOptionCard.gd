@@ -310,7 +310,7 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 		flavor_label = _label(flavor, small_size, _text_color(enabled, Color.html(String(cfg["option_flavor_color"]))), true)
 		flavor_label.custom_minimum_size.x = inner_width
 		_inner.add_child(flavor_label)
-	if look == Look.RELIC and bool(opt.get("needs_swap", false)) and String(relic_texts.get("cap_note", "")) != "":
+	if look == Look.RELIC and bool(opt.get("needs_swap", false)) and String(relic_texts.get("cap_note", "")) != "" and (enabled or String(opt.get("reason", "")) == ""):  # a greyed tile gives its reason instead (the note would contradict it)
 		cap_note_label = _label(String(relic_texts["cap_note"]), small_size, Color.html(String(cfg["option_warn_color"])), true)
 		cap_note_label.custom_minimum_size.x = inner_width
 		_inner.add_child(cap_note_label)

@@ -1,13 +1,13 @@
 # Director open items
 
-Last updated: 2026-11-13 (MAP4 sitting A done; latest tag `playtest-2026-11-12-MAP3b`)
-**Status:** 0 decisions waiting. 10 things to look at (56, 55, 54, 52, 51, 50, 49, 48, 47, 35), plus the round 2 vision check. **MB1 (new mini-bosses) is done**, tag `playtest-2026-11-11-MB1`. **MAP3b is done** (rare and legendary cards, boss relics), tag `playtest-2026-11-12-MAP3b`. **MAP4 (events) is being built** (5 sittings; the first is done). Next: MAP4 -> DF1 (difficulty bump) -> 3d -> BD3b.
+Last updated: 2026-11-13 (MAP4 closed; latest tag `playtest-2026-11-13-MAP4`)
+**Status:** 0 decisions waiting. 1 thing to look at (58: play MAP4), plus the round 2 vision check. **MAP4 (events) is done**, tag `playtest-2026-11-13-MAP4`. Items 35-56 expired at MAP4's close with their defaults kept (`docs/RESOLVED.md`). Next: DF1 (difficulty bump) -> 3d -> BD3b.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
 ## How to playtest
 
-- **Latest known-good build:** `git checkout playtest-2026-11-12-MAP3b`, play, then `git checkout main`. The one before it is `playtest-2026-11-11-MB1`. Older tags are in `docs/RESOLVED.md`.
+- **Latest known-good build:** `git checkout playtest-2026-11-13-MAP4`, play, then `git checkout main`. The one before it is `playtest-2026-11-12-MAP3b`. Older tags are in `docs/RESOLVED.md`.
 - **Relics:** `-- --relics=pyre_insurance+heavy_sigh` starts with relics; `-- --relic-cap=1` tries the give-one-up step.
 - **Normal run:** `godot --path .` (three acts of 10 rooms on a branching map; Continue on the class pick resumes a saved run). Extras: `-- --run-seed=5`, `-- --run-room=10` (act 1 mini-boss), `-- --run-room=30` (final boss), `-- --acts=1` (the old one-act run), `-- --no-map` (straight run), `-- --class=wizard`.
 - **Preset decks:** `godot --path . -- --list-decks`, then for example `-- --deck=fire-heavy-rogue --full-deck --run-room=10`.
@@ -23,74 +23,14 @@ Nothing right now.
 
 ## Needs your eyes
 
-Reply with the number and a word or two. **Each item has a default. If it's still unanswered when the slice after the one that added it closes, the default applies and it moves to `docs/RESOLVED.md` (your rule, 2026-11-12).** Everything below expires at **MAP4's close**.
+Reply with the number and a word or two. **Each item has a default. If it's still unanswered when the slice after the one that added it closes, the default applies and it moves to `docs/RESOLVED.md` (your rule, 2026-11-12).** 
 
-56. **Play MAP3b: rare and legendary cards, boss relics. Tag `playtest-2026-11-12-MAP3b`.**
-    - **How to get there:**
-      - beat the act 1 mini-boss: `godot --path . -- --run-room=10`;
-      - then the act 2 one: `-- --run-room=20`;
-      - better, play a full run as a Bleed Rogue.
-    - **After each mini-boss:**
-      - a boss relic: pick 1 of 3, each with an upside and a cost, no skip;
-      - then a rare card offer (after act 1) or a legendary one (after act 2).
-    - **Rare cards show up in normal offers from act 2, and legendaries from act 3.** They have silver and gold bands.
-    - **Do the boss relics feel like big, build-changing choices?** Is each cost something you actually feel? The Non-Compete Clause wins every bot run. **Done on main (2026-11-13, the default):** its cooldown refund went from 0.5 s to 0.3 s. Say "56 leave" to put it back to 0.5 s.
-    - **The act 3 floor changed from dull red to sand,** so the red chasers stand out. Keep it, or "56 old floor"?
-    - **Default:** refund 0.3 s, sand floor kept, Exsanguinate left as is.
-    - **Look for:**
-      - Open a Vein's slot glowing when an enemy in range has 2 or more Bleed stacks;
-      - Exsanguinate (legendary) on a fully stacked enemy. It can one-shot a boss with a deep build. Fun, or too much?
-
-55. **The act 1 mini-boss, "Head of Facilities" (MB1).** `godot --path . -- --scenario=mini_boss_act1`, or room 10 of a run.
-    - **A real act-ending fight, or a speed bump?** Its "Wet floor" circles now leave gaps to stand in.
-    - Say "55 leave", "55 harder" or "55 easier". **Default:** leave.
-    - You've already answered for the act 2 Raider ("too easy, died super fast"): it gets tougher at the start of MAP4.
-
-54. **FYI: the test bot was half-blind until today.** In every headless sim the bot aimed without turning, so cones, knives and dashes missed. Your own play was never affected. Fixed, it wins almost every run, so every old bot number (the H1/H2 dodge-off results, the MAP1-MAP3 run baselines) was measured with a weaker bot than we thought. No shipped value changes because of this. **SIM1 (done 2026-11-11)** added a "human" bot setting (0.2 s reaction delay, 25 degree aim error). On it the Rogue wins 26/36 three-act runs and the Wizard 15/36, so the Wizard is clearly harder for the bot; that goes to BD3b. These are only bot numbers: your own three-act runs (53) set the real bar. Reply "ok" when you've read this. **Default:** counts as read.
-
-52. **Two small checks from MAP3, next time you play.** (You've answered the run-time question: D50 = B, GDD §9.)
-    - **Quit mid-run, relaunch and press Enter.** Continue should be highlighted on the class pick and resume your run. Quitting during a fight restarts that room.
-    - **Click through the Act 2 screen** after the act 1 mini-boss.
-    - **Default:** no change.
-
-51. **Visit the merchant (MAP2).** `godot --path .`, and pick a route through the coin square.
-    - Buy two things, then leave. Is it clear what you can afford, and why something is greyed out?
-    - **The shop opens with the first relic highlighted**, so Enter buys it. There's a short delay that stops a held Enter from the map. Is that fine, or should Leave be highlighted first?
-    - Try the free reroll: `-- --relics=request_for_quotation`.
-    - **Default:** no change; the first relic stays highlighted.
-    - Relics on main now cost 80/120/170 over three acts (your D41 = B, with more gold). Cards priced by rarity come in MAP3b, when cards get a rarity.
-
-50. **Play a run on the map (MAP1).** `godot --path .`, one run per class if you can.
-    - **Does picking a route feel like a decision?** About 40% of nodes branch (the plan was 60%, which the generator can't reach). If it feels too linear, a generator that forks and merges more is the fix.
-    - **Is the map clear at a glance?** Where you are, what you can pick, and the chest sizes (1-3 dots). Pause -> Map shows it view-only.
-    - **Try an elite-and-chest route and a cautious one.** The bots won every relic route. From MAP2, every route has a rest (your D40 = A).
-    - **Gold** shows on the HUD with "+N". There's nothing to spend it on until MAP2's merchant.
-    - **Default:** no change; the map generator stays as it is.
-    - **Known and scheduled for MAP2:** the chest size isn't shown on the chest's reward screen; room 9 has a pointless one-choice pick before the boss; small legend text.
-
-49. **Two relic details, when you next play** (you said 2026-11-05 that relics feel fun and builds are getting more exciting; recorded). No rush. Without an answer I keep both as they are.
-    - **The relic room can land on room 9, just before the boss** (about 1 run in 3). Too late? The playtester would say "by room 7". MAP1 replaces this room with map nodes. I've set those nodes to rooms 3-8 (was 3-9), so room 9 never has one. Say if you'd rather have room 9 back.
-    - **Spite Knuckles' "every 4th light hit" restarts each room.** OK, or should it carry over? (In BD3a it changes from Burn to Bleed; the counter question is the same.)
-
-48. **Try the BD1 archetype decks** (new cards and combo cues). Launch with `godot --path . -- --deck=<id>`, adding `--run-room=10` for the boss.
-    - **rogue-hit-and-run:** dash with Ctrl, watch Drive-By light up yellow ("LIVE"), and cast it. Then press Space instead and see how long it takes to work out why it stays dark. The dodge doesn't count, per your D39 = A.
-    - **wizard-controlled-burn:** check that Heat Sink lights while your Zone is out. qa's sim says this deck is strong: about 59% of the standard boss time.
-    - **wizard-departure-lounge:** do you end up in melee range? The playtester's bot did, at 3/22 HP.
-    - **rogue-kindling:** does Burn feel like a plan?
-    - **A plain run:** your random starting slots can now roll the new cards. Does that confuse you?
-    - **What to look for:** does the yellow glow read at a glance mid-fight? Do you notice the small cyan bolt when a slot is primed? Does a Keystone offer on the reward screen feel exciting? The playtester thinks the primed marker and Keystone chip are too quiet; ux fixed those in BD2 (see 49).
-    - **Default:** no change.
-    - **A correction:** I called them "8 new Fire cards" earlier. By pool they're 4 Fire, 2 Rogue and 2 Wizard.
-
-47. **My numbers for your relic and card tiers** (`docs/MAP.md` §4.5). Say if any feel off; they're all data.
-    - Relic tier odds: act 1 80/20/0, act 2 15/70/15, act 3 5/25/70 (tier 1/2/3). They apply to every relic source (elite, relic stage, merchant), not just elites.
-    - Card odds per offer slot: act 2 20% rare; act 3 30% rare and 8% legendary.
-    - The boss-relic pick can't be skipped, and you can't give up a boss relic at the cap, so you always end with 2.
-    - Mini-bosses still give gold, and their rare/legendary card offer can be rejected with a reject token.
-    - **Default:** these numbers stay.
-    - Ballpark: a relic hunter ends with about 14-17 relics, a route that ignores relics with about 6-8 (both include the 2 boss relics).
-    - Cost to know about: this needs about 6 boss relics, 5 rare and 4 legendary cards per class. So MAP3 is split (2026-11-07): MAP3 builds the three acts and save/resume, and MAP3b adds this content. Until MAP3b, a mini-boss gives gold and a normal relic offer and card offer.
-35. **Builds (BD2 is in, so this can be played now; whenever you have time).** Build the same class and element twice with different plans. Do the two runs feel different? Does removing a keystone card hurt? **Default:** no change.
+58. **Play MAP4: events, curses, sacrifice relics. Tag `playtest-2026-11-13-MAP4`.** `godot --path .` and play a full three-act run; events are the "?" bubbles on the map. `-- --event=<id>` opens a given event at the next "?" (ids in `data/events/`, for example `supply_closet`, `performance_altar`, `sympathetic_coworker`).
+    - **Are the trade-offs clear before you click?** Costs are in one colour and gains in another, and greyed choices say why.
+    - **Curses:** you swap past one with Shift + the slot's key, which costs about 1 s on that slot. The playtester thinks that's too cheap ("players will take every curse"). **Default: after your run, the swap penalty on a curse goes from 1 s to 2 s** (curses only). Say "58 leave" to keep 1 s, or "58 harsher".
+    - **The Raider (act 2 mini-boss) has 180 HP now, was 120.** Is it an act-ending fight? The Rogue bot still kills it in about 15 s. Any change goes into DF1, the difficulty bump, next.
+    - **Small looks, each kept as is unless you say:** the purple curse frame next to the violet relic band; the give-up step's highlight starts on Cancel, so a first Enter cancels (safe; it moves to the first relic in the next ux pass); the Loyalty Pledge event is a toll with no upside (rare, on purpose).
+    - **Default:** no change beyond the curse swap penalty above. Expires at DF1's close.
 
 ## Later, optional
 

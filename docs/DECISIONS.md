@@ -2680,3 +2680,12 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
   - **`RunSession.clear()` keeping `--run-curses` and `--run-discount` is fine:** they're launch flags and sticky like `--relics`, as the code says. My brief's wording was wrong; no change.
   - **9 of 17 event choices are never taken by any bot policy.** qa's forced-choice sweep covers them for correctness. A random-choice sim mode can come with a later sim pass; not scheduled.
   - **Medians on the lower edge** (`relic` 14, `safe` 5) and **human Rogue on its 21 floor:** watched at DF1, not tuned now.
+
+## 2026-11-13 - MAP4 playtest triage (game-lead)
+- **No blocker; MAP4 closes as built.** The playtester couldn't play by hand (captures and bots), so the feel findings are theory, and the director's run (eyes 58) is the check.
+- **"A curse is a cheap tax" (major, theory):** a swap past it costs 1 s. A curse-only swap penalty of 2 s is a balance change to a slice the director hasn't played, so it waits for his play (playtest gate). Default after his play: 2 s.
+  - [Changing it before tagging: tunes feel he hasn't felt, and adds a loop before the tag.]
+- **Readability fixes go to the next ux pass,** not before the tag: the swap hint on a cursed slot, curse descriptions in event and removal lists, the Internal Audit's merchant note, the repeated sacrifice text, the double "Bleed detonated", the give-up step's first highlight. None hides a cost; the director can play around them.
+- **The Loyalty Pledge stays a toll** (weight 0.5, rare); **the Rogue's Raider (about 15 s)** goes to the director and DF1.
+- **Tooling bugs** (`-BossLog` crash, `--run-room` with `--event`, `--merchant` flags) go to DF1's gameplay-dev sitting.
+- **Eyes 35-56 expire at MAP4's close with their defaults kept,** under the director's 2026-11-12 rule. Their text is in 3307c3c `docs/OPEN_ITEMS.md`. The small look-items from ux go into eyes 58.

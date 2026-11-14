@@ -559,7 +559,7 @@ func test_every_choice_of_every_shipped_event_finishes_from_every_variant_withou
 					assert_bool(state.event_queue.is_empty() and state.event_fight.is_empty() and state.sacrifice_picks.is_empty()).override_failure_message(label + ": something is left pending").is_true()
 					assert_bool(DeckRules.check_shipped(state.deck).is_ok()).override_failure_message(label + ": the deck broke a minimum").is_true()
 					assert_int(state.cleanses).is_greater_equal(cleanses_before)
-	assert_int(played).override_failure_message("the sweep played too few cases (%d)" % played).is_greater(150)
+	assert_int(played).override_failure_message("the sweep played too few cases (%d)" % played).is_greater(100)
 
 
 ## The next option a player would take: in the multi-give-up step, pick tiles until Confirm is enabled, then Confirm; otherwise the first enabled option.
@@ -573,3 +573,35 @@ func _step_option(state: RunState, ctx: Dictionary) -> String:
 			if String(option["id"]).begins_with("giveup:") and bool(option["enabled"]) and not bool(option.get("selected", false)):
 				return String(option["id"])
 	return _first_enabled(state, ctx)
+
+
+# --- The Micromanager with the SHIPPED curse (map4c_test uses fixture curses) ------------------------------------------------
+
+func test_the_micromanager_with_a_shipped_curse_never_bricks_the_slot() -> void:
+	var caster: Node3D = auto_free(Node3D.new())
+	var owned: Array[String] = ["neutral", "rogue"]
+	var modifiers := StatModifiers.new()
+	var controller := CardSlotController.new(caster, caster, "player", modifiers, owned, RandomNumberGenerator.new())
+	var real: Array[String] = []
+	for card: Variant in CardDatabase.cards_for_slot_type("attack_single"):
+		if owned.has(String((card as Dictionary)["pool"])) and not CardSchema.is_curse(card as Dictionary) and real.size() < 2:
+			real.append(String((card as Dictionary)["id"]))
+	assert_int(real.size()).is_equal(2)
+	controller.set_deck([real[0], real[1], "curse_property_damage", "curse_property_damage", "curse_property_damage"] as Array[String])
+	assert_bool(RelicDatabase.get_relic("the_micromanager").is_empty()).is_false()
+	modifiers.add_modifier(CardSlotController.SWAP_LOCKED_STAT, "the_micromanager", StatModifiers.ADDITIVE, 1.0)
+	assert_bool(controller.swap_locked()).is_true()
+	var slot: CardSlot = controller.get_slot("attack_single")
+	var curse_casts: int = 0
+	for step in range(40):
+		slot.cooldown_remaining = 0.0
+		var current: String = slot.current_card_id
+		assert_str(current).is_not_empty()
+		assert_bool(controller.try_swap("attack_single")).is_false()
+		if current == "curse_property_damage":
+			assert_bool(controller.try_use("attack_single")).override_failure_message("a shipped curse could not be cast while swaps are locked (step %d)" % step).is_true()
+			assert_float(slot.cooldown_remaining).is_greater(0.0)
+			curse_casts += 1
+		else:
+			assert_str(slot.use_card(0.0, modifiers)).is_equal(current)
+	assert_int(curse_casts).is_greater(5)

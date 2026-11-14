@@ -60,6 +60,9 @@ func _on_event(first_seed: int = 1, act: int = 1) -> RunState:
 			state.hp = 30.0
 			state.max_hp = 30.0
 			state.act = act
+			state.acts_total = 3
+			for earlier in range(act - 1):
+				state.past_acts.append({"map": map.duplicate(true), "path": trail.duplicate()})
 			return state
 	return null
 
@@ -475,3 +478,98 @@ func test_documents_that_run_session_clear_keeps_start_curses_and_start_discount
 	var clean: RunState = RunSession.begin_new_run(7, "rogue")
 	assert_bool(clean.deck.has("curse_property_damage")).is_false()
 	assert_float(clean.merchant_discount).is_equal(0.0)
+
+
+# --- a forced-choice sweep: every choice of every shipped event, from several starting states --------------------------------
+# The bots' "first available" policy never takes E1b, E2b, E3b, E6b, E7a/c, E4b or E8b (qa counted 144 sim runs), so this takes every one of them.
+
+## Plays the open event to its end by always taking the first enabled step, saving and reading back at every pending step. Returns the steps used.
+func _drive_to_the_end(state: RunState, ctx: Dictionary, label: String) -> int:
+	var steps: int = 0
+	while steps < 14:
+		if not state.event_fight.is_empty():
+			EventEngine.fight_won(state, ctx)
+			steps += 1
+			continue
+		var open: bool = [RunState.PENDING_EVENT_SACRIFICE, RunState.PENDING_EVENT_REMOVE, RunState.PENDING_RELIC_SWAP].has(state.pending) or EventEngine.is_event_offer(state)
+		if not open:
+			break
+		var back: RunState = _roundtrip(state)
+		assert_object(back).override_failure_message("%s: step %d (%s) was refused on read: %s" % [label, steps, state.pending, RunSave.last_problem]).is_not_null()
+		var next: String = _step_option(state, ctx)
+		assert_str(next).override_failure_message("%s: step %d (%s) has no enabled option: soft lock" % [label, steps, state.pending]).is_not_empty()
+		var result: Dictionary = RunChoices.apply(state, next, ctx)
+		assert_bool(bool(result["ok"])).override_failure_message("%s: '%s' refused: %s" % [label, next, str(result.get("reason", ""))]).is_true()
+		steps += 1
+	assert_bool(steps < 14).override_failure_message("%s: the event did not end in 14 steps" % label).is_true()
+	return steps
+
+
+func _variant_state(kind: String, act: int) -> RunState:
+	var state: RunState = _on_event(1 + act, act)
+	match kind:
+		"poor_low":
+			state.gold = 0
+			state.hp = 1.0
+		"rich_cursed":
+			state.gold = 900
+			state.deck.append("curse_property_damage")
+			state.deck.append("curse_property_damage")
+			state.deck.append("curse_mandatory_training")
+			for id: String in _plain_relics("tier1", 3) + _plain_relics("tier2", 2) + _plain_relics("tier3", 1):
+				state.relics.append(id)
+		"relic_rich":
+			state.gold = 60
+			for id: String in _plain_relics("tier1", 6) + _plain_relics("tier2", 6) + _plain_relics("tier3", 6):
+				state.relics.append(id)
+		"min_hp":
+			state.gold = 45
+			state.max_hp = 10.0
+			state.hp = 10.0
+			state.relics.append(_plain_relics("tier1", 1)[0])
+	return state
+
+
+func test_every_choice_of_every_shipped_event_finishes_from_every_variant_without_breaking_the_run() -> void:
+	var ctx: Dictionary = _ctx()
+	var cap: int = RelicConfig.max_owned()
+	var played: int = 0
+	for event_id: String in EventDatabase.ids():
+		var event: Dictionary = EventDatabase.get_event(event_id)
+		for act in [1, 3]:
+			if not (event["acts"] as Array).any(func(a: Variant) -> bool: return int(a) == act):
+				continue
+			for kind: String in ["poor_low", "rich_cursed", "relic_rich", "min_hp"]:
+				for index in range((event["choices"] as Array).size()):
+					var state: RunState = _variant_state(kind, act)
+					_open(event_id, state)
+					var label: String = "%s act %d %s choice %d" % [event_id, act, kind, index]
+					var option: Dictionary = _option(RunChoices.options(state, ctx), "event_choice:%d" % index)
+					if not bool(option.get("enabled", false)):
+						continue  # greyed with a reason: covered by the greying tests
+					var cleanses_before: int = state.cleanses
+					var result: Dictionary = RunChoices.apply(state, "event_choice:%d" % index, ctx)
+					assert_bool(bool(result["ok"])).override_failure_message(label + ": refused: " + str(result.get("reason", ""))).is_true()
+					_drive_to_the_end(state, ctx, label)
+					played += 1
+					assert_bool(is_nan(state.hp) or state.hp < 1.0 or state.hp > state.max_hp).override_failure_message("%s: hp %s of %s" % [label, str(state.hp), str(state.max_hp)]).is_false()
+					assert_float(state.max_hp).override_failure_message(label + ": max HP under the floor").is_greater_equal(minf(10.0, 30.0))
+					assert_int(state.gold).override_failure_message(label + ": negative gold").is_greater_equal(0)
+					assert_int(state.relics.size()).override_failure_message(label + ": over the relic cap").is_less_equal(cap)
+					assert_bool(state.event_queue.is_empty() and state.event_fight.is_empty() and state.sacrifice_picks.is_empty()).override_failure_message(label + ": something is left pending").is_true()
+					assert_bool(DeckRules.check_shipped(state.deck).is_ok()).override_failure_message(label + ": the deck broke a minimum").is_true()
+					assert_int(state.cleanses).is_greater_equal(cleanses_before)
+	assert_int(played).override_failure_message("the sweep played too few cases (%d)" % played).is_greater(150)
+
+
+## The next option a player would take: in the multi-give-up step, pick tiles until Confirm is enabled, then Confirm; otherwise the first enabled option.
+func _step_option(state: RunState, ctx: Dictionary) -> String:
+	if state.pending == RunState.PENDING_RELIC_SWAP:
+		var options: Array[Dictionary] = RunChoices.options(state, ctx)
+		var confirm: Dictionary = _option(options, "giveup_confirm")
+		if not confirm.is_empty() and bool(confirm["enabled"]):
+			return "giveup_confirm"
+		for option: Dictionary in options:
+			if String(option["id"]).begins_with("giveup:") and bool(option["enabled"]) and not bool(option.get("selected", false)):
+				return String(option["id"])
+	return _first_enabled(state, ctx)

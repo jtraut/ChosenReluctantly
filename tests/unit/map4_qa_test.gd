@@ -616,26 +616,58 @@ func test_no_shipped_sacrifice_relic_is_offered_anywhere_while_you_cannot_pay() 
 			costs[String(relic["id"])] = int(relic["sacrifice_cost"])
 	assert_int(costs.size()).is_equal(4)
 	var tier1: String = _plain_relics("tier1", 1)[0]
+	var rich_holding: Array[String] = _plain_relics("tier1", 2) + _plain_relics("tier2", 1)
+	var probes_with_offers: int = 0
+	var sacrifice_seen: int = 0
 	for character: String in ["rogue", "wizard"]:
 		var ctx: Dictionary = RunChoices.shipped_context(CharacterDatabase.pools(character))
 		for run_seed in range(1, 121):
-			for held_count in [0, 1]:
+			for held_count in [0, 1, 3]:
 				var state: RunState = RunState.new_run(run_seed, CharacterDatabase.full_deck(character), 3, character)
 				state.act = 3
 				state.hp = 30.0
 				state.max_hp = 30.0
-				if held_count == 1:
+				if held_count == 3:
+					for id: String in rich_holding:
+						state.relics.append(id)
+				elif held_count == 1:
 					state.relics.append(tier1)
 				var offers: Array[String] = []
 				for room_type: String in ["elite", "relic_room", "mini_boss"]:
 					var probe: RunState = RunState.from_json(state.to_json())
 					RunRelics.open_for_room(probe, room_type, false, ctx)
 					offers.append_array(probe.offer)
+				if not offers.is_empty():
+					probes_with_offers += 1
 				var shop: Dictionary = Merchant.draw_stock(state, 5, 0, ctx, [] as Array[String], [] as Array[String])
 				for id: Variant in (shop["relics"] as Array):
 					offers.append(String(id))
 				for tier in [1, 2, 3]:
 					offers.append_array(EventEngine.offer_ids(state, ctx, {"type": "gain_relic", "tier": tier, "count": 3}))
 				for id: String in offers:
+					if costs.has(id) and held_count == 3:
+						sacrifice_seen += 1
 					if costs.has(id):
 						assert_int(held_count).override_failure_message("%s (give up %d) was offered to a %s holding %d eligible relic(s), seed %d" % [id, int(costs[id]), character, held_count, run_seed]).is_greater_equal(int(costs[id]))
+	assert_int(probes_with_offers).override_failure_message("the probes produced no offers: the absence check is vacuous").is_greater(300)
+	assert_int(sacrifice_seen).override_failure_message("a holder of 3 eligible relics never saw a sacrifice relic in 720 probes: the control is broken").is_greater(0)
+
+
+# --- a map that cannot be made at an act change (the generator's headroom shrank in MAP4) ----------------------------------------
+
+func test_a_failed_act_map_leaves_the_run_untouched_and_advance_act_reports_false() -> void:
+	# RunController then ends the run as a win with a loud error (RunController line ~678), so a seed past max_attempts is a premature win, not a stuck run.
+	var cfg: Dictionary = MapConfig.get_config().duplicate(true)
+	cfg["max_attempts"] = 1
+	var failures: int = 0
+	for run_seed in range(1, 40):
+		var state: RunState = RunSession.begin_new_run(run_seed, "rogue")
+		assert_int(state.acts_total).is_equal(3)
+		var before: Dictionary = state.to_dict()
+		if RunNodes.advance_act(state, cfg):
+			continue
+		failures += 1
+		assert_int(state.act).is_equal(1)
+		assert_bool(state.past_acts.is_empty()).is_true()
+		assert_bool(JSON.stringify(state.to_dict()) == JSON.stringify(before)).override_failure_message("a failed advance_act changed the run state").is_true()
+	assert_int(failures).override_failure_message("max_attempts 1 never failed; the check proves nothing").is_greater(0)

@@ -7,18 +7,14 @@ Last updated: 2026-11-13. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds on
 
 ## In progress
 - **MAP4 (events), briefed 2026-11-13** in ROADMAP MAP4 and BUILD_DEPTH §13. Tag `safe to chain`. Build sittings A-D done; events are live in three-act runs. The repo runs.
-- **MAP4 ux stopped early at 6f8f516** (range 6bc84d9..6f8f516; its full-suite run was killed for low memory at about 1465 cases). `Remaining:`
-  1. Run the full suite again (`tools/run_tests.ps1`; expected 2451) and re-check the four hashes. **-> qa does this.**
-  2. Keyboard-check the multi-give-up flow in `src/ui/RunPromptScreen.gd` (`show_content` and `is_giveup_refill`).
-  3. Capture the cleanse counter with a capped `curses.max_cleanses`, the event remove-curse list, and the "Nothing you hold can be given up" state.
-  4. Remove the unused `sacrifice_cost_note` key in `data/run.json`.
+- **MAP4 ux done** (6bc84d9..000d63b). Its full-suite run was killed for low memory: qa runs it (expected about 2457).
 
 ## Exact next step
-1. **A fresh ux-designer agent for Remaining 2-4** above (small). Item 1 goes to qa.
-2. Then qa (full MAP4 review, ROADMAP MAP4 "qa", plus the full suite and hashes), playtester, tech-writer, close.
+1. **qa: the full MAP4 review** (ROADMAP MAP4 "qa", plus the full suite and hashes).
+2. Then playtester, tech-writer, close.
 3. Then DF1 (difficulty bump, D51 = C; ROADMAP), then 3d, then BD3b, then the Milestone 3 close: the milestone playtest, then game-lead's own review of the report and screenshots (ROADMAP).
 
-**Next role:** ux-designer (MAP4 ux Remaining 2-4), then qa.
+**Next role:** qa (MAP4 review).
 
 ## Current baselines (MAP4 sitting A, 2026-11-13; qa re-gates at MAP4's qa)
 - Suite 2425 after D (one test fixed after the last full run; qa re-runs), 0 skipped, 0 orphans (about 18 min).
@@ -39,6 +35,7 @@ Last updated: 2026-11-13. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds on
 - **MAP4 sitting B2 (866ac63..fc444cd):** README: suite 2374, SIM1 numbers, the `offer_report` line for the D49 refinement (shares 12.2/22.8/9.9 -> 12.5/22.8/10.0), the new outcomes and sacrifice flow, save boundaries now include the event give-up step and an event fight's start. ARCHITECTURE: RunState `event_fight`, `run_mods`, `merchant_discount`, `sacrifice_picks`, `sacrificed_tier`; controller `event_fight_active()`, `confirm_relic_giveup()`, `confirm_purchase_giveup()`; EventEngine `fight_won`, `pick_fight_wave`, `sacrifice_candidates`. CHANGELOG: B2 outcomes, sacrifice relics (none shipped yet).
 - **MAP4 sitting C (5b85aad..eeae97c):** README: suite 2413, the curse card format, the `rest_dig` stat, `curses.max_cleanses`. ARCHITECTURE: `RunState.cleanses`, `PENDING_EVENT_REMOVE`; `RunChoices` `is_curse_id`, `curse_ids`, `cleanses_left`, `cleanses_at_cap`, `remove_from_deck`, `dig_enabled`, `dig_offer_ids`; `EventEngine` `outcome_block_reason`, `curse_pool`; `CardSchema.is_curse`, `DeckRules.slot_map_of`, `RouteBot.removal_choice`. CHANGELOG: curses and the Dig built (none shipped until D).
 - **MAP4 sitting D (fa94a97..33eff21):** README: suite 2425, `--run-curses=id+id`, `multi_act.types` in map.json, `run_map_print -Routes` events column, `run_wave_sim` EVENT SUMMARY / BOSS RELICS lines and curse-offer ERROR scan, capture presets `event_screen`, `event_screen_requires`, `rest_dig`, `curse_hud`, the event table, SIM1 numbers. ARCHITECTURE: `MapConfig.for_act` `multi_act.types`, `RouteBot.plan` relic tie-break toward events, `RunSession.start_curses`. CHANGELOG: events on (three-act only: event weight 0 -> 28, relic_room 14 -> 18), the 8 events, 3 curses, 6 event-only and 4 sacrifice relics; safe-route relic target 6-8 -> 5-8. MAP.md already updated by game-lead. Assets: none.
+- **MAP4 ux (6bc84d9..000d63b):** README: `--run-discount=<0..1>`, scenarios `map4ux_bleed4` and `map4ux_sand_telegraphs`, the give-up step keyboard flow (Up from Cancel into the relics, Down to Confirm or Cancel), suite count from qa. ARCHITECTURE: `RunController.run_mod_lines()`, `EventEngine.line_parts`/`outcome_kind`/`stat_name_of`/`stat_amount_text`/`mod_text`, `RunIcons.SHAPE_BUBBLE`/`draw_mark`, `AttackArcVisual.ENEMY_EDGE_THICKNESS`. CHANGELOG: the ux items, "Time" -> "Fight time", enemy telegraph dark band, give-up keyboard fix, greyed relic tile shows its reason instead of the cap note, `ui.relic.sacrifice_cost_note` removed.
 - **CHANGELOG:**
   - `[Director decision]` D49: pruning or rejecting had no effect on offers; now each one multiplies that status's offer weight by 0.8, floor 0.4.
   - `[Director decision]` D50: target run length 30-45 min -> about 15-20 min of real time, decisions included.

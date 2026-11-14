@@ -2,6 +2,47 @@
 
 The archive of the director's answered, received and acknowledged items, moved here from `docs/OPEN_ITEMS.md`. Owned by tech-writer (director, 2026-11-02). Newest dated section first; IDs (D19, call 16, checklist item 33) are kept so they can be searched. Old entries change only to fix a factual error.
 
+## 2026-11-13
+
+### Answer recorded in 35ef4b0 (eyes 57)
+
+Removed from OPEN_ITEMS when MAP4 sitting B2 built it. The question text, with the D49 shares, is in `git show 69c8b0d:docs/OPEN_ITEMS.md`.
+
+| ID | Question | Your answer | Where it went |
+|---|---|---|---|
+| eyes 57 | FYI: your D49 rule is in. For a Bleed Rogue in late offers it pushes Fire down from 31.3% to 22.8% and Burn from 19.9% to 9.9%, but Bleed barely rises (11.8% to 12.2%), because rejecting an offer also pushes away the Bleed cards in it that you already own. Reply "57 ok" or "57 boost Bleed". Default: no change. | 2026-11-13: "I don't like that dynamic, so let's try rejecting only pushes away cards not currently in your deck". | GDD §9 "Pruning and rejecting push a type away" (D49 refinement; 35ef4b0). Built at the start of MAP4 sitting B2 (2e4595b): a reject discounts only the offered cards you don't already own. Pruning is unchanged. Late shares after the change: Bleed 12.5%, Fire 22.8%, Burn 10.0% (DECISIONS "MAP4 sitting B2 triage"). Changelog: 2026-11-13, `[Director decision]`. |
+
+### Expired at MAP4's close (2026-11-13), default kept
+
+Your 2026-11-12 rule: an eyes item nobody answered by the close of the slice after the one that added it applies its default. Everything below expired at MAP4's close (dae7855). Their full text is in `git show 3307c3c:docs/OPEN_ITEMS.md`. Items 55, 52 and 56 were partly answered on 2026-11-12 (section below); the rows here are what was left.
+
+| ID | What it asked | Default that applied |
+|---|---|---|
+| 56 | Play MAP3b: do the boss relics feel big, is each cost felt, the Non-Compete Clause wins every bot run, the sand act 3 floor, Exsanguinate. | Refund 0.3 s (the Non-Compete's cooldown refund went 0.5 s to 0.3 s in MAP4 sitting A, d553f1c), sand floor kept, Exsanguinate left as is. |
+| 55 | The act 1 mini-boss, Head of Facilities: a real act ender or a speed bump? (The Raider half was answered, see below.) | Leave as is. |
+| 54 | FYI: the test bot was half-blind until the aim fix, so old bot numbers were weaker than thought; SIM1's "human" bot. | Counts as read. |
+| 52 | Quit mid-run, relaunch, press Enter (Continue); click through the Act 2 screen. (The timing question was answered, see below.) | No change. |
+| 51 | Visit the merchant: is it clear what you can afford and why something is greyed; first relic highlighted when the shop opens. | No change; the first relic stays highlighted. |
+| 50 | Play a run on the map: does picking a route feel like a decision, is the map clear at a glance. | No change; the map generator stays as it is. |
+| 49 | The relic room can land on room 9; Spite Knuckles' every-4th-hit counter restarts each room. | Both kept as they are (the map's relic stage stays on rooms 3-8 and Spite Knuckles' counter keeps restarting each room). |
+| 48 | Try the BD1 archetype decks (combo cues, the LIVE glow, Keystone offers). | No change. |
+| 47 | The relic and card tier odds in `docs/MAP.md` §4.5 (relic tiers per act, rare and legendary odds, boss relic rules). | The numbers stay. |
+| 35 | Builds: do two runs of the same class and element with different plans feel different. | No change. |
+
+## 2026-11-12
+
+### Answers recorded in b0222f9, c922381, dca0975, 6dec638 and 0a5232e (D49, D50, D51, eyes 53 and parts of 55, 52, 56)
+
+| ID | Question | Your answer | Where it went |
+|---|---|---|---|
+| D49 | When you prune or reject cards of one type, should that type show up less afterwards? **A** (default): no new rule. **B**: each card you prune or reject lowers its type's offer weight for the rest of the run (for example x0.8 each, never below x0.4). **C**: as B, but only pruning counts. Text: `git show 5b412e5:docs/OPEN_ITEMS.md`. | **B** (2026-11-12). Refined on 2026-11-13 (eyes 57, above). | GDD §9 (b0222f9); ROADMAP MAP4 first step. Built in MAP4 sitting A (0c8c2f5): `data/run.json` `rewards.prune_reject_factor` 0.8 and `prune_reject_floor` 0.4. Changelog: 2026-11-12, `[Director decision]`. |
+| D50 | Run length: your run took a bit under 7 minutes against the 30-45 minute target. **A**: keep 30-45 min and make fights longer and harder. **B**: lower the target to about 15-20 min, tougher fights for challenge, not length. **C** (default): no change, measure after MAP4. Text: `git show e038fa5:docs/OPEN_ITEMS.md`. | **B** (2026-11-12). You added that the 6:56 was the game's end-of-run time, "not wall clock time", and that with good, tough build decisions a run would take "more like 15 minutes real-time". | GDD §2 and §9 (target about 15-20 min of real time, decisions included), `docs/MAP.md` §1, ROADMAP MAP4 (dca0975). No length pass scheduled. The end-of-run "Time" stat was relabelled "Fight time" in MAP4 ux, since it adds up fight time only. Changelog: 2026-11-12, `[Director decision]`. |
+| D51 | How hard is the campaign now, before between-run upgrades exist? **A** (default): no change until Milestone 4. **B**: retune now to near-perfect-play wins. **C**: a modest bump now, final calibration with upgrades. Also: keep an Easy tier below Normal? Text: `git show 6dec638:docs/OPEN_ITEMS.md`. | **C**, and **no Easy tier** (2026-11-12). | GDD §9, §9a and §14 (0a5232e): every player starts on Normal and tiers unlock one at a time. ROADMAP slice DF1 (the bump, after MAP4). Changelog: 2026-11-12, `[Director decision]`. |
+| eyes 53 | Play a physical Rogue (BD3a): can you go Bleed from the start, harder or easier than MAP3? Text: `git show b0222f9:docs/OPEN_ITEMS.md`. | The Bleed Rogue "feels a lot more put together now" and probably holds up to Fire and Burn. You finished with zero Fire cards left. | DECISIONS "Director feedback on MAP3b" (c922381). Changelog: 2026-11-12, director feedback. |
+| 55 (the Raider half) | The Corporate Raider, act 2 mini-boss: a real act ender or a speed bump? | "Maybe too easy, like died super fast" (read as "55 harder"). | Applied by game-lead: Raider `max_health` 120 -> 180, phase 2 `attack_gap` 0.9 -> 0.75 (DECISIONS, c922381), built in MAP4 sitting A (d553f1c). |
+| 52 (the timing question) | How long did a three-act run take on the clock? | A bit under 7 minutes (6:56, end-of-run time: see D50). | Escalated as D50 (above). |
+| 56 (the Bleed question) | Does a Bleed Rogue finally get enough Bleed late? | Answered with 53: the Bleed Rogue holds up. | DECISIONS "Director feedback on MAP3b" (c922381). |
+
 ## 2026-11-11
 
 ### Answer recorded in ba252e3 (D48)

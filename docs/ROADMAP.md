@@ -1512,6 +1512,7 @@ un_offer_report.ps1`.
 ## DF1, difficulty bump (D51 = C, director 2026-11-12; after MAP4, before 3d)
 - [ ] **DF1. Full loop. Tag `playtest-YYYY-MM-DD-DF1`.** Goal (GDD §9a): a modest bump toward the hard campaign, from a high bot win rate to about 40-50%. Final calibration comes with between-run upgrades in Milestone 4. **Split into two gameplay-dev sittings (game-lead, 2026-11-16; DECISIONS "DF1 brief"):** the MAP4 carry-overs are code and don't fit the "one sitting, no new code" line. A takes them, and B is the director's data-only bump. Order: A -> B -> ux -> qa -> playtest -> docs. One tag at the end.
   - **Detailed brief (game-lead, 2026-11-16).**
+  - **Sitting A done 2026-11-16** (9c69a58..5da7427; DECISIONS "DF1 sitting A triage"). Hashes and SIM1 unchanged; `max_attempts` 1000 -> 2000 (act 3 worst 751); suite 2479 (+1 since).
   - **gameplay-dev sitting A, MAP4 carry-overs. `safe to chain`** (fixes and tooling; no feel or balance change):
     1. Add `--run-curses` and `--run-discount` to `RunSave.DEBUG_FLAG_PREFIXES`. Test: a launch with only those flags never reads, writes or deletes the real save.
     2. A map-generator failure at an act change must not end the run as a win (today: loud error, then a win). Make it a clean failure with no win screen and no save corruption (the simplest honest outcome; log your choice). Flip or extend qa's act-change failure test.

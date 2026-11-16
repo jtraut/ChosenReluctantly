@@ -6,14 +6,14 @@
 Last updated: 2026-11-16. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **DF1 brief written 2026-11-16** (ROADMAP DF1; DECISIONS "DF1 brief"). Sittings: A (MAP4 carry-overs) -> B (data-only bump) -> ux -> qa -> playtest -> docs. Nothing built yet. The repo runs.
+- **DF1 brief written 2026-11-16** (ROADMAP DF1; DECISIONS "DF1 brief"). Sittings: A (MAP4 carry-overs) -> B (data-only bump) -> ux -> qa -> playtest -> docs. Sitting A done (9c69a58..5da7427). The repo runs.
 
 ## Exact next step
-1. **gameplay-dev, DF1 sitting A** (ROADMAP DF1, items 1-6). It ends with a full suite run, the hashes and SIM1 as the new baseline.
-2. Then gameplay-dev sitting B (the bump to 14-18/36), ux, qa, playtester, tech-writer, close.
+1. **gameplay-dev, DF1 sitting B** (ROADMAP DF1): the data-only bump to 14-18/36. Baseline after A: unchanged from MAP4.
+2. Then (the bump to 14-18/36), ux, qa, playtester, tech-writer, close.
 3. Then 3d (it starts with the curse swap penalty if eyes 58 wasn't answered before B), then BD3b, then the Milestone 3 close.
 
-**Next role:** gameplay-dev (DF1 sitting A).
+**Next role:** gameplay-dev (DF1 sitting B).
 
 ## Current baselines (MAP4 close, 2026-11-13)
 - Suite 2478 (last full run 2477), 0 skipped, 0 orphans (about 22 min).
@@ -23,13 +23,11 @@ Last updated: 2026-11-16. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds on
 - Late shares for a Bleed Rogue: Bleed 12.5%, Fire 22.8%, Burn 10.0%.
 
 ## Pending for the next docs pass (tech-writer, DF1)
-- Nothing yet.
+- DF1 sitting A (9c69a58..5da7427): debug flags `--run-curses`, `--run-discount`, `--merchant` never touch the save; `--merchant` alone jumps to the first merchant node; `--run-room` + `--event` opens the event; `-BossLog` fixed; curse casts skip `card_cast` and cast history; act-change map failure is a loss; `max_attempts` 1000 -> 2000 (sweep 1001-4000 worst 421/341/751). Drop the ARCHITECTURE known issue.
 
 ## Known issues
 - Wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
-- `--run-curses` and `--run-discount` don't count as debug flags yet, so a launch with only those can touch the real run save (fix at DF1's start).
-- A map-generator failure at an act change ends the run as a win (no seed fails today; fix at DF1's start).
 
 **D-numbers:** D21-D51 answered. Next free: D52. Next eyes number: 59.
 

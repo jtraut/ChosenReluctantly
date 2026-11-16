@@ -432,6 +432,40 @@ func test_a_curse_cast_does_not_enter_the_cast_history_or_fire_card_cast() -> vo
 	CombatEvents.reset()
 
 
+func test_a_curse_cast_triggers_no_card_cast_relic_end_to_end() -> void:
+	# DF1-A, end to end: the shipped Non-Compete Clause (every cast) and Faculty Meeting (Utility casts) stay silent for a curse, and fire for an ordinary Utility card.
+	CombatEvents.reset()
+	var main: Main = (load("res://scenes/main/Main.tscn") as PackedScene).instantiate()
+	(main.get_node("EnemySpawner") as Node).process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(main)
+	auto_free(main)
+	var manager := RelicManager.new()
+	main.add_child(manager)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 5
+	manager.configure(main.player, main, rng, CombatEvents)
+	var fired: Array[String] = []
+	manager.effect_runner = func(trigger: Dictionary, _event: Dictionary) -> void: fired.append(String(trigger["relic_id"]))
+	manager.load_relics(["the_non_compete_clause", "faculty_meeting"] as Array[String])
+	var caster: Node3D = auto_free(Node3D.new())
+	add_child(caster)
+	var controller := CardSlotController.new(caster, caster, "player", StatModifiers.new(), ["rogue_bad_influence"] as Array[String])
+	controller.set_deck(["curse_mandatory_training", "curse_mandatory_training"] as Array[String])
+	var slot: CardSlot = controller.get_slot("utility")
+	assert_str(slot.current_card_id).is_equal("curse_mandatory_training")
+	assert_bool(controller.try_use("utility")).is_true()
+	manager.flush()
+	assert_array(fired).override_failure_message("a curse cast fired a card_cast relic: %s" % str(fired)).is_empty()
+	var control := CardSlotController.new(caster, caster, "player", StatModifiers.new(), ["rogue_bad_influence"] as Array[String])
+	control.set_deck(["rogue_bad_influence", "rogue_bad_influence"] as Array[String])
+	assert_bool(control.try_use("utility")).is_true()
+	manager.flush()
+	assert_array(fired).override_failure_message("the control cast fired nothing: the check is vacuous").is_not_empty()
+	CombatEvents.reset()
+	Juice.reset()
+	GamePause.reset()
+
+
 func _curse_slots() -> Array[String]:
 	var slots: Array[String] = []
 	for card_entry: Variant in CardDatabase.all_cards():
@@ -666,7 +700,7 @@ func test_no_shipped_sacrifice_relic_is_offered_anywhere_while_you_cannot_pay() 
 # --- a map that cannot be made at an act change (the generator's headroom shrank in MAP4) ----------------------------------------
 
 func test_a_failed_act_map_leaves_the_run_untouched_and_advance_act_reports_false() -> void:
-	# RunController then ends the run as a win with a loud error (RunController line ~678), so a seed past max_attempts is a premature win, not a stuck run.
+	# DF1-A: RunController now ends the run as a loss (run_lost, no win screen); that is tested at controller level in map3b_acts_test.
 	var cfg: Dictionary = MapConfig.get_config().duplicate(true)
 	cfg["max_attempts"] = 1
 	var failures: int = 0

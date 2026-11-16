@@ -707,6 +707,7 @@ func continue_to_next_room(force: bool = false) -> void:
 				# DF1-A: a generator failure is not a win. advance_act left the state untouched, so the run ends as a loss (death screen, no win screen) and its save is deleted.
 				push_error("RunController: act %d's map could not be made; the run ends here as a loss, not a win" % (_state.act + 1))
 				_active = false
+				set_process(false)
 				_state.outcome = "lost"
 				_delete_own_save()
 				run_lost.emit()

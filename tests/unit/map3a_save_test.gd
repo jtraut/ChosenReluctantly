@@ -141,7 +141,7 @@ func test_nothing_is_written_when_persistence_is_off() -> void:
 
 
 func test_debug_launch_flags_suppress_saving() -> void:
-	for flag: String in ["--run-room=4", "--run-node=33", "--run-gold=200", "--full-deck", "--deck=fire-heavy-rogue", "--relics=a+b", "--scenario=hp_bars", "--run-curses=mandatory_training", "--run-discount=0.25"]:
+	for flag: String in ["--run-room=4", "--run-node=33", "--run-gold=200", "--full-deck", "--deck=fire-heavy-rogue", "--relics=a+b", "--scenario=hp_bars", "--run-curses=mandatory_training", "--run-discount=0.25", "--merchant"]:
 		assert_bool(RunSave.args_suppress(PackedStringArray([flag]))).override_failure_message(flag).is_true()
 	for flag: String in ["--run-seed=7", "--class=wizard", "--map", "--no-map"]:
 		assert_bool(RunSave.args_suppress(PackedStringArray([flag]))).override_failure_message(flag).is_false()

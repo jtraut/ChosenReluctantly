@@ -127,8 +127,11 @@ func try_use(slot_type: String) -> bool:
 	if stat_modifiers != null:
 		stat_modifiers.consume_for_cast(slot_type, CardDatabase.tags_for(used_id), primed_before)
 	# History after the effects: a card's own conditions never see its own cast.
+	# DF1-A: a curse cast is not a card cast for the build: no history entry and no CombatEvents.card_cast, so it cannot satisfy Peer Review or fire
+	# Faculty Meeting, The Ivory Tower or The Non-Compete Clause. It still spends its slot cooldown and uses up primed buffs (above), and this
+	# controller's own `card_cast` still fires for the HUD and the cast feedback.
 	var relay := CombatLink.events()
-	if relay != null:
+	if relay != null and not CardSchema.is_curse(card_data):
 		relay.notify_card_cast(slot_type, used_id)
 	card_cast.emit(slot_type, used_id)
 	return true

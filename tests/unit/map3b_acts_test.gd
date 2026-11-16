@@ -856,6 +856,38 @@ func test_clearing_the_last_act_wins_the_run() -> void:
 	assert_str(state.outcome).is_equal("won")
 
 
+func test_a_map_that_cannot_be_made_at_an_act_change_ends_the_run_as_a_loss_not_a_win() -> void:
+	# DF1-A: it used to end as a win with a loud error. Now: run_lost, outcome "lost", no run_won, the save deleted.
+	var tight: Dictionary = MapConfig.get_config().duplicate(true)
+	tight["max_attempts"] = 1
+	var run_seed: int = -1
+	for candidate in range(1, 200):
+		var probe: RunState = RunSession.begin_new_run(candidate, "rogue")
+		if not bool(MapGenerator.build(probe.seed_value, tight, {}, 2, probe.acts_total)["ok"]):
+			run_seed = candidate
+			break
+	assert_int(run_seed).override_failure_message("no seed failed with max_attempts 1").is_greater(0)
+	RunSession.clear()
+	var state: RunState = RunSession.begin_new_run(run_seed, "rogue")
+	state.jump_to_room(9)  # the act 1 mini-boss
+	var main: Main = _spawn()
+	await _frames()
+	var controller: RunController = main.run_controller
+	var won: Array[bool] = [false]
+	var lost: Array[bool] = [false]
+	controller.run_won.connect(func() -> void: won[0] = true)
+	controller.run_lost.connect(func() -> void: lost[0] = true)
+	await _win_room(main)
+	controller.pick_relic(state.offer[0])
+	MapConfig.get_config()["max_attempts"] = 1  # the live cache: the next act's map cannot be made now (after_test resets it)
+	controller.choose("skip")  # two loud push_errors (the generator's and the controller's) are expected here
+	assert_bool(won[0]).is_false()
+	assert_bool(lost[0]).is_true()
+	assert_str(state.outcome).is_equal("lost")
+	assert_int(state.act).is_equal(1)  # the failed advance left the state alone
+	assert_bool(RunSave.has_save()).is_false()
+
+
 func test_a_one_act_run_still_ends_at_the_boss() -> void:
 	RunSession.map_override = 1
 	RunSession.acts_override = 1

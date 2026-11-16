@@ -58,6 +58,8 @@ var _boss: Boss = null
 var _launch_room: int = 0
 var _launch_room_set: bool = false
 var _launch_node: int = -1
+## DF1-A: `--merchant` was given (the run opens on the merchant when no room or node was named).
+var _launch_merchant: bool = false
 var _launch_gold: int = -1
 var _launch_clear_after: float = -1.0
 var _prepared: bool = false
@@ -258,9 +260,35 @@ func prepare(main: Main) -> bool:
 		_state.jump_to_room(_launch_room)  # a map run is laid along the `first` route (no gold for the rooms skipped)
 	if _fresh_launch and _launch_node >= 0 and RunNodes.active(_state) and not _state.jump_to_node(_launch_node):
 		push_error("RunController: --run-node=%d is not a node of this run's map" % _launch_node)
+	if _fresh_launch and RunNodes.active(_state):
+		_apply_debug_room_type()
 	if _fresh_launch and _launch_gold >= 0:
 		_state.gold = _launch_gold
 	return true
+
+
+## DF1-A: `--event=<id>` with `--run-room=N` (or a node) makes that room the event node, and `--merchant` alone opens the first merchant node on the map
+## (a merchant launch used to land on the map screen). Only a combat-like or rest room is converted; a boss, a mini-boss or a room that is already the wanted type
+## stays. With no merchant on the act's map it says so and the run starts normally.
+func _apply_debug_room_type() -> void:
+	var wanted: String = ""
+	if RunSession.forced_event != "" and (_launch_room_set or _launch_node >= 0):
+		wanted = RunConfig.EVENT_ROOM
+	elif _launch_merchant and not _launch_room_set and _launch_node < 0 and _state.path.is_empty():
+		for node_variant: Variant in (_state.map.get("nodes", []) as Array):
+			var found: Dictionary = node_variant as Dictionary
+			if String(found.get("type", "")) == RunConfig.MERCHANT_ROOM and int(found.get("room", 0)) > 0:
+				_state.jump_to_node(int(found["id"]))
+				return
+		push_warning("RunController: --merchant: this act's map has no merchant node; starting on the map")
+		return
+	if wanted.is_empty() or _state.path.is_empty():
+		return
+	var node: Dictionary = MapGraph.node(_state.map, _state.path[_state.path.size() - 1])
+	if node.is_empty() or ["boss", "mini_boss", wanted].has(String(node.get("type", ""))):
+		return
+	node["type"] = wanted
+	node["wave_id"] = ""
 
 
 ## The character of this run (data/characters.json id); "" before `prepare`.
@@ -332,6 +360,7 @@ func _apply_launch_args(tree: SceneTree) -> bool:
 				tree.quit(2)
 				return false
 			RunSession.forced_offer = offer_ids
+	_launch_merchant = args.has("--merchant")
 	if args.has("--merchant") and not MerchantSwitch.apply():  # MAP2-B: play the merchant before the shipped data turns it on
 		printerr("Launch refused: --merchant could not apply data/merchant_on.json")
 		tree.quit(2)
@@ -675,10 +704,12 @@ func continue_to_next_room(force: bool = false) -> void:
 				_rooms = _build_rooms(RunConfig.get_config())
 				act_started.emit(_state.act, act_summary())
 			else:
-				push_error("RunController: act %d's map could not be made; the run ends here as a win" % (_state.act + 1))
-				_state.outcome = "won"
+				# DF1-A: a generator failure is not a win. advance_act left the state untouched, so the run ends as a loss (death screen, no win screen) and its save is deleted.
+				push_error("RunController: act %d's map could not be made; the run ends here as a loss, not a win" % (_state.act + 1))
+				_active = false
+				_state.outcome = "lost"
 				_delete_own_save()
-				run_won.emit()
+				run_lost.emit()
 				return
 		else:
 			RunNodes.open(_state)  # a map run never walks on by itself: the player picks the next node (`pick_node`)

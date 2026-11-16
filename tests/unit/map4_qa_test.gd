@@ -408,16 +408,27 @@ func test_the_cleanse_counter_counts_event_removals_of_a_curse_but_not_of_an_ord
 
 # --- a curse cast and the cast history ---------------------------------------------------------------
 
-func test_a_curse_cast_enters_the_cast_history_under_its_slot_and_fires_card_cast() -> void:
+func test_a_curse_cast_does_not_enter_the_cast_history_or_fire_card_cast() -> void:
+	# DF1-A (flipped from MAP4's "a curse is a real cast"): through the real controller, a curse spends its slot but is no card cast for the build.
 	CombatEvents.reset()
 	var seen: Array[String] = []
 	var listener: Callable = func(slot_type: String, card_id: String, _tags: Array[String]) -> void: seen.append("%s/%s" % [slot_type, card_id])
 	CombatEvents.card_cast.connect(listener)
-	CombatEvents.notify_card_cast("utility", "curse_mandatory_training")
+	var caster: Node3D = auto_free(Node3D.new())
+	add_child(caster)
+	var controller := CardSlotController.new(caster, caster, "player", StatModifiers.new(), ["rogue_bad_influence"] as Array[String])
+	controller.set_deck(["curse_mandatory_training", "curse_mandatory_training"] as Array[String])
+	var own: Array[String] = []
+	controller.card_cast.connect(func(_slot_type: String, card_id: String) -> void: own.append(card_id))
+	assert_str(controller.get_slot("utility").current_card_id).is_equal("curse_mandatory_training")
+	assert_bool(controller.try_use("utility")).is_true()
+	assert_array(own).is_equal(["curse_mandatory_training"])  # the slot's own signal still fires (HUD)
+	assert_array(seen).is_empty()
+	assert_bool(CombatEvents.history.cast_within(CombatEvents.now(), 4.0, "utility")).override_failure_message("a curse satisfied Peer Review's condition").is_false()
 	CombatEvents.card_cast.disconnect(listener)
-	assert_array(seen).is_equal(["utility/curse_mandatory_training"])
-	assert_bool(CombatEvents.history.cast_within(CombatEvents.now(), 4.0, "utility")).is_true()  # Peer Review's condition
-	assert_bool(CombatEvents.history.cast_within(CombatEvents.now(), 4.0, "movement")).is_false()
+	# the relay still records an ordinary cast
+	CombatEvents.notify_card_cast("utility", "rogue_bad_influence")
+	assert_bool(CombatEvents.history.cast_within(CombatEvents.now(), 4.0, "utility")).is_true()
 	CombatEvents.reset()
 
 
@@ -430,10 +441,9 @@ func _curse_slots() -> Array[String]:
 	return slots
 
 
-func test_what_a_curse_cast_can_trigger_is_exactly_the_known_list() -> void:
-	## Report-only tripwire. A curse is a real cast in its fixed slot, so anything keyed on that slot (or on no slot at all) fires. Today:
-	## payoff card: Peer Review (cast_within utility 4 s); relic triggers: Faculty Meeting and The Ivory Tower (Utility casts), The Non-Compete Clause (every cast).
-	## A new entry here means a new curse exploit or synergy for game-lead to look at, not necessarily a bug.
+func test_the_listeners_a_curse_cast_would_have_reached_are_exactly_the_known_list() -> void:
+	## DF1-A: a curse cast fires no card_cast and enters no cast history (CardSlotController.try_use), so these three listings are what WOULD have fired.
+	## The data-side scan stays as a tripwire: if the list of listeners changes, game-lead should look. The runtime check is the test above.
 	var slots: Array[String] = _curse_slots()
 	assert_array(slots).contains_exactly_in_any_order(["attack_single", "attack_aoe", "utility"])
 	var payoffs: Array[String] = []

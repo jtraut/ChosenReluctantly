@@ -936,7 +936,7 @@ func test_the_shipped_data_has_the_merchant_fully_on() -> void:
 	assert_bool(MerchantSwitch.shipped_is_on()).is_true()
 	assert_array(MerchantSwitch.shipped_problems()).is_empty()
 	assert_float(float(map["types"]["rest"]["weight"])).is_equal(25.0)
-	assert_int(int(map["max_attempts"])).is_equal(1000)
+	assert_int(int(map["max_attempts"])).is_equal(2000)  # DF1-A: 1000 -> 2000, act 3 worst case 751 of 1000 had under 2x headroom
 
 
 # ---- 12. relic behaviour spot checks that go beyond the dev's: a dense Severance chain and a real Movement cast ----

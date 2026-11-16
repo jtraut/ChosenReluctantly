@@ -4,7 +4,7 @@
   "rooms": 10,
   "columns": 4,
   "walks": 4,
-  "max_attempts": 1000,
+  "max_attempts": 2000,
   "fixed": { "1": "combat", "2": "combat", "10": "boss" },
   "types": {
     "combat":     { "weight": 40, "rooms": [1, 9] },

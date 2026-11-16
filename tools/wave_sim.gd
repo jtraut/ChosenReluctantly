@@ -1509,7 +1509,13 @@ func _boss_summary() -> void:
 	var n: float = float(_boss_runs.size())
 	print("BOSS LOG over %d run(s) that reached the boss (%d won, %d died there): mean boss-room HP taken %.1f (phase 1/2/3 %.1f / %.1f / %.1f), dodges pressed per run %.1f" % [
 		_boss_runs.size(), wins, deaths, all_hp / n, phase_hp[0] / n, phase_hp[1] / n, phase_hp[2] / n, float(dodges) / n])
-	var volley_count: int = int(BossConfig.boss(String((_boss_runs[0])["boss_id"]))["attacks"]["volley"]["count"])
+	# DF1-A: only some bosses have a volley (the first run may be the Raider's mini-boss), so take the count from the first one that does.
+	var volley_count: int = 1
+	for boss_run: Variant in _boss_runs:
+		var boss_attacks: Dictionary = BossConfig.boss(String((boss_run as Dictionary)["boss_id"])).get("attacks", {})
+		if boss_attacks.has("volley"):
+			volley_count = int((boss_attacks["volley"] as Dictionary)["count"])
+			break
 	for id: Variant in totals.keys():
 		var t: Dictionary = totals[id]
 		var rate_text: String = ""

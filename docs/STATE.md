@@ -3,17 +3,17 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-13. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-16. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- Nothing. **MAP4 closed 2026-11-13**, tag `playtest-2026-11-13-MAP4`. The repo runs.
+- **DF1 brief written 2026-11-16** (ROADMAP DF1; DECISIONS "DF1 brief"). Sittings: A (MAP4 carry-overs) -> B (data-only bump) -> ux -> qa -> playtest -> docs. Nothing built yet. The repo runs.
 
 ## Exact next step
-1. **game-lead writes the DF1 brief** (ROADMAP DF1). Its one gameplay-dev sitting starts with the MAP4 carry-overs in ROADMAP MAP4: the map-generator headroom and the act-change "win" on failure, curse casts not firing `card_cast`, the two debug flags missing from `RunSave.DEBUG_FLAG_PREFIXES`, and the three tooling bugs. Then the enemy knobs. **DF1 is `safe to chain` for its enemy tuning** (D51 = C is the director's ask), but the curse swap penalty 1 s -> 2 s waits for his eyes-58 play.
-2. MAP4's ux readability carry-overs (ROADMAP MAP4) need a ux pass: fold into DF1's loop if it has room, else 3d's.
-3. Then 3d, then BD3b, then the Milestone 3 close: the milestone playtest, then game-lead's own review of the report and screenshots (ROADMAP).
+1. **gameplay-dev, DF1 sitting A** (ROADMAP DF1, items 1-6). It ends with a full suite run, the hashes and SIM1 as the new baseline.
+2. Then gameplay-dev sitting B (the bump to 14-18/36), ux, qa, playtester, tech-writer, close.
+3. Then 3d (it starts with the curse swap penalty if eyes 58 wasn't answered before B), then BD3b, then the Milestone 3 close.
 
-**Next role:** game-lead (DF1 brief), then gameplay-dev.
+**Next role:** gameplay-dev (DF1 sitting A).
 
 ## Current baselines (MAP4 close, 2026-11-13)
 - Suite 2478 (last full run 2477), 0 skipped, 0 orphans (about 22 min).

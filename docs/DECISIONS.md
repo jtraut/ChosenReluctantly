@@ -2689,3 +2689,11 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **The Loyalty Pledge stays a toll** (weight 0.5, rare); **the Rogue's Raider (about 15 s)** goes to the director and DF1.
 - **Tooling bugs** (`-BossLog` crash, `--run-room` with `--event`, `--merchant` flags) go to DF1's gameplay-dev sitting.
 - **Eyes 35-56 expire at MAP4's close with their defaults kept,** under the director's 2026-11-12 rule. Their text is in 3307c3c `docs/OPEN_ITEMS.md`. The small look-items from ux go into eyes 58.
+
+## 2026-11-16 - DF1 brief (game-lead)
+- **DF1 splits into two gameplay-dev sittings.** A takes the MAP4 carry-overs (code, tooling, tests), and B is the data-only bump the director asked for. One sitting can't hold both: they'd need two full suite runs and several SIM1 rounds. B tunes against A's re-baselined numbers, because the curse `card_cast` fix can move the bot. [One sitting, as the roadmap line said.]
+- **Map headroom: raise `max_attempts`, don't trim the event weight.** Raising it only affects seeds that would have failed. A trim reopens MAP4's event and relic targets and moves the hashes. [Trimming the event weight.]
+- **The SIM1 human-bot floors are retired for DF1.** The director's 40-50% target (14-18/36) is below the human Rogue floor of 21/36. The no-card, parity and fingerprint floors stay. qa sets new human and off-bot floors from B's numbers. [Keeping the old floors, which would block the director's ask.]
+- **B gets a knob order and a cap:** act `damage`, then act `hp`, then per-enemy outliers, with at most 4 SIM1 rounds. Act damage is 1.0 in every act today, so it's the smallest lever that touches every room. [Free tuning, which tends to wander.]
+- **The curse swap penalty stays out unless the director answers eyes 58 before B.** Otherwise it goes to 3d's first sitting with a SIM1 re-check. Eyes 58 expires at DF1's close, so the default (2 s) will apply then. [Landing it after B, which would shift a win rate B just calibrated.]
+- **The MAP4 ux readability carry-overs go into DF1's loop** as one short ux session after B. The playtest runs anyway, so the fixes get looked at. [Deferring them to 3d.]

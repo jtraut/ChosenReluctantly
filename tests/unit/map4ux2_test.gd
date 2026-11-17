@@ -67,17 +67,23 @@ func _focused_id() -> String:
 	return "" if index < 0 else String((_screen._options[index] as Dictionary).get("id", ""))
 
 
-func test_the_step_opens_on_cancel_and_enter_there_gives_nothing_up() -> void:
+func test_the_step_opens_on_the_first_relic_and_cancel_is_one_down_away() -> void:
 	await _open()
+	var first: String = _focused_id()
+	assert_bool(first.begins_with("giveup:")).override_failure_message("the step opened on %s, not a relic (DF1 ux)" % first).is_true()
+	await _press(&"ui_down")
+	for step in range(3):  # Cancel sits in the footer, a Down and at most a couple of sideways steps from the first relic
+		if _focused_id() != "giveup_cancel":
+			await _press(&"ui_right")
 	assert_str(_focused_id()).is_equal("giveup_cancel")
+	assert_array(_log).is_empty()  # a first Enter never cancels the take, and nothing was given up
 	await _press(&"ui_accept")
 	assert_array(_log).is_equal(["giveup_cancel"])
 	assert_array(_picks).is_empty()
 
 
-func test_up_from_cancel_enters_the_relics_and_the_toggled_relic_keeps_the_focus() -> void:
+func test_the_first_enter_picks_the_first_relic_and_the_toggled_relic_keeps_the_focus() -> void:
 	await _open()
-	await _press(&"ui_up")
 	var first: String = _focused_id()
 	assert_bool(first.begins_with("giveup:")).override_failure_message("Up from Cancel landed on %s" % first).is_true()
 	await _press(&"ui_accept")  # pick
@@ -87,7 +93,7 @@ func test_up_from_cancel_enters_the_relics_and_the_toggled_relic_keeps_the_focus
 	assert_array(_picks).is_empty()
 	assert_str(_focused_id()).is_equal(first)
 	await _press(&"ui_accept")  # pick again
-	await _press(&"ui_left")
+	await _press(&"ui_right")
 	var second: String = _focused_id()
 	assert_bool(second.begins_with("giveup:") and second != first).is_true()
 	await _press(&"ui_accept")
@@ -97,9 +103,8 @@ func test_up_from_cancel_enters_the_relics_and_the_toggled_relic_keeps_the_focus
 
 func test_confirm_is_reachable_by_keyboard_once_enough_are_picked_and_enter_confirms() -> void:
 	await _open()
-	await _press(&"ui_up")
 	await _press(&"ui_accept")
-	await _press(&"ui_left")
+	await _press(&"ui_right")
 	await _press(&"ui_accept")
 	assert_array(_picks).has_size(COST)
 	await _press(&"ui_down")
@@ -114,7 +119,6 @@ func test_confirm_is_reachable_by_keyboard_once_enough_are_picked_and_enter_conf
 
 func test_a_greyed_confirm_can_be_read_but_enter_on_it_does_nothing() -> void:
 	await _open()
-	await _press(&"ui_up")
 	await _press(&"ui_accept")  # one of two picked: Confirm is still off
 	await _press(&"ui_down")
 	await _press(&"ui_left")
@@ -127,9 +131,8 @@ func test_a_greyed_confirm_can_be_read_but_enter_on_it_does_nothing() -> void:
 
 func test_cancel_after_picking_reports_cancel_only_and_gives_nothing_up() -> void:
 	await _open()
-	await _press(&"ui_up")
 	await _press(&"ui_accept")
-	await _press(&"ui_left")
+	await _press(&"ui_right")
 	await _press(&"ui_accept")
 	assert_array(_picks).has_size(COST)
 	await _press(&"ui_down")

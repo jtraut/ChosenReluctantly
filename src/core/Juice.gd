@@ -117,6 +117,10 @@ func on_hit_landed(world_pos: Vector3, amount: float, damage_type: String, kind:
 		hit_stop(0.03, 0.2)
 
 
+var _last_detonate_word: String = ""
+var _last_detonate_msec: int = -1
+
+
 ## BD3a: a status detonation reads at a glance. Called right after the burst's own hit (so its damage number is the freshest
 ## one on screen): that number is enlarged and marked, and a short word ("Bleed detonated") rises above the enemy.
 func on_detonated(world_pos: Vector3, amount: float, damage_type: String, word: String, word_color: Color) -> void:
@@ -145,7 +149,21 @@ func on_detonated(world_pos: Vector3, amount: float, damage_type: String, word: 
 	var tree := Engine.get_main_loop() as SceneTree
 	var world: Node = WorldRef.get_world(tree) if tree != null else null
 	var screen_scale: float = world.get_viewport().get_visible_rect().size.y / 720.0 if world != null and world.get_viewport() != null else 1.0
+	# DF1 ux: one cast can detonate several enemies in the same instant. The enlarged "!" number shows on each, but the word shows once per cast
+	# (same word inside `detonate_word_window` seconds), so four enemies do not pile four labels on one another.
+	var now_msec: int = Time.get_ticks_msec()
+	if not should_show_detonate_word(_last_detonate_word, _last_detonate_msec, word, now_msec, float(cfg.get("detonate_word_window", 0.0))):
+		return
+	_last_detonate_word = word
+	_last_detonate_msec = now_msec
 	spawn_popup(world_pos, word, word_color, float(cfg["detonate_word_scale"]), word_height, float(cfg["detonate_word_clamp_extra"]) * screen_scale)
+
+
+## DF1 ux (pure): true when this detonation word should be shown: it differs from the last one shown, or `window` seconds have passed since it. A window of 0 shows every word.
+static func should_show_detonate_word(last_word: String, last_msec: int, word: String, now_msec: int, window: float) -> bool:
+	if window <= 0.0 or word != last_word or last_msec < 0:
+		return true
+	return float(now_msec - last_msec) / 1000.0 >= window
 
 
 ## A small floating word at `world_pos` (see UiConfig.popups). `height` is above the point.

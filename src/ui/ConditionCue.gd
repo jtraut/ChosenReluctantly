@@ -34,6 +34,15 @@ static func detonate_short(card: Dictionary, texts: Dictionary) -> String:
 	return ""
 
 
+## DF1 ux (MAP4 playtest): a curse card sits in a slot and nothing said you can swap past it. The dim line reads "Shift+Q swaps" (`swap_key` is the
+## slot's dead-card swap key text from InputLabels, so a rebind shows). Words only; "" for any card that is not a curse or when the data has no `curse_swap` line.
+static func curse_swap_text(card: Dictionary, texts: Dictionary, swap_key: String) -> String:
+	var line: String = String(texts.get("curse_swap", ""))
+	if line == "" or not line.contains("%s") or not CardSchema.is_curse(card):
+		return ""
+	return line % swap_key
+
+
 static func _short(condition: Dictionary, texts: Dictionary) -> String:
 	match String(condition.get("type", "")):
 		EffectCondition.TARGET_HAS_STATUS:

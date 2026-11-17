@@ -17,7 +17,7 @@
         }
     ],
     "triggers": [],
-    "rule_text": "You deal 35% more damage. Give up 2 relics to take it.",
+    "rule_text": "You deal 35% more damage.",
     "flavor_text": "Your relics are now an asset of the new entity.",
     "sacrifice_cost": 2
 }

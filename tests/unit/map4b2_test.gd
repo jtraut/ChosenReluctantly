@@ -852,7 +852,7 @@ func test_every_b2_outcome_has_a_generated_line() -> void:
 	assert_array(_lines(state, ctx, [{"type": "stat_mod", "stat": "slot_cooldown.recovery", "modifier_type": "multiplicative", "value": -0.2}])).is_equal(["Recovery cooldown -20% for this run"])
 	assert_array(_lines(state, ctx, [{"type": "stat_mod", "stat": "armor", "modifier_type": "additive", "value": 2}])).is_equal(["Armor +2 for this run"])
 	assert_array(_lines(state, ctx, [{"type": "stat_mod", "stat": "mystery_stat", "modifier_type": "additive", "value": 1}])).is_equal(["mystery_stat +1 for this run"])  # no name: the id shows
-	assert_array(_lines(state, ctx, [{"type": "merchant_discount", "fraction": 0.5}])).is_equal(["50% off at the next merchant"])
+	assert_array(_lines(state, ctx, [{"type": "merchant_discount", "fraction": 0.5}])).is_equal(["50% off at the next merchant, only if one is ahead on your route"])
 	assert_array(_lines(state, ctx, [{"type": "chance", "p": 0.5, "win": [{"type": "gain_gold", "amount": 40}], "lose": [{"type": "lose_hp", "fraction": 0.2}]}])).is_equal(["50%: gain 40 gold, otherwise lose 6 HP"])
 	assert_array(_lines(state, ctx, [SACRIFICE_PICK])).is_equal(["Give up a tier 1-2 relic you pick"])
 	assert_array(_lines(state, ctx, [{"type": "sacrifice_relic", "select": "highest", "min_tier": 1, "max_tier": 1}])).is_equal(["Give up your highest-tier relic (tier 1 only)"])

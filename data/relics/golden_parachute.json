@@ -37,7 +37,7 @@
         }
     ],
     "triggers": [],
-    "rule_text": "Every slot's cooldown is 10% shorter. Give up 1 relic to take it.",
+    "rule_text": "Every slot's cooldown is 10% shorter.",
     "flavor_text": "A soft landing, for someone. It was you.",
     "sacrifice_cost": 1
 }

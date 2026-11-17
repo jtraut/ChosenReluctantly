@@ -239,6 +239,7 @@
         "detonate_scale": 1.9,
         "detonate_suffix": "!",
         "detonate_word": "%s detonated",
+        "detonate_word_window": 0.3,
         "detonate_word_scale": 0.8,
         "detonate_word_height": 3.4,
         "detonate_word_clamp_extra": 44.0,

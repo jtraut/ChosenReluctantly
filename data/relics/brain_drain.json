@@ -22,7 +22,7 @@
         }
     ],
     "triggers": [],
-    "rule_text": "Your light attacks deal 40% more and fire 15% faster. Give up 1 relic to take it.",
+    "rule_text": "Your light attacks deal 40% more and fire 15% faster.",
     "flavor_text": "The knowledge is still in there. Just not for you.",
     "sacrifice_cost": 1
 }

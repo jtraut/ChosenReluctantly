@@ -453,7 +453,7 @@ static func outcome_types(outcomes: Array) -> Array[String]:
 static func title_and_line(state: RunState, ctx: Dictionary) -> Dictionary:
 	if state.pending == RunState.PENDING_EVENT_REMOVE:
 		var curse_only: bool = not state.event_queue.is_empty() and String(state.event_queue[0].get("type", "")) == "remove_curse"
-		return {"title": String(_ui(ctx).get("remove_title", "")), "line": String(_ui(ctx).get("remove_curse_line" if curse_only else "remove_line", ""))}
+		return {"title": String(_ui(ctx).get("remove_curse_title" if curse_only and _ui(ctx).has("remove_curse_title") else "remove_title", "")), "line": String(_ui(ctx).get("remove_curse_line" if curse_only else "remove_line", ""))}
 	if state.pending == RunState.PENDING_EVENT_SACRIFICE:
 		return {"title": String(_ui(ctx).get("sacrifice_title", "")), "line": String(_ui(ctx).get("sacrifice_line", ""))}
 	var event: Dictionary = event_of(state, ctx)

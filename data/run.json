@@ -199,9 +199,9 @@
                 "gain_relic_act": "Gain a relic (pick 1 of %d)", "gain_relic_next_act": "Gain a relic at the next act's odds (pick 1 of %d)",
                 "gain_relic_tier": "Gain a tier %d relic (pick 1 of %d)", "gain_relic_plus_one": "Gain a relic one tier above the one you gave up (pick 1 of %d)",
                 "no_skip": "no skip",
-                "gain_curse_random": "Gain a random curse", "gain_curse": "Gain the curse %s", "remove_curse": "Remove one of your curses", "remove_card": "Remove a card",
+                "gain_curse_random": "Gain a random curse (a dud card in one slot)", "gain_curse": "Gain the curse %s (a dud card in one slot)", "remove_curse": "Remove one of your curses", "remove_card": "Remove a card",
                 "sacrifice_pick": "Give up a relic you pick", "sacrifice_highest": "Give up your highest-tier relic", "start_fight": "Fight an elite",
-                "chance": "%d%%: %s", "chance_otherwise": "otherwise %s", "stat_mod": "%s %s for this run", "merchant_discount": "%d%% off at the next merchant",
+                "chance": "%d%%: %s", "chance_otherwise": "otherwise %s", "stat_mod": "%s %s for this run", "merchant_discount": "%d%% off at the next merchant, only if one is ahead on your route",
                 "sacrifice_pick_tier": "Give up a tier %s relic you pick", "sacrifice_highest_tier": "Give up your highest-tier relic (tier %s only)", "after_fight": "If you win: %s"
             },
             "stat_names": {
@@ -212,10 +212,10 @@
             },
             "reasons": { "gold": "Needs %d gold (you have %d)", "relic": "Needs a tier %s relic you can give up", "unsupported": "Not available yet", "offer_empty": "No relic is left to offer",
                 "no_curse": "You have no curse", "cleanse_cap": "You can't remove any more curses this run", "none_removable": "No card can be removed (the deck minimums hold them all)" },
-            "remove_title": "Remove which card?", "remove_line": "Pick a card to remove. Greyed cards would break a deck minimum.", "remove_curse_line": "Pick a curse to remove.",
+            "remove_title": "Remove which card?", "remove_line": "Pick a card to remove. Greyed cards would break a deck minimum.", "remove_curse_line": "Pick a curse to remove. A curse is a dud card that holds a slot until you remove it or swap past it (Shift + the slot key).", "remove_curse_title": "Remove which curse?",
             "sacrifice_title": "Give up a relic", "sacrifice_line": "This is the price. Pick the relic you give up; it never comes back."
         },
-        "slot_condition": { "target_has_status": "Needs %s", "cast_within_slot": "After %s", "cast_within_slot_key": "After %s (%s)", "cast_within_tag": "After %s", "zone_active": "Needs zone", "detonate_status": "Wants %s stacks", "slot_short": { "movement": "Move" } },
+        "slot_condition": { "curse_swap": "%s swaps", "target_has_status": "Needs %s", "cast_within_slot": "After %s", "cast_within_slot_key": "After %s (%s)", "cast_within_tag": "After %s", "zone_active": "Needs zone", "detonate_status": "Wants %s stacks", "slot_short": { "movement": "Move" } },
         "relic": {
             "title": "Relic found", "line": "Pick a relic to keep for this run, or skip.",
             "room_title": "Relic room", "room_title_chest": "%s (%s chest)", "room_line": "Nobody is guarding this one. Pick a relic to keep for this run, or skip.",

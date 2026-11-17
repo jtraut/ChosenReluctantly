@@ -24,7 +24,7 @@
         }
     ],
     "triggers": [],
-    "rule_text": "Your heavy attacks deal 50% more, and Bleed can stack 2 higher. Give up 1 relic to take it.",
+    "rule_text": "Your heavy attacks deal 50% more, and Bleed can stack 2 higher.",
     "flavor_text": "Sell off the parts. Keep the edge.",
     "sacrifice_cost": 1
 }

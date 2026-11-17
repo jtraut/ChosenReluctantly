@@ -921,13 +921,27 @@ func disarm() -> void:
 	_armed_at_msec = 0
 
 
-## Where the highlight starts: Cancel in the give-one-up step (a reflexive Enter must not give a relic away), else the first enabled option.
+## Where the highlight starts: Cancel in the plain give-one-up step (a reflexive Enter must not give a relic away), the first relic in a sacrifice relic's
+## give-up step (DF1 ux: nothing is lost until the separate confirm, so a first Enter picks instead of cancelling), else the first enabled option.
 func _default_focus() -> int:
-	if _layout == "cells":
-		for i in range(_options.size()):
-			if String(_options[i].get("kind", "")) == "back" and bool(_options[i].get("enabled", true)):
+	return default_focus_index(_options, _layout)
+
+
+## Pure form of `_default_focus` (unit-tested): `options` are the option dictionaries, `layout` the screen layout ("cells" for a list of tiles with a footer).
+static func default_focus_index(options: Array, layout: String) -> int:
+	if layout == "cells":
+		var sacrifice_step: bool = false
+		for option: Dictionary in options:
+			if String(option.get("kind", "")) == "giveup_confirm":
+				sacrifice_step = true
+		for i in range(options.size()):
+			var kind: String = String((options[i] as Dictionary).get("kind", ""))
+			if bool((options[i] as Dictionary).get("enabled", true)) and kind == ("giveup" if sacrifice_step else "back"):
 				return i
-	return _first_enabled()
+	for i in range(options.size()):
+		if bool((options[i] as Dictionary).get("enabled", true)):
+			return i
+	return 0
 
 
 func _first_enabled() -> int:

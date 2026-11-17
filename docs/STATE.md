@@ -6,13 +6,13 @@
 Last updated: 2026-11-17. Latest tag `playtest-2026-11-17-DF1`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- Nothing. **DF1 closed 2026-11-17**, tag `playtest-2026-11-17-DF1` (ROADMAP DF1; DECISIONS "DF1 close"). The repo runs.
+- **3d, loadouts.** Detailed brief written 2026-11-17 (ROADMAP 3d "Detailed brief"; DECISIONS "3d brief"). Five build sittings: gameplay-dev A -> B -> C -> ux D -> ux E, then qa -> playtester -> tech-writer -> close. Nothing built yet. The repo runs.
 
 ## Exact next step
-1. **game-lead: write 3d's detailed brief** (ROADMAP 3d, loadouts). Its first gameplay-dev sitting takes the DF1 carry-overs (ROADMAP DF1 "Carry-overs to 3d"): the curse swap penalty 1 s -> 2 s with a SIM1 re-check, plus the tooling items. Size it under 150 tool calls per sitting. Tag it `safe to chain` or `needs your play first`: the swap penalty is now a default from an expired eyes item, so it doesn't wait on the director.
-2. Then BD3b, then the Milestone 3 close (milestone playtest).
+1. **gameplay-dev sitting A** (ROADMAP 3d, sitting A): curse swap penalty 2 s on curses only (data), SIM1 re-check with a stop rule, the tooling items, the Try again test, the Wizard HP 22/20 and `-BossLog` label fixes, then a re-baseline.
+2. Then B (data and storage; uses D52's default A unless the director answers first), C, ux D, ux E, qa, playtester, tech-writer, close. Then BD3b and the Milestone 3 close.
 
-**Next role:** game-lead (3d brief).
+**Next role:** gameplay-dev (3d sitting A).
 
 ## Current baselines (DF1 qa, 2026-11-17)
 - Suite 2490 (178 suites), 0 failures, 0 skipped, 0 orphans (about 21 min).
@@ -33,9 +33,9 @@ Last updated: 2026-11-17. Latest tag `playtest-2026-11-17-DF1`. STATE holds only
 - The Wizard three-act sim prints "HP at each room end" 22.0 against a header max of 20.0. Undiagnosed; goes to 3d.
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D51 answered. Next free: D52. Next eyes number: 60.
+**D-numbers:** D21-D51 answered; D52 open (default A). Next free: D53. Next eyes number: 60.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths. A role that stops with a `Remaining:` list gets a fresh agent, never a resumed one.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions open; eyes 59 (play DF1; expires at 3d's close); the round 2 vision check.
+All director-facing items are in `docs/OPEN_ITEMS.md`: D52 (loadout starter cards; default A); eyes 59 (play DF1; expires at 3d's close); the round 2 vision check.

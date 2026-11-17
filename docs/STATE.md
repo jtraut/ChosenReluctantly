@@ -16,7 +16,14 @@ Last updated: 2026-11-17. Latest tag `playtest-2026-11-13-MAP4`. STATE holds onl
 ## Exact next step
 1. ~~gameplay-dev, DF1 fixes~~ done (a66b470, d67276f): blockers 2 and 3. qa confirms `map3b_acts_test` (gameplay-dev's run didn't finish).
 2. ~~ux-designer, DF1 fixes~~ done (f9f5c58): blocker 1 (keyless line), `Juice.reset()` clears `_last_detonate_*`.
-3. **qa re-check** (qa's Remaining above), then the playtester, tech-writer, close.
+3. **qa re-check: stopped early, nothing committed (HEAD db7c2d3).** The diff was reviewed and looks right. A full-suite run was left going in the background (session task output `b22uubgoe.output`). qa's Remaining:
+   1. Read the full-suite result. Expect about 2490 cases and 0 failures. If the result is missing, re-run `tools\run_tests.ps1`.
+   2. Confirm that `df1_qa_test`, `k1_key_hint_scan_test`, `mb1b_test`, `df1_ux_test` and `map3b_acts_test` pass.
+   3. Check that a real death shows Game Over once and that Try again works after `run_lost`. Add a test in `df1_qa_test.gd` if one is missing.
+   4. Run the reload soak `-Cycles 3`, then `-Cycles 2 -Class wizard`, after the suite has finished.
+   5. Confirm the four hashes.
+   6. Append the re-check verdict to the review, including the SIM1 gate against MAP.md §11.4. Commit.
+   Then the playtester, then the playtester, tech-writer, close.
 3. Then 3d (it starts with the curse swap penalty, since eyes 58 wasn't answered before B), then BD3b, then the Milestone 3 close.
 
 **Next role:** qa (DF1 re-check).

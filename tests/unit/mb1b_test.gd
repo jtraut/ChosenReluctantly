@@ -663,23 +663,26 @@ func _sequence_damage(def: Dictionary, attack_id: String) -> float:
 func test_no_one_duelist_sequence_does_more_than_ten_and_three_in_a_row_stay_under_the_note() -> void:
 	var def: Dictionary = BossConfig.boss(DUELIST_ID)
 	var scale: float = float(RunConfig.act_scale(2)["damage"])
-	assert_float(scale).is_equal(1.0)  # the table is written at act 2's x1.0
+	assert_float(scale).is_equal(1.05)  # tripwire: MAP 11.3 is written at act 2's x1.05 (game-lead ruling, DF1 qa FAIL triage)
 	var totals: Array[float] = []
 	for attack_id: String in BossConfig.weighted_attack_ids(def):
 		var total: float = _sequence_damage(def, attack_id) * scale
 		totals.append(total)
-		assert_float(total).override_failure_message("%s does %.1f in one sequence" % [attack_id, total]).is_less_equal(10.0)
+		assert_float(total).override_failure_message("%s does %.1f in one sequence" % [attack_id, total]).is_less_equal(10.0 * scale + 0.001)
 	totals.sort()
-	assert_array(totals).is_equal([7.0, 9.0, 10.0])  # parachute + backstab, slash, combo
-	# The table: two in a row at most 20, three in a row at most 29 (combo, combo, slash).
+	var base: Array[float] = [7.0, 9.0, 10.0]  # parachute + backstab, slash, combo (before the act scale)
+	for i in range(3):
+		assert_float(totals[i]).is_equal_approx(base[i] * scale, 0.001)
+	# The table: two in a row at most 20 x scale, three in a row at most 29 x scale (combo, combo, slash).
 	var worst: Array[float] = [totals[2], totals[2], totals[1]]
-	assert_float(worst[0] + worst[1]).is_less_equal(20.0)
-	assert_float(worst[0] + worst[1] + worst[2]).is_less_equal(29.0)
+	assert_float(worst[0] + worst[1]).is_less_equal(20.0 * scale + 0.001)
+	assert_float(worst[0] + worst[1] + worst[2]).is_less_equal(29.0 * scale + 0.001)
 	var wizard: float = CharacterDatabase.max_hp("wizard")
 	var rogue: float = CharacterDatabase.max_hp("rogue")
 	assert_float(worst[0]).is_less(wizard)  # one sequence never kills a full-HP Wizard
 	assert_float(worst[0] + worst[1]).is_less(wizard)  # nor two
-	assert_float(worst[0] + worst[1] + worst[2]).is_less(rogue)  # three leave a full-HP Rogue on 1
+	# Was "three leave a full-HP Rogue on 1" at x1.0 (29). At x1.05 three in a row do 30.45, which reaches a full-HP Rogue's 30.
+	assert_float(worst[0] + worst[1] + worst[2]).is_greater_equal(rogue)
 	assert_float(worst[0] + worst[1] + worst[2]).is_greater_equal(wizard)  # and kill the Wizard: the duel is dangerous
 
 

@@ -10,7 +10,6 @@ signal card_cast(slot_type: String, card_id: String)
 ## (CombatEvents.card_cast carries the tags too and is the one conditions and relics listen to.)
 
 const SLOT_TYPE_ORDER: Array[String] = ["attack_single", "attack_aoe", "utility", "movement", "recovery"]
-const DEFAULT_SWAP_PENALTY := 1.0
 
 var caster: Node3D
 var spawn_parent: Node
@@ -36,7 +35,14 @@ func _init(p_caster: Node3D, p_spawn_parent: Node, p_caster_team: String, p_stat
 	for slot_type: String in SLOT_TYPE_ORDER:
 		var base_cooldown: float = base_cooldown_for(slot_type)
 		var owned_card_ids := _owned_card_ids_for_slot(slot_type, owned_pools)
-		slots[slot_type] = CardSlot.new(slot_type, base_cooldown, owned_card_ids, DEFAULT_SWAP_PENALTY, rng)
+		slots[slot_type] = _new_slot(slot_type, base_cooldown, owned_card_ids, rng)
+
+
+## A slot with the dead-card swap penalties from data/run.json `curses` (3d: ordinary 1 s, swapping past a curse 2 s).
+static func _new_slot(slot_type: String, base_cooldown: float, card_ids: Array[String], rng: RandomNumberGenerator) -> CardSlot:
+	var slot := CardSlot.new(slot_type, base_cooldown, card_ids, RunConfig.swap_penalty(), rng)
+	slot.curse_swap_penalty = RunConfig.curse_swap_penalty()
+	return slot
 
 
 ## A slot's base cooldown: the character's override when it has one, else the slot type's data value.
@@ -63,7 +69,7 @@ func set_deck(card_ids: Array[String]) -> Array[String]:
 		(by_slot[slot_type] as Array[String]).append(card_id)
 		placed.append(card_id)
 	for slot_type: String in SLOT_TYPE_ORDER:
-		slots[slot_type] = CardSlot.new(slot_type, base_cooldown_for(slot_type), by_slot[slot_type] as Array[String], DEFAULT_SWAP_PENALTY, _shuffle_rng)
+		slots[slot_type] = _new_slot(slot_type, base_cooldown_for(slot_type), by_slot[slot_type] as Array[String], _shuffle_rng)
 	return placed
 
 

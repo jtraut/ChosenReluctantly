@@ -27,6 +27,8 @@ const MIN_COOLDOWN := 0.05
 var slot_type: String
 var base_cooldown: float
 var swap_penalty: float
+## 3d: the penalty when the card swapped away is a curse (CardSchema.is_curse); negative = same as swap_penalty. Set by CardSlotController from data/run.json `curses`.
+var curse_swap_penalty: float = -1.0
 var owned_card_ids: Array[String] = []
 
 var draw_pile: Array[String] = []
@@ -95,11 +97,19 @@ func use_card(card_cooldown_modifier: float, stat_modifiers: StatModifiers = nul
 func swap_card() -> bool:
 	if cooldown_remaining > 0.0 or current_card_id == "":
 		return false
+	var penalty: float = current_swap_penalty()  # read before the draw replaces the revealed card
 	discard_pile.append(current_card_id)
 	_draw_next_card()
-	cooldown_remaining = swap_penalty
-	last_cooldown_duration = swap_penalty
+	cooldown_remaining = penalty
+	last_cooldown_duration = penalty
 	return true
+
+
+## What swapping the revealed card away would cost right now: the curse value for a curse, else the ordinary one.
+func current_swap_penalty() -> float:
+	if curse_swap_penalty >= 0.0 and current_card_id != "" and CardSchema.is_curse(CardDatabase.get_card(current_card_id)):
+		return curse_swap_penalty
+	return swap_penalty
 
 
 func _reset_deck() -> void:

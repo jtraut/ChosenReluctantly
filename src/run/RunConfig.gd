@@ -80,18 +80,22 @@ static func validate(config: Dictionary, known_enemies: Array[String], _known_ca
 	return errors
 
 
-## `curses` (MAP4-C): {max_cleanses}: how many curses a run may remove in total (-1 = no limit).
+## `curses` (MAP4-C, 3d): {max_cleanses (-1 = no limit), swap_penalty, curse_swap_penalty}: the removal cap and the two dead-card swap cooldowns in seconds.
 static func _validate_curses_block(value: Variant) -> Array[String]:
 	var errors: Array[String] = []
 	if typeof(value) != TYPE_DICTIONARY:
 		errors.append("'curses' must be an object {max_cleanses}")
 		return errors
 	for key: Variant in (value as Dictionary).keys():
-		if String(key) != "max_cleanses":
+		if not ["max_cleanses", "swap_penalty", "curse_swap_penalty"].has(String(key)):
 			errors.append("curses: unknown key '%s'" % str(key))
 	var cap: Variant = (value as Dictionary).get("max_cleanses")
 	if not _is_whole(cap) or int(cap) < -1 or int(cap) > 1000:
 		errors.append("curses.max_cleanses must be a whole number from -1 (no limit) to 1000")
+	for penalty_key: String in ["swap_penalty", "curse_swap_penalty"]:
+		var penalty: Variant = (value as Dictionary).get(penalty_key)
+		if (typeof(penalty) != TYPE_FLOAT and typeof(penalty) != TYPE_INT) or float(penalty) < 0.0 or float(penalty) > 30.0:
+			errors.append("curses.%s must be a number of seconds from 0 to 30" % penalty_key)
 	return errors
 
 
@@ -101,6 +105,23 @@ static func max_cleanses() -> int:
 	if typeof(block) != TYPE_DICTIONARY:
 		return -1
 	return int((block as Dictionary).get("max_cleanses", -1))
+
+
+## The dead-card swap cooldown (data/run.json `curses.swap_penalty`, seconds): an ordinary card.
+static func swap_penalty() -> float:
+	return _curses_float("swap_penalty", 1.0)
+
+
+## The dead-card swap cooldown when the card swapped away is a curse (`curses.curse_swap_penalty`, seconds).
+static func curse_swap_penalty() -> float:
+	return _curses_float("curse_swap_penalty", 2.0)
+
+
+static func _curses_float(key: String, fallback: float) -> float:
+	var block: Variant = get_config().get("curses", {})
+	if typeof(block) != TYPE_DICTIONARY:
+		return fallback
+	return float((block as Dictionary).get(key, fallback))
 
 
 ## `events` (MAP4-B1): {min_max_hp} the floor max HP never goes below.

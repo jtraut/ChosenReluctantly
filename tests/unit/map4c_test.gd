@@ -260,12 +260,44 @@ func test_casting_a_curse_uses_the_slot_like_any_card() -> void:
 
 func test_a_curse_swaps_like_any_card_and_a_second_curse_swaps_again() -> void:
 	var slot := CardSlot.new("attack_single", 1.0, [CURSE, CURSE, "c_att1"] as Array[String], 1.0, RandomNumberGenerator.new())
+	slot.curse_swap_penalty = 2.0
 	slot.cooldown_remaining = 0.0
-	var before: String = slot.current_card_id
+	while slot.current_card_id != CURSE:
+		slot.swap_card()
+		slot.cooldown_remaining = 0.0
 	assert_bool(slot.swap_card()).is_true()
-	assert_float(slot.cooldown_remaining).is_equal(1.0)  # the usual penalty, no special skip
-	assert_int(slot.discard_pile.size()).is_greater(0)
-	assert_str(before).is_not_empty()
+	assert_float(slot.cooldown_remaining).is_equal(2.0)  # 3d: swapping past a curse costs the curse value
+	assert_float(slot.last_cooldown_duration).is_equal(2.0)
+
+
+func test_an_ordinary_swap_stays_at_the_ordinary_penalty_when_a_curse_penalty_is_set() -> void:
+	var slot := CardSlot.new("attack_single", 1.0, [CURSE, "c_att1", "c_att2"] as Array[String], 1.0, RandomNumberGenerator.new())
+	slot.curse_swap_penalty = 2.0
+	while slot.current_card_id == CURSE:
+		slot.swap_card()
+		slot.cooldown_remaining = 0.0
+	slot.cooldown_remaining = 0.0
+	assert_float(slot.current_swap_penalty()).is_equal(1.0)
+	assert_bool(slot.swap_card()).is_true()
+	assert_float(slot.cooldown_remaining).is_equal(1.0)
+
+
+func test_the_controller_reads_both_swap_penalties_from_run_json() -> void:
+	assert_float(RunConfig.swap_penalty()).is_equal(1.0)
+	assert_float(RunConfig.curse_swap_penalty()).is_equal(2.0)
+	var caster: Node3D = auto_free(Node3D.new())
+	var controller := CardSlotController.new(caster, caster, "player", StatModifiers.new(), ["neutral"] as Array[String], RandomNumberGenerator.new())
+	controller.set_deck([CURSE, "c_att1", "c_att2"] as Array[String])
+	var slot: CardSlot = controller.get_slot("attack_single")
+	assert_float(slot.swap_penalty).is_equal(1.0)
+	assert_float(slot.curse_swap_penalty).is_equal(2.0)
+
+
+func test_the_swap_penalties_in_run_json_are_validated() -> void:
+	var config: Dictionary = RunConfig.get_config().duplicate(true)
+	for bad: Variant in [-1.0, "x", 99.0, null]:
+		config["curses"] = {"max_cleanses": -1, "swap_penalty": 1.0, "curse_swap_penalty": bad}
+		assert_str(" ".join(RunConfig.validate(config, [] as Array[String], [] as Array[String]))).contains("curse_swap_penalty")
 
 
 func test_the_micromanager_plus_a_curse_keeps_the_slot_cycling() -> void:
@@ -581,11 +613,11 @@ func test_the_cleanse_cap_in_run_json_is_validated() -> void:
 	var config: Dictionary = RunConfig.get_config().duplicate(true)
 	assert_array(RunConfig.validate(config, [] as Array[String], [] as Array[String])).is_empty()
 	for bad: Variant in [1.5, "x", -2, 5000, null]:
-		config["curses"] = {"max_cleanses": bad}
+		config["curses"] = {"max_cleanses": bad, "swap_penalty": 1.0, "curse_swap_penalty": 2.0}
 		assert_str(" ".join(RunConfig.validate(config, [] as Array[String], [] as Array[String]))).contains("max_cleanses")
-	config["curses"] = {"max_cleanses": 3, "extra": 1}
+	config["curses"] = {"max_cleanses": 3, "swap_penalty": 1.0, "curse_swap_penalty": 2.0, "extra": 1}
 	assert_str(" ".join(RunConfig.validate(config, [] as Array[String], [] as Array[String]))).contains("unknown key")
-	config["curses"] = {"max_cleanses": -1}
+	config["curses"] = {"max_cleanses": -1, "swap_penalty": 1.0, "curse_swap_penalty": 2.0}
 	assert_array(RunConfig.validate(config, [] as Array[String], [] as Array[String])).is_empty()
 	assert_int(RunConfig.max_cleanses()).is_equal(-1)
 

@@ -34,7 +34,7 @@
     },
     "merchant": { "card_prices": { "common": 55, "rare": 85, "legendary": 125 }, "removal_base": 50, "removal_step": 25, "relic_stock": 3, "shop_only_slots": 1, "card_stock": 3 },
     "events": { "min_max_hp": 10 },
-    "curses": { "max_cleanses": -1 },
+    "curses": { "max_cleanses": -1, "swap_penalty": 1.0, "curse_swap_penalty": 2.0 },
     "gold": { "combat": [24, 36], "elite": [60, 80], "mini_boss": [90, 110] },
     "tiers": {
         "elite": { "hp_multiplier": 2.0, "armor": 17.0, "resistance_floor": 0.25, "resistance_cap": 0.5, "rank": "elite", "scale": 1.0, "marker_color": "#ffd23f", "marker_size": 0.26, "marker_height": 2.85 },

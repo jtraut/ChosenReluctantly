@@ -2731,3 +2731,9 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
   - **gameplay-dev:** `run_lost` shows the Game Over screen (qa's red test), and the mb1b test follows the ruling above.
   - **ux:** reword `event.remove_curse_line` so it has no hardcoded key (the K1 scan), and have `Juice.reset()` clear `_last_detonate_*`.
   - **qa:** re-run the three suites, then the full suite once.
+
+## 2026-11-17 - DF1 close (game-lead)
+- **DF1 closed.** qa PASS (4026720); playtest 8f0d595 found no blocker; docs pass 6cdbfd3. Tag `playtest-2026-11-17-DF1`.
+- **The 4 ux fixes the playtester couldn't capture don't block the close.** qa viewed all six at 1280x720 in its first review: the curse hint, the curse removal list, a single Bleed label, the sacrifice tiles and focus. Act-change Game Over has a test. The tooling flags that would let the playtester capture them go to 3d as carry-overs. [Holding the close for new tooling.]
+- **The playtester's three questions become one eyes item (59, "play DF1")** with defaults, rather than three separate items: the act 3 attrition shape stays; the map screen doesn't show HP; the Wizard's starter-deck act 1 boss (about 88 s) stays as it is. [Proposing a design change now, before the director has played it.]
+- **Eyes 58 expired with its default kept** (the curse swap penalty goes to 2 s in 3d's first sitting). It's in RESOLVED via 6cdbfd3. [Holding it open longer.]

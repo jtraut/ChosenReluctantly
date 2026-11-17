@@ -25,7 +25,7 @@ func test_curse_event_lines_say_what_a_curse_is() -> void:
 	var lines: Dictionary = RunConfig.ui()["event"]["lines"]
 	assert_str(String(lines["gain_curse_random"])).contains("dud card")
 	assert_str(String(lines["gain_curse"])).contains("dud card")
-	assert_str(String(RunConfig.ui()["event"]["remove_curse_line"])).contains("Shift")
+	assert_str(String(RunConfig.ui()["event"]["remove_curse_line"])).contains("swap past it")
 
 
 func test_the_merchant_discount_line_says_a_merchant_must_be_ahead() -> void:
@@ -61,3 +61,11 @@ func test_the_sacrifice_step_starts_on_the_first_relic_and_the_plain_swap_on_can
 	assert_int(RunPromptScreen.default_focus_index(plain, "cells")).is_equal(2)  # a reflexive Enter must not give a relic away (BD2)
 	var cards: Array[Dictionary] = [{"id": "x", "kind": "card", "enabled": false}, {"id": "y", "kind": "card", "enabled": true}]
 	assert_int(RunPromptScreen.default_focus_index(cards, "list")).is_equal(1)
+
+
+func test_juice_reset_clears_the_detonate_word_memory() -> void:
+	Juice._last_detonate_word = "Bleed detonated"
+	Juice._last_detonate_msec = 1000
+	Juice.reset()
+	assert_str(Juice._last_detonate_word).is_empty()
+	assert_int(Juice._last_detonate_msec).is_equal(-1)

@@ -40,6 +40,8 @@ func reset() -> void:
 	_frozen_scale = 1.0
 	_camera_rig = null
 	_live_numbers = []
+	_last_detonate_word = ""
+	_last_detonate_msec = -1
 	Engine.time_scale = 1.0
 
 

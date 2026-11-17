@@ -212,7 +212,7 @@
             },
             "reasons": { "gold": "Needs %d gold (you have %d)", "relic": "Needs a tier %s relic you can give up", "unsupported": "Not available yet", "offer_empty": "No relic is left to offer",
                 "no_curse": "You have no curse", "cleanse_cap": "You can't remove any more curses this run", "none_removable": "No card can be removed (the deck minimums hold them all)" },
-            "remove_title": "Remove which card?", "remove_line": "Pick a card to remove. Greyed cards would break a deck minimum.", "remove_curse_line": "Pick a curse to remove. A curse is a dud card that holds a slot until you remove it or swap past it (Shift + the slot key).", "remove_curse_title": "Remove which curse?",
+            "remove_title": "Remove which card?", "remove_line": "Pick a card to remove. Greyed cards would break a deck minimum.", "remove_curse_line": "Pick a curse to remove. A curse is a dud card that holds a slot until you remove it or swap past it.", "remove_curse_title": "Remove which curse?",
             "sacrifice_title": "Give up a relic", "sacrifice_line": "This is the price. Pick the relic you give up; it never comes back."
         },
         "slot_condition": { "curse_swap": "%s swaps", "target_has_status": "Needs %s", "cast_within_slot": "After %s", "cast_within_slot_key": "After %s (%s)", "cast_within_tag": "After %s", "zone_active": "Needs zone", "detonate_status": "Wants %s stacks", "slot_short": { "movement": "Move" } },

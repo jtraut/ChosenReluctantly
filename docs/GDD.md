@@ -409,6 +409,11 @@ If the slice is fun, scale outward. Scaling should be mostly data entry.
 - **Data-driven cards:** every card is a data file built from composable triggers, effects, modifiers, and statuses. No per-card custom code unless unavoidable.
 - **Data-driven everything else:** slot types, card pools, subclasses, passive trees, enemies, and resistances.
 - **Automated QA:** unit tests for card effects, and a headless simulation harness that runs many bot runs to detect crashes and balance outliers.
+  - **Decision-skill bots [DIRECTOR DECISION, 2026-11-17]:** the sim gets two out-of-combat play styles.
+    - A **"winging it" bot** picks cards, relics and other bonuses, and map routes, completely at random.
+    - A **"formulated" bot** optimizes. It leans into synergies as they become available and makes good route choices.
+    - The gap between their win rates must be clearly noticeable: smart decisions should win more runs.
+    - This is scheduled with the balance sim growth, once build diversity and synergies are deep enough to make the gap meaningful.
 
 ---
 

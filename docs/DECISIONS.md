@@ -2737,3 +2737,10 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **The 4 ux fixes the playtester couldn't capture don't block the close.** qa viewed all six at 1280x720 in its first review: the curse hint, the curse removal list, a single Bleed label, the sacrifice tiles and focus. Act-change Game Over has a test. The tooling flags that would let the playtester capture them go to 3d as carry-overs. [Holding the close for new tooling.]
 - **The playtester's three questions become one eyes item (59, "play DF1")** with defaults, rather than three separate items: the act 3 attrition shape stays; the map screen doesn't show HP; the Wizard's starter-deck act 1 boss (about 88 s) stays as it is. [Proposing a design change now, before the director has played it.]
 - **Eyes 58 expired with its default kept** (the curse swap penalty goes to 2 s in 3d's first sitting). It's in RESOLVED via 6cdbfd3. [Holding it open longer.]
+
+## 2026-11-17 - SIM2 defaults (game-lead)
+- The director asked for a "winging it" bot and a "formulated" bot, with a clearly noticeable win-rate gap between them (GDD §12; ROADMAP SIM2). The defaults I set:
+  - **Gate: formulated minus winging it at least 10/36** (about 28 percentage points) on the pooled three-act run, per class, with the `human` combat preset. That's well above the ±3 noise of 36 runs on each side, so a "noticeable" gap can't be a fluke. [5/36, which is inside the noise; a percentage target, which hides the run count.]
+  - **The combat skill is the same for both profiles.** Only out-of-combat decisions differ. Casting with `PlanPolicy` counts as formulated, since leaning into synergies in a fight is part of the director's ask. The gap measures decisions, not reflexes. [Pairing the dumb bot with the off bot, which would mix up two causes.]
+  - **Scheduled in Milestone 4**, as the director allowed ("later when there's deep build diversity"). [Building it now, when there are 3 archetypes per class and the drafter would have little to lean into.]
+  - **A small gap is a design flag, not a bot bug.** It goes to the director as a proposal. [Tuning the bots until the gap appears.]

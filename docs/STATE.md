@@ -24,6 +24,7 @@ Last updated: 2026-11-17. Latest tag `playtest-2026-11-17-DF1`. STATE holds only
 
 ## Pending for the next docs pass
 - Nothing yet. DF1 was covered by 6cdbfd3. The DF1 close moved eyes 58 to RESOLVED (6cdbfd3) and added eyes 59.
+- [Director decision] 2026-11-17: SIM2 decision-skill bots, a "winging it" (random) profile against a "formulated" (synergy-seeking, good routes) profile, with a noticeable win-rate gap. Recorded in GDD §12 "Automated QA" and ROADMAP Milestone 4 SIM2; the defaults are in DECISIONS "SIM2 defaults". No code yet.
 
 ## Known issues
 - Wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.

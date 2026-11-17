@@ -1545,6 +1545,16 @@ un_offer_report.ps1`.
 
 ## Milestone 4 — Second class/element, subclasses, passive tree prototype, balance sim
 Not started. Per GDD §13: Wizard + Water added, 2 subclasses each for Rogue/Wizard/Fire/Water, first passive tree prototype (30-40 nodes), headless balance simulation grown out.
+- [ ] **SIM2, decision-skill bots** (director 2026-11-17, GDD §12 "Automated QA"; DECISIONS "SIM2 defaults"). Schedule it with Milestone 4's balance sim, after subclasses and the passive tree give enough build depth for the gap to mean something. It can be pulled earlier if BD3b's depth is already enough.
+  - **"winging it" profile:** uniform random over every out-of-combat choice: card rewards (including skip), relic offers and give-ups, merchant buys, events, rests, removals, and the `random` route. It reuses `RouteBot._random` and the seeded policy RNG.
+  - **"formulated" profile:**
+    - It drafts toward the deck's emerging archetype, reading card `condition` and tag data, never card ids.
+    - It values relics by their synergy with the deck.
+    - It plans routes by HP, gold and needs: rest when low, elites when strong, merchants with gold.
+    - It casts with `PlanPolicy` (`-Plan`).
+  - **The combat bot is held constant across both profiles**: the same preset, run once with `human` and once with `off`. The gap then measures decisions, not reflexes.
+  - **Gate (default, tunable):** the pooled 36-run three-act win rate of `formulated` minus `winging it` is at least 10/36 on the `human` combat preset, for each class. qa reports it every balance pass. If the gap is small, the decisions don't matter enough, and that's a design flag for the director, not a bot bug.
+  - Existing pieces: the `random` route; the reward policy in `tools/wave_sim.gd` `_policy_choose`, which is already mostly random (25% skip, else a random unowned card); `RelicPolicy`; `PlanPolicy`.
 
 ## Milestone 5 — Art/audio pass, friends-and-family playtest
 Not started.

@@ -110,6 +110,7 @@ func _setup_run_mode() -> void:
 			if not MapConfig.is_valid():  # MAP1-A: a broken data/map.json fails loudly at run start (it reports itself); the run stays straight
 				push_error("data/map.json is invalid, so the run is the straight run. " + "; ".join(MapConfig.load_problems()))
 			run_controller = controller
+			controller.run_lost.connect(_on_run_lost)
 			controller.begin(self)
 			return
 		push_error("Run mode needs a valid data/run.json; falling back to the endless arena. " + "; ".join(RunConfig.load_problems()))
@@ -138,6 +139,14 @@ func _check_starting_deck() -> void:
 
 func is_game_over() -> bool:
 	return _game_over_announced
+
+
+## A run lost with the player still alive (DF1-A: an act-change map failure) has no death beat to end in Game Over, so show it now.
+## A death is left to its beat (_on_player_died), and _announce_game_over never fires twice.
+func _on_run_lost() -> void:
+	if player == null or player.is_dead():
+		return
+	_announce_game_over()
 
 
 func _on_player_died() -> void:

@@ -376,20 +376,21 @@ game-lead design note, 2026-11-11. The director's direction is in GDD §9 ("Each
   - It deals no damage and is never in threat itself.
   - The landing marker must be visible for the whole wind-up.
   - It never lands outside the arena, or inside a wall or the player; if it would, it moves the point toward the boss.
-- **Damage against 22 HP (Wizard) and 30 HP (Rogue), with act 2's damage x1.0:**
+- **Damage against 22 HP (Wizard) and 30 HP (Rogue), with act 2's damage x1.05 (DF1; was x1.0, game-lead 2026-11-17, DECISIONS "DF1 qa FAIL triage"). Base values: slash 9, combo 10, parachute + backstab 7. No armor:**
 
 | What hits | Total | Wizard 22 HP | Rogue 30 HP |
 |---|---|---|---|
-| Any one full sequence: slash 9, combo 10, or parachute + backstab 7 | at most 10 | survives at full HP | survives |
-| Two sequences in a row (worst: combo + combo) | at most 20 | survives on 2 | survives on 10 |
-| Three sequences in a row (worst: combo, combo, slash) | at most 29 | dies | survives on 1 |
+| Any one full sequence: slash 9.45, combo 10.5, or parachute + backstab 7.35 | at most 10.5 | survives at full HP | survives |
+| Two sequences in a row (worst: combo + combo) | at most 21 | survives on 1 | survives on 9 |
+| Three sequences in a row (worst: combo, combo, slash) | at most 30.45 | dies | dies by 0.45 (was: survives on 1 at x1.0) |
 
 - **The brute's worst single hit** is 8 (forklift); wet floor can't hit twice in one cast.
 
 ### 11.4 Scenarios and checks
 - `--scenario=mini_boss_act1` and `--scenario=mini_boss_act2`: the player in the mini-boss room with a standard deck at full HP, act scaling applied. These are for the director and the playtester.
 - qa gates on SIM1's floors (DECISIONS "SIM1 qa FAIL triage and the floors"):
-  - `human` three-act, Rogue at least 21/36, Wizard at least 9/36;
-  - off-bot guards: Rogue 32/36, Wizard 25/36.
+  - `human` three-act, Rogue at least 12/36, Wizard at least 10/36, and at most 21/36 and 20/36 (DF1's ceiling, so a later slice can't undo the bump silently);
+  - off-bot guards: Rogue at least 31/36, Wizard at least 30/36.
+  - (DF1, game-lead 2026-11-17; were human Rogue at least 21 and Wizard at least 9, off 32 and 25, no ceiling.)
 - qa also reports **the room where each human-preset loss happens** (10 = the brute, 20 = the duelist), so a mini-boss spike shows up even when the floor holds.
 - If the Wizard falls under its floor because of room 20, the first knob is the duelist's damage, not its telegraphs.

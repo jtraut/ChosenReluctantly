@@ -3,17 +3,23 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-17. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-17. Latest tag `playtest-2026-11-13-MAP4`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
 - **DF1 brief written 2026-11-16** (ROADMAP DF1; DECISIONS "DF1 brief"). Sittings: A (MAP4 carry-overs) -> B (data-only bump) -> ux -> qa -> playtest -> docs. Sitting A done (9c69a58..5da7427). Sitting B done (57b0a83..e3e1ac1): act damage 1.0/1.05/1.1; human Rogue 18/36, Wizard 16/36; off 34/36, 34/36; hashes unchanged. ux done (1fb09b3..6b12a6d). The repo runs.
+- **qa DF1: FAIL** (83d06d3, 604466d; docs/reviews/2026-11-17-df1-qa.md; DECISIONS "DF1 qa FAIL triage"). Blockers:
+  1. K1 key-hint scan: `event.remove_curse_line` hardcodes "(Shift + the slot key)" -> ux.
+  2. mb1b duelist test assumes act 2 x1.0 -> gameplay-dev: derive from the act scale (MAP.md §11.3 updated).
+  3. An act-change map failure leaves a dead screen; nothing listens to `run_lost` -> gameplay-dev (qa's red test in `df1_qa_test.gd`).
+  - qa's Remaining: after the fixes, re-run `k1_key_hint_scan_test`, `mb1b_test`, `df1_qa_test`, then the full suite once.
 
 ## Exact next step
-1. **qa, DF1 review** (ROADMAP DF1 "qa"): full suite, A's fixes, B's band and new floors, ux's six items.
-2. Then playtester, tech-writer, close.
+1. **gameplay-dev, DF1 fixes:** blockers 2 and 3.
+2. **ux-designer, DF1 fixes:** blocker 1, plus `Juice.reset()` clears `_last_detonate_*`.
+3. **qa re-check** (qa's Remaining above), then the playtester, tech-writer, close.
 3. Then 3d (it starts with the curse swap penalty, since eyes 58 wasn't answered before B), then BD3b, then the Milestone 3 close.
 
-**Next role:** qa (DF1 review).
+**Next role:** gameplay-dev (DF1 fixes).
 
 ## Current baselines (MAP4 close, 2026-11-13)
 - Suite 2478 (last full run 2477), 0 skipped, 0 orphans (about 22 min).
@@ -29,6 +35,7 @@ Last updated: 2026-11-17. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds on
 
 ## Known issues
 - Wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
+- Human-bot Kindling boss parity with relics is 67%, under 70% (qa DF1; not a DF1 regression).
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
 **D-numbers:** D21-D51 answered. Next free: D52. Next eyes number: 59.

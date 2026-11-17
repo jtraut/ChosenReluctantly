@@ -2716,3 +2716,18 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
   - **The curse swap hint always shows on a cursed current slot.** [Hiding it after the first swap, which needs a persistent flag for little gain.]
   - **The Internal Audit is warned, not greyed out.** The merchant-discount line now says it needs a merchant ahead, for every event that uses it. [Greying it out when no merchant is ahead, which needs route data from gameplay code. Noted as a possible 3d follow-up; not director-facing.]
   - **New `detonate_word_window` of 0.3 s** in `data/ui.json`.
+
+## 2026-11-17 - DF1 qa FAIL triage (game-lead)
+- **qa FAIL** (docs/reviews/2026-11-17-df1-qa.md; qa commits 83d06d3, 604466d) has three blockers. All are local; the bump reproduces in band: human Rogue 18/36, Wizard 16/36; off 34/36, 34/36; hashes unchanged.
+- **Raider ruling:** keep the uniform act 2 damage x1.05. MAP.md §11.3's table moves to x1.05: one sequence at most 10.5, two at most 21 (a full Wizard on 1), three at most 30.45. A full-HP Rogue with no armor now dies to three in a row by 0.45, where before it survived on 1. Player damage is float with no rounding, which I checked in `Health.take_damage`. The mb1b test reads the act scale and derives the limits from it instead of hardcoding x1.0. Cheap to reverse. Eyes 58 already asks the director whether the Raider is act-ending. Rejected:
+  - Exempting the Raider from the multiplier, which is code and outside B's data-only brief.
+  - Lowering act 2, which reopens B's calibration.
+  - Trimming the Raider's base damage to fractions.
+- **Floors (qa's proposal, about 2 binomial SD):** human Rogue at least 12/36, Wizard at least 10/36; off bot Rogue at least 31/36, Wizard at least 30/36. **New ceiling:** human Rogue at most 21/36, Wizard at most 20/36, so a later slice can't silently undo DF1. Recorded in MAP.md §11.4. Rejected:
+  - gameplay-dev's 14/12, which is only about 1.3 SD.
+  - Having no ceiling.
+- **Fingerprint:** 0.79 with relics, measured with qa's BUILD_DEPTH relic sets, which become the canonical sets. qa names them in its review, and tech-writer points the README gate at them. Human Kindling with relics at 67% parity is under the 70% line, but it's not a DF1 regression (act 1 is untouched). It's logged as a known issue, not a blocker.
+- **Fix routing:**
+  - **gameplay-dev:** `run_lost` shows the Game Over screen (qa's red test), and the mb1b test follows the ruling above.
+  - **ux:** reword `event.remove_curse_line` so it has no hardcoded key (the K1 scan), and have `Juice.reset()` clear `_last_detonate_*`.
+  - **qa:** re-run the three suites, then the full suite once.

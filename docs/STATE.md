@@ -15,11 +15,11 @@ Last updated: 2026-11-17. Latest tag `playtest-2026-11-13-MAP4`. STATE holds onl
 
 ## Exact next step
 1. ~~gameplay-dev, DF1 fixes~~ done (a66b470, d67276f): blockers 2 and 3. qa confirms `map3b_acts_test` (gameplay-dev's run didn't finish).
-2. **ux-designer, DF1 fixes:** blocker 1, plus `Juice.reset()` clears `_last_detonate_*`.
+2. ~~ux-designer, DF1 fixes~~ done (f9f5c58): blocker 1 (keyless line), `Juice.reset()` clears `_last_detonate_*`.
 3. **qa re-check** (qa's Remaining above), then the playtester, tech-writer, close.
 3. Then 3d (it starts with the curse swap penalty, since eyes 58 wasn't answered before B), then BD3b, then the Milestone 3 close.
 
-**Next role:** ux-designer (DF1 fix: blocker 1).
+**Next role:** qa (DF1 re-check).
 
 ## Current baselines (MAP4 close, 2026-11-13)
 - Suite 2478 (last full run 2477), 0 skipped, 0 orphans (about 22 min).

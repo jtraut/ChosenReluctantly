@@ -1515,6 +1515,7 @@ un_offer_report.ps1`.
   - **Sitting A done 2026-11-16** (9c69a58..5da7427; DECISIONS "DF1 sitting A triage"). Hashes and SIM1 unchanged; `max_attempts` 1000 -> 2000 (act 3 worst 751); suite 2479 (+1 since).
   - **Sitting B done 2026-11-17** (57b0a83..e3e1ac1; DECISIONS "DF1 sitting B triage"). `data/run.json` acts damage 1.0/1.0/1.0 -> 1.0/1.05/1.1 (hp untouched). SIM1 human Rogue 21 -> 18/36, Wizard 20 -> 16/36; off 34/36, 34/36. Held floors pass. Hashes unchanged (act 1 untouched). Full suite not run: qa runs it.
   - **ux done 2026-11-17** (1fb09b3..6b12a6d; DECISIONS "DF1 ux triage"). All six items, plus `tests/unit/df1_ux_test.gd` (7 tests).
+  - **qa PASS 2026-11-17** after a FAIL with 3 blockers (DECISIONS "DF1 qa FAIL triage"; fixes a66b470, d67276f, f9f5c58; re-check 4026720). Suite 2490, 0 failures; hashes unchanged; soak OK. New SIM1 floors (12 / 10 / 31 / 30) and ceiling (21 / 20) are in MAP.md §11.4.
   - **gameplay-dev sitting A, MAP4 carry-overs. `safe to chain`** (fixes and tooling; no feel or balance change):
     1. Add `--run-curses` and `--run-discount` to `RunSave.DEBUG_FLAG_PREFIXES`. Test: a launch with only those flags never reads, writes or deletes the real save.
     2. A map-generator failure at an act change must not end the run as a win (today: loud error, then a win). Make it a clean failure with no win screen and no save corruption (the simplest honest outcome; log your choice). Flip or extend qa's act-change failure test.

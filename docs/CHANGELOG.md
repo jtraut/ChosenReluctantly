@@ -2,6 +2,47 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
+## 2026-11-17 (Slice DF1: the difficulty bump, D51 = C)
+
+Commit range 9c69a58..HEAD (8f0d595). `[Director decision]` D51 = C, 2026-11-12: make the campaign harder, with a human-bot win target of 40 to 50% (14-18 of 36). gameplay-dev sitting A 9c69a58..5da7427 (MAP4 carry-overs), sitting B 57b0a83..e3e1ac1 (the data-only bump), ux 1fb09b3..6b12a6d, qa 83d06d3, 604466d and 4026720 (first review FAIL, re-check PASS: `docs/reviews/2026-11-17-df1-qa.md`), playtest 8f0d595 (`docs/playtests/2026-11-17-df1.md`, no blocker; the playtester cannot hand-play, so its feel findings are bot numbers and theory). Calls: `docs/DECISIONS.md` entries "DF1 brief" and the four DF1 triage entries; `docs/MAP.md` sections 11.3 and 11.4. The director has not played the bump yet.
+
+### Changed
+- **Balance (old -> new), `data/run.json` `acts`, enemy damage multiplier:** act 2 `damage` 1.0 -> 1.05, act 3 `damage` 1.0 -> 1.1 (e3e1ac1). Act 1 stays 1.0 and every act's `hp` is untouched (1.0 / 1.1 / 1.2). Sitting B tried 1.0 / 1.15 / 1.25 first (17/36 Rogue, 13/36 Wizard); the rounds were not monotonic, so it stopped at 1.05 / 1.1.
+- **SIM1 human bot** (pooled seeds 1/13/25, `-Route first`, 36 runs): Rogue 21 -> 18/36, Wizard 20 -> 16/36. **Off bot:** Rogue 36 -> 34/36, Wizard 35 -> 34/36. All four reproduced by qa. The human Rogue's losses are spread (rooms 13-15 hold 8 of 18, so no single wall). The sim hashes did not move, because the arena and bot sims are act 1 only.
+- **The Corporate Raider stays at act 2 x1.05** (game-lead's call, `docs/MAP.md` 11.3). Its hardest sequence is now 10.5 instead of 10, and three sequences in a row total at most 30.45: a full-HP Rogue with no armor now dies to three in a row by 0.45 (before, it survived on 1). A full-HP Wizard (22 HP) survives two sequences, on 1 HP. Cheap to reverse; eyes 58 already asks whether the Raider is act-ending.
+- **SIM1 floors re-gated** (qa's proposal, about 2 binomial SDs under the new pooled values; `docs/MAP.md` 11.4). Human three-act at least: Rogue 21 -> 12/36, Wizard 9 -> 10/36. Off-bot guards at least: Rogue 32 -> 31/36, Wizard 25 -> 30/36. **New ceiling** on the human bot, so a later slice cannot silently undo the bump: at most 21/36 Rogue, 20/36 Wizard (MAP4 was 21 / 20). Unchanged: the no-card clear at most 25%, boss-room parity 70-130%, fingerprint at least 0.6.
+- **Fingerprint relic sets are now canonical** (game-lead): qa's sets, taken from the BUILD_DEPTH archetypes and listed in `docs/reviews/2026-11-17-df1-qa.md` (Kindling: `pyre_insurance`, `smoldering_grudge`, `kindling_jar`; Bleed Out: `second_wind_unwillingly`, `serrated_excuse`; Grudge Brawler: `spite_knuckles`, `heavy_sigh`, `muscle_memory`, `overtime_unpaid`), give 0.79 with relics and 0.45 without. SIM1's earlier 0.61 used a set recorded nowhere, so it is not comparable.
+- **Map generator:** `data/map.json` `max_attempts` 1000 -> 2000 (6be42da). A sweep of seeds 1001-4000 had 0 failures; worst case 421 / 341 / 751 attempts for acts 1 / 2 / 3 (act 3 uses 37.5% of the new limit).
+- **Curse casts** no longer count as a card cast (6be42da): no `card_cast` relay event and no cast-history entry, so a curse cannot satisfy Peer Review or fire Faculty Meeting, The Ivory Tower or The Non-Compete Clause (GDD section 9: "useless or harmful"). It still uses its slot cooldown and still uses up primed buffs, as a fair cost.
+- **A map failure at an act change is a loss** (6be42da; it used to end the run as a win): the save is deleted and there is no win screen. a66b470: `Main` now listens to `run_lost` and shows Game Over when the player is still alive (the first qa review found a dead screen).
+- **Debug flags and tooling** (6be42da, 5da7427): `--run-curses`, `--run-discount` and `--merchant` are now debug flags (`RunSave.DEBUG_FLAG_PREFIXES`) and never read, write or delete the save. `--merchant` on its own jumps to the first merchant node (it used to open the map). `--run-room=N` with `--event=<id>` now opens the event (it opened a combat room). `run_wave_sim.ps1 -BossLog` no longer ends with a script error.
+- **Readability (ux, 6b12a6d, f9f5c58):**
+  - A cursed current slot shows a "Shift+<key> swaps" pill (`data/run.json` `slot_condition.curse_swap`).
+  - Curse event lines end with "(a dud card in one slot)".
+  - The curse removal list has its own title, "Remove which curse?", and a line that names no key (K1 forbids a key hint in JSON).
+  - The merchant-discount line reads "..% off at the next merchant, only if one is ahead on your route".
+  - "Give up N relic(s) to take it." is gone from four sacrifice relics' rule text (Asset Stripping, Brain Drain, Golden Parachute, Hostile Takeover); the separate "Cost - Give up N relics" line stays.
+  - "Bleed detonated" shows once per cast (new `data/ui.json` `detonate_word_window`, 0.3 s of real time); `Juice.reset()` clears that memory.
+  - The sacrifice give-up step starts its focus on the first relic, since nothing is lost before its Confirm. The plain over-cap swap still starts on Cancel (BD2).
+- **Measured at DF1's qa re-check:** suite 2490 cases in 178 suites, 0 failures, 0 skipped, 0 orphans. Hashes unchanged: 3172486861 / 916264160 / `-Plan` 1317880580 / bot 3476063471. Reload soak OK (Rogue and Wizard). The no-card ceiling holds (0/12 each).
+
+### Fixed
+- Fixes to sitting B and the ux session found by qa's first review (all in the re-check): the K1 scan failure on the curse removal line (f9f5c58), the `mb1b_test` duelist test, which now reads act 2's scale and derives its limits from it (d67276f), and the dead screen when a run is lost with the player alive (a66b470).
+
+### Docs and process
+- Eyes item 58 (play MAP4) expired at DF1's close with its default kept; it moved to `docs/RESOLVED.md`.
+- New qa tests in `tests/unit/df1_qa_test.gd` (a curse cast still uses up a primed buff; the act-change failure shows Game Over) and `df1_ux_test.gd`.
+
+### Known issues, left open
+- Human-bot Kindling boss parity with relics is 67%, under the 70% line (not a DF1 regression: act 1 is untouched and the no-relics numbers equal SIM1's).
+- No test covers Try again after `run_lost` (checked by reading the code only).
+- `_apply_debug_room_type` (the `--event` and `--merchant` conversion) has no unit test; qa ran the commands.
+- `-BossLog` labels the mini-boss's hits as "unknown".
+- The three-act Wizard sim prints "HP at each room end" 22.0 under a header of max 20.0 (playtester; a tooling label or a stale list, not diagnosed).
+- Boss-room parity runs on act 1, so it cannot see an act 2 or 3 damage change; the Raider regression was caught only by the unit suite.
+- The human-bot Wizard's standard-deck act 1 boss takes about 88 s (81-95 s over 4 runs; the volley is 75% of the damage it takes). Long, not dangerous; with relics it is 28-34 s. Playtester default: no change until the director sees it.
+- The curse swap penalty goes from 1 s to 2 s in 3d's first sitting (eyes 58's default).
+
 ## 2026-11-13 (Slice MAP4: events, curses, sacrifice relics)
 
 Commit range 3545c02..dae7855. Design: `docs/BUILD_DEPTH.md` section 13 (written after sitting A), `docs/MAP.md` sections 2 and 11.3. gameplay-dev sittings A 6cd1c44..b2ae51b (carry-overs), B1 6c49bd0..7fecaae (event engine), B2 866ac63..fc444cd (outcomes, sacrifice), C 5b85aad..eeae97c (curses, the Dig), D fa94a97..33eff21 (content); ux 6bc84d9..000d63b; qa 35f19c2..d57b750 (PASS, `docs/reviews/2026-11-13-map4-qa.md`); playtest c85b692 (`docs/playtests/2026-11-13-map4.md`, no blocker; the playtester cannot hand-play, so its feel findings are theory); game-lead triage commits. Calls: `docs/DECISIONS.md` entries dated 2026-11-13. The director's decisions that shaped the slice (D49, D50, D51) are in the 2026-11-12 section below. The director has not played this slice yet: his play is eyes item 58.

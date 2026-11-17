@@ -2,6 +2,14 @@
 
 The archive of the director's answered, received and acknowledged items, moved here from `docs/OPEN_ITEMS.md`. Owned by tech-writer (director, 2026-11-02). Newest dated section first; IDs (D19, call 16, checklist item 33) are kept so they can be searched. Old entries change only to fix a factual error.
 
+## 2026-11-17
+
+### Expired at DF1's close, default kept
+
+| ID | What it asked | Default that applied |
+|---|---|---|
+| 58 | Play MAP4 (eyes, added at MAP4's close). | The curse swap penalty goes from 1 s to 2 s in 3d's first sitting; the other looks stay as they are. The full text is in `git show f6f3a69:docs/OPEN_ITEMS.md`. game-lead removes it from OPEN_ITEMS at DF1's close. |
+
 ## 2026-11-13
 
 ### Answer recorded in 35ef4b0 (eyes 57)

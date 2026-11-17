@@ -2709,3 +2709,10 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **qa's band re-run is a reproduction**, since SIM1 is deterministic at fixed fps on fixed seeds. qa also proposes the new human floors (gameplay-dev suggested Rogue at least 14, Wizard at least 12).
 - **The fingerprint wasn't re-measured.** The boss-room runs use act 1, and the boss times match the README exactly, so 0.61 stands. qa confirms it.
 - **Flag for the playtester:** the human-bot Wizard's standard-deck boss median is 98.4 s (Rogue 39.7 s). The playtester's Wizard run checks whether the act 1 boss drags.
+
+## 2026-11-17 - DF1 ux triage (game-lead)
+- **ux accepted** (1fb09b3..6b12a6d), all six items. ux-designer's calls, accepted:
+  - **The first-relic focus applies only to the sacrifice step**, where nothing is lost until the separate confirm. The plain over-cap swap keeps Cancel (BD2), because a reflexive Enter there gives a relic away at once. [Moving the focus on both.]
+  - **The curse swap hint always shows on a cursed current slot.** [Hiding it after the first swap, which needs a persistent flag for little gain.]
+  - **The Internal Audit is warned, not greyed out.** The merchant-discount line now says it needs a merchant ahead, for every event that uses it. [Greying it out when no merchant is ahead, which needs route data from gameplay code. Noted as a possible 3d follow-up; not director-facing.]
+  - **New `detonate_word_window` of 0.3 s** in `data/ui.json`.

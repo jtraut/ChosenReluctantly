@@ -6,14 +6,14 @@
 Last updated: 2026-11-17. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **DF1 brief written 2026-11-16** (ROADMAP DF1; DECISIONS "DF1 brief"). Sittings: A (MAP4 carry-overs) -> B (data-only bump) -> ux -> qa -> playtest -> docs. Sitting A done (9c69a58..5da7427). Sitting B done (57b0a83..e3e1ac1): act damage 1.0/1.05/1.1; human Rogue 18/36, Wizard 16/36; off 34/36, 34/36; hashes unchanged. The repo runs.
+- **DF1 brief written 2026-11-16** (ROADMAP DF1; DECISIONS "DF1 brief"). Sittings: A (MAP4 carry-overs) -> B (data-only bump) -> ux -> qa -> playtest -> docs. Sitting A done (9c69a58..5da7427). Sitting B done (57b0a83..e3e1ac1): act damage 1.0/1.05/1.1; human Rogue 18/36, Wizard 16/36; off 34/36, 34/36; hashes unchanged. ux done (1fb09b3..6b12a6d). The repo runs.
 
 ## Exact next step
-1. **ux-designer, DF1 ux session** (ROADMAP DF1 "ux (after B)"): the MAP4 readability carry-overs.
-2. Then qa (full suite, A's fixes, B's band and new floors), playtester, tech-writer, close.
+1. **qa, DF1 review** (ROADMAP DF1 "qa"): full suite, A's fixes, B's band and new floors, ux's six items.
+2. Then playtester, tech-writer, close.
 3. Then 3d (it starts with the curse swap penalty, since eyes 58 wasn't answered before B), then BD3b, then the Milestone 3 close.
 
-**Next role:** ux-designer (DF1 ux).
+**Next role:** qa (DF1 review).
 
 ## Current baselines (MAP4 close, 2026-11-13)
 - Suite 2478 (last full run 2477), 0 skipped, 0 orphans (about 22 min).
@@ -25,6 +25,7 @@ Last updated: 2026-11-17. Latest tag `playtest-2026-11-12-MAP3b`. STATE holds on
 ## Pending for the next docs pass (tech-writer, DF1)
 - DF1 sitting A (9c69a58..5da7427): debug flags `--run-curses`, `--run-discount`, `--merchant` never touch the save; `--merchant` alone jumps to the first merchant node; `--run-room` + `--event` opens the event; `-BossLog` fixed; curse casts skip `card_cast` and cast history; act-change map failure is a loss; `max_attempts` 1000 -> 2000 (sweep 1001-4000 worst 421/341/751). Drop the ARCHITECTURE known issue.
 - DF1 sitting B (57b0a83..e3e1ac1): `data/run.json` `acts` damage 1.0/1.0/1.0 -> 1.0/1.05/1.1; SIM1 human Rogue 21 -> 18/36, Wizard 20 -> 16/36; off 36 -> 34/36, 35 -> 34/36; README SIM1 "Current" figures and floors (qa sets the new ones).
+- DF1 ux (1fb09b3..6b12a6d): a curse swap hint pill (`slot_condition.curse_swap`); curse event lines say "(a dud card in one slot)"; the curse removal list gets its own title and line; the merchant-discount line says a merchant must be ahead; the "Give up N relics" sentence is dropped from four sacrifice relics; "Bleed detonated" shows once per cast (`detonate_word_window` 0.3 s); the sacrifice give-up step focuses the first relic.
 
 ## Known issues
 - Wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.

@@ -937,3 +937,9 @@ func test_map_run_capture_presets_pin_one_act_and_the_act_presets_do_not() -> vo
 	assert_str(String(RunNodes.current_node(run)["type"])).is_equal("mini_boss")
 	run.jump_to_room(29)
 	assert_str(String(RunNodes.current_node(run)["type"])).is_equal("boss")
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

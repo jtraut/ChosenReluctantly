@@ -2,7 +2,7 @@ extends Node
 ## UX capture (P-dodge): hosts the real Main in an oversized SubViewport, drives a HUD state, saves one PNG, quits.
 ## Needs a renderer (not --headless). Run:
 ##   godot --path . res://tools/UxCapture.tscn -- --size=1024x600 --class=rogue --mode=pips_recharge --out=screenshots/ux/a.png
-## Modes: loadout_editor_legal / loadout_editor_blocked (3d E: the loadout editor), shop_rarity (MAP3b: a shop with a legendary, a rare and a common card, fabricated options), pips (full), pips_recharge (one spent, a pip coming back), pips_empty (all spent), stagger (a boss at its first
+## Modes: loadout_editor_legal / loadout_editor_blocked (3d E: the loadout editor), shop_plan_act2 (3d qa: a real act 2 shop whose plan holds rare and legendary cards), shop_rarity (MAP3b: a shop with a legendary, a rare and a common card, fabricated options), pips (full), pips_recharge (one spent, a pip coming back), pips_empty (all spent), stagger (a boss at its first
 ## threshold, mid-stagger), continue_pick (the class pick screen with a saved run), act_heal / act_low / act_resumed (the Act 2 screen, BD3a). The player is made immune and the spawner off, so the shot is only the state being checked.
 
 const BOSS_PATH := "res://scenes/enemies/BossGuardian.tscn"
@@ -98,6 +98,33 @@ func _ready() -> void:
 			sub.add_child(shop_screen)
 			shop_screen.show_content({"title": "Merchant", "line": "", "screen": "shop", "merchant": {"gold": 200, "items": []}, "gold": 200, "options": shop_options, "rejects_remaining": 0, "rejects_max": 0, "owned": {}, "relic": {}, "rows": [], "hint": ""})
 			shop_screen.disarm()
+			await _wait(0.6)
+		"shop_plan_act2":
+			# 3d qa: a REAL act 2 merchant stock (Merchant.draw_stock, RunChoices.model, no fabricated options) for a run whose plan holds every reward-only (rare and legendary) card,
+			# so the "On your plan" pill shows on the shop tiles. The first seed whose stock holds a plan card is used.
+			var plan_ctx: Dictionary = RunChoices.shipped_context(CharacterDatabase.pools(klass))
+			var plan_state: RunState = null
+			for plan_seed in range(1, 60):
+				var candidate: RunState = RunSession.begin_new_run(plan_seed, klass)
+				candidate.act = 2
+				candidate.plan = LoadoutCollection.plan_cards(klass)
+				candidate.gold = 300
+				var stock: Dictionary = Merchant.draw_stock(candidate, 3, 0, plan_ctx, [] as Array[String], [] as Array[String])
+				var hits: int = 0
+				for stock_id: String in stock["cards"]:
+					if candidate.is_on_plan(stock_id):
+						hits += 1
+				if hits >= 1:
+					plan_state = candidate
+					break
+			assert(plan_state != null, "no seed gave an act 2 shop with a plan card")
+			Merchant.open_visit(plan_state, 3, plan_ctx)
+			plan_state.pending = RunState.PENDING_MERCHANT
+			var plan_screen: RunPromptScreen = (load("res://scenes/ui/RunPromptScreen.tscn") as PackedScene).instantiate()
+			sub.add_child(plan_screen)
+			plan_screen.show_content(RunChoices.model(plan_state, plan_ctx))
+			plan_screen.disarm()
+			print("shop_plan_act2: seed ", plan_state.seed_value, " cards ", plan_state.merchant_visit["cards"])
 			await _wait(0.6)
 		"loadout_editor_legal", "loadout_editor_blocked":
 			# 3d E ux: the loadout editor over a memory-only store (nothing is read or written on disk). legal = the preset deck plus a different starter card, one reward card on the plan,

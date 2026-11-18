@@ -72,3 +72,9 @@ func test_game_over_ready_fires_exactly_once_after_two_lethal_hits() -> void:
 	await get_tree().create_timer(0.3, true, false, true).timeout
 	assert_array(fired).has_size(1)
 	assert_bool(main.is_game_over()).is_true()
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

@@ -715,3 +715,9 @@ func test_a_failed_act_map_leaves_the_run_untouched_and_advance_act_reports_fals
 		assert_bool(state.past_acts.is_empty()).is_true()
 		assert_bool(JSON.stringify(state.to_dict()) == JSON.stringify(before)).override_failure_message("a failed advance_act changed the run state").is_true()
 	assert_int(failures).override_failure_message("max_attempts 1 never failed; the check proves nothing").is_greater(0)
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

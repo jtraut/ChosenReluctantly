@@ -349,3 +349,9 @@ func test_room_started_and_room_cleared_fire_from_the_run() -> void:
 	assert_int(cleared.size()).is_equal(1)
 	assert_int(cleared[0]["index"]).is_equal(0)
 	RunSession.clear()
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

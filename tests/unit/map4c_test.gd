@@ -856,3 +856,9 @@ func test_a_stat_mod_run_modifier_can_give_the_dig_too() -> void:
 	state.run_mods.clear()
 	state.run_mods.append({"stat": "rest_dig", "modifier_type": "multiplicative", "value": 1.0})
 	assert_bool(RunChoices.dig_enabled(state, ctx)).is_false()  # only an additive total above 0 counts
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

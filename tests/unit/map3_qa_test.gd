@@ -243,3 +243,9 @@ func test_hp_and_reject_values_in_a_loaded_save_are_sane() -> void:
 		if back.hp <= 0.0 or back.hp > back.max_hp or back.rejects_remaining < 0 or back.rejects_remaining > RunConfig.rejects_per_run():
 			problems.append("%s loaded as hp %s of %s, rejects %d" % [str(patch), str(back.hp), str(back.max_hp), back.rejects_remaining])
 	assert_array(problems).override_failure_message("a hand-edited save loads out-of-range values: %s" % str(problems)).is_empty()
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

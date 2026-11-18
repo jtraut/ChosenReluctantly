@@ -92,3 +92,9 @@ func test_an_act_change_map_failure_shows_the_game_over_screen_with_the_player_a
 	assert_object(screen).is_not_null()
 	var shown: bool = main.is_game_over() or (screen is CanvasItem and (screen as CanvasItem).visible)
 	assert_bool(shown).override_failure_message("run lost on an act-change map failure, but no Game Over screen is shown: the player sees nothing (soft lock)").is_true()
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

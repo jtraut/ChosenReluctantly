@@ -555,3 +555,9 @@ func test_room_transition_and_try_again_work_inside_a_sub_viewport() -> void:
 	assert_object(third).is_not_null()
 	assert_int(third.run_controller.room_number()).is_equal(1)
 	assert_bool(RunSession.current.seed_value == seed_before).is_false()
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

@@ -150,3 +150,9 @@ func test_a_one_act_run_refuses_room_eleven() -> void:
 	# --acts=1 --run-room=11: the limit is the one act's 10 rooms.
 	assert_str(MapLaunch.run_room_problem(PackedStringArray(["--acts=1", "--run-room=11"]), 10)).is_not_empty()
 	assert_str(MapLaunch.run_room_problem(PackedStringArray(["--acts=1", "--run-room=10"]), 10)).is_empty()
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

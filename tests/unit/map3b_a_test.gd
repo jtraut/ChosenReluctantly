@@ -765,3 +765,9 @@ func test_a_boss_offer_that_cannot_be_taken_at_the_cap_still_has_a_way_out() -> 
 	for option: Dictionary in RunChoices.options(roomy, _ctx(_cards(6, 0, 0), relics, 5)):
 		roomy_kinds.append(String(option["kind"]))
 	assert_bool(roomy_kinds.has("relic_skip")).is_false()
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

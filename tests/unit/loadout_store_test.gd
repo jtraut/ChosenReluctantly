@@ -273,3 +273,9 @@ func test_the_real_user_files_are_never_touched_by_these_tests() -> void:
 	LoadoutStore.new(STORE_PATH).save_entry("rogue", 0, _entry())
 	assert_bool(FileAccess.file_exists(PlayerProfile.DEFAULT_PATH)).is_equal(before_profile)
 	assert_bool(FileAccess.file_exists(LoadoutStore.DEFAULT_PATH)).is_equal(before_store)
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

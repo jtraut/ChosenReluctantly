@@ -876,3 +876,9 @@ func test_the_run_controller_relays_the_boss_to_the_ui() -> void:
 	assert_object(main.run_controller.current_boss()).is_same(seen[0])
 	assert_str(seen[0].display_name()).is_equal("The Overly Enthusiastic Guardian")
 	assert_array(seen[0].phase_thresholds()).is_equal([0.66, 0.33])
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

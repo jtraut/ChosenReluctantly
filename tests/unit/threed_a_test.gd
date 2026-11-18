@@ -121,3 +121,9 @@ func test_try_again_after_a_run_lost_with_the_player_alive_starts_a_fresh_run() 
 	assert_int(RunSession.current.room_index).is_equal(0)
 	assert_int(fresh.run_controller.room_number()).is_equal(1)
 	assert_float(fresh.player.health.current_health).is_equal(fresh.player.health.max_health)
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

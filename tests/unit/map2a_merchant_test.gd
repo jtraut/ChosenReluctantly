@@ -488,3 +488,9 @@ func test_a_malformed_visit_is_dropped_and_bad_numbers_fall_back_to_zero() -> vo
 	assert_int(loaded.merchant_removals).is_equal(0)
 	assert_int(loaded.gold_spent_merchant).is_equal(0)
 	assert_bool(loaded.merchant_visit.is_empty()).is_false()
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

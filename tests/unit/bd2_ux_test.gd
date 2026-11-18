@@ -678,3 +678,9 @@ func test_a_focused_pause_list_scrolls_with_the_arrow_keys() -> void:
 	assert_int(screen.relic_scroll.scroll_vertical).override_failure_message("Down did not scroll the focused relic list").is_greater(0)
 	screen.close()
 	RunSession.clear()
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

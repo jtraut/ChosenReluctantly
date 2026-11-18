@@ -522,3 +522,9 @@ func test_needs_swap_and_giveable_and_can_take_at_a_low_cap() -> void:
 	var only_boss: Array[String] = ["boss_a", "boss_b"]
 	assert_bool(RelicOffer.can_take(only_boss, 2, _catalog())).is_false()  # full of boss relics: nothing to give up
 	assert_bool(RelicOffer.can_take(only_boss, 3, _catalog())).is_true()  # still room
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

@@ -604,3 +604,9 @@ func test_with_relics_off_a_run_has_no_relic_room_no_manager_and_cards_after_the
 	assert_bool(main.run_controller.rooms().any(func(r: Dictionary) -> bool: return String(r["type"]) == "relic_room")).is_false()
 	await _win_room(main)
 	assert_str(state.pending).is_equal(RunState.PENDING_REWARD)
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

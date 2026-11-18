@@ -599,3 +599,9 @@ func test_a_reload_in_the_shop_reopens_the_same_stock_with_no_second_visit() -> 
 	assert_int(restored.history.size()).is_equal(state.history.size())  # the merchant room was recorded once, not again
 	assert_bool(second.run_controller.merchant_open()).is_true()
 	assert_int(models.size()).is_equal(1)  # the reopened choice was announced
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

@@ -388,3 +388,9 @@ func test_qa_from_dict_survives_a_hostile_pending_and_offer() -> void:
 	var again := RunState.from_dict(RunState.from_dict(ok).to_dict())
 	assert_str(again.pending).is_equal(RunState.PENDING_REWARD)
 	assert_array(again.offer).is_equal(["a", "b", "c"])
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

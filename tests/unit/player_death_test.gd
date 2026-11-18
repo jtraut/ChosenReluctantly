@@ -185,3 +185,9 @@ func test_repeated_death_and_teardown_does_not_leak_nodes() -> void:
 			baseline = orphans
 		assert_int(orphans).is_less_equal(baseline)
 	assert_float(Engine.time_scale).is_equal(1.0)
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

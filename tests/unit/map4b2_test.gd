@@ -1091,3 +1091,9 @@ func test_an_event_sacrifice_through_the_controller_syncs_the_live_relics() -> v
 	assert_bool(state.relics_given_up.has("asap_notice")).is_true()
 	assert_str(state.pending).is_equal(RunState.PENDING_RELIC)  # tier 1 given up: a tier 2 offer, no skip
 	assert_str(state.offer_rarity).is_equal(RunState.OFFER_EVENT_NOSKIP)
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

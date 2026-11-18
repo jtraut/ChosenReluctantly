@@ -288,3 +288,9 @@ func test_an_enemy_wedge_has_a_thicker_edge_than_the_players_arc_and_a_dark_band
 	auto_free(wedge)
 	wedge.setup(1.8, 60.0, Color.RED, AttackArcVisual.ENEMY_EDGE_THICKNESS, true)
 	assert_bool(wedge.has_backing()).is_true()
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

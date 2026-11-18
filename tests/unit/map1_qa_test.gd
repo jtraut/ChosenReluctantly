@@ -935,3 +935,9 @@ func test_the_straight_run_is_unchanged_by_the_map_code() -> void:
 	var d: Dictionary = state.to_dict()
 	assert_bool(RunState.from_dict(d).equals(state)).is_true()
 	assert_str(String(rooms[9]["type"])).is_equal("boss")
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

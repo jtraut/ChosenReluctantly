@@ -1086,3 +1086,9 @@ func test_elite_and_relic_room_offers_over_the_full_catalog_hold_the_relic_rules
 	assert_array(failures).override_failure_message("\n".join(failures.slice(0, 8))).is_empty()
 	for id: String in ["asap_notice", "severance_package", "paperwork_fire", "grading_curve"]:
 		assert_bool(seen_new.has(id)).override_failure_message("%s never offered by an elite or relic room in 200 seeds" % id).is_true()
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

@@ -880,3 +880,9 @@ func test_a_push_left_over_from_recovering_is_cleared_when_the_next_wind_up_star
 	assert_float(boss._knockback_velocity.length()).is_greater(0.0)
 	boss._begin_windup("leveraged_dash")
 	assert_float(boss._knockback_velocity.length()).is_equal(0.0)
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

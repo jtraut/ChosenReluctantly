@@ -254,3 +254,9 @@ func test_the_stagger_into_the_last_phase_keeps_a_one_hp_floor_so_the_boss_canno
 	assert_float(boss.health.hp_floor).is_equal(0.0)
 	boss.health.take_damage(99999.0, "physical")
 	assert_bool(boss.is_defeated()).override_failure_message("and phase 3 can be killed").is_true()
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

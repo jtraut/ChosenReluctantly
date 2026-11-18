@@ -1059,3 +1059,9 @@ func test_the_event_text_in_run_json_is_validated_when_present() -> void:
 	without.erase("events")
 	(without["ui"] as Dictionary).erase("event")
 	assert_array(RunConfig.validate(without, EnemyConfig.enemy_ids(), [])).is_empty()  # both are optional (a config without them plays with the defaults)
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

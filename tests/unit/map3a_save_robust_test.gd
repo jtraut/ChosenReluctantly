@@ -152,3 +152,9 @@ func test_boss_config_reports_a_non_object_attack_instead_of_crashing() -> void:
 	attacks[first_id] = "hit"
 	var problems: Array[String] = BossConfig.validate(shipped, KNOWN_ENEMIES)
 	assert_array(problems).is_not_empty()
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

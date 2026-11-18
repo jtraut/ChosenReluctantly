@@ -292,3 +292,9 @@ func test_spawner_applies_tiers_from_the_queued_spawn() -> void:
 			tiers.append((child as Enemy).tier)
 	tiers.sort()
 	assert_array(tiers).is_equal(["boss", "normal"])
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

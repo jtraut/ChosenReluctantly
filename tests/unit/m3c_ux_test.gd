@@ -439,3 +439,9 @@ func test_the_hints_no_longer_offer_space() -> void:
 	for key: String in ["room_cleared", "win"]:
 		assert_str(String((ui[key] as Dictionary)["hint"])).not_contains("Space")
 		assert_str(String((ui[key] as Dictionary)["hint"])).contains("Enter")
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

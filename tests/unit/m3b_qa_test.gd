@@ -441,3 +441,9 @@ func test_full_deck_survives_try_again_and_the_full_deck_still_gets_offers() -> 
 			auto_free(child)
 	assert_object(RunSession.current).is_not_same(state)
 	assert_int(RunSession.current.deck.size()).is_equal(full_size)
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

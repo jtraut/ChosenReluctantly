@@ -361,3 +361,9 @@ func test_a_fresh_launch_scene_never_overwrites_an_existing_save() -> void:
 	await _frames()
 	assert_str(FileAccess.get_file_as_string(PATH)).is_equal(before)
 	assert_bool(main.run_controller != null).is_true()
+
+
+## 3d qa: the in-memory profile (LoadoutSession) counts finished runs process-wide; leave it clean so the next suite starts as run 1.
+func after() -> void:
+	LoadoutSession.reset()
+	StartScreen.reset()

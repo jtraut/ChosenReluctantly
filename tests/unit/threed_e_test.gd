@@ -146,6 +146,37 @@ func test_tabs_name_saved_empty_and_skipped_slots() -> void:
 	assert_str(String(tabs[0]["title"])).is_equal("1. Empty")
 
 
+func test_default_names_are_class_and_slot() -> void:
+	assert_str(LoadoutEditorScreen.default_name_for(_texts(), "rogue", 1)).is_equal("Rogue loadout 2")
+	assert_str(LoadoutEditorScreen.default_name_for(_texts(), "wizard", 0)).is_equal("Wizard loadout 1")
+
+
+func test_the_tab_of_a_filled_draft_shows_its_name_and_unsaved_state_never_empty() -> void:
+	var store := LoadoutStore.new(LOADOUTS)
+	var draft: LoadoutDraft = LoadoutDraft.from_preset("rogue", 0)
+	draft.loadout_name = "Brawler"
+	var tabs: Array[Dictionary] = LoadoutEditorScreen.tabs_for(store, "rogue", _texts(), draft, false)
+	assert_str(String(tabs[0]["label"])).is_equal("1. Brawler")
+	assert_str(String(tabs[0]["tag"])).is_equal("unsaved")
+	assert_str(String(tabs[0]["state"])).is_equal("draft")
+	assert_str(String(tabs[1]["title"])).is_equal("2. Empty")
+	draft.loadout_name = ""
+	assert_str(String(LoadoutEditorScreen.tabs_for(store, "rogue", _texts(), draft, false)[0]["label"])).is_equal("1. Rogue loadout 1")
+
+
+func test_the_detail_strip_lists_keywords_and_the_decks_slot_mates() -> void:
+	var draft: LoadoutDraft = LoadoutDraft.from_preset("rogue", 0)
+	var card_id: String = draft.deck[0]
+	var slot_type: String = String(CardDatabase.get_card(card_id)["slot_type"])
+	var line: String = LoadoutEditorScreen.slot_mates_text(draft, card_id, _texts())
+	assert_str(line).starts_with("In slot: ")
+	assert_str(line).contains(String(CardDatabase.get_card(card_id)["name"]))
+	assert_str(LoadoutEditorScreen.detail_chips_text(card_id)).is_equal(", ".join(PackedStringArray(SlotSynergy.chips(card_id))))
+	draft.deck.clear()
+	assert_str(LoadoutEditorScreen.slot_mates_text(draft, card_id, _texts())).is_equal("")
+	assert_str(slot_type).is_not_empty()
+
+
 # ---- the screen ----
 
 func test_the_screen_lists_every_collection_card_once_with_a_badge() -> void:
@@ -225,7 +256,10 @@ func test_the_name_field_is_capped_by_the_rules_data() -> void:
 	await _frames()
 	assert_int(editor.name_edit().max_length).is_equal(LoadoutRules.name_max_length())
 	editor.set_loadout_name("")
-	assert_bool(editor.save_button().disabled).override_failure_message("a blank name is a rule break").is_true()
+	assert_bool(editor.save_button().disabled).override_failure_message("BD3b-0: a blank name is filled with the default, so it never blocks Save").is_false()
+	assert_array(editor.shown_problems()).is_empty()
+	assert_array(editor.save()).is_empty()
+	assert_str(editor.draft.loadout_name).is_equal(LoadoutEditorScreen.default_name_for(_texts(), "rogue", editor.draft.slot))
 
 
 func test_the_relic_pick_has_none_plus_two_and_one_is_marked() -> void:

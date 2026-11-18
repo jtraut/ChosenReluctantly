@@ -49,6 +49,13 @@ func _ready() -> void:
 			for i in range(maximum):
 				main.player.dodge_charges.try_spend(maximum)
 			await _wait(0.3)
+		"slot_names":
+			# BD3b-0: the longest card names in the five HUD slots (the HUD is frozen so the names stay), to check none is cut off.
+			main.hud.set_process(false)
+			var long_names: Array[String] = ["Mandatory Training Module", "Healing Potion (Lukewarm)", "Death by a Thousand Memos", "Warm-Up, Reluctantly", "Flaming Nonsense"]
+			for slot_index in range(5):
+				main.hud.slot_widgets[slot_index]._set_name(long_names[slot_index])
+			await _wait(0.3)
 		"stagger":
 			var boss: Boss = (load(BOSS_PATH) as PackedScene).instantiate()
 			boss.position = main.player.global_position + Vector3(0.0, 0.0, -9.0)
@@ -126,7 +133,7 @@ func _ready() -> void:
 			plan_screen.disarm()
 			print("shop_plan_act2: seed ", plan_state.seed_value, " cards ", plan_state.merchant_visit["cards"])
 			await _wait(0.6)
-		"loadout_editor_legal", "loadout_editor_blocked":
+		"loadout_editor_legal", "loadout_editor_blocked", "loadout_editor_open", "loadout_editor_plan_full":
 			# 3d E ux: the loadout editor over a memory-only store (nothing is read or written on disk). legal = the preset deck plus a different starter card, one reward card on the plan,
 			# a starter relic and a name; blocked = a deck cut to a few cards with a blank name, so the checker's reasons show and Save is disabled.
 			var editor := LoadoutEditorScreen.new()
@@ -141,12 +148,17 @@ func _ready() -> void:
 						break
 				editor.add(LoadoutCollection.plan_cards(klass)[0])
 				editor.relic_buttons()[1].pressed.emit()
-			else:
+			elif mode == "loadout_editor_plan_full":
+				# BD3b-0: every reward card on the plan, the editor's own opening focus (the plan box must not clip at 1024x600)
+				for id: String in LoadoutCollection.plan_cards(klass):
+					editor.add(id)
+			elif mode == "loadout_editor_blocked":
 				editor.set_loadout_name("")
 				while editor.draft.deck.size() > 9:
 					editor.remove(editor.draft.deck[editor.draft.deck.size() - 1])
 				editor.add(LoadoutCollection.plan_cards(klass)[1])
-			editor.card_row(editor.draft.deck[3]).grab_focus()
+			if mode == "loadout_editor_legal" or mode == "loadout_editor_blocked":
+				editor.card_row(editor.draft.deck[3]).grab_focus()
 			await _wait(0.4)
 		"act_heal", "act_low", "act_resumed":
 			# BD3a ux: the Act 2 screen with fabricated summaries (the numbers of RunController.act_summary), over the arena: a heal that leaves

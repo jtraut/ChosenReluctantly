@@ -49,11 +49,26 @@ func bind(controller: RunController, host: Node) -> void:
 		_controller.relic_triggered.connect(on_trigger)
 
 
-func _on_room_started(_index: int, _total: int, _room_type: String) -> void:
+func _on_room_started(index: int, _total: int, _room_type: String) -> void:
 	var ids: Array[String] = []
 	for shown: Dictionary in _controller.owned_relics():
 		ids.append(String(shown["relic_id"]))
 	set_relics(ids)
+	if index == 0 and not _entries.is_empty():
+		show_start_tag()
+
+
+## BD3b-0: the relic(s) a run starts with are named once, in words, for a few seconds (the chip alone is two letters). Text: run.json ui.relic.start_tag.
+func show_start_tag() -> void:
+	var names: Array[String] = []
+	for entry: Dictionary in _entries:
+		names.append(String(entry["name"]))
+	var line: String = String(RunConfig.ui().get("relic", {}).get("start_tag", ""))
+	if line.is_empty() or not line.contains("%s") or names.is_empty():
+		return
+	_tag_name = line % ", ".join(PackedStringArray(names))
+	_tag_left = float(_cfg.get("relic_start_hold", 4.0))
+	queue_redraw()
 
 
 func configure(cfg: Dictionary, s: float) -> void:
@@ -105,6 +120,15 @@ func on_trigger(relic_id: String, _trigger_index: int = 0, _event_id: String = "
 	_tag_name = String(entry_for(relic_id)["name"])
 	_tag_left = float(_cfg.get("relic_name_hold", 1.6))
 	queue_redraw()
+
+
+## The name tag's text and seconds left (tests; the tag is drawn under the chips).
+func tag_text() -> String:
+	return _tag_name
+
+
+func tag_time_left() -> float:
+	return _tag_left
 
 
 func flash_state(relic_id: String) -> Dictionary:

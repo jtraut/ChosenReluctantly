@@ -314,6 +314,7 @@ const DEFAULT_HUD: Dictionary = {
 	"relic_flash_release": 0.4,
 	"relic_count_window": 1.5,
 	"relic_name_hold": 1.6,
+	"relic_start_hold": 4.0,
 	"relic_cue_enabled": true,
 	"relic_cue_life": 1.5,
 	"relic_cue_fade": 0.4,

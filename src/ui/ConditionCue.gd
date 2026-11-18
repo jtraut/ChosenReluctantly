@@ -36,10 +36,14 @@ static func detonate_short(card: Dictionary, texts: Dictionary) -> String:
 
 ## DF1 ux (MAP4 playtest): a curse card sits in a slot and nothing said you can swap past it. The dim line reads "Shift+Q swaps" (`swap_key` is the
 ## slot's dead-card swap key text from InputLabels, so a rebind shows). Words only; "" for any card that is not a curse or when the data has no `curse_swap` line.
-static func curse_swap_text(card: Dictionary, texts: Dictionary, swap_key: String) -> String:
+## BD3b-0: with `penalty` (seconds, from data/run.json curses.curse_swap_penalty; negative = leave it off) the line reads "Shift+Q swaps (2 s)" from `curse_swap_timed`.
+static func curse_swap_text(card: Dictionary, texts: Dictionary, swap_key: String, penalty: float = -1.0) -> String:
 	var line: String = String(texts.get("curse_swap", ""))
 	if line == "" or not line.contains("%s") or not CardSchema.is_curse(card):
 		return ""
+	var timed: String = String(texts.get("curse_swap_timed", ""))
+	if penalty >= 0.0 and timed.count("%s") == 2:
+		return timed % [swap_key, String.num(penalty, 2).trim_suffix("0").trim_suffix(".0").trim_suffix(".")]
 	return line % swap_key
 
 

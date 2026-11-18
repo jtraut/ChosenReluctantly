@@ -411,7 +411,7 @@ func condition_short() -> String:
 func _refresh_condition_short(card_id: String) -> void:
 	var card: Dictionary = CardDatabase.get_card(card_id) if card_id != "" else {}
 	var texts: Dictionary = RunConfig.ui().get("slot_condition", {})
-	var swap_hint: String = ConditionCue.curse_swap_text(card, texts, InputLabels.slot_swap_key(String(card.get("slot_type", "")))) if card_id != "" else ""
+	var swap_hint: String = ConditionCue.curse_swap_text(card, texts, InputLabels.slot_swap_key(String(card.get("slot_type", ""))), RunConfig.curse_swap_penalty()) if card_id != "" else ""
 	var tag: String = card_id + "|" + swap_hint  # DF1 ux: the swap key is part of the cache key, so a rebind refreshes the hint
 	if tag == _condition_short_card:
 		return

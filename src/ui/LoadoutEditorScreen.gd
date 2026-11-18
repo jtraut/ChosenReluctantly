@@ -45,6 +45,9 @@ var _problems_box: VBoxContainer = null
 var _collection_scroll: ScrollContainer = null
 var _detail_name: Label = null
 var _detail_text: Label = null
+var _detail_chips: Label = null
+var _detail_mates: Label = null
+var _shown_card: String = ""
 var _status_label: Label = null
 var _save_button: Button = null
 var _delete_button: Button = null
@@ -121,8 +124,14 @@ static func chips_for(draft_in: LoadoutDraft, texts: Dictionary) -> Array[Dictio
 	return out
 
 
-## The slot tabs: [{slot, title, state}] with state "saved", "empty" or "flagged".
-static func tabs_for(store: LoadoutStore, for_character: String, texts: Dictionary) -> Array[Dictionary]:
+## The default name of a new loadout: "Rogue loadout 2" (text `default_name`, class display name, 1-based slot). Never blank, so Save is never blocked by a missing name.
+static func default_name_for(texts: Dictionary, for_character: String, slot: int) -> String:
+	return String(texts.get("default_name", "%s loadout %d")) % [CharacterDatabase.display_name(for_character), slot + 1]
+
+
+## The slot tabs: [{slot, title, state}] with state "saved", "empty", "flagged" or "draft". BD3b-0: the slot being edited (`draft_in`) shows the draft's name while it is
+## filled, tagged "(unsaved)" until it matches the saved entry (`unsaved`, or no saved entry at all), never "1. Empty".
+static func tabs_for(store: LoadoutStore, for_character: String, texts: Dictionary, draft_in: LoadoutDraft = null, unsaved: bool = false) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
 	for i in range(store.slot_count()):
 		var entry: Dictionary = store.entry(for_character, i)
@@ -131,7 +140,15 @@ static func tabs_for(store: LoadoutStore, for_character: String, texts: Dictiona
 		if entry.is_empty():
 			state = "flagged" if store.is_flagged(for_character, i) else "empty"
 			label = String(texts.get("slot_skipped", "Can't start")) if state == "flagged" else String(texts.get("slot_empty", "Empty"))
-		out.append({"slot": i, "title": String(texts.get("slot_title", "%d. %s")) % [i + 1, label], "state": state})
+		var tag: String = ""
+		if draft_in != null and draft_in.slot == i and (not draft_in.deck.is_empty() or not entry.is_empty()):
+			var shown: String = draft_in.loadout_name.strip_edges()
+			label = shown if not shown.is_empty() else default_name_for(texts, for_character, i)
+			if entry.is_empty() or unsaved:
+				tag = String(texts.get("tab_unsaved", "unsaved"))
+				state = "draft"
+		var head: String = String(texts.get("slot_title", "%d. %s")) % [i + 1, label]
+		out.append({"slot": i, "title": head if tag.is_empty() else "%s (%s)" % [head, tag], "label": head, "tag": tag, "state": state})
 	return out
 
 
@@ -144,6 +161,25 @@ static func plan_lines_for(draft_in: LoadoutDraft, texts: Dictionary) -> Array[D
 		var info: Dictionary = {"availability": LoadoutCollection.availability(card_id), "unlock": CardSchema.unlock_text_of(card)}
 		out.append({"id": card_id, "name": String(card.get("name", card_id)), "slot_name": String(names.get(String(card.get("slot_type", "")), "")), "badge_text": String(badge_for(info, texts)["text"])})
 	return out
+
+
+## BD3b-0: the keywords and tags of a card as one line ("Melee, Bleed"), from the card's tags (SlotSynergy.chips: keywords first). "" for a card with none.
+static func detail_chips_text(card_id: String) -> String:
+	return ", ".join(PackedStringArray(SlotSynergy.chips(card_id)))
+
+
+## BD3b-0: the distinct cards the draft's deck holds in `card_id`'s slot, as one line ("In slot: A, B (+2 more)"), by name; "" for an empty slot. Words and the cap are data (ui.option).
+static func slot_mates_text(draft_in: LoadoutDraft, card_id: String, texts: Dictionary) -> String:
+	var slot_type: String = String(CardDatabase.get_card(card_id).get("slot_type", ""))
+	var names: Array[String] = []
+	for deck_id: String in draft_in.deck:
+		var card: Dictionary = CardDatabase.get_card(deck_id)
+		var card_name: String = String(card.get("name", deck_id))
+		if String(card.get("slot_type", "")) == slot_type and not names.has(card_name):
+			names.append(card_name)
+	names.sort()
+	var option_texts: Dictionary = RunConfig.ui().get("option", {})
+	return RunOptionCard.slot_now_text(slot_type, names, String(option_texts.get("slot_now", "In slot: %s")), int(option_texts.get("slot_now_max", 0)), String(option_texts.get("slot_now_more", "+%d more")))
 
 
 # ---- lifecycle ----
@@ -181,7 +217,7 @@ func _load_slot(index: int) -> void:
 	var entry: Dictionary = _store.entry(character_id, index)
 	draft = LoadoutDraft.from_entry(character_id, index, entry) if not entry.is_empty() else LoadoutDraft.from_preset(character_id, index)
 	if entry.is_empty():
-		draft.loadout_name = String(_texts.get("default_name", "Loadout %d")) % (index + 1)
+		draft.loadout_name = default_name_for(_texts, character_id, index)
 	_baseline = draft.entry()
 
 
@@ -203,6 +239,7 @@ func _make_effect_context() -> Dictionary:
 func _focus_first_card() -> void:
 	if _card_rows.is_empty() or not is_inside_tree():
 		return
+	_collection_scroll.scroll_vertical = 0  # BD3b-0: the list opens (and re-opens on a tab change) at its top
 	for group: Dictionary in _groups:
 		var cards: Array = group["cards"]
 		if not cards.is_empty():
@@ -229,6 +266,25 @@ func remove(card_id: String) -> String:
 	return refusal
 
 
+## BD3b-0: a blank name is filled with the default ("Rogue loadout 2") when saving, so it never blocks Save. The field shows the default as its placeholder.
+func _fill_blank_name() -> void:
+	if draft.loadout_name.strip_edges().is_empty():
+		draft.loadout_name = default_name_for(_texts, character_id, draft.slot)
+		if _name_edit != null:
+			_name_edit.text = draft.loadout_name
+
+
+## The reasons shown: the draft's own, except that a blank name is not one (the default name stands in for it).
+func _shown_problems() -> Array[String]:
+	var blank: bool = draft.loadout_name.strip_edges().is_empty()
+	if blank:
+		draft.loadout_name = default_name_for(_texts, character_id, draft.slot)
+	var problems: Array[String] = draft.problems()
+	if blank:
+		draft.loadout_name = ""
+	return problems
+
+
 func set_loadout_name(text: String) -> void:
 	draft.loadout_name = text
 	_ask = ""
@@ -248,6 +304,7 @@ func select_relic(relic_id: String) -> void:
 
 ## Saves the draft; blocked (returns the reasons) while a rule is broken. On success the tabs are rebuilt.
 func save() -> Array[String]:
+	_fill_blank_name()
 	var problems: Array[String] = draft.save(_store)
 	_ask = ""
 	if problems.is_empty():
@@ -325,7 +382,7 @@ func status_text() -> String:
 
 ## The checker's reasons as shown in the problems panel (empty when the draft can be saved).
 func shown_problems() -> Array[String]:
-	return draft.problems()
+	return _shown_problems()
 
 
 func card_row(card_id: String) -> Button:
@@ -449,11 +506,11 @@ func _build() -> void:
 	column.add_child(body)
 	var left: Control = _build_collection()
 	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	left.size_flags_stretch_ratio = 3.0
+	left.size_flags_stretch_ratio = 5.0
 	body.add_child(left)
 	var right: Control = _build_side()
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	right.size_flags_stretch_ratio = 2.0
+	right.size_flags_stretch_ratio = 4.0
 	body.add_child(right)
 	column.add_child(_build_footer())
 
@@ -474,7 +531,7 @@ func _build_header() -> Control:
 	var tabs := HBoxContainer.new()
 	tabs.add_theme_constant_override("separation", roundi(6.0 * _s))
 	box.add_child(tabs)
-	for tab: Dictionary in tabs_for(_store, character_id, _texts):
+	for tab: Dictionary in tabs_for(_store, character_id, _texts, draft, is_dirty()):
 		var button := ChoiceButton.new()
 		button.setup(String(tab["title"]), _cfg, _s)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -526,13 +583,32 @@ func _build_collection() -> Control:
 	column.add_theme_constant_override("separation", roundi(6.0 * _s))
 	column.add_child(_collection_scroll)
 	_detail_name = _label("", _px("option_body_font_size"), Color.html("#ffffff"))
+	_detail_name.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_detail_name.clip_text = true
+	_detail_name.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	_detail_chips = _label("", small, _color("option_flavor_color"))  # BD3b-0: the card's keywords and tags, right of its name (one line, never wraps)
+	_detail_chips.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	var detail_head := HBoxContainer.new()
+	detail_head.add_theme_constant_override("separation", roundi(8.0 * _s))
+	detail_head.add_child(_detail_name)
+	detail_head.add_child(_detail_chips)
 	_detail_text = _label("", small, _color("prompt_text_color"), 300.0 * _s)
 	_detail_text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_detail_mates = _label("", small, _color("option_flavor_color"))  # BD3b-0: the deck's other cards in this slot; one line, elided
+	_detail_mates.clip_text = true
+	_detail_mates.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	var detail := VBoxContainer.new()
-	detail.add_child(_detail_name)
+	detail.add_child(detail_head)
 	detail.add_child(_detail_text)
+	detail.add_child(_detail_mates)
 	column.add_child(_panel(detail, 6.0))
 	return column
+
+
+## The width a ChoiceButton needs for `title` (check mark, gaps, the text): a button in a flow row has no width of its own.
+func _choice_width(title: String) -> float:
+	var px: int = _px("option_body_font_size")
+	return ThemeDB.fallback_font.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1.0, px).x + float(px) * 0.9 + 22.0 * _s
 
 
 func _build_side() -> Control:
@@ -559,6 +635,7 @@ func _build_side() -> Control:
 	name_row.add_child(_label(String(_texts.get("name_label", "Name")), body_px, _color("prompt_text_color")))
 	_name_edit = LineEdit.new()
 	_name_edit.max_length = LoadoutRules.name_max_length()
+	_name_edit.placeholder_text = default_name_for(_texts, character_id, 0)
 	_name_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_name_edit.add_theme_font_size_override("font_size", body_px)
 	_name_edit.text_changed.connect(set_loadout_name)
@@ -569,13 +646,15 @@ func _build_side() -> Control:
 	column.add_child(name_row)
 	# starter relic
 	column.add_child(_label(String(_texts.get("relic_label", "Starter relic")), body_px, _color("prompt_text_color")))
-	var relics := VBoxContainer.new()  # stacked, so a relic's whole name fits
-	relics.add_theme_constant_override("separation", roundi(4.0 * _s))
+	var relics := HFlowContainer.new()  # BD3b-0: side by side (it wraps when the names don't fit), so the plan box keeps its room at 1024x600
+	relics.add_theme_constant_override("h_separation", roundi(4.0 * _s))
+	relics.add_theme_constant_override("v_separation", roundi(4.0 * _s))
 	column.add_child(relics)
 	var none_button := ChoiceButton.new()
 	none_button.setup(String(_texts.get("relic_none", "No relic")), _cfg, _s)
 	none_button.pressed.connect(select_relic.bind(""))
 	none_button.set_meta("relic", "")
+	none_button.custom_minimum_size.x = _choice_width(String(_texts.get("relic_none", "No relic")))
 	relics.add_child(none_button)
 	_relic_buttons.append(none_button)
 	for option: Dictionary in _relic_options:
@@ -583,6 +662,7 @@ func _build_side() -> Control:
 		button.setup(String(option["name"]), _cfg, _s)
 		button.pressed.connect(select_relic.bind(String(option["id"])))
 		button.set_meta("relic", String(option["id"]))
+		button.custom_minimum_size.x = _choice_width(String(option["name"]))
 		relics.add_child(button)
 		_relic_buttons.append(button)
 	_relic_detail = _label("", small, muted, 240.0 * _s)
@@ -659,16 +739,27 @@ func _refresh() -> void:
 		mark.color = _color("option_accent_color") if bool(tile_group["ok"]) else _color("option_warn_color")
 		for tile: Dictionary in (tile_group["cards"] as Array):
 			(_card_rows[String(tile["id"])] as CardRow).show_tile(tile)
-	var tabs: Array[Dictionary] = tabs_for(_store, character_id, _texts)
-	for i in range(_tab_buttons.size()):
-		_tab_buttons[i].set_title(String(tabs[i]["title"]))
-		_tab_buttons[i].set_selected(i == draft.slot)
 	for button in _relic_buttons:
 		button.set_selected(String(button.get_meta("relic")) == draft.starter_relic)
 	_refresh_checks()
 
 
+func _refresh_detail() -> void:
+	if _shown_card != "" and _detail_mates != null:
+		_detail_mates.text = slot_mates_text(draft, _shown_card, _texts)
+
+
+func _refresh_tabs() -> void:
+	var tabs: Array[Dictionary] = tabs_for(_store, character_id, _texts, draft, is_dirty())
+	for i in range(_tab_buttons.size()):
+		_tab_buttons[i].set_title(String(tabs[i]["label"]), String(tabs[i]["tag"]), String(tabs[i]["title"]))
+		_tab_buttons[i].set_selected(i == draft.slot)
+	_name_edit.placeholder_text = default_name_for(_texts, character_id, draft.slot)
+
+
 func _refresh_checks() -> void:
+	_refresh_tabs()
+	_refresh_detail()
 	_name_count.text = String(_texts.get("name_count", "%d/%d")) % [draft.loadout_name.length(), LoadoutRules.name_max_length()]
 	_relic_detail.text = String(_texts.get("relic_none_detail", ""))
 	for option: Dictionary in _relic_options:
@@ -676,7 +767,7 @@ func _refresh_checks() -> void:
 			_relic_detail.text = String(option["rule_text"])
 	_fill_chips()
 	_fill_plan()
-	var problems: Array[String] = draft.problems()
+	var problems: Array[String] = _shown_problems()
 	_fill_problems(problems)
 	_save_button.disabled = not problems.is_empty()
 	_delete_button.disabled = _store.entry(character_id, draft.slot).is_empty() and not _store.is_flagged(character_id, draft.slot)
@@ -721,10 +812,18 @@ func _fill_plan() -> void:
 	var small: int = _px("option_small_font_size")
 	var lines: Array[Dictionary] = plan_lines_for(draft, _texts)
 	_plan_box.add_child(_label(String(_texts.get("plan_title", "Plan: %d")) % lines.size(), _px("option_body_font_size"), _color("prompt_title_color")))
+	var explain: String = String(_texts.get("plan_explain", ""))
+	if not explain.is_empty():
+		_plan_box.add_child(_label(explain, small, _color("option_flavor_color"), 240.0 * _s))
 	if lines.is_empty():
 		_plan_box.add_child(_label(String(_texts.get("plan_empty", "")), small, _color("option_flavor_color"), 240.0 * _s))
-	for line: Dictionary in lines:
-		_plan_box.add_child(_label("%s  (%s, %s)" % [String(line["name"]), String(line["slot_name"]), String(line["badge_text"])], small, _color("prompt_text_color"), 240.0 * _s))
+	if not lines.is_empty():
+		# BD3b-0: one wrapped paragraph of names (a Reward card is just its name; anything else, such as a locked card, carries its badge), so 11 cards stay about 4 lines.
+		var reward_text: String = String(_texts.get("badge_reward", "Reward"))
+		var shown: PackedStringArray = PackedStringArray()
+		for line: Dictionary in lines:
+			shown.append(String(line["name"]) if String(line["badge_text"]) == reward_text else "%s (%s)" % [String(line["name"]), String(line["badge_text"])])
+		_plan_box.add_child(_label(", ".join(shown), small, _color("prompt_text_color"), 240.0 * _s))
 
 
 func _fill_problems(problems: Array[String]) -> void:
@@ -756,7 +855,10 @@ func _show_detail(card_id: String) -> void:
 	if tile.is_empty():
 		return
 	var option: Dictionary = RunChoices.card_option(card_id, "card", card_id, _effect_ctx)
+	_shown_card = card_id
 	_detail_name.text = "%s  -  %s" % [String(tile["name"]), String(tile["badge_text"])]
+	_detail_chips.text = detail_chips_text(card_id)
+	_detail_mates.text = slot_mates_text(draft, card_id, _texts)
 	var parts: Array[String] = []
 	if not String(option["detail"]).is_empty():
 		parts.append(String(option["detail"]))
@@ -771,6 +873,7 @@ func _show_detail(card_id: String) -> void:
 class ChoiceButton extends Button:
 	var mark: Control = null
 	var title_label: Label = null
+	var tag_label: Label = null
 	var _cfg: Dictionary = {}
 	var _s: float = 1.0
 	var _selected: bool = false
@@ -800,16 +903,25 @@ class ChoiceButton extends Button:
 		title_label = Label.new()
 		title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		title_label.clip_text = true
+		title_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 		title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		title_label.add_theme_font_size_override("font_size", font_px)
 		row.add_child(title_label)
+		tag_label = Label.new()  # a short state word ("unsaved") that is never elided, so a long name can't push it out
+		tag_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		tag_label.add_theme_font_size_override("font_size", roundi(float(cfg["option_small_font_size"]) * s))
+		tag_label.add_theme_color_override("font_color", Color.html(String(cfg["option_warn_color"])))
+		tag_label.visible = false
+		row.add_child(tag_label)
 		set_title(title)
 		custom_minimum_size.y = float(font_px) * 1.5 + 4.0 * s
 		_apply_styles()
 
-	func set_title(title: String) -> void:
+	func set_title(title: String, tag: String = "", full: String = "") -> void:
 		title_label.text = title
-		tooltip_text = title
+		tag_label.text = tag
+		tag_label.visible = not tag.is_empty()
+		tooltip_text = full if not full.is_empty() else title
 
 	func set_selected(value: bool) -> void:
 		_selected = value

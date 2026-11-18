@@ -162,11 +162,11 @@
             "condition_line": "%s: %s"
         },
         "loadout_editor": {
-            "title": "Loadouts", "subtitle": "Editing for %s", "slot_title": "%d. %s", "slot_empty": "Empty", "slot_skipped": "Can't start", "default_name": "Loadout %d",
+            "title": "Loadouts", "subtitle": "Editing for %s", "slot_title": "%d. %s", "slot_empty": "Empty", "slot_skipped": "Can't start", "default_name": "%s loadout %d", "tab_unsaved": "unsaved",
             "badge_starter": "Starter", "badge_reward": "Reward", "badge_locked": "Locked: %s", "copies": "x%d", "add_plan": "Add to plan", "on_plan": "On plan", "full_deck": "Deck full", "max_copies": "Max copies",
             "collection_title": "Collection", "group_header": "%s  %d/%d", "deck_size": "Deck: %d cards (%d to %d)", "counts_title": "Different cards per slot. Copies do not count.", "group_chip": "%s group %d/%d",
             "name_label": "Name", "name_count": "%d/%d", "relic_label": "Starter relic", "relic_none": "No relic", "relic_none_detail": "No starter relic.",
-            "plan_title": "Plan: %d", "plan_empty": "Nothing planned. Reward and locked cards go on the plan; you will see them marked in rewards and shops.",
+            "plan_title": "Plan: %d", "plan_explain": "Reward cards can't start in the deck. Put them on the plan and they are flagged when a run offers them.", "plan_empty": "Nothing planned yet.",
             "problems_title": "Can't save yet", "ok_line": "Ready to save.", "unsaved_tag": "Unsaved changes", "saved_line": "Saved.", "deleted_line": "Deleted.",
             "save": "Save", "delete": "Delete loadout", "back": "Back",
             "discard_warning": "Unsaved changes. Press again to discard them.", "delete_warning": "Press Delete again to remove this loadout.",
@@ -227,8 +227,9 @@
             "remove_title": "Remove which card?", "remove_line": "Pick a card to remove. Greyed cards would break a deck minimum.", "remove_curse_line": "Pick a curse to remove. A curse is a dud card that holds a slot until you remove it or swap past it.", "remove_curse_title": "Remove which curse?",
             "sacrifice_title": "Give up a relic", "sacrifice_line": "This is the price. Pick the relic you give up; it never comes back."
         },
-        "slot_condition": { "curse_swap": "%s swaps", "target_has_status": "Needs %s", "cast_within_slot": "After %s", "cast_within_slot_key": "After %s (%s)", "cast_within_tag": "After %s", "zone_active": "Needs zone", "detonate_status": "Wants %s stacks", "slot_short": { "movement": "Move" } },
+        "slot_condition": { "curse_swap": "%s swaps", "curse_swap_timed": "%s swaps (%s s)", "target_has_status": "Needs %s", "cast_within_slot": "After %s", "cast_within_slot_key": "After %s (%s)", "cast_within_tag": "After %s", "zone_active": "Needs zone", "detonate_status": "Wants %s stacks", "slot_short": { "movement": "Move" } },
         "relic": {
+            "start_tag": "Starter relic: %s",
             "title": "Relic found", "line": "Pick a relic to keep for this run, or skip.",
             "room_title": "Relic room", "room_title_chest": "%s (%s chest)", "room_line": "Nobody is guarding this one. Pick a relic to keep for this run, or skip.",
             "skip_label": "Skip", "skip_detail": "Take nothing. Free: your card rejects stay as they are.",

@@ -12,11 +12,21 @@ func test_a_curse_slot_hint_names_the_swap_key() -> void:
 	assert_str(ConditionCue.curse_swap_text(curse, {}, "Shift+E")).is_equal("")
 
 
+func test_the_curse_hint_carries_the_penalty_read_from_data() -> void:
+	var texts: Dictionary = RunConfig.ui()["slot_condition"]
+	var curse: Dictionary = CardDatabase.get_card("curse_property_damage")
+	assert_str(ConditionCue.curse_swap_text(curse, texts, "Shift+E", 2.0)).is_equal("Shift+E swaps (2 s)")
+	assert_str(ConditionCue.curse_swap_text(curse, texts, "Shift+E", 1.5)).is_equal("Shift+E swaps (1.5 s)")
+	assert_str(ConditionCue.curse_swap_text(curse, texts, "Shift+E", -1.0)).is_equal("Shift+E swaps")
+	assert_str(ConditionCue.curse_swap_text(CardDatabase.get_card("rogue_drive_by"), texts, "Shift+E", 2.0)).is_equal("")
+
+
 func test_the_slot_widget_shows_the_hint_only_for_a_curse() -> void:
 	var slot_ids: Array[String] = ["curse_property_damage", "rogue_drive_by"]
 	var widget: CardSlotWidget = auto_free(CardSlotWidget.new())
 	widget._refresh_condition_short(slot_ids[0])
-	assert_str(widget.condition_short()).is_equal(InputLabels.slot_swap_key("attack_single") + " swaps")
+	var seconds: String = String.num(RunConfig.curse_swap_penalty(), 2).trim_suffix("0").trim_suffix(".0").trim_suffix(".")
+	assert_str(widget.condition_short()).is_equal("%s swaps (%s s)" % [InputLabels.slot_swap_key("attack_single"), seconds])
 	widget._refresh_condition_short(slot_ids[1])
 	assert_str(widget.condition_short()).not_contains("swaps")
 
@@ -69,3 +79,14 @@ func test_juice_reset_clears_the_detonate_word_memory() -> void:
 	Juice.reset()
 	assert_str(Juice._last_detonate_word).is_empty()
 	assert_int(Juice._last_detonate_msec).is_equal(-1)
+
+
+func test_the_starter_relic_is_named_in_words_at_run_start() -> void:
+	var row: RelicRow = auto_free(RelicRow.new())
+	row.configure(UiConfig.hud(), 1.0)
+	var relic_id: String = RelicDatabase.ids()[0]
+	row.set_relics([relic_id] as Array[String])
+	row.show_start_tag()
+	assert_str(row.tag_text()).is_equal(String(RunConfig.ui()["relic"]["start_tag"]) % String(RelicDatabase.get_relic(relic_id)["name"]))
+	assert_float(row.tag_time_left()).is_equal(float(UiConfig.hud()["relic_start_hold"]))
+	assert_float(row.tag_time_left()).is_greater(float(UiConfig.hud()["relic_name_hold"]))

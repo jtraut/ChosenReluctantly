@@ -121,8 +121,7 @@ static func _validate_identity(relic: Dictionary, expected_id: String, errors: A
 	var rule: Variant = relic.get("rule_text")
 	if typeof(rule) != TYPE_STRING or String(rule).strip_edges().is_empty():
 		errors.append("'rule_text' must be a non-empty string (the rule in one plain line)")
-	elif String(rule).contains("
-") or String(rule).length() > MAX_RULE_TEXT_LENGTH:
+	elif String(rule).contains("\n") or String(rule).length() > MAX_RULE_TEXT_LENGTH:
 		errors.append("'rule_text' must be one line of at most %d characters" % MAX_RULE_TEXT_LENGTH)
 
 

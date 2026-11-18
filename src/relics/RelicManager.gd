@@ -517,7 +517,7 @@ static func _along_path(params: Dictionary, start: Vector3, end: Vector3) -> Dic
 # --- buff triggers (BD3b-B) ----------------------------------------------------------------------
 
 ## The caster's host for buff triggers: a RelicManager child named "BuffTriggers" with no relics, found through the caster's meta or created now.
-## `relay` lets a test give the host its own relay (the first call decides; later calls reuse it).
+## `relay` lets a test give the host its own relay (the first call decides; later calls reuse it). Null when there is no relay at all.
 static func buff_host(caster: Node3D, spawn_parent: Node, rng: RandomNumberGenerator, relay: CombatEventsRelay = null) -> RelicManager:
 	var found: Variant = caster.get_meta(BUFF_HOST_META) if caster.has_meta(BUFF_HOST_META) else null
 	if found is RelicManager and is_instance_valid(found):
@@ -525,6 +525,8 @@ static func buff_host(caster: Node3D, spawn_parent: Node, rng: RandomNumberGener
 		if rng != null:
 			existing._rng = rng
 		return existing
+	if relay == null and CombatLink.events() == null:
+		return null  # a `-s` script with no CombatEvents autoload: nothing could ever fire, and listening would only log errors
 	var host := RelicManager.new()
 	host.name = BUFF_HOST_NAME
 	caster.add_child(host)

@@ -767,7 +767,8 @@ static func _execute_buff(params: Dictionary, context: EffectContext) -> void:
 	if params.has("triggers") and context.caster is Node3D:
 		# BD3b-B: the buff's triggers, live for the buff's duration (see RelicManager's buff section).
 		var host: RelicManager = RelicManager.buff_host(context.caster as Node3D, context.spawn_parent, context.rng)
-		host.add_buff_triggers(context.origin if context.origin != "" else modifier_id, params["triggers"], duration)
+		if host != null:
+			host.add_buff_triggers(context.origin if context.origin != "" else modifier_id, params["triggers"], duration)
 	if params.has("consume_on_cast"):
 		# Primed: StatModifiers ages it (the card controller advances it) and uses it up by matching casts.
 		stat_modifiers.add_primed_modifier(stat, modifier_id, modifier_type, value, String(params["consume_on_cast"]), int(params.get("charges", 1)), duration)

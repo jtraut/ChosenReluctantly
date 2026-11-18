@@ -989,7 +989,7 @@ func _run_whole(run_seed: int) -> void:
 		RunSession.current.max_hp = 9999.0
 		RunSession.current.hp = 9999.0
 	_policy_rng.seed = run_seed * 977 + 13
-	var result: Dictionary = {"seed": run_seed, "rooms_total": rooms_in_run, "rooms_reached": 0, "outcome": "unfinished", "types": [], "wall_ms": 0, "sim_s": 0.0, "room_s": [], "room_min_hp": []}
+	var result: Dictionary = {"seed": run_seed, "rooms_total": rooms_in_run, "rooms_reached": 0, "outcome": "unfinished", "types": [], "wall_ms": 0, "sim_s": 0.0, "room_s": [], "room_min_hp": [], "max_by_len": {}}
 	for room: Dictionary in rooms:
 		(result["types"] as Array).append(String(room["type"]))
 	var wall_start := Time.get_ticks_msec()
@@ -1063,6 +1063,8 @@ func _run_whole(run_seed: int) -> void:
 				if not bool(outcome["ok"]):
 					_fail("run %d room %d: the bot choice '%s' was refused: %s" % [run_seed, room_index + 1, choice_id, str(outcome.get("reason", ""))])
 					break
+		# 3d: the max HP a room ended with, once its choices are done (an event can cut it), keyed by how many rooms the history holds, so the HP report compares each room with its own max.
+		((result["max_by_len"]) as Dictionary)[run_state.history.size()] = run_state.max_hp
 		if act_ended and next_room_index != 0:
 			_fail("run %d: the act ended but the bot did not move on to the next one" % run_seed)
 		var event_fight_next: bool = run_state.outcome == "" and not run_state.event_fight.is_empty()
@@ -1110,8 +1112,8 @@ func _run_whole(run_seed: int) -> void:
 		type_letters.append("R" if t == RunConfig.RELIC_ROOM else ("?" if t == RunConfig.EVENT_ROOM else t.substr(0, 1)))  # "r" is the rest room
 	print("  run seed %d: %s | rooms reached %d of %d | sim %.0f s in %.1f s wall | types %s | room seconds %s | lowest HP in each room %s | HP at last room clear %s" % [
 		run_seed, String(result["outcome"]).to_upper(), int(result["rooms_reached"]), int(result["rooms_total"]), float(result["sim_s"]), float(result["wall_ms"]) / 1000.0, ",".join(type_letters), str(result["room_s"]), str(result["room_min_hp"]), str(result["hp_end"])])
-	print("    HP at each room end %s (max %s) | deck %d cards %s | picks %d, rejects used %d, removals %d, rest heals %d" % [
-		str(result["room_hp_end"]), str(result["max_hp"]), int(result["deck_size"]), str(result["deck_slots"]), int(result["picks"]), int(result["rejects_used"]), int(result["removals"]), int(result["heals"])])
+	print("    HP at each room end %s (max at each room end %s, final max %s) | deck %d cards %s | picks %d, rejects used %d, removals %d, rest heals %d" % [
+		str(result["room_hp_end"]), str(result["room_max_hp"]), str(result["max_hp"]), int(result["deck_size"]), str(result["deck_slots"]), int(result["picks"]), int(result["rejects_used"]), int(result["removals"]), int(result["heals"])])
 	print("    run stat: seed %d outcome %s rooms_reached %d damage_taken %.1f" % [run_seed, String(result["outcome"]), int(result["rooms_reached"]), _damage_taken])
 	print("    relics: held %s | given up %s | offers taken %d, skipped %d, swapped %d" % [str(RunSession.current.relics if RunSession.current != null else []), str(RunSession.current.relics_given_up if RunSession.current != null else []), int(result["relic_picks"]), int(result["relic_skips"]), int(result["relic_swaps"])])
 	print("    damage by source (HP removed from enemies): %s" % _damage_line(_damage_run))
@@ -1228,6 +1230,7 @@ func _scan_offer(options: Array, room: int) -> void:
 func _record_deck_and_hp(result: Dictionary) -> void:
 	var state: RunState = RunSession.current
 	var hp_ends: Array[float] = []
+	var room_max_hp: Array[float] = []
 	var slots: Dictionary = {}
 	var picks: int = 0
 	var rejects_used: int = 0
@@ -1241,8 +1244,15 @@ func _record_deck_and_hp(result: Dictionary) -> void:
 	var shop_removals: int = 0
 	var shop_rerolls: int = 0
 	if state != null:
+		var max_by_len: Dictionary = result.get("max_by_len", {})
+		var index: int = 0
 		for entry: Dictionary in state.history:
+			index += 1
+			var room_max: float = float(max_by_len.get(index, state.max_hp))
 			hp_ends.append(snappedf(float(entry["hp_end"]), 0.1))
+			room_max_hp.append(snappedf(room_max, 0.1))
+			if float(entry["hp_end"]) > room_max + 0.05:
+				_fail("run %d room %d: HP %.1f at room end is above that room's max HP %.1f (a real overheal)" % [int(result.get("seed", 0)), index, float(entry["hp_end"]), room_max])
 		for card_id: String in state.deck:
 			var slot_type: String = String(CardDatabase.get_card(card_id).get("slot_type", "?"))
 			slots[slot_type] = int(slots.get(slot_type, 0)) + 1
@@ -1262,6 +1272,7 @@ func _record_deck_and_hp(result: Dictionary) -> void:
 				"merchant_remove": shop_removals += 1
 				"merchant_reroll": shop_rerolls += 1
 	result["room_hp_end"] = hp_ends
+	result["room_max_hp"] = room_max_hp
 	result["max_hp"] = snappedf(state.max_hp, 0.1) if state != null else -1.0
 	result["deck_size"] = state.deck.size() if state != null else 0
 	result["deck_slots"] = slots
@@ -1436,8 +1447,11 @@ func _boss_hit(boss: Boss, amount: float, damage_type: String) -> void:
 	var table: Dictionary = (BossConfig.boss(boss.enemy_id)["attacks"] as Dictionary)
 	for id: Variant in table.keys():
 		var attack: Dictionary = table[id]
-		if is_equal_approx(float(attack["damage"]), health.last_raw_amount) and String(attack["damage_type"]) == damage_type:
+		# 3d: the boss's own damage_scale (the act's damage multiplier) is applied to the attack, so compare the scaled value.
+		if is_equal_approx(float(attack["damage"]) * boss.damage_scale, health.last_raw_amount) and String(attack["damage_type"]) == damage_type:
 			ids.append(String(id))
+	if ids.is_empty() and boss.current_attack_id() != "":
+		ids.append(boss.current_attack_id())  # no damage match (a hit that was modified on the way): the attack the boss is in the middle of
 	var key: String = "|".join(ids) if not ids.is_empty() else "unknown"
 	if key == "volley":
 		# Pellets fly about 1.8 s and volleys are further apart than that, so a pellet hit belongs to the latest volley thrown.
@@ -1901,7 +1915,8 @@ func _print_attrition() -> void:
 			while sums.size() <= i:
 				sums.append(0.0)
 				counts.append(0)
-			sums[i] += float(ends[i]) / maxf(float(result.get("max_hp", 30.0)), 1.0)
+			var maxes: Array = result.get("room_max_hp", [])
+			sums[i] += float(ends[i]) / maxf(float(maxes[i]) if i < maxes.size() else float(result.get("max_hp", 30.0)), 1.0)
 			counts[i] += 1
 	var parts: Array[String] = []
 	for i in range(sums.size()):

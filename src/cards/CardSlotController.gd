@@ -73,6 +73,13 @@ func set_deck(card_ids: Array[String]) -> Array[String]:
 	return placed
 
 
+## Tooling (`--run-curse-first`): makes `card_id` the revealed card of its slot, if the slot holds it. Returns whether it is revealed now.
+func reveal_first(card_id: String) -> bool:
+	var slot_type: String = String(CardDatabase.get_card(card_id).get("slot_type", ""))
+	var slot: CardSlot = get_slot(slot_type)
+	return slot != null and slot.reveal_first(card_id)
+
+
 ## Every card id in the deck (copies included), across all slots.
 func owned_card_ids() -> Array[String]:
 	var ids: Array[String] = []

@@ -112,6 +112,18 @@ func current_swap_penalty() -> float:
 	return swap_penalty
 
 
+## Tooling: makes `card_id` the revealed card by trading places with the current one. False when the slot has no such card in its draw pile.
+func reveal_first(card_id: String) -> bool:
+	if current_card_id == card_id:
+		return true
+	var index: int = draw_pile.find(card_id)
+	if index < 0:
+		return false
+	draw_pile[index] = current_card_id
+	current_card_id = card_id
+	return true
+
+
 func _reset_deck() -> void:
 	draw_pile = owned_card_ids.duplicate()
 	_shuffle(draw_pile)

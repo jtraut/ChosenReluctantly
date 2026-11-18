@@ -93,6 +93,8 @@ func begin(main: Main) -> void:
 		player.health.current_health = clampf(_state.hp, 1.0, _state.max_hp)
 		player.health.health_changed.emit(player.health.current_health, player.health.max_health)
 	player.card_slots.set_deck(_state.deck)
+	if RunSession.curse_first != "":
+		player.card_slots.reveal_first(RunSession.curse_first)  # --run-curse-first (3d tooling)
 	_ctx = RunChoices.shipped_context(player.owned_pools)
 	_setup_relics(main)
 	_apply_run_mods()
@@ -446,6 +448,11 @@ func _apply_relic_args(args: PackedStringArray, tree: SceneTree) -> bool:
 				if not CardSchema.is_curse(CardDatabase.get_card(curse_id)):
 					problems.append("--run-curses: '%s' is not a curse card" % curse_id)
 			RunSession.start_curses = cursed
+		elif arg.begins_with("--run-curse-first="):
+			var first_id: String = arg.substr(18)
+			if not CardSchema.is_curse(CardDatabase.get_card(first_id)):
+				problems.append("--run-curse-first: '%s' is not a curse card" % first_id)
+			RunSession.curse_first = first_id
 		elif arg.begins_with("--run-discount="):
 			if not arg.substr(15).is_valid_float() or arg.substr(15).to_float() < 0.0 or arg.substr(15).to_float() >= 1.0:
 				problems.append("--run-discount needs a fraction from 0 to below 1, as --run-discount=0.25")

@@ -121,6 +121,20 @@
             "--run-auto-choose=relic:lingering_embers"
         ]
     },
+    "sacrifice_giveup": {
+        "description": "3d tooling: the sacrifice relic's give-up step (Asset Stripping asks for 1 of 2 held relics; nothing picked yet). Seed 1, room 9; --run-auto-choose picks the offer's relic and stops there. Add giveup:<relic id>+giveup_confirm to the auto-choose list to go on.",
+        "class": "rogue",
+        "scenario": "",
+        "after": "3.0",
+        "extra": [
+            "--no-map",
+            "--run-seed=1",
+            "--run-room=9",
+            "--relics=pyre_insurance+heavy_sigh",
+            "--relic-offer=asset_stripping+lingering_embers+heavy_sigh",
+            "--run-auto-choose=relic:asset_stripping"
+        ]
+    },
     "map_start": {
         "description": "MAP1-B: the map at run start. The map screen with the room-1 nodes pickable and the legend, with the branching map forced on (--map; data/map.json now ships it on, so the flag is explicit rather than needed). Run mode, seed 1.",
         "class": "rogue",

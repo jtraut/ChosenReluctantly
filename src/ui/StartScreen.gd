@@ -315,11 +315,11 @@ func _rebuild() -> void:
 	_fit_scroll.call_deferred()
 
 
-## The list takes the height it needs, up to 58% of the screen; past that it scrolls (the focused row is followed).
+## The list takes the height it needs, up to 66% of the screen; past that it scrolls (the focused row is followed).
 func _fit_scroll() -> void:
 	if _scroll == null or _rows_box == null or not is_instance_valid(_rows_box):
 		return
-	var limit: float = get_viewport().get_visible_rect().size.y * 0.58
+	var limit: float = get_viewport().get_visible_rect().size.y * 0.66
 	var ring: float = 2.0 * float(RunOptionCard.focus_ring_width(UiConfig.run_ui(), _scale))
 	_scroll.custom_minimum_size.y = minf(_rows_box.get_combined_minimum_size().y + ring, limit)
 
@@ -400,23 +400,25 @@ func row_buttons() -> Array[Button]:
 
 ## One selectable row: an arrow that shows on the highlighted row, the title, the detail line, and a "Last used" pill. Hover moves the highlight here (like the option cards).
 class StartRow extends Button:
-	var arrow: RunTypeIcon = null
+	var arrow: Control = null
 	var last_used_tag: PanelContainer = null
 	var title_label: Label = null
 	var detail_label: Label = null
 	var _inner: HBoxContainer = null
 	var _pad: float = 0.0
+	var _width: float = 0.0
+	var _always_on: bool = false
 	var _cfg: Dictionary = {}
 	var _s: float = 1.0
 
 	func setup(row: Dictionary, cfg: Dictionary, texts: Dictionary, width: float, s: float) -> void:
 		_cfg = cfg
 		_s = s
-		_pad = float(cfg["option_pad"]) * s
+		_pad = float(cfg["option_pad"]) * s * 0.8
 		focus_mode = Control.FOCUS_ALL
 		mouse_filter = Control.MOUSE_FILTER_STOP
 		text = ""
-		custom_minimum_size.x = width
+		_width = width
 		var title_px: int = roundi(float(cfg["option_title_font_size"]) * s)
 		var small_px: int = roundi(float(cfg["option_small_font_size"]) * s)
 		_apply_styles()
@@ -429,18 +431,33 @@ class StartRow extends Button:
 		_inner.offset_top = _pad
 		_inner.offset_right = -_pad
 		_inner.offset_bottom = -_pad
-		arrow = RunTypeIcon.new()
-		arrow.shape = RunIcons.SHAPE_PLUS if String(row["kind"]) == StartScreen.ROW_EDIT else RunIcons.SHAPE_ARROW
-		arrow.color = Color.html(String(cfg["option_focus_color"]))
-		arrow.custom_minimum_size = Vector2.ONE * float(title_px) * 0.9
+		var is_edit: bool = String(row["kind"]) == StartScreen.ROW_EDIT
+		var mark_px: float = float(title_px) * 0.9
+		arrow = Control.new()  # a plain holder: a Container resets the rotation of its children, so the pointer is a polygon drawn pointing right
+		arrow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		arrow.custom_minimum_size = Vector2.ONE * mark_px
 		arrow.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		arrow.modulate.a = 1.0 if String(row["kind"]) == StartScreen.ROW_EDIT else 0.0
+		_always_on = is_edit
+		var focus_color: Color = Color.html(String(cfg["option_focus_color"]))
+		if is_edit:
+			var plus := RunTypeIcon.new()
+			plus.shape = RunIcons.SHAPE_PLUS
+			plus.color = focus_color
+			plus.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+			plus.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			arrow.add_child(plus)
+		else:
+			var pointer := Polygon2D.new()
+			pointer.color = focus_color
+			pointer.polygon = PackedVector2Array([Vector2(0.0, 0.0), Vector2(mark_px, mark_px * 0.5), Vector2(0.0, mark_px)])
+			arrow.add_child(pointer)
+		arrow.modulate.a = 1.0 if is_edit else 0.0
 		_inner.add_child(arrow)
 		var text_box := VBoxContainer.new()
 		text_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		text_box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		_inner.add_child(text_box)
-		var tag_room: float = float(small_px) * 6.5 if bool(row["last_used"]) else 0.0
+		var tag_room: float = float(small_px) * 8.5 if bool(row["last_used"]) else 0.0
 		var text_width: float = width - 2.0 * _pad - float(title_px) * 0.9 - 10.0 * s - tag_room
 		title_label = _make_label(String(row["title"]), title_px, Color.html("#ffffff"), text_width)
 		text_box.add_child(title_label)
@@ -451,17 +468,17 @@ class StartRow extends Button:
 			last_used_tag = _pill(String(texts.get("last_used", "Last used")), small_px)
 			last_used_tag.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 			_inner.add_child(last_used_tag)
-		_inner.minimum_size_changed.connect(update_minimum_size)
+		_inner.minimum_size_changed.connect(_sync_min_size)
 		focus_entered.connect(_on_focus_changed.bind(true))
 		focus_exited.connect(_on_focus_changed.bind(false))
 		mouse_entered.connect(_on_hover)
-		update_minimum_size()
+		_sync_min_size()
 
-	func _get_minimum_size() -> Vector2:
+	## A Button ignores its children when it sizes itself, so the height of the content becomes its custom minimum.
+	func _sync_min_size() -> void:
 		if _inner == null:
-			return Vector2.ZERO
-		var inner_min: Vector2 = _inner.get_combined_minimum_size()
-		return Vector2(inner_min.x + 2.0 * _pad, inner_min.y + 2.0 * _pad)
+			return
+		custom_minimum_size = Vector2(_width, _inner.get_combined_minimum_size().y + 2.0 * _pad)
 
 	func _make_label(label_text: String, font_px: int, color: Color, wrap_width: float) -> Label:
 		var label := Label.new()
@@ -469,8 +486,9 @@ class StartRow extends Button:
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		label.add_theme_font_size_override("font_size", font_px)
 		label.add_theme_color_override("font_color", color)
-		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		label.custom_minimum_size.x = wrap_width
+		if wrap_width > 0.0:
+			label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			label.custom_minimum_size.x = wrap_width
 		return label
 
 	## The "Last used" pill: an accent outline with a check mark and the words.
@@ -524,5 +542,5 @@ class StartRow extends Button:
 			grab_focus()
 
 	func _on_focus_changed(focused: bool) -> void:
-		if arrow != null and arrow.shape != RunIcons.SHAPE_PLUS:
+		if arrow != null and not _always_on:
 			arrow.modulate.a = 1.0 if focused else 0.0

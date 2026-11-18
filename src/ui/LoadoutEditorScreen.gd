@@ -5,7 +5,7 @@ extends CanvasLayer
 ## availability badge and its copies), and on the right the name, the starter relic, the live counts, the plan and the checker's reasons. Save, Delete and Back sit in a footer.
 ##
 ## Pure model (unit-tested, no scene): `badge_for`, `tiles_for`, `chips_for`, `tabs_for`, `plan_lines_for`.
-## Keys: Up and Down move through cards, Enter adds, Delete / Minus / right-click removes, Left and Right change panel, Ctrl+S saves, Esc goes back. Words are data (run.json ui.loadout_editor).
+## Keys: Up and Down move through cards, Enter adds, Delete / Minus / right-click removes, Left and Right change panel, Ctrl+S saves (not in the hint text: key hints stay out of data), Esc goes back. Words are data (run.json ui.loadout_editor).
 ## Leaving with unsaved edits, switching slot with unsaved edits and deleting all ask once ("press again"): the second request goes through.
 
 signal closed()
@@ -519,6 +519,7 @@ func _build_collection() -> Control:
 			row.pressed.connect(_on_row_pressed.bind(String(card["id"])))
 			row.remove_requested.connect(remove.bind(String(card["id"])))
 			row.focus_entered.connect(_show_detail.bind(String(card["id"])))
+			row.mouse_entered.connect(_show_detail.bind(String(card["id"])))  # a mouse user reads a card without adding it; hover never moves the focus
 			inner.add_child(row)
 			_card_rows[String(card["id"])] = row
 	var column := VBoxContainer.new()
@@ -916,8 +917,9 @@ class CardRow extends Button:
 		var accent: Color = Color.html(String(_cfg["option_accent_color"]))
 		var gold: Color = Color.html(String(_cfg["option_focus_color"]))
 		var muted: Color = Color.html(String(_cfg["option_disabled_text_color"]))
-		var tint: Color = accent if kind == LoadoutEditorScreen.KIND_STARTER else (gold if kind == LoadoutEditorScreen.KIND_REWARD else muted)
-		badge_icon.shape = RunIcons.SHAPE_CHECK if kind == LoadoutEditorScreen.KIND_STARTER else (RunIcons.SHAPE_STAR if kind == LoadoutEditorScreen.KIND_REWARD else RunIcons.SHAPE_SQUARE)
+		var quiet: Color = Color.html(String(_cfg["option_flavor_color"]))  # Starter is the plain case: neutral and a circle. Green with a check is kept for "On your plan" (sitting D)
+		var tint: Color = quiet if kind == LoadoutEditorScreen.KIND_STARTER else (gold if kind == LoadoutEditorScreen.KIND_REWARD else muted)
+		badge_icon.shape = RunIcons.SHAPE_CIRCLE if kind == LoadoutEditorScreen.KIND_STARTER else (RunIcons.SHAPE_STAR if kind == LoadoutEditorScreen.KIND_REWARD else RunIcons.SHAPE_SQUARE)
 		badge_icon.color = tint
 		badge_label.text = String(tile["badge_text"])
 		badge_label.add_theme_color_override("font_color", tint)

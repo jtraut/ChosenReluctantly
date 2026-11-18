@@ -168,9 +168,9 @@
             "name_label": "Name", "name_count": "%d/%d", "relic_label": "Starter relic", "relic_none": "No relic", "relic_none_detail": "No starter relic.",
             "plan_title": "Plan: %d", "plan_empty": "Nothing planned. Reward and locked cards go on the plan; you will see them marked in rewards and shops.",
             "problems_title": "Can't save yet", "ok_line": "Ready to save.", "unsaved_tag": "Unsaved changes", "saved_line": "Saved.", "deleted_line": "Deleted.",
-            "save": "Save", "delete": "Delete", "back": "Back",
+            "save": "Save", "delete": "Delete loadout", "back": "Back",
             "discard_warning": "Unsaved changes. Press again to discard them.", "delete_warning": "Press Delete again to remove this loadout.",
-            "hint": "Up and Down: pick a card. Enter or click: add. Delete, Minus or right-click: remove. Left and Right: other panels. Ctrl+S: save. Esc: back."
+            "hint": "Up and Down: pick a card. Enter or click: add. Delete, Minus or right-click: remove. Left and Right: other panels. Esc: back."
         },
         "start_screen": { "title": "Start a run", "subtitle": "Playing as %s. Pick a deck.", "deck_cards": "%d cards", "plan_cards": "Plan: %d cards", "relic": "Relic: %s", "last_used": "Last used", "flagged_title": "Loadout %d: can't start", "edit_title": "Edit or create a loadout", "edit_detail": "Change a saved loadout or make a new one.", "hint": "Up and Down to choose. Enter or click to start.", "slot_title": "%d. %s" },
         "option": { "unavailable": "Unavailable: %s", "owned": "You own %d", "slot_now": "In slot: %s", "slot_now_max": 3, "slot_now_more": "+%d more", "copies": "x%d", "rarity_names": { "rare": "Rare", "legendary": "Legendary" }, "curse_tag": "Curse", "on_plan_tag": "On your plan", "curse_no_effect": "No effect when it comes up. Swap past it or remove it.", "cleanses_left": "Curse removals left this run: %d", "slot_key": "%s", "slot_label": "%s (%s)", "pick_hint": "Enter to pick", "dodge_hint": "The dodge does not count.", "dodge_slots": ["movement"], "act_hint": "Enter to choose", "remove_hint": "Enter to remove", "list_hint": "Arrow keys move, Enter or click confirms", "remove_list_hint": "Arrow keys move, Enter or click confirms" },

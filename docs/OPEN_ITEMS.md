@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-17 (DF1 closed; latest tag `playtest-2026-11-17-DF1`)
-**Status:** 1 decision waiting (D52, which cards a loadout may start with; default A). 1 thing to look at (59: play DF1), plus the round 2 vision check. **DF1 (difficulty bump) is done**, tag `playtest-2026-11-17-DF1`. Item 58 expired at DF1's close with its default kept: the curse swap penalty goes from 1 s to 2 s in 3d (`docs/RESOLVED.md`). Next: 3d (loadouts; brief written 2026-11-17, gameplay-dev sitting A next) -> BD3b -> the Milestone 3 close.
+Last updated: 2026-11-18 (D52 answered; latest tag `playtest-2026-11-17-DF1`)
+**Status:** No decisions waiting (D52 = A, answered 2026-11-18). 1 thing to look at (59: play DF1), plus the round 2 vision check. **DF1 (difficulty bump) is done**, tag `playtest-2026-11-17-DF1`. Item 58 expired at DF1's close with its default kept: the curse swap penalty goes from 1 s to 2 s in 3d (`docs/RESOLVED.md`). Next: 3d (loadouts; sittings A and B done, sitting C in progress) -> BD3b -> the Milestone 3 close.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -19,11 +19,7 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 Next new number: D53.
 
-**D52. Which cards can go in a saved starting deck (3d loadouts)?** Your 2026-11-02 rule was that every card that existed then is a "starter" card, so it can go in a loadout. Rare and legendary cards came after that rule. If they count as starter too, a run 2 deck could open with legendaries, which normally only show up in act 3.
-- **A (default):** common cards are starter. Rare and legendary cards are reward-only: you find them in a run, and you can put them on a loadout's plan so offers flag them "On your plan". With commons only, every slot still has at least 3 cards to pick from.
-- **B:** every card is starter, as your old rule says.
-- **C:** commons and rares are starter, and legendaries are reward-only.
-- **If you don't answer:** 3d builds A. Switching later only changes data.
+Nothing waiting.
 
 ## Needs your eyes
 

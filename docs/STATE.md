@@ -3,7 +3,7 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-17. Latest tag `playtest-2026-11-17-DF1`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-18. Latest tag `playtest-2026-11-17-DF1`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
 - **3d, loadouts.** Detailed brief written 2026-11-17 (ROADMAP 3d "Detailed brief"; DECISIONS "3d brief"). Five build sittings: gameplay-dev A -> B -> C -> ux D -> ux E, then qa -> playtester -> tech-writer -> close. Sittings A (eea038b..dc39f28) and B (41b6b01..501dcd0) done. The repo runs.
@@ -28,14 +28,16 @@ Last updated: 2026-11-17. Latest tag `playtest-2026-11-17-DF1`. STATE holds only
 - DF1 was covered by 6cdbfd3. The DF1 close moved eyes 58 to RESOLVED (6cdbfd3) and added eyes 59.
 - [Director decision] 2026-11-17: SIM2 decision-skill bots, a "winging it" (random) profile against a "formulated" (synergy-seeking, good routes) profile, with a noticeable win-rate gap. Recorded in GDD §12 "Automated QA" and ROADMAP Milestone 4 SIM2; the defaults are in DECISIONS "SIM2 defaults". No code yet.
 
+- [Director decision] 2026-11-18: D52 = A. Common cards are `starter`, rare and legendary are `reward` (what sitting B already shipped; no data change). Recorded in GDD §9 Loadouts. RESOLVED entry: the D52 text (options A/B/C, "if you don't answer: A") is in OPEN_ITEMS at 221768b.
+
 ## Known issues
 - Wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 - Human-bot Kindling boss parity with relics is 67%, under 70% (qa DF1; not a DF1 regression).
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D51 answered; D52 open (default A). Next free: D53. Next eyes number: 60.
+**D-numbers:** D21-D52 answered. Next free: D53. Next eyes number: 60.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths. A role that stops with a `Remaining:` list gets a fresh agent, never a resumed one.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: D52 (loadout starter cards; default A); eyes 59 (play DF1; expires at 3d's close); the round 2 vision check.
+All director-facing items are in `docs/OPEN_ITEMS.md`: eyes 59 (play DF1; expires at 3d's close); the round 2 vision check.

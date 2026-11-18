@@ -2852,3 +2852,10 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **A blank loadout name is filled with the default on Save**; the checker rule is unchanged. [Dropping the rule.]
 - **`TextFit.line_count` counts an over-wide single line as wrapped**, which affects every TextFit user (at most 1 px smaller or an ellipsis; their tests pass).
 - **The "(2 s)" hint is on the cursed slot's swap hint**, matching the triage list and `CardSlot`'s penalty (the brief's "next card is a curse" wording was loose).
+
+## 2026-11-18 - BD3b-A engine calls (gameplay-dev, recorded by game-lead)
+- **New status `effect_type` `counter`** for Charge (no damage, stacks, a reapply adds a stack). [A flag on `damage_over_time`, which needs fake damage fields.]
+- **`scale` is an effect-level block next to `params`**, adding `per` x count to `damage` (or a heal's `amount`); `max` caps the count and is optional on both forms. [Replacing the number with an object: breaks CardDamageRule, summary and preview.] This settles the brief's "required `max`" wording: optional.
+- **Decay:** `decay_after` is its own timer; a reapply at the cap resets it; the status ends at whichever of duration or decay comes first (reason `expired`). Consume runs once after the condition passes and removes every stack. `hp_below` is strict. Copies count in `deck_count`, including the card itself.
+- **"Gives 2 Charge" is two `apply_status` self effects** (no `stacks` param). [A `stacks` param: more schema for one use.]
+- **Game-lead: the bot sim can't see Charge or `hp_below`** (`tools/sim_caster.gd` has no status manager; `bot_sim.gd`'s view lacks `self_stacks`, `hp_fraction`, `deck_card_ids`). Fixing that is added to BD3b-D's scope, before its gating checks, since Thesis can't be measured otherwise. [Accepting it: the W-B gate would measure a Thesis that never scales.]

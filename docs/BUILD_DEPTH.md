@@ -76,7 +76,7 @@ Any effect in a card's `effects` list may carry a `condition`. If the condition 
 | `deck_count_at_least` | `tag`, `count` | your run deck holds N cards with the tag | "If your deck has 6+ Burn cards" |
 | `hp_below` (caster) | `fraction` | your HP fraction is below it | Relic and Recovery hooks |
 
-**Payoffs that scale** use an optional `scale` block on an effect's numeric param instead of a condition: `"scale": {"by": "self_stacks", "status_id": "charge", "per": 1.5, "consume": true}` or `{"by": "deck_count", "tag": "Burn", "per": 0.5, "max": 6}`. A generic resolver reads it.
+**Payoffs that scale** use an optional `scale` block on an effect's numeric param instead of a condition: `"scale": {"by": "self_stacks", "status_id": "charge", "per": 1.5, "consume": true}` or `{"by": "deck_count", "tag": "Burn", "per": 0.5, "max": 6}`. A generic resolver reads it. *(As built in BD3b-A: `scale` is an effect-level block next to `params`; it adds `per` x count to `damage`, or a heal's `amount`; `max` caps the count and is optional; consume removes every stack once the condition passes.)*
 
 **Data, not code:** a payoff card is `effects: [ {base}, {extra, "condition": {...}} ]`. No per-card script.
 

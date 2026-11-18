@@ -2787,3 +2787,15 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
   - `LoadoutSession` is the single isolation point: in-memory unless it's a real windowed launch with no debug flag. A named scratch path is still honoured in a gated launch.
   - Continue sets `start_resolved` as a second guard. Saved runs were already excluded.
   - `SAVE_VERSION` is not bumped. The plan field is optional, and the DF1-era fixture loads.
+
+## 2026-11-18 - 3d sitting D triage (game-lead)
+- **Sitting D accepted** (0bc25be..a95c3ac). Suite 2597 (184), 0 failures; hashes unchanged. game-lead viewed the start screen and the reward badge at 1024x600: both are readable and nothing clips.
+- **ux's calls, accepted:**
+  - The badge is a solid green pill with a check mark. On tiles it sits above the title; in the shop it sits in the header row. Its shape is distinct from the rarity band and the chips.
+  - The start screen shows file-level notes and each skipped row's own reason, without repeating the flagged messages.
+  - `open_editor()` honours the arm delay.
+  - `h2_test` resets `LoadoutSession` and `StartScreen` in `before_test`.
+- **Carry-overs to qa:**
+  - (1) The in-memory profile still counts lost runs across suites, so add a global or per-suite reset so the next suite can't trip on it. [Leaving it to per-test fixes.]
+  - (2) Look at an act 2+ merchant with a plan holding rare or legendary cards, since the badge can't appear in an act 1 shop.
+- **Not escalated:** ux asked whether the plan should bias merchant stock. The GDD doesn't ask for that and 3d isn't a balance slice. It goes to the director only if the playtester finds the plan feels pointless.

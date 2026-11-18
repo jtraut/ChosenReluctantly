@@ -2754,3 +2754,13 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **Profile isolation:** scenarios, sims and every debug-flag launch never read or write the profile or the loadouts. This is the same bug class as DF1 A item 1. `--runs-finished=N` fakes the count without writing. Existing players start at 0 finished runs. [Counting debug runs, which would leak test runs into the director's profile.]
 - **"On your plan" covers reward, mini-boss and merchant card offers** (the merchant exists now; the GDD says "or later a merchant"), and only for cards not already in the deck. [Reward screens only.]
 - **Save compatibility:** the run plan is an optional field with an empty default, so a DF1-era mid-run save still loads. [A version bump that rejects old saves.]
+
+## 2026-11-17 - 3d sitting A triage (game-lead)
+- **Sitting A accepted** (eea038b..dc39f28). Suite 2499 (179 suites), 0 failures. Hashes unchanged, because the arena and bot sims never swap past a curse. SIM1 is unchanged at 18/16/34/34 and inside the §11.4 limits. Runs pick up about 0.1-0.2 curses each.
+- **gameplay-dev's calls, accepted:**
+  - Both penalties live in `data/run.json` `curses` (`swap_penalty` 1.0, `curse_swap_penalty` 2.0). [A new top-level key for the ordinary value.]
+  - `--run-curse-first` adds the curse to the deck and re-applies it every room. [A one-room flag.]
+  - The sim tracks max HP per room, not `RunState.history`, which leaves the save format alone. A real overheal now fails the sim loudly.
+- **The Wizard "HP 22 against 20" was a report bug.** An event cut max HP mid-run. **The `-BossLog` "unknown" was the act `damage_scale`.** Both are fixed in `tools/wave_sim.gd`.
+- **Auto-choose already reached the sacrifice give-up step.** It was a missing chain, not a bug. The `sacrifice_giveup` capture preset now covers it.
+- **Note for BD3b:** Filing Cabinet must zero both `swap_penalty` and `curse_swap_penalty`.

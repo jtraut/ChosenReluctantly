@@ -6,16 +6,16 @@
 Last updated: 2026-11-17. Latest tag `playtest-2026-11-17-DF1`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **3d, loadouts.** Detailed brief written 2026-11-17 (ROADMAP 3d "Detailed brief"; DECISIONS "3d brief"). Five build sittings: gameplay-dev A -> B -> C -> ux D -> ux E, then qa -> playtester -> tech-writer -> close. Nothing built yet. The repo runs.
+- **3d, loadouts.** Detailed brief written 2026-11-17 (ROADMAP 3d "Detailed brief"; DECISIONS "3d brief"). Five build sittings: gameplay-dev A -> B -> C -> ux D -> ux E, then qa -> playtester -> tech-writer -> close. Sitting A done (eea038b..dc39f28). The repo runs.
 
 ## Exact next step
-1. **gameplay-dev sitting A** (ROADMAP 3d, sitting A): curse swap penalty 2 s on curses only (data), SIM1 re-check with a stop rule, the tooling items, the Try again test, the Wizard HP 22/20 and `-BossLog` label fixes, then a re-baseline.
-2. Then B (data and storage; uses D52's default A unless the director answers first), C, ux D, ux E, qa, playtester, tech-writer, close. Then BD3b and the Milestone 3 close.
+1. **gameplay-dev sitting B** (ROADMAP 3d, sitting B): card `availability` (D52 default A unless the director answers), collection without curses, the 4 starter relics, `data/loadouts.json`, the profile and the loadout store. Logic and tests only.
+2. Then C, ux D, ux E, qa, playtester, tech-writer, close. Then BD3b and the Milestone 3 close.
 
-**Next role:** gameplay-dev (3d sitting A).
+**Next role:** gameplay-dev (3d sitting B).
 
 ## Current baselines (DF1 qa, 2026-11-17)
-- Suite 2490 (178 suites), 0 failures, 0 skipped, 0 orphans (about 21 min).
+- Suite 2499 (179 suites), 0 failures, 0 skipped, 0 orphans (3d sitting A; about 21 min).
 - Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 (unchanged; act 1 is untouched).
 - SIM1 `-Route first`: human Rogue 18/36, Wizard 16/36; off 34/36, 34/36. Floors 12 / 10 / 31 / 30, ceiling 21 / 20 (MAP.md §11.4). Rogue losses in rooms 13-15: 8 of 18.
 - Fingerprint 0.79 with relics (qa's BUILD_DEPTH relic sets, now canonical), 0.45 without. Boss parity 92% / 109% / 106%.
@@ -23,14 +23,13 @@ Last updated: 2026-11-17. Latest tag `playtest-2026-11-17-DF1`. STATE holds only
 - Late shares for a Bleed Rogue: Bleed 12.5%, Fire 22.8%, Burn 10.0%.
 
 ## Pending for the next docs pass
-- Nothing yet. DF1 was covered by 6cdbfd3. The DF1 close moved eyes 58 to RESOLVED (6cdbfd3) and added eyes 59.
+- 3d sitting A (eea038b..dc39f28): curse swap penalty 1.0 -> 2.0 s (curses only; ordinary stays 1.0; both in `data/run.json` `curses`; expired eyes 58 default). New `--run-curse-first=<id>`; `--run-auto-choose` and `--run-curse-first` are in the never-saves list; `sacrifice_giveup` capture preset; `-Run` report shows max HP per room; `-BossLog` names scaled boss hits. ARCHITECTURE: `CardSlot.current_swap_penalty`, `reveal_first`, `RunConfig.swap_penalty()`/`curse_swap_penalty()`.
+- DF1 was covered by 6cdbfd3. The DF1 close moved eyes 58 to RESOLVED (6cdbfd3) and added eyes 59.
 - [Director decision] 2026-11-17: SIM2 decision-skill bots, a "winging it" (random) profile against a "formulated" (synergy-seeking, good routes) profile, with a noticeable win-rate gap. Recorded in GDD §12 "Automated QA" and ROADMAP Milestone 4 SIM2; the defaults are in DECISIONS "SIM2 defaults". No code yet.
 
 ## Known issues
 - Wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 - Human-bot Kindling boss parity with relics is 67%, under 70% (qa DF1; not a DF1 regression).
-- Tooling: no flag puts a curse first in a slot, and `--run-auto-choose` doesn't reach the sacrifice give-up step. Both go to 3d.
-- The Wizard three-act sim prints "HP at each room end" 22.0 against a header max of 20.0. Undiagnosed; goes to 3d.
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
 **D-numbers:** D21-D51 answered; D52 open (default A). Next free: D53. Next eyes number: 60.

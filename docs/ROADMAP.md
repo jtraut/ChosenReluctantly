@@ -947,6 +947,7 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
     8. slot names aren't cut off;
     9. keywords and slot-mates in the detail strip, if they fit.
     - Captures at 1280x720 and 1024x600 for each item; list what didn't fit.
+    - **Done 2026-11-18:** ux bc463f5..ddb0d1b (5ba8a58, 958fdba, ddb0d1b). All 9 items; item 9 fits. Captures in `docs/playtests/img/bd3b0/`. Suite 2629 (186), hashes unchanged. DECISIONS "BD3b-0 ux calls". qa carry-overs: the keyboard walk across the one-row relic buttons; the starter relic label with 3+ relics at 1024x600; slot names at 1152x648, 1366x768 and 1600x900 in hand play; a 24-character name in a tab.
   - **BD3b-A, engine 1 (gameplay-dev; fixtures only). `safe to chain`.**
     1. `stacking.decay_after` on statuses: all stacks drop N s after the last gain; validated.
     2. Self-status `charge` (`data/statuses.json`): no damage, `max_stacks` 10 through `status_max_stacks.charge`, `decay_after` 4. Applied with `apply_status` target `self`.

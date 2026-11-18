@@ -2845,3 +2845,10 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **Playtest gate: every BD3b sitting is `safe to chain`.** The director hasn't played MAP3b-3d, so BD3b sets only its own new numbers. Older balance carry-overs move to the first balance item after the Milestone 3 playtest, `needs your play first` (the ROADMAP "Deferred" list). The Wizard's act 1 losses are measured, not tuned. [Folding the carry-overs into BD3b: that retunes four unplayed slices.]
 - **Gating:** the §2 checks gate only the two new archetypes; the older ones stay informational. [Gating every archetype: Controlled Burn and Kindling already miss, and fixing them is deferred tuning.]
 - **Size:** seven sittings (0, A, B, C1, C2, D, ux), each smaller than MAP3b's. The content is split in two (cards, relics) because the relic sitting also carries the share measurements.
+
+## 2026-11-18 - BD3b-0 ux calls (ux-designer, recorded by game-lead)
+- **The editor's relic buttons sit in one row** (Right/Left between them, not Down), to fit the plan box at 1024x600. [Stacked buttons: the plan box clipped.] The footer hint is slightly off for that row; qa checks the keyboard walk.
+- **"Starter relic:" shows for any relic held at room index 0**, including debug `--relics` starts. [Tying it to the loadout's relic: more plumbing for a 4 s label.]
+- **A blank loadout name is filled with the default on Save**; the checker rule is unchanged. [Dropping the rule.]
+- **`TextFit.line_count` counts an over-wide single line as wrapped**, which affects every TextFit user (at most 1 px smaller or an ellipsis; their tests pass).
+- **The "(2 s)" hint is on the cursed slot's swap hint**, matching the triage list and `CardSlot`'s penalty (the brief's "next card is a curse" wording was loose).

@@ -6,17 +6,17 @@
 Last updated: 2026-11-18 (BD3b brief written). Latest tag `playtest-2026-11-18-3d`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **BD3b brief written 2026-11-18** (ROADMAP, BD3b entry below 3d; BUILD_DEPTH §14; DECISIONS "BD3b brief"). Nothing built yet. The repo runs.
+- **BD3b brief written 2026-11-18** (ROADMAP, BD3b entry below 3d; BUILD_DEPTH §14; DECISIONS "BD3b brief"). BD3b-0 done (bc463f5..ddb0d1b). The repo runs.
 
 ## Exact next step
-1. **ux-designer runs BD3b-0** (the 3d polish list, 9 items, nothing else). `safe to chain`.
-2. Then gameplay-dev BD3b-A (engine 1, fixtures only), B, C1, C2, D, then BD3b-ux, qa, playtester, tech-writer, close. One sitting per agent; a `Remaining:` list gets a fresh agent.
+1. **gameplay-dev runs BD3b-A** (engine 1, fixtures only). `safe to chain`.
+2. Then gameplay-dev B, C1, C2, D, then BD3b-ux, qa, playtester, tech-writer, close. One sitting per agent; a `Remaining:` list gets a fresh agent.
 3. Then the Milestone 3 close and milestone playtest (CLAUDE.md, milestone boundary).
 
-**Next role:** ux-designer (BD3b-0).
+**Next role:** gameplay-dev (BD3b-A).
 
 ## Current baselines (DF1 qa, 2026-11-17)
-- Suite 2623 (186 suites), 0 failures, 0 orphans (3d qa).
+- Suite 2629 (186 suites), 0 failures, 0 orphans (BD3b-0).
 - Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 (unchanged; act 1 is untouched).
 - SIM1 `-Route first`: human Rogue 18/36, Wizard 16/36; off 34/36, 34/36. Floors 12 / 10 / 31 / 30, ceiling 21 / 20 (MAP.md §11.4). Rogue losses in rooms 13-15: 8 of 18.
 - Fingerprint 0.79 with relics (qa's BUILD_DEPTH relic sets, now canonical), 0.45 without. Boss parity 92% / 109% / 106%.
@@ -25,7 +25,7 @@ Last updated: 2026-11-18 (BD3b brief written). Latest tag `playtest-2026-11-18-3
 
 ## Pending for the next docs pass
 - [Director decision] 2026-11-18: D53 = B. Starter relics may also drop as ordinary relics (the four 3d starters keep their elite, relic room and merchant sources; no data change). Recorded in GDD §4a and BUILD_DEPTH §4.7 row 6. CHANGELOG and ARCHITECTURE currently call it a conflict and should be updated. RESOLVED entry: the D53 text (options A/B/C, "if you don't answer: A, in BD3b") is in OPEN_ITEMS at 6c77cdf.
-- When BD3b-0 ships, tech-writer removes the 3d polish list from the "Known issues" in CHANGELOG and ARCHITECTURE.
+- BD3b-0 shipped (bc463f5..ddb0d1b): tech-writer removes the 3d polish list from "Known issues" in CHANGELOG and ARCHITECTURE; CHANGELOG entry for the 9 items (old/new: `plan_empty` text, editor columns 3:2 -> 5:4, default name "Loadout %d" -> "%s loadout %d", `TextFit.fit` gains `max_height`); README: new UxCapture modes and the one-row relic keys; ARCHITECTURE: TextFit, `RelicRow.show_start_tag`, `ConditionCue.curse_swap_text`.
 
 ## Known issues
 - Wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.

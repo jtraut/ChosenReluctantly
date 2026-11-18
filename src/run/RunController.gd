@@ -31,6 +31,8 @@ signal relic_triggered(relic_id: String, trigger_index: int, event_id: String)
 signal boss_spawned(boss: Boss)
 ## The class pick was confirmed (`confirm_class_pick`): the run is (re)started as `character_id`. The scene swaps right after.
 signal class_picked(character_id: String)
+## 3d: the start screen's choice was confirmed (`confirm_start_choice`): the preset (`LoadoutStore.PRESET`) or a loadout slot. The scene swaps right after for a loadout.
+signal start_chosen(slot: int)
 ## The run's gold changed: a fight node paid out (`delta` above 0), or a merchant purchase (`delta` below 0). `total` is `RunState.gold`.
 signal gold_changed(total: int, delta: int)
 ## MAP3-B: the run moved on to the next act (the mini-boss's rewards are done and the next act's map is open on its first pick). `act` is the new act (2, 3, ...);
@@ -327,6 +329,37 @@ func confirm_class_pick(character: String) -> bool:
 	return true
 
 
+## 3d: the start screen's one call (run 2 and later). `slot` is LoadoutStore.PRESET for the preset deck (no relic, nothing restarts) or the index of a usable saved loadout of
+## this run's class: the run is rebuilt with that loadout (same seed, same start room) as a fresh scene, and the choice is remembered as the last used. A slot that is not usable
+## (empty, flagged) is refused and nothing changes. Returns true when the run now starts as chosen.
+func confirm_start_choice(slot: int) -> bool:
+	if _state == null or _main == null or not LoadoutSession.is_run_start(_state):
+		return false
+	var store: LoadoutStore = LoadoutSession.store()
+	var chosen_entry: Dictionary = {}
+	if slot != LoadoutStore.PRESET:
+		chosen_entry = store.entry(_state.character_id, slot)
+		if chosen_entry.is_empty():
+			push_error("RunController.confirm_start_choice: loadout %d is not usable" % (slot + 1))
+			return false
+	store.set_last_used(_state.character_id, slot)
+	if slot == LoadoutStore.PRESET:
+		LoadoutSession.start_resolved(_state)  # the run already is the preset: nothing to rebuild
+		start_chosen.emit(slot)
+		return true
+	var room_index: int = _state.room_index
+	var had_path: bool = not _state.path.is_empty()
+	_active = false
+	RunSession.next_loadout = chosen_entry
+	var fresh: RunState = RunSession.begin_new_run(_state.seed_value, _state.character_id)
+	if room_index > 0 or had_path:
+		fresh.jump_to_room(room_index)
+	LoadoutSession.start_resolved(fresh)
+	start_chosen.emit(slot)
+	_main.swap_to_fresh_scene()
+	return true
+
+
 ## Launch arguments for tools and repro (after `--`); they apply to the first run of a launch only:
 ## `--run-seed=N` fixes the seed, `--run-room=K` starts at room K (1-based), `--full-deck` starts with every card of the character's pools (debug), `--run-clear-after=S` wins the room
 ## S seconds in (so a screenshot can show the room-cleared prompt or the win screen). `--deck=<name>` starts with a debug
@@ -346,6 +379,12 @@ func _apply_launch_args(tree: SceneTree) -> bool:
 	for message: String in (launch["errors"] as Array[String]):
 		printerr("Launch refused: " + message)  # plain stderr: a bad launch arg is the caller's error, not an engine error with a stack trace
 	RunSave.suppressed = RunSave.args_suppress(args)  # a debug launch never reads, writes or deletes the player's save
+	var loadout_problems: Array[String] = LoadoutSession.apply_args(args)  # 3d: and never the profile or the loadouts (only scratch files it names itself)
+	if not loadout_problems.is_empty():
+		for problem: String in loadout_problems:
+			printerr("Launch refused: " + problem)
+		tree.quit(2)
+		return false
 	var exit_code: int = int(launch["exit"])
 	if exit_code != DebugDecks.EXIT_CONTINUE:
 		tree.quit(exit_code)
@@ -550,6 +589,7 @@ func _finish_room(healed: float) -> void:
 	if _state.room_index >= _rooms.size() - 1 and not RunNodes.has_next_act(_state):
 		_state.outcome = "won"
 		_delete_own_save()
+		LoadoutSession.record_run_finished(_state)  # 3d: a finished run counts (won or lost), once, before any screen asks "is this run 2?"
 		run_won.emit()
 		return
 	if RunRelics.open_for_room(_state, String(room["type"]), false, _ctx) != RunState.PENDING_NONE:
@@ -717,6 +757,7 @@ func continue_to_next_room(force: bool = false) -> void:
 				set_process(false)
 				_state.outcome = "lost"
 				_delete_own_save()
+				LoadoutSession.record_run_finished(_state)
 				run_lost.emit()
 				return
 		else:
@@ -755,6 +796,7 @@ func _on_player_died() -> void:
 	set_process(false)
 	_state.outcome = "lost"
 	_delete_own_save()
+	LoadoutSession.record_run_finished(_state)
 	run_lost.emit()
 
 

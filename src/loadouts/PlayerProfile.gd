@@ -9,6 +9,8 @@ extends RefCounted
 
 const DEFAULT_PATH := "user://profile.json"
 const VERSION := 1
+## The path of an in-memory profile: nothing is read from it or written to it.
+const MEMORY_PATH := ""
 
 var path: String
 ## Whole number of finished runs.
@@ -21,6 +23,14 @@ var read_only: bool = false
 var _backed_up: bool = false
 
 
+## A profile that never touches a file (a gated launch: scenario, sim, debug flags, headless, scripts): reads as 0 runs and `write` does nothing. It is
+## never built with a path, so the real `user://profile.json` cannot be read or written by mistake.
+static func in_memory() -> PlayerProfile:
+	var profile := PlayerProfile.new(MEMORY_PATH)
+	profile.read_only = true
+	return profile
+
+
 func _init(file_path: String = DEFAULT_PATH) -> void:
 	path = file_path
 	load_file()  # like LoadoutStore: a new instance always starts from the file, so a write can never reset a real count
@@ -31,6 +41,8 @@ func load_file() -> void:
 	runs_finished = 0
 	problem = ""
 	_backed_up = false
+	if path == MEMORY_PATH:
+		return
 	var read: Dictionary = UserJson.read(path)
 	if not bool(read["ok"]):
 		problem = "profile ignored: " + String(read["problem"])

@@ -13,6 +13,8 @@ extends RefCounted
 const DEFAULT_PATH := "user://loadouts.json"
 const VERSION := 1
 const PRESET := -1
+## The path of an in-memory store: nothing is read from it or written to it.
+const MEMORY_PATH := ""
 
 var path: String
 ## "" when the file was fine or absent; otherwise why the whole file was ignored.
@@ -24,6 +26,17 @@ var _last_used: Dictionary = {}  # class id -> int
 var _flag_messages: Array[String] = []
 var _extra_classes: Dictionary = {}  # class blocks of unknown classes, kept as read
 var _backed_up: bool = false
+
+
+## A store that never touches a file (a gated launch: scenario, sim, debug flags, headless, scripts). It starts empty and `write` only pretends, so edits
+## live in memory for the process. Never built with a path, so the real `user://loadouts.json` cannot be read or written by mistake.
+static func in_memory() -> LoadoutStore:
+	return LoadoutStore.new(MEMORY_PATH)
+
+
+## True for an in-memory store.
+func is_memory_only() -> bool:
+	return path == MEMORY_PATH
 
 
 func _init(file_path: String = DEFAULT_PATH) -> void:
@@ -40,6 +53,8 @@ func load_file() -> void:
 	_extra_classes = {}
 	_backed_up = false
 	file_problem = ""
+	if is_memory_only():
+		return
 	var read: Dictionary = UserJson.read(path)
 	if not bool(read["ok"]):
 		file_problem = "loadouts ignored: " + String(read["problem"])
@@ -169,6 +184,8 @@ func delete_entry(class_id: String, index: int) -> bool:
 
 ## Writes the file. A file that could not be read is kept as `<path>.bak` first (once). Flagged entries are written back as they were.
 func write() -> bool:
+	if is_memory_only():
+		return true  # in memory only: the edit stands for this process and no file is touched
 	if not file_problem.is_empty() and not _backed_up:
 		_backed_up = true
 		UserJson.backup(path)

@@ -39,6 +39,9 @@ static var forced_relic_offer: Array[String] = []
 static var relic_cap: int = 0
 ## `--event=<id>` (MAP4-B1, capture and playtest tooling): the next event node draws this event. Consumed by that one draw.
 static var forced_event: String = ""
+## 3d: the saved loadout entry the NEXT new run starts with ({} = the preset). Set by the start screen's choice (`RunController.confirm_start_choice`) and consumed by `begin_new_run`,
+## so Try again never repeats it. `--loadout=<n>` (LoadoutSession.forced_slot) is the sticky version for tooling. A debug deck (`--deck`, `--full-deck`) always wins over a loadout.
+static var next_loadout: Dictionary = {}
 
 
 ## `--map` / `--no-map` (MAP1-B): -1 uses data/map.json `enabled`, 1 forces the branching map on, 0 forces the straight run. Sticky for the launch
@@ -89,11 +92,13 @@ static func begin_new_run(seed_value: int = -1, character: String = "") -> RunSt
 		chosen = new_random_seed()
 	var who: String = character if CharacterDatabase.has(character) else chosen_character()
 	var deck: Array[String]
+	var debug_start: bool = full_deck or (not debug_deck.is_empty() and preset_character(debug_deck) == who)
 	if not debug_deck.is_empty() and preset_character(debug_deck) == who:
 		deck = DebugDecks.deck_of(debug_deck, full_deck)
 	else:
 		deck = CharacterDatabase.full_deck(who) if full_deck else CharacterDatabase.starting_deck(who)
 	current = RunState.new_run(chosen, deck, RunConfig.rejects_per_run(), who)
+	_apply_loadout(current, debug_start)
 	for relic_id: String in start_relics:
 		current.add_relic(relic_id)
 	for curse_id: String in start_curses:
@@ -111,6 +116,23 @@ static func begin_new_run(seed_value: int = -1, character: String = "") -> RunSt
 			current.acts_total = acts
 			RunNodes.open(current)
 	return current
+
+
+## 3d: gives a new run the loadout it was asked to start with: the start screen's `next_loadout` (consumed), else `--loadout` (sticky). A debug deck wins. A loadout that no longer
+## passes the rules, or a launch whose loadouts file does not hold the slot, is reported and the run starts with the preset (the preset is always available).
+static func _apply_loadout(state: RunState, debug_start: bool) -> void:
+	var entry: Dictionary = next_loadout
+	next_loadout = {}
+	if debug_start:
+		return
+	if entry.is_empty() and LoadoutSession.forced_slot >= 0:
+		entry = LoadoutSession.store().entry(state.character_id, LoadoutSession.forced_slot)
+		if entry.is_empty():
+			push_warning("--loadout=%d: no usable loadout %d for %s; starting with the preset" % [LoadoutSession.forced_slot + 1, LoadoutSession.forced_slot + 1, state.character_id])
+	if entry.is_empty():
+		return
+	for problem: String in LoadoutStart.apply(state, entry):
+		push_error("Loadout not used, starting with the preset: " + problem)
 
 
 ## The live run, or a new one when there is none.

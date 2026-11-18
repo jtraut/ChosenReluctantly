@@ -22,6 +22,24 @@ extends Node
 
 ## A relic trigger fired. `trigger_index` is its place in the relic's `triggers` array. ux flashes the relic's chip on this.
 signal relic_triggered(relic_id: String, trigger_index: int, event_id: String)
+## BD3b-B: a buff's triggers went live (a buff with a `triggers` list was applied or refreshed) and `expires_at` is the relay clock time they stop.
+## `source` is the buff's origin ("card:<id>"). ux shows a cue while a buff's triggers are live.
+signal buff_triggers_started(source: String, expires_at: float)
+## A buff's triggers stopped. `reason` is "expired", "reset" (the relay was reset: run, room or arena load) or "cleared" (the manager left the tree).
+signal buff_triggers_ended(source: String, reason: String)
+## A buff's trigger fired (ran its effects). `trigger_index` is its place in the buff's `triggers` list.
+signal buff_trigger_fired(source: String, trigger_index: int, event_id: String)
+
+## BD3b-B buff triggers: a buff effect's `triggers` list (relic trigger format) lives in a manager hosted by the caster (buff_host(), created on
+## first use, so a run with no relics needs none). Each is live only while its buff lasts: they carry the buff's expiry on the relay clock and
+## are dropped on expiry, when the relay resets (a run, room or arena loads) and when the host leaves the tree (room exit). They match, queue and
+## run exactly as relic triggers do (origin guard, internal cooldown, chain depth), with the effects stamped "relic:buff_<card id>". Recasting the
+## same buff refreshes its expiry and keeps one set of triggers (and the cooldowns), so a recast never doubles a nova.
+const BUFF_HOST_NAME := "BuffTriggers"
+const BUFF_HOST_META := &"buff_trigger_host"
+const BUFF_ORIGIN_ID_PREFIX := "buff_"
+## A dash shorter than this (metres) leaves no line.
+const MIN_PATH_LENGTH := 0.1
 
 ## How many relic-triggered effects may be on the stack when another relic trigger fires (0 = only top-level ones).
 const MAX_CHAIN_DEPTH := 1
@@ -43,6 +61,7 @@ var _triggers: Array[Dictionary] = []
 var _connected: Dictionary = {}
 ## The chain level of the job whose effects are running now (0 = none). A trigger matched meanwhile is level _depth + 1.
 var _depth: int = 0
+var _reset_connected: bool = false
 ## Run-long numbers a scaled modifier reads (`per_run_stat`, MAP2-B): {stat id: value}. RunController sets them from the RunState.
 var _run_stats: Dictionary = {}
 var _fired_total: int = 0
@@ -85,12 +104,18 @@ func add_relic(relic_id: String) -> bool:
 	var triggers: Array = relic.get("triggers", [])
 	for i in range(triggers.size()):
 		var spec: Dictionary = triggers[i]
-		_triggers.append({
-			"relic_id": relic_id, "index": i, "event": String(spec["event"]), "filter": spec.get("filter", {}), "at": String(spec.get("at", RelicSchema.AT_PLAYER)),
-			"cooldown": float(spec.get("internal_cooldown", 0.0)), "effects": spec["effects"], "next_ready": -1.0, "matches": 0,
-		})
+		_triggers.append(_compile_trigger(relic_id, ORIGIN_PREFIX + relic_id, i, spec))
 		_listen(String(spec["event"]))
 	return true
+
+
+## One compiled trigger: {relic_id, origin, index, event, filter, at, cooldown, effects, next_ready, matches, buff, dead}. `relic_id` is the owner's id
+## (for a buff trigger the buff's key, with `buff` true, `source` and `expires_at` added); `origin` is what its effects are stamped with.
+func _compile_trigger(owner_id: String, origin: String, index: int, spec: Dictionary) -> Dictionary:
+	return {
+		"relic_id": owner_id, "origin": origin, "index": index, "event": String(spec["event"]), "filter": spec.get("filter", {}), "at": String(spec.get("at", RelicSchema.AT_PLAYER)),
+		"cooldown": float(spec.get("internal_cooldown", 0.0)), "effects": spec["effects"], "next_ready": -1.0, "matches": 0, "buff": false, "dead": false,
+	}
 
 
 ## Removes a relic: takes its modifiers off the player and stops its triggers (the relay connection stays only while
@@ -101,10 +126,8 @@ func remove_relic(relic_id: String) -> bool:
 	_relic_ids.erase(relic_id)
 	var relic: Dictionary = _catalog.get(relic_id, {})
 	_remove_relic_modifiers(relic)
-	_triggers = _triggers.filter(func(t: Dictionary) -> bool: return String(t["relic_id"]) != relic_id)
-	for event_id: String in _connected.keys():
-		if not _triggers.any(func(t: Dictionary) -> bool: return String(t["event"]) == event_id):
-			_unlisten(event_id)
+	_triggers = _triggers.filter(func(t: Dictionary) -> bool: return bool(t["buff"]) or String(t["relic_id"]) != relic_id)
+	_unlisten_unused()
 	return true
 
 
@@ -149,16 +172,25 @@ func flush() -> void:
 
 
 func _exit_tree() -> void:
+	_end_all_buff_triggers("cleared")
 	_pending.clear()
 	_disconnect_all()
+	_disconnect_reset()
 
 
 func _clear() -> void:
 	for relic_id: String in _relic_ids.duplicate():
 		remove_relic(relic_id)
+	_end_all_buff_triggers("cleared")
 	_triggers.clear()
 	_pending.clear()
 	_disconnect_all()
+
+
+func _unlisten_unused() -> void:
+	for event_id: String in _connected.keys():
+		if not _triggers.any(func(t: Dictionary) -> bool: return String(t["event"]) == event_id):
+			_unlisten(event_id)
 
 
 # --- modifiers ---------------------------------------------------------------------------------
@@ -233,7 +265,7 @@ func _disconnect_all() -> void:
 
 ## One handler per event: it turns the signal's arguments into the normalized event dictionary `handle_event` matches
 ## against: {event, origin, target, position (Vector3 or null), amount, damage_type, kind, statuses, status_id, reason,
-## slot_type, card_id, tags, attack_id, shape, room_type}. Keys an event does not have are absent.
+## slot_type, card_id, tags, attack_id, shape, room_type, path_start (dash_ended: where the dash began; `position` is where it ended)}. Keys an event does not have are absent.
 func _handler_for(event_id: String) -> Callable:
 	match event_id:
 		"hit_landed":
@@ -255,8 +287,8 @@ func _handler_for(event_id: String) -> Callable:
 			return func(attack_id: String, aim_point: Vector3) -> void:
 				handle_event({"event": event_id, "attack_id": attack_id, "position": aim_point, "origin": ""})
 		"dash_ended":
-			return func(_start: Vector3, end: Vector3, card_id: String) -> void:
-				handle_event({"event": event_id, "card_id": card_id, "position": end, "origin": ""})
+			return func(start: Vector3, end: Vector3, card_id: String) -> void:
+				handle_event({"event": event_id, "card_id": card_id, "position": end, "path_start": start, "origin": ""})
 		"dash_passed_through":
 			return func(card_id: String, _count: int, position: Vector3) -> void:
 				handle_event({"event": event_id, "card_id": card_id, "position": position, "origin": ""})
@@ -291,13 +323,17 @@ static func _origin_slot_type(origin: String) -> String:
 
 ## Offers one normalized event to every trigger (see _handler_for for the keys). Public so tests can drive it without a relay.
 func handle_event(event: Dictionary) -> void:
-	if _triggers.is_empty() or _depth > MAX_CHAIN_DEPTH:
+	var base_depth: int = maxi(_depth, CombatEventsRelay.chain_depth)
+	if _triggers.is_empty() or base_depth > MAX_CHAIN_DEPTH:
 		return
+	_expire_buff_triggers()
 	var event_id: String = String(event["event"])
 	var origin: String = String(event.get("origin", ""))
 	# Copy: a trigger's effects can add or remove relics (and so change the list) while we walk it.
 	for trigger: Dictionary in _triggers.duplicate():
 		if String(trigger["event"]) != event_id:
+			continue
+		if bool(trigger["dead"]):
 			continue
 		var filter: Dictionary = trigger["filter"]
 		if origin.begins_with(ORIGIN_PREFIX) and not bool(filter.get("allow_relic_origin", false)):
@@ -312,7 +348,7 @@ func handle_event(event: Dictionary) -> void:
 		if now < float(trigger["next_ready"]):
 			continue
 		trigger["next_ready"] = now + float(trigger["cooldown"])
-		_pending.append({"trigger": trigger, "event": event, "level": _depth + 1})
+		_pending.append({"trigger": trigger, "event": event, "level": base_depth + 1})
 		if not _flush_scheduled:
 			_flush_scheduled = true
 			flush.call_deferred()
@@ -342,14 +378,21 @@ func _now() -> float:
 
 func _execute(job: Dictionary) -> void:
 	var trigger: Dictionary = job["trigger"]
-	if not _relic_ids.has(String(trigger["relic_id"])):
-		return  # given up while it waited
+	var is_buff: bool = bool(trigger["buff"])
+	if bool(trigger["dead"]) or (not is_buff and not _relic_ids.has(String(trigger["relic_id"]))):
+		return  # given up (or its buff ended) while it waited
 	var outer: int = _depth
+	var outer_ambient: int = CombatEventsRelay.chain_depth
 	_depth = int(job["level"])
+	CombatEventsRelay.chain_depth = _depth
 	_fired_total += 1
 	effect_runner.call(trigger, job["event"])
 	_depth = outer
-	relic_triggered.emit(String(trigger["relic_id"]), int(trigger["index"]), String(trigger["event"]))
+	CombatEventsRelay.chain_depth = outer_ambient
+	if is_buff:
+		buff_trigger_fired.emit(String(trigger["source"]), int(trigger["index"]), String(trigger["event"]))
+	else:
+		relic_triggered.emit(String(trigger["relic_id"]), int(trigger["index"]), String(trigger["event"]))
 
 
 func _matches(filter: Dictionary, event: Dictionary) -> bool:
@@ -415,7 +458,8 @@ func _run_effects(trigger: Dictionary, event: Dictionary) -> void:
 	if _player == null or not is_instance_valid(_player) or not _player.is_inside_tree():
 		return
 	var context := EffectContext.new(_player, _spawn_parent if _spawn_parent != null else _player.get_parent(), "player")
-	context.origin = ORIGIN_PREFIX + String(trigger["relic_id"])
+	context.origin = String(trigger["origin"])
+	context.chain_depth = _depth
 	context.rng = _rng
 	if "card_slots" in _player and _player.card_slots != null:
 		context.deck_card_ids = _player.card_slots.owned_card_ids()
@@ -429,6 +473,7 @@ func _run_effects(trigger: Dictionary, event: Dictionary) -> void:
 	var at: String = String(trigger["at"])
 	var where: Variant = event.get("position")
 	var place: bool = at != RelicSchema.AT_PLAYER and where is Vector3
+	var path_start: Variant = event.get("path_start") if at == RelicSchema.AT_EVENT_PATH else null
 	if place:
 		context.aim_point = where
 	if at == RelicSchema.AT_EVENT_TARGET:
@@ -443,8 +488,146 @@ func _run_effects(trigger: Dictionary, event: Dictionary) -> void:
 		if place and String(effect.get("template", "")) == "aoe" and not params.has("center"):
 			params = params.duplicate()
 			params["center"] = where
+		if path_start is Vector3 and where is Vector3 and String(effect.get("template", "")) == "zone":
+			params = _along_path(params, path_start, where)
+			if params.is_empty():
+				continue  # a dash that did not move leaves no line
 		if String(effect.get("template", "")) == "projectile" and not params.has("direction") and _player.has_method("get_shot_direction"):
 			# MAP3b: a relic's bolt follows the aim (the reticle), not the body, which trails the mouse by a few frames.
 			params = params.duplicate()
 			params["direction"] = _player.call("get_shot_direction")
 		EffectTemplates.execute(String(effect.get("template", "")), params, context, effect.get("condition", {}), effect.get("scale", {}))
+
+
+## A line zone's params laid along the path from `start` to `end` (BD3b-B): `length` becomes the path's length, and the code-only `center` (the midpoint)
+## and `cast_dir` (across the path, because a line zone's long side runs across its cast direction) place it, bypassing the caster-relative placement.
+## Empty when the path is too short to be a line.
+static func _along_path(params: Dictionary, start: Vector3, end: Vector3) -> Dictionary:
+	var along := Vector3(end.x - start.x, 0.0, end.z - start.z)
+	if along.length() < MIN_PATH_LENGTH:
+		return {}
+	var out: Dictionary = params.duplicate()
+	out["length"] = minf(along.length(), EffectTemplates.MAX_ZONE_LINE_LENGTH)
+	out["center"] = Vector3((start.x + end.x) * 0.5, end.y, (start.z + end.z) * 0.5)
+	var direction: Vector3 = along.normalized()
+	out["cast_dir"] = Vector3(direction.z, 0.0, -direction.x)
+	return out
+
+
+# --- buff triggers (BD3b-B) ----------------------------------------------------------------------
+
+## The caster's host for buff triggers: a RelicManager child named "BuffTriggers" with no relics, found through the caster's meta or created now.
+## `relay` lets a test give the host its own relay (the first call decides; later calls reuse it).
+static func buff_host(caster: Node3D, spawn_parent: Node, rng: RandomNumberGenerator, relay: CombatEventsRelay = null) -> RelicManager:
+	var found: Variant = caster.get_meta(BUFF_HOST_META) if caster.has_meta(BUFF_HOST_META) else null
+	if found is RelicManager and is_instance_valid(found):
+		var existing: RelicManager = found
+		if rng != null:
+			existing._rng = rng
+		return existing
+	var host := RelicManager.new()
+	host.name = BUFF_HOST_NAME
+	caster.add_child(host)
+	host.configure(caster, spawn_parent, rng, relay, {"": {}})  # a non-empty catalog: the host holds no relics, so it never loads the shipped ones
+	caster.set_meta(BUFF_HOST_META, host)
+	return host
+
+
+## Makes a buff's `triggers` live for `duration` seconds of relay time. `source` is the buff's origin ("card:<id>", or any non-empty text), which
+## also keys it: applying the same source again refreshes the expiry and keeps the one set of triggers. Their effects are stamped
+## "relic:buff_<id>", so the recursion guard treats them like a relic's.
+func add_buff_triggers(source: String, triggers: Array, duration: float) -> void:
+	if source.is_empty() or triggers.is_empty():
+		return
+	var expires_at: float = _now() + duration
+	var existing: bool = false
+	for trigger: Dictionary in _triggers:
+		if bool(trigger["buff"]) and String(trigger["source"]) == source and not bool(trigger["dead"]):
+			trigger["expires_at"] = expires_at
+			existing = true
+	if not existing:
+		var origin: String = ORIGIN_PREFIX + BUFF_ORIGIN_ID_PREFIX + (source.substr(source.find(":") + 1) if source.contains(":") else source)
+		for i in range(triggers.size()):
+			var trigger: Dictionary = _compile_trigger(source, origin, i, triggers[i])
+			trigger["buff"] = true
+			trigger["source"] = source
+			trigger["expires_at"] = expires_at
+			_triggers.append(trigger)
+			_listen(String(trigger["event"]))
+	_connect_reset()
+	buff_triggers_started.emit(source, expires_at)
+	if is_inside_tree():
+		get_tree().create_timer(duration, false).timeout.connect(_expire_source.bind(source, expires_at))
+
+
+## True while the source's buff triggers are live.
+func has_buff_triggers(source: String) -> bool:
+	return _triggers.any(func(t: Dictionary) -> bool: return bool(t["buff"]) and String(t["source"]) == source and not bool(t["dead"]))
+
+
+## Sources whose buff triggers are live now.
+func live_buff_sources() -> Array[String]:
+	var result: Array[String] = []
+	for trigger: Dictionary in _triggers:
+		if bool(trigger["buff"]) and not bool(trigger["dead"]) and not result.has(String(trigger["source"])):
+			result.append(String(trigger["source"]))
+	return result
+
+
+## Ends one source's buff triggers now (reason as buff_triggers_ended).
+func remove_buff_triggers(source: String, reason: String) -> void:
+	var removed: bool = false
+	for trigger: Dictionary in _triggers:
+		if bool(trigger["buff"]) and String(trigger["source"]) == source and not bool(trigger["dead"]):
+			trigger["dead"] = true
+			removed = true
+	if removed:
+		_triggers = _triggers.filter(func(t: Dictionary) -> bool: return not bool(t["dead"]))
+		_unlisten_unused()
+		buff_triggers_ended.emit(source, reason)
+
+
+## Drops every source's buff triggers now.
+func clear_buff_triggers(reason: String = "cleared") -> void:
+	_end_all_buff_triggers(reason)
+
+
+func _end_all_buff_triggers(reason: String) -> void:
+	for source: String in live_buff_sources():
+		remove_buff_triggers(source, reason)
+
+
+## Drops the sources whose expiry has passed on the relay clock. handle_event runs it first, so a trigger never matches after its buff ended.
+func _expire_buff_triggers() -> void:
+	var now: float = _now()
+	for trigger: Dictionary in _triggers.duplicate():
+		if bool(trigger["buff"]) and not bool(trigger["dead"]) and now >= float(trigger["expires_at"]):
+			remove_buff_triggers(String(trigger["source"]), "expired")
+
+
+## The timer end: only the application that set this expiry may end it (a refresh moved the expiry on, and has its own timer).
+func _expire_source(source: String, expires_at: float) -> void:
+	for trigger: Dictionary in _triggers:
+		if bool(trigger["buff"]) and String(trigger["source"]) == source and is_equal_approx(float(trigger["expires_at"]), expires_at):
+			remove_buff_triggers(source, "expired")
+			return
+
+
+func _connect_reset() -> void:
+	if _reset_connected or _relay == null or not is_instance_valid(_relay):
+		return
+	_reset_connected = true
+	_relay.reset_done.connect(_on_relay_reset)
+
+
+func _disconnect_reset() -> void:
+	if not _reset_connected:
+		return
+	_reset_connected = false
+	if _relay != null and is_instance_valid(_relay) and _relay.reset_done.is_connected(_on_relay_reset):
+		_relay.reset_done.disconnect(_on_relay_reset)
+
+
+func _on_relay_reset() -> void:
+	_end_all_buff_triggers("reset")
+	_pending = _pending.filter(func(job: Dictionary) -> bool: return not bool((job["trigger"] as Dictionary)["dead"]))

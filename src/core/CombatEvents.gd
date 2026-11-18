@@ -37,6 +37,9 @@ signal zone_started(zone_id: int, shape: String, position: Vector3)
 signal zone_ended(zone_id: int, shape: String, position: Vector3)
 signal room_started(index: int, room_type: String)
 signal room_cleared(index: int, room_type: String)
+## BD3b-B: the relay was reset (a run, room or arena loaded, or a restart). Anything that outlives a single event and belongs to one run
+## (a buff's live triggers) drops its state on this.
+signal reset_done
 
 const STATUS_END_EXPIRED := "expired"
 const STATUS_END_OWNER_DIED := "owner_died"
@@ -48,6 +51,23 @@ const STATUS_END_REASONS: Array[String] = [STATUS_END_EXPIRED, STATUS_END_OWNER_
 
 var history := CastHistory.new()
 var _now: float = 0.0
+
+## BD3b-B: the relic-trigger chain level of the effect running right now (0 = none). RelicManager sets it while a trigger's effects run,
+## and anything those effects start that hits LATER (a projectile in flight, a zone tick, a delayed or repeated hit) re-enters its own
+## level (EffectContext.chain_depth) around the hit, so a relic trigger caused by that hit counts one level deeper instead of starting
+## again at zero. Static: every manager (the room's relics, a buff's triggers) shares one number, whichever relay it listens to.
+static var chain_depth: int = 0
+
+
+## Raises the ambient chain level to at least `level` and returns the previous one; pass that to leave_chain() afterwards.
+static func enter_chain(level: int) -> int:
+	var previous: int = chain_depth
+	chain_depth = maxi(previous, level)
+	return previous
+
+
+static func leave_chain(previous: int) -> void:
+	chain_depth = previous
 
 
 func _process(delta: float) -> void:
@@ -148,3 +168,5 @@ func notify_room_cleared(index: int, room_type: String) -> void:
 func reset() -> void:
 	history.clear()
 	_now = 0.0
+	chain_depth = 0
+	reset_done.emit()

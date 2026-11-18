@@ -40,6 +40,8 @@ class Zone extends RefCounted:
 	var source_id: int = 0
 	## EffectContext.origin of the cast that placed it, stamped on its hits and statuses.
 	var origin: String = ""
+	## BD3b-B: the relic chain level of the cast that placed it, re-entered around each tick's hits.
+	var chain_depth: int = 0
 	var rng: RandomNumberGenerator = null
 	var elapsed: float = 0.0
 	var ticks_done: int = 0
@@ -113,6 +115,7 @@ func spawn(params: Dictionary, center: Vector3, cast_dir: Vector3, context: Effe
 	zone.team = context.caster_team
 	zone.source_id = context.caster.get_instance_id() if context.caster != null else 0
 	zone.origin = context.origin
+	zone.chain_depth = context.chain_depth
 	zone.rng = context.rng
 	zone.elapsed = 0.0
 	zone.ticks_done = 0
@@ -241,6 +244,7 @@ func _tick(zone: Zone) -> void:
 	var chance_ok: bool = zone.status_chance >= 1.0 or zone.status_chance <= 0.0 or zone.rng != null
 	if not chance_ok and not status_def.is_empty():
 		push_error("ZoneManager: zone status '%s' has chance %s but the context has no RNG; not applied" % [zone.status_id, str(zone.status_chance)])
+	var previous_chain: int = CombatEventsRelay.enter_chain(zone.chain_depth)
 	for hurtbox: Hurtbox in hits:
 		if not is_instance_valid(hurtbox):
 			continue
@@ -254,6 +258,7 @@ func _tick(zone: Zone) -> void:
 			continue
 		if AttackStatuses.roll(zone.rng, zone.status_chance):
 			hurtbox.status_manager.apply_status(zone.status_id, status_def, zone.status_duration, source, zone.origin)
+	CombatEventsRelay.leave_chain(previous_chain)
 
 
 func _end(zone: Zone) -> void:

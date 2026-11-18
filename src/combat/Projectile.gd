@@ -32,6 +32,8 @@ var _spent: bool = false
 var condition: Dictionary = {}
 ## Who fired it (EffectContext.origin), stamped on the hit it deals. Set by the template before launch; "" when not set.
 var origin: String = ""
+## BD3b-B: the relic chain level of the effect that fired it (EffectContext.chain_depth); re-entered around the hit.
+var chain_depth: int = 0
 ## BD3a: a status the shot puts on the target it hits (a knife that cuts); "" = none. Set by the projectile template from the card's params.
 var status_id: String = ""
 var status_duration: float = 0.0
@@ -148,8 +150,10 @@ func _on_area_entered(area: Area3D) -> void:
 		queue_free()
 		return
 	var source: Node = instance_from_id(_source_id) as Node if _source_id != 0 else null
+	var previous_chain: int = CombatEventsRelay.enter_chain(chain_depth)
 	hurtbox.receive_damage(_damage, _damage_type, knockback, source, _hit_kind, origin)
 	_apply_status(hurtbox, source)
+	CombatEventsRelay.leave_chain(previous_chain)
 	_burst()
 	queue_free()
 

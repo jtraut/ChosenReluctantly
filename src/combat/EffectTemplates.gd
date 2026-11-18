@@ -64,6 +64,10 @@ const DIRECTION_FORWARD := "forward"
 const DIRECTION_AWAY := "away_from_aim"
 const MAX_ZONE_DURATION := 30.0
 const MAX_ZONE_TICKS := 200
+## The longest a line zone may be (the validator's cap on `length`); a line laid along a dash path is clamped to it.
+const MAX_ZONE_LINE_LENGTH := 20.0
+## BD3b-B: how many triggers one buff may carry.
+const MAX_BUFF_TRIGGERS := 4
 const MAX_PLACE_RANGE := 30.0
 const MAX_PASS_THROUGH := 30.0
 const MAX_AOE_DELAY := 3.0
@@ -188,6 +192,8 @@ static func is_factor_stat(stat: String) -> bool:
 
 
 static func _validate_buff(params: Dictionary, errors: Array[String]) -> void:
+	if params.has("triggers"):
+		_validate_buff_triggers(params, errors)
 	if params.has("charges") and not params.has("consume_on_cast"):
 		errors.append("'charges' needs 'consume_on_cast'")
 	if params.has("consume_on_cast"):
@@ -214,6 +220,22 @@ static func _validate_buff(params: Dictionary, errors: Array[String]) -> void:
 		errors.append("a %s buff must be additive (it adds to the zone's status chance)" % ZONE_STATUS_CHANCE_STAT)
 	if typeof(stat) == TYPE_STRING and String(stat).begins_with(CARD_DAMAGE_VS_STATUS_PREFIX) and not StatusDatabase.has_status(String(stat).substr(CARD_DAMAGE_VS_STATUS_PREFIX.length())):
 		errors.append("'%s' names an unknown status" % String(stat))
+
+
+## BD3b-B: a buff's `triggers` (relic trigger format, RelicSchema.validate_trigger) are live while the buff lasts. A buff that lasts by charges
+## (`consume_on_cast`) has no duration to hold them to, so it cannot carry any.
+static func _validate_buff_triggers(params: Dictionary, errors: Array[String]) -> void:
+	var triggers: Variant = params["triggers"]
+	if typeof(triggers) != TYPE_ARRAY or (triggers as Array).is_empty():
+		errors.append("'triggers' must be a non-empty array of relic-format triggers")
+		return
+	if (triggers as Array).size() > MAX_BUFF_TRIGGERS:
+		errors.append("a buff may carry at most %d triggers" % MAX_BUFF_TRIGGERS)
+	if params.has("consume_on_cast"):
+		errors.append("'triggers' cannot be combined with 'consume_on_cast' (the triggers last as long as the buff's duration)")
+	for i in range((triggers as Array).size()):
+		for problem: String in RelicSchema.validate_trigger((triggers as Array)[i], i):
+			errors.append("buff %s" % problem)
 
 
 static func _validate_zone(params: Dictionary, errors: Array[String]) -> void:
@@ -371,7 +393,9 @@ static func _run_hits(params: Dictionary, context: EffectContext, fire: Callable
 	for index in range(1, hits):
 		tree.create_timer(interval * index, false, true).timeout.connect(func() -> void:
 			if _caster_active(context):
-				fire.call(index))
+				var previous_chain: int = CombatEventsRelay.enter_chain(context.chain_depth)
+				fire.call(index)
+				CombatEventsRelay.leave_chain(previous_chain))
 
 
 static func _caster_active(context: EffectContext) -> bool:
@@ -508,7 +532,9 @@ static func _telegraphed_aoe(locked: Dictionary, context: EffectContext, delay: 
 	tween.tween_callback(func() -> void:
 		_stop_telegraph(pool, parts, generations)
 		if _caster_active(context):
-			_run_hits(locked, context, func(index: int) -> void: _aoe_hit(locked, context, index)))
+			var previous_chain: int = CombatEventsRelay.enter_chain(context.chain_depth)
+			_run_hits(locked, context, func(index: int) -> void: _aoe_hit(locked, context, index))
+			CombatEventsRelay.leave_chain(previous_chain))
 
 
 static func _drive_telegraph(pool: EffectPool, parts: Array[PooledEffect], generations: Array[int], fraction: float) -> void:
@@ -623,6 +649,7 @@ static func _projectile_shot(params: Dictionary, context: EffectContext, index: 
 		instance.condition = params[EffectCondition.PARAM_KEY]
 	instance.set_source(context.caster, _kind_for(index))
 	instance.origin = context.origin
+	instance.chain_depth = context.chain_depth
 	if params.has("status_id"):
 		instance.status_id = String(params["status_id"])
 		instance.status_duration = float(params["status_duration"])
@@ -737,6 +764,10 @@ static func _execute_buff(params: Dictionary, context: EffectContext) -> void:
 		TemplateVfx.buff_aura(_vfx_pool(context), context.caster as Node3D, cue, duration)
 	_buff_serial += 1
 	var modifier_id := "buff_%d" % _buff_serial
+	if params.has("triggers") and context.caster is Node3D:
+		# BD3b-B: the buff's triggers, live for the buff's duration (see RelicManager's buff section).
+		var host: RelicManager = RelicManager.buff_host(context.caster as Node3D, context.spawn_parent, context.rng)
+		host.add_buff_triggers(context.origin if context.origin != "" else modifier_id, params["triggers"], duration)
 	if params.has("consume_on_cast"):
 		# Primed: StatModifiers ages it (the card controller advances it) and uses it up by matching casts.
 		stat_modifiers.add_primed_modifier(stat, modifier_id, modifier_type, value, String(params["consume_on_cast"]), int(params.get("charges", 1)), duration)
@@ -754,12 +785,19 @@ static func _execute_zone(params: Dictionary, context: EffectContext) -> void:
 	var manager := ZoneManager.for_world(context.spawn_parent)
 	if manager == null:
 		return
-	var placed: Dictionary = context.placement(float(params["max_range"]))
-	var origin: Vector3 = placed["origin"]
-	var point: Vector3 = placed["point"]
-	var cast_dir := Vector3(point.x - origin.x, 0.0, point.z - origin.z)
-	if cast_dir.length_squared() < 0.0001:
-		cast_dir = -context.caster.global_transform.basis.z
+	var point: Vector3
+	var cast_dir: Vector3
+	if params.has("center"):
+		# Code-only (BD3b-B): a caller that already knows where the zone goes (a line laid along a dash path) skips the caster-relative placement.
+		point = params["center"]
+		cast_dir = params.get("cast_dir", -context.caster.global_transform.basis.z)
+	else:
+		var placed: Dictionary = context.placement(float(params["max_range"]))
+		var origin: Vector3 = placed["origin"]
+		point = placed["point"]
+		cast_dir = Vector3(point.x - origin.x, 0.0, point.z - origin.z)
+		if cast_dir.length_squared() < 0.0001:
+			cast_dir = -context.caster.global_transform.basis.z
 	manager.spawn(params, point, cast_dir.normalized(), context)
 	# Zones tick on their own; nothing was hit at cast time as far as later effects are concerned.
 	context.last_hits = []

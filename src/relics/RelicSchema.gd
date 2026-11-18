@@ -17,7 +17,10 @@ const RUN_STATS: Array[String] = ["gold_spent_merchant"]
 const AT_PLAYER := "player"
 const AT_EVENT_POSITION := "event_position"
 const AT_EVENT_TARGET := "event_target"
-const AT_VALUES: Array[String] = [AT_PLAYER, AT_EVENT_POSITION, AT_EVENT_TARGET]
+## BD3b-B: only for an event that carries a path (dash_ended: the start and the end). A zone effect at the path is a line laid from the
+## start to the end; its `length` in data is a placeholder the path replaces. Any other effect there is placed at the path's end.
+const AT_EVENT_PATH := "event_path"
+const AT_VALUES: Array[String] = [AT_PLAYER, AT_EVENT_POSITION, AT_EVENT_TARGET, AT_EVENT_PATH]
 const MAX_INTERNAL_COOLDOWN := 600.0
 const MAX_EVERY_NTH := 100
 const MAX_RULE_TEXT_LENGTH := 120
@@ -36,8 +39,8 @@ const FILTER_KINDS: Dictionary = {
 	"allow_relic_origin": "bool", "every_nth": "nth",
 }
 
-## Per event: `filter` (accepted filter keys), `position` (it has a place an effect can happen at) and `target` (it names a
-## combatant the effect can be aimed at). `allow_relic_origin` and `every_nth` are accepted by every event.
+## Per event: `filter` (accepted filter keys), `position` (it has a place an effect can happen at), `target` (it names a
+## combatant the effect can be aimed at), `origin` (it carries who caused it) and, optionally, `path` (it has a start and an end). `allow_relic_origin` and `every_nth` are accepted by every event.
 const EVENTS: Dictionary = {
 	"hit_landed": {"filter": ["origin", "damage_type", "kind", "target_team", "target_has_status", "min_amount", "tag", "slot_type"], "position": true, "target": true, "origin": true},
 	"enemy_killed": {"filter": ["origin", "target_has_status"], "position": true, "target": true, "origin": true},
@@ -45,7 +48,7 @@ const EVENTS: Dictionary = {
 	"status_ended": {"filter": ["origin", "status_id", "reason", "target_team"], "position": true, "target": true, "origin": true},
 	"card_cast": {"filter": ["slot_type", "card_id", "tag"], "position": false, "target": false, "origin": false},
 	"attack_fired": {"filter": ["attack_id"], "position": true, "target": false, "origin": false},
-	"dash_ended": {"filter": ["card_id"], "position": true, "target": false, "origin": false},
+	"dash_ended": {"filter": ["card_id"], "position": true, "target": false, "origin": false, "path": true},
 	"dash_passed_through": {"filter": ["card_id"], "position": true, "target": false, "origin": false},
 	"player_damaged": {"filter": ["origin", "min_amount"], "position": false, "target": false, "origin": true},
 	"zone_started": {"filter": ["shape"], "position": true, "target": false, "origin": false},
@@ -227,6 +230,17 @@ static func _validate_triggers(relic: Dictionary, errors: Array[String]) -> int:
 	return list.size()
 
 
+## BD3b-B: problems with one trigger written in the relic trigger format (empty = fine). Public for a buff's `triggers` block
+## (EffectTemplates), which uses the same format; `index` only labels the messages ("triggers[0]").
+static func validate_trigger(trigger: Variant, index: int) -> Array[String]:
+	var errors: Array[String] = []
+	if typeof(trigger) != TYPE_DICTIONARY:
+		errors.append("triggers[%d] must be an object" % index)
+		return errors
+	_validate_trigger(trigger, index, errors)
+	return errors
+
+
 static func _validate_trigger(trigger: Dictionary, index: int, errors: Array[String]) -> void:
 	var label: String = "triggers[%d]" % index
 	for key: Variant in trigger.keys():
@@ -251,6 +265,8 @@ static func _validate_trigger(trigger: Dictionary, index: int, errors: Array[Str
 				errors.append("%s: the event '%s' has no position, so 'at' cannot be event_position" % [label, String(event_id)])
 			if String(at) == AT_EVENT_TARGET and not bool(spec["target"]):
 				errors.append("%s: the event '%s' has no target, so 'at' cannot be event_target" % [label, String(event_id)])
+			if String(at) == AT_EVENT_PATH and not bool(spec.get("path", false)):
+				errors.append("%s: the event '%s' has no path, so 'at' cannot be event_path" % [label, String(event_id)])
 	if trigger.has("internal_cooldown"):
 		var cooldown: Variant = trigger["internal_cooldown"]
 		if not _is_number(cooldown) or float(cooldown) < 0.0 or float(cooldown) > MAX_INTERNAL_COOLDOWN:
@@ -262,6 +278,17 @@ static func _validate_trigger(trigger: Dictionary, index: int, errors: Array[Str
 	var effect_errors: Array[String] = []
 	for j in range((effects as Array).size()):
 		CardSchema.validate_effect_entry((effects as Array)[j], j, effect_errors)
+		# A buff inside a trigger may not carry triggers of its own: a buff's triggers are live only while the buff lasts, and a trigger
+		# that starts new ones would make the chain unbounded by data.
+		var entry: Variant = (effects as Array)[j]
+		if typeof(entry) == TYPE_DICTIONARY and String((entry as Dictionary).get("template", "")) == "buff":
+			var entry_params: Variant = (entry as Dictionary).get("params", {})
+			if typeof(entry_params) == TYPE_DICTIONARY and (entry_params as Dictionary).has("triggers"):
+				effect_errors.append("effects[%d] (buff): a buff inside a trigger cannot carry 'triggers'" % j)
+		if String(trigger.get("at", "")) == AT_EVENT_PATH and typeof(entry) == TYPE_DICTIONARY and String((entry as Dictionary).get("template", "")) == "zone":
+			var zone_params: Variant = (entry as Dictionary).get("params", {})
+			if typeof(zone_params) == TYPE_DICTIONARY and String((zone_params as Dictionary).get("shape", "")) != ZoneShape.LINE:
+				effect_errors.append("effects[%d] (zone): at event_path a zone must be a line (it is laid from the path's start to its end)" % j)
 	for problem: String in effect_errors:
 		errors.append("%s: %s" % [label, problem])
 

@@ -2764,3 +2764,14 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **The Wizard "HP 22 against 20" was a report bug.** An event cut max HP mid-run. **The `-BossLog` "unknown" was the act `damage_scale`.** Both are fixed in `tools/wave_sim.gd`.
 - **Auto-choose already reached the sacrifice give-up step.** It was a missing chain, not a bug. The `sacrifice_giveup` capture preset now covers it.
 - **Note for BD3b:** Filing Cabinet must zero both `swap_penalty` and `curse_swap_penalty`.
+
+## 2026-11-17 - 3d sitting B triage (game-lead)
+- **Sitting B accepted** (41b6b01..501dcd0). Suite 2544 (181 suites), 0 failures; hashes unchanged. D52 default A applied: 48 common cards are `starter` and 17 rare or legendary are `reward`; the 3 curses have no field. The 4 starter relics are tagged.
+- **gameplay-dev's calls, accepted:**
+  - Names are at most 24 characters; `PRESET = -1` stands for the preset in `last_used`.
+  - Slot positions never shift. A bad entry keeps its slot, is flagged and is written back unchanged until it's overwritten or deleted. [Compacting the list, which would silently renumber the player's loadouts.]
+  - An unreadable or wrong-version file is ignored whole and copied to `.bak` before the first write. There's no migration at version 1. A bad profile reads as 0 runs.
+  - A plan holds only reward or locked cards, with no duplicates.
+  - Loadout rules are validated lazily, not at boot, which keeps Main untouched. Sitting C calls `LoadoutRules.shipped_problems()` at run start.
+- **Flipping D52 is a data edit across the card files,** not code. That's acceptable under "data change only". [A rarity-to-availability mapping in code, which would hide the field.]
+- **Known test hazard (not new):** suites that load fixture card sets leave the static `CardDatabase` on the fixtures. New suites reload in `before_test`. qa should be aware.

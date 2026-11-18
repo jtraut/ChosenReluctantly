@@ -82,7 +82,9 @@ func test_the_four_cards_and_six_relics_load_clean_with_the_planned_slots_and_ti
 		var relic: Dictionary = RelicDatabase.get_relic(id)
 		assert_str(String(relic["rarity"])).is_equal(String(tiers[id]))
 		assert_str(String(relic["pool"])).is_equal(String(pools[id]))
-		assert_array(relic["sources"]).is_equal(["elite", "relic_room", "merchant"])
+		var sources: Array = (relic["sources"] as Array).duplicate()
+		sources.erase("starter")  # 3d-B: chasing_paper also lists the starter source
+		assert_array(sources).is_equal(["elite", "relic_room", "merchant"])
 
 
 func test_the_new_attack_cards_pass_the_damage_rule_on_unconditional_damage() -> void:

@@ -2859,3 +2859,12 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **Decay:** `decay_after` is its own timer; a reapply at the cap resets it; the status ends at whichever of duration or decay comes first (reason `expired`). Consume runs once after the condition passes and removes every stack. `hp_below` is strict. Copies count in `deck_count`, including the card itself.
 - **"Gives 2 Charge" is two `apply_status` self effects** (no `stacks` param). [A `stacks` param: more schema for one use.]
 - **Game-lead: the bot sim can't see Charge or `hp_below`** (`tools/sim_caster.gd` has no status manager; `bot_sim.gd`'s view lacks `self_stacks`, `hp_fraction`, `deck_card_ids`). Fixing that is added to BD3b-D's scope, before its gating checks, since Thesis can't be measured otherwise. [Accepting it: the W-B gate would measure a Thesis that never scales.]
+
+## 2026-11-18 - BD3b-B engine calls (gameplay-dev, recorded by game-lead)
+- **Buff triggers live in a lazily created `BuffTriggers` RelicManager on the caster**, in `params.triggers`, stamped `relic:buff_<card id>` so the origin guard applies. [`card:<id>`: bypasses the guard.] Consequence for D: Spiteful Ward's nova is its own fingerprint source, not `slot:utility`, and gets no `card_damage_mult_vs_status`.
+- **A recast refreshes the buff's expiry and keeps one trigger set.** [Stacking: doubled novas.] At most 4 triggers per buff; no nesting; none on `consume_on_cast` buffs.
+- **Chain depth is one static on the relay**, carried by projectiles, zones and delayed or repeated aoe hits. [Per manager: a buff host and a relic manager could ping-pong.]
+- **Exit Strategy uses `at: event_path` on `dash_ended`** (a line from start to end, capped at 20 m). Its filter is `{}`, since every dash card is a Movement card today.
+- **Game-lead: C1 uses `{"origin": "enemy"}` on Spiteful Ward's filter**, the safer of the two options gameplay-dev offered, so a future DoT or self-damage can't set off the nova.
+- **Game-lead: Thorned Boundary stays in C2 with its engine work.** `player_damaged` has no attacker or melee flag, so C2 first adds both to the event. [Dropping the relic: W-D would lose its only new non-Fire relic.] If that pushes C2 over a sitting, gameplay-dev stops with `Remaining:`.
+- **Old stash:** gameplay-dev's `git stash pop` on a clean tree applied an old stash (`stash@{0}`, from 85cd564) and it was undone by hand; `git diff HEAD` was empty afterwards. The stash is left in place for the director.

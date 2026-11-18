@@ -91,6 +91,14 @@ func test_a_float_count_from_json_is_a_whole_number_so_an_existing_file_loads() 
 	assert_str(profile.problem).is_empty()
 
 
+func test_a_new_instance_reads_the_file_so_recording_adds_to_the_real_count() -> void:
+	_put(PROFILE_PATH, "{\"version\": 1, \"runs_finished\": 5}")
+	var profile := PlayerProfile.new(PROFILE_PATH)
+	assert_int(profile.runs_finished).is_equal(5)
+	assert_bool(profile.record_run_finished()).is_true()
+	assert_int(PlayerProfile.new(PROFILE_PATH).runs_finished).is_equal(6)
+
+
 func test_a_faked_run_count_writes_nothing() -> void:
 	var profile := PlayerProfile.new(PROFILE_PATH)
 	profile.fake_runs_finished(5)

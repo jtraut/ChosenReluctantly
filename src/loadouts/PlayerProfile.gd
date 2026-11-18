@@ -3,7 +3,7 @@ extends RefCounted
 ## The small persisted profile (3d, acceptance 1): `user://profile.json` = {version, runs_finished}. A finished run counts whether it was won or lost.
 ## Run 1 (runs_finished 0) starts straight away with the preset; from run 2 the start screen shows.
 ##
-## The path is injectable (`PlayerProfile.new(path)`), so tests never touch the real user folder. A missing file reads as 0 runs. A bad or
+## The path is injectable (`PlayerProfile.new(path)`; construction reads the file), so tests never touch the real user folder. A missing file reads as 0 runs. A bad or
 ## outdated file reads as 0 runs too, never crashes, and sets `problem`; the next write keeps the bad file as `<path>.bak` first.
 ## Sitting C decides who may call `record_run_finished` (scenarios, sims and debug launches never do).
 
@@ -23,6 +23,7 @@ var _backed_up: bool = false
 
 func _init(file_path: String = DEFAULT_PATH) -> void:
 	path = file_path
+	load_file()  # like LoadoutStore: a new instance always starts from the file, so a write can never reset a real count
 
 
 ## (Re)reads the file. Never crashes: any problem leaves 0 runs and sets `problem`.

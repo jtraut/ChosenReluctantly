@@ -86,6 +86,10 @@ class ActiveStatus:
 	var base_max_stacks: int = 1
 	## MAP3b: `stacking.hard_cap`, the ceiling above the stat-raised cap (0 = none).
 	var hard_cap: int = 0
+	## BD3b: `stacking.decay_after` (seconds, 0 = none) and the time left on it. Every gain, including one at the cap, resets it; at 0 all
+	## stacks drop (the status ends as "expired").
+	var decay_after: float = 0.0
+	var decay_left: float = 0.0
 
 	func source_node() -> Node:
 		return instance_from_id(source_id) as Node if source_id != 0 else null
@@ -106,6 +110,8 @@ class ActiveStatus:
 		if typeof(stacking) == TYPE_DICTIONARY:
 			base_max_stacks = maxi(int((stacking as Dictionary).get("max_stacks", 1)), 1)
 			hard_cap = maxi(int((stacking as Dictionary).get("hard_cap", 0)), 0)
+			decay_after = maxf(float((stacking as Dictionary).get("decay_after", 0.0)), 0.0)
+			decay_left = decay_after
 		var visual: Variant = status_def.get("visual")
 		if typeof(visual) == TYPE_DICTIONARY:
 			cue = visual
@@ -196,9 +202,11 @@ func apply_status(status_id: String, status_def: Dictionary, duration: float, so
 		if origin != "":
 			refreshed.origin = origin
 		# BD3a: a reapply adds a stack up to the max (1 by default, so nothing stacks unless data or a stat says so).
-		if refreshed.effect_type == "damage_over_time" and refreshed.stacks < _max_stacks(refreshed, source):
+		if StatusDatabase.STACKABLE_TYPES.has(refreshed.effect_type) and refreshed.stacks < _max_stacks(refreshed, source):
 			refreshed.stacks += 1
 			status_stacks_changed.emit(status_id, refreshed.stacks)
+		# BD3b: any gain (a stack, or a reapply at the cap) restarts the decay timer.
+		refreshed.decay_left = refreshed.decay_after
 	else:
 		var created := ActiveStatus.new(status_id, status_def, duration, source)
 		created.origin = origin
@@ -325,10 +333,12 @@ func _process(delta: float) -> void:
 		var active: ActiveStatus = _active[status_id]
 		active.time_remaining -= delta
 		active.time_to_next_tick -= delta
+		if active.decay_after > 0.0:
+			active.decay_left -= delta
 		if active.time_to_next_tick <= 0.0:
 			active.time_to_next_tick += active.tick_interval / _tick_rate(active, active.source_node())
 			_tick(active)
-		if active.time_remaining <= 0.0:
+		if active.time_remaining <= 0.0 or (active.decay_after > 0.0 and active.decay_left <= 0.0):
 			_expired.append(status_id)
 	for status_id: String in _expired:
 		var ended: ActiveStatus = _active[status_id]

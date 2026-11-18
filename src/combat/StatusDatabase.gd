@@ -7,7 +7,12 @@ extends RefCounted
 
 ## damage_over_time: Burn, Bleed. heal_over_time: Regeneration. lifesteal: while active, the
 ## owner heals a fraction of the damage it deals (see StatusEffectManager.on_damage_dealt).
-const EFFECT_TYPES: Array[String] = ["damage_over_time", "heal_over_time", "lifesteal", "stun"]
+## counter (BD3b): deals nothing and does nothing by itself; its stack count is read by `scale` and `self_stacks_at_least` (Charge).
+const EFFECT_TYPES: Array[String] = ["damage_over_time", "heal_over_time", "lifesteal", "stun", "counter"]
+## The effect types whose reapply adds a stack (up to `stacking.max_stacks`).
+const STACKABLE_TYPES: Array[String] = ["damage_over_time", "counter"]
+## Sanity limit on `stacking.decay_after` (seconds).
+const MAX_DECAY_AFTER := 3600.0
 ## Enemy ranks a stun rule must cover (see EnemyConfig.RANKS, which owns the list).
 const RANKS: Array[String] = ["normal", "elite", "boss"]
 ## Allowed "visual.kind" values (see StatusEffectManager._ensure_flame).
@@ -44,6 +49,7 @@ const NUMBER_RULES_BY_TYPE: Dictionary = {
 	"stun": {
 		"base_duration": [0.0, 60.0, false],
 	},
+	"counter": {},
 }
 ## Diminishing-returns block of a stun: field -> [min, max, min_inclusive].
 const DR_RULES: Dictionary = {
@@ -98,22 +104,25 @@ static func validate_entry(entry: Dictionary) -> Array[String]:
 	if entry.has("visual"):
 		errors.append_array(_validate_visual(entry["visual"]))
 	if entry.has("stacking"):
-		errors.append_array(_validate_stacking(entry["stacking"], type_ok and String(effect_type) == "damage_over_time"))
+		errors.append_array(_validate_stacking(entry["stacking"], type_ok and STACKABLE_TYPES.has(String(effect_type))))
 	return errors
 
 
-## BD3a: the optional `stacking` block, {max_stacks: whole number 1..MAX_STACKS}. Only damage_over_time statuses stack.
+## BD3a: the optional `stacking` block, {max_stacks: whole number 1..MAX_STACKS, hard_cap, decay_after: seconds > 0}. Only
+## damage_over_time and counter statuses stack. BD3b: `decay_after` drops all stacks that many seconds after the last gain.
 static func _validate_stacking(stacking: Variant, stackable: bool) -> Array[String]:
 	var errors: Array[String] = []
 	if typeof(stacking) != TYPE_DICTIONARY:
 		errors.append("'stacking' must be an object")
 		return errors
 	if not stackable:
-		errors.append("'stacking' is only supported by damage_over_time statuses")
+		errors.append("'stacking' is only supported by %s statuses" % str(STACKABLE_TYPES))
 	var block: Dictionary = stacking
 	for key: Variant in block.keys():
-		if not ["max_stacks", "hard_cap"].has(String(key)):
-			errors.append("'stacking.%s' is not a known key (max_stacks, hard_cap)" % str(key))
+		if not ["max_stacks", "hard_cap", "decay_after"].has(String(key)):
+			errors.append("'stacking.%s' is not a known key (max_stacks, hard_cap, decay_after)" % str(key))
+	if block.has("decay_after") and not EffectTemplates.number_in(block["decay_after"], 0.0, MAX_DECAY_AFTER, false):
+		errors.append("'stacking.decay_after' must be a number above 0 and at most %s" % str(MAX_DECAY_AFTER))
 	# MAP3b: `hard_cap` clamps the stat-raised cap and may stand alone (the base cap then stays 1).
 	for field: String in ["max_stacks", "hard_cap"]:
 		if field == "max_stacks" and not block.has(field) and block.has("hard_cap"):

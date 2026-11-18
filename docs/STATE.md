@@ -3,21 +3,17 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-18 (3d closed). Latest tag `playtest-2026-11-18-3d`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-18 (BD3b brief written). Latest tag `playtest-2026-11-18-3d`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- Nothing in flight. **3d closed 2026-11-18**, tag `playtest-2026-11-18-3d`. The repo runs.
+- **BD3b brief written 2026-11-18** (ROADMAP, BD3b entry below 3d; BUILD_DEPTH §14; DECISIONS "BD3b brief"). Nothing built yet. The repo runs.
 
 ## Exact next step
-1. **game-lead writes the BD3b brief** in ROADMAP (BD3 entry, line ~853; BUILD_DEPTH §9a). Fold in:
-   - **BD3b-0**, a ux polish sitting with the list in DECISIONS "3d playtest triage";
-   - N2 ("Preset deck" text to data);
-   - Filing Cabinet zeroing both swap penalties;
-   - the ARCHITECTURE trim (tech-writer, 520 lines against ~400).
-   - Tag each sitting `safe to chain` or `needs your play first`. DF1's balance is unplayed by the director (59 expired), so judge whether BD3b's relic tuning waits.
-2. BD3b, then the Milestone 3 close and milestone playtest (CLAUDE.md, milestone boundary).
+1. **ux-designer runs BD3b-0** (the 3d polish list, 9 items, nothing else). `safe to chain`.
+2. Then gameplay-dev BD3b-A (engine 1, fixtures only), B, C1, C2, D, then BD3b-ux, qa, playtester, tech-writer, close. One sitting per agent; a `Remaining:` list gets a fresh agent.
+3. Then the Milestone 3 close and milestone playtest (CLAUDE.md, milestone boundary).
 
-**Next role:** game-lead (BD3b brief).
+**Next role:** ux-designer (BD3b-0).
 
 ## Current baselines (DF1 qa, 2026-11-17)
 - Suite 2623 (186 suites), 0 failures, 0 orphans (3d qa).

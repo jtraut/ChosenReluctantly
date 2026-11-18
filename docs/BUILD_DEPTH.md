@@ -503,7 +503,7 @@ Each slice should fit one sitting and gets the full loop (gameplay-dev -> ux-des
 
 **Order (director, 2026-11-02: D24 = A, D28 = A):** BD0 -> H3 (dodge return) -> MAP0 -> PL3 -> **BD1 -> BD2** -> first map build -> 3d -> BD3. BD2 sits before the map build so map nodes can offer relics from day one.
 
-**Split 2026-11-09 (director feedback, below):** BD3 becomes **BD3a, physical Rogue** (run next after MAP3) and **BD3b, Wizard depth** (the rest of BD3, where BD3 was). See §9a.
+**Split 2026-11-09 (director feedback, below):** BD3 becomes **BD3a, physical Rogue** (run next after MAP3) and **BD3b, Wizard depth** (the rest of BD3, where BD3 was). See §9a. BD3b is designed in §14 (2026-11-18).
 
 ## 9a. BD3a: physical Rogue builds (director feedback, 2026-11-09) [PROPOSED details]
 
@@ -910,6 +910,65 @@ The MAP4 content listed in §4.7 and §4.8, MAP.md §2 and GDD §9 (D37 = A, D38
 - Save and Continue at each event step (the choice screen, a pending relic offer, a pending removal, a pending sacrifice, and between paying for a fight and finishing it) gives the same run.
 - The Micromanager plus a curse: the slot keeps cycling.
 - Hashes don't move in B1, B2 or C (weight 0, fixtures in tests). D moves them; each move is explained before qa re-baselines.
+
+## 14. BD3b: Wizard depth (game-lead design pass, 2026-11-18) [PROPOSED details]
+
+The rest of BD3 (§9, §9a "Not in BD3a"): W-B Thesis, W-D Ward Battlemage, Charge, `scale`, buff triggers and the three remaining conditions. Every number is a starting value in data; names and flavour are placeholders until story is active. Logged in DECISIONS "BD3b brief".
+
+### 14.1 Why: the Wizard is where the Rogue was at BD3a
+
+A Wizard who wants no Fire has exactly 3 common Attack: Single cards (`wizard_bolt_volley`, `wizard_overqualified_bolt`, `neutral_pointy_stick`) and 3 common Attack: AoE cards (`wizard_arcane_nova`, `wizard_well_actually`, `neutral_shrug_bomb`). The deck rule asks for 3 unique per slot, so **every non-Fire Wizard deck is the same deck in both Attack slots.** Fire has 8 common Attack cards. The Wizard class pool also has no Recovery card. The SIM1 human-bot Wizard gap (16/36 against the Rogue's 18/36, with act 1 losses) is a symptom.
+
+### 14.2 Engine (new generic code, all from §3.2-§3.4)
+
+- **`stacking.decay_after`** on a status: all stacks drop N s after the last gain. BD3a built `max_stacks`/`hard_cap`, not this.
+- **Self-status `charge`** in `data/statuses.json`: no damage, stacks to 10 (`status_max_stacks.charge`, so a relic can raise it), `decay_after` 4 s. Applied with the existing `apply_status` target `self`.
+- **`scale` resolver** on an effect's numeric param: `{"by": "self_stacks", "status_id", "per", "max"?, "consume"?}` and `{"by": "deck_count", "tag", "per", "max"}`. Scaled damage doesn't count for `CardDamageRule` (§3.5).
+- **Conditions** `self_stacks_at_least`, `deck_count_at_least`, `hp_below` (caster), in the evaluator, the validator, `SlotSynergy` (live glow), `PlanPolicy` and `CastPreview`. Content uses `hp_below` only. The other two ship with fixture tests and no card, for the passive tree (M4). [Leaving them out: the evaluator, glow and bot are being opened anyway, and §3.2 specs them.]
+- **Buff triggers:** a `buff` may carry a `triggers` list in the relic trigger format (event, filter, internal cooldown, effects). They're live only while the buff lasts and go through the same recursion guard. Built for Spiteful Ward.
+- **Line zone along a dash path** for Exit Strategy (the `zone_line` shape exists; this places it from the `dash_ended` start and end points).
+- **Chain-depth carry-over (BD2 qa):** a relic-spawned projectile or zone that hits later keeps its chain depth, so a buff trigger or relic can't loop through a delayed hit.
+
+### 14.3 Cards (7 new Wizard cards, all non-Fire, all common `starter`)
+
+Keystones are common `starter`, as BD3a's are (`rogue_open_a_vein`, `rogue_bad_influence`); BD0's "keystones are `reward`" default is superseded by D52 (rare and legendary are reward-only).
+
+| Card | Slot | Sketch | Archetype | From |
+|---|---|---|---|---|
+| `wizard_thesis_defense` **Keystone, Payoff** | Attack: Single | Projectile 7 neutral, cooldown +0.3. +1.5 damage per Charge, consumes all Charge. | W-B | §5 |
+| `wizard_footnotes` **Primer** | Attack: Single | 4 hits of 1.8 neutral, cooldown +0.2. The cast gives you 2 Charge. | W-B | §5 |
+| `wizard_citation_needed` **NEW** | Attack: Single | Projectile 6 neutral, cooldown +0.1. +0.5 damage per Projectile card in your run deck (max +3). | W-B | new |
+| `wizard_literature_review` **NEW, Primer** | Attack: AoE | Area r2.8 at the aim point (max range 8), 13 neutral, cooldown +0.3. The cast gives you 2 Charge. | W-B | new |
+| `wizard_spiteful_ward` **Keystone** | Utility | +25 armor for 4 s. While it lasts, each hit you take releases a 6-neutral nova, r2.5, 0.5 s internal cooldown. | W-D | §5 |
+| `wizard_hostile_feedback` **NEW, Payoff** | Attack: AoE | Area r2.5 around you, 12 neutral, cooldown 0. Below 50% HP: +8 and knockback 6. | W-D | new |
+| `wizard_sick_day` **NEW** | Recovery | Heal 10 and +15 armor for 3 s. The Wizard's first class Recovery card. | W-D, any | new |
+
+A non-Fire Wizard then has 6 common Attack: Single and 5 common Attack: AoE cards to choose from. Every Attack card must pass `CardDamageRule` on its unconditional damage; gameplay-dev adjusts the starting numbers to pass and logs any change.
+
+**Debug decks:** `wizard-thesis` and `wizard-ward-battlemage`, from the §5 lists with the new cards swapped in. Each holds at most 1 Fire card (target 0).
+
+### 14.4 Relics (4, plus 1 optional)
+
+| Relic | Pool, tier | Rule | Note |
+|---|---|---|---|
+| Exit Strategy | fire, 1 | Movement cards leave a 2 s line of fire along the path (2 damage every 0.5 s). | Owed since BD2 (§4.5 #4). |
+| Thorned Boundary | neutral, 2 | While you have bonus armor, enemies that hit you in melee are stunned 0.5 s and take 10% of the hit back. | §4.5 candidates. Replaces Thermal Ward, which is Fire. |
+| Reading List **NEW** | wizard, 2 | Your Charge stacks to 15. | Data only (`status_max_stacks.charge`). Replaces Extra Credit, which is too close to cc: All Staff and Office Supplies. |
+| Filing Cabinet | wizard, 1 | No dead-card swap penalty on your Utility and Movement slots (the ordinary 1 s and the curse 2 s). | §4.8. Ordinary sources only (elite, relic room, merchant), **not `starter` yet:** no lock rule for relics exists, so `starter` would make it a third unlocked Wizard starter against the "2 per class" rule (§4.7). It becomes a starter when unlock rules exist. |
+| Hot Streak *(optional)* | fire, 2 | Three Fire-tag casts within 4 s reset your Attack: AoE cooldown. 8 s internal cooldown. | Ships only if the Bleed Rogue's relic Burn share stays at its baseline (§14.5). |
+
+**Dropped:** Controlled Panic (Adrenaline Vial shipped its role; §4.5 said pick one), Thermal Ward and Extra Credit (above).
+
+W-B's relics become Reading List, cc: All Staff and Office Supplies. W-D's become Thorned Boundary, Ergonomic Chair and Heavy Sigh.
+
+### 14.5 Checks (for the ROADMAP brief)
+
+- The validators accept every new card, status and relic; a bad `scale`, `decay_after` or buff trigger fails loudly.
+- `CardDamageRule` passes on every new Attack card.
+- **Fire share doesn't regress (BD3a's fix):** the Bleed Rogue's relic Burn share and its late-offer Fire and Burn shares (STATE: Fire 22.8%, Burn 10.0%) rise by at most 1 point. For a Thesis Wizard, report the late-offer Fire share before and after; target: down by at least 5 points.
+- **Gating for W-B and W-D** (§2, on the plan bot): parity 70-130% of the Wizard preset's boss time; fingerprint L1 at least 0.6 between W-B and W-D, and against W-A, with a different top source; removal pain on the keystone. Older archetypes stay informational.
+- SIM1 floors and ceiling (MAP.md §11.4) hold. The Wizard's act 1 losses are measured and reported per room, not tuned (DF1's numbers wait for the director's play).
+- Charge decays, caps and is consumed exactly as specified; Spiteful Ward's nova respects its internal cooldown and can't chain through Thorned Boundary or a relic.
 
 ## Decided in this doc (game-lead defaults, logged in DECISIONS "2026-11-02 - BD0")
 

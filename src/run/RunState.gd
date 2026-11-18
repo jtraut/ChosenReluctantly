@@ -56,6 +56,9 @@ var rejects_remaining: int = 0
 ## merchant's stock. Ids only, no duplicates. An old save without the key loads as empty. Nothing erases an entry: a removed card can still be
 ## re-added by a debug path (`--full-deck`, a forced `--run-offer`), and then it simply sits in the deck while staying out of offers.
 var removed_cards: Array[String] = []
+## 3d: the loadout's plan (reward and locked card ids the player hopes to find). Optional in a save (an older save has none and loads as empty). A card offer, a
+## mini-boss offer or a merchant card is "on your plan" while it is on this list and not already in the deck (`is_on_plan`). Never changes during a run.
+var plan: Array[String] = []
 ## D49 = B: status id -> the offer weight multiplier earned by pruning or rejecting cards that apply it (1.0 = untouched; an absent key is 1.0).
 ## Each prune or reject multiplies by `rewards.prune_reject_factor`, never below `rewards.prune_reject_floor`. Read by RewardOffer.generate.
 var offer_weights: Dictionary = {}
@@ -288,6 +291,7 @@ func to_dict() -> Dictionary:
 		"max_hp": max_hp,
 		"deck": deck.duplicate(),
 		"removed_cards": removed_cards.duplicate(),
+		"plan": plan.duplicate(),
 		"offer_weights": offer_weights.duplicate(),
 		"rejects_remaining": rejects_remaining,
 		"history": history.duplicate(true),
@@ -423,6 +427,7 @@ static func from_dict(data: Dictionary) -> RunState:
 	_read_merchant_fields(state, data)
 	_read_run_fields(state, data)
 	_read_event_fields(state, data)
+	state.plan = _id_list(data.get("plan", []), "plan")
 	if state.pending == PENDING_EVENT and not _event_choice_fits(state):
 		push_error("RunState.from_dict: pending 'event' has no usable event ('%s'); no choice is open" % state.event_id)
 		state.pending = PENDING_NONE
@@ -832,6 +837,11 @@ static func _offer_weights_of(value: Variant) -> Dictionary:
 		else:
 			push_error("RunState.from_dict: 'offer_weights' entry '%s' is not a status id with a weight in (0, 1]; dropped" % str(key))
 	return out
+
+
+## True when `card_id` is on the loadout's plan and not already in the deck ("On your plan", 3d). One shared flag for reward, mini-boss and merchant cards.
+func is_on_plan(card_id: String) -> bool:
+	return plan.has(card_id) and not deck.has(card_id)
 
 
 ## True when the run holds this relic.

@@ -1,0 +1,376 @@
+{
+  "run": {
+    "act": 1,
+    "acts_total": 3,
+    "character": "rogue",
+    "choice_log": [],
+    "cleanses": 0,
+    "deck": [
+      "rogue_quick_slash",
+      "rogue_overhand_whatever",
+      "fire_ember_whatever",
+      "fire_fine_burn_then",
+      "rogue_everyone_calm_down",
+      "neutral_shrug_bomb",
+      "fire_hot_head",
+      "neutral_deep_sigh",
+      "rogue_not_my_problem",
+      "fire_blaze_and_bail",
+      "rogue_ugh_fine_moving",
+      "neutral_backward_leap",
+      "neutral_healing_potion",
+      "rogue_nap_time",
+      "neutral_regeneration"
+    ],
+    "event_fight": {},
+    "event_id": "",
+    "event_queue": [],
+    "events_seen": [],
+    "gold": 34,
+    "gold_spent_merchant": 0,
+    "history": [
+      {
+        "hp_end": 20.0,
+        "index": 0,
+        "seconds": 12.5,
+        "type": "combat",
+        "wave_id": "combat_intro"
+      },
+      {
+        "hp_end": 20.0,
+        "index": 1,
+        "seconds": 12.5,
+        "type": "combat",
+        "wave_id": "combat_intro"
+      }
+    ],
+    "hp": 20.0,
+    "map": {
+      "edges": [
+        [
+          1,
+          6
+        ],
+        [
+          2,
+          6
+        ],
+        [
+          2,
+          7
+        ],
+        [
+          3,
+          7
+        ],
+        [
+          6,
+          9
+        ],
+        [
+          6,
+          11
+        ],
+        [
+          7,
+          11
+        ],
+        [
+          9,
+          13
+        ],
+        [
+          11,
+          14
+        ],
+        [
+          11,
+          15
+        ],
+        [
+          13,
+          17
+        ],
+        [
+          14,
+          17
+        ],
+        [
+          14,
+          18
+        ],
+        [
+          15,
+          19
+        ],
+        [
+          17,
+          21
+        ],
+        [
+          18,
+          21
+        ],
+        [
+          19,
+          22
+        ],
+        [
+          21,
+          24
+        ],
+        [
+          21,
+          25
+        ],
+        [
+          22,
+          25
+        ],
+        [
+          24,
+          28
+        ],
+        [
+          24,
+          29
+        ],
+        [
+          25,
+          29
+        ],
+        [
+          25,
+          30
+        ],
+        [
+          28,
+          32
+        ],
+        [
+          29,
+          32
+        ],
+        [
+          29,
+          33
+        ],
+        [
+          30,
+          34
+        ],
+        [
+          32,
+          38
+        ],
+        [
+          33,
+          38
+        ],
+        [
+          34,
+          38
+        ]
+      ],
+      "nodes": [
+        {
+          "column": 1,
+          "id": 1,
+          "room": 1,
+          "type": "combat",
+          "wave_id": "combat_intro"
+        },
+        {
+          "column": 2,
+          "id": 2,
+          "room": 1,
+          "type": "combat",
+          "wave_id": "combat_intro"
+        },
+        {
+          "column": 3,
+          "id": 3,
+          "room": 1,
+          "type": "combat",
+          "wave_id": "combat_intro"
+        },
+        {
+          "column": 2,
+          "id": 6,
+          "room": 2,
+          "type": "combat",
+          "wave_id": "combat_mixed"
+        },
+        {
+          "column": 3,
+          "id": 7,
+          "room": 2,
+          "type": "combat",
+          "wave_id": "combat_mixed"
+        },
+        {
+          "chest": "small",
+          "column": 1,
+          "id": 9,
+          "room": 3,
+          "type": "relic_room",
+          "wave_id": ""
+        },
+        {
+          "chest": "small",
+          "column": 3,
+          "id": 11,
+          "room": 3,
+          "type": "relic_room",
+          "wave_id": ""
+        },
+        {
+          "column": 1,
+          "id": 13,
+          "room": 4,
+          "type": "event",
+          "wave_id": ""
+        },
+        {
+          "column": 2,
+          "id": 14,
+          "room": 4,
+          "type": "event",
+          "wave_id": ""
+        },
+        {
+          "column": 3,
+          "id": 15,
+          "room": 4,
+          "type": "elite",
+          "wave_id": "elite_brutes"
+        },
+        {
+          "column": 1,
+          "id": 17,
+          "room": 5,
+          "type": "elite",
+          "wave_id": "elite_brutes"
+        },
+        {
+          "column": 2,
+          "id": 18,
+          "room": 5,
+          "type": "elite",
+          "wave_id": "elite_brutes"
+        },
+        {
+          "column": 3,
+          "id": 19,
+          "room": 5,
+          "type": "combat",
+          "wave_id": "combat_stonewall"
+        },
+        {
+          "column": 1,
+          "id": 21,
+          "room": 6,
+          "type": "combat",
+          "wave_id": "combat_swarm"
+        },
+        {
+          "column": 2,
+          "id": 22,
+          "room": 6,
+          "type": "elite",
+          "wave_id": "elite_brutes"
+        },
+        {
+          "column": 0,
+          "id": 24,
+          "room": 7,
+          "type": "event",
+          "wave_id": ""
+        },
+        {
+          "column": 1,
+          "id": 25,
+          "room": 7,
+          "type": "combat",
+          "wave_id": "combat_mixed"
+        },
+        {
+          "column": 0,
+          "id": 28,
+          "room": 8,
+          "type": "rest",
+          "wave_id": ""
+        },
+        {
+          "column": 1,
+          "id": 29,
+          "room": 8,
+          "type": "rest",
+          "wave_id": ""
+        },
+        {
+          "column": 2,
+          "id": 30,
+          "room": 8,
+          "type": "elite",
+          "wave_id": "elite_brutes"
+        },
+        {
+          "column": 0,
+          "id": 32,
+          "room": 9,
+          "type": "combat",
+          "wave_id": "combat_stonewall"
+        },
+        {
+          "column": 1,
+          "id": 33,
+          "room": 9,
+          "type": "combat",
+          "wave_id": "combat_stonewall"
+        },
+        {
+          "column": 2,
+          "id": 34,
+          "room": 9,
+          "type": "rest",
+          "wave_id": ""
+        },
+        {
+          "column": 2,
+          "id": 38,
+          "room": 10,
+          "type": "mini_boss",
+          "wave_id": "mini_boss_act1"
+        }
+      ]
+    },
+    "max_hp": 30.0,
+    "merchant_discount": 0.0,
+    "merchant_removals": 0,
+    "merchant_visit": {},
+    "offer": [],
+    "offer_rarity": "",
+    "offer_weights": {},
+    "outcome": "",
+    "past_acts": [],
+    "path": [
+      1,
+      6
+    ],
+    "pending": "node",
+    "rejects_remaining": 3,
+    "relic_incoming": "",
+    "relics": [],
+    "relics_given_up": [],
+    "removed_cards": [],
+    "room_index": 1,
+    "run_mods": [],
+    "sacrifice_picks": [],
+    "sacrificed_tier": 0,
+    "seed": 5,
+    "version": 2,
+    "xp_earned": 0
+  },
+  "save_version": 1
+}

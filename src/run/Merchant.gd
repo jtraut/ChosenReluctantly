@@ -391,7 +391,7 @@ static func items(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 		var card_reason: String = "sold" if card_sold else ("too_expensive" if card_cost > state.gold else "")
 		var card: Dictionary = (ctx["by_id"] as Dictionary).get(card_id, {})
 		out.append({"kind": KIND_CARD, "id": card_id, "name": String(card.get("name", card_id)), "rarity": CardSchema.rarity_of(card), "price": card_cost, "base_price": card_price(ctx, card_id),
-				"sold": card_sold, "can_buy": card_reason.is_empty(), "reason": card_reason, "needs_giveup": false, "sacrifice_cost": 0})
+				"sold": card_sold, "can_buy": card_reason.is_empty(), "reason": card_reason, "needs_giveup": false, "sacrifice_cost": 0, "on_plan": state.is_on_plan(card_id)})
 	var removal: int = removal_price(state, ctx)
 	var removal_reason: String = ""
 	if RunChoices.removable_card_ids(state, ctx).is_empty():

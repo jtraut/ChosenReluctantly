@@ -134,6 +134,7 @@ static func _shop_options(state: RunState, ctx: Dictionary) -> Array[Dictionary]
 			Merchant.KIND_CARD:
 				option = RunChoices.card_option(OPTION_BUY_CARD + ":" + String(item["id"]), OPTION_BUY_CARD, String(item["id"]), ctx)
 				option["owned"] = state.deck.count(String(item["id"]))
+				option["on_plan"] = bool(item["on_plan"])
 				option["base_price"] = int(item["base_price"])
 				option["label"] = String(ui.get("item_format", "%s - %d")) % [String(option["label"]), int(item["price"])]
 			_:

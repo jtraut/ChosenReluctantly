@@ -21,6 +21,7 @@ extends RefCounted
 ##   amount: float       HP a heal option gives, else 0
 ##   owned: int          copies of this card in the deck now (card options), else 0
 ##   rarity: String      card options: "common" | "rare" | "legendary" (MAP3b), else ""
+##   on_plan: bool       true on a card option (reward, mini-boss or merchant) when the card is on the loadout's plan and not in the deck yet ("On your plan"), else false
 ##   slot_contents: Array[String]  names of the distinct cards the deck holds in this card's slot now, in name order
 ##                       (card options of a reward; [] elsewhere), for "Slot 1 now: A, B, C"
 ##
@@ -220,6 +221,7 @@ static func options(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 			for card_id: String in state.offer:
 				var offered_option: Dictionary = card_option("card:" + card_id, "card", card_id, ctx)
 				offered_option["owned"] = state.deck.count(card_id)
+				offered_option["on_plan"] = state.is_on_plan(card_id)
 				offered_option["slot_contents"] = slot_contents(state, String(offered_option["slot_type"]), ctx)
 				out.append(offered_option)
 			var r: Dictionary = ui["reward"]
@@ -527,6 +529,7 @@ static func card_option(option_id: String, kind: String, card_id: String, ctx: D
 	option["slot_name"] = String((ctx["slot_names"] as Dictionary).get(slot_type, slot_type))
 	option["rarity"] = CardSchema.rarity_of(card)
 	option["curse"] = CardSchema.is_curse(card)
+	option["on_plan"] = false  # the callers that have a RunState set it (reward options, merchant cards)
 	var effect_text: Dictionary = ((ctx["ui"] as Dictionary).get("effect", {}) as Dictionary).duplicate()
 	effect_text["slot_names"] = ctx["slot_names"]
 	effect_text["statuses"] = ctx.get("statuses", {})
@@ -538,5 +541,5 @@ static func _blank(option_id: String, kind: String) -> Dictionary:
 	return {
 		"id": option_id, "kind": kind, "label": "", "detail": "", "flavor": "", "card_id": "",
 		"slot_type": "", "slot_name": "", "count": 0, "enabled": true, "reason": "",
-		"costs_reject": false, "opens_list": false, "amount": 0.0, "owned": 0, "slot_contents": [], "rarity": "",
+		"costs_reject": false, "opens_list": false, "amount": 0.0, "owned": 0, "on_plan": false, "slot_contents": [], "rarity": "",
 	}

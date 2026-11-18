@@ -11,7 +11,6 @@ Last updated: 2026-11-18 (3d closed). Latest tag `playtest-2026-11-18-3d`. STATE
 ## Exact next step
 1. **game-lead writes the BD3b brief** in ROADMAP (BD3 entry, line ~853; BUILD_DEPTH §9a). Fold in:
    - **BD3b-0**, a ux polish sitting with the list in DECISIONS "3d playtest triage";
-   - D53 (default A: the four starter relics become `["starter"]`-only, then re-check SIM1 and the hashes);
    - N2 ("Preset deck" text to data);
    - Filing Cabinet zeroing both swap penalties;
    - the ARCHITECTURE trim (tech-writer, 520 lines against ~400).
@@ -29,7 +28,7 @@ Last updated: 2026-11-18 (3d closed). Latest tag `playtest-2026-11-18-3d`. STATE
 - Late shares for a Bleed Rogue: Bleed 12.5%, Fire 22.8%, Burn 10.0%.
 
 ## Pending for the next docs pass
-- Nothing. The 3d pass (38092f0, b061b42) covered everything.
+- [Director decision] 2026-11-18: D53 = B. Starter relics may also drop as ordinary relics (the four 3d starters keep their elite, relic room and merchant sources; no data change). Recorded in GDD §4a and BUILD_DEPTH §4.7 row 6. CHANGELOG and ARCHITECTURE currently call it a conflict and should be updated. RESOLVED entry: the D53 text (options A/B/C, "if you don't answer: A, in BD3b") is in OPEN_ITEMS at 6c77cdf.
 - When BD3b-0 ships, tech-writer removes the 3d polish list from the "Known issues" in CHANGELOG and ARCHITECTURE.
 
 ## Known issues
@@ -37,9 +36,9 @@ Last updated: 2026-11-18 (3d closed). Latest tag `playtest-2026-11-18-3d`. STATE
 - Human-bot Kindling boss parity with relics is 67%, under 70% (qa DF1; not a DF1 regression).
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D52 answered; D53 open (starter relics, default A in BD3b). Next free: D54. Next eyes number: 61.
+**D-numbers:** D21-D53 answered. Next free: D54. Next eyes number: 61.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths. A role that stops with a `Remaining:` list gets a fresh agent, never a resumed one.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: D53 (starter relics); eyes 60 (play 3d; expires at BD3b's close); the round 2 vision check.
+All director-facing items are in `docs/OPEN_ITEMS.md`: eyes 60 (play 3d; expires at BD3b's close); the round 2 vision check.

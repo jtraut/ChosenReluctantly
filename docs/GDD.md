@@ -184,6 +184,7 @@ Added 2026-11-02 from the director's notes. The goals are director decisions. Th
     - Curse cards don't count toward the slot minimums (§4).
     - Curses are not relics.
   - **Starting relic, in his words:** players shouldn't depend on restarting runs until the RNG gives them what they hoped for. Once they've unlocked "starter" tier 1 relics, they choose one of them as part of their pre-run loadout.
+  - **(D53 = B, director 2026-11-18)** A starter relic can also drop as an ordinary relic during a run (elite, relic room, merchant). Starter is an extra source, not an exclusive one.
   - The details are [PROPOSED] in BUILD_DEPTH §4.7.
 - **(D25 = A)** Burn and Bleed do **not** stack in the base game; a second application refreshes the first. Stacking the same status comes only from special conditions: **relics, keystone cards, and potential passive-tree nodes** (§8). The director likes this.
 - **(D24 = A)** Relics are built in their own slice (BD2) straight after the synergy core (BD1), before loadouts (3d).

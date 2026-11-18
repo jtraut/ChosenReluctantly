@@ -280,7 +280,7 @@ The idea for each source is credited to his summary. Anything about those games 
 | 4 | **Treasure chests** | The relic stage (`relic_room`) gets a **chest size: small, medium or large** (weights 50/35/15). Size is shown on the map, so you can plan for it. Small uses the act's tier odds, medium the next act's row, and large is at least tier 2 using the act 3 row. Pick 1 of 3 or skip, as decided in D22. | No. | MAP1 |
 | 5a | **Rest dig** (**D37 = A**, director 2026-11-04) | A relic (placeholder name "Gravedigger's Spade") adds a third rest action, **Dig**: pick 1 of 3 relics at the act's odds, instead of healing or removing a card. | The dig relic itself is event-only or shop-only. | MAP4 |
 | 5b | **Sacrifice** | An **altar** event lets you give up a non-boss tier N relic, then pick 1 of 3 from tier N+1 (tier 3 stays tier 3). Some high-tier relics have a **`sacrifice_cost`** (1 or 2): to take one, you give up that many owned non-boss relics. Both reuse the BD2 give-one-up step and the "given-up relics never come back" rule. This lets you take weak relics early as fodder, which is his Last Flame point. A **Forge** variant (give up 2, get a tag-matched tier N+1 relic) comes from the Gemini list in §4.5. | Some `sacrifice_cost` relics. | MAP4 |
-| 6 | **Starter relic (loadout)** | Tier 1 relics with `sources` `["starter"]`, found nowhere else. The loadout (3d) gets one **starter relic slot**, filled from the starter relics the profile has unlocked. Run 1 and the preset start have none. Unlock rules wait for meta-progression (GDD §8, §14 item 11), so 3d ships 2 per class unlocked by default, and the rest `locked` with "TBD". | Yes: starter relics. | 3d |
+| 6 | **Starter relic (loadout)** | Tier 1 relics with `"starter"` in `sources`. ~~found nowhere else~~ They can also drop from their ordinary sources (D53 = B, director 2026-11-18). The loadout (3d) gets one **starter relic slot**, filled from the starter relics the profile has unlocked. Run 1 and the preset start have none. Unlock rules wait for meta-progression (GDD §8, §14 item 11), so 3d ships 2 per class unlocked by default, and the rest `locked` with "TBD". | Yes: starter relics. | 3d |
 
 **Shared rules:**
 - **No duplicates and no return:** every source skips relics you own or gave up. Sacrifices count as giving a relic up.
@@ -355,7 +355,7 @@ Generated from a game-specific prompt. **Unscheduled candidates**, like the roun
 | Burnout Syndrome | fix | Burn ticks 2x faster and stacks to 10 (not infinite) / casting a Burn-tag card costs you 1 HP (2 is harsh at 22 HP). |
 | Quarterly Downsizing | keep | Utility and Recovery slots are disabled; the other 3 slots' cooldowns are halved / no healing from cards. Card offers skip the disabled slots. |
 
-**Starter relics** (3d; tier 1, `sources` `["starter"]`)
+**Starter relics** (3d; tier 1, `"starter"` in `sources`, may also have ordinary sources per D53 = B)
 
 | Name | Class | Rule as we'd build it |
 |---|---|---|

@@ -2,7 +2,7 @@ class_name Map3bUxTest
 extends GdUnitTestSuite
 ## MAP3b ux: rarity marks on card tiles, the boss-relic offer, the Open a Vein glow, and the MB1 nits (slot names, stack labels vs damage numbers).
 
-const HEIGHTS: Array[int] = [540, 600, 720, 768, 800, 900, 1050, 1080, 1200, 1440]
+const HEIGHTS: Array[int] = [540, 600, 648, 720, 768, 800, 810, 864, 900, 1050, 1080, 1200, 1440]  # BD3b-0: 648 (1152x648) lost the second line of a two-line name
 
 
 func after_test() -> void:
@@ -252,3 +252,15 @@ func test_the_detonate_glow_lights_the_slot_widget_from_two_stacks() -> void:
 	for _i in range(10):
 		widget.update_synergy({"detonate_status": "bleed", "detonate_stacks": 2, "condition_live": false}, 1.0 / 60.0)
 	assert_float(widget.glow_level()).is_greater(0.5)
+
+
+# --- BD3b-0: slot names keep their second line ---
+
+func test_text_fit_counts_a_line_wider_than_the_width_as_wrapped_and_caps_lines_by_height() -> void:
+	var font: Font = ThemeDB.fallback_font
+	# "Flaming Nonsense" at 14 px measures 125 px: in 124.2 a Label wraps it, so it is two lines (the measure said one).
+	assert_int(TextFit.line_count("Flaming Nonsense", font, 14, 124.2)).is_equal(2)
+	assert_int(TextFit.lines_allowed(font, 14, 2, 0.0)).is_equal(2)
+	assert_int(TextFit.lines_allowed(font, 14, 2, 5.0)).is_equal(1)
+	var result: Dictionary = TextFit.fit("Warm-Up, Reluctantly", font, 124.2, 2, 14, 11, 39.0)
+	assert_int(int(result["lines"])).is_less_equal(TextFit.lines_allowed(font, int(result["font_size"]), 2, 39.0))

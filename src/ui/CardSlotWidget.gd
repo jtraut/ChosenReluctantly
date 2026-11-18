@@ -475,7 +475,7 @@ func _fit(label: Label, text: String, base_key: String, min_key: String, lines_k
 	var width := label.custom_minimum_size.x - float(_cfg["fit_padding"]) * _scale
 	var result := TextFit.fit(
 		text, font, width, int(_cfg[lines_key]),
-		roundi(float(_cfg[base_key]) * _scale), roundi(float(_cfg[min_key]) * _scale)
+		roundi(float(_cfg[base_key]) * _scale), roundi(float(_cfg[min_key]) * _scale), label.custom_minimum_size.y
 	)
 	label.text = result["text"]
 	label.add_theme_font_size_override("font_size", result["font_size"])

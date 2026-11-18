@@ -60,7 +60,7 @@ static func apply_args(args: PackedStringArray) -> Array[String]:
 static func default_files_allowed() -> bool:
 	if persist_override != null:
 		return bool(persist_override)
-	if suppressed or DisplayServer.get_name() == "headless":
+	if suppressed or RunSave.args_suppress(OS.get_cmdline_user_args()) or DisplayServer.get_name() == "headless":  # the args are read directly too: true by construction, not by call order
 		return false
 	return not LoadoutArgs.is_script_launch(OS.get_cmdline_args())
 

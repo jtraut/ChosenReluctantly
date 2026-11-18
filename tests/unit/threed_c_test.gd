@@ -194,6 +194,27 @@ func test_a_lost_run_in_the_real_controller_counts() -> void:
 	assert_int(PlayerProfile.new(PROFILE).runs_finished).is_equal(1)
 
 
+func test_try_again_after_a_finished_run_opens_the_start_screen() -> void:
+	LoadoutSession.persist_override = true
+	LoadoutSession.profile_path = PROFILE
+	LoadoutSession.loadouts_path = LOADOUTS
+	StartScreen.enabled_override = true
+	ClassPickScreen.enabled_override = false
+	RunSession.begin_new_run(31, "rogue")
+	var main: Main = _spawn()
+	await _frames(3)
+	assert_bool((main.get_node("StartScreen") as StartScreen).is_open()).override_failure_message("run 1 starts straight away").is_false()
+	main.run_controller._on_player_died()  # run 1 is lost: it counts
+	main.restart_arena()  # Try again
+	await _frames(3)
+	var fresh: Main = null
+	for child in get_children():
+		if child is Main and child != main and not child.is_queued_for_deletion():
+			fresh = child
+	assert_object(fresh).is_not_null()
+	assert_bool((fresh.get_node("StartScreen") as StartScreen).is_open()).override_failure_message("Try again from run 2 goes to the start screen").is_true()
+
+
 # ---- run start ----
 
 func _save_loadout(slot: int, relic: String = "") -> Dictionary:

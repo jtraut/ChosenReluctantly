@@ -33,7 +33,11 @@ static func reset() -> void:
 static func should_open(state: RunState) -> bool:
 	if enabled_override != null:
 		return bool(enabled_override) and LoadoutSession.start_screen_wanted(state)
-	return ClassPickScreen.interactive() and LoadoutSession.start_screen_wanted(state)
+	if DisplayServer.get_name() == "headless" or not ClassPickScreen.interactive() or (ClassPickScreen.enabled_override != null and not bool(ClassPickScreen.enabled_override)):
+		return false  # a capture or tool that turned the class pick off wants no prompt over its shot
+	if RunSession.character_forced and LoadoutSession.faked_runs < 0 and not LoadoutSession.profile_path_named:
+		return false  # `--class=` skips the class pick and its start screen too, unless the launch asked for run 2 itself (`--runs-finished=`, `--profile-path=`)
+	return LoadoutSession.start_screen_wanted(state)
 
 
 func _ready() -> void:

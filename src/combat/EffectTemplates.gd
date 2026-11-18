@@ -388,16 +388,21 @@ static func _kind_for(index: int) -> StringName:
 	return Health.KIND_HIT if index == 0 else Health.KIND_ECHO
 
 
+## `scale` is the effect's optional scale block (see EffectScale).
 ## `condition` is the effect's optional condition block (see EffectCondition). A caster condition (cast_within,
 ## zone_active) is checked once here and a false one skips the effect. A target condition travels to the hit
 ## path in a copy of the params (only made when there is one, so unconditioned effects run exactly as before).
-static func execute(template_id: String, params: Dictionary, context: EffectContext, condition: Dictionary = {}) -> void:
+static func execute(template_id: String, params: Dictionary, context: EffectContext, condition: Dictionary = {}, scale: Dictionary = {}) -> void:
 	if not condition.is_empty():
 		if not EffectCondition.caster_ok(condition, context):
 			return
 		if EffectCondition.is_target_condition(condition):
 			params = params.duplicate()
 			params[EffectCondition.PARAM_KEY] = condition
+	# BD3b: the effect's `scale` raises one numeric param by a live count, once, here (so a consume happens once per cast, not per hit).
+	# After the condition, so a skipped effect neither scales nor consumes.
+	if not scale.is_empty():
+		params = EffectScale.apply(scale, template_id, params, context)
 	match template_id:
 		"cone":
 			_execute_cone(params, context)

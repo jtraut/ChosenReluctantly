@@ -620,6 +620,7 @@ static func _validate_relic_text(value: Variant) -> Array[String]:
 const EFFECT_TEXT_GROUPS: Dictionary = {
 	"condition": ["target_has_status", "cast_within_slot", "cast_within_tag", "zone_active", "self_stacks_at_least", "deck_count_at_least", "hp_below"],
 	"buff_stats": ["slot_cooldown_skip", "status_damage_mult", "card_damage_mult_vs_status"],
+	"scale": ["self_stacks", "deck_count", "max", "consume"],
 }
 
 

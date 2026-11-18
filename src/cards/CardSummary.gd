@@ -19,6 +19,9 @@ static func effect_line(card: Dictionary, slot_base_cooldown: float = -1.0, text
 		var part: String = _effect_part(String(effect_dict.get("template", "")), effect_dict.get("params", {}), text)
 		if part == "":
 			continue
+		var scale: Variant = effect_dict.get("scale")
+		if typeof(scale) == TYPE_DICTIONARY and not (scale as Dictionary).is_empty():
+			part += ", " + EffectScale.text(scale, _word(text, "scale"), _status_name(String((scale as Dictionary).get("status_id", "")), text))
 		var condition: Variant = effect_dict.get("condition")
 		if typeof(condition) == TYPE_DICTIONARY and not (condition as Dictionary).is_empty():
 			var key: String = condition_text(condition, text)
@@ -129,6 +132,7 @@ const DEFAULT_TEXT: Dictionary = {
 		"deck_count_at_least": "If your deck has %d or more %s cards",
 		"hp_below": "While below %s%% HP",
 	},
+	"scale": {"self_stacks": "+%s per %s", "deck_count": "+%s per %s card in your deck", "max": "(up to +%s)", "consume": "uses up your %s"},
 	"condition_line": "%s: %s",
 }
 

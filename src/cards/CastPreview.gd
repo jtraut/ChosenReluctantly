@@ -309,10 +309,12 @@ func _cached(key: String, builder: Callable) -> Mesh:
 ## What is being previewed, for ux and tests. `active` false means nothing is shown (all
 ## other fields are empty). `slot` is the slot type id, `shape` and `size` those of the
 ## first part (the card's main shape), `parts` every part (see CastPreviewShapes), `ready`
-## whether releasing now would cast (false while the slot cools: ux may dim the preview).
+## whether releasing now would cast (false while the slot cools: ux may dim the preview). `scaled` (BD3b) is the live number of every
+## effect with a `scale` block, [{param, base, bonus, value, count}] (EffectScale.preview_values), so ux can show "13.5 damage" for a
+## payoff that grows with Charge or the deck; empty for an ordinary card.
 func get_state() -> Dictionary:
 	if not _sync():
-		return {"active": false, "slot": "", "card_id": "", "shape": "", "size": 0.0, "parts": [], "ready": false, "placement": {}}
+		return {"active": false, "slot": "", "card_id": "", "shape": "", "size": 0.0, "parts": [], "ready": false, "placement": {}, "scaled": []}
 	return {
 		"active": true,
 		"slot": CardSlotController.slot_type_at_index(_shown_slot),
@@ -322,6 +324,7 @@ func get_state() -> Dictionary:
 		"parts": _parts.duplicate(true),
 		"ready": _is_shown_slot_ready(),
 		"placement": _placement_state(),
+		"scaled": EffectScale.preview_values(CardDatabase.get_card(_shown_card), _player, _player.card_slots.owned_card_ids()),
 	}
 
 

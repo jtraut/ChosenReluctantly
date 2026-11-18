@@ -39,8 +39,17 @@ static func start_choices(character_id: String, store: LoadoutStore = null) -> D
 	messages.append_array(rule_problems)
 	return {
 		"character": character_id, "character_name": CharacterDatabase.display_name(character_id),
-		"preset": {"slot": LoadoutStore.PRESET, "name": "Preset deck", "deck_size": CharacterDatabase.starting_deck(character_id).size()},
+		"preset": {"slot": LoadoutStore.PRESET, "name": _preset_title(), "deck_size": CharacterDatabase.starting_deck(character_id).size()},
 		"loadouts": loadouts, "flagged": flagged, "free_slots": free_slots,
 		"last_used": source.last_used(character_id) if rule_problems.is_empty() else LoadoutStore.PRESET,
 		"messages": messages, "rule_problems": rule_problems,
 	}
+
+
+## The preset row's title, from data/run.json ui.start_screen.preset_title. A missing or empty value is a data error: it is logged and the row falls back to a plain word.
+static func _preset_title() -> String:
+	var title: Variant = (RunConfig.ui().get("start_screen", {}) as Dictionary).get("preset_title")
+	if typeof(title) != TYPE_STRING or String(title).strip_edges().is_empty():
+		push_error("LoadoutChoices: data/run.json ui.start_screen.preset_title must be a non-empty string")
+		return "Preset"
+	return String(title)

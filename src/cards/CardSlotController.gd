@@ -180,7 +180,7 @@ func _cast_card(card_data: Dictionary) -> void:
 		context.arena = caster.get_arena_rect()
 	var effects: Array = card_data.get("effects", [])
 	for effect: Dictionary in effects:
-		EffectTemplates.execute(effect.get("template", ""), effect.get("params", {}), context, effect.get("condition", {}))
+		EffectTemplates.execute(effect.get("template", ""), effect.get("params", {}), context, effect.get("condition", {}), effect.get("scale", {}))
 
 
 func _owned_card_ids_for_slot(slot_type: String, owned_pools: Array[String]) -> Array[String]:

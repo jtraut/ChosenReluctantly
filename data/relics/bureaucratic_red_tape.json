@@ -37,6 +37,6 @@
             ]
         }
     ],
-    "rule_text": "Casting a Keystone card stuns enemies within 3 m for 1.5 s.",
+    "rule_text": "Casting a Keystone card stuns enemies within 3 m for 1.5 s (halved on elites).",
     "flavor_text": "Form 27-B must be filed before anything moves."
 }

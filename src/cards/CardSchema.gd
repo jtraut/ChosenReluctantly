@@ -163,6 +163,9 @@ static func _validate_effect(effect: Variant, index: int, errors: Array[String])
 	if effect_dict.has("condition"):
 		for problem: String in EffectCondition.validate(effect_dict["condition"], template_id):
 			errors.append("effects[%d] (%s): %s" % [index, template_id, problem])
+	if effect_dict.has("scale"):
+		for problem: String in EffectScale.validate(effect_dict["scale"], template_id, params_dict):
+			errors.append("effects[%d] (%s): %s" % [index, template_id, problem])
 
 
 static func _require_non_empty_string(card_data: Dictionary, field: String, errors: Array[String]) -> void:

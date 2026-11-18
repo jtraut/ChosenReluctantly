@@ -162,6 +162,7 @@
                 "deck_count_at_least": "If your deck has %d or more %s cards",
                 "hp_below": "While below %s%% HP"
             },
+            "scale": { "self_stacks": "+%s per %s", "deck_count": "+%s per %s card in your deck", "max": "(up to +%s)", "consume": "uses up your %s" },
             "condition_line": "%s: %s"
         },
         "loadout_editor": {
@@ -175,7 +176,7 @@
             "discard_warning": "Unsaved changes. Press again to discard them.", "delete_warning": "Press Delete again to remove this loadout.",
             "hint": "Up and Down: pick a card. Enter or click: add. Delete, Minus or right-click: remove. Left and Right: other panels. Esc: back."
         },
-        "start_screen": { "title": "Start a run", "subtitle": "Playing as %s. Pick a deck.", "deck_cards": "%d cards", "plan_cards": "Plan: %d cards", "relic": "Relic: %s", "last_used": "Last used", "flagged_title": "Loadout %d: can't start", "edit_title": "Edit or create a loadout", "edit_detail": "Change a saved loadout or make a new one.", "hint": "Up and Down to choose. Enter or click to start.", "slot_title": "%d. %s" },
+        "start_screen": { "preset_title": "Preset deck", "title": "Start a run", "subtitle": "Playing as %s. Pick a deck.", "deck_cards": "%d cards", "plan_cards": "Plan: %d cards", "relic": "Relic: %s", "last_used": "Last used", "flagged_title": "Loadout %d: can't start", "edit_title": "Edit or create a loadout", "edit_detail": "Change a saved loadout or make a new one.", "hint": "Up and Down to choose. Enter or click to start.", "slot_title": "%d. %s" },
         "option": { "unavailable": "Unavailable: %s", "owned": "You own %d", "slot_now": "In slot: %s", "slot_now_max": 3, "slot_now_more": "+%d more", "copies": "x%d", "rarity_names": { "rare": "Rare", "legendary": "Legendary" }, "curse_tag": "Curse", "on_plan_tag": "On your plan", "curse_no_effect": "No effect when it comes up. Swap past it or remove it.", "cleanses_left": "Curse removals left this run: %d", "slot_key": "%s", "slot_label": "%s (%s)", "pick_hint": "Enter to pick", "dodge_hint": "The dodge does not count.", "dodge_slots": ["movement"], "act_hint": "Enter to choose", "remove_hint": "Enter to remove", "list_hint": "Arrow keys move, Enter or click confirms", "remove_list_hint": "Arrow keys move, Enter or click confirms" },
         "room_label": "Room %d of %d",
         "type_names": { "combat": "Combat", "elite": "Elite", "rest": "Rest", "boss": "Boss", "relic_room": "Relics", "merchant": "Merchant", "mini_boss": "Mini-boss", "event": "Event" },

@@ -36,6 +36,6 @@
             ]
         }
     ],
-    "rule_text": "Every 4th card projectile that hits stuns the target for 0.5 s.",
+    "rule_text": "Every 4th card projectile that hits stuns the target for 0.5 s (halved on elites).",
     "flavor_text": "Stapler included. Aim not included."
 }

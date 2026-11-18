@@ -157,7 +157,10 @@
                 "target_has_status": "If the target has %s",
                 "cast_within_slot": "If you used your %s slot in the last %s s",
                 "cast_within_tag": "If you cast a %s card in the last %s s",
-                "zone_active": "While you have a Zone active"
+                "zone_active": "While you have a Zone active",
+                "self_stacks_at_least": "If you have %d or more %s",
+                "deck_count_at_least": "If your deck has %d or more %s cards",
+                "hp_below": "While below %s%% HP"
             },
             "condition_line": "%s: %s"
         },
@@ -227,7 +230,7 @@
             "remove_title": "Remove which card?", "remove_line": "Pick a card to remove. Greyed cards would break a deck minimum.", "remove_curse_line": "Pick a curse to remove. A curse is a dud card that holds a slot until you remove it or swap past it.", "remove_curse_title": "Remove which curse?",
             "sacrifice_title": "Give up a relic", "sacrifice_line": "This is the price. Pick the relic you give up; it never comes back."
         },
-        "slot_condition": { "curse_swap": "%s swaps", "curse_swap_timed": "%s swaps (%s s)", "target_has_status": "Needs %s", "cast_within_slot": "After %s", "cast_within_slot_key": "After %s (%s)", "cast_within_tag": "After %s", "zone_active": "Needs zone", "detonate_status": "Wants %s stacks", "slot_short": { "movement": "Move" } },
+        "slot_condition": { "curse_swap": "%s swaps", "curse_swap_timed": "%s swaps (%s s)", "target_has_status": "Needs %s", "cast_within_slot": "After %s", "cast_within_slot_key": "After %s (%s)", "cast_within_tag": "After %s", "zone_active": "Needs zone", "self_stacks_at_least": "Needs %d %s", "deck_count_at_least": "Needs %d %s cards", "hp_below": "Below %s%% HP", "detonate_status": "Wants %s stacks", "slot_short": { "movement": "Move" } },
         "relic": {
             "start_tag": "Starter relic: %s",
             "title": "Relic found", "line": "Pick a relic to keep for this run, or skip.",

@@ -169,6 +169,7 @@ func _cast_card(card_data: Dictionary) -> void:
 	var context := EffectContext.new(caster, spawn_parent, caster_team)
 	context.origin = "card:" + String(card_data.get("id", ""))
 	context.rng = status_rng
+	context.deck_card_ids = owned_card_ids()
 	var relay := CombatLink.events()
 	if relay != null:
 		context.cast_history = relay.history

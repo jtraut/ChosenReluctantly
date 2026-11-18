@@ -120,6 +120,21 @@ func can_pay_off_soon(card: Dictionary, own_slot_type: String, slots: Dictionary
 					return true
 				if _another_card_soon(slots, own_slot_type, func(card_id: String) -> bool: return CardDatabase.has_tag(card_id, CardTags.ZONE)):
 					return true
+			EffectCondition.SELF_STACKS_AT_LEAST:
+				# Live now, or another slot's card can build the stacks (a card that applies the status to you) before the hold runs out.
+				var self_status: String = String(condition.get("status_id", ""))
+				if SlotSynergy.condition_live(effect, card, view):
+					return true
+				if _another_card_soon(slots, own_slot_type, func(card_id: String) -> bool: return CardSummary.status_ids(CardDatabase.get_card(card_id)).has(self_status)):
+					return true
+			EffectCondition.DECK_COUNT_AT_LEAST:
+				# The deck does not change mid-fight: it pays off now or never, so this card is swapped away when it is short.
+				if SlotSynergy.condition_live(effect, card, view):
+					return true
+			EffectCondition.HP_BELOW:
+				# Damage is coming whenever enemies are around, so a healthy bot keeps the card and lets the hold clock cast it.
+				if not (view.get("enemies", []) as Array).is_empty():
+					return true
 			EffectCondition.TARGET_HAS_STATUS:
 				var status_id: String = String(condition.get("status_id", ""))
 				for enemy: Variant in (view.get("enemies", []) as Array):

@@ -65,6 +65,14 @@ static func _short(condition: Dictionary, texts: Dictionary) -> String:
 			return String(texts.get("cast_within_tag", "")) % String(condition.get("tag", ""))
 		EffectCondition.ZONE_ACTIVE:
 			return String(texts.get("zone_active", ""))
+		EffectCondition.SELF_STACKS_AT_LEAST:
+			var stack_status: String = String(condition.get("status_id", ""))
+			var stack_name: String = String(StatusDatabase.get_status(stack_status).get("display_name", stack_status.replace("_", " ").capitalize()))
+			return String(texts.get("self_stacks_at_least", "")) % [int(condition.get("count", 0)), stack_name]
+		EffectCondition.DECK_COUNT_AT_LEAST:
+			return String(texts.get("deck_count_at_least", "")) % [int(condition.get("count", 0)), String(condition.get("tag", ""))]
+		EffectCondition.HP_BELOW:
+			return String(texts.get("hp_below", "")) % String.num(roundf(float(condition.get("fraction", 0.0)) * 100.0), 0)
 	return ""
 
 

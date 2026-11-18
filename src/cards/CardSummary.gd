@@ -74,6 +74,12 @@ static func condition_text(condition: Variant, text: Dictionary = {}) -> String:
 			return String(words["cast_within_tag"]) % [String(c.get("tag", "")), seconds]
 		"zone_active":
 			return String(words["zone_active"])
+		"self_stacks_at_least":
+			return String(words["self_stacks_at_least"]) % [int(c.get("count", 0)), _status_name(String(c.get("status_id", "")), text)]
+		"deck_count_at_least":
+			return String(words["deck_count_at_least"]) % [int(c.get("count", 0)), String(c.get("tag", ""))]
+		"hp_below":
+			return String(words["hp_below"]) % _num(roundf(float(c.get("fraction", 0.0)) * 100.0))
 	return ""
 
 
@@ -119,6 +125,9 @@ const DEFAULT_TEXT: Dictionary = {
 		"cast_within_slot": "If you used your %s slot in the last %s s",
 		"cast_within_tag": "If you cast a %s card in the last %s s",
 		"zone_active": "While you have a Zone active",
+		"self_stacks_at_least": "If you have %d or more %s",
+		"deck_count_at_least": "If your deck has %d or more %s cards",
+		"hp_below": "While below %s%% HP",
 	},
 	"condition_line": "%s: %s",
 }

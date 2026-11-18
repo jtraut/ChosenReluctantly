@@ -3,18 +3,25 @@ extends RefCounted
 ## The optional `condition` block of a card effect (sibling of `template` and `params`). When it is false the
 ## effect is skipped. Pure functions over an EffectContext, so tests need no scene.
 ##
-## Types (BD1-A; the later BUILD_DEPTH 3.2 types are not built and are rejected by validate()):
+## Types (BD1-A, and BD3b for the last three):
 ##   target_has_status {status_id}          a target hit has the status. Per target, in the cone, aoe, projectile,
 ##                                          zone and apply_status paths. The hits that pass are what the effect
 ##                                          damages (and what later effects see in last_hits).
 ##   cast_within {slot_type | tag, seconds} the caster cast a matching card within the last N seconds (checked once
 ##                                          per cast; the current cast is not in the history yet).
 ##   zone_active {}                         one of the caster's Zones is alive (checked once per cast).
+##   self_stacks_at_least {status_id, count}  the caster holds at least `count` stacks of a status on itself (once per cast).
+##   deck_count_at_least {tag, count}       the run deck holds at least `count` cards (copies count) with that tag (once per cast).
+##   hp_below {fraction}                    the caster's HP fraction is strictly below `fraction` (once per cast).
 
 const TARGET_HAS_STATUS := "target_has_status"
 const CAST_WITHIN := "cast_within"
 const ZONE_ACTIVE := "zone_active"
-const TYPES: Array[String] = [TARGET_HAS_STATUS, CAST_WITHIN, ZONE_ACTIVE]
+const SELF_STACKS_AT_LEAST := "self_stacks_at_least"
+const DECK_COUNT_AT_LEAST := "deck_count_at_least"
+const HP_BELOW := "hp_below"
+const TYPES: Array[String] = [TARGET_HAS_STATUS, CAST_WITHIN, ZONE_ACTIVE, SELF_STACKS_AT_LEAST, DECK_COUNT_AT_LEAST, HP_BELOW]
+const MAX_COUNT := 999
 ## Templates that have a target hit path, so a target condition means something there.
 const TARGET_TEMPLATES: Array[String] = ["cone", "aoe", "projectile", "zone", "apply_status", "detonate_status"]
 ## Internal params key under which execute() hands a target condition to the hit path (never written in data).
@@ -38,6 +45,12 @@ static func caster_ok(condition: Dictionary, context: EffectContext) -> bool:
 				return false
 			var manager: ZoneManager = ZoneManager.find_in_world(context.spawn_parent)
 			return manager != null and manager.live_count_for(context.caster.get_instance_id()) > 0
+		SELF_STACKS_AT_LEAST:
+			return CasterStats.self_stacks(context.caster, String(condition["status_id"])) >= int(condition["count"])
+		DECK_COUNT_AT_LEAST:
+			return CasterStats.deck_tag_count(context.deck_card_ids, String(condition["tag"])) >= int(condition["count"])
+		HP_BELOW:
+			return CasterStats.hp_fraction(context.caster) < float(condition["fraction"])
 	return true
 
 
@@ -93,7 +106,29 @@ static func validate(condition: Variant, template_id: String) -> Array[String]:
 				errors.append("cast_within 'seconds' must be a number above 0 and at most %s" % str(CastHistory.MAX_SECONDS))
 		ZONE_ACTIVE:
 			pass
+		SELF_STACKS_AT_LEAST:
+			allowed.append_array(["status_id", "count"])
+			if typeof(dict.get("status_id")) != TYPE_STRING or not StatusDatabase.has_status(String(dict["status_id"])):
+				errors.append("self_stacks_at_least needs a known 'status_id'")
+			errors.append_array(_validate_count(dict, type))
+		DECK_COUNT_AT_LEAST:
+			allowed.append_array(["tag", "count"])
+			if typeof(dict.get("tag")) != TYPE_STRING or not CardTags.is_known_tag(String(dict["tag"])):
+				errors.append("deck_count_at_least 'tag' must be a derived tag or a keyword (for example Burn, Projectile, Primer)")
+			errors.append_array(_validate_count(dict, type))
+		HP_BELOW:
+			allowed.append("fraction")
+			if not EffectTemplates.number_in(dict.get("fraction"), 0.0, 1.0, false):
+				errors.append("hp_below 'fraction' must be a number above 0 and at most 1")
 	for key: Variant in dict.keys():
 		if not allowed.has(String(key)):
 			errors.append("'%s' is not a known %s param" % [str(key), type])
+	return errors
+
+
+static func _validate_count(dict: Dictionary, type: String) -> Array[String]:
+	var errors: Array[String] = []
+	var count: Variant = dict.get("count")
+	if not EffectTemplates.number_in(count, 0.0, float(MAX_COUNT), false) or float(count) != floorf(float(count)):
+		errors.append("%s 'count' must be a whole number from 1 to %d" % [type, MAX_COUNT])
 	return errors

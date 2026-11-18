@@ -417,6 +417,8 @@ func _run_effects(trigger: Dictionary, event: Dictionary) -> void:
 	var context := EffectContext.new(_player, _spawn_parent if _spawn_parent != null else _player.get_parent(), "player")
 	context.origin = ORIGIN_PREFIX + String(trigger["relic_id"])
 	context.rng = _rng
+	if "card_slots" in _player and _player.card_slots != null:
+		context.deck_card_ids = _player.card_slots.owned_card_ids()
 	if _relay != null and is_instance_valid(_relay):
 		context.cast_history = _relay.history
 		context.now = _relay.now()

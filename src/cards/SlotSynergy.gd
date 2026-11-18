@@ -10,6 +10,9 @@ extends RefCounted
 ##   history: CastHistory        the caster's recent casts
 ##   zone_count: int             how many Zones of the caster are alive
 ##   origin: Vector3, forward: Vector3 (flat), aim_point: Variant (Vector3 or null), arena: Rect2
+##   self_stacks: Dictionary     status id -> stacks the caster holds on itself (BD3b)
+##   deck_card_ids: Array        the run deck's card ids, copies included (BD3b)
+##   hp_fraction: float          the caster's HP / max HP (BD3b; missing = 1.0)
 ##   enemies: Array[Dictionary]  [{pos: Vector3, statuses: Array, stacks: Dictionary status id -> stack count (MAP3b; optional)}]
 ##
 ## Live rule: a card with a condition is live when ANY of its conditional effects has a live condition. cast_within
@@ -110,6 +113,12 @@ static func condition_live(effect: Dictionary, card: Dictionary, view: Dictionar
 			return (history as CastHistory).cast_within(float(view.get("now", 0.0)), float(condition.get("seconds", 0.0)), String(condition.get("slot_type", "")), String(condition.get("tag", "")))
 		EffectCondition.ZONE_ACTIVE:
 			return int(view.get("zone_count", 0)) > 0
+		EffectCondition.SELF_STACKS_AT_LEAST:
+			return int((view.get("self_stacks", {}) as Dictionary).get(String(condition.get("status_id", "")), 0)) >= int(condition.get("count", 1))
+		EffectCondition.DECK_COUNT_AT_LEAST:
+			return CasterStats.deck_tag_count(view.get("deck_card_ids", []), String(condition.get("tag", ""))) >= int(condition.get("count", 1))
+		EffectCondition.HP_BELOW:
+			return float(view.get("hp_fraction", 1.0)) < float(condition.get("fraction", 0.0))
 		EffectCondition.TARGET_HAS_STATUS:
 			var no_ring: Dictionary = {"self_ring_enabled": false}
 			var parts: Array[Dictionary] = CastPreviewShapes.parts_for_card({"effects": [{"template": effect.get("template", ""), "params": effect.get("params", {})}]}, no_ring)

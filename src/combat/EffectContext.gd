@@ -20,6 +20,9 @@ var arena: Rect2 = Rect2()
 ## CombatEvents). Null history = no cast ever counts.
 var cast_history: CastHistory = null
 var now: float = 0.0
+## The run deck's card ids (copies included), for `deck_count_at_least` and the `deck_count` scale (CardSlotController and
+## RelicManager set it from the player's slots). Empty = a deck with no cards.
+var deck_card_ids: Array[String] = []
 ## Who this effect run is for, stamped on every hit and status it causes: "light", "heavy", "card:<id>", "relic:<id>" or "enemy"
 ## ("" = not set). See CombatEvents.
 var origin: String = ""

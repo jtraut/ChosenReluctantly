@@ -927,6 +927,7 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
       - swapping past a curse costs 2 s, an ordinary swap 1 s;
       - the SIM1 re-check against the §11.4 floors and ceiling, and the hashes;
       - the README commands and the CHANGELOG entry.
+    - **qa PASS 2026-11-18** (7e22f98, 0f2a0a2; `docs/reviews/2026-11-18-3d-qa.md`). Suite 2623 (186), 0 failures; hashes unchanged; SIM1 off 34/36, 34/36, human Rogue 18/36, Wizard 16/36 (same as DF1). Real user folder untouched. A reset guard was added to 33 suites, plus a scan test. Act 2 merchant badge captured. Findings: N1 starter relics still drop in ordinary offers, against BUILD_DEPTH §4.7 row 6 "found nowhere else" (D53); N2 "Preset deck" hardcoded; N3 HUD chip shows over the start screen.
     - **Playtester:** use `--runs-finished=1` with scratch `--profile-path` and `--loadouts-path`. Build a loadout for each class, then start a run with it and a starter relic. Is the editor clear without reading the docs? Does one Enter start the run? At 2 s, does a curse feel more like a cost? Plus the smoke check.
     - **Gate F, restated:** the four hashes in STATE stay the same, except for any move sitting A explains (the curse change). SIM1 three-act may move because of A, but it must stay inside the §11.4 floors and ceiling.
     - **The director's eyes 59 (play DF1) expires at 3d's close.**

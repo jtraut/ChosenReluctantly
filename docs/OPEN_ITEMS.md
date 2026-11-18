@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-18 (D52 answered; latest tag `playtest-2026-11-17-DF1`)
-**Status:** No decisions waiting (D52 = A, answered 2026-11-18). 1 thing to look at (59: play DF1), plus the round 2 vision check. **DF1 (difficulty bump) is done**, tag `playtest-2026-11-17-DF1`. Item 58 expired at DF1's close with its default kept: the curse swap penalty goes from 1 s to 2 s in 3d (`docs/RESOLVED.md`). Next: 3d (loadouts; sittings A and B done, sitting C in progress) -> BD3b -> the Milestone 3 close.
+Last updated: 2026-11-18 (3d qa PASS, D53 added; latest tag `playtest-2026-11-17-DF1`)
+**Status:** 1 decision waiting (D53, starter relics). 1 thing to look at (59: play DF1), plus the round 2 vision check. **DF1 (difficulty bump) is done**, tag `playtest-2026-11-17-DF1`. Item 58 expired at DF1's close with its default kept: the curse swap penalty goes from 1 s to 2 s in 3d (`docs/RESOLVED.md`). Next: 3d (loadouts; all built, qa PASS, playtest next) -> BD3b -> the Milestone 3 close.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -17,9 +17,13 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## Needs your decision
 
-Next new number: D53.
+Next new number: D54.
 
-Nothing waiting.
+D53. **Starter relics: loadout only, or also found in runs?** Your rule (2026-11-04) was that starter relics are found nowhere else. In 3d I picked four existing relics as starters (Rogue Chasing Paper and Spite Knuckles, Wizard Ergonomic Chair and Paperwork Fire). They still drop from elites, relic rooms and the merchant too. That was my oversight, and qa caught it. Nothing is broken either way: you never get a relic you already own.
+   - **A.** They become loadout-only, as you said. This is a data edit, but it takes 2 relics per class out of normal drops, so the bot win rates are re-checked. Done in BD3b, the relic slice.
+   - **B.** Keep it as it is: they're starter picks and normal drops too. I update the plan doc.
+   - **C.** Leave those four as normal drops and add four new starter-only relics in BD3b.
+   - **If you don't answer: A, in BD3b.**
 
 ## Needs your eyes
 

@@ -2815,3 +2815,8 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
   - A keyboard-only walk through the editor, opened from the real start screen.
   - Check that Esc in the editor never opens the pause menu.
 - **To the playtester:** is the effect line in the detail strip enough to judge a card, without keywords?
+
+## 2026-11-18 - 3d qa PASS triage (game-lead)
+- **qa PASS** (7e22f98, 0f2a0a2). It fixed the profile leak in the tests (33 `after()` resets plus a scan guard), not in the game. [A per-scene profile in game code, which is more churn in a closing slice.] Accepted.
+- **N1, my oversight:** sitting B's brief tagged four existing ordinary relics as starters. BUILD_DEPTH §4.7 row 6, from the director's 2026-11-04 follow-up, says starter relics are "found nowhere else". This contradicts a director rule, so it's escalated as D53. Default A (starter-only) lands in BD3b, the relic slice. [Fixing it now in 3d: that moves the relic pools and SIM1 in a slice that isn't about balance, and 3d works either way.]
+- **N2** ("Preset deck" hardcoded in `LoadoutChoices`) goes to BD3b as a small carry-over. **N3** (the act/room chip and gold show over the start screen) is cosmetic: the playtester judges it, and it goes to ux only if it's flagged.

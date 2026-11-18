@@ -2775,3 +2775,15 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
   - Loadout rules are validated lazily, not at boot, which keeps Main untouched. Sitting C calls `LoadoutRules.shipped_problems()` at run start.
 - **Flipping D52 is a data edit across the card files,** not code. That's acceptable under "data change only". [A rarity-to-availability mapping in code, which would hide the field.]
 - **Known test hazard (not new):** suites that load fixture card sets leave the static `CardDatabase` on the fixtures. New suites reload in `before_test`. qa should be aware.
+
+## 2026-11-18 - 3d sitting C triage (game-lead)
+- **Sitting C accepted** (221768b, 68e38d6..25b010d). The first sitting C session was cut off with ~1,500 lines uncommitted and no `Remaining:` list. A fresh gameplay-dev reviewed the work, fixed it and committed it in 68e38d6, then finished the sitting. Hashes unchanged. The last full suite had 2581 cases with 2 failures, both in `h2_test` `test_ctrl_casts_movement_after_the_class_pick_closes`: the in-memory profile counted runs across the test process. The fix was verified only on 3 suites (76 cases). [Accepting on that partial check: blocking for a 21-minute full run when ux D re-runs the full suite anyway.] ux D's first step is a full suite run.
+- **gameplay-dev's calls, accepted:**
+  - `--loadout=<n|preset>` (1-based) requires `--loadouts-path`, because debug launches never read the real loadouts file. [Letting it read the real file, which breaks the never-touch-the-profile rule for debug flags.]
+  - `--deck` / `--full-deck` win over `--loadout`.
+  - A loadout start rebuilds the run as a fresh scene with the same seed and room. [Patching the live RunState in place.]
+  - A loadout that fails validation at start logs `push_error` and starts the preset. [Blocking the run.] This matches acceptance 5: the preset is always available.
+  - The start screen stays closed headless, when a tool turned the class pick off, and with `--class=` unless `--runs-finished=` or `--profile-path=` is also given. This keeps capture presets clean once the real profile reaches 1. The playtester reaches it with `--class=rogue --runs-finished=1`.
+  - `LoadoutSession` is the single isolation point: in-memory unless it's a real windowed launch with no debug flag. A named scratch path is still honoured in a gated launch.
+  - Continue sets `start_resolved` as a second guard. Saved runs were already excluded.
+  - `SAVE_VERSION` is not bumped. The plan field is optional, and the DF1-era fixture loads.

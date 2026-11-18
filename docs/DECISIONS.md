@@ -2820,3 +2820,18 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **qa PASS** (7e22f98, 0f2a0a2). It fixed the profile leak in the tests (33 `after()` resets plus a scan guard), not in the game. [A per-scene profile in game code, which is more churn in a closing slice.] Accepted.
 - **N1, my oversight:** sitting B's brief tagged four existing ordinary relics as starters. BUILD_DEPTH §4.7 row 6, from the director's 2026-11-04 follow-up, says starter relics are "found nowhere else". This contradicts a director rule, so it's escalated as D53. Default A (starter-only) lands in BD3b, the relic slice. [Fixing it now in 3d: that moves the relic pools and SIM1 in a slice that isn't about balance, and 3d works either way.]
 - **N2** ("Preset deck" hardcoded in `LoadoutChoices`) goes to BD3b as a small carry-over. **N3** (the act/room chip and gold show over the start screen) is cosmetic: the playtester judges it, and it goes to ux only if it's flagged.
+
+## 2026-11-18 - 3d playtest triage (game-lead)
+- **No blocker** (5520044). The playtester used scripted launches and captures only, with no hand play. One Enter on the start screen starts the run with the saved deck.
+- **I close 3d now and put the polish at the head of BD3b** as a short ux sitting, "BD3b-0". [A ux polish sitting plus another qa round before the 3d tag: that delays the director's playable build for readability nits.] The polish list:
+  1. Show the curse swap price before the swap: "(2 s)" on the cursed slot's swap hint.
+  2. Name the starter relic in the run. The HUD shows only its two-letter badge; a toast or label at run start would fix it.
+  3. A one-line explanation of "Plan" in the editor: reward cards can't start in the deck; they're flagged when offered.
+  4. Editor tabs say "1. Empty" while a draft is filled.
+  5. Give new loadouts a default name, so an empty name never blocks Save.
+  6. The plan box clips at 1024x600 (blocked Wizard).
+  7. The card list opens scrolled partway down.
+  8. Slot names are cut off.
+  9. Keywords and slot-mates in the detail strip, if they fit.
+- **The playtester's director questions 1-3** (explain Plan, show the swap price, announce the starter relic) are readability, not design, so I answered yes to all three via the list above, not to the director. Question 4 is D53, which is already open.
+- **N3** (the HUD chip over the start screen) is dimmed, and the playtester didn't find it distracting. No action.

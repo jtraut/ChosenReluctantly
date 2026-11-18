@@ -367,7 +367,7 @@ func test_a_keyboard_only_walk_builds_saves_and_starts_a_loadout_with_a_starter_
 			break
 		await _press(KEY_RIGHT)
 	assert_bool(reached).override_failure_message("Right never reached the relic panel").is_true()
-	await _press(KEY_DOWN)
+	await _press(KEY_RIGHT)  # BD3b-0: the relics sit side by side, so Right (not Down) steps to the next one
 	await _press(KEY_ENTER)
 	var relic: String = editor.draft.starter_relic
 	assert_str(relic).override_failure_message("Enter on a relic button did not pick it").is_not_empty()

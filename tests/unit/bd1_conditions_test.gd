@@ -46,7 +46,7 @@ func test_each_type_validates() -> void:
 
 
 func test_unknown_or_missing_type_is_an_error() -> void:
-	assert_array(_valid({"type": "hp_below", "fraction": 0.5})).is_not_empty()
+	assert_array(_valid({"type": "not_a_condition", "fraction": 0.5})).is_not_empty()  # BD3b: hp_below is a real type now
 	assert_array(_valid({})).is_not_empty()
 	assert_array(_valid("zone_active")).is_not_empty()
 

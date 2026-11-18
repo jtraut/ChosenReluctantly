@@ -302,7 +302,7 @@ func test_status_stacking_data_validation() -> void:
 	var good: Dictionary = _bleed().duplicate(true)
 	good["stacking"] = {"max_stacks": 5}
 	assert_array(StatusDatabase.validate_entry(good)).is_empty()
-	for bad: Variant in [{"max_stacks": 0}, {"max_stacks": 2.5}, {"max_stacks": 100}, {}, {"max_stacks": 2, "decay_after": 4}, 7]:
+	for bad: Variant in [{"max_stacks": 0}, {"max_stacks": 2.5}, {"max_stacks": 100}, {}, {"max_stacks": 2, "decay": 4}, {"max_stacks": 2, "decay_after": 0}, 7]:
 		var entry: Dictionary = _bleed().duplicate(true)
 		entry["stacking"] = bad
 		assert_array(StatusDatabase.validate_entry(entry)).is_not_empty()

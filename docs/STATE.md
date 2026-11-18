@@ -6,10 +6,11 @@
 Last updated: 2026-11-18. Latest tag `playtest-2026-11-17-DF1`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **3d, loadouts.** Detailed brief written 2026-11-17 (ROADMAP 3d "Detailed brief"; DECISIONS "3d brief"). Five build sittings: gameplay-dev A -> B -> C -> ux D -> ux E, then qa -> playtester -> tech-writer -> close. Sittings A (eea038b..dc39f28) and B (41b6b01..501dcd0) done. The repo runs.
+- **3d, loadouts.** Detailed brief written 2026-11-17 (ROADMAP 3d "Detailed brief"; DECISIONS "3d brief"). Five build sittings: gameplay-dev A -> B -> C -> ux D -> ux E, then qa -> playtester -> tech-writer -> close. Sittings A (eea038b..dc39f28) and B (41b6b01..501dcd0) done.
+- **Sitting C was cut off mid-session (2026-11-17, ~19:03) with no `Remaining:` list.** Committed: 221768b (RunState plan, `on_plan` flag on reward/mini-boss/merchant offers, DF1-era save fixture; item 3 partly). **Uncommitted in the working tree, unverified (may not run):** modified `RunMain.tscn`, `LoadoutStore.gd`, `PlayerProfile.gd`, `RunController.gd`, `RunSave.gd`, `RunSession.gd`; new `src/loadouts/Loadout{Args,Choices,Draft,Session,Start}.gd`, `src/ui/StartScreen.gd`, `src/ui/LoadoutEditorScreen.gd`, `tests/unit/threed_c_test.gd` (~1,500 lines; items 1, 2, 4, 5 in some state). game-lead did not commit it (not its code).
 
 ## Exact next step
-1. **gameplay-dev sitting C** (ROADMAP 3d, sitting C): run-end counting with profile isolation, run start with a loadout and starter relic, "On your plan" flag with save compatibility, the debug flags, placeholder start screen and editor. Builds on B's `src/loadouts/` APIs.
+1. **Fresh gameplay-dev, sitting C finish** (ROADMAP 3d, sitting C): first review the uncommitted work against the brief, get it compiling and its tests green, commit it; then finish what's missing and run item 6's gates. If it can't finish, commit and hand back `Remaining:`.
 2. Then ux D, ux E, qa, playtester, tech-writer, close. Then BD3b and the Milestone 3 close.
 
 **Next role:** gameplay-dev (3d sitting C).

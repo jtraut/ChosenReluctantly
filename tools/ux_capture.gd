@@ -2,7 +2,7 @@ extends Node
 ## UX capture (P-dodge): hosts the real Main in an oversized SubViewport, drives a HUD state, saves one PNG, quits.
 ## Needs a renderer (not --headless). Run:
 ##   godot --path . res://tools/UxCapture.tscn -- --size=1024x600 --class=rogue --mode=pips_recharge --out=screenshots/ux/a.png
-## Modes: shop_rarity (MAP3b: a shop with a legendary, a rare and a common card, fabricated options), pips (full), pips_recharge (one spent, a pip coming back), pips_empty (all spent), stagger (a boss at its first
+## Modes: loadout_editor_legal / loadout_editor_blocked (3d E: the loadout editor), shop_rarity (MAP3b: a shop with a legendary, a rare and a common card, fabricated options), pips (full), pips_recharge (one spent, a pip coming back), pips_empty (all spent), stagger (a boss at its first
 ## threshold, mid-stagger), continue_pick (the class pick screen with a saved run), act_heal / act_low / act_resumed (the Act 2 screen, BD3a). The player is made immune and the spawner off, so the shot is only the state being checked.
 
 const BOSS_PATH := "res://scenes/enemies/BossGuardian.tscn"
@@ -99,6 +99,28 @@ func _ready() -> void:
 			shop_screen.show_content({"title": "Merchant", "line": "", "screen": "shop", "merchant": {"gold": 200, "items": []}, "gold": 200, "options": shop_options, "rejects_remaining": 0, "rejects_max": 0, "owned": {}, "relic": {}, "rows": [], "hint": ""})
 			shop_screen.disarm()
 			await _wait(0.6)
+		"loadout_editor_legal", "loadout_editor_blocked":
+			# 3d E ux: the loadout editor over a memory-only store (nothing is read or written on disk). legal = the preset deck plus a different starter card, one reward card on the plan,
+			# a starter relic and a name; blocked = a deck cut to a few cards with a blank name, so the checker's reasons show and Save is disabled.
+			var editor := LoadoutEditorScreen.new()
+			editor.setup(klass, LoadoutStore.in_memory())
+			sub.add_child(editor)
+			await _wait(0.3)
+			if mode == "loadout_editor_legal":
+				editor.set_loadout_name("Reluctant Brawler")
+				for id: String in LoadoutCollection.starter_cards(klass):
+					if not editor.draft.deck.has(id):
+						editor.add(id)
+						break
+				editor.add(LoadoutCollection.plan_cards(klass)[0])
+				editor.relic_buttons()[1].pressed.emit()
+			else:
+				editor.set_loadout_name("")
+				while editor.draft.deck.size() > 9:
+					editor.remove(editor.draft.deck[editor.draft.deck.size() - 1])
+				editor.add(LoadoutCollection.plan_cards(klass)[1])
+			editor.card_row(editor.draft.deck[3]).grab_focus()
+			await _wait(0.4)
 		"act_heal", "act_low", "act_resumed":
 			# BD3a ux: the Act 2 screen with fabricated summaries (the numbers of RunController.act_summary), over the arena: a heal that leaves
 			# HP healthy (act_heal), a heal that leaves it low (act_low: red, "Low HP"), and a resumed act (healed 0: no heal line).

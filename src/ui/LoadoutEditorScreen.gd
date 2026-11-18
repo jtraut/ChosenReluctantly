@@ -430,7 +430,7 @@ func _build() -> void:
 	_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(_root)
 	var backdrop := ColorRect.new()
-	backdrop.color = Color(0.05, 0.03, 0.05, 0.98)
+	backdrop.color = Color(0.05, 0.03, 0.05, 1.0)  # opaque: the run's HUD must not show through
 	backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_root.add_child(backdrop)
@@ -476,7 +476,7 @@ func _build_header() -> Control:
 	box.add_child(tabs)
 	for tab: Dictionary in tabs_for(_store, character_id, _texts):
 		var button := ChoiceButton.new()
-		button.setup(String(tab["title"]), _cfg, _s, false)
+		button.setup(String(tab["title"]), _cfg, _s)
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.pressed.connect(request_slot.bind(int(tab["slot"])))
 		tabs.add_child(button)
@@ -568,19 +568,18 @@ func _build_side() -> Control:
 	column.add_child(name_row)
 	# starter relic
 	column.add_child(_label(String(_texts.get("relic_label", "Starter relic")), body_px, _color("prompt_text_color")))
-	var relics := HFlowContainer.new()
-	relics.add_theme_constant_override("h_separation", roundi(6.0 * _s))
-	relics.add_theme_constant_override("v_separation", roundi(6.0 * _s))
+	var relics := VBoxContainer.new()  # stacked, so a relic's whole name fits
+	relics.add_theme_constant_override("separation", roundi(4.0 * _s))
 	column.add_child(relics)
 	var none_button := ChoiceButton.new()
-	none_button.setup(String(_texts.get("relic_none", "No relic")), _cfg, _s, true)
+	none_button.setup(String(_texts.get("relic_none", "No relic")), _cfg, _s)
 	none_button.pressed.connect(select_relic.bind(""))
 	none_button.set_meta("relic", "")
 	relics.add_child(none_button)
 	_relic_buttons.append(none_button)
 	for option: Dictionary in _relic_options:
 		var button := ChoiceButton.new()
-		button.setup(String(option["name"]), _cfg, _s, true)
+		button.setup(String(option["name"]), _cfg, _s)
 		button.pressed.connect(select_relic.bind(String(option["id"])))
 		button.set_meta("relic", String(option["id"]))
 		relics.add_child(button)
@@ -775,7 +774,7 @@ class ChoiceButton extends Button:
 	var _s: float = 1.0
 	var _selected: bool = false
 
-	func setup(title: String, cfg: Dictionary, s: float, wrap_free: bool) -> void:
+	func setup(title: String, cfg: Dictionary, s: float) -> void:
 		_cfg = cfg
 		_s = s
 		focus_mode = Control.FOCUS_ALL
@@ -805,8 +804,6 @@ class ChoiceButton extends Button:
 		row.add_child(title_label)
 		set_title(title)
 		custom_minimum_size.y = float(font_px) * 1.5 + 4.0 * s
-		if wrap_free:
-			custom_minimum_size.x = float(font_px) * 6.5 + 18.0 * s
 		_apply_styles()
 
 	func set_title(title: String) -> void:
@@ -937,7 +934,8 @@ class CardRow extends Button:
 		action_label.text = String(tile["action_text"])
 		var held: bool = int(tile["copies"]) > 0 or bool(tile["on_plan"])
 		action_label.add_theme_color_override("font_color", accent if held else Color.html(String(_cfg["option_flavor_color"])))
-		minus.visible = bool(tile["can_remove"])
+		minus.modulate.a = 1.0 if bool(tile["can_remove"]) else 0.0  # keeps its room, so the badges line up
+		minus.mouse_filter = Control.MOUSE_FILTER_STOP if bool(tile["can_remove"]) else Control.MOUSE_FILTER_IGNORE
 		tooltip_text = String(tile["name"])
 
 	func _on_gui_input(event: InputEvent) -> void:

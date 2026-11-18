@@ -168,7 +168,7 @@ func test_enter_on_a_row_adds_and_delete_removes() -> void:
 	row.pressed.emit()  # Enter or a click
 	assert_int(editor.draft.copies(id)).is_equal(1)
 	assert_str((row as LoadoutEditorScreen.CardRow).action_label.text).is_equal("x1")
-	assert_bool((row as LoadoutEditorScreen.CardRow).minus.visible).is_true()
+	assert_float((row as LoadoutEditorScreen.CardRow).minus.modulate.a).is_equal(1.0)
 	var key := InputEventKey.new()
 	key.keycode = KEY_DELETE
 	key.pressed = true

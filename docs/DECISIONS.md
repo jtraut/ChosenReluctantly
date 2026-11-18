@@ -2799,3 +2799,19 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
   - (1) The in-memory profile still counts lost runs across suites, so add a global or per-suite reset so the next suite can't trip on it. [Leaving it to per-test fixes.]
   - (2) Look at an act 2+ merchant with a plan holding rare or legendary cards, since the badge can't appear in an act 1 shop.
 - **Not escalated:** ux asked whether the plan should bias merchant stock. The GDD doesn't ask for that and 3d isn't a balance slice. It goes to the director only if the playtester finds the plan feels pointless.
+
+## 2026-11-18 - 3d sitting E triage (game-lead)
+- **Sitting E accepted** (9eef38b..4e7f104). The full suite of 2614 (185) ran on cc13628 with one failure: k1 flagged "Ctrl+S" in the hint text. That was fixed in 4e7f104, and 5 suites were re-run green. Hashes unchanged. game-lead viewed the blocked editor at 1024x600: the reasons, chips and badges are readable. The plan panel sits at the bottom of a scrolling side panel.
+- **ux's calls, accepted:**
+  - Leaving, switching slots with unsaved edits, and Delete each need a second press. [A modal confirm, rejected as heavier.]
+  - A new or skipped slot starts from the class's preset deck, named "Loadout N". [An empty deck, which is illegal from the first frame.]
+  - Hovering shows card detail without moving focus.
+  - The Starter badge is quiet, Reward is gold with a star, and Locked is a muted square. Green stays reserved for "On your plan".
+  - The relic pick is stacked buttons. Ctrl+S works but isn't shown in the hint, because of the k1 rule. The backdrop is opaque.
+  - StartScreen hides while the editor is open (an edit to sitting D's file).
+- **Carry-overs to qa:**
+  - Run the full suite on 4e7f104.
+  - Reload soak and SceneSelfCheck (not run in E).
+  - A keyboard-only walk through the editor, opened from the real start screen.
+  - Check that Esc in the editor never opens the pause menu.
+- **To the playtester:** is the effect line in the detail strip enough to judge a card, without keywords?

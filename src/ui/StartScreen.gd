@@ -195,11 +195,13 @@ func open_editor() -> void:
 	_editor = LoadoutEditorScreen.new()
 	_editor.setup(_controller.character_id(), LoadoutSession.store())
 	_editor.closed.connect(_on_editor_closed)
+	_root.visible = false  # the arrow keys must not reach the rows underneath while the editor is up
 	add_child(_editor)
 
 
 func _on_editor_closed() -> void:
 	_editor = null
+	_root.visible = true
 	_choices = LoadoutChoices.start_choices(_controller.character_id())
 	_rebuild()
 	_focus_last_used()

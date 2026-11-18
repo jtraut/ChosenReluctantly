@@ -18,6 +18,7 @@ Commit range 0a321ad..58c73cc (sittings A and B were committed on 2026-11-17, th
 
 ### Changed
 - **Balance (old -> new), `data/run.json` `curses`:** the curse swap penalty (the cooldown left by swapping a cursed card away) 1.0 s -> 2.0 s, on curses only (eea038b). An ordinary dead-card swap stays 1.0 s. Both values are now data: `curses.swap_penalty` (1.0) and `curses.curse_swap_penalty` (2.0). `[Director's default applied]`: this is the default of eyes item 58, which expired at DF1's close. The sim hashes did not move (the arena and bot sims never swap past a curse) and SIM1 did not move.
+- **Debug flags and the save** (A dc39f28): `--run-auto-choose` and the new `--run-curse-first` are now in `RunSave.DEBUG_FLAG_PREFIXES`, so a launch with either never reads, writes or deletes the save (before, a windowed capture using `--run-auto-choose` could). The loadout flags joined the list in C 68e38d6.
 - **Start flow:** a loadout start rebuilds the run as a fresh scene with the same seed and start room (C 68e38d6). A loadout that fails its checks at start logs an error and the run starts with the preset. The start screen stays closed headless, in scenarios, with `--deck`, `--full-deck` or `--loadout`, and with `--class` alone (it opens with `--class` plus `--runs-finished` or `--profile-path`).
 - **Measured (qa, unchanged by 3d):** suite 2623 cases in 186 suites, 0 failures, 0 flaky, 0 skipped, 0 orphans. Hashes: 3172486861 / 916264160 / `-Plan` 1317880580 / bot sim 3476063471. SIM1: human Rogue 18/36, Wizard 16/36; off bot 34/36 and 34/36, inside the DF1 floors and ceilings.
 
@@ -31,7 +32,6 @@ Commit range 0a321ad..58c73cc (sittings A and B were committed on 2026-11-17, th
 - Eyes item 59 (play DF1) expired at 3d's close with its defaults kept (58c73cc): keep the difficulty shape, keep the Raider, no map HP, no Wizard boss trim, readability fixes as they are. Moved to `docs/RESOLVED.md`.
 - `[Director decision]` D52 = A, 2026-11-18: moved to `docs/RESOLVED.md`.
 - `[Director decision]` 2026-11-17: SIM2, see the 2026-11-17 section below.
-- `-Run` sim reports max HP per room (A 8cde9dc).
 
 ### Known issues, left open
 - **D53 (open, director):** four relics (Chasing Paper, Spite Knuckles, Ergonomic Chair, Paperwork Fire) carry the `starter` source but are also found in runs. BUILD_DEPTH 4.7 says a starter relic is found nowhere else, so this contradicts a director rule (qa N1). game-lead's default (starter-only) lands in BD3b.

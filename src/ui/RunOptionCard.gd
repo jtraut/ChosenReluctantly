@@ -62,6 +62,8 @@ var shop_band: Control = null
 var shop_only_tag: PanelContainer = null
 ## MAP3b: the "Rare" / "Legendary" pill (a mark and the word) on a card tile; null for a common card and any non-card look.
 var rarity_tag: PanelContainer = null
+## 3d D: the "On your plan" pill (a check mark and the words) on a card tile or shop card whose option has `on_plan`; null otherwise.
+var plan_tag: PanelContainer = null
 
 var _inner: VBoxContainer = null
 var _width: float = 0.0
@@ -197,6 +199,10 @@ func setup(opt: Dictionary, the_look: Look, width: float, cfg: Dictionary, s: fl
 		if is_curse_option(opt):
 			curse_band = _curse_band(String(texts.get("curse_tag", "")), small_size, enabled)  # MAP4 ux: a curse says so in a band across its top
 			_inner.add_child(curse_band)
+		if look == Look.CARD:
+			plan_tag = _plan_tag(opt, texts, small_size, enabled)
+			if plan_tag != null:
+				_inner.add_child(plan_tag)
 
 	# Head row: number key (when numbered), name, copy count.
 	var head := HBoxContainer.new()
@@ -509,6 +515,9 @@ func _build_shop(opt: Dictionary, extra: Dictionary, enabled: bool, inner_width:
 		rarity_tag = _rarity_tag(opt, extra.get("texts", {}), small_size, enabled, false)
 		if rarity_tag != null:
 			band.add_child(rarity_tag)
+		plan_tag = _plan_tag(opt, extra.get("texts", {}), small_size, enabled)
+		if plan_tag != null:
+			band.add_child(plan_tag)
 	# One header row: the kind chips, the name (it takes what is left and wraps if it must), the price tag on the right.
 	title_label = _label(name_text, roundi(float(title_size) * 0.86), _text_color(enabled, Color.html("#ffffff")), true)
 	title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -837,6 +846,46 @@ func _curse_band(word: String, font_px: int, enabled: bool) -> PanelContainer:
 	mark.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(mark)
 	row.add_child(_label(word, font_px, text_color, false))
+	return pill
+
+
+## 3d D: true when a card option is on the loadout's plan and not in the deck yet (the option's `on_plan`, set by RunChoices and RunMerchant).
+static func is_on_plan(opt: Dictionary) -> bool:
+	return bool(opt.get("on_plan", false))
+
+
+## 3d D: the "On your plan" badge: a filled pill in the accent green with a check mark and the words (data ui.option.on_plan_tag), so it is never colour alone. It is a
+## solid rounded pill: the rarity band is square and outlined, the keyword chips are small and dark, so the three cannot be mixed up. null when the option is not on
+## the plan, is not a card, or the words are missing from data.
+func _plan_tag(opt: Dictionary, texts: Dictionary, font_px: int, enabled: bool) -> PanelContainer:
+	var word: String = String(texts.get("on_plan_tag", ""))
+	if not is_on_plan(opt) or word == "" or frame_card_id() == "":
+		return null
+	var fill: Color = Color.html(String(_cfg["option_accent_color"])) if enabled else Color.html(String(_cfg["option_disabled_text_color"]))
+	var dark: Color = Color.html("#1a1218")
+	var pill := PanelContainer.new()
+	pill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var style := StyleBoxFlat.new()
+	style.bg_color = fill
+	style.set_corner_radius_all(roundi(9.0 * _scale))
+	style.content_margin_left = 7.0 * _scale
+	style.content_margin_right = 8.0 * _scale
+	style.content_margin_top = 1.0 * _scale
+	style.content_margin_bottom = 1.0 * _scale
+	pill.add_theme_stylebox_override("panel", style)
+	pill.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	pill.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_theme_constant_override("separation", roundi(4.0 * _scale))
+	pill.add_child(row)
+	var mark := RunTypeIcon.new()
+	mark.shape = RunIcons.SHAPE_CHECK
+	mark.color = dark
+	mark.custom_minimum_size = Vector2.ONE * float(font_px) * 0.9
+	mark.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(mark)
+	row.add_child(_label(word, font_px, dark, false))
 	return pill
 
 

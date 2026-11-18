@@ -16,6 +16,8 @@ var _main: Main = null
 
 func before_test() -> void:
 	RunSession.map_override = 0  # MAP1: this suite is about the straight run
+	LoadoutSession.reset()  # 3d D: an earlier suite's lost run counts in the shared in-memory profile; run 2 would open the start screen after the class pick and take the focus
+	StartScreen.reset()
 	CardDatabase.load_all()
 	PlayerConfig.reload()
 	_original_store = Settings.store

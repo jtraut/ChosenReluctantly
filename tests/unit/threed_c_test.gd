@@ -307,6 +307,17 @@ func test_a_map_run_asks_only_before_its_first_node() -> void:
 	assert_bool(LoadoutSession.start_screen_wanted(state)).is_false()
 
 
+func test_a_resumed_run_never_asks_for_a_start_choice() -> void:
+	RunSession.map_override = 1
+	assert_array(LoadoutSession.apply_args(_args(["--runs-finished=2"]))).is_empty()
+	var state: RunState = RunSession.begin_new_run(5, "rogue")
+	state.jump_to_room(3)  # what a save at room 4's start looks like: a path, no history
+	assert_bool(LoadoutSession.start_screen_wanted(state)).override_failure_message("Continue skips the start screen").is_false()
+	var loaded: RunState = RunSession.begin_new_run(6, "rogue")
+	LoadoutSession.start_resolved(loaded)  # what ClassPickScreen.continue_run does for the run it loads
+	assert_bool(LoadoutSession.start_screen_wanted(loaded)).is_false()
+
+
 func test_a_debug_deck_skips_the_start_screen() -> void:
 	assert_array(LoadoutSession.apply_args(_args(["--runs-finished=2"]))).is_empty()
 	RunSession.full_deck = true

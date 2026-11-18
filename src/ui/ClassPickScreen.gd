@@ -192,6 +192,7 @@ func continue_run() -> bool:
 	if main == null or not RunSave.load_save():
 		return false
 	var loaded: RunState = RunSession.current
+	LoadoutSession.start_resolved(loaded)  # 3d: Continue never shows the start screen (a saved room-1 start of a straight run would look like a fresh start)
 	_confirmed_run = loaded  # the scene built from it must not ask again (an act's first map screen has an empty path)
 	CharacterPick.remember(loaded.character_id)
 	RunSession.selected_character = loaded.character_id

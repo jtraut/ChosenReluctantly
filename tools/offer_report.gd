@@ -79,7 +79,7 @@ func _initialize() -> void:
 	_relic_report()
 	print("")
 	print("CARD OFFERS (share of every offered card; 3 cards per offer)")
-	for bot: String in ["neutral", "bleed", "bleed-old", "burn"]:
+	for bot: String in (["neutral", "thesis"] if character == "wizard" else ["neutral", "bleed", "bleed-old", "burn"]):
 		for lean: float in [0.0, lean_on]:
 			_card_report(bot, lean, seeds, offers, character)
 	quit(0)
@@ -132,6 +132,17 @@ func _relic_report() -> void:
 
 func _applies(card_id: String, status_id: String) -> bool:
 	return CardSummary.status_ids(_by_id[card_id]).has(status_id)
+
+
+## BD3b-C1: "bleed" / "burn" mean a card that applies that status; "fire" is a Fire-pool card; "thesis" is what a Thesis Wizard picks: a card that
+## gives Charge (a Primer) or the Charge keystone, or any non-Fire Attack: Single card (it prunes Fire cards instead of Burn cards).
+func _wanted_card(card_id: String, kind: String) -> bool:
+	var card: Dictionary = _by_id[card_id]
+	if kind == "fire":
+		return String(card["pool"]) == "fire"
+	if kind == "thesis":
+		return _applies(card_id, "charge") or (String(card["pool"]) != "fire" and String(card["slot_type"]) == "attack_single")
+	return _applies(card_id, kind)
 
 
 func _matrix(seeds: int, offers: int, character: String) -> void:
@@ -195,12 +206,12 @@ func _card_report(bot: String, lean: float, seeds: int, offers: int, character: 
 				if offered.all(func(id: String) -> bool: return _applies(id, "bleed")):
 					last_all_bleed += 1
 			var bleeder: bool = bot == "bleed" or bot == "bleed-old"
-			var wanted: String = "bleed" if bleeder else ("burn" if bot == "burn" else "")
-			var pruned: String = "burn" if bleeder else ("bleed" if bot == "burn" else "")
+			var wanted: String = "bleed" if bleeder else ("burn" if bot == "burn" else ("thesis" if bot == "thesis" else ""))
+			var pruned: String = "burn" if bleeder else ("bleed" if bot == "burn" else ("fire" if bot == "thesis" else ""))
 			if wanted != "":
 				var pick: String = ""
 				for id: String in offered:
-					if not deck.has(id) and _applies(id, wanted):
+					if not deck.has(id) and _wanted_card(id, wanted):
 						pick = id
 						break
 				if pick != "":
@@ -213,7 +224,7 @@ func _card_report(bot: String, lean: float, seeds: int, offers: int, character: 
 							_discount(weights, id, rewards)
 				if (index + 1) % PRUNE_EVERY == 0:
 					for id: String in deck:
-						if _applies(id, pruned) and DeckRules.can_remove(deck, id, DeckRules.shipped_config(), _slot_of, SlotTypeDatabase.known_ids()).is_empty():
+						if _wanted_card(id, pruned) and DeckRules.can_remove(deck, id, DeckRules.shipped_config(), _slot_of, SlotTypeDatabase.known_ids()).is_empty():
 							deck.erase(id)
 							_discount(weights, id, rewards)
 							if not removed.has(id):

@@ -189,6 +189,12 @@ func test_decisions_balance_table_matches_the_data_files() -> void:
 		# BD3a sitting B: Cutting Corners 10 + Bleed 3 s capped to the 2.7 s cycle (5 ticks); The Knife Drawer 5 knives x 3 (the knives' own Bleed is not credited)
 		"rogue_cut_corners": [15.0, 2.7, 5.56],
 		"rogue_knife_drawer": [15.0, 2.8, 5.36],
+		# BD3b-C1 (BUILD_DEPTH 14.3): scaled and conditional damage never counts; Footnotes 4 hits of 1.8; Literature Review 14.5 and Hostile Feedback 13 were raised from 13 and 12 to pass the rule
+		"wizard_thesis_defense": [7.0, 1.3, 5.38],
+		"wizard_footnotes": [7.2, 1.2, 6.00],
+		"wizard_citation_needed": [6.0, 1.1, 5.45],
+		"wizard_literature_review": [14.5, 2.8, 5.18],
+		"wizard_hostile_feedback": [13.0, 2.5, 5.20],
 		# MAP3b B (rare and legendary): unconditional damage only (BUILD_DEPTH 12.3)
 		"fire_controlled_demolition": [13.0, 2.5, 5.20],
 		"fire_scorched_earth": [36.0, 2.5, 14.40],

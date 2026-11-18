@@ -1,0 +1,7 @@
+{
+    "name": "wizard-thesis",
+    "class": "wizard",
+    "description": "BD3b archetype W-B, Thesis (non-Fire Wizard): Footnotes and Literature Review build Charge, Thesis Defense spends it. Legal 16-card deck, no Fire card; starter and full are the same list.",
+    "starter": ["wizard_thesis_defense", "wizard_footnotes", "wizard_bolt_volley", "wizard_citation_needed", "wizard_arcane_nova", "wizard_literature_review", "neutral_shrug_bomb", "wizard_borrowed_focus", "neutral_deep_sigh", "wizard_footwork_allegedly", "wizard_sideways_blink", "wizard_tactical_hover", "neutral_backward_leap", "neutral_healing_potion", "neutral_leech", "neutral_regeneration"],
+    "full": ["wizard_thesis_defense", "wizard_footnotes", "wizard_bolt_volley", "wizard_citation_needed", "wizard_arcane_nova", "wizard_literature_review", "neutral_shrug_bomb", "wizard_borrowed_focus", "neutral_deep_sigh", "wizard_footwork_allegedly", "wizard_sideways_blink", "wizard_tactical_hover", "neutral_backward_leap", "neutral_healing_potion", "neutral_leech", "neutral_regeneration"]
+}

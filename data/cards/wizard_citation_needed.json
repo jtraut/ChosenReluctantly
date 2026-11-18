@@ -1,0 +1,17 @@
+{
+    "id": "wizard_citation_needed",
+    "name": "Citation Needed",
+    "slot_type": "attack_single",
+    "pool": "wizard",
+    "availability": "starter",
+    "cooldown_modifier": 0.1,
+    "keywords": [],
+    "flavor_text": "Hits harder the more sources you pretend to have.",
+    "effects": [
+        {
+            "template": "projectile",
+            "params": { "damage": 6.0, "damage_type": "neutral", "speed": 14.0, "max_range": 12.0, "hit_radius": 0.5 },
+            "scale": { "by": "deck_count", "tag": "Projectile", "per": 0.5, "max": 6 }
+        }
+    ]
+}

@@ -1,0 +1,14 @@
+{
+    "id": "wizard_hostile_feedback",
+    "name": "Hostile Feedback",
+    "slot_type": "attack_aoe",
+    "pool": "wizard",
+    "availability": "starter",
+    "cooldown_modifier": 0.0,
+    "keywords": ["Payoff"],
+    "flavor_text": "Constructive, in the way a wall is constructive.",
+    "effects": [
+        { "template": "aoe", "params": { "damage": 13.0, "damage_type": "neutral", "radius": 2.5 } },
+        { "template": "aoe", "params": { "damage": 8.0, "damage_type": "neutral", "radius": 2.5, "knockback_strength": 6.0 }, "condition": { "type": "hp_below", "fraction": 0.5 } }
+    ]
+}

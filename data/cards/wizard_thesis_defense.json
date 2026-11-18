@@ -1,0 +1,17 @@
+{
+    "id": "wizard_thesis_defense",
+    "name": "Thesis Defense",
+    "slot_type": "attack_single",
+    "pool": "wizard",
+    "availability": "starter",
+    "cooldown_modifier": 0.3,
+    "keywords": ["Keystone", "Payoff"],
+    "flavor_text": "Twelve footnotes of preparation, one very pointed answer.",
+    "effects": [
+        {
+            "template": "projectile",
+            "params": { "damage": 7.0, "damage_type": "neutral", "speed": 14.0, "max_range": 12.0, "hit_radius": 0.5, "look": {"color": "#b6ff4a", "scale": 1.3, "ball_scale": 1.4} },
+            "scale": { "by": "self_stacks", "status_id": "charge", "per": 1.5, "consume": true }
+        }
+    ]
+}

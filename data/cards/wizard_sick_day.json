@@ -1,0 +1,14 @@
+{
+    "id": "wizard_sick_day",
+    "name": "Sick Day",
+    "slot_type": "recovery",
+    "pool": "wizard",
+    "availability": "starter",
+    "cooldown_modifier": 0.0,
+    "keywords": [],
+    "flavor_text": "Out of office. Do not disturb. Do not hit.",
+    "effects": [
+        { "template": "heal", "params": { "amount": 10 } },
+        { "template": "buff", "params": { "stat": "armor", "modifier_type": "additive", "value": 15.0, "duration": 3.0 } }
+    ]
+}

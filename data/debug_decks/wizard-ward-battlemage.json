@@ -1,0 +1,7 @@
+{
+    "name": "wizard-ward-battlemage",
+    "class": "wizard",
+    "description": "BD3b archetype W-D, Ward Battlemage (non-Fire Wizard): armor up, stand in the crowd, punish what hits you. Legal 16-card deck, no Fire card; starter and full are the same list.",
+    "starter": ["wizard_overqualified_bolt", "wizard_bolt_volley", "wizard_citation_needed", "wizard_arcane_nova", "wizard_hostile_feedback", "neutral_shrug_bomb", "wizard_spiteful_ward", "wizard_ward", "neutral_deep_sigh", "wizard_sideways_blink", "wizard_tactical_hover", "neutral_backward_leap", "wizard_sick_day", "neutral_leech", "neutral_healing_potion", "neutral_regeneration"],
+    "full": ["wizard_overqualified_bolt", "wizard_bolt_volley", "wizard_citation_needed", "wizard_arcane_nova", "wizard_hostile_feedback", "neutral_shrug_bomb", "wizard_spiteful_ward", "wizard_ward", "neutral_deep_sigh", "wizard_sideways_blink", "wizard_tactical_hover", "neutral_backward_leap", "wizard_sick_day", "neutral_leech", "neutral_healing_potion", "neutral_regeneration"]
+}

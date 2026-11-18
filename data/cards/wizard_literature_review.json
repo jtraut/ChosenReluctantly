@@ -1,0 +1,15 @@
+{
+    "id": "wizard_literature_review",
+    "name": "Literature Review",
+    "slot_type": "attack_aoe",
+    "pool": "wizard",
+    "availability": "starter",
+    "cooldown_modifier": 0.3,
+    "keywords": ["Primer"],
+    "flavor_text": "Surveys the field. The field would like a word.",
+    "effects": [
+        { "template": "aoe", "params": { "damage": 14.5, "damage_type": "neutral", "radius": 2.8, "max_range": 8.0 } },
+        { "template": "apply_status", "params": { "status_id": "charge", "duration": 4.0, "target": "self" } },
+        { "template": "apply_status", "params": { "status_id": "charge", "duration": 4.0, "target": "self" } }
+    ]
+}

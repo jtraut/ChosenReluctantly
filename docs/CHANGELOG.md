@@ -2,6 +2,42 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
+## 2026-11-18 (Slice 3d: loadouts)
+
+Commit range 0a321ad..58c73cc (sittings A and B were committed on 2026-11-17, the rest on 2026-11-18). Five build sittings, then qa and a playtest. gameplay-dev A eea038b..dc39f28, B 41b6b01..501dcd0, C 221768b and 68e38d6..25b010d; ux D 0bc25be..a95c3ac, E 9eef38b..4e7f104; qa 7e22f98 and 0f2a0a2 (PASS: `docs/reviews/2026-11-18-3d-qa.md`); playtest 5520044 (`docs/playtests/2026-11-18-3d.md`, no blocker; the playtester used scripted launches and captures, not hand play). Calls: `docs/DECISIONS.md` entries "3d brief" through "3d playtest triage". GDD section 9 "Loadouts" is the design.
+
+### Added
+- **Run counting and a start screen** (C 68e38d6, D 0bc25be, a95c3ac): the game counts finished runs (won or lost, once per run) in `user://profile.json`. Run 1 starts straight away with the class's preset deck. From run 2 a start screen opens after the class pick: the preset, each saved loadout (card count, plan size, starter relic), skipped loadouts with the checker's reason, and "Edit or create a loadout". The last used row is preselected with a "Last used" pill, so one Enter starts the run. Up/Down and Enter, or the mouse.
+- **Loadouts** (B 41b6b01, 9b59312): saved in `user://loadouts.json`, limits in the new `data/loadouts.json` (slots per class, copies, deck size, name length). A loadout is a name, a deck of `starter` cards, a plan of `reward` and `locked` cards, and an optional starter relic. Code in the new `src/loadouts/` group; see `docs/ARCHITECTURE.md` "Loadouts (3d)".
+- **Card `availability`** (B 41b6b01, `[Director decision]` D52 = A, answered 2026-11-18, GDD section 9): 48 cards are `starter`, 17 are `reward` (every rare and legendary card), and the 3 curses have none. Before, the GDD line said every card that existed on 2026-11-02 is `starter`; that line predated card rarity.
+- **Starter relics** (B 41b6b01): `starter` is now a relic source, set on Chasing Paper, Spite Knuckles (Rogue) and Ergonomic Chair, Paperwork Fire (Wizard). See "Known issues" for the D53 conflict.
+- **Plan and the "On your plan" pill** (C 221768b, D 0bc25be): `RunState.plan` is saved (optional, empty by default, so a DF1-era save still loads; `SAVE_VERSION` is unchanged). Card offers after a fight and after a mini-boss, and merchant cards, show a green "On your plan" pill when the card is on the plan and not in the deck yet.
+- **The loadout editor** (C 68e38d6 placeholder, E 9eef38b, cc13628, 4e7f104): slot tabs, the collection grouped by slot with a Starter, Reward or Locked badge and copy counts, live counts and the checker's own reasons, a plan list, a starter relic pick, and Save, Delete and Back. Up/Down, Enter or click to add, Delete, Backspace, Minus or right-click to remove, Left/Right to switch panels, Esc to go back, Ctrl+S to save. Leaving or switching slots with unsaved edits, and Delete, ask once. Save is blocked while the deck breaks a rule.
+- **Launch flags** (A dc39f28, C 68e38d6): `--run-curse-first=<id>`, `--runs-finished=N`, `--profile-path=<file>`, `--loadouts-path=<file>` and `--loadout=<n|preset>` (needs `--loadouts-path`). All are debug flags: the launch never reads, writes or deletes the save, the profile or the loadouts, except the scratch files it names. Bad values exit 2 with "Launch refused: ...". Details in the README launch table.
+- **Capture tooling:** preset `sacrifice_giveup` (A dc39f28, the sacrifice relic's give-up step); `UxCapture` modes `loadout_editor_legal` and `loadout_editor_blocked` (E cc13628) and `shop_plan_act2` (qa 7e22f98: a real act 2 shop whose plan holds rare and legendary cards).
+
+### Changed
+- **Balance (old -> new), `data/run.json` `curses`:** the curse swap penalty (the cooldown left by swapping a cursed card away) 1.0 s -> 2.0 s, on curses only (eea038b). An ordinary dead-card swap stays 1.0 s. Both values are now data: `curses.swap_penalty` (1.0) and `curses.curse_swap_penalty` (2.0). `[Director's default applied]`: this is the default of eyes item 58, which expired at DF1's close. The sim hashes did not move (the arena and bot sims never swap past a curse) and SIM1 did not move.
+- **Start flow:** a loadout start rebuilds the run as a fresh scene with the same seed and start room (C 68e38d6). A loadout that fails its checks at start logs an error and the run starts with the preset. The start screen stays closed headless, in scenarios, with `--deck`, `--full-deck` or `--loadout`, and with `--class` alone (it opens with `--class` plus `--runs-finished` or `--profile-path`).
+- **Measured (qa, unchanged by 3d):** suite 2623 cases in 186 suites, 0 failures, 0 flaky, 0 skipped, 0 orphans. Hashes: 3172486861 / 916264160 / `-Plan` 1317880580 / bot sim 3476063471. SIM1: human Rogue 18/36, Wizard 16/36; off bot 34/36 and 34/36, inside the DF1 floors and ceilings.
+
+### Fixed
+- **Sim report fixes** (A 8cde9dc): the wave sim's HP report now compares each room with its own max HP (the Wizard "HP 22 against 20" was an event cutting max HP mid-run, not a bug in the game), and `-BossLog` matches boss hits through the act's `damage_scale` (the mini-boss's hits used to show as "unknown").
+- **A profile that counted runs across test suites** (C, `h2_test`; qa 7e22f98): the in-memory profile carried its count from one suite into the next, which made the start screen open under a later test. qa added an `after()` reset of `LoadoutSession` and `StartScreen` to 33 suites and a guard test (`threed_qa_test`) that fails for any suite that can end a run without it. The game code was not changed.
+- **Ctrl+S in the editor's hint text** failed the K1 hint scan; the hint no longer names it (E 4e7f104). Ctrl+S still saves.
+- **Try again after a lost run** now has a test (A dc39f28).
+
+### Docs and process
+- Eyes item 59 (play DF1) expired at 3d's close with its defaults kept (58c73cc): keep the difficulty shape, keep the Raider, no map HP, no Wizard boss trim, readability fixes as they are. Moved to `docs/RESOLVED.md`.
+- `[Director decision]` D52 = A, 2026-11-18: moved to `docs/RESOLVED.md`.
+- `[Director decision]` 2026-11-17: SIM2, see the 2026-11-17 section below.
+- `-Run` sim reports max HP per room (A 8cde9dc).
+
+### Known issues, left open
+- **D53 (open, director):** four relics (Chasing Paper, Spite Knuckles, Ergonomic Chair, Paperwork Fire) carry the `starter` source but are also found in runs. BUILD_DEPTH 4.7 says a starter relic is found nowhere else, so this contradicts a director rule (qa N1). game-lead's default (starter-only) lands in BD3b.
+- **BD3b-0 polish list** (playtest, DECISIONS "3d playtest triage"): show the curse swap price on the cursed slot's swap hint; name the starter relic in the run (the HUD shows only a two-letter chip); explain "Plan" in the editor; editor tabs read "1. Empty" while a draft is filled; give new loadouts a default name; the plan box clips at 1024x600 (blocked Wizard); the card list opens scrolled partway down; slot names are cut off; keywords and slot-mates in the detail strip. Also "Preset deck" is hardcoded in `LoadoutChoices` (qa N2).
+- Nobody has hand-played the start screen or editor with a real mouse and keyboard (scripted keys and captures only), and a real window has not finished a run into the default `user://profile.json` (covered by tests with scratch paths).
+
 ## 2026-11-17 (Slice DF1: the difficulty bump, D51 = C)
 
 Commit range 9c69a58..HEAD (8f0d595). `[Director decision]` D51 = C, 2026-11-12: make the campaign harder, with a human-bot win target of 40 to 50% (14-18 of 36). gameplay-dev sitting A 9c69a58..5da7427 (MAP4 carry-overs), sitting B 57b0a83..e3e1ac1 (the data-only bump), ux 1fb09b3..6b12a6d, qa 83d06d3, 604466d and 4026720 (first review FAIL, re-check PASS: `docs/reviews/2026-11-17-df1-qa.md`), playtest 8f0d595 (`docs/playtests/2026-11-17-df1.md`, no blocker; the playtester cannot hand-play, so its feel findings are bot numbers and theory). Calls: `docs/DECISIONS.md` entries "DF1 brief" and the four DF1 triage entries; `docs/MAP.md` sections 11.3 and 11.4. The director has not played the bump yet.
@@ -30,6 +66,7 @@ Commit range 9c69a58..HEAD (8f0d595). `[Director decision]` D51 = C, 2026-11-12:
 - Fixes to sitting B and the ux session found by qa's first review (all in the re-check): the K1 scan failure on the curse removal line (f9f5c58), the `mb1b_test` duelist test, which now reads act 2's scale and derives its limits from it (d67276f), and the dead screen when a run is lost with the player alive (a66b470).
 
 ### Docs and process
+- `[Director decision]` 2026-11-17 (added in the 3d docs pass): SIM2, decision-skill bots. A "winging it" (random) profile against a "formulated" (synergy-seeking, good routes) profile, with a noticeable win-rate gap. Recorded in GDD section 12 "Automated QA" and ROADMAP Milestone 4 SIM2; the defaults are in DECISIONS "SIM2 defaults" (d74cce3). No code yet.
 - Eyes item 58 (play MAP4) expired at DF1's close with its default kept; it moved to `docs/RESOLVED.md`.
 - New qa tests in `tests/unit/df1_qa_test.gd` (a curse cast still uses up a primed buff; the act-change failure shows Game Over) and `df1_ux_test.gd`.
 

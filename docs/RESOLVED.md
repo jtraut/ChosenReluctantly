@@ -2,6 +2,24 @@
 
 The archive of the director's answered, received and acknowledged items, moved here from `docs/OPEN_ITEMS.md`. Owned by tech-writer (director, 2026-11-02). Newest dated section first; IDs (D19, call 16, checklist item 33) are kept so they can be searched. Old entries change only to fix a factual error.
 
+## 2026-11-18
+
+### Answer recorded in ba92f3f (D52)
+
+Removed from OPEN_ITEMS when you answered (ba92f3f). The full text, with options A, B and C, is in `git show 221768b:docs/OPEN_ITEMS.md`.
+
+| ID | Question | Your answer | Where it went |
+|---|---|---|---|
+| D52 | Which cards can go in a saved starting deck (3d loadouts)? Your 2026-11-02 rule made every card that existed then a "starter" card. Rare and legendary cards came after it. Option A (default): common cards are starter, rare and legendary are reward-only (you find them in a run and can put them on a loadout's plan). B: every card is starter. C: commons and rares are starter, legendaries are reward-only. | **A**, 2026-11-18. | GDD section 9 "Loadouts" (ba92f3f). It is what 3d sitting B already shipped, so no data change: 48 cards are `starter`, 17 are `reward`, the 3 curses have no `availability`. Switching later is a data edit across `data/cards/`. Changelog: 2026-11-18, `[Director decision]`. |
+
+### Expired at 3d's close, default kept
+
+Eyes 59 was added at DF1's close; it expired at the close of the slice after it (3d), per your 2026-11-12 rule. game-lead removed it from OPEN_ITEMS in 58c73cc. The full text is in `git show 7f0cbd3:docs/OPEN_ITEMS.md`.
+
+| ID | What it asked | Default that applied |
+|---|---|---|
+| 59 | Play DF1, the difficulty bump (tag `playtest-2026-11-17-DF1`): act 2 enemies hit 5% harder and act 3 enemies 10% harder; the bot wins about 45-50% of runs (Rogue 18/36, Wizard 16/36). Five sub-questions. | All defaults kept: keep the difficulty shape (HP refills only at rests and act starts); keep the Raider (three of its combos in a row now kill a full-HP Rogue); do not show HP on the map screen; no Wizard act 1 boss trim (about 90 s with the starter deck, about 30 s with a few relics); keep the small readability fixes (the "Shift+F swaps" pill on a cursed slot, curse lines, the merchant discount wording, one "Bleed detonated" per cast, the give-up step's first focus). |
+
 ## 2026-11-17
 
 ### Expired at DF1's close, default kept

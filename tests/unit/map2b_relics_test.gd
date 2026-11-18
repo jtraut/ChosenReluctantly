@@ -79,7 +79,9 @@ func test_the_seven_new_relics_load_clean_with_the_right_pool_tier_and_sources()
 		assert_bool(String(relic["rule_text"]).length() <= RelicSchema.MAX_RULE_TEXT_LENGTH).is_true()
 		assert_str(String(relic["flavor_text"])).is_not_empty()
 	for id: String in POOL_RELICS:
-		assert_array(RelicDatabase.get_relic(id)["sources"]).is_equal(["elite", "relic_room", "merchant"])
+		var sources: Array = (RelicDatabase.get_relic(id)["sources"] as Array).duplicate()
+		sources.erase("starter")  # 3d-B: four relics also list the starter source
+		assert_array(sources).is_equal(["elite", "relic_room", "merchant"])
 		assert_bool(Merchant.is_shop_only(RelicDatabase.get_relic(id))).is_false()
 	for id: String in SHOP_ONLY:
 		assert_array(RelicDatabase.get_relic(id)["sources"]).is_equal(["merchant"])

@@ -168,6 +168,7 @@ func test_name_over_limit_warns_but_still_validates() -> void:
 		"name": FIXTURE_NAME,
 		"slot_type": "attack_single",
 		"pool": "rogue",
+		"availability": "starter",
 		"cooldown_modifier": 0.0,
 		"flavor_text": "x",
 		"effects": [{"template": "cone", "params": {"damage": 6, "damage_type": "physical", "range": 2.0, "half_angle_degrees": 45}}],

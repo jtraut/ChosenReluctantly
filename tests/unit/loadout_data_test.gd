@@ -9,6 +9,7 @@ const RELICS_BY_CLASS: Dictionary = {
 
 
 func before_test() -> void:
+	CardDatabase.load_all()  # other suites load fixture card sets into the static database
 	RelicDatabase.load_all()
 
 

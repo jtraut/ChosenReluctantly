@@ -122,9 +122,12 @@ func test_an_empty_effect_list_is_allowed_only_on_a_curse() -> void:
 	var card: Dictionary = (CardDatabase.get_card("c_att1") as Dictionary).duplicate(true)
 	card["effects"] = []
 	assert_array(CardSchema.validate(card)).is_not_empty()
+	var availability: Variant = card["availability"]
+	card.erase("availability")  # 3d-B: a curse carries none
 	card["curse"] = true
 	assert_array(CardSchema.validate(card)).is_empty()
 	card["curse"] = false
+	card["availability"] = availability
 	assert_array(CardSchema.validate(card)).is_not_empty()
 
 

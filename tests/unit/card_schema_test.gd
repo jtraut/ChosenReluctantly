@@ -11,6 +11,7 @@ func _valid_card() -> Dictionary:
 		"name": "Quick, I Guess",
 		"slot_type": "attack_single",
 		"pool": "rogue",
+		"availability": "starter",
 		"cooldown_modifier": -0.3,
 		"flavor_text": "Fine, I'll stab it.",
 		"effects": [

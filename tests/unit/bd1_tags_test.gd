@@ -6,7 +6,7 @@ extends GdUnitTestSuite
 func _card(effects: Array, keywords: Variant = null) -> Dictionary:
 	var card: Dictionary = {
 		"id": "test_tag_card", "name": "Tag Card", "slot_type": "attack_single", "pool": "rogue",
-		"cooldown_modifier": 0.0, "flavor_text": "x", "effects": effects,
+		"availability": "starter", "cooldown_modifier": 0.0, "flavor_text": "x", "effects": effects,
 	}
 	if keywords != null:
 		card["keywords"] = keywords

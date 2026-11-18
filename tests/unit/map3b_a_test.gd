@@ -40,7 +40,7 @@ func test_a_player_and_an_enemy_on_the_same_spot_do_not_climb() -> void:
 # --- fixtures ---
 
 func _card(id: String, rarity: String, slot_type: String = "attack_single", pool: String = "rogue") -> Dictionary:
-	var card: Dictionary = {"id": id, "name": id, "flavor_text": "", "slot_type": slot_type, "pool": pool, "cooldown_modifier": 0.0,
+	var card: Dictionary = {"id": id, "name": id, "flavor_text": "", "slot_type": slot_type, "availability": "starter", "pool": pool, "cooldown_modifier": 0.0,
 			"effects": [{"template": "cone", "params": {"damage": 5.0, "damage_type": "physical", "range": 2.0, "half_angle_degrees": 45.0}}]}
 	if rarity != "":
 		card["rarity"] = rarity

@@ -3,6 +3,7 @@
     "name": "Test Primer",
     "slot_type": "movement",
     "pool": "neutral",
+    "availability": "starter",
     "cooldown_modifier": 0.0,
     "flavor_text": "Test fixture: primes the next attack_single cast.",
     "keywords": ["Primer"],

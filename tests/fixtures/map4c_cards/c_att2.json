@@ -3,6 +3,7 @@
     "name": "Att 2",
     "slot_type": "attack_single",
     "pool": "neutral",
+    "availability": "starter",
     "cooldown_modifier": 0.0,
     "flavor_text": "Fixture.",
     "effects": [

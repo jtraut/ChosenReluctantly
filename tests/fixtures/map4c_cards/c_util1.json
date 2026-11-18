@@ -3,6 +3,7 @@
     "name": "Util 1",
     "slot_type": "utility",
     "pool": "neutral",
+    "availability": "starter",
     "cooldown_modifier": 0.0,
     "flavor_text": "Fixture.",
     "effects": [

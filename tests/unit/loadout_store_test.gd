@@ -8,6 +8,7 @@ const STORE_PATH := "user://tests/loadout_b_loadouts.json"
 
 func before_test() -> void:
 	DirAccess.make_dir_recursive_absolute("user://tests")
+	CardDatabase.load_all()  # other suites load fixture card sets into the static database
 	RelicDatabase.load_all()
 	_wipe()
 
@@ -204,7 +205,7 @@ func test_a_bad_entry_is_flagged_and_skipped_and_the_good_ones_still_load() -> v
 		assert_bool(store.is_flagged("rogue", i)).is_true()
 		assert_str(store.flag_message("rogue", i)).is_not_empty()
 		assert_dict(store.entry("rogue", i)).is_empty()
-	assert_bool(" ".join(store.flagged()).contains("rogue slot 2 'Short' skipped")).is_true()
+	assert_bool(" ".join(store.flagged()).contains("rogue loadout 2 'Short' skipped")).is_true()
 	assert_array(store.free_indices("rogue")).is_empty()  # a flagged slot still holds its bad entry
 	assert_int(store.last_used("rogue")).is_equal(0)
 

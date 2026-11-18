@@ -3,6 +3,7 @@
     "name": "Test Payoff",
     "slot_type": "attack_single",
     "pool": "neutral",
+    "availability": "starter",
     "cooldown_modifier": 0.0,
     "flavor_text": "Test fixture: heals 5 only within 2 s of a Movement cast.",
     "keywords": ["Payoff"],

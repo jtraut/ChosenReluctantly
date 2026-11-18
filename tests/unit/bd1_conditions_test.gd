@@ -85,7 +85,7 @@ func test_unsupported_params_are_rejected() -> void:
 
 
 func test_card_schema_validates_conditions_and_names_the_effect() -> void:
-	var card: Dictionary = {"id": "x", "name": "X", "slot_type": "recovery", "pool": "neutral", "cooldown_modifier": 0.0, "flavor_text": "f",
+	var card: Dictionary = {"id": "x", "name": "X", "slot_type": "recovery", "availability": "starter", "pool": "neutral", "cooldown_modifier": 0.0, "flavor_text": "f",
 			"effects": [{"template": "heal", "params": {"amount": 1}, "condition": {"type": "bogus"}}]}
 	var errors := CardSchema.validate(card)
 	assert_int(errors.size()).is_equal(1)

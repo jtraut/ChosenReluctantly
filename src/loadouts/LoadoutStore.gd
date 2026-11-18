@@ -137,7 +137,7 @@ func save_entry(class_id: String, index: int, new_entry: Dictionary) -> Array[St
 		problems.append("unknown class '%s'" % class_id)
 		return problems
 	if index < 0 or index >= slot_count():
-		problems.append("slot %d is out of range (0 to %d)" % [index, slot_count() - 1])
+		problems.append("loadout number %d is out of range (0 to %d)" % [index, slot_count() - 1])
 		return problems
 	problems = LoadoutCheck.entry_problems(class_id, new_entry)
 	if not problems.is_empty():
@@ -201,7 +201,7 @@ func _flag(class_id: String, index: int, entry_name: String, message: String) ->
 	var flags: Dictionary = _flags.get(class_id, {})
 	flags[index] = message
 	_flags[class_id] = flags
-	var label: String = "%s slot %d" % [class_id, index + 1]
+	var label: String = "%s loadout %d" % [class_id, index + 1]
 	if not entry_name.is_empty():
 		label += " '%s'" % entry_name
 	_flag_messages.append("%s skipped: %s" % [label, message])

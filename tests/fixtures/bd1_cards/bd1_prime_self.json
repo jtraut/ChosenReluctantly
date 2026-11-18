@@ -3,6 +3,7 @@
     "name": "Test Prime Self",
     "slot_type": "attack_aoe",
     "pool": "neutral",
+    "availability": "starter",
     "cooldown_modifier": 0.0,
     "flavor_text": "Test fixture: primes its own slot; its own cast must not use up its own charge.",
     "effects": [

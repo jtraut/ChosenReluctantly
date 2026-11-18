@@ -404,7 +404,7 @@ func test_status_with_the_same_timing_rolls_once_per_hit() -> void:
 # --- schema --------------------------------------------------------------------------------
 
 func _card_with(template: String, params: Dictionary) -> Dictionary:
-	return {"id": "t", "name": "T", "flavor_text": "", "slot_type": "utility", "pool": "neutral", "cooldown_modifier": 0.0,
+	return {"id": "t", "name": "T", "flavor_text": "", "slot_type": "utility", "availability": "starter", "pool": "neutral", "cooldown_modifier": 0.0,
 			"effects": [{"template": template, "params": params}]}
 
 

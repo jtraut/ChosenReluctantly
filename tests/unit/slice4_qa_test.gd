@@ -60,7 +60,7 @@ func test_water_element_is_data_only_end_to_end() -> void:
 	assert_object(ElementVisuals.color_for_damage_type("fire")).is_equal(Color.html("#ff6a1f"))
 	# A water card passes card validation with no code change.
 	var card := {
-		"id": "water_splash", "name": "Wet, Technically", "slot_type": "attack_single", "pool": "water",
+		"id": "water_splash", "name": "Wet, Technically", "slot_type": "attack_single", "pool": "water", "availability": "starter",
 		"cooldown_modifier": 0.0, "flavor_text": "Damp.",
 		"effects": [{"template": "projectile", "params": {"damage": 5, "damage_type": "water", "speed": 9.0, "max_range": 10.0, "hit_radius": 0.3}}],
 	}

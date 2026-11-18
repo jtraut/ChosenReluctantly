@@ -90,7 +90,7 @@ func test_valid_zones_pass_and_run_through_the_card_schema() -> void:
 	assert_array(_errors("zone", _circle())).is_empty()
 	assert_array(_errors("zone", _line({"knockback_strength": 2.0}))).is_empty()
 	assert_array(_errors("zone", _circle({"status_id": "burn", "status_duration": 3.0, "status_chance": 0.5}))).is_empty()
-	var card: Dictionary = {"id": "x", "name": "X", "flavor_text": "f", "slot_type": "attack_aoe", "pool": "fire", "cooldown_modifier": 0.0,
+	var card: Dictionary = {"id": "x", "name": "X", "flavor_text": "f", "slot_type": "attack_aoe", "availability": "starter", "pool": "fire", "cooldown_modifier": 0.0,
 			"effects": [{"template": "zone", "params": _line()}]}
 	assert_array(CardSchema.validate(card)).is_empty()
 
@@ -123,7 +123,7 @@ func test_zone_schema_fails_loud_on_bad_values() -> void:
 		assert_array(_errors("zone", params)).override_failure_message("should be rejected: %s" % str(params)).is_not_empty()
 	var missing := _circle()
 	missing.erase("tick_interval")
-	var card: Dictionary = {"id": "x", "name": "X", "flavor_text": "f", "slot_type": "attack_aoe", "pool": "fire", "cooldown_modifier": 0.0,
+	var card: Dictionary = {"id": "x", "name": "X", "flavor_text": "f", "slot_type": "attack_aoe", "availability": "starter", "pool": "fire", "cooldown_modifier": 0.0,
 			"effects": [{"template": "zone", "params": missing}]}
 	assert_array(CardSchema.validate(card)).is_not_empty()
 	var status_only := _circle({"damage": 0.0, "status_id": "burn", "status_duration": 2.0})
@@ -497,7 +497,7 @@ func test_pass_through_schema() -> void:
 	assert_array(_errors("pass_through", {"duration": 2.0})).is_empty()
 	for bad: Dictionary in [{"duration": 0.0}, {"duration": -1.0}, {"duration": 999.0}, {"duration": 2.0, "stat": "x"}, {"duration": "2"}]:
 		assert_array(_errors("pass_through", bad)).override_failure_message(str(bad)).is_not_empty()
-	var missing: Dictionary = {"id": "x", "name": "X", "flavor_text": "f", "slot_type": "movement", "pool": "neutral", "cooldown_modifier": 0.0,
+	var missing: Dictionary = {"id": "x", "name": "X", "flavor_text": "f", "slot_type": "movement", "availability": "starter", "pool": "neutral", "cooldown_modifier": 0.0,
 			"effects": [{"template": "pass_through", "params": {}}]}
 	assert_array(CardSchema.validate(missing)).is_not_empty()
 

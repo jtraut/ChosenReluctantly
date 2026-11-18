@@ -3,6 +3,7 @@
     "name": "Test Self Aware",
     "slot_type": "recovery",
     "pool": "neutral",
+    "availability": "starter",
     "cooldown_modifier": 0.0,
     "flavor_text": "Test fixture: heals 5 only if a Heal card was cast in the last 2 s (its own cast must not count).",
     "effects": [

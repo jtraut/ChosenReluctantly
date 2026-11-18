@@ -3,6 +3,7 @@
     "name": "Healing Potion (Lukewarm)",
     "slot_type": "recovery",
     "pool": "neutral",
+    "availability": "starter",
     "cooldown_modifier": 0.0,
     "flavor_text": "It was free. That's the whole review.",
     "effects": [

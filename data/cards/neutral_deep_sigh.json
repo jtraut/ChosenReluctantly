@@ -3,6 +3,7 @@
     "name": "Deep Sigh",
     "slot_type": "utility",
     "pool": "neutral",
+    "availability": "starter",
     "cooldown_modifier": 0.5,
     "flavor_text": "Gathers the will to keep going. Briefly.",
     "effects": [

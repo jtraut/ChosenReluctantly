@@ -3,6 +3,7 @@
     "name": "Strongly Worded Ward",
     "slot_type": "utility",
     "pool": "wizard",
+    "availability": "reward",
     "rarity": "rare",
     "cooldown_modifier": 0.0,
     "keywords": [

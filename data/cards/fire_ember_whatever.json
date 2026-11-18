@@ -3,6 +3,7 @@
     "name": "Ember, Whatever",
     "slot_type": "attack_single",
     "pool": "fire",
+    "availability": "starter",
     "cooldown_modifier": 0.1,
     "flavor_text": "A little fire. A little regret, probably, for them.",
     "effects": [

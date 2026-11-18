@@ -3,6 +3,7 @@
     "name": "Overqualified Bolt",
     "slot_type": "attack_single",
     "pool": "wizard",
+    "availability": "starter",
     "cooldown_modifier": 0.8,
     "flavor_text": "A lot of education went into this. It shows on impact.",
     "effects": [

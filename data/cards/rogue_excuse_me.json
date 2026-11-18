@@ -3,6 +3,7 @@
     "name": "Excuse Me",
     "slot_type": "movement",
     "pool": "rogue",
+    "availability": "starter",
     "cooldown_modifier": 0.0,
     "flavor_text": "Said politely, on the way through. They'll feel it later.",
     "effects": [

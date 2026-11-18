@@ -3,6 +3,7 @@
     "name": "Personal Space, Enforced",
     "slot_type": "attack_aoe",
     "pool": "wizard",
+    "availability": "starter",
     "cooldown_modifier": -0.5,
     "flavor_text": "A ring of arcane disapproval. Everyone steps back.",
     "effects": [

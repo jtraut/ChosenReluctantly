@@ -3,6 +3,7 @@
     "name": "Second Opinion",
     "slot_type": "recovery",
     "pool": "neutral",
+    "availability": "reward",
     "rarity": "rare",
     "cooldown_modifier": 0.0,
     "flavor_text": "Slightly better than the first one. Costs the same.",

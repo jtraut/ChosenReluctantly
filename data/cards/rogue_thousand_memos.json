@@ -3,6 +3,7 @@
     "name": "Death by a Thousand Memos",
     "slot_type": "attack_single",
     "pool": "rogue",
+    "availability": "reward",
     "rarity": "legendary",
     "cooldown_modifier": 0.0,
     "flavor_text": "Each one is a small cut. All of them are marked urgent.",

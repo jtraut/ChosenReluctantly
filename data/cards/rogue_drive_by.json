@@ -3,6 +3,7 @@
     "name": "Drive-By",
     "slot_type": "attack_single",
     "pool": "rogue",
+    "availability": "starter",
     "cooldown_modifier": 0.1,
     "keywords": ["Keystone", "Payoff"],
     "flavor_text": "Technically a stab. Mostly momentum.",

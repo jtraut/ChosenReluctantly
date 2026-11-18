@@ -3,6 +3,7 @@
     "name": "Bad Influence",
     "slot_type": "utility",
     "pool": "rogue",
+    "availability": "starter",
     "cooldown_modifier": 0.0,
     "keywords": ["Keystone", "Primer"],
     "flavor_text": "Teaches your cuts to multiply and hurry up. HR has been notified.",

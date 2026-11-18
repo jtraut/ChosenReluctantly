@@ -3,6 +3,7 @@
     "name": "Blood Money",
     "slot_type": "recovery",
     "pool": "rogue",
+    "availability": "starter",
     "cooldown_modifier": 0.0,
     "flavor_text": "Payment up front, the rest in installments from whoever's nearby.",
     "effects": [

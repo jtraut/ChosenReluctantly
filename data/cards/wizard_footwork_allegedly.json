@@ -3,6 +3,7 @@
     "name": "Footwork, Allegedly",
     "slot_type": "utility",
     "pool": "wizard",
+    "availability": "starter",
     "cooldown_modifier": 2.0,
     "flavor_text": "Moves feel lighter. Nothing about this is certain.",
     "effects": [

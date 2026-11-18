@@ -3,6 +3,7 @@
     "name": "Slash, Then Bleed",
     "slot_type": "attack_single",
     "pool": "rogue",
+    "availability": "starter",
     "cooldown_modifier": 0.2,
     "flavor_text": "It keeps being a problem. Not mine, though.",
     "effects": [

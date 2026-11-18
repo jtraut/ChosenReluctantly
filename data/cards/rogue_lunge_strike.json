@@ -3,6 +3,7 @@
     "name": "Reluctant Lunge",
     "slot_type": "movement",
     "pool": "rogue",
+    "availability": "starter",
     "cooldown_modifier": 0.0,
     "flavor_text": "Short sprint, sharp end first. Minimal enthusiasm.",
     "effects": [

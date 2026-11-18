@@ -3,6 +3,7 @@
     "name": "Borrowed Focus",
     "slot_type": "utility",
     "pool": "wizard",
+    "availability": "starter",
     "cooldown_modifier": 0.0,
     "flavor_text": "Concentrates, briefly, on someone else's problem.",
     "effects": [

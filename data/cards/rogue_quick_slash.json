@@ -3,6 +3,7 @@
     "name": "Quick, I Guess",
     "slot_type": "attack_single",
     "pool": "rogue",
+    "availability": "starter",
     "cooldown_modifier": -0.4,
     "flavor_text": "A fast, uninspired stab. It'll do.",
     "effects": [

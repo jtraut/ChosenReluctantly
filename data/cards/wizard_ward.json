@@ -3,6 +3,7 @@
     "name": "Ward, Technically",
     "slot_type": "utility",
     "pool": "wizard",
+    "availability": "starter",
     "cooldown_modifier": 1.0,
     "flavor_text": "A thin shimmer between you and consequences.",
     "effects": [

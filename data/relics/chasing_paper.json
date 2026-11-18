@@ -6,7 +6,8 @@
     "sources": [
         "elite",
         "relic_room",
-        "merchant"
+        "merchant",
+        "starter"
     ],
     "keywords": [
         "Dash"

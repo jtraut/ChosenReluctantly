@@ -26,6 +26,31 @@ static func is_curse(card_data: Variant) -> bool:
 	return typeof(card_data) == TYPE_DICTIONARY and typeof((card_data as Dictionary).get("curse", false)) == TYPE_BOOL and bool((card_data as Dictionary).get("curse", false))
 
 
+## 3d-B (GDD section 9, D23, D52 = A): where a card may be found. `starter` can go in a loadout's starting deck, `reward` is found only as a run reward,
+## `locked` waits for an unlock condition (`unlock` text, "TBD" until the rules exist). Every non-curse card has the field; a curse must not.
+const AVAILABILITY_STARTER := "starter"
+const AVAILABILITY_REWARD := "reward"
+const AVAILABILITY_LOCKED := "locked"
+const AVAILABILITIES: Array[String] = ["starter", "reward", "locked"]
+const UNLOCK_TBD := "TBD"
+
+
+## A card's availability. A curse (or anything unreadable) has none and returns "".
+static func availability_of(card_data: Variant) -> String:
+	if typeof(card_data) != TYPE_DICTIONARY or is_curse(card_data):
+		return ""
+	var value: Variant = (card_data as Dictionary).get("availability", "")
+	return String(value) if typeof(value) == TYPE_STRING and AVAILABILITIES.has(String(value)) else ""
+
+
+## The unlock condition text of a locked card ("TBD" when it carries none); "" for any other card.
+static func unlock_text_of(card_data: Variant) -> String:
+	if availability_of(card_data) != AVAILABILITY_LOCKED:
+		return ""
+	var value: Variant = (card_data as Dictionary).get("unlock", UNLOCK_TBD)
+	return String(value) if typeof(value) == TYPE_STRING and not String(value).strip_edges().is_empty() else UNLOCK_TBD
+
+
 static func validate(card_data: Dictionary) -> Array[String]:
 	var errors: Array[String] = []
 
@@ -42,6 +67,7 @@ static func validate(card_data: Dictionary) -> Array[String]:
 			errors.append("curse must be true or false")
 		elif bool(card_data["curse"]) and card_data.get("pool") != CURSE_POOL:
 			errors.append("a curse card must be in the '%s' pool" % CURSE_POOL)
+	_validate_availability(card_data, errors)
 	_validate_effects(card_data, errors)
 	errors.append_array(CardTags.validate_keywords(card_data))
 	if card_data.has("requires"):
@@ -60,6 +86,23 @@ static func warnings(card_data: Dictionary, max_name_length: int = -1) -> Array[
 	if typeof(card_name) == TYPE_STRING and (card_name as String).length() > limit:
 		result.append("name is %d characters (over %d); the HUD will shrink or truncate it" % [(card_name as String).length(), limit])
 	return result
+
+
+static func _validate_availability(card_data: Dictionary, errors: Array[String]) -> void:
+	if is_curse(card_data):
+		if card_data.has("availability") or card_data.has("unlock"):
+			errors.append("a curse card must not carry 'availability' or 'unlock' (curses are not in the collection)")
+		return
+	var value: Variant = card_data.get("availability")
+	if typeof(value) != TYPE_STRING or not AVAILABILITIES.has(String(value)):
+		errors.append("availability must be one of %s" % [AVAILABILITIES])
+		return
+	var has_unlock: bool = card_data.has("unlock")
+	if String(value) == AVAILABILITY_LOCKED:
+		if not has_unlock or typeof(card_data["unlock"]) != TYPE_STRING or String(card_data["unlock"]).strip_edges().is_empty():
+			errors.append("a locked card needs 'unlock' text (or \"%s\")" % UNLOCK_TBD)
+	elif has_unlock:
+		errors.append("'unlock' is only for a locked card")
 
 
 static func _validate_slot_type(card_data: Dictionary, errors: Array[String]) -> void:

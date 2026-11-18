@@ -3,6 +3,7 @@
     "name": "Peer Review",
     "slot_type": "attack_aoe",
     "pool": "wizard",
+    "availability": "reward",
     "rarity": "legendary",
     "cooldown_modifier": 0.0,
     "keywords": [

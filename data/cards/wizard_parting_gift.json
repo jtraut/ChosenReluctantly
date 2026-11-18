@@ -3,6 +3,7 @@
     "name": "Parting Gift",
     "slot_type": "movement",
     "pool": "wizard",
+    "availability": "starter",
     "cooldown_modifier": 0.5,
     "keywords": ["Keystone"],
     "flavor_text": "Leaves something behind. It isn't a note.",

@@ -3,6 +3,7 @@
     "name": "Flaming Nonsense",
     "slot_type": "attack_single",
     "pool": "fire",
+    "availability": "starter",
     "cooldown_modifier": 0.2,
     "flavor_text": "Throws fire at the problem. Works surprisingly often.",
     "effects": [

@@ -3,6 +3,7 @@
     "name": "Warm-Up, Reluctantly",
     "slot_type": "utility",
     "pool": "rogue",
+    "availability": "starter",
     "cooldown_modifier": 0.0,
     "keywords": ["Keystone"],
     "flavor_text": "Stretches, sighs, then hits things faster. In that order.",

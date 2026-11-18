@@ -3,6 +3,7 @@
     "name": "Sideways Blink",
     "slot_type": "movement",
     "pool": "wizard",
+    "availability": "starter",
     "cooldown_modifier": 0.5,
     "flavor_text": "Elsewhere, but only slightly.",
     "effects": [

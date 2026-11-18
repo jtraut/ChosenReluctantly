@@ -3,6 +3,7 @@
     "name": "Not My Problem",
     "slot_type": "utility",
     "pool": "rogue",
+    "availability": "starter",
     "cooldown_modifier": 0.0,
     "flavor_text": "Delegates the follow-up swing to Future Me.",
     "effects": [

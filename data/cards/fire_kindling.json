@@ -3,6 +3,7 @@
     "name": "Kindling",
     "slot_type": "utility",
     "pool": "fire",
+    "availability": "starter",
     "cooldown_modifier": 0.0,
     "keywords": ["Primer"],
     "flavor_text": "Dry twigs and a bad attitude.",

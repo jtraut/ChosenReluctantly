@@ -3,6 +3,7 @@
     "name": "Shrug Bomb",
     "slot_type": "attack_aoe",
     "pool": "neutral",
+    "availability": "starter",
     "cooldown_modifier": -0.3,
     "flavor_text": "It's not a strategy. It's a shrug with consequences.",
     "effects": [

@@ -3,6 +3,7 @@
     "name": "Sabbatical",
     "slot_type": "movement",
     "pool": "wizard",
+    "availability": "reward",
     "rarity": "legendary",
     "cooldown_modifier": 0.0,
     "flavor_text": "Out of office. Leaves a parting statement.",

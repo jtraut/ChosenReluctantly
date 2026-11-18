@@ -3,6 +3,7 @@
     "name": "Cutting Corners",
     "slot_type": "attack_aoe",
     "pool": "rogue",
+    "availability": "starter",
     "cooldown_modifier": 0.2,
     "flavor_text": "A quick spin that saves everyone time. Mostly you.",
     "effects": [

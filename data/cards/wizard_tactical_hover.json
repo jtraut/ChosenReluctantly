@@ -3,6 +3,7 @@
     "name": "Tactical Hover",
     "slot_type": "movement",
     "pool": "wizard",
+    "availability": "starter",
     "cooldown_modifier": 1.0,
     "flavor_text": "Not fleeing. Repositioning. Loudly.",
     "effects": [

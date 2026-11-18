@@ -3,6 +3,7 @@
     "name": "Walk Through Everyone",
     "slot_type": "movement",
     "pool": "rogue",
+    "availability": "starter",
     "cooldown_modifier": 1.0,
     "flavor_text": "Walk through them. Rude, but effective.",
     "effects": [

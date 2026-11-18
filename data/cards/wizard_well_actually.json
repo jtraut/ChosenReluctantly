@@ -3,6 +3,7 @@
     "name": "Well, Actually",
     "slot_type": "attack_aoe",
     "pool": "wizard",
+    "availability": "starter",
     "cooldown_modifier": 0.0,
     "keywords": ["Payoff"],
     "flavor_text": "Allow me to interrupt. At length.",

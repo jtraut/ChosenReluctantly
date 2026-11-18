@@ -3,6 +3,7 @@
     "name": "Fireball, Incoming",
     "slot_type": "attack_aoe",
     "pool": "fire",
+    "availability": "starter",
     "cooldown_modifier": 0.6,
     "flavor_text": "Slow enough to dodge. Enemies never do.",
     "effects": [

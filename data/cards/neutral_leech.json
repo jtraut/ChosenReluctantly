@@ -3,6 +3,7 @@
     "name": "Heal By Hurting",
     "slot_type": "recovery",
     "pool": "neutral",
+    "availability": "starter",
     "cooldown_modifier": 0.5,
     "flavor_text": "Hit things, feel better. Ethics pending.",
     "effects": [

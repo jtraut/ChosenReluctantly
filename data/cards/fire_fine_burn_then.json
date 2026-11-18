@@ -3,6 +3,7 @@
     "name": "Fine, Burn Then",
     "slot_type": "attack_aoe",
     "pool": "fire",
+    "availability": "starter",
     "cooldown_modifier": 0.8,
     "flavor_text": "If they insist on being difficult.",
     "effects": [

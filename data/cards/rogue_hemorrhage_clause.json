@@ -3,6 +3,7 @@
     "name": "Hemorrhage Clause",
     "slot_type": "utility",
     "pool": "rogue",
+    "availability": "reward",
     "rarity": "rare",
     "cooldown_modifier": 0.0,
     "keywords": [

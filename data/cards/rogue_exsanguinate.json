@@ -3,6 +3,7 @@
     "name": "Exsanguinate",
     "slot_type": "attack_aoe",
     "pool": "rogue",
+    "availability": "reward",
     "rarity": "legendary",
     "cooldown_modifier": 1.5,
     "keywords": [

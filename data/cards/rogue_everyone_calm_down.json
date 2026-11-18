@@ -3,6 +3,7 @@
     "name": "Everyone Calm Down",
     "slot_type": "attack_aoe",
     "pool": "rogue",
+    "availability": "starter",
     "cooldown_modifier": 0.5,
     "flavor_text": "A wide, unenthusiastic sweep.",
     "effects": [

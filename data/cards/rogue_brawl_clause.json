@@ -3,6 +3,7 @@
     "name": "Brawl Clause",
     "slot_type": "utility",
     "pool": "rogue",
+    "availability": "reward",
     "rarity": "legendary",
     "cooldown_modifier": 0.0,
     "keywords": [

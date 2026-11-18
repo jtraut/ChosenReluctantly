@@ -3,6 +3,7 @@
     "name": "Knuckle Sandwich",
     "slot_type": "attack_single",
     "pool": "rogue",
+    "availability": "reward",
     "rarity": "rare",
     "cooldown_modifier": 0.0,
     "flavor_text": "Lunch is served. Your other hand is already hungry.",

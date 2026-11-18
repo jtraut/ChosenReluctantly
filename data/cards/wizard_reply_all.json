@@ -3,6 +3,7 @@
     "name": "Reply All",
     "slot_type": "attack_single",
     "pool": "wizard",
+    "availability": "reward",
     "rarity": "rare",
     "cooldown_modifier": 0.0,
     "flavor_text": "Everyone was copied. Everyone regrets it.",

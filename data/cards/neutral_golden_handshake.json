@@ -3,6 +3,7 @@
     "name": "Golden Handshake",
     "slot_type": "recovery",
     "pool": "neutral",
+    "availability": "reward",
     "rarity": "legendary",
     "cooldown_modifier": 0.0,
     "flavor_text": "A generous package. Everything else is on the house too.",

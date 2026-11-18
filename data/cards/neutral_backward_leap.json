@@ -3,6 +3,7 @@
     "name": "Nope, Leaping Away",
     "slot_type": "movement",
     "pool": "neutral",
+    "availability": "starter",
     "cooldown_modifier": 0.5,
     "flavor_text": "The other direction, quickly.",
     "effects": [

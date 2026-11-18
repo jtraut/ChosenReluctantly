@@ -3,6 +3,7 @@
     "name": "Eventual Healing",
     "slot_type": "recovery",
     "pool": "neutral",
+    "availability": "starter",
     "cooldown_modifier": 0.0,
     "flavor_text": "Slow healing, no questions.",
     "effects": [

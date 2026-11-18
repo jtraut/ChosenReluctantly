@@ -3,6 +3,7 @@
     "name": "Hot Head",
     "slot_type": "utility",
     "pool": "fire",
+    "availability": "starter",
     "cooldown_modifier": 0.0,
     "flavor_text": "A brief, manageable rage.",
     "effects": [

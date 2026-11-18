@@ -3,6 +3,7 @@
     "name": "Fan the Flames",
     "slot_type": "attack_aoe",
     "pool": "fire",
+    "availability": "starter",
     "cooldown_modifier": 0.5,
     "keywords": ["Keystone"],
     "flavor_text": "It was almost out. You can't have that.",

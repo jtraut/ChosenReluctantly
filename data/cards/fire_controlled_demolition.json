@@ -3,6 +3,7 @@
     "name": "Controlled Demolition",
     "slot_type": "attack_aoe",
     "pool": "fire",
+    "availability": "reward",
     "rarity": "rare",
     "cooldown_modifier": 0.0,
     "keywords": [

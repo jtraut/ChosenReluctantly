@@ -3,6 +3,7 @@
     "name": "Heat Sink",
     "slot_type": "attack_aoe",
     "pool": "fire",
+    "availability": "starter",
     "cooldown_modifier": 0.5,
     "keywords": ["Keystone", "Payoff"],
     "flavor_text": "Somewhere to put all that.",

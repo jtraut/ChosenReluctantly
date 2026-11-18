@@ -1,0 +1,7 @@
+{
+    "version": 1,
+    "slots_per_class": 5,
+    "max_copies": 2,
+    "deck_max": 20,
+    "name_max_length": 24
+}

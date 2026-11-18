@@ -3,6 +3,7 @@
     "name": "Hot Desking",
     "slot_type": "movement",
     "pool": "fire",
+    "availability": "reward",
     "rarity": "rare",
     "cooldown_modifier": 0.0,
     "flavor_text": "Nobody keeps a seat warm like you do. Literally.",

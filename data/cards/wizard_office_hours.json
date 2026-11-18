@@ -3,6 +3,7 @@
     "name": "Office Hours",
     "slot_type": "attack_aoe",
     "pool": "wizard",
+    "availability": "reward",
     "rarity": "rare",
     "cooldown_modifier": 0.0,
     "flavor_text": "Drop-ins welcome. Staying is mandatory.",

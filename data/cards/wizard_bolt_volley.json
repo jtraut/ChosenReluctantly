@@ -3,6 +3,7 @@
     "name": "Three Bolts, Reluctantly",
     "slot_type": "attack_single",
     "pool": "wizard",
+    "availability": "starter",
     "cooldown_modifier": 0.2,
     "flavor_text": "One would have been plenty. Rules say three.",
     "effects": [

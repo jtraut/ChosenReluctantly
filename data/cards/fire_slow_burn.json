@@ -3,6 +3,7 @@
     "name": "Slow Burn",
     "slot_type": "attack_aoe",
     "pool": "fire",
+    "availability": "starter",
     "cooldown_modifier": 0.8,
     "flavor_text": "Patience is a kind of arson.",
     "effects": [

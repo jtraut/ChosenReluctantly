@@ -3,6 +3,7 @@
     "name": "Momentum, Unfortunately",
     "slot_type": "movement",
     "pool": "rogue",
+    "availability": "starter",
     "cooldown_modifier": 0.0,
     "keywords": ["Primer"],
     "flavor_text": "Hard to stop now. You've tried.",

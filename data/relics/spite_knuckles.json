@@ -3,7 +3,7 @@
     "name": "Spite Knuckles",
     "pool": "rogue",
     "rarity": "tier1",
-    "sources": ["elite", "relic_room", "merchant"],
+    "sources": ["elite", "relic_room", "merchant", "starter"],
     "keywords": ["Bleed"],
     "modifiers": [],
     "triggers": [

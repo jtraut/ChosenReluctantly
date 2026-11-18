@@ -3,6 +3,7 @@
     "name": "Blaze and Bail",
     "slot_type": "movement",
     "pool": "fire",
+    "availability": "starter",
     "cooldown_modifier": 0.4,
     "flavor_text": "Sets the immediate area on fire, then leaves it to figure that out.",
     "effects": [

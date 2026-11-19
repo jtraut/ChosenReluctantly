@@ -140,7 +140,7 @@ func test_slot_infos_on_a_live_player_light_the_target_condition_and_show_the_pr
 	assert_bool(bool(aoe["has_condition"])).is_true()
 	assert_bool(bool(aoe["condition_live"])).override_failure_message("a Burning enemy 1.5 m away must light Fan the Flames").is_true()
 	assert_str(String(aoe["condition_text"])).is_equal("If the target has Burn")
-	assert_array(aoe["chips"]).is_equal(["Keystone", "Area", "Burn"] as Array[String])
+	assert_array(aoe["chips"]).is_equal(["Keystone", "Area", "Burn", "Fire"] as Array[String])
 	assert_bool(bool(infos["attack_single"]["condition_live"])).is_false()  # Drive-By: no Movement cast yet
 	assert_bool(bool(infos["attack_single"]["primed"])).is_false()
 	# The burn runs out: the glow goes out.

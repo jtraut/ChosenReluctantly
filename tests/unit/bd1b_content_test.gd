@@ -47,9 +47,9 @@ func test_every_new_attack_card_passes_the_damage_rule_on_its_unconditional_dama
 
 
 func test_tags_of_the_new_cards() -> void:
-	assert_array(CardDatabase.tags_for("fire_fan_the_flames")).is_equal(["Area", "Burn", "Keystone"] as Array[String])
+	assert_array(CardDatabase.tags_for("fire_fan_the_flames")).is_equal(["Area", "Burn", "Keystone", "Fire"] as Array[String])
 	assert_array(CardDatabase.tags_for("rogue_momentum")).is_equal(["Dash", "Buff", "Primer"] as Array[String])
-	assert_array(CardDatabase.tags_for("fire_slow_burn")).is_equal(["Zone", "Burn"] as Array[String])
+	assert_array(CardDatabase.tags_for("fire_slow_burn")).is_equal(["Zone", "Burn", "Fire"] as Array[String])
 	assert_array(CardDatabase.tags_for("wizard_parting_gift")).is_equal(["Area", "Dash", "Keystone"] as Array[String])
 	assert_array(SlotSynergy.chips("rogue_drive_by")).is_equal(["Keystone", "Payoff", "Melee"] as Array[String])
 

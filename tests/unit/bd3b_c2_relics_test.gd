@@ -12,7 +12,19 @@ func before_test() -> void:
 	RelicDatabase.load_all()
 
 
+# The relay is an autoload: a RelayLog left connected keeps firing in later suites (it broke c1b1, heavy_3b2 and others), so every log is stopped here.
+var _logs: Array[RelayLog] = []
+
+
+func _track(log: RelayLog) -> RelayLog:
+	_logs.append(log)
+	return log
+
+
 func after_test() -> void:
+	for log: RelayLog in _logs:
+		log.stop()
+	_logs.clear()
 	BodyFlag.reset()
 	CombatEvents.reset()
 	Juice.reset()
@@ -102,7 +114,7 @@ func test_event_amount_scale_is_a_floored_fraction_of_the_hit() -> void:
 
 func test_an_enemy_melee_cone_reports_the_attacker_and_melee_true() -> void:
 	var main := _spawn_main()
-	var log := RelayLog.new(CombatEvents)
+	var log := _track(RelayLog.new(CombatEvents))
 	var enemy := _enemy(main, Vector3(0, 0, 2))
 	main.player.global_position = Vector3.ZERO
 	enemy.look_at(main.player.global_position, Vector3.UP)
@@ -117,7 +129,7 @@ func test_an_enemy_melee_cone_reports_the_attacker_and_melee_true() -> void:
 
 func test_an_enemy_projectile_reports_the_attacker_and_melee_false() -> void:
 	var main := _spawn_main()
-	var log := RelayLog.new(CombatEvents)
+	var log := _track(RelayLog.new(CombatEvents))
 	var enemy := _enemy(main, Vector3(0, 0, 3))
 	main.player.global_position = Vector3.ZERO
 	enemy.look_at(main.player.global_position, Vector3.UP)
@@ -133,7 +145,7 @@ func test_an_enemy_projectile_reports_the_attacker_and_melee_false() -> void:
 
 func test_a_status_tick_is_not_melee_and_has_no_attacker() -> void:
 	var main := _spawn_main()
-	var log := RelayLog.new(CombatEvents)
+	var log := _track(RelayLog.new(CombatEvents))
 	main.player.health.take_damage(3.0, "fire", Vector3.ZERO, null, Health.KIND_DOT, "status:burn")
 	var damaged := log.named("player_damaged")
 	assert_int(damaged.size()).is_equal(1)

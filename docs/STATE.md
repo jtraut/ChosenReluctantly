@@ -11,7 +11,7 @@ Last updated: 2026-11-19 (BD3b-C2 recorded; D next). Latest tag `playtest-2026-1
 
 ## Exact next step
 1. **gameplay-dev runs BD3b-D1** (the C2 carry-overs, then the bot sim sees the new rules, then the hash check), then **D2** (`PlanPolicy`, gates, tuning). Both `safe to chain`; the split is in ROADMAP.
-2. Then then BD3b-ux, qa, playtester, tech-writer, close. One sitting per agent; a `Remaining:` list gets a fresh agent.
+2. Then BD3b-ux, qa, playtester, tech-writer, close. One sitting per agent; a `Remaining:` list gets a fresh agent.
 3. Then the Milestone 3 close and milestone playtest (CLAUDE.md, milestone boundary).
 
 **Next role:** gameplay-dev (BD3b-D1).

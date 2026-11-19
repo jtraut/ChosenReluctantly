@@ -356,3 +356,104 @@ func test_hot_streak_ignores_non_fire_casts() -> void:
 		CombatEvents.notify_card_cast("movement", "rogue_bleed_slash")
 	await _frames(2)
 	assert_float(slot.cooldown_remaining).is_greater(1.0)
+
+
+# --- BD3b-D1: Thorned Boundary against the real enemy and boss attacks -------------------------------------
+
+const MELEE_CHASER_PATH := "res://scenes/enemies/MeleeChaser.tscn"
+const SHOOTER_PATH := "res://scenes/enemies/RangedShooter.tscn"
+const BOSS_PATH := "res://scenes/enemies/BossGuardian.tscn"
+
+
+func _armored_thorned(main: Main) -> RelicManager:
+	var manager := _manager(main, ["thorned_boundary"] as Array[String])
+	main.player.stat_modifiers.add_modifier("armor", "test_ward", StatModifiers.ADDITIVE, 10.0)
+	main.player.health.damage_immune = false
+	return manager
+
+
+func _stunned_after(main: Main, manager: RelicManager, foe: Node, attack: Callable) -> bool:
+	main.player.global_position = Vector3.ZERO
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	attack.call()
+	manager.flush()
+	return (foe.get("status_manager") as StatusEffectManager).has_status("stun")
+
+
+func test_thorned_boundary_fires_on_a_real_enemy_melee_hit() -> void:
+	var main := _spawn_main()
+	var manager := _armored_thorned(main)
+	var chaser: Enemy = (load(MELEE_CHASER_PATH) as PackedScene).instantiate()
+	main.add_child(chaser)
+	chaser.global_position = Vector3(0, 0, -1.5)
+	chaser.target = main.player
+	chaser.look_at(main.player.global_position, Vector3.UP)
+	var stunned: bool = await _stunned_after(main, manager, chaser, func() -> void: chaser._execute_attack())
+	assert_bool(stunned).override_failure_message("an ordinary enemy's melee cone must trigger Thorned Boundary").is_true()
+
+
+func test_thorned_boundary_ignores_a_real_enemy_projectile() -> void:
+	var main := _spawn_main()
+	var manager := _armored_thorned(main)
+	var shooter: Enemy = (load(SHOOTER_PATH) as PackedScene).instantiate()
+	main.add_child(shooter)
+	shooter.global_position = Vector3(0, 0, -4)
+	shooter.target = main.player
+	shooter.look_at(main.player.global_position, Vector3.UP)
+	var hp: float = main.player.health.current_health
+	var stunned: bool = await _stunned_after(main, manager, shooter, func() -> void: shooter._execute_attack())
+	await _frames(40)
+	manager.flush()
+	assert_float(main.player.health.current_health).override_failure_message("the shot must have landed").is_less(hp)
+	assert_bool(stunned or shooter.status_manager.has_status("stun")).is_false()
+	assert_float(shooter.health.current_health).override_failure_message("no reflected damage either").is_equal(shooter.health.max_health)
+
+
+func _brute(main: Main, attack_id: String) -> Boss:
+	var boss: Boss = (load(BOSS_PATH) as PackedScene).instantiate()
+	boss.position = Vector3(0, 0, 4)
+	boss.target = main.player
+	boss.spawn_index = 0
+	main.add_child(boss)
+	boss.set_seed(7)
+	boss.set_physics_process(false)
+	boss._attack_id = attack_id
+	boss._attack = boss._attacks[attack_id]
+	boss._state = Boss.State.WINDUP
+	boss._lock_dir = Vector3(0.0, 0.0, -1.0)
+	boss._lock_point = Vector3.ZERO
+	boss._charge_start = boss.global_position
+	boss.global_transform.basis = Basis.looking_at(boss._lock_dir, Vector3.UP)
+	return boss
+
+
+## Bosses are stun-immune, so the proof Thorned Boundary fired is the reflected tenth taking HP off the boss.
+func _reflected(main: Main, manager: RelicManager, boss: Boss, attack: Callable) -> bool:
+	main.player.health.current_health = main.player.health.max_health
+	main.player.global_position = Vector3.ZERO
+	boss.health.current_health = boss.health.max_health
+	boss.global_position = Vector3(0, 0, 1)  # in reach of the cone, the charge sweep and the slam
+	await get_tree().physics_frame
+	await get_tree().physics_frame
+	var player_hp: float = main.player.health.current_health
+	attack.call()
+	manager.flush()
+	assert_float(main.player.health.current_health).override_failure_message("the attack must have hit the player").is_less(player_hp)
+	return boss.health.current_health < boss.health.max_health
+
+
+func test_thorned_boundary_fires_on_a_boss_cone_and_a_boss_charge_but_not_a_boss_slam_or_volley() -> void:
+	var main := _spawn_main()
+	var manager := _armored_thorned(main)
+	var boss := _brute(main, "smash")
+	boss.health.base_armor = 0.0
+	assert_bool(await _reflected(main, manager, boss, func() -> void: boss._land_attack())).override_failure_message("boss cone").is_true()
+	boss._attack_id = "charge"
+	boss._attack = boss._attacks["charge"]
+	assert_bool(await _reflected(main, manager, boss, func() -> void: boss._charge_sweep())).override_failure_message("boss charge").is_true()
+	boss._attack_id = "slam"
+	boss._attack = boss._attacks["slam"]
+	boss._lock_point = Vector3.ZERO
+	boss._aoe_locked = []
+	assert_bool(await _reflected(main, manager, boss, func() -> void: boss._land_attack())).override_failure_message("boss ground slam is not melee").is_false()

@@ -196,11 +196,13 @@ func _run_plan_room(room_index: int) -> void:
 	var policy := PlanPolicy.new()
 	for tick in range(TICKS_PER_ROOM):
 		relay.step(DT)
+		caster.call("step", DT)  # BD3b-D1: the stand-in caster's statuses tick (Charge decays)
 		controller.advance(DT)
 		var now: float = relay.now()
 		var burning: bool = relay.history.cast_within(now, 4.0, "", "Burn")
 		var view: Dictionary = {"now": now, "history": relay.history, "zone_count": 1 if relay.history.cast_within(now, 4.0, "", "Zone") else 0, "origin": Vector3.ZERO, "forward": Vector3(0, 0, -1),
 				"aim_point": Vector3(0, 0, -2), "arena": Rect2(), "enemies": [{"pos": Vector3(0, 0, -2), "statuses": ["burn"] if burning else []}]}
+		view.merge(caster.call("live_view_fields", controller))  # BD3b-D1: self_stacks, hp_fraction, deck_card_ids
 		policy.swap_locked = controller.swap_locked()
 		var decisions: Dictionary = policy.decide_all(controller.slots, view, 1.0, (tick / 90) % 3 == 0, false)
 		for slot_type: String in CardSlotController.SLOT_TYPE_ORDER:

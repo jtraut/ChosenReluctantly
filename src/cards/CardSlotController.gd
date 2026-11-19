@@ -162,7 +162,7 @@ func try_swap(slot_type: String) -> bool:
 	var slot: CardSlot = get_slot(slot_type)
 	if slot == null or swap_locked():
 		return false
-	return slot.swap_card()
+	return slot.swap_card(stat_modifiers)
 
 
 func _cast_card(card_data: Dictionary) -> void:

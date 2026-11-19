@@ -265,7 +265,7 @@ func _disconnect_all() -> void:
 
 ## One handler per event: it turns the signal's arguments into the normalized event dictionary `handle_event` matches
 ## against: {event, origin, target, position (Vector3 or null), amount, damage_type, kind, statuses, status_id, reason,
-## slot_type, card_id, tags, attack_id, shape, room_type, path_start (dash_ended: where the dash began; `position` is where it ended)}. Keys an event does not have are absent.
+## slot_type, card_id, tags, attack_id, shape, room_type, melee and attacker (player_damaged; the attacker is a node or null, and `position` is its place), path_start (dash_ended: where the dash began; `position` is where it ended)}. Keys an event does not have are absent.
 func _handler_for(event_id: String) -> Callable:
 	match event_id:
 		"hit_landed":
@@ -293,8 +293,11 @@ func _handler_for(event_id: String) -> Callable:
 			return func(card_id: String, _count: int, position: Vector3) -> void:
 				handle_event({"event": event_id, "card_id": card_id, "position": position, "origin": ""})
 		"player_damaged":
-			return func(amount: float, origin: String) -> void:
-				handle_event({"event": event_id, "amount": amount, "origin": origin})
+			return func(amount: float, origin: String, attacker: Node, melee: bool) -> void:
+				var damaged: Dictionary = {"event": event_id, "amount": amount, "origin": origin, "melee": melee, "attacker": attacker}
+				if attacker != null and is_instance_valid(attacker) and attacker is Node3D:
+					damaged["position"] = (attacker as Node3D).global_position  # where an effect `at: attacker` is centred (the event's own `position` flag stays false)
+				handle_event(damaged)
 		"zone_started", "zone_ended":
 			return func(_zone_id: int, shape: String, position: Vector3) -> void:
 				handle_event({"event": event_id, "shape": shape, "position": position, "origin": ""})
@@ -365,8 +368,8 @@ func trigger_progress(relic_id: String) -> int:
 
 ## The event's target node, or null when it has none or was freed since the event (a killing blow frees the enemy before a deferred trigger runs;
 ## casting a freed object to Node is a script error, so check validity on the Variant first).
-static func _live_target(event: Dictionary) -> Node:
-	var raw: Variant = event.get("target")
+static func _live_target(event: Dictionary, key: String = "target") -> Node:
+	var raw: Variant = event.get(key)
 	if raw == null or not is_instance_valid(raw):
 		return null
 	return raw as Node
@@ -424,6 +427,9 @@ func _matches(filter: Dictionary, event: Dictionary) -> bool:
 			"min_amount":
 				if float(event.get("amount", 0.0)) < float(wanted):
 					return false
+			"melee":
+				if bool(event.get("melee", false)) != bool(wanted):
+					return false
 			# allow_relic_origin and every_nth are handled by handle_event.
 	return true
 
@@ -453,13 +459,15 @@ static func _as_strings(value: Variant) -> Array[String]:
 
 ## The default runner: the trigger's effects through EffectTemplates, from the player, stamped "relic:<id>". `at` chooses
 ## where: the player (default), the event's position, or the event's target (which also becomes the hit set, so an
-## apply_status first in the list lands on it).
+## apply_status first in the list lands on it). `attacker` (player_damaged) does the same for the node that dealt the damage, and centres
+## placed effects (an aoe) on it; a freed or missing attacker leaves the effects with no hit set, so nothing lands.
 func _run_effects(trigger: Dictionary, event: Dictionary) -> void:
 	if _player == null or not is_instance_valid(_player) or not _player.is_inside_tree():
 		return
 	var context := EffectContext.new(_player, _spawn_parent if _spawn_parent != null else _player.get_parent(), "player")
 	context.origin = String(trigger["origin"])
 	context.chain_depth = _depth
+	context.event_amount = float(event.get("amount", 0.0))
 	context.rng = _rng
 	if "card_slots" in _player and _player.card_slots != null:
 		context.deck_card_ids = _player.card_slots.owned_card_ids()
@@ -471,13 +479,15 @@ func _run_effects(trigger: Dictionary, event: Dictionary) -> void:
 	if _player.has_method("get_arena_rect"):
 		context.arena = _player.call("get_arena_rect")
 	var at: String = String(trigger["at"])
+	if at == RelicSchema.AT_ATTACKER and _live_target(event, "attacker") == null:
+		return  # the attacker is gone (killed or freed): nothing to land on, and an aoe must not fall back to the player
 	var where: Variant = event.get("position")
 	var place: bool = at != RelicSchema.AT_PLAYER and where is Vector3
 	var path_start: Variant = event.get("path_start") if at == RelicSchema.AT_EVENT_PATH else null
 	if place:
 		context.aim_point = where
-	if at == RelicSchema.AT_EVENT_TARGET:
-		var target := _live_target(event)
+	if at == RelicSchema.AT_EVENT_TARGET or at == RelicSchema.AT_ATTACKER:
+		var target := _live_target(event, "attacker" if at == RelicSchema.AT_ATTACKER else "target")
 		if target != null and is_instance_valid(target):
 			var box := target.get_node_or_null("Hurtbox") as Hurtbox
 			if box != null:

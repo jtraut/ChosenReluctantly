@@ -1,0 +1,52 @@
+{
+    "id": "thorned_boundary",
+    "name": "Thorned Boundary",
+    "pool": "neutral",
+    "rarity": "tier2",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "player_damaged",
+            "filter": {
+                "melee": true
+            },
+            "at": "attacker",
+            "internal_cooldown": 0.0,
+            "effects": [
+                {
+                    "template": "apply_status",
+                    "params": {
+                        "status_id": "stun",
+                        "duration": 0.5
+                    },
+                    "condition": {
+                        "type": "has_bonus_armor"
+                    }
+                },
+                {
+                    "template": "aoe",
+                    "params": {
+                        "damage": 0.1,
+                        "damage_type": "neutral",
+                        "radius": 0.5
+                    },
+                    "condition": {
+                        "type": "has_bonus_armor"
+                    },
+                    "scale": {
+                        "by": "event_amount",
+                        "per": 0.1
+                    }
+                }
+            ]
+        }
+    ],
+    "rule_text": "With bonus armor, enemies that hit you in melee are stunned 0.5 s (halved on elites) and take 10% back.",
+    "flavor_text": "Personal space is a policy, not a suggestion."
+}

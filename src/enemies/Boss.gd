@@ -686,7 +686,7 @@ func _charge_sweep() -> bool:
 		return false
 	for hurtbox_hit: Hurtbox in hits:
 		hurtbox_hit.receive_damage(float(_attack["damage"]), String(_attack["damage_type"]),
-				EffectTemplates.knockback_from(global_position - _lock_dir * 0.5, hurtbox_hit.global_position, float(_attack["knockback"])), self, Health.KIND_HIT, "enemy")
+				EffectTemplates.knockback_from(global_position - _lock_dir * 0.5, hurtbox_hit.global_position, float(_attack["knockback"])), self, Health.KIND_HIT, "enemy", true)
 	Juice.screen_shake(float(_attack["shake"]), float(_attack["shake_duration"]))
 	Juice.hit_stop(float(_attack["hit_stop"]), 0.05)
 	attack_landed.emit(_attack_id, true)

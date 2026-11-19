@@ -414,7 +414,8 @@ func _on_damaged(amount: float, damage_type: String, knockback: Vector3) -> void
 	Juice.on_hit_landed(global_position, amount, damage_type, health.last_kind, health.last_channel, health.last_reduction)
 	var relay := CombatLink.events()
 	if relay != null:
-		relay.notify_player_damaged(amount, health.last_origin)
+		var attacker: Node = instance_from_id(health.last_source_id) as Node if health.last_source_id != 0 else null
+		relay.notify_player_damaged(amount, health.last_origin, attacker, health.last_melee)
 
 
 func _flash_body(color: Color) -> void:

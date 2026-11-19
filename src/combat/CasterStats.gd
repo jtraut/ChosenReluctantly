@@ -32,3 +32,11 @@ static func hp_fraction(caster: Node) -> float:
 	if health == null or health.get_max_health() <= 0.0:
 		return 1.0
 	return clampf(health.get_current_health() / health.get_max_health(), 0.0, 1.0)
+
+
+## BD3b-C2: true when the caster's armor is above its base, that is, something (a buff, a relic, equipment) is giving it bonus armor right now.
+static func has_bonus_armor(caster: Node) -> bool:
+	if caster == null or not is_instance_valid(caster) or not caster.has_node("Health"):
+		return false
+	var health := caster.get_node("Health") as Health
+	return health != null and health.get_armor() > health.base_armor

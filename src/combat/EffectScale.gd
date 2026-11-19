@@ -10,13 +10,19 @@ extends RefCounted
 ##   {"by": "deck_count", "tag": "Projectile", "per": 0.5, "max": 6}
 ##       count = the cards in the run deck with that tag (copies count).
 ##
+##   {"by": "event_amount", "per": 0.1, "param": "damage"}
+##       RELIC TRIGGERS ONLY (BD3b-C2, an event that carries an amount: player_damaged, hit_landed). The param becomes per x the event's amount (capped
+##       by `max` when given), but never less than the base in `params`, which is the floor (so the base is a small placeholder, like a zone's `length`
+##       at event_path). "Deals 10% of the hit back" is per 0.1 with a base of 0.1.
+##
 ## `max` (optional on both forms) caps the COUNT, not the bonus: per 0.5 and max 6 adds at most +3. `param` is optional: it defaults to the
 ## template's damage (`damage`, or `amount` for a heal) and may only name a non-geometric number (damage, amount), because the cast preview
 ## draws shapes once per card. The effect must already carry that param (its base).
 
 const SELF_STACKS := "self_stacks"
 const DECK_COUNT := "deck_count"
-const BY: Array[String] = [SELF_STACKS, DECK_COUNT]
+const EVENT_AMOUNT := "event_amount"
+const BY: Array[String] = [SELF_STACKS, DECK_COUNT, EVENT_AMOUNT]
 ## Templates that may scale, and the params each may name (the first is the default).
 const PARAMS_BY_TEMPLATE: Dictionary = {
 	"projectile": ["damage"], "cone": ["damage"], "aoe": ["damage"], "zone": ["damage"], "dash": ["damage"], "heal": ["amount"],
@@ -61,6 +67,10 @@ static func apply(scale: Dictionary, template_id: String, params: Dictionary, co
 		push_error("EffectScale: effect '%s' cannot scale param '%s'" % [template_id, param])
 		return params
 	var scaled: Dictionary = params.duplicate()
+	if String(scale.get("by", "")) == EVENT_AMOUNT:
+		var amount: float = minf(context.event_amount, float(scale["max"])) if scale.has("max") else context.event_amount
+		scaled[param] = maxf(float(params[param]), float(scale.get("per", 0.0)) * amount)
+		return scaled
 	scaled[param] = float(params[param]) + bonus(scale, context.caster, context.deck_card_ids)
 	if bool(scale.get("consume", false)) and String(scale.get("by", "")) == SELF_STACKS:
 		_consume(context.caster, String(scale["status_id"]))
@@ -97,6 +107,8 @@ static func preview_values(card: Dictionary, caster: Node, deck_card_ids: Array)
 static func text(scale: Dictionary, words: Dictionary, status_name: String) -> String:
 	var per: String = _num(float(scale.get("per", 0.0)))
 	var line: String
+	if String(scale.get("by", "")) == EVENT_AMOUNT:
+		return ""  # relic triggers only: a relic states its rule in its own rule_text
 	if String(scale.get("by", "")) == SELF_STACKS:
 		line = String(words["self_stacks"]) % [per, status_name]
 	else:

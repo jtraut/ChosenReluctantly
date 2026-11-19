@@ -31,8 +31,9 @@ signal attack_fired(attack_id: String, aim_point: Vector3)
 signal dash_ended(start: Vector3, end: Vector3, card_id: String)
 ## BD3a: a Movement card's pass-through dash finished having passed through `count` (at least 1) enemies; `position` is where it ended.
 signal dash_passed_through(card_id: String, count: int, position: Vector3)
-## The player lost HP.
-signal player_damaged(amount: float, origin: String)
+## The player lost HP. BD3b-C2: `attacker` is the node that dealt it (null when unknown, freed, or a status tick with no source) and `melee` is true
+## for a melee hit (an enemy cone, a boss charge) and false for a projectile, a zone, a status tick or anything not marked melee.
+signal player_damaged(amount: float, origin: String, attacker: Node, melee: bool)
 signal zone_started(zone_id: int, shape: String, position: Vector3)
 signal zone_ended(zone_id: int, shape: String, position: Vector3)
 signal room_started(index: int, room_type: String)
@@ -145,8 +146,8 @@ func notify_dash_passed_through(card_id: String, count: int, at: Vector3) -> voi
 	dash_passed_through.emit(card_id, count, at)
 
 
-func notify_player_damaged(amount: float, origin: String) -> void:
-	player_damaged.emit(amount, origin)
+func notify_player_damaged(amount: float, origin: String, attacker: Node = null, melee: bool = false) -> void:
+	player_damaged.emit(amount, origin, attacker, melee)
 
 
 func notify_zone_started(zone_id: int, shape: String, at: Vector3) -> void:

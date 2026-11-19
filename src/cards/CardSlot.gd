@@ -94,10 +94,10 @@ func use_card(card_cooldown_modifier: float, stat_modifiers: StatModifiers = nul
 ## Discards the revealed card for a fresh draw, at the cost of a penalty
 ## cooldown on the slot. Blocked while the slot is already on cooldown, or
 ## if there's no revealed card to discard. Returns whether the swap happened.
-func swap_card() -> bool:
+func swap_card(stat_modifiers: StatModifiers = null) -> bool:
 	if cooldown_remaining > 0.0 or current_card_id == "":
 		return false
-	var penalty: float = current_swap_penalty()  # read before the draw replaces the revealed card
+	var penalty: float = current_swap_penalty(stat_modifiers)  # read before the draw replaces the revealed card
 	discard_pile.append(current_card_id)
 	_draw_next_card()
 	cooldown_remaining = penalty
@@ -106,10 +106,17 @@ func swap_card() -> bool:
 
 
 ## What swapping the revealed card away would cost right now: the curse value for a curse, else the ordinary one.
-func current_swap_penalty() -> float:
+## BD3b-C2: the `swap_penalty_mult.<slot_type>` stat (base 1.0, a relic modifier of -1.0 = free) scales whichever of the two applies.
+const SWAP_PENALTY_MULT_PREFIX := "swap_penalty_mult."
+
+
+func current_swap_penalty(stat_modifiers: StatModifiers = null) -> float:
+	var penalty: float = swap_penalty
 	if curse_swap_penalty >= 0.0 and current_card_id != "" and CardSchema.is_curse(CardDatabase.get_card(current_card_id)):
-		return curse_swap_penalty
-	return swap_penalty
+		penalty = curse_swap_penalty
+	if stat_modifiers != null and stat_modifiers.has_modifier(SWAP_PENALTY_MULT_PREFIX + slot_type):
+		penalty = maxf(penalty * stat_modifiers.apply(SWAP_PENALTY_MULT_PREFIX + slot_type, 1.0), 0.0)
+	return penalty
 
 
 ## Tooling: makes `card_id` the revealed card by trading places with the current one. False when the slot has no such card in its draw pile.

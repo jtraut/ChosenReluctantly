@@ -29,6 +29,8 @@ var origin: String = ""
 ## BD3b-B: the relic-trigger chain level this run belongs to (0 = a card or an attack). Projectiles, zones and delayed or repeated hits
 ## it starts keep it and re-enter it when they hit later (CombatEventsRelay.enter_chain), so a delayed hit cannot restart a relic chain.
 var chain_depth: int = 0
+## BD3b-C2: the amount of the event that fired this relic trigger (damage taken or dealt), for a `scale` by event_amount. 0 outside a trigger.
+var event_amount: float = 0.0
 
 
 func _init(p_caster: Node3D, p_spawn_parent: Node, p_caster_team: String = "neutral") -> void:

@@ -476,7 +476,7 @@ static func _cone_hit(params: Dictionary, context: EffectContext, index: int) ->
 		_play_cone_vfx(params, context, forward)
 	var knockback_strength: float = params.get("knockback_strength", 0.0)
 	for hurtbox: Hurtbox in hits:
-		hurtbox.receive_damage(params["damage"], params["damage_type"], knockback_from(context.caster.global_position, hurtbox.global_position, knockback_strength), context.caster, _kind_for(index), context.origin)
+		hurtbox.receive_damage(params["damage"], params["damage_type"], knockback_from(context.caster.global_position, hurtbox.global_position, knockback_strength), context.caster, _kind_for(index), context.origin, true)
 
 
 ## Ground wedge through the shared EffectPool, sized by VfxSizing (the same

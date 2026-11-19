@@ -20,7 +20,10 @@ const AT_EVENT_TARGET := "event_target"
 ## BD3b-B: only for an event that carries a path (dash_ended: the start and the end). A zone effect at the path is a line laid from the
 ## start to the end; its `length` in data is a placeholder the path replaces. Any other effect there is placed at the path's end.
 const AT_EVENT_PATH := "event_path"
-const AT_VALUES: Array[String] = [AT_PLAYER, AT_EVENT_POSITION, AT_EVENT_TARGET, AT_EVENT_PATH]
+## BD3b-C2: only for an event that names who caused it (player_damaged): the effects land on that attacker (a status goes on it, and a placed
+## effect is centred on it). It is the cause, where event_target is the one hit.
+const AT_ATTACKER := "attacker"
+const AT_VALUES: Array[String] = [AT_PLAYER, AT_EVENT_POSITION, AT_EVENT_TARGET, AT_EVENT_PATH, AT_ATTACKER]
 const MAX_INTERNAL_COOLDOWN := 600.0
 const MAX_EVERY_NTH := 100
 const MAX_RULE_TEXT_LENGTH := 120
@@ -36,13 +39,13 @@ const FILTER_KINDS: Dictionary = {
 	"origin": "origin", "damage_type": "string_list", "kind": "kind", "target_team": "team", "target_has_status": "status",
 	"status_id": "status", "reason": "reason", "slot_type": "slot_type", "card_id": "string_list", "tag": "tag",
 	"attack_id": "attack", "shape": "shape", "room_type": "string_list", "min_amount": "number",
-	"allow_relic_origin": "bool", "every_nth": "nth",
+	"allow_relic_origin": "bool", "every_nth": "nth", "melee": "bool",
 }
 
 ## Per event: `filter` (accepted filter keys), `position` (it has a place an effect can happen at), `target` (it names a
-## combatant the effect can be aimed at), `origin` (it carries who caused it) and, optionally, `path` (it has a start and an end). `allow_relic_origin` and `every_nth` are accepted by every event.
+## combatant the effect can be aimed at), `origin` (it carries who caused it) and, optionally, `path` (it has a start and an end), `attacker` (it names the node that caused it) and `amount` (it carries an amount, for a `scale` by event_amount). `allow_relic_origin` and `every_nth` are accepted by every event.
 const EVENTS: Dictionary = {
-	"hit_landed": {"filter": ["origin", "damage_type", "kind", "target_team", "target_has_status", "min_amount", "tag", "slot_type"], "position": true, "target": true, "origin": true},
+	"hit_landed": {"filter": ["origin", "damage_type", "kind", "target_team", "target_has_status", "min_amount", "tag", "slot_type"], "position": true, "target": true, "origin": true, "amount": true},
 	"enemy_killed": {"filter": ["origin", "target_has_status"], "position": true, "target": true, "origin": true},
 	"status_applied": {"filter": ["origin", "status_id", "target_team"], "position": true, "target": true, "origin": true},
 	"status_ended": {"filter": ["origin", "status_id", "reason", "target_team"], "position": true, "target": true, "origin": true},
@@ -50,7 +53,7 @@ const EVENTS: Dictionary = {
 	"attack_fired": {"filter": ["attack_id"], "position": true, "target": false, "origin": false},
 	"dash_ended": {"filter": ["card_id"], "position": true, "target": false, "origin": false, "path": true},
 	"dash_passed_through": {"filter": ["card_id"], "position": true, "target": false, "origin": false},
-	"player_damaged": {"filter": ["origin", "min_amount"], "position": false, "target": false, "origin": true},
+	"player_damaged": {"filter": ["origin", "min_amount", "melee"], "position": false, "target": false, "origin": true, "attacker": true, "amount": true},
 	"zone_started": {"filter": ["shape"], "position": true, "target": false, "origin": false},
 	"zone_ended": {"filter": ["shape"], "position": true, "target": false, "origin": false},
 	"room_started": {"filter": ["room_type"], "position": false, "target": false, "origin": false},
@@ -264,6 +267,8 @@ static func _validate_trigger(trigger: Dictionary, index: int, errors: Array[Str
 				errors.append("%s: the event '%s' has no position, so 'at' cannot be event_position" % [label, String(event_id)])
 			if String(at) == AT_EVENT_TARGET and not bool(spec["target"]):
 				errors.append("%s: the event '%s' has no target, so 'at' cannot be event_target" % [label, String(event_id)])
+			if String(at) == AT_ATTACKER and not bool(spec.get("attacker", false)):
+				errors.append("%s: the event '%s' has no attacker, so 'at' cannot be attacker" % [label, String(event_id)])
 			if String(at) == AT_EVENT_PATH and not bool(spec.get("path", false)):
 				errors.append("%s: the event '%s' has no path, so 'at' cannot be event_path" % [label, String(event_id)])
 	if trigger.has("internal_cooldown"):
@@ -277,6 +282,10 @@ static func _validate_trigger(trigger: Dictionary, index: int, errors: Array[Str
 	var effect_errors: Array[String] = []
 	for j in range((effects as Array).size()):
 		CardSchema.validate_effect_entry((effects as Array)[j], j, effect_errors)
+		var scale_entry: Variant = (effects as Array)[j]
+		if typeof(scale_entry) == TYPE_DICTIONARY and typeof((scale_entry as Dictionary).get("scale")) == TYPE_DICTIONARY and String(((scale_entry as Dictionary)["scale"] as Dictionary).get("by", "")) == EffectScale.EVENT_AMOUNT:
+			if not event_known or not bool((EVENTS[String(event_id)] as Dictionary).get("amount", false)):
+				effect_errors.append("effects[%d]: a scale by event_amount needs an event that carries an amount (%s)" % [j, str(_events_with("amount"))])
 		# A buff inside a trigger may not carry triggers of its own: a buff's triggers are live only while the buff lasts, and a trigger
 		# that starts new ones would make the chain unbounded by data.
 		var entry: Variant = (effects as Array)[j]
@@ -290,6 +299,14 @@ static func _validate_trigger(trigger: Dictionary, index: int, errors: Array[Str
 				effect_errors.append("effects[%d] (zone): at event_path a zone must be a line (it is laid from the path's start to its end)" % j)
 	for problem: String in effect_errors:
 		errors.append("%s: %s" % [label, problem])
+
+
+static func _events_with(key: String) -> Array:
+	var ids: Array = []
+	for id: Variant in EVENTS.keys():
+		if bool((EVENTS[id] as Dictionary).get(key, false)):
+			ids.append(id)
+	return ids
 
 
 static func _validate_filter(filter: Dictionary, event_id: String, label: String, errors: Array[String]) -> void:

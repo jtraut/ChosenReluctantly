@@ -1,0 +1,27 @@
+{
+    "id": "filing_cabinet",
+    "name": "Filing Cabinet",
+    "pool": "wizard",
+    "rarity": "tier1",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [],
+    "modifiers": [
+        {
+            "stat": "swap_penalty_mult.utility",
+            "modifier_type": "multiplicative",
+            "value": -1.0
+        },
+        {
+            "stat": "swap_penalty_mult.movement",
+            "modifier_type": "multiplicative",
+            "value": -1.0
+        }
+    ],
+    "triggers": [],
+    "rule_text": "Swapping a dead Utility or Movement card costs no cooldown.",
+    "flavor_text": "Misfiled under 'Later'."
+}

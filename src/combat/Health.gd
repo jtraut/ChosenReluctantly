@@ -52,6 +52,9 @@ var last_source_id: int = 0
 ## Where the last damage event came from ("light", "card:<id>", "status:burn", "enemy", ...); "" when the caller gave none.
 ## Valid in `damaged` handlers like last_kind. It travels on the CombatEvents hit_landed and player_damaged events.
 var last_origin: String = ""
+## BD3b-C2: whether the last damage event was a melee hit (the caller said so: a cone, a boss charge). Valid in `damaged` handlers like last_kind.
+## False for projectiles, zones, status ticks and everything the caller did not mark.
+var last_melee: bool = false
 
 
 func _ready() -> void:
@@ -61,7 +64,7 @@ func _ready() -> void:
 ## `source` is whoever dealt it (may be null or freed). If it has a `damage_dealt`
 ## signal it is emitted once per event with the HP actually removed (overkill is not
 ## counted), so lifesteal and similar listeners cover every damage source.
-func take_damage(amount: float, damage_type: String = "physical", knockback: Vector3 = Vector3.ZERO, source: Node = null, kind: StringName = KIND_HIT, origin: String = "") -> void:
+func take_damage(amount: float, damage_type: String = "physical", knockback: Vector3 = Vector3.ZERO, source: Node = null, kind: StringName = KIND_HIT, origin: String = "", melee: bool = false) -> void:
 	if _is_dead or damage_immune or amount <= 0.0:
 		return
 	amount = _card_bonus_vs_statuses(amount, source, origin)
@@ -90,6 +93,7 @@ func take_damage(amount: float, damage_type: String = "physical", knockback: Vec
 	last_raw_amount = amount
 	last_source_id = source.get_instance_id() if source != null and is_instance_valid(source) else 0
 	last_origin = origin
+	last_melee = melee
 	last_reduction = 1.0 - final_amount / amount
 	damaged.emit(final_amount, damage_type, knockback)
 	health_changed.emit(current_health, max_health)

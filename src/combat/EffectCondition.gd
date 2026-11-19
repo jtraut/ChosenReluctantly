@@ -13,6 +13,7 @@ extends RefCounted
 ##   self_stacks_at_least {status_id, count}  the caster holds at least `count` stacks of a status on itself (once per cast).
 ##   deck_count_at_least {tag, count}       the run deck holds at least `count` cards (copies count) with that tag (once per cast).
 ##   hp_below {fraction}                    the caster's HP fraction is strictly below `fraction` (once per cast).
+##   has_bonus_armor {}                     the caster's armor is above its base (BD3b-C2; once per cast). No card wording: it is for relic triggers.
 
 const TARGET_HAS_STATUS := "target_has_status"
 const CAST_WITHIN := "cast_within"
@@ -20,7 +21,8 @@ const ZONE_ACTIVE := "zone_active"
 const SELF_STACKS_AT_LEAST := "self_stacks_at_least"
 const DECK_COUNT_AT_LEAST := "deck_count_at_least"
 const HP_BELOW := "hp_below"
-const TYPES: Array[String] = [TARGET_HAS_STATUS, CAST_WITHIN, ZONE_ACTIVE, SELF_STACKS_AT_LEAST, DECK_COUNT_AT_LEAST, HP_BELOW]
+const HAS_BONUS_ARMOR := "has_bonus_armor"
+const TYPES: Array[String] = [TARGET_HAS_STATUS, CAST_WITHIN, ZONE_ACTIVE, SELF_STACKS_AT_LEAST, DECK_COUNT_AT_LEAST, HP_BELOW, HAS_BONUS_ARMOR]
 const MAX_COUNT := 999
 ## Templates that have a target hit path, so a target condition means something there.
 const TARGET_TEMPLATES: Array[String] = ["cone", "aoe", "projectile", "zone", "apply_status", "detonate_status"]
@@ -51,6 +53,8 @@ static func caster_ok(condition: Dictionary, context: EffectContext) -> bool:
 			return CasterStats.deck_tag_count(context.deck_card_ids, String(condition["tag"])) >= int(condition["count"])
 		HP_BELOW:
 			return CasterStats.hp_fraction(context.caster) < float(condition["fraction"])
+		HAS_BONUS_ARMOR:
+			return CasterStats.has_bonus_armor(context.caster)
 	return true
 
 
@@ -116,6 +120,8 @@ static func validate(condition: Variant, template_id: String) -> Array[String]:
 			if typeof(dict.get("tag")) != TYPE_STRING or not CardTags.is_known_tag(String(dict["tag"])):
 				errors.append("deck_count_at_least 'tag' must be a derived tag or a keyword (for example Burn, Projectile, Primer)")
 			errors.append_array(_validate_count(dict, type))
+		HAS_BONUS_ARMOR:
+			pass
 		HP_BELOW:
 			allowed.append("fraction")
 			if not EffectTemplates.number_in(dict.get("fraction"), 0.0, 1.0, false):

@@ -1,0 +1,22 @@
+{
+    "id": "reading_list",
+    "name": "Reading List",
+    "pool": "wizard",
+    "rarity": "tier2",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [],
+    "modifiers": [
+        {
+            "stat": "status_max_stacks.charge",
+            "modifier_type": "additive",
+            "value": 5
+        }
+    ],
+    "triggers": [],
+    "rule_text": "Your Charge stacks to 15.",
+    "flavor_text": "Week 3: everything. Due Monday."
+}

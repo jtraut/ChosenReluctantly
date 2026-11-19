@@ -21,8 +21,8 @@ func _init(relay: CombatEventsRelay) -> void:
 		events.append({"name": "attack_fired", "attack_id": attack_id, "aim_point": aim_point}))
 	_listen(relay.dash_ended, func(start: Vector3, end: Vector3, card_id: String) -> void:
 		events.append({"name": "dash_ended", "start": start, "end": end, "card_id": card_id}))
-	_listen(relay.player_damaged, func(amount: float, origin: String) -> void:
-		events.append({"name": "player_damaged", "amount": amount, "origin": origin}))
+	_listen(relay.player_damaged, func(amount: float, origin: String, attacker: Node, melee: bool) -> void:
+		events.append({"name": "player_damaged", "amount": amount, "origin": origin, "attacker": attacker, "melee": melee}))
 	_listen(relay.zone_started, func(zone_id: int, shape: String, position: Vector3) -> void:
 		events.append({"name": "zone_started", "zone_id": zone_id, "shape": shape, "position": position}))
 	_listen(relay.zone_ended, func(zone_id: int, shape: String, position: Vector3) -> void:

@@ -138,10 +138,10 @@ static func _validate_effects(card_data: Dictionary, errors: Array[String]) -> v
 ## Checks one effect entry ({template, params, condition?}) the way a card's effects are checked. Relics reuse it, so a
 ## relic effect and a card effect can never be validated differently. Problems read "effects[<index>] ...".
 static func validate_effect_entry(effect: Variant, index: int, errors: Array[String]) -> void:
-	_validate_effect(effect, index, errors)
+	_validate_effect(effect, index, errors, true)
 
 
-static func _validate_effect(effect: Variant, index: int, errors: Array[String]) -> void:
+static func _validate_effect(effect: Variant, index: int, errors: Array[String], in_trigger: bool = false) -> void:
 	if typeof(effect) != TYPE_DICTIONARY:
 		errors.append("effects[%d] must be an object" % index)
 		return
@@ -166,6 +166,8 @@ static func _validate_effect(effect: Variant, index: int, errors: Array[String])
 	if effect_dict.has("scale"):
 		for problem: String in EffectScale.validate(effect_dict["scale"], template_id, params_dict):
 			errors.append("effects[%d] (%s): %s" % [index, template_id, problem])
+		if not in_trigger and typeof(effect_dict["scale"]) == TYPE_DICTIONARY and String((effect_dict["scale"] as Dictionary).get("by", "")) == EffectScale.EVENT_AMOUNT:
+			errors.append("effects[%d] (%s): a scale by event_amount is for relic triggers only" % [index, template_id])
 
 
 static func _require_non_empty_string(card_data: Dictionary, field: String, errors: Array[String]) -> void:

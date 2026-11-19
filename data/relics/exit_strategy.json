@@ -1,0 +1,39 @@
+{
+    "id": "exit_strategy",
+    "name": "Exit Strategy",
+    "pool": "fire",
+    "rarity": "tier1",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [
+        "Dash"
+    ],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "dash_ended",
+            "filter": {},
+            "at": "event_path",
+            "effects": [
+                {
+                    "template": "zone",
+                    "params": {
+                        "shape": "line",
+                        "length": 1.0,
+                        "width": 1.0,
+                        "duration": 2.0,
+                        "tick_interval": 0.5,
+                        "damage": 2,
+                        "damage_type": "fire",
+                        "max_range": 1.0
+                    }
+                }
+            ]
+        }
+    ],
+    "rule_text": "Movement cards leave a 2 s line of fire along the path.",
+    "flavor_text": "A fire exit, as the regulations require."
+}

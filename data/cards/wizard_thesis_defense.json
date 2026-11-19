@@ -11,7 +11,7 @@
         {
             "template": "projectile",
             "params": { "damage": 7.0, "damage_type": "neutral", "speed": 14.0, "max_range": 12.0, "hit_radius": 0.5, "look": {"color": "#b6ff4a", "scale": 1.3, "ball_scale": 1.4} },
-            "scale": { "by": "self_stacks", "status_id": "charge", "per": 24.0, "consume": true }
+            "scale": { "by": "self_stacks", "status_id": "charge", "per": 10.0, "consume": true }
         }
     ]
 }

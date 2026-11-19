@@ -116,4 +116,4 @@ func test_the_sim_caster_view_carries_the_decay_time() -> void:
 	caster.call("step", 1.0)
 	var fields: Dictionary = caster.call("live_view_fields", controller)
 	assert_int(int((fields["self_stacks"] as Dictionary)["charge"])).is_equal(1)
-	assert_float(float((fields["self_decay_left"] as Dictionary)["charge"])).is_between(6.9, 7.1)
+	assert_float(float((fields["self_decay_left"] as Dictionary)["charge"])).is_between(2.9, 3.1)

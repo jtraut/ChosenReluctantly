@@ -22,7 +22,7 @@
                 {
                     "template": "projectile",
                     "params": {
-                        "damage": 6,
+                        "damage": 3,
                         "damage_type": "neutral",
                         "speed": 20.0,
                         "max_range": 12.0,
@@ -32,6 +32,6 @@
             ]
         }
     ],
-    "rule_text": "Casting a Projectile card also fires a 6-damage bolt.",
+    "rule_text": "Casting a Projectile card also fires a 3-damage bolt.",
     "flavor_text": "Reply-all is a lifestyle."
 }

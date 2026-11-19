@@ -776,7 +776,7 @@ All are `sources` `["elite", "relic_room", "merchant"]`. `card_cast` and `player
 ### 12.6 Checks (for the ROADMAP brief)
 
 - The shipped content validators accept every new card and relic.
-- Each class's eligible set meets §12.1 (at least 5 rare, 4 legendary, 6 boss relics, about 22 tier 1-3 relics with 5 or more at tier 3).
+- Each class's eligible set meets §12.1 (at least 5 rare, 4 legendary, 6 boss relics, about 22 or more tier 1-3 relics (a floor; 29 Rogue and 30 Wizard after BD3b-C2), with 5 or more at tier 3).
 - Every card price is below its relic tier price, in both run lengths.
 - Every finished three-act run has exactly 2 boss relics.
 - MAP.md §4.5's relic targets: `relic` route median 14-17, `safe` 6-8, nobody at the cap in the median run.

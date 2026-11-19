@@ -814,12 +814,24 @@ func _plan_cards(in_danger: bool, dodge_ready: bool) -> void:
 					_plan_stats["live_casts"] = int(_plan_stats["live_casts"]) + 1
 				elif not SlotSynergy.conditional_effects(card).is_empty():
 					_plan_stats["held_casts"] = int(_plan_stats["held_casts"]) + 1
+				if not PlanPolicy.spender_scale(card).is_empty():  # BD3b-D2: how many stacks the spender actually spent
+					var spent_id: String = String(PlanPolicy.spender_scale(card).get("status_id", ""))
+					_plan_stats["spender_casts"] = int(_plan_stats.get("spender_casts", 0)) + 1
+					_plan_stats["spender_stacks"] = int(_plan_stats.get("spender_stacks", 0)) + int((view.get("self_stacks", {}) as Dictionary).get(spent_id, 0))
 				_press(StringName("slot_%d" % (index + 1)))
 				_plan_busy_until[slot_type] = _sim_time + PLAN_PRESS_GAP + _human_lag(true)
 			PlanPolicy.SWAP:
 				_plan_stats["swaps"] = int(_plan_stats["swaps"]) + 1
 				_press(StringName("dead_card_swap_%d" % (index + 1)))
 				_plan_busy_until[slot_type] = _sim_time + PLAN_PRESS_GAP + _human_lag(true)
+
+
+## BD3b-D2: ", N spender casts spending S stacks (average A)" for the plan line, empty when the deck has no spender.
+func _spender_note() -> String:
+	var casts: int = int(_plan_stats.get("spender_casts", 0))
+	if casts == 0:
+		return ""
+	return ", %d spender casts spent %d stacks (%.1f each)" % [casts, int(_plan_stats["spender_stacks"]), float(_plan_stats["spender_stacks"]) / float(casts)]
 
 
 ## The Wizard stand-off (metres): its bolt reaches 12 m and its heavy disc 7 m, melee enemies close in on it.
@@ -949,7 +961,7 @@ func _report(run_seed: int, wall_ms: int) -> void:
 	print("    result: seed %d hp_lost %.3f kills %d casts %d alive_max %d stages %d sim_time %.3f state_hash %d" % [
 		run_seed, _damage_taken, _kills, _casts, _max_alive, _main.enemy_spawner.plan.stages_started(), _sim_time, _state_hash()])
 	if _plan:
-		print("    plan policy: %d card casts (%d with the condition live, %d held payoff casts), %d dead-card swaps" % [int(_plan_stats["casts"]), int(_plan_stats["live_casts"]), int(_plan_stats["held_casts"]), int(_plan_stats["swaps"])])
+		print("    plan policy: %d card casts (%d with the condition live, %d held payoff casts), %d dead-card swaps%s" % [int(_plan_stats["casts"]), int(_plan_stats["live_casts"]), int(_plan_stats["held_casts"]), int(_plan_stats["swaps"]), _spender_note()])
 	print("    pinned: %d of %d move-commanded frames (%.1f%%), longest stretch %d frames (%.2f s)" % [
 		_pin_frames, _pin_frames_total, 100.0 * float(_pin_frames) / maxf(float(_pin_frames_total), 1.0), _pin_streak_max, float(_pin_streak_max) / 60.0])
 	print("    climb: player feet max y %.3f m, %d frames above %.1f m" % [_max_player_y, _climb_frames, CLIMB_Y])
@@ -1125,7 +1137,7 @@ func _run_whole(run_seed: int) -> void:
 	if _merchant or (result.has("route_summary") and MerchantSwitch.shipped_is_on()):  # qa MAP2: the merchant ships on, so a plain -Route reports it too
 		print("    merchant: visited %s | gold spent %d | relics bought %d, cards bought %d, removals %d, rerolls %d" % [str(_visited_merchant(result)), int(result["gold_spent"]), int(result["shop_relics"]), int(result["shop_cards"]), int(result["shop_removals"]), int(result["shop_rerolls"])])
 	if _plan:
-		print("    plan policy: %d card casts (%d with the condition live, %d held payoff casts), %d dead-card swaps" % [int(_plan_stats["casts"]), int(_plan_stats["live_casts"]), int(_plan_stats["held_casts"]), int(_plan_stats["swaps"])])
+		print("    plan policy: %d card casts (%d with the condition live, %d held payoff casts), %d dead-card swaps%s" % [int(_plan_stats["casts"]), int(_plan_stats["live_casts"]), int(_plan_stats["held_casts"]), int(_plan_stats["swaps"]), _spender_note()])
 	# Leave nothing of this run behind for the next one.
 	var last: Node = get_tree().current_scene
 	if last != null and last is Main:

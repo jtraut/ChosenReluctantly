@@ -10,11 +10,11 @@ Last updated: 2026-11-19 (BD3b-C2 recorded; D next). Latest tag `playtest-2026-1
 - BD3b-C2 done 2026-11-19 (65be0d9..8fe0560, verified in 069f3ef).
 
 ## Exact next step
-1. **gameplay-dev runs BD3b-D** (ROADMAP; it starts with the C2 carry-overs: pool tags into data, and melee marking on every enemy hit). `safe to chain`.
-2. Then gameplay-dev D, then BD3b-ux, qa, playtester, tech-writer, close. One sitting per agent; a `Remaining:` list gets a fresh agent.
+1. **gameplay-dev runs BD3b-D1** (the C2 carry-overs, then the bot sim sees the new rules, then the hash check), then **D2** (`PlanPolicy`, gates, tuning). Both `safe to chain`; the split is in ROADMAP.
+2. Then then BD3b-ux, qa, playtester, tech-writer, close. One sitting per agent; a `Remaining:` list gets a fresh agent.
 3. Then the Milestone 3 close and milestone playtest (CLAUDE.md, milestone boundary).
 
-**Next role:** gameplay-dev (BD3b-D).
+**Next role:** gameplay-dev (BD3b-D1).
 
 ## Current baselines (DF1 qa, 2026-11-17)
 - Suite 2745 (195 suites), 0 failures (BD3b-C2). SIM1 `-Route first` after C2: human Rogue 19/36, Wizard 20/36 (at the ceiling); off 35/36, 31/36.

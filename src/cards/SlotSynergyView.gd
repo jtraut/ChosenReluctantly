@@ -51,9 +51,11 @@ static func view_for(player: Player) -> Dictionary:
 		if manager != null:
 			zones = manager.live_count_for(player.get_instance_id())
 	var self_stacks: Dictionary = {}
+	var self_decay_left: Dictionary = {}
 	if player.hurtbox != null and player.hurtbox.status_manager != null:
 		for status_id: Variant in player.hurtbox.status_manager.active_status_ids():
 			self_stacks[String(status_id)] = player.hurtbox.status_manager.stacks_of(String(status_id))
+			self_decay_left[String(status_id)] = player.hurtbox.status_manager.decay_left_of(String(status_id))
 	var enemies: Array[Dictionary] = []
 	if player.is_inside_tree():
 		var team: String = player.hurtbox.team if player.hurtbox != null else "player"
@@ -71,6 +73,7 @@ static func view_for(player: Player) -> Dictionary:
 		"history": relay.history if relay != null else null,
 		"zone_count": zones,
 		"self_stacks": self_stacks,
+		"self_decay_left": self_decay_left,
 		"deck_card_ids": player.card_slots.owned_card_ids(),
 		"hp_fraction": CasterStats.hp_fraction(player),
 		"origin": player.global_position,

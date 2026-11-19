@@ -40,6 +40,8 @@ func step(delta: float) -> void:
 ## and the deck's card ids. Merge it into the view so Thesis scaling and `hp_below` / `deck_count_at_least` read live values.
 func live_view_fields(controller: CardSlotController) -> Dictionary:
 	var self_stacks: Dictionary = {}
+	var self_decay_left: Dictionary = {}
 	for status_id: Variant in status_manager.active_status_ids():
 		self_stacks[String(status_id)] = status_manager.stacks_of(String(status_id))
-	return {"self_stacks": self_stacks, "hp_fraction": CasterStats.hp_fraction(self), "deck_card_ids": controller.owned_card_ids()}
+		self_decay_left[String(status_id)] = status_manager.decay_left_of(String(status_id))
+	return {"self_stacks": self_stacks, "self_decay_left": self_decay_left, "hp_fraction": CasterStats.hp_fraction(self), "deck_card_ids": controller.owned_card_ids()}

@@ -239,6 +239,14 @@ func stacks_of(status_id: String) -> int:
 	return (_active[status_id] as ActiveStatus).stacks
 
 
+## BD3b-D2: seconds until a status with `stacking.decay_after` drops all its stacks (0 when it is inactive or never decays).
+func decay_left_of(status_id: String) -> float:
+	if not _active.has(status_id):
+		return 0.0
+	var active: ActiveStatus = _active[status_id]
+	return maxf(active.decay_left, 0.0) if active.decay_after > 0.0 else 0.0
+
+
 ## The most stacks the status can reach for its current applier right now (data `stacking.max_stacks` through the
 ## applier's `status_max_stacks.<id>` stat; at least 1). 0 when the status is not active.
 func max_stacks_of(status_id: String) -> int:

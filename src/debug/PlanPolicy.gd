@@ -9,6 +9,11 @@ extends RefCounted
 ##   * Otherwise it is held. After HOLD_SECONDS of holding (time with the slot ready and an enemy about) it is cast anyway.
 ##   * A held payoff whose condition cannot come true soon (nothing in the other slots would set it up within
 ##     SOON_SECONDS, and no enemy already has the status) is swapped away at once, if the slot has another card.
+##   * BD3b-D2, a spender (an effect whose `scale` reads the caster's own stacks, such as Thesis Defense) is held until the stacks are
+##     worth spending: at SPEND_AT_STACKS or more, or when any stacks are about to decay (SPEND_DECAY_MARGIN s left). With no stacks
+##     and no other slot able to build them soon it is swapped away; after the hold time it is cast anyway.
+##   * BD3b-D2, a buff that carries `triggers` (Spiteful Ward) is cast before contact: an enemy within TRIGGER_BUFF_RANGE, or danger
+##     about to land, and not while the same slot's last cast is still running.
 ##   * An unconditional attack is cast when an enemy is inside its preview area; a Utility card when an enemy is near;
 ##     a Recovery card when HP is low.
 ##   * Movement is an escape by default (cast when in danger with no dodge charge left). It is spent offensively
@@ -22,6 +27,11 @@ const RECOVERY_BELOW_HP := 0.7
 ## "Dash in" only from a gap: closer than this the dash would push through the target, further than FAR it would waste the window.
 const DASH_IN_MIN := 2.0
 const DASH_IN_MAX := 9.0
+## BD3b-D2: a spender fires at this many stacks of what it spends (Charge: 6 of 10), or when they have this many seconds left before decaying.
+const SPEND_AT_STACKS := 6
+const SPEND_DECAY_MARGIN := 1.0
+## BD3b-D2: a triggered buff (Spiteful Ward) goes up when the nearest enemy is this close (m), so its few seconds cover the contact.
+const TRIGGER_BUFF_RANGE := 8.0
 
 const CAST := "cast"
 const SWAP := "swap"
@@ -61,6 +71,8 @@ func decide(slot_type: String, slot: CardSlot, slots: Dictionary, view: Dictiona
 		# casting is the only way the slot moves on (the cooldown starts and the next card is drawn).
 		_holding.erase(slot_type)
 		return SWAP if (not swap_locked and _has_other_real_card(slot)) else CAST
+	if not spender_scale(card).is_empty():
+		return _decide_spender(slot_type, slot, card, slots, view, now, enemies)
 	if SlotSynergy.conditional_effects(card).size() > 0:
 		return _decide_payoff(slot_type, slot, card, slots, view, now, enemies)
 	_holding.erase(slot_type)
@@ -68,6 +80,8 @@ func decide(slot_type: String, slot: CardSlot, slots: Dictionary, view: Dictiona
 		"attack_single", "attack_aoe":
 			return CAST if SlotSynergy.enemy_in_area(card, view) else WAIT
 		"utility":
+			if has_trigger_buff(card):
+				return CAST if _trigger_buff_wanted(slot_type, card, view, in_danger) else WAIT
 			return CAST if _nearest_enemy_distance(view) <= NEAR_ENEMY else WAIT
 		"recovery":
 			return CAST if (hp_fraction < RECOVERY_BELOW_HP and not enemies.is_empty()) else WAIT
@@ -91,6 +105,67 @@ func _decide_payoff(slot_type: String, slot: CardSlot, card: Dictionary, slots: 
 		_holding.erase(slot_type)
 		return SWAP
 	if now - float(held["since"]) >= hold_seconds:
+		_holding.erase(slot_type)
+		return CAST
+	return WAIT
+
+
+## The `scale` block of a spender card (an effect scaled by the caster's own stacks of a status), {} when the card has none.
+static func spender_scale(card: Dictionary) -> Dictionary:
+	for effect: Variant in card.get("effects", []):
+		var scale: Variant = (effect as Dictionary).get("scale")
+		if scale is Dictionary and String((scale as Dictionary).get("by", "")) == EffectScale.SELF_STACKS:
+			return scale as Dictionary
+	return {}
+
+
+## True when a buff effect of the card carries `triggers` (a buff that reacts while it lasts).
+static func has_trigger_buff(card: Dictionary) -> bool:
+	return _trigger_buff_duration(card) > 0.0
+
+
+## The longest duration of the card's triggered buffs (0 when it has none).
+static func _trigger_buff_duration(card: Dictionary) -> float:
+	var longest: float = 0.0
+	for effect: Variant in card.get("effects", []):
+		var params: Dictionary = (effect as Dictionary).get("params", {})
+		if String((effect as Dictionary).get("template", "")) == "buff" and not (params.get("triggers", []) as Array).is_empty():
+			longest = maxf(longest, maxf(float(params.get("duration", 0.0)), 0.001))
+	return longest
+
+
+func _trigger_buff_wanted(slot_type: String, card: Dictionary, view: Dictionary, in_danger: bool) -> bool:
+	if (view.get("enemies", []) as Array).is_empty():
+		return false
+	var history: Variant = view.get("history")
+	if history is CastHistory and (history as CastHistory).cast_within(float(view.get("now", 0.0)), _trigger_buff_duration(card), slot_type, ""):
+		return false  # still up from the last cast
+	return in_danger or _nearest_enemy_distance(view) <= TRIGGER_BUFF_RANGE
+
+
+func _decide_spender(slot_type: String, slot: CardSlot, card: Dictionary, slots: Dictionary, view: Dictionary, now: float, enemies: Array) -> String:
+	if enemies.is_empty():
+		_holding.erase(slot_type)
+		return WAIT
+	var scale: Dictionary = spender_scale(card)
+	var status_id: String = String(scale.get("status_id", ""))
+	var stacks: int = int((view.get("self_stacks", {}) as Dictionary).get(status_id, 0))
+	var decay_left: float = float((view.get("self_decay_left", {}) as Dictionary).get(status_id, INF))
+	var in_area: bool = SlotSynergy.enemy_in_area(card, view)
+	if stacks > 0 and in_area and (stacks >= mini(SPEND_AT_STACKS, int(scale.get("max", SPEND_AT_STACKS))) or decay_left <= SPEND_DECAY_MARGIN):
+		_holding.erase(slot_type)
+		return CAST
+	var held: Dictionary = _holding.get(slot_type, {})
+	if held.is_empty() or String(held["card"]) != slot.current_card_id or now < float(held["since"]):
+		held = {"card": slot.current_card_id, "since": now}
+		_holding[slot_type] = held
+	var builder_soon: bool = _another_card_soon(slots, slot_type, func(card_id: String) -> bool: return CardSummary.status_ids(CardDatabase.get_card(card_id)).has(status_id))
+	if stacks == 0 and not builder_soon and not swap_locked and _has_other_card(slot):
+		_holding.erase(slot_type)
+		return SWAP
+	if stacks > 0 and builder_soon:
+		return WAIT  # more is coming and the decay rule above bounds the wait
+	if now - float(held["since"]) >= hold_seconds and in_area:
 		_holding.erase(slot_type)
 		return CAST
 	return WAIT

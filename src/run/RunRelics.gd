@@ -150,11 +150,36 @@ static func display(relic_id: String, ctx: Dictionary) -> Dictionary:
 	}
 
 
-## The relics the run holds (in the order taken), as display dictionaries.
+## The run-long numbers relic modifiers can scale by (RelicSchema.RUN_STATS), from the RunState. RunController hands the same dictionary to its RelicManager.
+static func run_stats(state: RunState) -> Dictionary:
+	return {"gold_spent_merchant": state.gold_spent_merchant}
+
+
+## BD3b-ux (MAP2 carry-over): what a relic whose modifier scales with a run stat (Liquidate Assets, per 50 gold spent) is worth right now, as a line
+## ("Now: Damage +4%"). The value is RelicManager.scaled_value, the number the player's stats really hold, never recomputed; the words are the event
+## stat names (ui.event.stat_names) and ui.relic.now_format. "" for a relic with no run-scaled modifier (its rule_text already says it all).
+static func current_text(relic: Dictionary, stats: Dictionary, ctx: Dictionary) -> String:
+	var format: String = String(((ctx.get("relics", {}) as Dictionary).get("ui", {}) as Dictionary).get("now_format", ""))
+	if format == "" or not format.contains("%s"):
+		return ""
+	var parts: Array[String] = []
+	for entry: Variant in (relic.get("modifiers", []) as Array):
+		if typeof(entry) != TYPE_DICTIONARY or not (entry as Dictionary).has("per_run_stat"):
+			continue
+		var mod: Dictionary = entry
+		parts.append(EventEngine.mod_text({"stat": mod["stat"], "modifier_type": mod["modifier_type"], "value": RelicManager.scaled_value(mod, stats)}, ctx))
+	return format % ", ".join(PackedStringArray(parts)) if not parts.is_empty() else ""
+
+
+## The relics the run holds (in the order taken), as display dictionaries. Each carries `now` (see current_text) when its numbers move with the run.
 static func owned_display(state: RunState, ctx: Dictionary) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
+	var stats: Dictionary = run_stats(state)
 	for relic_id: String in state.relics:
-		result.append(display(relic_id, ctx))
+		var shown: Dictionary = display(relic_id, ctx)
+		var relic: Dictionary = ((ctx.get("relics", {}) as Dictionary).get("by_id", {}) as Dictionary).get(relic_id, {})
+		shown["now"] = current_text(relic, stats, ctx)
+		result.append(shown)
 	return result
 
 

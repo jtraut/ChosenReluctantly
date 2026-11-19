@@ -375,6 +375,8 @@ func _relic_entry(shown: Dictionary, cfg: Dictionary, s: float, with_flavor: boo
 	body.add_child(_relic_text(title, name_px, Color.html("#ffffff"), false))
 	var text_width: float = maxf(list_width - maxf(4.0 * s, 3.0) - 8.0 * s, 10.0)  # the bar and the gap are beside the text
 	body.add_child(_relic_text(String(shown.get("rule_text", "")), rule_px, line_color, true, text_width))
+	if String(shown.get("now", "")) != "":
+		body.add_child(_relic_text(String(shown["now"]), rule_px, Color.html(String(cfg.get("relic_now_color", "#ffe27a"))), true, text_width))  # BD3b-ux: Liquidate Assets' current value
 	if with_flavor:
 		body.add_child(_relic_text(String(shown.get("flavor", "")), rule_px, Color.html(String(cfg["relic_flavor_color"])), true, text_width))
 	return row

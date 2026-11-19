@@ -36,6 +36,19 @@
             "--run-room=10"
         ]
     },
+    "bd3b_fire_reward": {
+        "description": "BD3b-ux: a Wizard reward screen offering three Fire cards (Heat Sink, Fireball Incoming, Fine, Burn Then), to judge the Fire pool-tag chip on an offer.",
+        "class": "wizard",
+        "scenario": "",
+        "after": "3.0",
+        "extra": [
+            "--acts=1",
+            "--run-seed=3",
+            "--run-room=1",
+            "--run-clear-after=1",
+            "--run-offer=fire_heat_sink+fire_fireball+fire_fine_burn_then"
+        ]
+    },
     "bd1_reward_keystone": {
         "description": "BD1: a Rogue reward screen offering Fan the Flames and Drive-By (Keystones) and Kindling (Primer).",
         "class": "rogue",

@@ -51,8 +51,13 @@ static func texts_for(chips: Array, keywords_only: bool = false) -> Dictionary:
 	var strong_id: String = String(hud.get("chip_strong_keyword", ""))
 	var merge_ids: Array = hud.get("chip_merge_keywords", [])
 	var as_strings: Array[String] = []
+	# BD3b-ux: a pool tag ("Fire", data/pools.json `tag`) is the last chip of its card, so it showed on some Fire cards and was cut from others (a Keystone
+	# already fills the row). It is left off every chip row (HUD slot, offer card); the card's family colour and its "fire damage" line say it, and the editor's
+	# full tag line ("Melee, Burn, Fire") keeps it. data/ui.json hud `chip_hide_pool_tags`.
+	var hidden: Array[String] = PoolDatabase.all_pool_tags() if bool(hud.get("chip_hide_pool_tags", true)) else ([] as Array[String])
 	for chip: Variant in chips:
-		as_strings.append(String(chip))
+		if not hidden.has(String(chip)):
+			as_strings.append(String(chip))
 	var merged: Array[String] = []
 	if strong_id != "" and as_strings.has(strong_id):
 		for merge_id: Variant in merge_ids:

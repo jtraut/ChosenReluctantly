@@ -153,6 +153,7 @@
         "chip_font_size": 12,
         "chip_height": 16,
         "chip_max": 3,
+        "chip_hide_pool_tags": true,
         "chip_pad_x": 4,
         "chip_gap": 3,
         "chip_keyword_color": "#b8dcff",
@@ -443,7 +444,8 @@
         "relic_header_font_size": 24,
         "relic_name_font_size": 20,
         "relic_rule_font_size": 16,
-        "relic_flavor_color": "#c9bcc4"
+        "relic_flavor_color": "#c9bcc4",
+        "relic_now_color": "#ffe27a"
     },
     "player_outline": {
         "enabled": true,

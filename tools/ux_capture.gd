@@ -2,7 +2,7 @@ extends Node
 ## UX capture (P-dodge): hosts the real Main in an oversized SubViewport, drives a HUD state, saves one PNG, quits.
 ## Needs a renderer (not --headless). Run:
 ##   godot --path . res://tools/UxCapture.tscn -- --size=1024x600 --class=rogue --mode=pips_recharge --out=screenshots/ux/a.png
-## Modes: bd3b_hud (BD3b-ux: Charge 6, Spiteful Ward live, Thesis in its slot, Filing Cabinet's free swaps, a curse in Utility), loadout_editor_legal / loadout_editor_blocked (3d E: the loadout editor), shop_plan_act2 (3d qa: a real act 2 shop whose plan holds rare and legendary cards), shop_rarity (MAP3b: a shop with a legendary, a rare and a common card, fabricated options), pips (full), pips_recharge (one spent, a pip coming back), pips_empty (all spent), stagger (a boss at its first
+## Modes: bd3b_fire_offer (BD3b-ux: a merchant stock of Fire cards), bd3b_hud (BD3b-ux: Charge 6, Spiteful Ward live, Thesis in its slot, Filing Cabinet's free swaps, a curse in Utility), loadout_editor_legal / loadout_editor_blocked (3d E: the loadout editor), shop_plan_act2 (3d qa: a real act 2 shop whose plan holds rare and legendary cards), shop_rarity (MAP3b: a shop with a legendary, a rare and a common card, fabricated options), pips (full), pips_recharge (one spent, a pip coming back), pips_empty (all spent), stagger (a boss at its first
 ## threshold, mid-stagger), continue_pick (the class pick screen with a saved run), act_heal / act_low / act_resumed (the Act 2 screen, BD3a). The player is made immune and the spawner off, so the shot is only the state being checked.
 
 const BOSS_PATH := "res://scenes/enemies/BossGuardian.tscn"
@@ -108,12 +108,15 @@ func _ready() -> void:
 			await _wait(0.6)
 			RunSession.acts_override = 0
 			RunSave.reset()
-		"shop_rarity":
+		"shop_rarity", "bd3b_fire_offer":
 			# MAP3b ux: a merchant shop with a legendary, a rare and a common card in stock (a real stock only holds legendaries in act 3). The options are
 			# fabricated (real card ids, rarity and slot from the card data; a stand-in effect line), over the arena; the tiles are the real RunOptionCard.
 			var shop_options: Array[Dictionary] = []
 			var slot_names: Dictionary = {"attack_single": "Attack: Single", "attack_aoe": "Attack: AoE", "utility": "Utility", "movement": "Movement", "recovery": "Recovery"}
-			for card_id: String in ["rogue_brawl_clause", "rogue_arterial_spray", "rogue_drive_by"]:
+			var offered: Array[String] = ["rogue_brawl_clause", "rogue_arterial_spray", "rogue_drive_by"]
+			if mode == "bd3b_fire_offer":
+				offered = ["fire_heat_sink", "fire_fireball", "fire_kindling"]  # BD3b-ux: Fire cards, to judge the pool tag chip on an offer
+			for card_id: String in offered:
 				var card: Dictionary = CardDatabase.get_card(card_id)
 				var slot_type: String = String(card.get("slot_type", ""))
 				var price: int = int((RunConfig.get_config()["merchant"]["card_prices"] as Dictionary).get(CardSchema.rarity_of(card), 55))

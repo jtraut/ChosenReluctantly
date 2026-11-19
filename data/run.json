@@ -237,7 +237,7 @@
         "status_readout": { "counter_format": "%s %d/%d", "max_suffix": " MAX", "seconds_format": "%.1f s", "trigger_fallback": "Trigger" },
         "slot_condition": { "curse_swap": "%s swaps", "curse_swap_timed": "%s swaps (%s s)", "target_has_status": "Needs %s", "cast_within_slot": "After %s", "cast_within_slot_key": "After %s (%s)", "cast_within_tag": "After %s", "zone_active": "Needs zone", "self_stacks_at_least": "Needs %d %s", "deck_count_at_least": "Needs %d %s cards", "hp_below": "Below %s%% HP", "has_bonus_armor": "Needs armor", "cast_within_slot_count": "After %d %s casts", "cast_within_tag_count": "After %d %s casts", "curse_swap_free": "%s swaps: free", "swap_free": "Swap: free", "scale_now": "%s, now +%s", "scale_now_mid": "+%s/%s: +%s", "scale_now_short": "Now +%s", "detonate_status": "Wants %s stacks", "slot_short": { "movement": "Move" } },
         "relic": {
-            "start_tag": "Starter relic: %s",
+            "start_tag": "Starter relic: %s", "now_format": "Now: %s",
             "title": "Relic found", "line": "Pick a relic to keep for this run, or skip.",
             "room_title": "Relic room", "room_title_chest": "%s (%s chest)", "room_line": "Nobody is guarding this one. Pick a relic to keep for this run, or skip.",
             "skip_label": "Skip", "skip_detail": "Take nothing. Free: your card rejects stay as they are.",

@@ -239,7 +239,7 @@ func _sync_relics() -> void:
 
 ## The run-long numbers relic modifiers can scale by (RelicSchema.RUN_STATS), from the RunState.
 func _run_stats() -> Dictionary:
-	return {"gold_spent_merchant": _state.gold_spent_merchant}
+	return RunRelics.run_stats(_state)
 
 
 ## This room's RelicManager, or null when the run holds no relics (or relics are off). ux connects `relic_triggered` here.

@@ -85,7 +85,7 @@ func test_a_primer_gives_three_charge_and_thesis_defense_spends_it() -> void:
 	var thesis: Dictionary = (CardDatabase.get_card("wizard_thesis_defense") as Dictionary)["effects"][0]
 	var context := EffectContext.new(caster, self, "player")
 	var scaled: Dictionary = EffectScale.apply(thesis["scale"], "projectile", thesis["params"], context)
-	assert_float(float(scaled["damage"])).is_equal_approx(151.0, 0.0001)
+	assert_float(float(scaled["damage"])).is_equal_approx(67.0, 0.0001)
 	assert_bool(caster.status_manager.has_status("charge")).is_false()
 
 

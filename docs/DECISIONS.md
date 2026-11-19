@@ -2897,3 +2897,15 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - The melee audit changed no code. Enemy and boss cones and the boss charge were already melee; projectiles, ground aoes, DoTs and zones are not. [A blanket `melee=true` for every Enemy source.] This corrects the C2 triage's "may rarely fire" note.
 - `SimCaster` builds a Hurtbox and a StatusEffectManager and ticks them through `step()`, calling the manager's `_process` directly. [Building the nodes in `bot_sim.gd`; a Player instance; a public `advance` in src.] `live_view_fields()` is on SimCaster, so tests can reach it.
 
+## 2026-11-19 - BD3b-D2 triage (game-lead)
+- **Engine calls (gameplay-dev):**
+  - The spender is detected by `scale.by == self_stacks` in data. [Keying on the keyword or the id.]
+  - The decay time is a view field (`self_decay_left` from `StatusEffectManager.decay_left_of`). [Tracking gain time in the policy.]
+  - A triggered buff is cast within 8 m or on danger, and isn't recast while it runs. [The old 12 m utility rule: the 4 s buff expires before contact.]
+  - The spender holds for 1.5 s, then casts at 0 stacks if no builder is coming.
+  - Fingerprint and removal are measured on the boss-room form (the BD1 qa precedent).
+- **Not escalated yet: one more tuning sitting, D3.** The brief escalates only when a gate can't be met with BD3b's own numbers. D2 called Charge's stacks and decay and Footnotes' slot out of scope. But Charge was added in BD3b-A (aa3e3c2) and Footnotes is a C1 card, so both are BD3b's. Spiteful Ward's nova (0.4% of damage) and Thorned Boundary's reflect were never tuned for W-D either. [Escalating now: the director would get a question that BD3b's own numbers may still answer.]
+- **Correction to "BD3b-C2 triage":** SIM1 is deterministic, and its human preset presses slots at random, not through PlanPolicy. So the C1 -> C2 drop from 27/36 to 20/36 came from C2's data, not machine load. The ceiling was met as a side effect, not fixed.
+- **Damage taken isn't an escape hatch for W-D.** Its full-run damage taken goes 28.1 -> 33.5 without the keystone, which is +19%, under the +25% bar. The real finding: under the plan bot, W-D plays like the standard deck (L1 0.19 from it).
+- **`w1a_test` bolt-range failure** (32 s in a full run, passes alone): added to Known issues. qa re-runs it on a quiet machine.
+

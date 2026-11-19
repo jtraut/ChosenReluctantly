@@ -47,7 +47,7 @@
     "charge": {
         "display_name": "Charge",
         "effect_type": "counter",
-        "stacking": { "max_stacks": 10, "decay_after": 4.0 },
+        "stacking": { "max_stacks": 10, "decay_after": 8.0 },
         "flavor_text": "Ten percent more effort, ten times the paperwork."
     }
 }

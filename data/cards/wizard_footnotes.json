@@ -13,6 +13,7 @@
             "params": { "damage": 1.8, "damage_type": "neutral", "speed": 22.0, "max_range": 13.0, "hit_radius": 0.25, "hits": 4, "hit_interval": 0.1, "look": {"color": "#b6ff4a", "scale": 0.8, "ball_scale": 0.8} }
         },
         { "template": "apply_status", "params": { "status_id": "charge", "duration": 4.0, "target": "self" } },
+        { "template": "apply_status", "params": { "status_id": "charge", "duration": 4.0, "target": "self" } },
         { "template": "apply_status", "params": { "status_id": "charge", "duration": 4.0, "target": "self" } }
     ]
 }

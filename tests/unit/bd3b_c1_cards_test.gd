@@ -75,17 +75,17 @@ func test_the_keywords_match_the_design() -> void:
 		assert_array(keywords).override_failure_message(id).is_equal(expected[id])
 
 
-func test_a_primer_gives_two_charge_and_thesis_defense_spends_it() -> void:
+func test_a_primer_gives_three_charge_and_thesis_defense_spends_it() -> void:
 	var caster := _caster()
 	await _frames(2)
 	_cast("wizard_footnotes", caster)
-	assert_int(caster.status_manager.stacks_of("charge")).is_equal(2)
+	assert_int(caster.status_manager.stacks_of("charge")).is_equal(3)
 	_cast("wizard_literature_review", caster)
-	assert_int(caster.status_manager.stacks_of("charge")).is_equal(4)
+	assert_int(caster.status_manager.stacks_of("charge")).is_equal(6)
 	var thesis: Dictionary = (CardDatabase.get_card("wizard_thesis_defense") as Dictionary)["effects"][0]
 	var context := EffectContext.new(caster, self, "player")
 	var scaled: Dictionary = EffectScale.apply(thesis["scale"], "projectile", thesis["params"], context)
-	assert_float(float(scaled["damage"])).is_equal_approx(13.0, 0.0001)
+	assert_float(float(scaled["damage"])).is_equal_approx(151.0, 0.0001)
 	assert_bool(caster.status_manager.has_status("charge")).is_false()
 
 

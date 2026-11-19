@@ -14,7 +14,9 @@
                 "stat": "armor", "modifier_type": "additive", "value": 25.0, "duration": 4.0,
                 "triggers": [
                     { "event": "player_damaged", "filter": { "origin": "enemy" }, "at": "player", "internal_cooldown": 0.5,
-                      "effects": [ { "template": "aoe", "params": { "damage": 6, "damage_type": "neutral", "radius": 2.5 } } ] }
+                      "effects": [ { "template": "aoe", "params": { "damage": 6, "damage_type": "neutral", "radius": 2.5 } } ] },
+                    { "event": "hit_landed", "filter": { "target_team": "enemy" }, "at": "event_position", "internal_cooldown": 0.5,
+                      "effects": [ { "template": "aoe", "params": { "damage": 16, "damage_type": "neutral", "radius": 2.5 } } ] }
                 ]
             }
         }

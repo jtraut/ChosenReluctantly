@@ -41,7 +41,7 @@ func test_charge_ships_as_a_counter_that_stacks_to_ten_and_decays_after_four_sec
 	assert_bool(def.is_empty()).is_false()
 	assert_str(String(def["effect_type"])).is_equal("counter")
 	assert_int(int(def["stacking"]["max_stacks"])).is_equal(10)
-	assert_float(float(def["stacking"]["decay_after"])).is_equal(4.0)
+	assert_float(float(def["stacking"]["decay_after"])).is_equal(_decay())
 	assert_array(StatusDatabase.validate_entry(def)).is_empty()
 
 
@@ -71,12 +71,16 @@ func test_charge_deals_no_damage_while_it_stands() -> void:
 	assert_float(target.health.current_health).is_equal(before)
 
 
-func test_all_stacks_drop_four_seconds_after_the_last_gain() -> void:
+func _decay() -> float:
+	return float((StatusDatabase.get_status("charge")["stacking"] as Dictionary)["decay_after"])
+
+
+func test_all_stacks_drop_decay_after_seconds_after_the_last_gain() -> void:
 	var target := _target()
 	var source := _source()
 	for i in range(3):
 		target.status_manager.apply_status("charge", _charge(), 60.0, source, "card:test")
-	target.status_manager._process(3.9)
+	target.status_manager._process(_decay() - 0.1)
 	assert_int(target.status_manager.stacks_of("charge")).is_equal(3)
 	target.status_manager._process(0.2)
 	assert_int(target.status_manager.stacks_of("charge")).is_equal(0)
@@ -87,9 +91,9 @@ func test_a_fresh_gain_resets_the_decay_timer() -> void:
 	var target := _target()
 	var source := _source()
 	target.status_manager.apply_status("charge", _charge(), 60.0, source, "card:test")
-	target.status_manager._process(3.0)
+	target.status_manager._process(_decay() - 1.0)
 	target.status_manager.apply_status("charge", _charge(), 60.0, source, "card:test")
-	target.status_manager._process(3.0)  # 6 s after the first gain, 3 s after the last
+	target.status_manager._process(_decay() - 1.0)  # past the first gain's decay, 1 s short of the last's
 	assert_int(target.status_manager.stacks_of("charge")).is_equal(2)
 	target.status_manager._process(1.1)
 	assert_int(target.status_manager.stacks_of("charge")).is_equal(0)
@@ -100,9 +104,9 @@ func test_a_reapply_at_the_cap_still_counts_as_a_gain_and_resets_the_timer() -> 
 	var source := _source()
 	for i in range(10):
 		target.status_manager.apply_status("charge", _charge(), 60.0, source, "card:test")
-	target.status_manager._process(3.0)
+	target.status_manager._process(_decay() - 1.0)
 	target.status_manager.apply_status("charge", _charge(), 60.0, source, "card:test")
-	target.status_manager._process(3.0)
+	target.status_manager._process(_decay() - 1.0)
 	assert_int(target.status_manager.stacks_of("charge")).is_equal(10)
 
 
@@ -111,7 +115,7 @@ func test_decay_ends_the_status_as_expired_through_the_signal_and_the_relay() ->
 	var seen: Array[String] = []
 	target.status_manager.status_expired.connect(func(id: String) -> void: seen.append(id))
 	target.status_manager.apply_status("charge", _charge(), 60.0, _source(), "card:test")
-	target.status_manager._process(4.1)
+	target.status_manager._process(_decay() + 0.1)
 	assert_array(seen).is_equal(["charge"])
 
 

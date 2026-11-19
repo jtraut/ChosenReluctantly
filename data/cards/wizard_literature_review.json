@@ -10,6 +10,7 @@
     "effects": [
         { "template": "aoe", "params": { "damage": 14.5, "damage_type": "neutral", "radius": 2.8, "max_range": 8.0 } },
         { "template": "apply_status", "params": { "status_id": "charge", "duration": 4.0, "target": "self" } },
+        { "template": "apply_status", "params": { "status_id": "charge", "duration": 4.0, "target": "self" } },
         { "template": "apply_status", "params": { "status_id": "charge", "duration": 4.0, "target": "self" } }
     ]
 }

@@ -134,7 +134,7 @@ func _process(delta: float) -> void:
 	var synergy: Dictionary = SlotSynergyView.infos(player)  # BD1: chips, live condition, primed state (cached per physics frame)
 	for i in range(CardSlotController.SLOT_TYPE_ORDER.size()):
 		var slot_type := CardSlotController.slot_type_at_index(i)
-		slot_widgets[i].update_from_slot(player.card_slots.get_slot(slot_type))
+		slot_widgets[i].update_from_slot(player.card_slots.get_slot(slot_type), player.stat_modifiers)
 		slot_widgets[i].update_synergy(synergy.get(slot_type, {}), delta)
 
 

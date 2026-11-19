@@ -41,10 +41,80 @@ static func curse_swap_text(card: Dictionary, texts: Dictionary, swap_key: Strin
 	var line: String = String(texts.get("curse_swap", ""))
 	if line == "" or not line.contains("%s") or not CardSchema.is_curse(card):
 		return ""
+	var free: String = String(texts.get("curse_swap_free", ""))
+	if penalty >= 0.0 and is_zero_approx(penalty) and free.contains("%s"):
+		return free % swap_key  # BD3b-ux: a relic (Filing Cabinet) made this slot's swap free, curse included
 	var timed: String = String(texts.get("curse_swap_timed", ""))
 	if penalty >= 0.0 and timed.count("%s") == 2:
 		return timed % [swap_key, String.num(penalty, 2).trim_suffix("0").trim_suffix(".0").trim_suffix(".")]
 	return line % swap_key
+
+
+## BD3b-ux: "Swap: free" for an ordinary card whose slot swap costs nothing now (`penalty`, from CardSlot.current_swap_penalty(stat_modifiers)) while it
+## costs something without the modifiers (`base_penalty`, current_swap_penalty(null)). Never computed here: both come from the slot. "" for a curse (its own
+## line, curse_swap_text, says it), for a swap that costs time and for one that was free anyway.
+static func swap_free_text(card: Dictionary, texts: Dictionary, penalty: float, base_penalty: float) -> String:
+	if CardSchema.is_curse(card) or penalty < 0.0 or not is_zero_approx(penalty) or base_penalty <= 0.0:
+		return ""
+	return String(texts.get("swap_free", ""))
+
+
+## BD3b-ux: the live value of a scaled card ("+10 per Charge, now +60") as candidates, longest first, so the slot picks the first that fits:
+## the long form, then the short "Now +60". `scaled` is EffectScale.preview_values(card, caster, deck) (same order as the card's scaled effects);
+## `texts` is ui.slot_condition, `scale_words` is ui.effect.scale. The "uses up your Charge" part stays on the card text; it does not fit a slot.
+## Several scaled effects show the first one. [] for a card with no scale.
+static func scale_candidates(card: Dictionary, scaled: Array, texts: Dictionary, scale_words: Dictionary) -> Array[String]:
+	var out: Array[String] = []
+	if scaled.is_empty() or not String(texts.get("scale_now", "")).contains("%s") or scale_words.is_empty():
+		return out
+	var index: int = 0
+	for effect: Variant in (card.get("effects", []) as Array):
+		if typeof(effect) != TYPE_DICTIONARY or typeof((effect as Dictionary).get("scale")) != TYPE_DICTIONARY:
+			continue
+		var block: Dictionary = ((effect as Dictionary)["scale"] as Dictionary).duplicate()
+		var param: String = EffectScale.param_name(block, String((effect as Dictionary).get("template", "")))
+		if param.is_empty() or not ((effect as Dictionary).get("params", {}) as Dictionary).has(param):
+			continue  # preview_values skips these too, so the indexes stay paired
+		if index >= scaled.size():
+			break
+		var now: String = _number(float((scaled[index] as Dictionary).get("bonus", 0.0)))
+		block["consume"] = false
+		var status_id: String = String(block.get("status_id", ""))
+		var status_name: String = String(StatusDatabase.get_status(status_id).get("display_name", status_id.replace("_", " ").capitalize()))
+		var per_text: String = EffectScale.text(block, scale_words, status_name)
+		if per_text != "":
+			out.append(String(texts["scale_now"]) % [per_text, now])
+		var unit: String = status_name if String(block.get("by", "")) == EffectScale.SELF_STACKS else String(block.get("tag", ""))
+		if String(texts.get("scale_now_mid", "")).count("%s") == 3 and unit != "":
+			out.append(String(texts["scale_now_mid"]) % [_number(float(block.get("per", 0.0))), unit, now])
+		if String(texts.get("scale_now_short", "")).contains("%s"):
+			out.append(String(texts["scale_now_short"]) % now)
+		return out
+	return out
+
+
+static func _number(value: float) -> String:
+	if absf(value - roundf(value)) < 0.0001:
+		return str(int(roundf(value)))
+	return String.num(value, 2).trim_suffix("0")
+
+
+## BD3b-ux: the pills over a slot, most important first, at most `limit` (the slot draws the first one nearest its frame). One place for the priority, since
+## four things want that space: (1) the curse swap line (a curse is the dud the player must act on), (2) the live scale value, (3) why a conditional
+## card is not lit, (4) "Swap: free". `scale` is scale_candidates (the slot picks which fits); every entry is [{"text": String, "alternatives": Array[String]}].
+static func pill_lines(curse_line: String, scale: Array[String], condition_line: String, free_line: String, limit: int) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	if curse_line != "":
+		out.append({"kind": "curse", "text": curse_line, "alternatives": [] as Array[String]})
+	if not scale.is_empty():
+		out.append({"kind": "scale", "text": scale[0], "alternatives": scale.slice(1)})
+	if condition_line != "":
+		out.append({"kind": "condition", "text": condition_line, "alternatives": [] as Array[String]})
+	if free_line != "":
+		out.append({"kind": "free", "text": free_line, "alternatives": [] as Array[String]})
+	while out.size() > maxi(limit, 0):
+		out.pop_back()
+	return out
 
 
 static func _short(condition: Dictionary, texts: Dictionary) -> String:
@@ -54,14 +124,19 @@ static func _short(condition: Dictionary, texts: Dictionary) -> String:
 			var entry: Dictionary = StatusDatabase.get_status(status_id)
 			return String(texts.get("target_has_status", "")) % String(entry.get("display_name", status_id.replace("_", " ").capitalize()))
 		EffectCondition.CAST_WITHIN:
+			var times: int = int(condition.get("count", 1))  # BD3b-C2 `count` variant: "After 3 Fire casts"; one cast keeps the old wording
 			if condition.has("slot_type"):
 				var slot_type: String = String(condition["slot_type"])
 				var short_names: Dictionary = texts.get("slot_short", {})
 				var key: String = InputLabels.slot_key(slot_type)
+				if times > 1 and String(texts.get("cast_within_slot_count", "")) != "":
+					return String(texts["cast_within_slot_count"]) % [times, String(short_names.get(slot_type, InputLabels.slot_name(slot_type)))]
 				if String(texts.get("cast_within_slot_key", "")) != "" and key != "" and key != "?":
 					# "After Move (Ctrl)": the player acts on a key, not on a slot name.
 					return String(texts["cast_within_slot_key"]) % [String(short_names.get(slot_type, InputLabels.slot_name(slot_type))), key]
 				return String(texts.get("cast_within_slot", "")) % String(short_names.get(slot_type, InputLabels.slot_name(slot_type)))
+			if times > 1 and String(texts.get("cast_within_tag_count", "")) != "":
+				return String(texts["cast_within_tag_count"]) % [times, String(condition.get("tag", ""))]
 			return String(texts.get("cast_within_tag", "")) % String(condition.get("tag", ""))
 		EffectCondition.ZONE_ACTIVE:
 			return String(texts.get("zone_active", ""))
@@ -73,6 +148,8 @@ static func _short(condition: Dictionary, texts: Dictionary) -> String:
 			return String(texts.get("deck_count_at_least", "")) % [int(condition.get("count", 0)), String(condition.get("tag", ""))]
 		EffectCondition.HP_BELOW:
 			return String(texts.get("hp_below", "")) % String.num(roundf(float(condition.get("fraction", 0.0)) * 100.0), 0)
+		EffectCondition.HAS_BONUS_ARMOR:
+			return String(texts.get("has_bonus_armor", ""))
 	return ""
 
 

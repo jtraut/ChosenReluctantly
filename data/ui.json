@@ -192,6 +192,8 @@
         "condition_font_size": 13,
         "condition_min_font_px": 12,
         "condition_color": "#d3c8cf",
+        "scale_color": "#e8c9ff",
+        "pill_max": 2,
         "relic_chip_size": 30,
         "relic_chip_gap": 4,
         "relic_row_gap": 8,

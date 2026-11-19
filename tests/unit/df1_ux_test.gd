@@ -24,7 +24,7 @@ func test_the_curse_hint_carries_the_penalty_read_from_data() -> void:
 func test_the_slot_widget_shows_the_hint_only_for_a_curse() -> void:
 	var slot_ids: Array[String] = ["curse_property_damage", "rogue_drive_by"]
 	var widget: CardSlotWidget = auto_free(CardSlotWidget.new())
-	widget._refresh_condition_short(slot_ids[0])
+	widget._refresh_condition_short(slot_ids[0], RunConfig.curse_swap_penalty())  # BD3b-ux: the HUD passes CardSlot.current_swap_penalty; for a plain curse that is this value
 	var seconds: String = String.num(RunConfig.curse_swap_penalty(), 2).trim_suffix("0").trim_suffix(".0").trim_suffix(".")
 	assert_str(widget.condition_short()).is_equal("%s swaps (%s s)" % [InputLabels.slot_swap_key("attack_single"), seconds])
 	widget._refresh_condition_short(slot_ids[1])

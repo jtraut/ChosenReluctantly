@@ -70,10 +70,15 @@ static func condition_text(condition: Variant, text: Dictionary = {}) -> String:
 		"target_has_status":
 			return String(words["target_has_status"]) % _status_name(String(c.get("status_id", "")), text)
 		"cast_within":
+			var times: int = int(c.get("count", 1))  # BD3b-C2: "count" asks for at least that many casts; 1 keeps the old wording
 			if c.has("slot_type"):
 				var slot_type: String = String(c["slot_type"])
 				var slot_name: String = String((text.get("slot_names", {}) as Dictionary).get(slot_type, slot_type.replace("_", " ").capitalize()))
+				if times > 1 and words.has("cast_within_slot_count"):
+					return String(words["cast_within_slot_count"]) % [slot_name, times, seconds]
 				return String(words["cast_within_slot"]) % [slot_name, seconds]
+			if times > 1 and words.has("cast_within_tag_count"):
+				return String(words["cast_within_tag_count"]) % [times, String(c.get("tag", "")), seconds]
 			return String(words["cast_within_tag"]) % [String(c.get("tag", "")), seconds]
 		"zone_active":
 			return String(words["zone_active"])
@@ -83,6 +88,8 @@ static func condition_text(condition: Variant, text: Dictionary = {}) -> String:
 			return String(words["deck_count_at_least"]) % [int(c.get("count", 0)), String(c.get("tag", ""))]
 		"hp_below":
 			return String(words["hp_below"]) % _num(roundf(float(c.get("fraction", 0.0)) * 100.0))
+		"has_bonus_armor":
+			return String(words.get("has_bonus_armor", ""))
 	return ""
 
 
@@ -131,6 +138,9 @@ const DEFAULT_TEXT: Dictionary = {
 		"self_stacks_at_least": "If you have %d or more %s",
 		"deck_count_at_least": "If your deck has %d or more %s cards",
 		"hp_below": "While below %s%% HP",
+		"has_bonus_armor": "While you have bonus armor",
+		"cast_within_slot_count": "If you used your %s slot %d times in the last %s s",
+		"cast_within_tag_count": "If you cast %d %s cards in the last %s s",
 	},
 	"scale": {"self_stacks": "+%s per %s", "deck_count": "+%s per %s card in your deck", "max": "(up to +%s)", "consume": "uses up your %s"},
 	"condition_line": "%s: %s",

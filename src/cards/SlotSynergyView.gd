@@ -28,7 +28,10 @@ static func infos(player: Player) -> Dictionary:
 		var slot: CardSlot = player.card_slots.get_slot(slot_type)
 		if slot == null:
 			continue
-		result[slot_type] = SlotSynergy.slot_info(slot_type, slot.current_card_id, view, primed, _text)
+		var info: Dictionary = SlotSynergy.slot_info(slot_type, slot.current_card_id, view, primed, _text)
+		# BD3b-ux: the live number of a scaled card (EffectScale.preview_values), for the slot's "+10 per Charge, now +60" pill.
+		info["scaled"] = EffectScale.preview_values(CardDatabase.get_card(slot.current_card_id), player, view["deck_card_ids"])
+		result[slot_type] = info
 	_cache = result
 	_cache_frame = frame
 	_cache_owner = player.get_instance_id()
@@ -76,6 +79,7 @@ static func view_for(player: Player) -> Dictionary:
 		"self_decay_left": self_decay_left,
 		"deck_card_ids": player.card_slots.owned_card_ids(),
 		"hp_fraction": CasterStats.hp_fraction(player),
+		"has_bonus_armor": CasterStats.has_bonus_armor(player),
 		"origin": player.global_position,
 		"forward": player.get_aim_direction(),
 		"aim_point": player.get_aim_point(),

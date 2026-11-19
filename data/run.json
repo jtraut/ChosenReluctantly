@@ -160,7 +160,10 @@
                 "zone_active": "While you have a Zone active",
                 "self_stacks_at_least": "If you have %d or more %s",
                 "deck_count_at_least": "If your deck has %d or more %s cards",
-                "hp_below": "While below %s%% HP"
+                "hp_below": "While below %s%% HP",
+                "has_bonus_armor": "While you have bonus armor",
+                "cast_within_slot_count": "If you used your %s slot %d times in the last %s s",
+                "cast_within_tag_count": "If you cast %d %s cards in the last %s s"
             },
             "scale": { "self_stacks": "+%s per %s", "deck_count": "+%s per %s card in your deck", "max": "(up to +%s)", "consume": "uses up your %s" },
             "condition_line": "%s: %s"
@@ -232,7 +235,7 @@
             "sacrifice_title": "Give up a relic", "sacrifice_line": "This is the price. Pick the relic you give up; it never comes back."
         },
         "status_readout": { "counter_format": "%s %d/%d", "max_suffix": " MAX", "seconds_format": "%.1f s", "trigger_fallback": "Trigger" },
-        "slot_condition": { "curse_swap": "%s swaps", "curse_swap_timed": "%s swaps (%s s)", "target_has_status": "Needs %s", "cast_within_slot": "After %s", "cast_within_slot_key": "After %s (%s)", "cast_within_tag": "After %s", "zone_active": "Needs zone", "self_stacks_at_least": "Needs %d %s", "deck_count_at_least": "Needs %d %s cards", "hp_below": "Below %s%% HP", "detonate_status": "Wants %s stacks", "slot_short": { "movement": "Move" } },
+        "slot_condition": { "curse_swap": "%s swaps", "curse_swap_timed": "%s swaps (%s s)", "target_has_status": "Needs %s", "cast_within_slot": "After %s", "cast_within_slot_key": "After %s (%s)", "cast_within_tag": "After %s", "zone_active": "Needs zone", "self_stacks_at_least": "Needs %d %s", "deck_count_at_least": "Needs %d %s cards", "hp_below": "Below %s%% HP", "has_bonus_armor": "Needs armor", "cast_within_slot_count": "After %d %s casts", "cast_within_tag_count": "After %d %s casts", "curse_swap_free": "%s swaps: free", "swap_free": "Swap: free", "scale_now": "%s, now +%s", "scale_now_mid": "+%s/%s: +%s", "scale_now_short": "Now +%s", "detonate_status": "Wants %s stacks", "slot_short": { "movement": "Move" } },
         "relic": {
             "start_tag": "Starter relic: %s",
             "title": "Relic found", "line": "Pick a relic to keep for this run, or skip.",

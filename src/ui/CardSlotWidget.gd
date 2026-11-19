@@ -40,6 +40,13 @@ var _condition_text: String = ""
 ## BD2 ux: the short dim reason on a conditional slot that is not lit ("Needs Burn"), and the "prime ended" mark.
 var _condition_short: String = ""
 var _condition_short_card: String = UNSET
+## BD3b-ux: the pieces of the pills over the slot (see ConditionCue.pill_lines): the curse swap line, the plain condition, "Swap: free", and the live scale
+## value of a scaled card as candidates (longest first; the slot picks the one that fits).
+var _swap_line: String = ""
+var _condition_only: String = ""
+var _free_line: String = ""
+var _scale_candidates: Array[String] = []
+var _scale_signature: String = ""
 var _spent: Dictionary = {"level": 0.0, "used": true}
 
 
@@ -138,7 +145,7 @@ func _draw_frame() -> void:
 	var inset := kw + fw
 	_draw_live_glow(r)
 	_draw_cues(r, inset)
-	_draw_condition_line(inset)
+	_draw_pills()
 	if _has_next:
 		var sw := _px(float(_cfg["slot_next_swatch_width"]))
 		var row := Rect2(preview_label.position, preview_label.size)
@@ -234,32 +241,44 @@ func _draw_cues(r: Rect2, inset: float) -> void:
 	_overlay.draw_rect(Rect2(bar.position, Vector2(bar.size.x * _primed_fraction, bar.size.y)), color)
 
 
-## The dim "why isn't it lit" tag ("Needs Burn", "After Move (Ctrl)"). It sits as a small pill just above the slot frame, not in the key row:
-## the key row only had about 45 px beside the key at 1024x600, so "After Move" came out as "After M..." at 9 px. Only while the slot holds a
-## conditional card that is not lit and not primed, so it never fights the LIVE pill or the primed marker. It is drawn on the overlay, so it adds
-## no row and the five-row fit is untouched; the tag is at least `condition_min_font_px` (12) tall text.
-func _draw_condition_line(_inset: float) -> void:
-	if _condition_short == "" or _primed or float(_glow["level"]) >= 0.5 or float(_spent["level"]) > 0.01:
-		return
+## The pills over the slot frame, nearest the frame first (BD3b-ux; the priority lives in ConditionCue.pill_lines): the curse swap line, the live value of a
+## scaled card ("+10 per Charge, now +60"), the dim "why isn't it lit" tag ("Needs Burn", "After Move (Ctrl)") and "Swap: free". They sit above the frame, not
+## in the key row (that row has about 45 px beside the key at 1024x600), so they add no row and the five-row fit is untouched. Each is at least
+## `condition_min_font_px` (12) tall text. The reason tag, the curse line and "Swap: free" give way to the LIVE pill, the primed marker and the used mark as before;
+## the scale value stays (it is a number the player acts on).
+func _draw_pills() -> void:
+	var lit: bool = _primed or float(_glow["level"]) >= 0.5 or float(_spent["level"]) > 0.01
+	var lines: Array[Dictionary] = ConditionCue.pill_lines(_swap_line, _scale_candidates, "" if lit else _condition_only, "" if lit else _free_line, int(_cfg.get("pill_max", 2)))
 	var font: Font = key_label.get_theme_font("font")
-	var base_px: int = maxi(roundi(float(_cfg.get("condition_font_size", 12)) * _scale), int(_cfg.get("condition_min_font_px", 12)))
+	var min_px: int = int(_cfg.get("condition_min_font_px", 12))
+	var base_px: int = maxi(roundi(float(_cfg.get("condition_font_size", 12)) * _scale), min_px)
 	var pad: float = _px(5.0)
 	var room: float = _overlay.size.x - 2.0 * pad
-	var fit: Dictionary = TextFit.fit(_condition_short, font, room, 1, base_px, int(_cfg.get("condition_min_font_px", 12)))
-	var shown_px: int = int(fit["font_size"])
-	var text: String = String(fit["text"])
-	var text_w: float = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, shown_px).x
-	var h: float = float(shown_px) + _px(6.0)
-	var pill := Rect2(Vector2((_overlay.size.x - text_w) * 0.5 - pad, -h - _px(3.0)), Vector2(text_w + 2.0 * pad, h))
-	var color := Color.html(String(_cfg.get("condition_color", "#b9aeb5")))
-	var box := StyleBoxFlat.new()
-	box.bg_color = Color.html(String(_cfg.get("condition_pill_color", "#1a1218e6")))
-	box.border_color = color
-	box.set_border_width_all(1)
-	box.set_corner_radius_all(roundi(_px(4.0)))
-	_overlay.draw_style_box(box, pill)
-	var baseline: float = pill.position.y + (pill.size.y + font.get_ascent(shown_px) - font.get_descent(shown_px)) * 0.5
-	_overlay.draw_string(font, Vector2(pill.position.x + pad, baseline), text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, shown_px, color)
+	var rise: float = _px(3.0)
+	for line: Dictionary in lines:
+		var picked: Dictionary = {}
+		var options: Array[String] = [String(line["text"])]
+		options.append_array(line["alternatives"] as Array[String])
+		for i in range(options.size()):
+			picked = TextFit.fit(options[i], font, room, 1, base_px, min_px)
+			if String(picked["text"]) == options[i]:
+				break  # the first candidate that fits whole; the last is drawn shrunk or cut
+		var shown_px: int = int(picked["font_size"])
+		var text: String = String(picked["text"])
+		var text_w: float = font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, shown_px).x
+		var h: float = float(shown_px) + _px(6.0)
+		var pill := Rect2(Vector2((_overlay.size.x - text_w) * 0.5 - pad, -h - rise), Vector2(text_w + 2.0 * pad, h))
+		var is_scale: bool = String(line["kind"]) == "scale"
+		var color := Color.html(String(_cfg.get("scale_color" if is_scale else "condition_color", "#d3c8cf")))
+		var box := StyleBoxFlat.new()
+		box.bg_color = Color.html(String(_cfg.get("condition_pill_color", "#1a1218e6")))
+		box.border_color = color
+		box.set_border_width_all(2 if is_scale else 1)
+		box.set_corner_radius_all(roundi(_px(4.0)))
+		_overlay.draw_style_box(box, pill)
+		var baseline: float = pill.position.y + (pill.size.y + font.get_ascent(shown_px) - font.get_descent(shown_px)) * 0.5
+		_overlay.draw_string(font, Vector2(pill.position.x + pad, baseline), text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, shown_px, color)
+		rise += h + _px(2.0)
 
 
 func _px(value: float) -> float:
@@ -327,7 +346,7 @@ func set_key_hint(text: String) -> void:
 	key_label.text = text
 
 
-func update_from_slot(slot: CardSlot) -> void:
+func update_from_slot(slot: CardSlot, stat_modifiers: StatModifiers = null) -> void:
 	_sync_overlay()
 	if slot == null or not slot.has_cards():
 		_set_frames("", "")
@@ -345,7 +364,8 @@ func update_from_slot(slot: CardSlot) -> void:
 
 	var preview_id := slot.preview_card_id()
 	_set_frames(slot.current_card_id, preview_id)
-	_refresh_condition_short(slot.current_card_id)
+	# BD3b-ux: the swap cost comes from the slot itself (curse value, ordinary value, and the relic stat, e.g. Filing Cabinet), never computed here.
+	_refresh_condition_short(slot.current_card_id, slot.current_swap_penalty(stat_modifiers), slot.current_swap_penalty(null))
 	if preview_id == "":
 		_set_preview("Next: —")
 	else:
@@ -368,6 +388,7 @@ func update_synergy(info: Dictionary, delta: float) -> void:
 		# MAP4 ux: a curse card has no tags, so its slot would show no chip row at all. It wears the data's curse chip instead (an X and "Curse").
 		chip_row.show_chips([String(_cfg.get("curse_chip_text", ""))] if _is_curse(_card_id) else info.get("chips", []))
 	_condition_text = String(info.get("condition_text", ""))
+	_refresh_scale(info.get("scaled", []))
 	_live_target = bool(info.get("condition_live", false)) or SlotCues.detonate_live(info, int(_cfg.get("detonate_live_stacks", 2)))
 	var before_level: float = float(_glow["level"])
 	_glow = SlotCues.glow_step(_glow, _live_target, delta, float(_cfg.get("live_attack", 0.08)), float(_cfg.get("live_hold", 0.3)), float(_cfg.get("live_release", 0.25)))
@@ -408,18 +429,44 @@ func condition_short() -> String:
 	return _condition_short
 
 
-func _refresh_condition_short(card_id: String) -> void:
+## `penalty` is what swapping away the revealed card costs now (CardSlot.current_swap_penalty(stat_modifiers)) and `base_penalty` what it costs with no
+## modifiers (current_swap_penalty(null)); -1 (the default, a caller with no slot) leaves the swap pills off.
+func _refresh_condition_short(card_id: String, penalty: float = -1.0, base_penalty: float = -1.0) -> void:
 	var card: Dictionary = CardDatabase.get_card(card_id) if card_id != "" else {}
 	var texts: Dictionary = RunConfig.ui().get("slot_condition", {})
-	var swap_hint: String = ConditionCue.curse_swap_text(card, texts, InputLabels.slot_swap_key(String(card.get("slot_type", ""))), RunConfig.curse_swap_penalty()) if card_id != "" else ""
-	var tag: String = card_id + "|" + swap_hint  # DF1 ux: the swap key is part of the cache key, so a rebind refreshes the hint
+	var swap_key: String = InputLabels.slot_swap_key(String(card.get("slot_type", ""))) if card_id != "" else ""
+	var swap_hint: String = ConditionCue.curse_swap_text(card, texts, swap_key, penalty) if card_id != "" else ""
+	var free_line: String = ConditionCue.swap_free_text(card, texts, penalty, base_penalty) if card_id != "" else ""
+	var tag: String = card_id + "|" + swap_hint + "|" + free_line  # DF1 ux: the swap key is part of the cache key, so a rebind refreshes the hint; BD3b-ux: so does the swap cost
 	if tag == _condition_short_card:
 		return
 	_condition_short_card = tag
-	_condition_short = swap_hint
-	if card_id != "" and swap_hint == "":
-		_condition_short = ConditionCue.short_text(card, texts)
+	_swap_line = swap_hint
+	_free_line = free_line
+	_condition_only = ConditionCue.short_text(card, texts) if card_id != "" and swap_hint == "" else ""
+	_condition_short = swap_hint if swap_hint != "" else _condition_only
 	_redraw_frame()
+
+
+## The live scale value of the card in the slot (ConditionCue.scale_candidates), refreshed only when it changes.
+func _refresh_scale(scaled: Variant) -> void:
+	var card: Dictionary = CardDatabase.get_card(_card_id) if _card_id != "" and _card_id != UNSET else {}
+	var list: Array = scaled if scaled is Array else []
+	var signature: String = _card_id + "|" + str(list)
+	if signature == _scale_signature:
+		return
+	_scale_signature = signature
+	_scale_candidates = ConditionCue.scale_candidates(card, list, RunConfig.ui().get("slot_condition", {}), (RunConfig.ui().get("effect", {}) as Dictionary).get("scale", {}))
+	_redraw_frame()
+
+
+## The scale pill's candidates (tests), longest first.
+func scale_candidates() -> Array[String]:
+	return _scale_candidates
+
+
+func swap_free_line() -> String:
+	return _free_line
 
 
 func primed_fraction() -> float:

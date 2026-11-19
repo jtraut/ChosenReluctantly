@@ -119,6 +119,8 @@ static func condition_live(effect: Dictionary, card: Dictionary, view: Dictionar
 			return CasterStats.deck_tag_count(view.get("deck_card_ids", []), String(condition.get("tag", ""))) >= int(condition.get("count", 1))
 		EffectCondition.HP_BELOW:
 			return float(view.get("hp_fraction", 1.0)) < float(condition.get("fraction", 0.0))
+		EffectCondition.HAS_BONUS_ARMOR:
+			return bool(view.get("has_bonus_armor", false))  # BD3b-ux: set by SlotSynergyView; a bot's view has none, which reads false as it always did
 		EffectCondition.TARGET_HAS_STATUS:
 			var no_ring: Dictionary = {"self_ring_enabled": false}
 			var parts: Array[Dictionary] = CastPreviewShapes.parts_for_card({"effects": [{"template": effect.get("template", ""), "params": effect.get("params", {})}]}, no_ring)

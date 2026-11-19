@@ -14,6 +14,7 @@ class_name Hud
 
 var dodge_pips: DodgePips = null
 var relic_row: RelicRow = null
+var status_readout: StatusReadout = null
 var relic_cues: RelicCueLayer = null
 var player: Player = null
 
@@ -23,6 +24,9 @@ func _ready() -> void:
 	dodge_pips.name = "DodgePips"
 	dodge_pips.visible = PlayerConfig.dodge_enabled()  # H2: hidden while the dodge is off (DodgePips keeps it in step)
 	$Root.add_child(dodge_pips)
+	status_readout = StatusReadout.new()
+	status_readout.name = "StatusReadout"
+	$Root.add_child(status_readout)
 	relic_row = RelicRow.new()
 	relic_row.name = "RelicRow"
 	$Root.add_child(relic_row)
@@ -35,6 +39,7 @@ func _ready() -> void:
 	relic_cues.set_anchors_preset(Control.PRESET_FULL_RECT)
 	relic_cues.bind(func() -> Node3D: return player)
 	relic_row.triggered.connect(relic_cues.on_trigger)
+	status_readout.trigger_fired.connect(relic_cues.on_named_cue)
 	_ignore_mouse_recursive($Root)
 	_apply_layout()
 	get_viewport().size_changed.connect(_apply_layout)
@@ -72,6 +77,11 @@ func _apply_layout() -> void:
 	dodge_pips.position = dr.position
 	dodge_pips.size = dr.size
 
+	var sr := HudLayout.status_rect(vp, cfg)
+	status_readout.configure(cfg, s)
+	status_readout.position = sr.position
+	status_readout.size = sr.size
+
 	relic_cues.configure(cfg, s)
 	var rr := HudLayout.relic_row_rect(vp, cfg, relic_row.entries().size())
 	relic_row.configure(cfg, s)
@@ -108,6 +118,7 @@ func set_player(p: Player) -> void:
 	light_meter.set_player(p)
 	heavy_meter.set_player(p)
 	dodge_pips.set_player(p)
+	status_readout.set_player(p)
 
 
 func _process(delta: float) -> void:

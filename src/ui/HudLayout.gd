@@ -129,11 +129,23 @@ static func relic_columns(width: float, chip: float, gap: float) -> int:
 	return maxi(int(floorf((width + gap) / maxf(chip + gap, 1.0))), 1)
 
 
-## The relic row (BD2): under the dodge pips, same left edge and width as the health panel, wrapping to as many rows as
+## BD3b-ux: the status readout (a counter row such as Charge, a buff-trigger row such as Spiteful Ward): under the dodge pips, same left edge and width.
+## Its space (`status_rows` rows of `status_row_height`, at least the cue font's height) is always reserved, so the relic row below never jumps.
+static func status_rect(viewport_size: Vector2, cfg: Dictionary) -> Rect2:
+	var s := ui_scale(viewport_size, cfg)
+	var dodge := dodge_rect(viewport_size, cfg)
+	var rows: int = int(cfg.get("status_rows", 2))
+	var row_h: float = maxf(float(cfg.get("status_row_height", 20)) * s, float(cfg.get("status_min_font_px", 12)) + 4.0)
+	var gap: float = float(maxi(1, roundi(2.0 * s)))
+	var height: float = float(rows) * row_h + float(maxi(rows - 1, 0)) * gap
+	return Rect2(Vector2(dodge.position.x, dodge.end.y + float(cfg["meter_row_gap"]) * s), Vector2(dodge.size.x, height))
+
+
+## The relic row (BD2): under the status readout, same left edge and width as the health panel, wrapping to as many rows as
 ## `count` chips need (the chip pitch is `relic_chip_size` + `relic_chip_gap`). An empty row has no height.
 static func relic_row_rect(viewport_size: Vector2, cfg: Dictionary, count: int) -> Rect2:
 	var s := ui_scale(viewport_size, cfg)
-	var dodge := dodge_rect(viewport_size, cfg)
+	var dodge := status_rect(viewport_size, cfg)
 	var chip: float = float(cfg["relic_chip_size"]) * s
 	var gap: float = float(cfg["relic_chip_gap"]) * s
 	var width: float = dodge.size.x

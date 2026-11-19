@@ -2,7 +2,7 @@ extends Node
 ## UX capture (P-dodge): hosts the real Main in an oversized SubViewport, drives a HUD state, saves one PNG, quits.
 ## Needs a renderer (not --headless). Run:
 ##   godot --path . res://tools/UxCapture.tscn -- --size=1024x600 --class=rogue --mode=pips_recharge --out=screenshots/ux/a.png
-## Modes: loadout_editor_legal / loadout_editor_blocked (3d E: the loadout editor), shop_plan_act2 (3d qa: a real act 2 shop whose plan holds rare and legendary cards), shop_rarity (MAP3b: a shop with a legendary, a rare and a common card, fabricated options), pips (full), pips_recharge (one spent, a pip coming back), pips_empty (all spent), stagger (a boss at its first
+## Modes: bd3b_hud (BD3b-ux: Charge 6, Spiteful Ward live, Thesis in its slot, Filing Cabinet's free swaps, a curse in Utility), loadout_editor_legal / loadout_editor_blocked (3d E: the loadout editor), shop_plan_act2 (3d qa: a real act 2 shop whose plan holds rare and legendary cards), shop_rarity (MAP3b: a shop with a legendary, a rare and a common card, fabricated options), pips (full), pips_recharge (one spent, a pip coming back), pips_empty (all spent), stagger (a boss at its first
 ## threshold, mid-stagger), continue_pick (the class pick screen with a saved run), act_heal / act_low / act_resumed (the Act 2 screen, BD3a). The player is made immune and the spawner off, so the shot is only the state being checked.
 
 const BOSS_PATH := "res://scenes/enemies/BossGuardian.tscn"
@@ -56,6 +56,26 @@ func _ready() -> void:
 			for slot_index in range(5):
 				main.hud.slot_widgets[slot_index]._set_name(long_names[slot_index])
 			await _wait(0.3)
+		"bd3b_hud":
+			# BD3b-ux: a Thesis Wizard mid-fight. Charge 6 (decaying), Spiteful Ward cast and live, Thesis revealed (scaled text), Filing Cabinet's free swaps on Utility
+			# and Movement with a curse sitting in Utility. The HUD is the real one; only the player's state is set up.
+			var thesis_deck: Array[String] = []
+			for id: Variant in (JSON.parse_string(FileAccess.get_file_as_string("res://data/debug_decks/wizard-thesis.json")) as Dictionary)["starter"]:
+				thesis_deck.append(String(id))
+			thesis_deck.append_array(["wizard_spiteful_ward", "wizard_hostile_feedback", "curse_mandatory_training"] as Array[String])
+			main.player.card_slots.set_deck(thesis_deck)
+			var wizard_slots: CardSlotController = main.player.card_slots
+			wizard_slots.reveal_first("wizard_spiteful_ward")
+			wizard_slots.try_use("utility")
+			wizard_slots.reveal_first("curse_mandatory_training")
+			wizard_slots.reveal_first("wizard_thesis_defense")
+			wizard_slots.reveal_first("wizard_hostile_feedback")
+			main.player.stat_modifiers.add_modifier("swap_penalty_mult.utility", "capture_filing_cabinet_utility", "multiplicative", -1.0)
+			main.player.stat_modifiers.add_modifier("swap_penalty_mult.movement", "capture_filing_cabinet_movement", "multiplicative", -1.0)
+			var charge_def: Dictionary = StatusDatabase.get_status("charge")
+			for i in range(6):
+				main.player.hurtbox.status_manager.apply_status("charge", charge_def, 4.0, main.player)
+			await _wait(0.6)
 		"stagger":
 			var boss: Boss = (load(BOSS_PATH) as PackedScene).instantiate()
 			boss.position = main.player.global_position + Vector3(0.0, 0.0, -9.0)

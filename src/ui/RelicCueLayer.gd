@@ -79,6 +79,19 @@ func on_trigger(relic_id: String) -> void:
 	queue_redraw()
 
 
+## BD3b-ux: a cue that is not a held relic (a buff's trigger fired, Spiteful Ward): its name floats at the player in the status colour. `key` merges
+## repeats ("Spiteful Ward x3"), like a relic's.
+func on_named_cue(key: String, label: String) -> void:
+	if _cfg.is_empty() or not bool(_cfg.get("relic_cue_enabled", true)):
+		return
+	var color := Color.html(String(_cfg.get("status_trigger_color", "#ffb04a")))
+	var player: Node3D = _player_provider.call() as Node3D if _player_provider.is_valid() else null
+	var spot: Vector3 = player.global_position if player != null and is_instance_valid(player) else Vector3.ZERO
+	RelicCues.add(_cues, key, label, spot, color, float(_cfg.get("relic_cue_merge_window", 0.6)), float(_cfg.get("relic_cue_merge_radius", 2.5)), int(_cfg.get("relic_cue_max", 6)))
+	set_process(true)
+	queue_redraw()
+
+
 func cues() -> Array[Dictionary]:
 	return _cues
 

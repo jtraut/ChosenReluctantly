@@ -595,6 +595,14 @@ func has_buff_triggers(source: String) -> bool:
 	return _triggers.any(func(t: Dictionary) -> bool: return bool(t["buff"]) and String(t["source"]) == source and not bool(t["dead"]))
 
 
+## BD3b-ux (read-only, for the HUD): when the source's buff triggers stop, on the relay clock; -1 when they are not live.
+func buff_expires_at(source: String) -> float:
+	for trigger: Dictionary in _triggers:
+		if bool(trigger["buff"]) and String(trigger["source"]) == source and not bool(trigger["dead"]):
+			return float(trigger["expires_at"])
+	return -1.0
+
+
 ## Sources whose buff triggers are live now.
 func live_buff_sources() -> Array[String]:
 	var result: Array[String] = []

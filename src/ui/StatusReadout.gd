@@ -278,6 +278,8 @@ func _draw_counter(row: Dictionary, rect: Rect2, label_w: float, px: int, base_y
 	var at_max: bool = stacks >= maximum
 	var color := Color.html(String(_cfg.get("status_counter_max_color" if at_max else "status_counter_color", "#c79bff")))
 	var label: String = counter_label(row, texts)
+	if font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1.0, px).x > label_w:
+		label = counter_label(row, texts.merged({"max_suffix": ""}))  # no room for the MAX word at this size: "15/15" already says it
 	draw_string_outline(font, Vector2(0.0, base_y), label, HORIZONTAL_ALIGNMENT_LEFT, label_w, px, outline, outline_col)
 	draw_string(font, Vector2(0.0, base_y), label, HORIZONTAL_ALIGNMENT_LEFT, label_w, px, text_col)
 	var bar := Rect2(rect.position.x + label_w + 4.0 * _scale, rect.position.y, maxf(rect.size.x - label_w - 4.0 * _scale, 4.0), rect.size.y)
@@ -289,7 +291,7 @@ func _draw_counter(row: Dictionary, rect: Rect2, label_w: float, px: int, base_y
 	var fraction: float = float(row["decay_fraction"])
 	if fraction >= 0.0 and stacks > 0:
 		var drain := Rect2(bar.position.x, bar.end.y - drain_h, bar.size.x * fraction, drain_h)
-		draw_rect(drain, color.lightened(0.35))
+		draw_rect(drain, color.lightened(0.6))
 
 
 func _draw_trigger(row: Dictionary, rect: Rect2, px: int, base_y: float, font: Font, texts: Dictionary, back: Color, frame: Color, text_col: Color, outline_col: Color, outline: int, thin: float, thick: float, drain_h: float) -> void:
@@ -298,6 +300,8 @@ func _draw_trigger(row: Dictionary, rect: Rect2, px: int, base_y: float, font: F
 	var lit: float = float(flash.get("level", 0.0))
 	draw_rect(rect, back)
 	draw_rect(Rect2(rect.position, Vector2(rect.size.x * float(row["fraction"]), rect.size.y - drain_h)), Color(color, 0.55))
+	if lit > 0.0:
+		draw_rect(rect, Color(1.0, 1.0, 1.0, 0.45 * lit))  # the fire flash goes under the label, so the name and the xN stay readable
 	if float(row["time_left"]) >= 0.0:
 		draw_rect(Rect2(rect.position.x, rect.end.y - drain_h, rect.size.x * float(row["fraction"]), drain_h), color)
 	# The shield: a shape, so the row is not told apart by colour alone.
@@ -320,6 +324,5 @@ func _draw_trigger(row: Dictionary, rect: Rect2, px: int, base_y: float, font: F
 	draw_string(font, Vector2(text_x, base_y), label, HORIZONTAL_ALIGNMENT_LEFT, rect.end.x - text_x, px, text_col)
 	draw_rect(rect, frame, false, thin)
 	if lit > 0.0:
-		# A trigger fired: the frame floods white and swells, fading over status_flash_release.
-		draw_rect(rect, Color(1.0, 1.0, 1.0, 0.6 * lit))
+		# A trigger fired: a thick frame swells out of the row and fades over status_flash_release.
 		draw_rect(rect.grow(thick * (2.0 - lit)), Color(1.0, 1.0, 1.0, lit), false, thick)

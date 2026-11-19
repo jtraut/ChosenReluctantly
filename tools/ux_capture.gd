@@ -2,7 +2,7 @@ extends Node
 ## UX capture (P-dodge): hosts the real Main in an oversized SubViewport, drives a HUD state, saves one PNG, quits.
 ## Needs a renderer (not --headless). Run:
 ##   godot --path . res://tools/UxCapture.tscn -- --size=1024x600 --class=rogue --mode=pips_recharge --out=screenshots/ux/a.png
-## Modes: bd3b_fire_offer (BD3b-ux: a merchant stock of Fire cards), bd3b_hud (BD3b-ux: Charge 6, Spiteful Ward live, Thesis in its slot, Filing Cabinet's free swaps, a curse in Utility), loadout_editor_legal / loadout_editor_blocked (3d E: the loadout editor), shop_plan_act2 (3d qa: a real act 2 shop whose plan holds rare and legendary cards), shop_rarity (MAP3b: a shop with a legendary, a rare and a common card, fabricated options), pips (full), pips_recharge (one spent, a pip coming back), pips_empty (all spent), stagger (a boss at its first
+## Modes: bd3b_hud_fired (BD3b-ux: Charge at a raised cap, Spiteful Ward just fired), bd3b_fire_offer (BD3b-ux: a merchant stock of Fire cards), bd3b_hud (BD3b-ux: Charge 6, Spiteful Ward live, Thesis in its slot, Filing Cabinet's free swaps, a curse in Utility), loadout_editor_legal / loadout_editor_blocked (3d E: the loadout editor), shop_plan_act2 (3d qa: a real act 2 shop whose plan holds rare and legendary cards), shop_rarity (MAP3b: a shop with a legendary, a rare and a common card, fabricated options), pips (full), pips_recharge (one spent, a pip coming back), pips_empty (all spent), stagger (a boss at its first
 ## threshold, mid-stagger), continue_pick (the class pick screen with a saved run), act_heal / act_low / act_resumed (the Act 2 screen, BD3a). The player is made immune and the spawner off, so the shot is only the state being checked.
 
 const BOSS_PATH := "res://scenes/enemies/BossGuardian.tscn"
@@ -76,6 +76,22 @@ func _ready() -> void:
 			for i in range(6):
 				main.player.hurtbox.status_manager.apply_status("charge", charge_def, 4.0, main.player)
 			await _wait(0.6)
+		"bd3b_hud_fired":
+			# BD3b-ux: Charge at its raised cap (Reading List: +5 on top of the data cap, all stacks full) and Spiteful Ward just fired (its flash and the xN count; the
+			# floating cue at the player). The player is immune in captures, so the fire is sent straight to the readout.
+			main.player.stat_modifiers.add_modifier("status_max_stacks.charge", "capture_reading_list", "additive", 5.0)
+			var cap_def: Dictionary = StatusDatabase.get_status("charge")
+			for i in range(20):
+				main.player.hurtbox.status_manager.apply_status("charge", cap_def, 4.0, main.player)
+			var ward_deck: Array[String] = main.player.card_slots.owned_card_ids()
+			ward_deck.append("wizard_spiteful_ward")
+			main.player.card_slots.set_deck(ward_deck)
+			main.player.card_slots.reveal_first("wizard_spiteful_ward")
+			main.player.card_slots.try_use("utility")
+			await _wait(0.3)
+			for i in range(3):
+				main.hud.status_readout._on_fired("card:wizard_spiteful_ward", 0, "player_damaged")
+			await _wait(0.05)
 		"stagger":
 			var boss: Boss = (load(BOSS_PATH) as PackedScene).instantiate()
 			boss.position = main.player.global_position + Vector3(0.0, 0.0, -9.0)

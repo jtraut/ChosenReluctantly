@@ -9,6 +9,7 @@ func before_test() -> void:
 
 
 func after_test() -> void:
+	BodyFlag.reset()
 	CombatEvents.reset()
 
 

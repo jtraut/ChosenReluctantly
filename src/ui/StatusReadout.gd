@@ -279,7 +279,7 @@ func _draw_counter(row: Dictionary, rect: Rect2, label_w: float, px: int, base_y
 	var color := Color.html(String(_cfg.get("status_counter_max_color" if at_max else "status_counter_color", "#c79bff")))
 	var label: String = counter_label(row, texts)
 	if font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1.0, px).x > label_w:
-		label = counter_label(row, texts.merged({"max_suffix": ""}))  # no room for the MAX word at this size: "15/15" already says it
+		label = counter_label(row, texts.merged({"max_suffix": ""}, true))  # no room for the MAX word at this size: "15/15" already says it
 	draw_string_outline(font, Vector2(0.0, base_y), label, HORIZONTAL_ALIGNMENT_LEFT, label_w, px, outline, outline_col)
 	draw_string(font, Vector2(0.0, base_y), label, HORIZONTAL_ALIGNMENT_LEFT, label_w, px, text_col)
 	var bar := Rect2(rect.position.x + label_w + 4.0 * _scale, rect.position.y, maxf(rect.size.x - label_w - 4.0 * _scale, 4.0), rect.size.y)

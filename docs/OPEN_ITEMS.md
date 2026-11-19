@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-18 (D53 answered; latest tag `playtest-2026-11-18-3d`)
-**Status:** No decisions waiting (D53 = B, answered 2026-11-18). 1 thing to look at (60: play 3d), plus the round 2 vision check. **3d (loadouts) is done**, tag `playtest-2026-11-18-3d`. Item 59 (play DF1) expired at 3d's close with its defaults kept (`docs/RESOLVED.md`). Next: BD3b -> the Milestone 3 close.
+Last updated: 2026-11-19 (D54 added; latest tag `playtest-2026-11-18-3d`)
+**Status:** 1 decision waiting (D54: Ward Battlemage). 1 thing to look at (60: play 3d), plus the round 2 vision check. BD3b (Wizard depth) is being built; the screen work runs while D54 waits. **3d (loadouts) is done**, tag `playtest-2026-11-18-3d`. Item 59 (play DF1) expired at 3d's close with its defaults kept (`docs/RESOLVED.md`). Next: BD3b -> the Milestone 3 close.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -17,9 +17,23 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## Needs your decision
 
-Next new number: D54.
+Next new number: D55.
 
-Nothing waiting.
+**D54. Ward Battlemage, the defensive Wizard archetype, doesn't play as its own build.** BD3b adds two Wizard builds:
+- **Thesis:** build Charge, then spend it on one big bolt. It passes all its checks.
+- **Ward Battlemage:** a ward that blasts back when you're hit. It fails them:
+  - removing its key card (Spiteful Ward) changes nothing;
+  - it deals most of its damage with the same plain single-target attacks as Thesis;
+  - it plays almost like the standard Wizard deck.
+
+The test bot kites, so it's rarely hit, and a blast when you're hit does about 1% of the damage. A blast on your own hits did pass the checks. But it lifted the Wizard's overall win rate in the sim from 20/36 to 24-26/36, over the ceiling, so it was taken out.
+- **A (my pick):** ship Ward Battlemage as it is, with its checks counting as information only, the same as the older builds. You play it in the Milestone 3 playtest, and it gets fixed in BAL1 (the balance pass after that playtest) with your feel in hand.
+- **B:** fix it now. Teach the test bot to fight up close, and make the ward react to real contact. That's one or two more sittings, tuned before you've played it.
+- **C:** change what the build is for. Its goal becomes survival (less damage taken), not damage, and its check changes to match. It shrugs off about 19% more damage with the ward than without.
+
+**If you don't answer by BD3b's close: A.**
+
+Heads-up, not a question: Thesis Defense now hits hard. A spend at 6 Charge does 67 base damage, and with the Reading List relic up to 157. That was needed for the card to matter. Judge it when you play.
 
 ## Needs your eyes
 

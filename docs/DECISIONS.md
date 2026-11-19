@@ -2909,3 +2909,19 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **Damage taken isn't an escape hatch for W-D.** Its full-run damage taken goes 28.1 -> 33.5 without the keystone, which is +19%, under the +25% bar. The real finding: under the plan bot, W-D plays like the standard deck (L1 0.19 from it).
 - **`w1a_test` bolt-range failure** (32 s in a full run, passes alone): added to Known issues. qa re-runs it on a quiet machine.
 
+## 2026-11-19 - BD3b-D3 triage (game-lead)
+- **Kept D3's numbers** (all BD3b's own):
+  - Thesis `per` 1.5 -> 10, uncapped.
+  - Primers 2 -> 3 Charge.
+  - cc:All Staff bolt 6 -> 3: at 6 it stood in for any removed keystone.
+  - [Thesis at 1.5: the keystone was 8% of boss damage, and removing it changed nothing.]
+  - A Thesis cast at 6 Charge now does 67 base, and with Reading List's 15 stacks 157. That's a big single hit. The playtester and the director judge how it feels. No cap was added, because a `max` of 10 makes Reading List useless for Thesis.
+- **W-B passes on the no-relic form, and that form counts for parity and removal pain.** With relics, parity against the relic-free preset (66%) and removal pain pull in opposite directions, because the reference has no relics. Fingerprint stays with relics (the README rule). One random off-plan swap without relics reads +10% against ±8%; the other reads +2%, and with relics both pass. With 12 seeds that's noise at the edge (BD1 qa: "signals, not proof"). [Changing the parity reference to a relic-matched preset: that's a gate change for the director.]
+- **W-D is the director's call (D54)**, because no BD3b number passes it without breaking the SIM1 ceiling. The kiting plan bot is almost never hit while warded, so a nova on taking damage does about 1%. A nova on the player's own hits passes, but SIM1's random presses take it to 24-26/36. The remaining fixes change the bot's behaviour, the gate, or the card's identity, and none of those are BD3b's numbers. [Shipping the nova over the SIM1 ceiling: the ceiling is §11.4's rule.]
+- **Default for D54, my recommendation:**
+  - A: W-D's §2 checks stay informational, like the older archetypes.
+  - BD3b closes with W-B gated.
+  - Ward Battlemage goes to BAL1 after the milestone playtest, where the director plays it first.
+  - [B, a bot that fights up close plus a contact trigger: a sitting of unknown size, tuned without the director having played it.]
+- **BD3b-ux runs while D54 waits.** It reads Charge, the Ward cue and the slot text from data, so any D54 answer leaves it valid.
+

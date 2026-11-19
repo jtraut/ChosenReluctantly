@@ -10,14 +10,14 @@ Last updated: 2026-11-19 (BD3b-C2 recorded; D next). Latest tag `playtest-2026-1
 - BD3b-C2 done 2026-11-19 (65be0d9..8fe0560, verified in 069f3ef).
 
 ## Exact next step
-1. **gameplay-dev runs BD3b-D3** (ROADMAP: tune Charge data, Footnotes' slot, Spiteful Ward's nova and Thorned Boundary's reflect against the W-B/W-D gates; re-measure SIM1 for both classes). `safe to chain`. Anything still missing goes to the director as D54. D2 built 7d1b197..c678b24, gates not met (ROADMAP D2 line).
+1. **ux-designer runs BD3b-ux** (ROADMAP). `safe to chain`; it runs while D54 waits. D3 done 16b1e81..76001b1: W-B passes, W-D goes to the director as D54 (default A: W-D informational, fixed in BAL1). If D54 = B or C, a gameplay-dev D4 sitting comes before qa.
 2. Then BD3b-ux, qa, playtester, tech-writer, close. One sitting per agent; a `Remaining:` list gets a fresh agent.
 3. Then the Milestone 3 close and milestone playtest (CLAUDE.md, milestone boundary).
 
-**Next role:** gameplay-dev (BD3b-D3).
+**Next role:** ux-designer (BD3b-ux).
 
 ## Current baselines (DF1 qa, 2026-11-17)
-- Suite 2767 (198 suites), 1 failure (BD3b-D2: `w1a_test` bolt range, passes alone); a full run takes about 23 minutes, so run it in the background. SIM1 `-Route first` after C2: human Rogue 19/36, Wizard 20/36 (at the ceiling); off 35/36, 31/36.
+- Suite 2767 (198 suites), 0 failures (BD3b-D3; the `w1a_test` flake didn't recur); a full run takes about 23 minutes, so run it in the background. SIM1 `-Route first` after D3: human Rogue 19/36, Wizard 20/36 (at the ceiling); off 35/36, 31/36. SIM1's human preset presses slots at random (no PlanPolicy).
 - Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 (unchanged; act 1 is untouched).
 - SIM1 `-Route first`: human Rogue 18/36, Wizard 16/36; off 34/36, 34/36. Floors 12 / 10 / 31 / 30, ceiling 21 / 20 (MAP.md §11.4). Rogue losses in rooms 13-15: 8 of 18.
 - Fingerprint 0.79 with relics (qa's BUILD_DEPTH relic sets, now canonical), 0.45 without. Boss parity 92% / 109% / 106%.
@@ -37,6 +37,7 @@ Last updated: 2026-11-19 (BD3b-C2 recorded; D next). Latest tag `playtest-2026-1
 - BD3b-C2 shipped (65be0d9..8fe0560, verified in 069f3ef): ARCHITECTURE (the 4-argument `player_damaged` with attacker and melee; `Health.last_melee` and the `melee` argument on `receive_damage`/`take_damage`; `RelicSchema.AT_ATTACKER`; trigger-level `condition`; `EffectCondition.HAS_BONUS_ARMOR`; `cast_within.count` and `CastHistory.count_within`; `EffectScale.EVENT_AMOUNT` and `EffectContext.event_amount`; `CardTags.POOL_TAGS`; the `swap_penalty_mult.<slot>` stat and `CardSlot.swap_card(stat_modifiers)`; `CasterStats.has_bonus_armor`). CHANGELOG (5 relics: Exit Strategy, Thorned Boundary, Reading List, Filing Cabinet, Hot Streak; relic Burn share 25.0% -> 21.1% (4/16 -> 4/19); Fire cards' tags gain "Fire"; the `map3b_content_test` relic upper bound goes 26 -> 32; §12.1's "about 22" is now a floor). README (suite 2745 / 195; the stale relic Burn share "28.6% (4 of 14)" becomes 21.1% (4 of 19); SIM1 human Wizard 20/36).
 - BD3b-D1 shipped (b9b3687..0477a81): ARCHITECTURE (`PoolDatabase.tag_for_pool`/`all_pool_tags` and the pool `tag` field; `CardTags.POOL_TAGS` removed, which replaces the C2 note; `SimCaster` gains a Hurtbox, a StatusEffectManager, `step()` and `live_view_fields()`; `bot_sim.gd` plan view gains `self_stacks`, `hp_fraction` and `deck_card_ids`). CHANGELOG (the pool tag moves from code to data with behaviour unchanged; bot-sim plan mode now sees Charge and the live view fields; the melee audit found nothing missing). README (suite 2758 / 197; a full run takes about 23 minutes).
 - BD3b-D2 shipped (7d1b197..c678b24): ARCHITECTURE (`PlanPolicy.spender_scale`, `has_trigger_buff`, `SPEND_AT_STACKS`, `SPEND_DECAY_MARGIN`, `TRIGGER_BUFF_RANGE`; `StatusEffectManager.decay_left_of`; view key `self_decay_left` in `SlotSynergyView.view_for` and `SimCaster.live_view_fields`; the wave sim's plan line prints spender casts). CHANGELOG (the plan bot plays Charge and Spiteful Ward; gate results). README (suite count; SIM1's human preset doesn't use PlanPolicy; Wizard fingerprint relic sets W-A `lingering_embers+pyre_insurance+grading_curve`, W-B `reading_list+cc_all_staff+office_supplies`, W-D `thorned_boundary+ergonomic_chair+heavy_sigh`).
+- BD3b-D3 shipped (16b1e81..76001b1): CHANGELOG (Thesis Defense +1.5 -> +10 per Charge; Footnotes and Literature Review 2 -> 3 Charge per cast; cc:All Staff bolt 6 -> 3 and its rule_text; W-B gates pass, W-D's miss is D54). Tests: `bd3b_engine_test` reads `decay_after` from data.
 
 ## Known issues
 - `w1a_test.gd` `test_the_wizard_bolt_does_not_reach_past_its_12_m_range...` failed once in a full run (32 s) and passes alone; qa re-runs it on a quiet machine.
@@ -45,9 +46,9 @@ Last updated: 2026-11-19 (BD3b-C2 recorded; D next). Latest tag `playtest-2026-1
 - An old git stash (`stash@{0}`, from 85cd564) is still in the repo; the director decides whether to drop it.
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D53 answered. Next free: D54. Next eyes number: 61.
+**D-numbers:** D21-D53 answered; D54 open. Next free: D55. Next eyes number: 61.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths. A role that stops with a `Remaining:` list gets a fresh agent, never a resumed one.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: eyes 60 (play 3d; expires at BD3b's close); the round 2 vision check.
+All director-facing items are in `docs/OPEN_ITEMS.md`: D54 (Ward Battlemage; default A at BD3b's close); eyes 60 (play 3d; expires at BD3b's close); the round 2 vision check.

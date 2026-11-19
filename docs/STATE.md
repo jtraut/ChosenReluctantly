@@ -10,14 +10,14 @@ Last updated: 2026-11-19 (BD3b-C2 recorded; D next). Latest tag `playtest-2026-1
 - BD3b-C2 done 2026-11-19 (65be0d9..8fe0560, verified in 069f3ef).
 
 ## Exact next step
-1. **gameplay-dev runs BD3b-D1** (the C2 carry-overs, then the bot sim sees the new rules, then the hash check), then **D2** (`PlanPolicy`, gates, tuning). Both `safe to chain`; the split is in ROADMAP.
+1. **gameplay-dev runs BD3b-D2** (`PlanPolicy` plays Charge and Spiteful Ward, the §2 gates, the Citation Needed A/B, tuning, SIM1). `safe to chain`. D1 done (b9b3687..0477a81).
 2. Then BD3b-ux, qa, playtester, tech-writer, close. One sitting per agent; a `Remaining:` list gets a fresh agent.
 3. Then the Milestone 3 close and milestone playtest (CLAUDE.md, milestone boundary).
 
-**Next role:** gameplay-dev (BD3b-D1).
+**Next role:** gameplay-dev (BD3b-D2).
 
 ## Current baselines (DF1 qa, 2026-11-17)
-- Suite 2745 (195 suites), 0 failures (BD3b-C2). SIM1 `-Route first` after C2: human Rogue 19/36, Wizard 20/36 (at the ceiling); off 35/36, 31/36.
+- Suite 2758 (197 suites), 0 failures (BD3b-D1); a full run takes about 23 minutes, so run it in the background. SIM1 `-Route first` after C2: human Rogue 19/36, Wizard 20/36 (at the ceiling); off 35/36, 31/36.
 - Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 (unchanged; act 1 is untouched).
 - SIM1 `-Route first`: human Rogue 18/36, Wizard 16/36; off 34/36, 34/36. Floors 12 / 10 / 31 / 30, ceiling 21 / 20 (MAP.md §11.4). Rogue losses in rooms 13-15: 8 of 18.
 - Fingerprint 0.79 with relics (qa's BUILD_DEPTH relic sets, now canonical), 0.45 without. Boss parity 92% / 109% / 106%.
@@ -35,6 +35,7 @@ Last updated: 2026-11-19 (BD3b-C2 recorded; D next). Latest tag `playtest-2026-1
 - BD3b-C1 shipped (1865109..97acc3d): CHANGELOG (7 Wizard cards; Hostile Feedback 12 -> 13 and Literature Review 13 -> 14.5 against the design sketch; Thesis late Fire share 32.7% -> 25.8%); README (14 presets incl. `wizard-thesis` and `wizard-ward-battlemage`; Wizard full pool 39 -> 46; the offer report's Wizard `thesis` bot).
 
 - BD3b-C2 shipped (65be0d9..8fe0560, verified in 069f3ef): ARCHITECTURE (the 4-argument `player_damaged` with attacker and melee; `Health.last_melee` and the `melee` argument on `receive_damage`/`take_damage`; `RelicSchema.AT_ATTACKER`; trigger-level `condition`; `EffectCondition.HAS_BONUS_ARMOR`; `cast_within.count` and `CastHistory.count_within`; `EffectScale.EVENT_AMOUNT` and `EffectContext.event_amount`; `CardTags.POOL_TAGS`; the `swap_penalty_mult.<slot>` stat and `CardSlot.swap_card(stat_modifiers)`; `CasterStats.has_bonus_armor`). CHANGELOG (5 relics: Exit Strategy, Thorned Boundary, Reading List, Filing Cabinet, Hot Streak; relic Burn share 25.0% -> 21.1% (4/16 -> 4/19); Fire cards' tags gain "Fire"; the `map3b_content_test` relic upper bound goes 26 -> 32; §12.1's "about 22" is now a floor). README (suite 2745 / 195; the stale relic Burn share "28.6% (4 of 14)" becomes 21.1% (4 of 19); SIM1 human Wizard 20/36).
+- BD3b-D1 shipped (b9b3687..0477a81): ARCHITECTURE (`PoolDatabase.tag_for_pool`/`all_pool_tags` and the pool `tag` field; `CardTags.POOL_TAGS` removed, which replaces the C2 note; `SimCaster` gains a Hurtbox, a StatusEffectManager, `step()` and `live_view_fields()`; `bot_sim.gd` plan view gains `self_stacks`, `hp_fraction` and `deck_card_ids`). CHANGELOG (the pool tag moves from code to data with behaviour unchanged; bot-sim plan mode now sees Charge and the live view fields; the melee audit found nothing missing). README (suite 2758 / 197; a full run takes about 23 minutes).
 
 ## Known issues
 - Wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.

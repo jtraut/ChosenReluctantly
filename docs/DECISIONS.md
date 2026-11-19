@@ -2891,3 +2891,9 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **The Wizard's `relic` median on seed 13 is 13.5,** half a relic under 14. That seed had 2 losses in 12 runs. The other seeds and Rogue hold, and C2 can only add relics, so this isn't a regression. qa re-checks it at the slice review. [Retuning relic room odds.]
 - **Thorned Boundary's reach:** only cone hits and the boss charge sweep are marked melee, so the relic may rarely fire. D gets it as a bug fix (every melee or contact hit is marked), not a tuning change. [Leaving it until qa.]
 - **The Fire pool tag now shows on every Fire card.** BD3b-ux decides whether to show it or filter it out.
+
+## 2026-11-19 - BD3b-D1 engine calls (gameplay-dev, recorded by game-lead)
+- The pool `tag` field may go on any pool, not only elements. [Elements only.] It must be a non-empty string with no spaces, must not equal a derived tag, and must be unique across pools. [Allowing duplicates.] `CardTags` reads it through `PoolDatabase`. [A cached constant, which would be a second source of truth.]
+- The melee audit changed no code. Enemy and boss cones and the boss charge were already melee; projectiles, ground aoes, DoTs and zones are not. [A blanket `melee=true` for every Enemy source.] This corrects the C2 triage's "may rarely fire" note.
+- `SimCaster` builds a Hurtbox and a StatusEffectManager and ticks them through `step()`, calling the manager's `_process` directly. [Building the nodes in `bot_sim.gd`; a Player instance; a public `advance` in src.] `live_view_fields()` is on SimCaster, so tests can reach it.
+

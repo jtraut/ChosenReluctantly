@@ -21,9 +21,9 @@ const BUFF := "Buff"
 ## Canonical order of the derived tags (derive() returns them in this order).
 const DERIVED: Array[String] = [PROJECTILE, MELEE, AREA, ZONE, DASH, HEAL, BURN, BLEED, BUFF]
 
-## BD3b-C2: pool id -> the tag every card of that pool carries (a Fire-pool card is a "Fire" card). Not derived from effects: it follows the card's `pool`,
+## BD3b-C2: a pool's tag is carried by every card of that pool (a Fire-pool card is a "Fire" card). Not derived from effects: it follows the card's `pool`,
 ## so a relic or condition can say "Fire cards" without listing them. Added after the keywords by all_tags().
-const POOL_TAGS: Dictionary = {"fire": "Fire"}
+## BD3b-D1: the tag lives in data/pools.json (`tag`), read through PoolDatabase.tag_for_pool.
 
 ## status id -> the tag applying it grants.
 const STATUS_TAGS: Dictionary = {"burn": BURN, "bleed": BLEED}
@@ -53,7 +53,7 @@ static func all_tags(card: Dictionary) -> Array[String]:
 		for keyword: Variant in (keywords as Array):
 			if typeof(keyword) == TYPE_STRING and not result.has(String(keyword)):
 				result.append(String(keyword))
-	var pool_tag: String = String(POOL_TAGS.get(String(card.get("pool", "")), ""))
+	var pool_tag: String = PoolDatabase.tag_for_pool(String(card.get("pool", "")))
 	if not pool_tag.is_empty() and not result.has(pool_tag):
 		result.append(pool_tag)
 	return result
@@ -72,7 +72,7 @@ static func keywords_of(card: Dictionary) -> Array[String]:
 
 ## True when `tag` is a derived tag or a known keyword (what a condition or buff may name).
 static func is_known_tag(tag: String) -> bool:
-	return DERIVED.has(tag) or KeywordDatabase.has(tag) or POOL_TAGS.values().has(tag)
+	return DERIVED.has(tag) or KeywordDatabase.has(tag) or PoolDatabase.all_pool_tags().has(tag)
 
 
 ## Problems with a card's `keywords` field (empty = fine or absent).

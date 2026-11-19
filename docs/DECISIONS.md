@@ -2925,3 +2925,12 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
   - [B, a bot that fights up close plus a contact trigger: a sitting of unknown size, tuned without the director having played it.]
 - **BD3b-ux runs while D54 waits.** It reads Charge, the Ward cue and the slot text from data, so any D54 answer leaves it valid.
 
+## 2026-11-19 - BD3b-ux calls (ux-designer, recorded by game-lead)
+- The status rows are always reserved, so the relic row never jumps mid-fight. The Rogue gets a ~45 px empty gap. [Rows that appear on demand.]
+- The counter reads "6/10", because the cap matters with Reading List. [The enemy-style "x6".] The scale "now" value comes from `EffectScale.preview_values` in `SlotSynergyView`. [CastPreview "scaled", which is live only while aiming.]
+- Pill priority: curse, then scale, then reason, then Swap: free, at most 2.
+- **The Fire pool tag is filtered off every chip row** (it showed on some Fire cards and was cut from others), but stays in the editor's tag line. **game-lead accepts this,** with one gap noted: Kindling and Hot Head show Fire only through the orange frame, which is colour alone. That goes to qa and the playtester to judge. A fixed "Fire" mark on the offer header is a candidate for the next ux polish. [Showing it as the last chip: inconsistent.]
+- **Non-ux files touched, acknowledged:** `RelicManager.buff_expires_at` (read-only getter); `RunRelics.run_stats` / `current_text`; `RunController._run_stats` delegates to RunRelics; `SlotSynergy`, `SlotSynergyView` and `CardSummary` gain `has_bonus_armor`, `scaled` and the count wording. These are display plumbing, not rules.
+- **Open, small:** "Swap: free" and the curse swap line still show while swaps are locked (The Micromanager); the curse line already had this gap. There's no Ward indicator on the Utility slot. Both go to qa to judge whether they block.
+- **Process lesson:** a text-mode script edit rewrote an embedded newline in a `.gd` string to CRLF, and that broke 7 tests. Scripted edits of source files must keep line endings.
+

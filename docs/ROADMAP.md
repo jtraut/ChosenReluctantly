@@ -977,6 +977,12 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
   - **playtester:** a Thesis Wizard and a Ward Battlemage run (three acts if time allows, otherwise act 1 plus `--run-room=10`). Does Charge read, does Spiteful Ward feel like a plan or an accident, and does a non-Fire Wizard feel different from a Fire one? Also the 3d polish items.
   - **tech-writer:** the slice docs, plus the pending items in STATE: D53 (CHANGELOG and ARCHITECTURE no longer call it a conflict; RESOLVED entry), the 3d polish list out of "Known issues", and **the ARCHITECTURE trim** (520 lines, target about 400; move detail to code comments or remove what's stale).
   - **Close:** eyes 60 (play 3d) expires at this close if unanswered. Next is the Milestone 3 close.
+    - **Built 2026-11-19:** ux d39b156..9040ef4.
+      - A `StatusReadout` under the dodge pips shows the Charge counter ("6/10" with a drain line) and the Spiteful Ward cue (live bar, a fire flash, a floating "x3").
+      - Slot pills show the scale ("+10 per Charge, now +60", with a short form at 1024x600), the `has_bonus_armor` and `cast_within` count lines, and "Swap: free" read from `current_swap_penalty`.
+      - The Fire pool tag is filtered off chip rows but kept in the editor's tag line. The pause relic list shows Liquidate Assets' "Now:" value.
+      - Captures are in `docs/playtests/img/bd3b-ux/`. Hashes unchanged.
+      - The one full run (2792 / 201) had 9 failures, all ux-caused and fixed (85 cases re-run green). **qa re-runs the full suite.** DECISIONS "BD3b-ux calls".
   - **Deferred (not in BD3b; they retune slices the director hasn't played). Home: BAL1, the first balance item after the Milestone 3 playtest, `needs your play first`:**
     - Request for Quotation in about 79% of shops; Liquidate Assets is weak.
     - Paperwork Fire rarely fires; Severance Package chains.

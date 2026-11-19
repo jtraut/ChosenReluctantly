@@ -6,17 +6,17 @@
 Last updated: 2026-11-18 (BD3b brief written). Latest tag `playtest-2026-11-18-3d`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **BD3b brief written 2026-11-18** (ROADMAP, BD3b entry below 3d; BUILD_DEPTH §14; DECISIONS "BD3b brief"). BD3b-0 done (bc463f5..ddb0d1b); BD3b-A done (0436585..e9dfacf); BD3b-B done (070ffd6..23370fe). The repo runs.
+- **BD3b brief written 2026-11-18** (ROADMAP, BD3b entry below 3d; BUILD_DEPTH §14; DECISIONS "BD3b brief"). BD3b-0 done (bc463f5..ddb0d1b); BD3b-A done (0436585..e9dfacf); BD3b-B done (070ffd6..23370fe); BD3b-C1 done (1865109..97acc3d), but the SIM1 human Wizard is 27/36, over its ceiling of 20; D fixes it. The repo runs.
 
 ## Exact next step
-1. **gameplay-dev runs BD3b-C1** (7 Wizard cards, 2 debug decks). `safe to chain`.
+1. **gameplay-dev runs BD3b-C2** (relics, plus the attacker and melee flag on `player_damaged` for Thorned Boundary). `safe to chain`.
 2. Then gameplay-dev C1, C2, D, then BD3b-ux, qa, playtester, tech-writer, close. One sitting per agent; a `Remaining:` list gets a fresh agent.
 3. Then the Milestone 3 close and milestone playtest (CLAUDE.md, milestone boundary).
 
-**Next role:** gameplay-dev (BD3b-C1).
+**Next role:** gameplay-dev (BD3b-C2).
 
 ## Current baselines (DF1 qa, 2026-11-17)
-- Suite 2715 (193 suites), 0 failures (BD3b-B).
+- Suite 2723 (194 suites), 0 failures (BD3b-C1). SIM1 human Wizard 27/36 after C1 (over the ceiling; D tunes).
 - Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 (unchanged; act 1 is untouched).
 - SIM1 `-Route first`: human Rogue 18/36, Wizard 16/36; off 34/36, 34/36. Floors 12 / 10 / 31 / 30, ceiling 21 / 20 (MAP.md §11.4). Rogue losses in rooms 13-15: 8 of 18.
 - Fingerprint 0.79 with relics (qa's BUILD_DEPTH relic sets, now canonical), 0.45 without. Boss parity 92% / 109% / 106%.
@@ -30,6 +30,8 @@ Last updated: 2026-11-18 (BD3b brief written). Latest tag `playtest-2026-11-18-3
 - BD3b-A shipped (0436585..e9dfacf): ARCHITECTURE (conditions, `scale` block, `EffectScale`, `CasterStats`, `EffectContext.deck_card_ids`, `counter` effect type, `stacking.decay_after`, `CastPreview` "scaled", `EffectTemplates.execute` scale arg); CHANGELOG (Office Supplies and Bureaucratic Red Tape rule_text old -> new "(halved on elites)"; new keys `ui.start_screen.preset_title`, `ui.effect.scale`, three condition strings); README suite count.
 
 - BD3b-B shipped (070ffd6..23370fe): ARCHITECTURE (`BuffTriggers` host, meta `buff_trigger_host`, signals `buff_triggers_started/ended`, `buff_trigger_fired`, `at: event_path`, static `CombatEventsRelay.chain_depth`, `reset_done`, public `RelicSchema.validate_trigger`, `MAX_ZONE_LINE_LENGTH`, `MAX_BUFF_TRIGGERS`); README suite count.
+
+- BD3b-C1 shipped (1865109..97acc3d): CHANGELOG (7 Wizard cards; Hostile Feedback 12 -> 13 and Literature Review 13 -> 14.5 against the design sketch; Thesis late Fire share 32.7% -> 25.8%); README (14 presets incl. `wizard-thesis` and `wizard-ward-battlemage`; Wizard full pool 39 -> 46; the offer report's Wizard `thesis` bot).
 
 ## Known issues
 - Wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.

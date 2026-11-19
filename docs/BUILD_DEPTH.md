@@ -938,9 +938,9 @@ Keystones are common `starter`, as BD3a's are (`rogue_open_a_vein`, `rogue_bad_i
 | `wizard_thesis_defense` **Keystone, Payoff** | Attack: Single | Projectile 7 neutral, cooldown +0.3. +1.5 damage per Charge, consumes all Charge. | W-B | §5 |
 | `wizard_footnotes` **Primer** | Attack: Single | 4 hits of 1.8 neutral, cooldown +0.2. The cast gives you 2 Charge. | W-B | §5 |
 | `wizard_citation_needed` **NEW** | Attack: Single | Projectile 6 neutral, cooldown +0.1. +0.5 damage per Projectile card in your run deck (max +3). | W-B | new |
-| `wizard_literature_review` **NEW, Primer** | Attack: AoE | Area r2.8 at the aim point (max range 8), 13 neutral, cooldown +0.3. The cast gives you 2 Charge. | W-B | new |
+| `wizard_literature_review` **NEW, Primer** | Attack: AoE | Area r2.8 at the aim point (max range 8), 14.5 neutral (13 -> 14.5 in C1 for CardDamageRule), cooldown +0.3. The cast gives you 2 Charge. | W-B | new |
 | `wizard_spiteful_ward` **Keystone** | Utility | +25 armor for 4 s. While it lasts, each hit you take releases a 6-neutral nova, r2.5, 0.5 s internal cooldown. | W-D | §5 |
-| `wizard_hostile_feedback` **NEW, Payoff** | Attack: AoE | Area r2.5 around you, 12 neutral, cooldown 0. Below 50% HP: +8 and knockback 6. | W-D | new |
+| `wizard_hostile_feedback` **NEW, Payoff** | Attack: AoE | Area r2.5 around you, 13 neutral (12 -> 13 in C1 for CardDamageRule), cooldown 0. Below 50% HP: +8 and knockback 6. | W-D | new |
 | `wizard_sick_day` **NEW** | Recovery | Heal 10 and +15 armor for 3 s. The Wizard's first class Recovery card. | W-D, any | new |
 
 A non-Fire Wizard then has 6 common Attack: Single and 5 common Attack: AoE cards to choose from. Every Attack card must pass `CardDamageRule` on its unconditional damage; gameplay-dev adjusts the starting numbers to pass and logs any change.

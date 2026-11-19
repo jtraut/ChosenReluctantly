@@ -7,8 +7,9 @@ extends RefCounted
 ##   target_has_status {status_id}          a target hit has the status. Per target, in the cone, aoe, projectile,
 ##                                          zone and apply_status paths. The hits that pass are what the effect
 ##                                          damages (and what later effects see in last_hits).
-##   cast_within {slot_type | tag, seconds} the caster cast a matching card within the last N seconds (checked once
-##                                          per cast; the current cast is not in the history yet).
+##   cast_within {slot_type | tag, seconds, count?} the caster cast a matching card within the last N seconds (checked once
+##                                          per cast; a card's own cast is not in the history yet, a relic trigger on card_cast sees it).
+##                                          `count` (BD3b-C2, default 1) asks for at least that many matching casts in the window.
 ##   zone_active {}                         one of the caster's Zones is alive (checked once per cast).
 ##   self_stacks_at_least {status_id, count}  the caster holds at least `count` stacks of a status on itself (once per cast).
 ##   deck_count_at_least {tag, count}       the run deck holds at least `count` cards (copies count) with that tag (once per cast).
@@ -41,7 +42,7 @@ static func caster_ok(condition: Dictionary, context: EffectContext) -> bool:
 		CAST_WITHIN:
 			if context.cast_history == null:
 				return false
-			return context.cast_history.cast_within(context.now, float(condition["seconds"]), String(condition.get("slot_type", "")), String(condition.get("tag", "")))
+			return context.cast_history.count_within(context.now, float(condition["seconds"]), String(condition.get("slot_type", "")), String(condition.get("tag", "")), int(condition.get("count", 1))) >= int(condition.get("count", 1))
 		ZONE_ACTIVE:
 			if context.caster == null or not is_instance_valid(context.caster):
 				return false
@@ -97,7 +98,9 @@ static func validate(condition: Variant, template_id: String) -> Array[String]:
 			if typeof(dict.get("status_id")) != TYPE_STRING or not StatusDatabase.has_status(String(dict["status_id"])):
 				errors.append("target_has_status needs a known 'status_id'")
 		CAST_WITHIN:
-			allowed.append_array(["slot_type", "tag", "seconds"])
+			allowed.append_array(["slot_type", "tag", "seconds", "count"])
+			if dict.has("count") and (not EffectTemplates.number_in(dict["count"], 0.0, float(CastHistory.MAX_ENTRIES), false) or float(dict["count"]) != floorf(float(dict["count"]))):
+				errors.append("cast_within 'count' must be a whole number from 1 to %d" % CastHistory.MAX_ENTRIES)
 			var has_slot: bool = dict.has("slot_type")
 			var has_tag: bool = dict.has("tag")
 			if has_slot == has_tag:

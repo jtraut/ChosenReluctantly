@@ -48,16 +48,24 @@ func size() -> int:
 ## True when a cast of `slot_type` (if not empty) and carrying `tag` (if not empty) happened within the last
 ## `seconds` (inclusive) before `now`. With both empty, any cast counts.
 func cast_within(now: float, seconds: float, slot_type: String = "", tag: String = "") -> bool:
+	return count_within(now, seconds, slot_type, tag, 1) >= 1
+
+
+## BD3b-C2: how many matching casts happened within the last `seconds` (inclusive), counting up to `limit` (0 = no limit; stops early at the limit).
+func count_within(now: float, seconds: float, slot_type: String = "", tag: String = "", limit: int = 0) -> int:
+	var found: int = 0
 	for i in range(_entries.size() - 1, -1, -1):
 		var entry: Entry = _entries[i]
 		if now - entry.time > seconds:
-			return false  # entries are in time order, so everything earlier is older still
+			break  # entries are in time order, so everything earlier is older still
 		if not slot_type.is_empty() and entry.slot_type != slot_type:
 			continue
 		if not tag.is_empty() and not entry.tags.has(tag):
 			continue
-		return true
-	return false
+		found += 1
+		if limit > 0 and found >= limit:
+			break
+	return found
 
 
 ## The recorded casts, oldest first, as plain dictionaries {time, slot_type, card_id, tags} (for ux and tests).

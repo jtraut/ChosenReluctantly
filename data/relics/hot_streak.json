@@ -1,0 +1,40 @@
+{
+    "id": "hot_streak",
+    "name": "Hot Streak",
+    "pool": "fire",
+    "rarity": "tier2",
+    "sources": [
+        "elite",
+        "relic_room",
+        "merchant"
+    ],
+    "keywords": [],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "card_cast",
+            "filter": {
+                "tag": "Fire"
+            },
+            "at": "player",
+            "internal_cooldown": 8.0,
+            "condition": {
+                "type": "cast_within",
+                "tag": "Fire",
+                "seconds": 4.0,
+                "count": 3
+            },
+            "effects": [
+                {
+                    "template": "reduce_cooldown",
+                    "params": {
+                        "slot_type": "attack_aoe",
+                        "seconds": 60
+                    }
+                }
+            ]
+        }
+    ],
+    "rule_text": "Three Fire cards cast within 4 s reset your Attack: AoE cooldown (8 s between resets).",
+    "flavor_text": "Three in a row. Management has noticed."
+}

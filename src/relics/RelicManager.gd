@@ -114,7 +114,7 @@ func add_relic(relic_id: String) -> bool:
 func _compile_trigger(owner_id: String, origin: String, index: int, spec: Dictionary) -> Dictionary:
 	return {
 		"relic_id": owner_id, "origin": origin, "index": index, "event": String(spec["event"]), "filter": spec.get("filter", {}), "at": String(spec.get("at", RelicSchema.AT_PLAYER)),
-		"cooldown": float(spec.get("internal_cooldown", 0.0)), "effects": spec["effects"], "next_ready": -1.0, "matches": 0, "buff": false, "dead": false,
+		"cooldown": float(spec.get("internal_cooldown", 0.0)), "condition": spec.get("condition", {}), "effects": spec["effects"], "next_ready": -1.0, "matches": 0, "buff": false, "dead": false,
 	}
 
 
@@ -343,6 +343,8 @@ func handle_event(event: Dictionary) -> void:
 			continue  # the recursion guard: a relic's own work does not trigger relics
 		if not _matches(filter, event):
 			continue
+		if not _trigger_condition_ok(trigger):
+			continue
 		trigger["matches"] = int(trigger["matches"]) + 1
 		var nth: int = int(filter.get("every_nth", 0))
 		if nth > 1 and int(trigger["matches"]) % nth != 0:
@@ -396,6 +398,22 @@ func _execute(job: Dictionary) -> void:
 		buff_trigger_fired.emit(String(trigger["source"]), int(trigger["index"]), String(trigger["event"]))
 	else:
 		relic_triggered.emit(String(trigger["relic_id"]), int(trigger["index"]), String(trigger["event"]))
+
+
+## BD3b-C2: the trigger's own caster `condition` (none = true), read against the player, the relay's cast history and clock.
+func _trigger_condition_ok(trigger: Dictionary) -> bool:
+	var condition: Dictionary = trigger["condition"]
+	if condition.is_empty():
+		return true
+	if _player == null or not is_instance_valid(_player):
+		return false
+	var context := EffectContext.new(_player, _spawn_parent, "player")
+	if _relay != null and is_instance_valid(_relay):
+		context.cast_history = _relay.history
+		context.now = _relay.now()
+	if "card_slots" in _player and _player.card_slots != null:
+		context.deck_card_ids = _player.card_slots.owned_card_ids()
+	return EffectCondition.caster_ok(condition, context)
 
 
 func _matches(filter: Dictionary, event: Dictionary) -> bool:

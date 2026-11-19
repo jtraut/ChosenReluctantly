@@ -274,3 +274,73 @@ func test_filing_cabinet_zeroes_the_curse_penalty_on_utility_and_attack_keeps_it
 	var attack: CardSlot = controller.get_slot("attack_single")
 	attack.current_card_id = attack_curse
 	assert_float(attack.current_swap_penalty(main.player.stat_modifiers)).is_equal_approx(RunConfig.curse_swap_penalty(), 0.0001)
+
+
+# --- Hot Streak and its engine ------------------------------------------------------------------------------------
+
+func test_hot_streak_validates_and_a_fire_pool_card_carries_the_fire_tag() -> void:
+	var relic: Dictionary = RelicDatabase.get_relic("hot_streak")
+	assert_bool(relic.is_empty()).is_false()
+	assert_array(RelicSchema.validate(relic, "hot_streak")).is_empty()
+	assert_array(relic["sources"]).is_equal(["elite", "relic_room", "merchant"])
+	assert_bool(CardTags.is_known_tag("Fire")).is_true()
+	assert_bool(CardDatabase.has_tag("fire_fireball", "Fire")).is_true()
+	assert_bool(CardDatabase.has_tag("fire_fireball", "Bleed")).is_false()
+
+
+func test_count_within_counts_casts_in_the_window() -> void:
+	var history := CastHistory.new()
+	history.record(1.0, "attack_single", "a", ["Fire"] as Array[String])
+	history.record(2.0, "utility", "b", ["Fire"] as Array[String])
+	history.record(3.0, "movement", "c", ["Dash"] as Array[String])
+	history.record(4.0, "attack_aoe", "d", ["Fire"] as Array[String])
+	assert_int(history.count_within(4.0, 4.0, "", "Fire")).is_equal(3)
+	assert_int(history.count_within(4.0, 2.5, "", "Fire")).is_equal(2)
+	assert_int(history.count_within(4.0, 4.0, "", "Fire", 2)).is_equal(2)  # stops at the limit
+	assert_bool(history.cast_within(4.0, 0.5, "movement")).is_false()
+
+
+func test_a_trigger_condition_neither_counts_nor_starts_the_cooldown_while_false() -> void:
+	var main := _spawn_main()
+	var manager := _manager(main, ["hot_streak"] as Array[String])
+	var fired: Array[String] = []
+	manager.effect_runner = func(_trigger: Dictionary, _event: Dictionary) -> void: fired.append("x")
+	var event: Dictionary = {"event": "card_cast", "slot_type": "attack_single", "card_id": "fire_fireball", "tags": ["Fire"], "origin": ""}
+	# One and two Fire casts in the history: the condition is false, so nothing fires and no 8 s cooldown starts.
+	CombatEvents.notify_card_cast("attack_single", "fire_fireball")
+	manager.handle_event(event)
+	CombatEvents.notify_card_cast("attack_single", "fire_fireball")
+	manager.handle_event(event)
+	manager.flush()
+	assert_int(fired.size()).is_equal(0)
+	CombatEvents.notify_card_cast("attack_single", "fire_fireball")
+	manager.handle_event(event)
+	manager.flush()
+	assert_int(fired.size()).is_equal(1)
+	# The 8 s internal cooldown: a fourth Fire cast right away does not fire again.
+	CombatEvents.notify_card_cast("attack_single", "fire_fireball")
+	manager.handle_event(event)
+	manager.flush()
+	assert_int(fired.size()).is_equal(1)
+
+
+func test_hot_streak_resets_the_attack_aoe_cooldown_on_the_third_fire_cast() -> void:
+	var main := _spawn_main()
+	_manager(main, ["hot_streak"] as Array[String])
+	var slot: CardSlot = main.player.card_slots.get_slot("attack_aoe")
+	slot.cooldown_remaining = 2.0
+	for i in range(3):
+		CombatEvents.notify_card_cast("attack_single", "fire_fireball")
+	await _frames(2)
+	assert_float(slot.cooldown_remaining).is_equal(0.0)
+
+
+func test_hot_streak_ignores_non_fire_casts() -> void:
+	var main := _spawn_main()
+	_manager(main, ["hot_streak"] as Array[String])
+	var slot: CardSlot = main.player.card_slots.get_slot("attack_aoe")
+	slot.cooldown_remaining = 2.0
+	for i in range(3):
+		CombatEvents.notify_card_cast("movement", "rogue_bleed_slash")
+	await _frames(2)
+	assert_float(slot.cooldown_remaining).is_greater(1.0)

@@ -110,7 +110,7 @@ static func condition_live(effect: Dictionary, card: Dictionary, view: Dictionar
 			var history: Variant = view.get("history")
 			if not (history is CastHistory):
 				return false
-			return (history as CastHistory).cast_within(float(view.get("now", 0.0)), float(condition.get("seconds", 0.0)), String(condition.get("slot_type", "")), String(condition.get("tag", "")))
+			return (history as CastHistory).count_within(float(view.get("now", 0.0)), float(condition.get("seconds", 0.0)), String(condition.get("slot_type", "")), String(condition.get("tag", "")), int(condition.get("count", 1))) >= int(condition.get("count", 1))
 		EffectCondition.ZONE_ACTIVE:
 			return int(view.get("zone_count", 0)) > 0
 		EffectCondition.SELF_STACKS_AT_LEAST:

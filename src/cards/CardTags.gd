@@ -21,6 +21,10 @@ const BUFF := "Buff"
 ## Canonical order of the derived tags (derive() returns them in this order).
 const DERIVED: Array[String] = [PROJECTILE, MELEE, AREA, ZONE, DASH, HEAL, BURN, BLEED, BUFF]
 
+## BD3b-C2: pool id -> the tag every card of that pool carries (a Fire-pool card is a "Fire" card). Not derived from effects: it follows the card's `pool`,
+## so a relic or condition can say "Fire cards" without listing them. Added after the keywords by all_tags().
+const POOL_TAGS: Dictionary = {"fire": "Fire"}
+
 ## status id -> the tag applying it grants.
 const STATUS_TAGS: Dictionary = {"burn": BURN, "bleed": BLEED}
 const HEAL_STATUS_EFFECT_TYPES: Array[String] = ["heal_over_time", "lifesteal"]
@@ -41,7 +45,7 @@ static func derive(card: Dictionary) -> Array[String]:
 	return result
 
 
-## Derived tags then authored keywords (unknown or repeated keywords dropped), keywords after the derived ones.
+## Derived tags then authored keywords (unknown or repeated keywords dropped), keywords after the derived ones, then the pool tag (BD3b-C2).
 static func all_tags(card: Dictionary) -> Array[String]:
 	var result := derive(card)
 	var keywords: Variant = card.get("keywords", [])
@@ -49,6 +53,9 @@ static func all_tags(card: Dictionary) -> Array[String]:
 		for keyword: Variant in (keywords as Array):
 			if typeof(keyword) == TYPE_STRING and not result.has(String(keyword)):
 				result.append(String(keyword))
+	var pool_tag: String = String(POOL_TAGS.get(String(card.get("pool", "")), ""))
+	if not pool_tag.is_empty() and not result.has(pool_tag):
+		result.append(pool_tag)
 	return result
 
 
@@ -65,7 +72,7 @@ static func keywords_of(card: Dictionary) -> Array[String]:
 
 ## True when `tag` is a derived tag or a known keyword (what a condition or buff may name).
 static func is_known_tag(tag: String) -> bool:
-	return DERIVED.has(tag) or KeywordDatabase.has(tag)
+	return DERIVED.has(tag) or KeywordDatabase.has(tag) or POOL_TAGS.values().has(tag)
 
 
 ## Problems with a card's `keywords` field (empty = fine or absent).

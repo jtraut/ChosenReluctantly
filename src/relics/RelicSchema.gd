@@ -10,7 +10,9 @@ const RARITIES: Array[String] = ["tier1", "tier2", "tier3", "boss"]
 const SOURCES: Array[String] = ["elite", "relic_room", "merchant", "mini_boss", "curse_room", "buff_room", "boss", "starter", "event", "altar"]
 const BOSS_SOURCE := "mini_boss"
 const TOP_KEYS: Array[String] = ["id", "name", "pool", "rarity", "sources", "keywords", "modifiers", "triggers", "rule_text", "flavor_text", "sacrifice_cost"]
-const TRIGGER_KEYS: Array[String] = ["event", "filter", "at", "internal_cooldown", "effects"]
+## `condition` (BD3b-C2): one caster condition (EffectCondition) checked when the event matches. While false the trigger neither counts the match (every_nth)
+## nor starts its internal cooldown, so "three Fire casts in 4 s, then 8 s quiet" is data.
+const TRIGGER_KEYS: Array[String] = ["event", "filter", "at", "internal_cooldown", "condition", "effects"]
 const MODIFIER_KEYS: Array[String] = ["stat", "modifier_type", "value", "per_run_stat", "per"]
 ## Run stats a modifier may scale by (MAP2-B): the modifier's value is multiplied by floor(stat / per). RunController feeds the values.
 const RUN_STATS: Array[String] = ["gold_spent_merchant"]
@@ -271,6 +273,13 @@ static func _validate_trigger(trigger: Dictionary, index: int, errors: Array[Str
 				errors.append("%s: the event '%s' has no attacker, so 'at' cannot be attacker" % [label, String(event_id)])
 			if String(at) == AT_EVENT_PATH and not bool(spec.get("path", false)):
 				errors.append("%s: the event '%s' has no path, so 'at' cannot be event_path" % [label, String(event_id)])
+	if trigger.has("condition"):
+		var trigger_condition: Variant = trigger["condition"]
+		if typeof(trigger_condition) == TYPE_DICTIONARY and EffectCondition.is_target_condition(trigger_condition):
+			errors.append("%s.condition: a trigger condition is about the caster, not a target" % label)
+		else:
+			for problem: String in EffectCondition.validate(trigger_condition, ""):
+				errors.append("%s.condition: %s" % [label, problem])
 	if trigger.has("internal_cooldown"):
 		var cooldown: Variant = trigger["internal_cooldown"]
 		if not _is_number(cooldown) or float(cooldown) < 0.0 or float(cooldown) > MAX_INTERNAL_COOLDOWN:

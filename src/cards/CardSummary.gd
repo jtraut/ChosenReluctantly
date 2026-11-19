@@ -75,7 +75,7 @@ static func condition_text(condition: Variant, text: Dictionary = {}) -> String:
 				var slot_type: String = String(c["slot_type"])
 				var slot_name: String = String((text.get("slot_names", {}) as Dictionary).get(slot_type, slot_type.replace("_", " ").capitalize()))
 				if times > 1 and words.has("cast_within_slot_count"):
-					return String(words["cast_within_slot_count"]) % [slot_name, times, seconds]
+					return String(words["cast_within_slot_count"]) % [times, slot_name, seconds]
 				return String(words["cast_within_slot"]) % [slot_name, seconds]
 			if times > 1 and words.has("cast_within_tag_count"):
 				return String(words["cast_within_tag_count"]) % [times, String(c.get("tag", "")), seconds]
@@ -139,7 +139,7 @@ const DEFAULT_TEXT: Dictionary = {
 		"deck_count_at_least": "If your deck has %d or more %s cards",
 		"hp_below": "While below %s%% HP",
 		"has_bonus_armor": "While you have bonus armor",
-		"cast_within_slot_count": "If you used your %s slot %d times in the last %s s",
+		"cast_within_slot_count": "If you cast %d cards from your %s slot in the last %s s",
 		"cast_within_tag_count": "If you cast %d %s cards in the last %s s",
 	},
 	"scale": {"self_stacks": "+%s per %s", "deck_count": "+%s per %s card in your deck", "max": "(up to +%s)", "consume": "uses up your %s"},

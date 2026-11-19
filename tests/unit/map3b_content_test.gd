@@ -68,7 +68,7 @@ func test_each_class_sees_six_boss_relics_and_about_22_standard_relics() -> void
 		var standard: int = 0
 		for rarity: String in ["tier1", "tier2", "tier3"]:
 			standard += _relics(character_id, rarity, "elite").size()
-		assert_int(standard).is_between(21, 26)  # MAP4-D: + the 3 sacrifice relics each class can see
+		assert_int(standard).is_between(21, 32)  # BD3b C2: five more relics for the Wizard, three for the Rogue (upper bound was 26);  # MAP4-D: + the 3 sacrifice relics each class can see
 		assert_int(_relics(character_id, "tier3", "elite").size()).is_greater_equal(5)
 
 
@@ -99,7 +99,9 @@ func test_card_trigger_relics_use_the_player() -> void:
 	for relic: Dictionary in RelicDatabase.all_relics():
 		for trigger: Dictionary in (relic["triggers"] as Array):
 			if ["card_cast", "player_damaged"].has(String(trigger["event"])):
-				assert_str(String(trigger.get("at", "player"))).is_equal("player")
+				# BD3b C2: a player_damaged trigger may also aim at the attacker (Thorned Boundary).
+				var allowed: Array = ["player", "attacker"] if String(trigger["event"]) == "player_damaged" else ["player"]
+				assert_bool(allowed.has(String(trigger.get("at", "player")))).is_true()
 
 
 func test_no_rare_or_legendary_card_in_any_starting_deck() -> void:

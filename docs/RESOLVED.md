@@ -2,6 +2,16 @@
 
 The archive of the director's answered, received and acknowledged items, moved here from `docs/OPEN_ITEMS.md`. Owned by tech-writer (director, 2026-11-02). Newest dated section first; IDs (D19, call 16, checklist item 33) are kept so they can be searched. Old entries change only to fix a factual error.
 
+## 2026-11-20 (UX1b close)
+
+### Expired at UX1b's close, default kept
+
+Eyes 65 was added at UX1a's close and got no answer by the close of the slice after it, so the default applied. The original text is at `git show 8a3c2de:docs/OPEN_ITEMS.md`.
+
+| ID | What it asked | Default that applied |
+|---|---|---|
+| 65 | Can you tell which relic fired? A relic that fires pulses its own badge (a cream frame and its name under the row) instead of floating its name over the action. The bot playtester thought it might be easy to miss in a burst. | Keep it as built. |
+
 ## 2026-11-20 (UX1a close)
 
 ### Answer recorded in cc75f62 (D55)

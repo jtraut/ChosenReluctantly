@@ -2,7 +2,45 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-11-20 (Milestone 3 review, D55, slice UX1a, slice BD3b)
+## 2026-11-20 (UX1b, setting and tone; Milestone 3 review, D55, UX1a, BD3b)
+
+### Slice UX1b, run-screen readability
+
+Commit range 5ddd3b0..HEAD. ux f7d895e, c40ccdd, 7100d50, 86eaf8c, 820d6a4, b64bba0, adf2e8a (two sittings), then fixes 69fafd7 and 57660d4. qa: c7269ea (fixed a stale `w1a_test` colour pin), b7b102c (FAIL: B2 watch mode ran the map beat, B3 crowd digits overprinted), 6386562 (re-review PASS, `docs/reviews/2026-11-20-ux1b-qa.md`). Playtest 2ae2d92 (`docs/playtests/2026-11-20-ux1b.md`, no blocker). Calls: `docs/DECISIONS.md` "UX1b calls" and "UX1b playtest triage". Display and run-screen flow only: the four state hashes and SIM1 are unchanged. Suite 2819 -> 2851, 0 failures. No third-party assets were added. The director has not played UX1b (eyes 67).
+
+**Added**
+- **First-time status names:** the first time a status shows on any enemy, its name ("Bleed") appears over it for 3 s, once per launch (`StatusStackLabel`, `data/ui.json` `intro_seconds`). The red triangle the playtester asked about was the Bleed pip.
+- **Single-option map beat:** when exactly one node is reachable the map shows for 1 s (`map_screen.auto_advance_seconds`) with the node highlighted, then picks it. Any key or click skips; pause holds it. Human sessions only: `tools/wave_sim.gd` sets `MapScreen.automated_session`, so bots, SIM and watch mode skip it. New strings `ui.map.beat_line` and `beat_hint` (in `data/run.json`).
+- **Crowd number ring:** in a pile of 6+ enemies (`crowd_min` 6, `crowd_radius` 3.0) damage numbers move to a ring around the pile (`crowd_margin` 2.6, `crowd_front_drop` 2.3), one lane per damage type (`crowd_type_order`, `crowd_lane_lift` 0.85) with a bump to a free lane. The heal number sits beside the pile. All keys are under `data/ui.json` `damage_numbers`. Read-only `Enemy.live_positions()` added.
+- **Tooling:** capture-only scenario `ux1b_crowd` (`data/scenarios.json`: 7 idle melee enemies, Burn and Bleed, an Area card cast twice, a Healing Potion at 2.2 s); probe scene `tools/ProbeHumanSession.tscn`; captures in `docs/playtests/img/ux1b/` and `ux1b-playtest/` (`boss-banner-recheck-*` supersedes `boss-banner-*`).
+
+**Changed**
+- **Class colours** (`data/characters.json`; each is above an RGB distance of 0.45 from all 13 enemy colours, checked by a test): Rogue #338ce6 (blue) -> #1fd6c4 (teal); Wizard #8a4fe0 (purple) -> #f4f1ff (ivory).
+- **Number heights** (`data/ui.json`): `spawn_height` 1.9 -> 2.9, `rise_distance` 1.2 -> 0.5, stack label 3.5 -> 4.1, IMMUNE 3.3 -> 4.6. Crowd tuning in the fix sitting: ring margin 1.7 -> 2.6, front drop 1.8 -> 2.3.
+- **Act screen heal line:** "You recover N HP. Rests are on the map." -> "+N HP (act heal 30%)" (`data/run.json` `ui.act.heal`). N is the applied heal clamped to max; the percent is read from data (`acts.start_heal`); hidden at full HP.
+- **Capture presets** (`tools/capture_presets.json`): `map_room9` now captures at 1.3 s; `map_mini_boss` is `--run-auto-choose=skip`, `after` 1.7; `map_act2` is `--run-room=12` with `skip`, `after` 1.6.
+- `StatusStackLabel.setup()` now ends with a refresh. Tests that assert a lone Bleed label must call `StatusStackLabel.reset_intros()`.
+
+**Fixed**
+- **`[Arm n]` / `<Res n>` overprint** (carried from UX1a): numbers merge on the spawn point (`DamageNumber.merge_anchor`), armored hits of any type share one key, numbers pinned under the boss bar drift down, and a new number is clamped before its first drawn frame. qa's guess (no camera on the first frame) was not the cause; `Juice` also falls back to the world viewport camera.
+- **Boss attack banner covering numbers:** the boss bar clamp keeps a number's top edge below the whole bar block (`half_height_px`).
+- **qa B2:** watch mode ran the map beat (`human_session()` was true for a scene-hosted WaveSim); fixed with the explicit `automated_session` opt-out. **qa B3:** crowd ring numbers overprinted and the heal number landed on bars; fixed with lanes per type, a free-lane bump and `heal_spot`.
+- `w1a_test` pinned the old Rogue colour; it follows the data colour now (c7269ea).
+
+**Docs and process**
+- README: capture preset rows, `ux1b_crowd`, the map beat, the probe; the Rogue `-Acts 1` SIM1 boss median is now 35.9 s (was 34.5 s; human 40.6 s, was 41.9 s).
+- Eyes 65 expired at UX1b's close, default kept (`docs/RESOLVED.md`). Eyes 66 and 67 are open in `docs/OPEN_ITEMS.md`.
+
+### [Director decision] Setting and tone (415e217)
+
+- **[Director decision]** The world is a modern-day metropolis where magic is real (SF/NYC vibes, office jobs, most people attuned to an element). Humor is edgy and lightly offensive; the heroes are lazy and self-deprecating. Tone references: Borderlands 1-3, South Park: The Fractured But Whole, Disco Elysium. Recorded in `docs/GDD.md` section 11 ("Tone", "Setting"), section 14 item 10 and section 15, and in `.claude/agents/story.md` and `art.md`. The story and art roles stay dormant.
+- Class names will be modernized later (the Wizard may become the "IT Wizard"; not final). Nothing is renamed yet.
+- game-lead set a default working line for "lightly offensive" for the story role (eyes 66; `docs/DECISIONS.md` "Setting and tone recorded").
+
+### Earlier on 2026-11-20
+
+The sections below are the earlier work of the same date.
+
 
 ### Milestone 3 review, D55 and UX1a
 

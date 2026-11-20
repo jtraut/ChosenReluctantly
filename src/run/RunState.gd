@@ -83,6 +83,8 @@ var choice_log: Array[Dictionary] = []
 var relics: Array[String] = []
 ## Relic ids the player gave up this run (a swap at the cap, a sacrifice). They are never offered again this run.
 var relics_given_up: Array[String] = []
+## HP1: each held relic's current max HP boost {relic_id: amount} (RunMaxHp). Saved; a missing key (an old save) is empty.
+var relic_max_hp: Dictionary = {}
 ## MAP1-A: the branching map (MapGraph format {nodes, edges}), or {} for a straight run / an old save. Built once at the start of a run.
 var map: Dictionary = {}
 ## The map node ids taken so far, in order (the current node is the last).
@@ -303,6 +305,7 @@ func to_dict() -> Dictionary:
 		"choice_log": choice_log.duplicate(true),
 		"relics": relics.duplicate(),
 		"relics_given_up": relics_given_up.duplicate(),
+		"relic_max_hp": relic_max_hp.duplicate(),
 		"map": map.duplicate(true),
 		"path": path.duplicate(),
 		"gold": gold,
@@ -412,6 +415,7 @@ static func from_dict(data: Dictionary) -> RunState:
 	state.relics = _id_list(data.get("relics", []), "relics")
 	state.removed_cards = _id_list(data.get("removed_cards", []), "removed_cards")  # D47: a missing key (an old save) is empty
 	state.relics_given_up = _id_list(data.get("relics_given_up", []), "relics_given_up")
+	state.relic_max_hp = _relic_max_hp_of(data.get("relic_max_hp", {}))
 	state.offer_weights = _offer_weights_of(data.get("offer_weights", {}))  # D49: a missing key (an old save) is empty
 	var relic_problem: String = _relic_problem(state)
 	if not relic_problem.is_empty():
@@ -775,6 +779,9 @@ static func _relic_problem(state: RunState) -> String:
 			return "relic '%s' does not exist" % relic_id
 		if state.relics_given_up.has(relic_id):
 			return "relic '%s' is both held and given up" % relic_id
+	for relic_id: Variant in state.relic_max_hp.keys():
+		if not state.relics.has(String(relic_id)):
+			return "relic_max_hp names '%s', which is not held" % String(relic_id)
 	for relic_id: String in state.relics_given_up:
 		if not RelicDatabase.has_relic(relic_id):
 			return "given-up relic '%s' does not exist" % relic_id
@@ -839,6 +846,21 @@ static func _offer_weights_of(value: Variant) -> Dictionary:
 	return out
 
 
+## HP1: reads the saved boosts: relic id -> a positive whole number. Anything else is dropped with an error.
+static func _relic_max_hp_of(value: Variant) -> Dictionary:
+	var out: Dictionary = {}
+	if typeof(value) != TYPE_DICTIONARY:
+		push_error("RunState.from_dict: 'relic_max_hp' must be an object; dropped")
+		return out
+	for key: Variant in (value as Dictionary).keys():
+		var entry: Variant = (value as Dictionary)[key]
+		if typeof(key) == TYPE_STRING and (typeof(entry) == TYPE_INT or typeof(entry) == TYPE_FLOAT) and not is_nan(float(entry)) and float(entry) > 0.0 and float(entry) < 1000.0:
+			out[String(key)] = float(entry)
+		else:
+			push_error("RunState.from_dict: 'relic_max_hp' entry '%s' is not a relic id with a positive amount; dropped" % str(key))
+	return out
+
+
 ## True when `card_id` is on the loadout's plan and not already in the deck ("On your plan", 3d). One shared flag for reward, mini-boss and merchant cards.
 func is_on_plan(card_id: String) -> bool:
 	return plan.has(card_id) and not deck.has(card_id)
@@ -854,6 +876,7 @@ func add_relic(relic_id: String) -> bool:
 	if relics.has(relic_id):
 		return false
 	relics.append(relic_id)
+	RunMaxHp.on_relic_gained(self, relic_id)
 	return true
 
 
@@ -862,6 +885,7 @@ func give_up_relic(relic_id: String) -> bool:
 	if not relics.has(relic_id):
 		return false
 	relics.erase(relic_id)
+	RunMaxHp.on_relic_lost(self, relic_id)
 	if not relics_given_up.has(relic_id):
 		relics_given_up.append(relic_id)
 	return true

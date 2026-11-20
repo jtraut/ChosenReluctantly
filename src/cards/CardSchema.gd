@@ -150,6 +150,8 @@ static func _validate_effect(effect: Variant, index: int, errors: Array[String],
 	if typeof(template_id) != TYPE_STRING or not EffectTemplates.is_known_template(template_id):
 		errors.append("effects[%d].template must be one of %s" % [index, EffectTemplates.REQUIRED_PARAMS.keys()])
 		return
+	if template_id == RunMaxHp.EFFECT and not in_trigger:
+		errors.append("effects[%d]: '%s' is for relic triggers only (the run owns max HP)" % [index, template_id])
 	var params: Variant = effect_dict.get("params")
 	if typeof(params) != TYPE_DICTIONARY:
 		errors.append("effects[%d].params must be an object" % index)

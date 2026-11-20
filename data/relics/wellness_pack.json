@@ -1,0 +1,14 @@
+{
+    "id": "wellness_pack",
+    "name": "Mandatory Wellness Pack",
+    "pool": "neutral",
+    "rarity": "tier1",
+    "sources": ["elite", "relic_room", "merchant"],
+    "keywords": [],
+    "modifiers": [
+        { "stat": "max_hp", "modifier_type": "additive", "value": 4 }
+    ],
+    "triggers": [],
+    "rule_text": "Gain 4 max HP (and heal 4).",
+    "flavor_text": "A stress ball, a granola bar and a pamphlet. You are the stress ball."
+}

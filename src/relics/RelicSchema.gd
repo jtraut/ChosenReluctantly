@@ -206,6 +206,13 @@ static func _validate_modifiers(relic: Dictionary, errors: Array[String]) -> int
 				errors.append("modifiers[%d].per_run_stat must be one of %s" % [i, RUN_STATS])
 			if not _is_whole(modifier["per"]) or int(modifier["per"]) < 1:
 				errors.append("modifiers[%d].per must be a whole number from 1" % i)
+		if typeof(stat) == TYPE_STRING and String(stat) == RunMaxHp.STAT:
+			# HP1: a run-level stat (RunMaxHp), added once when the relic is gained: whole, positive, additive, never scaled by a run stat.
+			if String(modifier.get("modifier_type", "")) != StatModifiers.ADDITIVE or modifier.has("per_run_stat"):
+				errors.append("modifiers[%d]: max_hp must be an additive modifier with no per_run_stat" % i)
+			if not (_is_number(modifier.get("value")) and float(modifier["value"]) == floorf(float(modifier["value"])) and float(modifier["value"]) >= 1.0 and float(modifier["value"]) <= float(EffectTemplates.MAX_GAIN_MAX_HP)):
+				errors.append("modifiers[%d].value of max_hp must be a whole number from 1 to %d" % [i, EffectTemplates.MAX_GAIN_MAX_HP])
+			continue
 		if not _is_number(modifier.get("value")):
 			errors.append("modifiers[%d].value must be a number" % i)
 		elif typeof(stat) == TYPE_STRING:

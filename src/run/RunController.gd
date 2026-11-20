@@ -88,8 +88,11 @@ func begin(main: Main) -> void:
 	_room_seconds = 0.0
 	var player: Player = main.player
 	if not _state.has_hp():
-		_state.max_hp = player.health.max_health
-		_state.hp = player.health.max_health
+		_state.max_hp = player.health.max_health + RunMaxHp.pending_total(_state)  # HP1: boosts held before the run had HP (a debug --relics start)
+		_state.hp = _state.max_hp
+		player.health.max_health = _state.max_hp
+		player.health.current_health = _state.hp
+		player.health.health_changed.emit(player.health.current_health, player.health.max_health)
 	else:
 		player.health.max_health = _state.max_hp
 		player.health.current_health = clampf(_state.hp, 1.0, _state.max_hp)
@@ -234,6 +237,7 @@ func _sync_relics() -> void:
 			for owned: String in _state.relics:
 				if not _relics.has_relic(owned):
 					_relics.add_relic(owned)
+	_push_state_hp_to_player()  # HP1: a gained or lost max HP relic changes the live player's max HP and HP now
 	relics_changed.emit(_state.relics.duplicate())
 
 
@@ -583,6 +587,14 @@ func _finish_room(healed: float) -> void:
 	}
 	if earned > 0:
 		gold_changed.emit(_state.gold, earned)
+	# HP1: a cleared room can raise max HP (the per-elite relic). The run owns the number; the live player follows, and the relic's badge pulses.
+	var max_hp_gains: Dictionary = RunMaxHp.on_room_cleared(_state, String(room["type"]))
+	if not max_hp_gains.is_empty():
+		_push_state_hp_to_player()
+		_summary["hp"] = health.current_health
+		_summary["max_hp"] = health.max_health
+		for gained_id: Variant in max_hp_gains.keys():
+			relic_triggered.emit(String(gained_id), 0, "room_cleared")
 	var relay := CombatLink.events()
 	if relay != null:
 		relay.notify_room_cleared(int(room["index"]), String(room["type"]))

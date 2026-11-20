@@ -20,6 +20,7 @@ const REQUIRED_PARAMS: Dictionary = {
 	"pass_through": ["duration"],
 	"reduce_cooldown": ["seconds"],
 	"detonate_status": ["status_id", "multiplier"],
+	"gain_max_hp": ["amount"],
 }
 
 ## Optional params, validated by validate_params (CardSchema calls it). Absent = old behaviour.
@@ -102,6 +103,10 @@ const PROJECTILE_SCENE_PATH := "res://scenes/effects/Projectile.tscn"
 const PROJECTILE_MUZZLE_OFFSET := 0.6
 
 
+## HP1: the most one gain_max_hp effect may give.
+const MAX_GAIN_MAX_HP := 20
+
+
 static func is_known_template(template_id: String) -> bool:
 	return REQUIRED_PARAMS.has(template_id)
 
@@ -169,6 +174,9 @@ static func validate_params(template_id: String, params: Dictionary) -> Array[St
 			_validate_reduce_cooldown(params, errors)
 		"detonate_status":
 			_validate_detonate_status(params, errors)
+		"gain_max_hp":
+			if not (_is_number(params.get("amount")) and float(params["amount"]) == floorf(float(params["amount"])) and float(params["amount"]) >= 1.0 and float(params["amount"]) <= MAX_GAIN_MAX_HP):
+				errors.append("'amount' must be a whole number from 1 to %d" % MAX_GAIN_MAX_HP)
 	return errors
 
 
@@ -450,6 +458,8 @@ static func execute(template_id: String, params: Dictionary, context: EffectCont
 			_execute_reduce_cooldown(params, context)
 		"detonate_status":
 			_execute_detonate_status(params, context)
+		"gain_max_hp":
+			pass  # HP1: the run layer owns max HP and applies this itself (RunMaxHp.on_room_cleared); nothing happens in the room
 		_:
 			push_error("EffectTemplates: unknown template '%s'" % template_id)
 

@@ -1,0 +1,20 @@
+{
+    "id": "performance_review",
+    "name": "Performance Review",
+    "pool": "neutral",
+    "rarity": "tier1",
+    "sources": ["elite", "relic_room", "merchant"],
+    "keywords": [],
+    "modifiers": [],
+    "triggers": [
+        {
+            "event": "room_cleared",
+            "filter": { "room_type": "elite" },
+            "at": "player",
+            "internal_cooldown": 0.0,
+            "effects": [ { "template": "gain_max_hp", "params": { "amount": 1 } } ]
+        }
+    ],
+    "rule_text": "Each elite room you clear from now on: gain 1 max HP (and heal 1).",
+    "flavor_text": "Exceeds expectations. The expectations were to not die."
+}

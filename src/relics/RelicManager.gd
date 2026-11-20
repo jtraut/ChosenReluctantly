@@ -216,6 +216,8 @@ func _apply_relic_modifiers(relic: Dictionary) -> void:
 		return
 	for i in range(list.size()):
 		var entry: Dictionary = list[i]
+		if String(entry["stat"]) == RunMaxHp.STAT:
+			continue  # HP1: a run-level stat, applied by RunState.add_relic, never a per-room modifier (it would compound each room)
 		mods.add_modifier(String(entry["stat"]), _modifier_id(String(relic["id"]), i), String(entry["modifier_type"]), scaled_value(entry, _run_stats))
 
 
@@ -233,6 +235,8 @@ func _remove_relic_modifiers(relic: Dictionary) -> void:
 		return
 	var list: Array = relic.get("modifiers", [])
 	for i in range(list.size()):
+		if String((list[i] as Dictionary)["stat"]) == RunMaxHp.STAT:
+			continue
 		mods.remove_modifier(String((list[i] as Dictionary)["stat"]), _modifier_id(String(relic["id"]), i))
 
 

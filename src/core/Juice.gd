@@ -131,7 +131,7 @@ func on_detonated(world_pos: Vector3, amount: float, damage_type: String, word: 
 	var entries: Array = []
 	for live: DamageNumber in _live_numbers:
 		entries.append({"pos": live.merge_anchor(), "type": live.damage_type, "idle": live.idle_time()})
-	var spot: Vector3 = world_pos + Vector3(0.0, float(UiConfig.damage_numbers()["spawn_height"]), 0.0)
+	var spot: Vector3 = crowd_spot(world_pos + Vector3(0.0, float(UiConfig.damage_numbers()["spawn_height"]), 0.0))
 	var at: int = DamageNumber.find_merge_index(entries, spot, damage_type, float(UiConfig.damage_numbers()["merge_radius"]), float(UiConfig.damage_numbers()["merge_window"]))
 	var number: DamageNumber = null
 	if at >= 0:
@@ -161,6 +161,12 @@ func on_detonated(world_pos: Vector3, amount: float, damage_type: String, word: 
 	spawn_popup(world_pos, word, word_color, float(cfg["detonate_word_scale"]), word_height, float(cfg["detonate_word_clamp_extra"]) * screen_scale)
 
 
+## UX1b: a number's spawn point, moved out of a tight pile of 6 or more enemies (see DamageNumber.crowd_spot). Display only: reads enemy positions, never writes.
+func crowd_spot(spot: Vector3) -> Vector3:
+	var cfg: Dictionary = UiConfig.damage_numbers()
+	return DamageNumber.crowd_spot(spot, Enemy.live_positions(), float(cfg["crowd_radius"]), int(cfg["crowd_min"]), float(cfg["crowd_margin"]), float(cfg["crowd_front_drop"]))
+
+
 ## DF1 ux (pure): true when this detonation word should be shown: it differs from the last one shown, or `window` seconds have passed since it. A window of 0 shows every word.
 static func should_show_detonate_word(last_word: String, last_msec: int, word: String, now_msec: int, window: float) -> bool:
 	if window <= 0.0 or word != last_word or last_msec < 0:
@@ -179,7 +185,7 @@ func spawn_popup(world_pos: Vector3, words: String, color: Color, text_scale: fl
 	var instance: DamageNumber = scene.instantiate()
 	instance.configure(UiConfig.damage_numbers())
 	WorldRef.get_world(tree).add_child(instance)
-	instance.global_position = world_pos + Vector3(0.0, height, 0.0)
+	instance.global_position = crowd_spot(world_pos + Vector3(0.0, height, 0.0))  # UX1b: a word follows its number out of a pile
 	instance.clamp_extra_px = clamp_extra_px
 	instance.show_text(words, color, text_scale)
 
@@ -200,7 +206,7 @@ func spawn_damage_number(world_pos: Vector3, amount: float, damage_type: String,
 	var cfg: Dictionary = UiConfig.damage_numbers()
 	var is_big: bool = amount >= HEAVY_HIT_THRESHOLD
 	var style: StringName = DamageNumber.style_for(channel, reduction, cfg)
-	var spot: Vector3 = world_pos + Vector3(0.0, float(cfg["spawn_height"]), 0.0)
+	var spot: Vector3 = crowd_spot(world_pos + Vector3(0.0, float(cfg["spawn_height"]), 0.0))
 	# UX1a: an armored "[Arm 4]" and a resisted "<Res 4>" from the same hit spawn at one point and printed over each other; they now start to either side of it
 	# (display only: the amount, the merge and the timing are unchanged).
 	var camera: Camera3D = tree.root.get_viewport().get_camera_3d() if tree.root != null else null

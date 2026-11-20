@@ -1218,6 +1218,25 @@
         "groups": [ { "scene": "res://scenes/enemies/BossBrute.tscn", "count": 1 } ],
         "boss_attacks": ["wet_floor"]
     },
+    "ux1b_crowd": {
+        "_note": "UX1b capture: 7 idle enemies in a tight pile at the player, all Burning and Bleeding, an Area card cast so their digits land together (crowd digit placement).",
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "enemy_max_health": 3000,
+        "enemies_idle": true,
+        "disable_auto_attack": true,
+        "relics": ["fight_club_membership"],
+        "deck": ["fire_fine_burn_then", "fire_kindling", "fire_hot_head", "rogue_drive_by", "neutral_healing_potion"],
+        "origin_offset": [-0.9, 0.0, -2.2],
+        "spacing": [0.9, 0.8],
+        "columns": 3,
+        "groups": [ { "scene": "res://scenes/enemies/MeleeChaser.tscn", "count": 7 } ],
+        "burn_indices": [0, 1, 2, 3, 4, 5, 6],
+        "burn_duration": 60.0,
+        "bleed_indices": [0, 1, 2, 3, 4, 5, 6],
+        "bleed_duration": 60.0,
+        "casts": [ {"at": 0.4, "slot": "attack_aoe", "card": "fire_fine_burn_then"}, {"at": 1.6, "slot": "attack_aoe", "card": "fire_fine_burn_then"} ]
+    },
     "ux1a_boss_statuses": {
         "_note": "UX1a capture: the boss carries Burn and Bleed, the player holds 20 relics (the cap) and a Fire deck, auto attack on, so armor and resisted numbers, the badge row and the slot Fire mark are all on screen.",
         "disable_spawner": true,

@@ -284,3 +284,104 @@ func test_the_two_classes_differ_from_each_other() -> void:
 	var a: Color = CharacterDatabase.body_color("rogue")
 	var b: Color = CharacterDatabase.body_color("wizard")
 	assert_float(Vector3(a.r - b.r, a.g - b.g, a.b - b.b).length()).is_greater(0.45)
+
+
+# ---- boss-bar clamp: the half-height gap ----
+
+func test_the_clamp_keeps_a_numbers_top_edge_below_the_whole_bar_block() -> void:
+	# pure: the label is centred on its point, so the point sits half a line plus the gap under the block
+	assert_float(DamageNumber.clamp_below_bar(50.0, 100.0, 6.0 + 20.0)).is_equal(126.0)
+	assert_float(DamageNumber.clamp_below_bar(50.0, 100.0, 6.0 + 20.0) - 20.0).is_greater(100.0)  # top edge under the block
+	assert_float(DamageNumber.clamp_below_bar(300.0, 100.0, 26.0)).is_equal(300.0)  # already clear: left alone
+	assert_float(DamageNumber.clamp_below_bar(50.0, 0.0, 26.0)).is_equal(50.0)  # no bar
+
+
+func test_a_new_number_under_the_boss_bar_is_clamped_before_its_first_drawn_frame_with_its_top_edge_clear() -> void:
+	RunSession.map_override = 0
+	var main: Main = (load("res://scenes/main/Main.tscn") as PackedScene).instantiate()
+	(main.get_node("EnemySpawner") as Node).process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(main)
+	auto_free(main)
+	await get_tree().process_frame
+	var boss: Boss = (load("res://scenes/enemies/BossGuardian.tscn") as PackedScene).instantiate()
+	boss.target = main.player
+	main.add_child(boss)
+	boss.global_position = Vector3(0.0, 0.2, -30.0)
+	boss.begin_spawn_grace(999.0)
+	for i in range(4):
+		await get_tree().process_frame
+	var bar := main.get_node("BossHpBar") as BossHpBar
+	var limit: float = bar.occupied_bottom()
+	assert_bool(bar.is_showing()).override_failure_message("the boss bar is not showing; the test proves nothing").is_true()
+	assert_float(limit).is_greater(20.0)
+	var camera: Camera3D = main.get_viewport().get_camera_3d()
+	var cfg: Dictionary = UiConfig.damage_numbers()
+	var number: DamageNumber = (load("res://scenes/effects/DamageNumber.tscn") as PackedScene).instantiate()
+	number.configure(cfg)
+	main.add_child(number)
+	number.global_position = camera.project_position(Vector2(main.get_viewport().get_visible_rect().size.x * 0.5, limit * 0.4), 18.0)
+	number.show_amount(7.0, "fire", Color.ORANGE, false)
+	# no frame has run since show_amount: this is the first frame that would be drawn
+	var centre_y: float = camera.unproject_position(number.global_position).y
+	var half: float = DamageNumber.half_height_px(camera, number.global_position, number.font_size, number.pixel_size, number.scale.x)
+	assert_float(half).is_greater(4.0)
+	assert_float(centre_y - half).override_failure_message("first frame: the number's top edge is at %.1f, inside the bar block that ends at %.1f" % [centre_y - half, limit]).is_greater_equal(limit)
+	assert_float(centre_y - half).is_greater_equal(limit + float(cfg["boss_bar_gap"]) - 1.5)
+	RunSession.map_override = -1
+
+
+# ---- crowd digit placement ----
+
+func _pile(count: int, spacing: float) -> Array[Vector3]:
+	var out: Array[Vector3] = []
+	for i in range(count):
+		out.append(Vector3(float(i % 3) * spacing, 0.0, float(i / 3) * spacing))
+	return out
+
+
+func test_a_pile_under_the_minimum_leaves_numbers_where_they_spawn() -> void:
+	var enemies: Array[Vector3] = _pile(5, 0.9)
+	var spot := Vector3(0.9, 2.9, 0.0)
+	assert_vector(DamageNumber.crowd_spot(spot, enemies, 3.0, 6, 1.7, 1.8)).is_equal(spot)
+
+
+func test_in_a_pile_every_number_lands_outside_the_pile_and_no_two_share_a_spot() -> void:
+	var enemies: Array[Vector3] = _pile(7, 0.9)
+	var spots: Array[Vector3] = []
+	var centroid := Vector2.ZERO
+	for at: Vector3 in enemies:
+		centroid += Vector2(at.x, at.z) / float(enemies.size())
+	var pile_radius: float = 0.0
+	for at: Vector3 in enemies:
+		pile_radius = maxf(pile_radius, (Vector2(at.x, at.z) - centroid).length())
+	for at: Vector3 in enemies:
+		var spot: Vector3 = DamageNumber.crowd_spot(at + Vector3(0.0, 2.9, 0.0), enemies, 3.0, 6, 1.7, 1.8)
+		var from_centre: float = (Vector2(spot.x, spot.z) - centroid).length()
+		assert_float(from_centre).is_greater_equal(pile_radius + 1.7 - 0.01)  # on the ring, clear of every enemy
+		for other: Vector3 in spots:
+			assert_float(Vector2(spot.x - other.x, spot.z - other.z).length()).is_greater(0.8)  # wider than a merge radius
+		spots.append(spot)
+
+
+func test_the_crowd_spot_is_deterministic_and_drops_only_on_the_camera_side() -> void:
+	var enemies: Array[Vector3] = _pile(7, 0.9)
+	var hit := enemies[6] + Vector3(0.0, 2.9, 0.0)
+	assert_vector(DamageNumber.crowd_spot(hit, enemies, 3.0, 6, 1.7, 1.8)).is_equal(DamageNumber.crowd_spot(hit, enemies, 3.0, 6, 1.7, 1.8))
+	for at: Vector3 in enemies:
+		var spot: Vector3 = DamageNumber.crowd_spot(at + Vector3(0.0, 2.9, 0.0), enemies, 3.0, 6, 1.7, 1.8)
+		assert_float(spot.y).is_less_equal(2.9 + 0.0001)
+		assert_float(spot.y).is_greater_equal(2.9 - 1.8 - 0.0001)
+
+
+func test_a_hit_that_is_not_on_an_enemy_is_not_moved() -> void:
+	var enemies: Array[Vector3] = _pile(7, 0.9)
+	var far := Vector3(1.0, 2.9, 2.2)
+	assert_vector(DamageNumber.crowd_spot(far, enemies, 3.0, 6, 1.7, 1.8)).is_equal(far)
+
+
+func test_the_crowd_settings_are_in_data() -> void:
+	var cfg: Dictionary = UiConfig.damage_numbers()
+	assert_int(int(cfg["crowd_min"])).is_equal(6)
+	assert_float(float(cfg["crowd_radius"])).is_greater(0.0)
+	assert_float(float(cfg["crowd_margin"])).is_greater(0.0)
+	assert_float(float(cfg["crowd_front_drop"])).is_greater(0.0)

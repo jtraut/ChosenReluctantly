@@ -123,6 +123,56 @@ static func evict_count(live: int, cap: int) -> int:
 	return maxi(live - maxi(cap, 1) + 1, 0)
 
 
+## UX1b (pure, deterministic): where a hit's number is spawned (ground plane; y is kept, except a camera-side slot drops) in a tight pile. `pos` is the hit; `enemies` are all live enemy
+## ground positions. When `min_count` or more enemies sit within `radius` of `pos`, every number moves out onto a ring around the pile's centroid
+## (ring radius = pile radius + `margin`): so none lands on a neighbour's head or HP bar, and each stays on its own side of the pile. The neighbours are
+## sorted by angle and given evenly spaced ring slots (rotated to the nearest fit), so two enemies in a line from the centroid never share a spot.
+static func crowd_spot(pos: Vector3, enemies: Array[Vector3], radius: float, min_count: int, margin: float, front_drop: float = 0.0) -> Vector3:
+	var near: Array[Vector3] = []
+	for at: Vector3 in enemies:
+		if Vector2(at.x - pos.x, at.z - pos.z).length() <= radius:
+			near.append(at)
+	if near.size() < min_count:
+		return pos
+	var centroid := Vector2.ZERO
+	for at: Vector3 in near:
+		centroid += Vector2(at.x, at.z)
+	centroid /= float(near.size())
+	var pile_radius: float = 0.0
+	var angles: Array[Dictionary] = []
+	var own: int = -1
+	var own_dist: float = INF
+	for i in range(near.size()):
+		var rel := Vector2(near[i].x, near[i].z) - centroid
+		pile_radius = maxf(pile_radius, rel.length())
+		var from_hit: float = Vector2(near[i].x - pos.x, near[i].z - pos.z).length()
+		if from_hit < own_dist:
+			own_dist = from_hit
+			own = i
+		# an enemy dead on the centroid has no direction: it takes "away from the camera" (-z), the clear side
+		angles.append({"i": i, "a": rel.angle() if rel.length() > 0.01 else -PI * 0.5})
+	if own_dist > 0.75:
+		return pos  # the hit is not on any enemy of the pile (a ground effect)
+	angles.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a["a"]) < float(b["a"]) or (float(a["a"]) == float(b["a"]) and int(a["i"]) < int(b["i"])))
+	var step: float = TAU / float(near.size())
+	var sin_sum: float = 0.0
+	var cos_sum: float = 0.0
+	for k in range(angles.size()):
+		var diff: float = float(angles[k]["a"]) - step * float(k)
+		sin_sum += sin(diff)
+		cos_sum += cos(diff)
+	var offset: float = atan2(sin_sum, cos_sum)
+	var slot: int = 0
+	for k in range(angles.size()):
+		if int(angles[k]["i"]) == own:
+			slot = k
+	var angle: float = offset + step * float(slot)
+	var ring: Vector2 = centroid + Vector2.from_angle(angle) * (pile_radius + margin)
+	# a slot on the camera side (+z) would draw at head height over the pile's front rows, so it drops by up to `front_drop` metres; the far side keeps the full height
+	var drop: float = front_drop * maxf(sin(angle), 0.0)
+	return Vector3(ring.x, pos.y - drop, ring.y)
+
+
 ## Pure: the screen y a number is drawn at once the boss bar block (down to `limit`) is kept clear: a number that would sit
 ## inside the block (y < limit) is pushed just below it, so it never hides behind the bar or its text. limit <= 0 = no bar.
 static func clamp_below_bar(screen_y: float, limit: float, gap: float) -> float:

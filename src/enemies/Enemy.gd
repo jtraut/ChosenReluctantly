@@ -136,6 +136,16 @@ func _exit_tree() -> void:
 	_roster.erase(self)
 
 
+## Display only (UX1b crowd digits): the ground positions of every live enemy, in spawn order. Read-only.
+static func live_positions() -> Array[Vector3]:
+	var out: Array[Vector3] = []
+	for enemy: Enemy in _roster:
+		if enemy.health != null and enemy.health.is_dead():
+			continue
+		out.append(enemy.global_position)
+	return out
+
+
 ## Pass-through buff (Player): every live enemy stops colliding with the player's body (and stays
 ## that way for enemies spawned meanwhile), or goes back to the mask its scene gave it.
 static func set_player_body_suppressed(suppressed: bool) -> void:

@@ -3,17 +3,27 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-20 (TL1 and TL2 closed; Milestone 3 playtest next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-20 (Milestone 3 playtest done c50c360; close docs pass next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- Nothing mid-sitting. TL1 and TL2 closed 2026-11-20 (ROADMAP; docs pass 2c559b1..9e067f5). The repo runs.
+- Milestone 3 close. The milestone playtest is done (c50c360, no blocker, `docs/playtests/2026-11-20-milestone-3.md`). The repo runs.
 
 ## Exact next step
-1. **Milestone 3 close: the milestone playtest** (ROADMAP "Milestone 3 close"; playtester.md "Milestone playtest"). The playtester runs a full three-act run per class with watch mode: `run_wave_sim.ps1 -Run -Class <c> -Seed <n> -BotPreset human -Scale 4 -Shots ...`. If the human bot loses early, it reruns, then uses `-BotPreset off` (DECISIONS "TL2 qa triage"). It judges the run against the GDD pillars; this report is the baseline. Screenshots go to `docs/playtests/img/`, and the report to `docs/playtests/2026-11-2x-milestone-3.md`.
-2. Then a tech-writer pass for the milestone close, including the ARCHITECTURE trim (540+ lines, target about 400).
-3. Then, **in a fresh session**, game-lead reads the report and its screenshots itself, before writing the Milestone 4 brief. BD3c (Battlemage rework, D54) and BAL1 (`needs your play first`) come after it.
+1. **tech-writer: Milestone 3 close docs pass.**
+   - The ARCHITECTURE trim (540+ lines, target about 400).
+   - README "Last verification".
+   - Check the README watch text: only `--watch-shots=` exits 2; a bare `--watch-shots` is ignored.
+   - A CHANGELOG line for the milestone playtest.
+2. **Then a FRESH game-lead session** (CLAUDE.md, milestone boundary). Read the report and look at the 16 screenshots in `docs/playtests/img/milestone-3/` directly. Then:
+   - Turn the playtester's 4 director questions into OPEN_ITEMS entries: HP growth in a run; the 15-20 min target vs a 20-28 min estimate; auto-advancing single-option map picks; a gold sink. Each needs a default.
+   - Write up its 6 proposals for the director.
+   - Write the Milestone 4 brief, noting what the review changed.
+   - Known context for the review:
+     - BD3c (Battlemage, D54) and BAL1 (`needs your play first`) wait on this.
+     - The report's "Remaining" asks for hand-scripted captures of the Wizard decks and the loadout screen.
+     - "Max HP 30 -> 27" is unexplained (probably an event; check the log).
 
-**Next role:** playtester (Milestone 3 playtest).
+**Next role:** tech-writer (Milestone 3 close docs pass), then a fresh game-lead session.
 
 ## Current baselines (BD3b qa 664bfec, 2026-11-19)
 - Suite 2813 (TL2 qa), 0 failures; a full run takes about 23 minutes, so run it in the background.
@@ -24,7 +34,11 @@ Last updated: 2026-11-20 (TL1 and TL2 closed; Milestone 3 playtest next). Latest
 - Late shares for a Bleed Rogue: Bleed 12.5%, Fire 22.8%, Burn 10.0%. Relic Burn share 21.1% (4 of 19). Thesis Wizard late Fire share about 26%.
 
 ## Pending for the next docs pass
-- The Milestone 3 close pass: the ARCHITECTURE trim; README "Last verification" has no TL1/TL2 entry (tech-writer ran nothing beyond the bad-value checks); fix the README watch text if it says a bare `--watch-shots` exits 2 (qa: only `--watch-shots=` does).
+- The Milestone 3 close pass:
+  - the ARCHITECTURE trim;
+  - README "Last verification" has no TL1/TL2 entry;
+  - fix the README watch text if it says a bare `--watch-shots` exits 2 (qa: only `--watch-shots=` does);
+  - CHANGELOG: the milestone playtest (c50c360), with no blocker and the baseline report.
 
 ## Known issues
 - TL2 watch log nits (qa d2218fb): a bare `--watch-shots` is ignored; "HP at end" is stale on a loss; CROWD/BOSS lines use act-local room numbers; `crowded-fight.png` is overwritten. Fix when convenient.

@@ -604,6 +604,8 @@ func _start_beat() -> void:
 			return
 		_beat_target = target
 		_beat_left = seconds
+	# The screen's own line ("Pick the boss when you are ready") would contradict a pick that is made for the player in a second.
+	line_label.text = String(_texts().get("beat_line", line_label.text))
 	hint_label.text = String(_texts().get("beat_hint", hint_label.text))
 
 

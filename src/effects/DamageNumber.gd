@@ -171,6 +171,8 @@ func show_amount(amount: float, type: String, color: Color, is_big: bool, prefix
 		_base_scale *= _muted_scale  # a reduced hit reads smaller as well as greyer
 	scale = Vector3.ONE * _base_scale
 	_start_pos = global_position if is_inside_tree() else position  # a number built outside the tree (a test) has no global transform yet
+	if is_inside_tree():
+		_keep_clear_of_boss_bar()  # UX1b: _process has not run yet, and this label is drawn once at its spawn point first: that frame sat on the boss bar's text
 
 
 ## Adds another hit of the same type into this number and keeps it on screen a little longer.
@@ -221,6 +223,8 @@ func show_text(words: String, color: Color, text_scale: float) -> void:
 	render_priority += 1
 	outline_render_priority = render_priority - 1
 	_start_pos = global_position if is_inside_tree() else position  # a number built outside the tree (a test) has no global transform yet
+	if is_inside_tree():
+		_keep_clear_of_boss_bar()  # UX1b: _process has not run yet, and this label is drawn once at its spawn point first: that frame sat on the boss bar's text
 
 
 func is_word() -> bool:

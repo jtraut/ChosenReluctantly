@@ -204,6 +204,9 @@ func spawn_damage_number(world_pos: Vector3, amount: float, damage_type: String,
 	# UX1a: an armored "[Arm 4]" and a resisted "<Res 4>" from the same hit spawn at one point and printed over each other; they now start to either side of it
 	# (display only: the amount, the merge and the timing are unchanged).
 	var camera: Camera3D = tree.root.get_viewport().get_camera_3d() if tree.root != null else null
+	if camera == null:
+		var world_view: Viewport = WorldRef.get_world(tree).get_viewport()  # UX1b: a world hosted in a SubViewport (TrueSize captures) has no camera on the root viewport
+		camera = world_view.get_camera_3d() if world_view != null else null
 	if camera != null:
 		spot += camera.global_transform.basis.x * DamageNumber.style_shift(style, float(cfg["style_spread"]))
 	_prune_numbers()

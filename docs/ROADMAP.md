@@ -984,6 +984,7 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
       - Captures are in `docs/playtests/img/bd3b-ux/`. Hashes unchanged.
       - The one full run (2792 / 201) had 9 failures, all ux-caused and fixed (85 cases re-run green). **qa re-runs the full suite.** DECISIONS "BD3b-ux calls".
     - **qa PASS 2026-11-19** (664bfec; `docs/reviews/2026-11-19-bd3b-qa.md`). Suite 2796 / 202 green; hashes and SIM1 match D3; W-B gates pass, but the removal pain margin is thin (+22% with a different replacement card). Non-blocking: Swap: free shows while swaps are locked; Kindling and Hot Head show Fire by colour only (both to the next ux polish); Wizard `relic` median 14.0, at the edge.
+    - **Playtest 2026-11-19, no blocker** (a454d6d; `docs/playtests/2026-11-19-bd3b.md`). The smoke check passes. Charge and the pills read well. Ward Battlemage reads as "standard Wizard with a bar" (nova: 18 damage over 6 runs); the playtester leans toward D54 = C. Open feel questions for the director: Thesis's 67/157 hit, and whether the spender should share a slot with its builders. The playtester can't hold movement or aim, so feel was not judged, and it asks for a `--press` hold-and-aim tool (game-lead: TL1, before the Milestone 3 playtest).
   - **Deferred (not in BD3b; they retune slices the director hasn't played). Home: BAL1, the first balance item after the Milestone 3 playtest, `needs your play first`:**
     - Request for Quotation in about 79% of shops; Liquidate Assets is weak.
     - Paperwork Fire rarely fires; Severance Package chains.
@@ -1620,6 +1621,7 @@ un_offer_report.ps1`.
     - **Playtester:** one run per class that visits at least 3 events. Are the trade-offs clear before you click? Did any choice feel like a trap you couldn't have read? Does a curse feel like a real cost, and is swapping past it clear? Was the Raider an act-ending fight this time?
     - **Acceptance:** BUILD_DEPTH §13.7; SIM1 floors as re-gated after A; the bot's Raider fight time reported, not gated (amended after A, DECISIONS "MAP4 sitting A triage"); late Bleed share reported (not gated); the D49 = B before-and-after shares reported.
 
+- [ ] **TL1, playtester movement tool (gameplay-dev; one short sitting; before the Milestone 3 playtest). `safe to chain`.** `--press` can hold a movement action for N seconds and aim at the nearest enemy, so the playtester can play a fight instead of standing still. Tests and a README line. The milestone playtest needs full three-act runs per class, and today the playtester can only capture a player who stands still (BD3b playtest; DECISIONS "BD3b playtest triage").
 - [ ] **Milestone 3 close (after BD3b).** playtester runs the milestone playtest (playtester.md "Milestone playtest"): a full three-act run per class, judged against the three pillars. No earlier milestone report exists, so this one is the baseline. Then game-lead reviews the report and the screenshots itself, in a fresh session, before writing the Milestone 4 brief.
 
 ## DF1, difficulty bump (D51 = C, director 2026-11-12; after MAP4, before 3d)

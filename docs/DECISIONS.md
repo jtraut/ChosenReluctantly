@@ -2934,3 +2934,9 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **Open, small:** "Swap: free" and the curse swap line still show while swaps are locked (The Micromanager); the curse line already had this gap. There's no Ward indicator on the Utility slot. Both go to qa to judge whether they block.
 - **Process lesson:** a text-mode script edit rewrote an embedded newline in a `.gd` string to CRLF, and that broke 7 tests. Scripted edits of source files must keep line endings.
 
+## 2026-11-19 - BD3b playtest triage (game-lead)
+- **No blocker; BD3b goes to its docs pass.** The playtester's minor items ("Swap: free" always on; colour-only Fire; two-letter relic badges) join the next ux polish list in STATE.
+- **TL1 (a movement and aim hold for `--press`) goes before the Milestone 3 playtest.** That playtest asks for full three-act runs per class, and a player who stands still dies in 7 s, so without it the milestone report can't judge feel or pacing. [Running the milestone playtest on bot runs only: it would judge the pillars without any feel.]
+- **The playtester's two feel questions (Thesis's 67/157 hit; a spender sharing a slot with its builders) go to the director as an eyes item for when he plays BD3b.** Default: keep as built, and revisit in BAL1. They're feel calls on a slice he hasn't played. [Retuning now, which breaks the playtest gate.]
+- **D54 stays open after BD3b's close.** BD3b closes in A's state (W-D informational), and B or C would be follow-up work, so closing doesn't foreclose either. The default A now applies when the Milestone 3 playtest starts, not at BD3b's close, so the director gets time to answer. [Applying A at this close, minutes after asking.]
+

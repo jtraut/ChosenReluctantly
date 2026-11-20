@@ -82,6 +82,29 @@ Commit range bc463f5..41c0bc9 (committed 2026-11-18 to 2026-11-20). Brief bc463f
 - `w1a_test`'s bolt-range case failed once in a full run under load (D2) and passed alone and in qa's loaded run; it stays here until it passes a few quiet runs.
 - Not verified by qa: real key events on the relic buttons (the focus-neighbour search is tested), a HUD capture with 3 or more relics and no pause panel, any capture at 1366x768, a save round trip with Charge held and Ward live.
 
+### TL1 and TL2: playtester tooling (no tag)
+
+Commit range 492078f..e408be7. TL1 build 77e3c9d, qa ad617bf (`docs/reviews/2026-11-20-tl1-qa.md`), fix e93ffa3. TL2 build dd13031..0e5875e (3e1c3b6 and 0e5875e are a double commit with the same message), qa 63e0531 and d2218fb (`docs/reviews/2026-11-20-tl2-qa.md`). Calls: DECISIONS "TL1 calls", "TL1 qa triage", "TL2 calls", "TL2 qa triage". Tooling only, so no tag and no gameplay change; the suite is 2813 cases, 0 failures, and the hashes and SIM1 are unchanged. No third-party assets.
+
+**Added**
+- **`--press` holds and aim** (TL1 77e3c9d): `<t>:<action>:<hold>` holds an action for `<hold>` seconds (0 < hold <= 120), so the four move actions can be held and two holds at the same t make a diagonal. `<t>:aim_nearest` keeps the aim on the nearest live enemy until `<t>:aim_off` (through `Player.aim_point_override`). The console logs each step with the player's (x, z). `capture_screenshot.ps1 -Actions` takes the same grammar. Tests: `tests/unit/tl1_press_test.gd`, `tests/unit/tl1_qa_test.gd`.
+- **Watch mode** (TL2 dd13031): `tools\run_wave_sim.ps1 -Run ... -Shots <dir>` plays whole seeded runs in a window and saves screenshots of the real UI plus a text log (`log.txt`) to `<dir>\<class>-seed<N>\`. Code: `src/debug/WatchMode.gd`, gated on `--watch-shots` in `tools/wave_sim.gd`, so the headless sim is unchanged. Test: `tests/unit/tl2_watch_mode_test.gd`. The log names the map route (0e5875e). Details in the README, "Watch the bot (TL2)".
+
+**Fixed**
+- **A `--press` launch could touch the real save** (TL1 77e3c9d): `--press` was not a debug flag. It is now in `RunSave.DEBUG_FLAG_PREFIXES`, so a `--press` launch never reads, writes or deletes the save, profile or loadouts.
+- **TL1-1: held keys stuck after a scene swap** (e93ffa3, found by qa in ad617bf): `ScriptedInput` now releases pending holds in `_exit_tree`.
+
+**Docs and process**
+- `/shots/` is gitignored (d2218fb).
+- No separate playtester smoke check for TL1 and TL2: they are tooling, and the Milestone 3 playtest is the mode's first real use (DECISIONS "TL2 qa triage").
+- Eyes item 61 expired at TL2's close with its default kept; see `docs/RESOLVED.md`.
+
+**Known issues, left open (TL2 log nits from qa; none blocks the playtest)**
+- A bare `--watch-shots` (no `=`) is ignored by a hand-typed Godot command. The ps1 script cannot produce it.
+- "HP at end" is stale on a loss.
+- CROWD and BOSS log lines use act-local room numbers.
+- `crowded-fight.png` is overwritten by each bigger crowd, so only the biggest survives.
+
 ## 2026-11-18 (Slice 3d: loadouts)
 
 Commit range 0a321ad..58c73cc (sittings A and B were committed on 2026-11-17, the rest on 2026-11-18). Five build sittings, then qa and a playtest. gameplay-dev A eea038b..dc39f28, B 41b6b01..501dcd0, C 221768b and 68e38d6..25b010d; ux D 0bc25be..a95c3ac, E 9eef38b..4e7f104; qa 7e22f98 and 0f2a0a2 (PASS: `docs/reviews/2026-11-18-3d-qa.md`); playtest 5520044 (`docs/playtests/2026-11-18-3d.md`, no blocker; the playtester used scripted launches and captures, not hand play). Calls: `docs/DECISIONS.md` entries "3d brief" through "3d playtest triage". GDD section 9 "Loadouts" is the design.

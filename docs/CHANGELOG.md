@@ -2,7 +2,32 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-11-20 (Slice BD3b: Wizard depth)
+## 2026-11-20 (Milestone 3 review, D55, slice UX1a, slice BD3b)
+
+### Milestone 3 review, D55 and UX1a
+
+Commit range 3a46fc6..63492cb. UX1a: ux 1abef8c, qa PASS e732d2e (`docs/reviews/2026-11-20-ux1a-qa.md`), playtest b06a637 (`docs/playtests/2026-11-20-ux1a.md`, no blocker). No third-party assets were added. The BD3b section below is the earlier work of the same date.
+
+**Added**
+- **Capture-only scenario `ux1a_boss_statuses`** in `data/scenarios.json` (ux 1abef8c): a boss with Burn and Bleed, 20 relics, a Fire deck, auto attack on. Run with `godot --path . -- --scenario=ux1a_boss_statuses`.
+- **Element word pill** (1abef8c): element-pool cards show a "Fire" pill, keyed on pool data (`data/pools.json` `kind` and `tag`), so Kindling and Hot Head are not told apart by colour alone.
+- **[Director decision] D55 = B** (cc75f62; GDD section 9): max HP can grow during a run through two relics, a flat boost (starting +4) and +1 max HP per elite beaten. Old: max HP could only go down in a run (two events lowered it) and nothing raised it. Not built yet; new slice HP1 in `docs/ROADMAP.md`, values tuned in BAL1.
+
+**Changed**
+- **Relic procs pulse their HUD badge** (1abef8c) instead of floating the relic's name in the field. Buff cues (for example Spiteful Ward) still float.
+- **Relic badges:** size 30 -> 40 px, font 15 -> 18 (`data/ui.json`). The `xN` burst counter is a strip along the bottom of the badge, no longer a pill over the letters. 20 relics (the cap) fit as 5 x 4 at 1152x648.
+- **Damage numbers:** armored `[n]` -> `[Arm n]`, resisted `<n>` -> `<Res n>`, and they spread sideways so the two do not print over each other (new `data/ui.json` key `damage_numbers.style_spread`, 1.3 m). Display only: amounts and timing are unchanged.
+- **Swap pills:** "Swap: free" is hidden on ready cards and while swaps are locked; the curse swap line is hidden while locked.
+- **Milestone 3 closed** after game-lead's fresh-session review (0c384cb; `docs/DECISIONS.md` "Milestone 3 review"). Watch mode at `-Scale 4` is not evidence of difficulty (headless SIM1 disagrees). The max HP drops in the milestone playtest came from the Complacency Trap event. Milestone 4 order: UX1a -> UX1b -> HP1 -> SIM2a -> BAL1 and BD3c. SIM2's "formulated" profile is pulled forward as SIM2a. Map single-option auto-advance is game-lead's call (UX1b).
+
+**Fixed**
+- Nothing in UX1a was a bug fix. Known gap: `[Arm n]` and `<Res n>` can still overprint in the first frame after a hit (qa, `docs/reviews/2026-11-20-ux1a-qa.md`, cause not found); passed to UX1b.
+
+**Docs and process**
+- Tests: suite 2819 cases, 0 failures (2813 + 6 new UX1a cases); the four sim hashes are unchanged (qa).
+- Eyes items 62, 63 and 64 expired at UX1a's close, defaults kept (see `docs/RESOLVED.md`). D55 archived there.
+
+### Slice BD3b
 
 Commit range bc463f5..41c0bc9 (committed 2026-11-18 to 2026-11-20). Brief bc463f5. Sittings: BD3b-0 (ux polish) bc463f5..ddb0d1b; A (engine: scale, conditions, Charge) 0436585..e9dfacf; B (buff triggers, line zone, chain depth) 070ffd6..23370fe; C1 (7 Wizard cards) 1865109..97acc3d; C2 (5 relics and the engine work behind them) 65be0d9..8fe0560, verified in 069f3ef (C2's hand-back was lost; the work was checked from the commits); D1 (pool tag to data, sim caster) b9b3687..0477a81; D2 (plan bot plays Charge and Ward) 7d1b197..c678b24; D3 (tuning) 16b1e81..76001b1; ux d39b156..9040ef4. qa PASS 664bfec (`docs/reviews/2026-11-19-bd3b-qa.md`). Playtest a454d6d (`docs/playtests/2026-11-19-bd3b.md`, no blocker). D54 recorded 41c0bc9. Design: `docs/BUILD_DEPTH.md` section 14. Calls: `docs/DECISIONS.md` entries "BD3b brief" through "D54 recorded". Tag: `playtest-2026-11-20-BD3b`. No third-party assets were added (`docs/ASSETS.md` is unchanged). The director has not played BD3b.
 

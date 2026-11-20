@@ -2,7 +2,23 @@
 
 The archive of the director's answered, received and acknowledged items, moved here from `docs/OPEN_ITEMS.md`. Owned by tech-writer (director, 2026-11-02). Newest dated section first; IDs (D19, call 16, checklist item 33) are kept so they can be searched. Old entries change only to fix a factual error.
 
-## 2026-11-20
+## 2026-11-20 (UX1a close)
+
+### Answer recorded in cc75f62 (D55)
+
+| ID | Question | Your answer | Where it went |
+|---|---|---|---|
+| D55 | Should max HP grow during a run? | **B**, 2026-11-20: "I like both a flat boost relic and a +1 per elite relic." | GDD section 9 and ROADMAP HP1. Changelog: 2026-11-20, `[Director decision]`. The original text is at `git show 43aba3a:docs/OPEN_ITEMS.md`. |
+
+### Expired at UX1a's close, default kept
+
+Eyes 62, 63 and 64 got no answer by the close of the slice after the one that added them, so the default applied. The original text is at `git show 63492cb:docs/OPEN_ITEMS.md`.
+
+| ID | What it asked | Default that applied |
+|---|---|---|
+| 62 | Time a real run on a clock. | Keep the 15-20 minute target (D50) and change nothing until it is measured. |
+| 63 | Leftover gold (bot runs ended with 200-600 unspent). | No gold change until SIM2a measures it. |
+| 64 | Veto of the map auto-advance when only one room is next. | No veto: build the auto-advance in UX1b. |
 
 ### Expired at TL2's close, default kept
 

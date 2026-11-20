@@ -6,7 +6,7 @@
 Last updated: 2026-11-20 (Milestone 3 closed after the fresh-session review; Milestone 4 briefs written). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- Nothing is half done. Milestone 3 is closed (DECISIONS "Milestone 3 review"), and the repo runs.
+- UX1a (ux-designer) started 2026-11-20 after 63f1427. If a cutoff hits, check `git log` for its commits and any `Remaining:` list, then start a fresh ux-designer for the rest. Milestone 3 is closed (DECISIONS "Milestone 3 review"), and the repo runs.
 
 ## Exact next step
 1. **ux-designer: UX1a, combat HUD readability** (ROADMAP Milestone 4; the brief is complete; `safe to chain`). One sitting, well under 150 calls.

@@ -82,6 +82,11 @@ func _choose_character() -> void:
 		printerr("Launch refused: " + class_problem)  # once, on stderr, like a bad run launch; no stack trace
 		get_tree().quit(2)
 		return
+	var press_problem: String = String(CaptureArgs.parse(OS.get_cmdline_user_args())["press_error"])
+	if press_problem != "":
+		printerr("Launch refused: " + press_problem)
+		get_tree().quit(2)
+		return
 	if hero != null:
 		var scenario_class: String = Scenario.class_arg(OS.get_cmdline_user_args())
 		if scenario_class != "":
@@ -244,6 +249,8 @@ func _setup_debug_capture() -> void:
 		return
 	var config := CaptureArgs.parse(args)
 	var error: String = config["error"]
+	if String(config["press_error"]) != "":
+		return  # _choose_character already refused this launch (exit 2)
 	if error != "":
 		push_error("Capture args: " + error)
 		get_tree().quit(1)
@@ -267,4 +274,5 @@ func _setup_debug_capture() -> void:
 		scripted.name = "ScriptedInput"
 		scripted.process_mode = Node.PROCESS_MODE_ALWAYS
 		scripted.presses = presses
+		scripted.player = player
 		add_child(scripted)

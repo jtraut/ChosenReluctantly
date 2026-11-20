@@ -17,7 +17,7 @@ extends RefCounted
 const DEFAULT_PATH := "user://run_save.json"
 const SAVE_VERSION := 1
 ## Launch flags that change the run into a debug run: their runs never save (or delete) the player's file.
-const DEBUG_FLAG_PREFIXES: Array[String] = ["--run-room", "--run-node", "--run-gold", "--run-clear-after", "--run-offer", "--full-deck", "--deck", "--relics", "--relic-offer", "--relic-cap", "--event", "--merchant", "--run-curses", "--run-curse-first", "--run-auto-choose", "--run-discount", "--acts", "--scenario", "--sim-", "--runs-finished", "--profile-path", "--loadouts-path", "--loadout"]
+const DEBUG_FLAG_PREFIXES: Array[String] = ["--run-room", "--run-node", "--run-gold", "--run-clear-after", "--run-offer", "--full-deck", "--deck", "--relics", "--relic-offer", "--relic-cap", "--event", "--merchant", "--run-curses", "--run-curse-first", "--run-auto-choose", "--run-discount", "--acts", "--scenario", "--sim-", "--runs-finished", "--profile-path", "--loadouts-path", "--loadout", "--press"]
 
 static var path: String = DEFAULT_PATH
 ## Tests set this to true/false to force file use on or off; null = decide from how the game was launched.

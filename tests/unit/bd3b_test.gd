@@ -232,7 +232,8 @@ func test_a_card_dash_reports_the_enemies_it_passed_and_a_clear_dash_reports_not
 	await _frames(2)
 	var log := RelayLog.new(CombatEvents)
 	var seen: Array[Dictionary] = []
-	CombatEvents.dash_passed_through.connect(func(card_id: String, count: int, _at: Vector3) -> void: seen.append({"card": card_id, "count": count}))
+	var on_pass := func(card_id: String, count: int, _at: Vector3) -> void: seen.append({"card": card_id, "count": count})
+	CombatEvents.dash_passed_through.connect(on_pass)
 	_cast("rogue_ugh_fine_moving", main.player, main)
 	await _frames(40)
 	assert_int(seen.size()).is_equal(1)
@@ -247,6 +248,7 @@ func test_a_card_dash_reports_the_enemies_it_passed_and_a_clear_dash_reports_not
 	_cast("rogue_ugh_fine_moving", main.player, main)
 	await _frames(40)
 	assert_int(seen.size()).is_equal(0)
+	CombatEvents.dash_passed_through.disconnect(on_pass)
 	log.stop()
 
 
@@ -256,9 +258,11 @@ func test_the_dodge_roll_never_reports_a_pass_through() -> void:
 	_target(main, 100.0, Vector3(0, 0, -1.5))
 	await _frames(2)
 	var seen: Array[int] = []
-	CombatEvents.dash_passed_through.connect(func(_card_id: String, count: int, _at: Vector3) -> void: seen.append(count))
+	var on_pass := func(_card_id: String, count: int, _at: Vector3) -> void: seen.append(count)
+	CombatEvents.dash_passed_through.connect(on_pass)
 	main.player.start_forced_move(Vector3(0, 0, -1), 14.0, 0.3, true)  # what the dodge calls: no card, no pass-through
 	await _frames(30)
+	CombatEvents.dash_passed_through.disconnect(on_pass)
 	assert_int(seen.size()).is_equal(0)
 
 

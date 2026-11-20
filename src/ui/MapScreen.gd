@@ -556,9 +556,16 @@ func _on_node_pressed(node_id: int) -> void:
 
 # --- the single-option beat (UX1b) ------------------------------------------------------------------
 
-## True in a person's own game: a window (not --headless) hosted by the normal scene tree. The bots (tools/wave_sim.gd, tools/bot_sim) and the test runner
-## run as a script that replaces the SceneTree, so `get_script()` is set there; watch mode is the same bot in a window, so it is skipped too.
+## Set by an automated driver (the wave sim, in headless and in a window alike) so the beat never runs under a bot, SIM or watch mode.
+## The wave sim is a scene, so the main loop has no script to infer this from; the driver says so explicitly.
+static var automated_session: bool = false
+
+
+## True in a person's own game: a window (not --headless), not driven by a bot. The test runner and bot_sim run as a script that replaces
+## the SceneTree (`get_script()` is set); tools/wave_sim.gd sets `automated_session` itself, which also covers watch mode.
 static func human_session() -> bool:
+	if automated_session:
+		return false
 	var loop: MainLoop = Engine.get_main_loop()
 	return DisplayServer.get_name() != "headless" and loop != null and loop.get_script() == null
 

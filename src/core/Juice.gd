@@ -206,7 +206,12 @@ func spawn_damage_number(world_pos: Vector3, amount: float, damage_type: String,
 	var cfg: Dictionary = UiConfig.damage_numbers()
 	var is_big: bool = amount >= HEAVY_HIT_THRESHOLD
 	var style: StringName = DamageNumber.style_for(channel, reduction, cfg)
-	var spot: Vector3 = crowd_spot(world_pos + Vector3(0.0, float(cfg["spawn_height"]), 0.0))
+	var raw_spot: Vector3 = world_pos + Vector3(0.0, float(cfg["spawn_height"]), 0.0)
+	var spot: Vector3 = crowd_spot(raw_spot)
+	if damage_type == HEAL_TYPE:
+		spot = DamageNumber.heal_spot(raw_spot, Enemy.live_positions(), float(cfg["crowd_radius"]), int(cfg["crowd_min"]), float(cfg["crowd_margin"]), float(cfg["crowd_front_drop"]))
+	if not spot.is_equal_approx(raw_spot) and damage_type != HEAL_TYPE:
+		spot.y += DamageNumber.crowd_lane_lift(damage_type, cfg["crowd_type_order"], float(cfg["crowd_lane_lift"]))  # UX1b: one lane per type at a ring slot
 	# UX1a: an armored "[Arm 4]" and a resisted "<Res 4>" from the same hit spawn at one point and printed over each other; they now start to either side of it
 	# (display only: the amount, the merge and the timing are unchanged).
 	var camera: Camera3D = tree.root.get_viewport().get_camera_3d() if tree.root != null else null
@@ -234,6 +239,11 @@ func spawn_damage_number(world_pos: Vector3, amount: float, damage_type: String,
 	var instance: DamageNumber = scene.instantiate()
 	instance.configure(cfg)
 	WorldRef.get_world(tree).add_child(instance)
+	if not raw_spot.is_equal_approx(crowd_spot(raw_spot)) and damage_type != HEAL_TYPE:
+		var anchors: Array[Vector3] = []
+		for live: DamageNumber in _live_numbers:
+			anchors.append(live.merge_anchor())
+		spot.y = DamageNumber.free_lane_y(spot, anchors, float(cfg["crowd_lane_lift"]), float(cfg["merge_radius"]) * 0.5)  # UX1b: an older number at the slot pushes this one up a lane
 	instance.global_position = spot
 	var color: Color = color_override if color_override is Color else DamageNumber.styled_color(style, damage_type, cfg)
 	instance.show_amount(amount, damage_type, color, is_big, prefix, style, DamageNumber.brackets_for(style, cfg))

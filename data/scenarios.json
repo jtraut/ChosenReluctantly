@@ -1222,6 +1222,7 @@
         "_note": "UX1b capture: 7 idle enemies in a tight pile at the player, all Burning and Bleeding, an Area card cast so their digits land together (crowd digit placement).",
         "disable_spawner": true,
         "player_max_health": 9999,
+        "player_start_damage": 4000,
         "enemy_max_health": 3000,
         "enemies_idle": true,
         "disable_auto_attack": true,
@@ -1235,7 +1236,7 @@
         "burn_duration": 60.0,
         "bleed_indices": [0, 1, 2, 3, 4, 5, 6],
         "bleed_duration": 60.0,
-        "casts": [ {"at": 0.4, "slot": "attack_aoe", "card": "fire_fine_burn_then"}, {"at": 1.6, "slot": "attack_aoe", "card": "fire_fine_burn_then"} ]
+        "casts": [ {"at": 0.4, "slot": "attack_aoe", "card": "fire_fine_burn_then"}, {"at": 1.6, "slot": "attack_aoe", "card": "fire_fine_burn_then"}, {"at": 2.2, "slot": "recovery", "card": "neutral_healing_potion"} ]
     },
     "ux1a_boss_statuses": {
         "_note": "UX1a capture: the boss carries Burn and Bleed, the player holds 20 relics (the cap) and a Fire deck, auto attack on, so armor and resisted numbers, the badge row and the slot Fire mark are all on screen.",

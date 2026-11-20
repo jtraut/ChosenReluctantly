@@ -173,6 +173,56 @@ static func crowd_spot(pos: Vector3, enemies: Array[Vector3], radius: float, min
 	return Vector3(ring.x, pos.y - drop, ring.y)
 
 
+## UX1b (pure): where the player's heal number goes in a pile. The heal spawns over the player, and a pile of `min_count` or more enemies within `radius` of
+## the player has its HP bars at that screen height, so the "+N" landed on them. It moves to the side of the pile the player is on (the ring, as
+## `crowd_spot` does for a hit), on the camera side when the player is on the pile's centroid, and drops by `front_drop` there. No pile: unchanged.
+static func heal_spot(pos: Vector3, enemies: Array[Vector3], radius: float, min_count: int, margin: float, front_drop: float) -> Vector3:
+	var near: Array[Vector3] = []
+	for at: Vector3 in enemies:
+		if Vector2(at.x - pos.x, at.z - pos.z).length() <= radius:
+			near.append(at)
+	if near.size() < min_count:
+		return pos
+	var centroid := Vector2.ZERO
+	var pile_radius: float = 0.0
+	for at: Vector3 in near:
+		centroid += Vector2(at.x, at.z)
+	centroid /= float(near.size())
+	for at: Vector3 in near:
+		pile_radius = maxf(pile_radius, (Vector2(at.x, at.z) - centroid).length())
+	var rel := Vector2(pos.x, pos.z) - centroid
+	var angle: float = rel.angle() if rel.length() > 0.3 else PI * 0.5
+	var ring: Vector2 = centroid + Vector2.from_angle(angle) * (pile_radius + margin)
+	return Vector3(ring.x, pos.y - front_drop * maxf(sin(angle), 0.0) - 0.5, ring.y)
+
+
+## UX1b (pure): the height lift (metres) of a number's lane at a crowd ring slot. Two numbers of different types from one enemy (a Fire hit and a Bleed
+## tick) land on the same slot and printed over each other, so each type has its own lane, stacked upward: `order` lists the types (data), any type not listed
+## takes the lanes after them. A lane is the same every time, so a second hit of a type still merges into the first. The heal type is not laned (see Juice).
+static func crowd_lane_lift(type: String, order: Array, step: float) -> float:
+	var lane: int = order.find(type)
+	if lane < 0:
+		lane = order.size()
+	return float(lane) * step
+
+
+## UX1b (pure): the height of the first free lane at `spot`. `anchors` are the spawn points of the numbers still on screen. A new number at a ring slot that an older
+## number (still rising, or fading) occupies is lifted by whole `step`s until it is clear of every one within `xz_radius` on the ground plane, so a Fire hit
+## never prints over the Burn tick before it. A hit that merges never gets here.
+static func free_lane_y(spot: Vector3, anchors: Array[Vector3], step: float, xz_radius: float) -> float:
+	var y: float = spot.y
+	for _i in range(anchors.size() + 1):
+		var taken: bool = false
+		for at: Vector3 in anchors:
+			if Vector2(at.x - spot.x, at.z - spot.z).length() <= xz_radius and absf(at.y - y) < step * 0.9:
+				taken = true
+				break
+		if not taken:
+			return y
+		y += step
+	return y
+
+
 ## Pure: the screen y a number is drawn at once the boss bar block (down to `limit`) is kept clear: a number that would sit
 ## inside the block (y < limit) is pushed just below it, so it never hides behind the bar or its text. limit <= 0 = no bar.
 static func clamp_below_bar(screen_y: float, limit: float, gap: float) -> float:

@@ -65,8 +65,7 @@ static func compose_with_intro(entries: Array, cfg: Dictionary, intro_ids: Array
 			var row: Dictionary = entry
 			if String(row["id"]) == id and not shows(int(row["stacks"]), cfg):
 				lines.append(String(row["name"]))
-	return "
-".join(lines)
+	return "\n".join(lines)
 
 
 ## UX1b (pure): whether a status gets its one-time name now: intros are on (`intro_seconds` > 0) and it has not been named yet.

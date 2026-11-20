@@ -182,6 +182,7 @@ const HEAL_BELOW_FRACTION := 0.7
 
 
 func _ready() -> void:
+	MapScreen.automated_session = true  # a bot drives this, windowed (watch mode) or not: no map beat (UX1b)
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--seed="):
 			_seed = int(arg.substr(7))

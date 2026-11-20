@@ -157,6 +157,18 @@ func test_the_bot_and_test_runner_path_has_no_beat() -> void:
 	assert_bool(screen.pick_pending()).is_true()  # nothing picked for the bot: it answers through the controller itself
 
 
+func test_the_wave_sim_opt_out_gives_no_beat_even_in_a_scene_hosted_window() -> void:
+	# Watch mode is scene-hosted and windowed, so the main loop heuristic says "human"; the sim's explicit flag must win.
+	MapScreen.automated_session = true
+	assert_bool(MapScreen.human_session()).is_false()
+	var screen: MapScreen = await _spawn(MapScreen.human_session())
+	screen.show_pick(_pick_data(1))
+	assert_bool(screen.beat_running()).is_false()
+	MapScreen.automated_session = false
+	var src: String = FileAccess.get_file_as_string("res://tools/wave_sim.gd")
+	assert_bool(src.contains("MapScreen.automated_session = true")).is_true()  # the sim really sets it
+
+
 # ---- the act heal line ----
 
 func test_the_heal_line_shows_the_applied_heal_and_the_percent_from_the_summary() -> void:
@@ -385,3 +397,52 @@ func test_the_crowd_settings_are_in_data() -> void:
 	assert_float(float(cfg["crowd_radius"])).is_greater(0.0)
 	assert_float(float(cfg["crowd_margin"])).is_greater(0.0)
 	assert_float(float(cfg["crowd_front_drop"])).is_greater(0.0)
+
+
+func test_two_numbers_of_different_types_from_one_enemy_never_share_a_spot() -> void:
+	# The crowd captures showed a Fire hit and a Bleed tick (physical) printed over each other at one ring slot.
+	var cfg: Dictionary = UiConfig.damage_numbers()
+	var order: Array = cfg["crowd_type_order"]
+	var step: float = float(cfg["crowd_lane_lift"])
+	var types: Array[String] = []
+	types.assign(order)  # every listed type has its own lane
+	for id: String in PoolDatabase.known_ids():
+		if String(PoolDatabase.get_definition(id).get("kind", "")) == "element":
+			assert_bool(order.has(id)).override_failure_message("element '%s' is missing from ui.json damage_numbers.crowd_type_order: it would share a lane" % id).is_true()
+	var enemies: Array[Vector3] = _pile(7, 0.9)
+	for at: Vector3 in enemies:
+		var base: Vector3 = DamageNumber.crowd_spot(at + Vector3(0.0, 2.9, 0.0), enemies, 3.0, 6, 1.7, 1.8)
+		var lifts: Array[float] = []
+		for type: String in types:
+			var lift: float = DamageNumber.crowd_lane_lift(type, order, step)
+			for other: float in lifts:
+				assert_float(absf(lift - other)).is_greater_equal(float(cfg["pixel_size"]) * float(cfg["font_size"]))  # clear of one glyph height
+			lifts.append(lift)
+			assert_float((base + Vector3(0.0, lift, 0.0)).y).is_greater_equal(base.y)
+	assert_float(DamageNumber.crowd_lane_lift("fire", order, step)).is_equal(DamageNumber.crowd_lane_lift("fire", order, step))  # stable, so a repeat hit still merges
+
+
+func test_a_heal_in_a_pile_lands_beside_it_not_on_the_enemy_bars() -> void:
+	var cfg: Dictionary = UiConfig.damage_numbers()
+	var enemies: Array[Vector3] = _pile(7, 0.9)
+	var player := Vector3(0.9, 2.9, 1.9)  # at the pile's front edge
+	var spot: Vector3 = DamageNumber.heal_spot(player, enemies, 3.0, 6, 1.7, float(cfg["crowd_front_drop"]))
+	var centroid := Vector2(0.9, 0.9)
+	assert_float((Vector2(spot.x, spot.z) - centroid).length()).is_greater_equal(1.7)
+	assert_float(spot.y).is_less_equal(player.y)
+	assert_vector(DamageNumber.heal_spot(player, _pile(5, 0.9), 3.0, 6, 1.7, 1.8)).is_equal(player)  # no pile, no move
+	var inside: Vector3 = DamageNumber.heal_spot(Vector3(0.9, 2.9, 0.9), enemies, 3.0, 6, 1.7, 1.8)  # player on the centroid
+	assert_float(inside.z).is_greater(0.9)  # camera side
+
+
+func test_a_new_number_at_an_occupied_ring_slot_is_lifted_to_a_free_lane() -> void:
+	var step: float = float(UiConfig.damage_numbers()["crowd_lane_lift"])
+	var spot := Vector3(4.0, 2.0, 1.0)
+	var none: Array[Vector3] = []
+	assert_float(DamageNumber.free_lane_y(spot, none, step, 0.4)).is_equal(2.0)
+	var taken: Array[Vector3] = [Vector3(4.0, 2.0, 1.0), Vector3(4.1, 2.0 + step, 1.0)]
+	assert_float(DamageNumber.free_lane_y(spot, taken, step, 0.4)).is_equal_approx(2.0 + 2.0 * step, 0.0001)  # two lanes full: third
+	var elsewhere: Array[Vector3] = [Vector3(7.0, 2.0, 1.0)]
+	assert_float(DamageNumber.free_lane_y(spot, elsewhere, step, 0.4)).is_equal(2.0)
+	var beside: Array[Vector3] = [Vector3(4.0, 2.0 + step, 1.0)]
+	assert_float(DamageNumber.free_lane_y(spot, beside, step, 0.4)).is_equal(2.0)  # a lane already clear of the other number stays

@@ -82,6 +82,14 @@ Commit range bc463f5..41c0bc9 (committed 2026-11-18 to 2026-11-20). Brief bc463f
 - `w1a_test`'s bolt-range case failed once in a full run under load (D2) and passed alone and in qa's loaded run; it stays here until it passes a few quiet runs.
 - Not verified by qa: real key events on the relic buttons (the focus-neighbour search is tested), a HUD capture with 3 or more relics and no pause panel, any capture at 1366x768, a save round trip with Charge held and Ward live.
 
+### Milestone 3 playtest (c50c360, no tag)
+
+Commit range 02b908a..b813a41. The baseline milestone report is `docs/playtests/2026-11-20-milestone-3.md`, with 16 screenshots in `docs/playtests/img/milestone-3/`. Verdict: no blocker. There is no earlier milestone report, so it is a baseline for later comparison, not a better-or-worse verdict.
+
+### Docs and process
+- **Milestone 3 playtest recorded** (c50c360, game-lead's record b813a41). A bot played, not a human, so feel is read from screenshots and logs. 9 windowed watch runs (TL2 watch mode, `-Scale 4`): Rogue and Wizard each won seed 1 with `-BotPreset off`; the human-preset Wizard died by room 9 on all 3 seeds (rooms 2, 9 and 2). Findings are reported in the file and are under game-lead review; game-lead triages them in a fresh session, and none is a decision yet.
+- ARCHITECTURE trimmed from 543 to about 393 lines (history and detail that the code headers or README already hold were cut). README: watch-mode note and a Last verification entry for TL1, TL2 and the playtest.
+
 ### TL1 and TL2: playtester tooling (no tag)
 
 Commit range 492078f..e408be7. TL1 build 77e3c9d, qa ad617bf (`docs/reviews/2026-11-20-tl1-qa.md`), fix e93ffa3. TL2 build dd13031..0e5875e (3e1c3b6 and 0e5875e are a double commit with the same message), qa 63e0531 and d2218fb (`docs/reviews/2026-11-20-tl2-qa.md`). Calls: DECISIONS "TL1 calls", "TL1 qa triage", "TL2 calls", "TL2 qa triage". Tooling only, so no tag and no gameplay change; the suite is 2813 cases, 0 failures, and the hashes and SIM1 are unchanged. No third-party assets.

@@ -1744,6 +1744,7 @@ UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> BAL1 and BD3c (`needs your
   - **Files likely touched:** `src/ui/MapScreen.gd`, `src/ui/ActScreen.gd`, the floating-text/Juice popups, the enemy bar marks, the boss banner, the player/class colour data in `data/`, and the UI string keys.
   - **GDD:** §11 (presentation), D32 (whole map visible), D45 (the act heal).
   - **Then:** qa, a playtester smoke check, docs, close.
+  - **Built 2026-11-20:** ux-designer, two sittings: f7d895e..86eaf8c (items 1-3 and 5-8) and 820d6a4..adf2e8a (crowd digits on a ring around a 6+ pile, preset re-times, clamp tests, first-frame and recheck captures). Hashes and SIM1 (Rogue, 1 act) unchanged; touched tests green. DECISIONS "UX1b calls". Next: qa (full suite).
 - [ ] **HP1, max HP relics (D55 = B, director 2026-11-20; GDD §9). gameplay-dev, one sitting. `safe to chain`** (new content the director asked for; its numbers go to BAL1). Placed before SIM2a so the bot measures runs with them.
   - **Goal:** two relics that raise max HP during a run.
   - **Engine:**

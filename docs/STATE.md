@@ -3,23 +3,17 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-20 (UX1b first sitting stopped with Remaining). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-20 (UX1b built; qa next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **UX1b: ux-designer stopped at 154 calls with a `Remaining:` list** (commits f7d895e, c40ccdd, 7100d50, 86eaf8c; list in 86eaf8c's body). Items 1-3 and 5-8 are built; hashes and SIM1 (Rogue, 1 act) are unchanged. Remaining:
-  1. Crowd digits in a tight 6+ melee pile still land on a neighbour's bar, pip or "Bleed" word (`src/effects/DamageNumber.gd`, `src/core/Juice.gd`).
-  2. `tools/capture_presets.json` `map_mini_boss` (`after` 4.0) and `map_act2` need re-timing for the 1 s map beat.
-  3. A unit test for the boss-bar clamp's half-height gap.
-  4. A first-frame Arm/Res capture at 0.1-0.3 s.
-  5. View the unviewed captures (1280x720 and 1366x768 start screen and boss banner, `crowd-*_2`). The `wizard-boss-ring` capture exists at 1152x648 only.
-  6. qa: the full suite.
+- **UX1b built** (ux f7d895e..86eaf8c, then 820d6a4..adf2e8a). qa is next: review plus the full suite. Nothing half done; the repo runs.
 
 ## Exact next step
-1. A fresh ux-designer agent does Remaining 1-5.
-2. Then qa (the full suite) -> playtester smoke check -> docs -> close (eyes 65 expires at UX1b's close, default kept). Then HP1 (gameplay-dev), then SIM2a.
+1. qa reviews UX1b and runs the full suite.
+2. Then playtester smoke check -> docs -> close (eyes 65 expires at UX1b's close, default kept). Then HP1 (gameplay-dev), then SIM2a.
 3. BAL1 and BD3c wait for the director's play of BD3b ("The one ask" in OPEN_ITEMS).
 
-**Next role:** ux-designer (UX1b remaining, a fresh agent).
+**Next role:** qa (UX1b).
 
 ## Current baselines (BD3b qa 664bfec, 2026-11-19)
 - Suite 2819 (UX1a qa e732d2e), 0 failures; a full run takes about 23 minutes, so run it in the background.
@@ -35,7 +29,7 @@ Last updated: 2026-11-20 (UX1b first sitting stopped with Remaining). Latest tag
 ## Known issues
 - **Watch mode at `-Scale 4` makes the bot much weaker than headless** (off preset 2/4 wins in watch vs 35/36 and 31/36 in SIM1; human Wizard 0/3 vs 20/36). Don't read difficulty from fast watch runs: the next milestone playtest uses `-Scale 1-2` or headless SIM for difficulty. Fix the fidelity if it's cheap (TL2 follow-up).
 - TL2 watch log nits (qa d2218fb): a bare `--watch-shots` is ignored; "HP at end" is stale on a loss; CROWD/BOSS lines use act-local room numbers; `crowded-fight.png` is overwritten. Fix when convenient.
-- Next ux polish: capture the 3+ starter relic label (in UX1b). The rest shipped in UX1a.
+- In `docs/playtests/img/ux1b/crowd-1152x648_0.png` an enemy overlaps the top edge of the bottom-right card strip (camera framing or card layering). Not fixed in UX1b; a later ux polish item.
 - Thin margins to carry into BAL1: SIM1 human Wizard exactly at its ceiling (20/36), off Wizard 1 above its floor (31/30), Wizard `relic` median 14.0, W-B removal pain +22% to +28%.
 - `w1a_test.gd` `test_the_wizard_bolt_does_not_reach_past_its_12_m_range...` failed once in a full run (32 s) and passes alone; qa re-runs it on a quiet machine.
 - Wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.

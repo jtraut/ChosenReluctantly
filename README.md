@@ -315,8 +315,8 @@ Parameters: `-Rooms` (default 20), `-Seed` (default 1), `-Plan` (BD1: the plan-a
 Plays whole seeded runs in a window with no hand input, and saves screenshots plus a text log to `<dir>\<class>-seed<N>\`:
 
 ```
-powershell -File toolsun_wave_sim.ps1 -Run -Class rogue -Seed 3 -BotPreset human -Scale 4 -Shots shots\m3
-powershell -File toolsun_wave_sim.ps1 -Run -Class wizard -Seed 3 -BotPreset human -Scale 4 -Shots shots\m3
+powershell -File tools\run_wave_sim.ps1 -Run -Class rogue -Seed 3 -BotPreset human -Scale 4 -Shots shots\m3
+powershell -File tools\run_wave_sim.ps1 -Run -Class wizard -Seed 3 -BotPreset human -Scale 4 -Shots shots\m3
 ```
 
 - **Files:** `NN-<what>.png` in play order; `crowded-fight.png` (overwritten by each bigger crowd, 4 or more enemies alive); `log.txt`. The same lines print as `WATCH ...` in the console.

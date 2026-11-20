@@ -2959,3 +2959,8 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **Hold cap 120 s** (0 < hold <= 120). [No cap: a typo like 1200 hangs a capture.]
 - **Aim targets Enemy nodes that are direct children of the player's parent** (where the spawner puts them; Boss extends Enemy). It keeps the last point when none is left. [A group lookup: no "enemies" group is guaranteed today.]
 - **A bad `--press` is refused in `Main._choose_character`** via a new `press_error` key in `CaptureArgs.parse`; the old `error` key still flags it, so `pl3_tooling_test` stays valid.
+
+## 2026-11-20 - TL1 qa triage (game-lead)
+- **TL1 qa PASS (ad617bf) with TL1-1 (held actions not released when Main is swapped).** The fix is about four lines, but ad617bf commits its red test, so the repo isn't green. It goes first in the next gameplay-dev sitting, as its own commit, before anything else.
+- **TL1 alone can't drive a three-act run** (qa: the script restarts with each scene, no UI input, fixed timings only). **New item TL2 before the Milestone 3 playtest:** a "watch the bot" mode. **First choice: reuse the wave sim's `-Run` bot** (it already plays whole seeded runs through the real Main scene with real input actions, picks routes, rewards and relics, and has a human-like preset), run windowed instead of headless, with screenshots saved at key moments. [A new autoplay inside ScriptedInput: it duplicates a bot we already have and tune.] [Hand-scripting each room: qa showed fixed-time scripts miss in later rooms.]
+- TL2 is tooling, so it's `safe to chain`. TL1 closes when TL2 closes, with one docs pass for both. Eyes 61 now expires at TL2's close, since its rule ties it to TL1's close and TL1 now closes together with TL2.

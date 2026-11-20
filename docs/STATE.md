@@ -3,16 +3,16 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-20 (TL1 built in 77e3c9d; qa next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-20 (TL1 qa PASS ad617bf; TL2 next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- TL1 built (77e3c9d, one sitting, nothing remaining); qa reviews it next. BD3b closed 2026-11-20 (ROADMAP; docs pass c84792b..bd45c08). The repo runs.
+- TL1 built (77e3c9d), qa PASS ad617bf with TL1-1: **ad617bf commits a red test** (`tl1_qa_test.gd` mid-hold release), fixed first in TL2. TL1 closes with TL2. BD3b closed 2026-11-20 (ROADMAP; docs pass c84792b..bd45c08). The repo runs.
 
 ## Exact next step
-1. **TL1, playtester movement tool** (ROADMAP, under MAP4's section; `safe to chain`): gameplay-dev, one short sitting. Then qa (short review: tests, README line), then game-lead closes it. No playtest gate of its own beyond the tool working; no tag needed (tooling only). Eyes 61 expires at TL1's close.
+1. **TL2, watch-the-bot mode** (ROADMAP, under TL1; `safe to chain`): gameplay-dev, one sitting, TL1-1 fix as its first commit. Then qa (short), a playtester smoke check of the mode, one tech-writer docs pass for TL1+TL2, close. Eyes 61 expires at TL2's close.
 2. Then the Milestone 3 close: milestone playtest (a full three-act run per class; this report is the baseline), docs pass including the ARCHITECTURE trim (540 lines, target about 400), then a fresh game-lead session reads the report and screenshots before the Milestone 4 brief. BD3c (Battlemage rework, D54) and BAL1 come after the milestone playtest.
 
-**Next role:** qa (TL1 review).
+**Next role:** gameplay-dev (TL2).
 
 ## Current baselines (BD3b qa 664bfec, 2026-11-19)
 - Suite 2796 (202 suites), 0 failures; a full run takes about 23 minutes, so run it in the background.
@@ -40,4 +40,4 @@ Last updated: 2026-11-20 (TL1 built in 77e3c9d; qa next). Latest tag `playtest-2
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths. A role that stops with a `Remaining:` list gets a fresh agent, never a resumed one.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions; eyes 61 (Thesis's hit; expires at TL1's close); the round 2 vision check; and, under "Later, optional", Battlemage as a Wizard subclass (GDD §6).
+All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions; eyes 61 (Thesis's hit; expires at TL2's close); the round 2 vision check; and, under "Later, optional", Battlemage as a Wizard subclass (GDD §6).

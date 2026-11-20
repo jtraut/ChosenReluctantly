@@ -1623,6 +1623,26 @@ un_offer_report.ps1`.
 
 - [ ] **TL1, playtester movement tool (gameplay-dev; one short sitting; before the Milestone 3 playtest). `safe to chain`.** `--press` can hold a movement action for N seconds and aim at the nearest enemy, so the playtester can play a fight instead of standing still. Tests and a README line. The milestone playtest needs full three-act runs per class, and today the playtester can only capture a player who stands still (BD3b playtest; DECISIONS "BD3b playtest triage").
   - **Built 2026-11-20:** gameplay-dev 77e3c9d. `--press` gains `<t>:<action>:<hold>` and `aim_nearest`/`aim_off`; it is now a debug flag (it could touch the save before); 6 new cases in `tl1_press_test.gd`; Rogue and Wizard scripted fights ran and hit enemies. Hashes can't move (code runs only with `--press`). DECISIONS "TL1 calls". Next: qa (short review), then the docs line goes to the Milestone 3 close docs pass.
+  - **qa PASS 2026-11-20** (ad617bf; `docs/reviews/2026-11-20-tl1-qa.md`), full suite 2802 / 203 green. Non-blocking TL1-1: held actions are not released when Main is swapped. Its red test is committed in `tl1_qa_test.gd`, and the fix is first in TL2's sitting. qa: TL1 alone can't drive a three-act run, so TL2 was added. TL1 closes with TL2 (DECISIONS "TL1 qa triage").
+- [ ] **TL2, watch-the-bot mode for the milestone playtest (gameplay-dev; one sitting; before the Milestone 3 playtest). `safe to chain`.**
+  1. **First, its own commit:** fix TL1-1. `ScriptedInput._exit_tree` releases every pending hold. Then `tests/unit/tl1_qa_test.gd` passes.
+  2. **Goal:** the playtester can watch, and capture, a full three-act run per class without hand input.
+  3. **Preferred approach** (DECISIONS "TL1 qa triage"): the wave sim's `-Run` bot, run windowed (not `--headless`), with the human-like bot preset available and screenshots auto-saved at key moments:
+     - each map screen or route choice;
+     - each reward, relic, shop and event choice;
+     - a crowded fight (most enemies alive in a room);
+     - each boss;
+     - the end screen.
+     Save them to a folder named on the command line. If the sim bypasses the real map, reward or event screens, say so: the screens must be the real UI if that's cheap. Otherwise, capture the room and log what the player would have seen (its choices and the deck at each step).
+  4. **Also wanted:** a text log the playtester can quote: route, offers, picks, deck at each act end, fight times, HP, and the result.
+  5. **Acceptance:**
+     - one full three-act windowed run per class completes;
+     - the screenshots exist and show the moments above;
+     - the four hashes and SIM1 are unchanged, because the headless path is untouched (state how you checked);
+     - tests for any new parsing;
+     - the exact commands go in the hand-back, for README.
+  6. **If it's clearly bigger than one sitting,** commit at a clean point with a `Remaining:` list.
+  7. **Then:** qa (short) -> playtester smoke check of the mode -> one tech-writer docs pass for TL1 and TL2 -> close.
 - [ ] **Milestone 3 close (after BD3b and TL1).** The tech-writer pass for this close also does the ARCHITECTURE trim (540 lines, target about 400) that BD3b's pass left. playtester runs the milestone playtest (playtester.md "Milestone playtest"): a full three-act run per class, judged against the three pillars. No earlier milestone report exists, so this one is the baseline. Then game-lead reviews the report and the screenshots itself, in a fresh session, before writing the Milestone 4 brief.
 
 ## DF1, difficulty bump (D51 = C, director 2026-11-12; after MAP4, before 3d)

@@ -25,6 +25,13 @@ func _ready() -> void:
 	presses.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a["at"]) < float(b["at"]))
 
 
+## A scene swap (or quit) must not leave a scripted hold stuck down: release every pending hold.
+func _exit_tree() -> void:
+	for release: Dictionary in _releases:
+		_send(release["action"], false)
+	_releases.clear()
+
+
 func _process(delta: float) -> void:
 	_elapsed += delta
 	while _next < presses.size() and _elapsed >= float(presses[_next]["at"]):

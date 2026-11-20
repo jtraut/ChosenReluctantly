@@ -1713,13 +1713,37 @@ UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> BAL1 and BD3c (`needs your
   - **Built 2026-11-20:** ux-designer 1abef8c. All 6 items done, display only; hashes unchanged; touched UI tests green. Remaining: a capture of the `xN` strip during a burst. DECISIONS "UX1a calls". Next: qa.
   - **qa PASS 2026-11-20** (e732d2e; `docs/reviews/2026-11-20-ux1a-qa.md`). Suite 2819, 0 failures; hashes unchanged. qa captured the `xN` strip in a real run (x6, x13), and it reads cleanly. Non-blocking, to UX1b: `[Arm]`/`<Res>` overprint in the first frame after a hit, and a boss banner over a number. Next: a playtester smoke check.
   - **Playtest 2026-11-20, no blocker** (b06a637; `docs/playtests/2026-11-20-ux1a.md`). The smoke check passes. Cleaner field, readable badges, the Arm/Res words read. Confirmed: the boss banner overlaps a number (already in UX1b). "Which relic fired" -> eyes 65. Red enemy triangle and crowd digits -> UX1b. Next: docs pass, close.
-- [ ] **UX1b, run-screen readability (one sitting; gameplay-dev first only if the run flow needs a hook). `safe to chain`.**
-  - **Single-option map pick:** show the map for about 1 s with the one node highlighted, then advance (any key skips). The bot and SIM paths must not change, so the hashes stay the same.
-  - **Act screen:** add a line "+N HP (act heal 30%)", so the D45 heal is visible.
-  - **Player colour:** the player capsule colour is distinct from every enemy colour, for both classes (data).
-  - **Captures:** the 3+ starter relic label, the loadout start screen and 1366x768.
-  - **From the UX1a playtest (b06a637):** the red triangle over enemy bars has no word (give it one, or a short label the first time it appears), and crowd damage digits sit on enemy heads.
-  - **From UX1a qa (e732d2e):** `[Arm n]` and `<Res n>` overprint in the first frame after a hit (qa guesses there's no current camera on the first frame, so the sideways shift is skipped; unverified). Also, the boss attack banner overlaps damage numbers. Confirm both on a real fight and fix.
+- [ ] **UX1b, run-screen readability (ux-designer, one sitting; no gameplay-dev hook needed). `safe to chain`** (display and run-screen flow only; no feel or balance change).
+  - **Brief (game-lead, 2026-11-20):**
+    - The map pick is already UI-side. `MapScreen._on_node_pressed` calls `RunController.pick_node`, and the bots call the controller directly, so the auto-advance beat goes in `MapScreen` and needs no run-flow hook.
+    - Evidence: `docs/playtests/2026-11-20-ux1a.md` lines 22 and 28, `docs/reviews/2026-11-20-ux1a-qa.md`, and DECISIONS "Milestone 3 review" (single-option auto-advance; the triangle and crowd digits go to UX1b).
+  - **Acceptance, in priority order.** If the sitting stops early, the `Remaining:` list holds the tail.
+    1. **Arm/Res first-frame overprint:**
+       - Confirm it on a real fight first. qa's guess at the cause (no current camera on the first frame) is unverified.
+       - Then fix it: `[Arm n]` and `<Res n>` never overprint each other or the damage number, including in the first frame after a hit.
+    2. **Boss attack banner:** confirm it on a real fight, then fix it so the banner never covers a damage number.
+    3. **Red triangle over enemy bars:** find out what it is. Then name it inline, the way Arm and Res are named: a word on the mark, or a short label the first time it appears. No legend screen.
+    4. **Crowd damage digits:** in a crowd of 6 or more, digits don't sit on enemy heads or HP bars, and each one reads as belonging to its enemy.
+    5. **Act screen heal line:** "+N HP (act heal 30%)".
+       - N is the D45 heal actually applied, clamped to max.
+       - The 30% is read from data, not hard-coded.
+       - At full HP the line is hidden.
+    6. **Player colour:** the player capsule colour is distinct from every enemy colour, including the element tints, for both classes (a data change). The hand-back lists each class colour against the enemy colours.
+    7. **Single-option map pick auto-advance:**
+       - When exactly one node is reachable, the map shows for about 1 s with that node highlighted, then picks it.
+       - Any key or click skips the wait.
+       - The whole map stays visible during the beat (D32).
+       - It applies only to the human UI path: bots, headless SIM and watch mode skip it, and it uses no RNG.
+       - The timer cancels if the pick happens another way or the screen closes. Pausing during the beat holds it.
+    8. **Captures,** each at 1152x648, 1280x720 and 1366x768: the 3+ starter relic label, the loadout start screen, a crowded fight (items 1-4) and the map beat.
+  - **Constraint:** don't change the relic proc badge pulse. Eyes 65 judges it as built and expires at this close.
+  - **Checks:**
+    - The four state hashes are unchanged (3172486861 / 916264160 / 1317880580 / 3476063471), and SIM1 is unchanged.
+    - Run only the touched UI tests. The full suite (2819 tests, about 23 minutes) is qa's.
+    - Add tests for the beat (the single-option pick, a skip, the cancel on another pick, and the bot path left untouched) and for the heal line's value.
+  - **Files likely touched:** `src/ui/MapScreen.gd`, `src/ui/ActScreen.gd`, the floating-text/Juice popups, the enemy bar marks, the boss banner, the player/class colour data in `data/`, and the UI string keys.
+  - **GDD:** §11 (presentation), D32 (whole map visible), D45 (the act heal).
+  - **Then:** qa, a playtester smoke check, docs, close.
 - [ ] **HP1, max HP relics (D55 = B, director 2026-11-20; GDD §9). gameplay-dev, one sitting. `safe to chain`** (new content the director asked for; its numbers go to BAL1). Placed before SIM2a so the bot measures runs with them.
   - **Goal:** two relics that raise max HP during a run.
   - **Engine:**

@@ -3,17 +3,17 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-20 (UX1a closed; docs pass d7dc951). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-20 (UX1b brief written; ux-designer running). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- Nothing is half done. UX1a is closed, and the repo runs.
+- **UX1b: ux-designer running** (brief and acceptance in ROADMAP Milestone 4, written 2026-11-20). No gameplay-dev hook is needed: the map pick is UI-side. If ux stops with a `Remaining:` list, copy it and its commit hash here first.
 
 ## Exact next step
-1. **ux-designer: UX1b, run-screen readability** (ROADMAP Milestone 4; `safe to chain`). It includes the carried UX1a items: the Arm/Res first-frame overprint, the boss banner over numbers, the red enemy triangle, and crowd digits on heads. Map auto-advance may need a run-flow hook from gameplay-dev; ux lists it under `Remaining:` if so. Write UX1b's acceptance list in ROADMAP before starting it, if it isn't concrete enough.
-2. Then qa -> playtester -> docs -> close (eyes 65 expires at UX1b's close). Then HP1 (gameplay-dev), then SIM2a.
+1. Wait for ux-designer's UX1b hand-back. A `Remaining:` list goes to a fresh ux agent.
+2. Then qa -> playtester smoke check -> docs -> close (eyes 65 expires at UX1b's close, default kept). Then HP1 (gameplay-dev), then SIM2a.
 3. BAL1 and BD3c wait for the director's play of BD3b ("The one ask" in OPEN_ITEMS).
 
-**Next role:** ux-designer (UX1b).
+**Next role:** ux-designer (UX1b, running).
 
 ## Current baselines (BD3b qa 664bfec, 2026-11-19)
 - Suite 2819 (UX1a qa e732d2e), 0 failures; a full run takes about 23 minutes, so run it in the background.

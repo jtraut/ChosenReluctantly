@@ -10,8 +10,8 @@ Last updated: 2026-11-19 (BD3b-C2 recorded; D next). Latest tag `playtest-2026-1
 - BD3b-C2 done 2026-11-19 (65be0d9..8fe0560, verified in 069f3ef).
 
 ## Exact next step
-1. **tech-writer docs pass for BD3b** (the handoff covers this STATE's pending list plus the RESOLVED entries), then game-lead closes BD3b and tags `playtest-2026-11-19-BD3b`. qa PASS 664bfec; playtest a454d6d, no blocker. D3 done 16b1e81..76001b1: W-B passes, W-D goes to the director as D54 (default A: W-D informational, fixed in BAL1). If D54 = B or C, a gameplay-dev D4 sitting comes before qa.
-2. Then TL1 (playtester movement tool), then One sitting per agent; a `Remaining:` list gets a fresh agent.
+1. **tech-writer docs pass for BD3b** (the handoff covers this STATE's pending list plus the RESOLVED entries), then game-lead closes BD3b and tags `playtest-2026-11-19-BD3b`. qa PASS 664bfec; playtest a454d6d, no blocker. D54 stays open; default A applies when the Milestone 3 playtest starts. If he answers B or C, that becomes a short follow-up slice before the milestone playtest.
+2. Then TL1 (playtester movement tool; ROADMAP). One sitting per agent; a `Remaining:` list gets a fresh agent.
 3. Then the Milestone 3 close and milestone playtest (CLAUDE.md, milestone boundary).
 
 **Next role:** tech-writer (BD3b docs pass).
@@ -55,4 +55,4 @@ Last updated: 2026-11-19 (BD3b-C2 recorded; D next). Latest tag `playtest-2026-1
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths. A role that stops with a `Remaining:` list gets a fresh agent, never a resumed one.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: D54 (Ward Battlemage; default A at BD3b's close); eyes 60 (play 3d; expires at BD3b's close); the round 2 vision check.
+All director-facing items are in `docs/OPEN_ITEMS.md`: D54 (Ward Battlemage; default A when the Milestone 3 playtest starts); eyes 60 (play 3d; expires at BD3b's close); the round 2 vision check.

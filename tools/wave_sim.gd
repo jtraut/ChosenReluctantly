@@ -1032,7 +1032,7 @@ func _run_whole(run_seed: int) -> void:
 		_watch = WatchMode.new()
 		_watch.begin(_watch_dir, RunSession.selected_character, run_seed)
 		_watch_crowd_best = 0
-		_watch.say("RUN seed %d, class %s, bot preset %s, route policy %s, time_scale %.0f" % [run_seed, RunSession.selected_character, _bot_settings.preset_name, _route_policy if _route_policy != "" else "(none: straight run)", _scale])
+		_watch.say("RUN seed %d, class %s, bot preset %s, route %s, time_scale %.0f" % [run_seed, RunSession.selected_character, _bot_settings.preset_name, ("map, policy " + (_route_policy if _route_policy != "" else "first")) if not _route.is_empty() else "straight run (no map)", _scale])
 		_watch.say("ROUTE act 1 (the bot is placed on the first node, so act 1's opening map pick is not shown): nodes %s, types %s" % [str(_route), _watch_types(rooms)])
 	get_tree().change_scene_to_packed(load(RUN_MAIN_PATH) as PackedScene)
 	var previous: Node = null

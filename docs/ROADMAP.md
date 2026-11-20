@@ -1704,12 +1704,13 @@ UX1a -> UX1b -> SIM2a (all `safe to chain`) -> BAL1 and BD3c (`needs your play f
     1. Relic procs show no floating name label in the play field. The proc shows on the relic's badge in the badge row instead (a pulse, plus the existing `xN`).
     2. The badge's `xN` stack counter doesn't cover the badge letters.
     3. Relic badges are legible in combat at 1152x648, and still fit 20 relics (the cap).
-    4. The status marks over enemies (today `[8]`, `<7>`, `<1>`) say which status they are without a legend and without colour alone (for example "Bl 8", "Bu 7", or a glyph).
+    4. ~~The status marks over enemies (today `[8]`, `<7>`, `<1>`) say which status they are~~ Corrected 2026-11-20: `[n]` and `<n>` are armor-reduced and resisted damage numbers, not statuses. They say what they are without a legend (built as `[Arm n]` and `<Res n>`), and don't overlap. Status pips were already shape-coded.
     5. "Swap: free" is hidden on ready cards and while swaps are locked. The curse swap line is hidden while swaps are locked.
     6. Kindling and Hot Head get a non-colour Fire mark.
   - **Checks:** captures at 1152x648, 1280x720 and 1366x768 of a crowded fight and of a boss with 2 statuses on it. Touched UI tests green, and the four state hashes unchanged (display only).
   - **Files likely touched:** the HUD relic badge row, the floating-text/Juice popups for relic procs, the enemy status label, card slot widgets, and string keys in `data/`.
   - **GDD:** §11 (presentation), and the readability rule in CLAUDE.md "Game feel".
+  - **Built 2026-11-20:** ux-designer 1abef8c. All 6 items done, display only; hashes unchanged; touched UI tests green. Remaining: a capture of the `xN` strip during a burst. DECISIONS "UX1a calls". Next: qa.
 - [ ] **UX1b, run-screen readability (one sitting; gameplay-dev first only if the run flow needs a hook). `safe to chain`.**
   - **Single-option map pick:** show the map for about 1 s with the one node highlighted, then advance (any key skips). The bot and SIM paths must not change, so the hashes stay the same.
   - **Act screen:** add a line "+N HP (act heal 30%)", so the D45 heal is visible.

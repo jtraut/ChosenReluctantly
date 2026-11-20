@@ -2999,3 +2999,12 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
   Enemy *shapes* by type (the playtester's suggestion) stay out: that's art (Milestone 5).
 - **Milestone 4 order:** UX1a -> UX1b -> SIM2a (all `safe to chain`; the director hasn't played BD3b), then BAL1 and BD3c after his play, then the meta design pass. Two small ux sittings instead of one: the list is about 10 items across HUD, map and the act screen, and MAP3b showed big sittings run over.
 - **Milestone 3 is marked done.** Its close conditions are met: milestone playtest (c50c360, no blocker), docs pass (c4f14dc..e21a259), and this fresh-session review.
+
+## 2026-11-20 - UX1a calls (ux-designer 1abef8c, recorded by game-lead)
+- **`[n]`/`<n>` are damage numbers (armor-reduced and resisted), not status marks.** The brief's premise was wrong. They became `[Arm n]` and `<Res n>`, with armor 1.3 m left and resist 1.3 m right (`damage_numbers.style_spread`), because the two collided. [A glyph: a `Label3D` font may lack it.] [One letter: needs a legend.] [A vertical stagger: it reads as a timing change.]
+- **The relic proc pulses its badge (+1-2 px) instead of floating a name.** `RelicCueLayer` stays for buff cues (Spiteful Ward). [Delete the layer, or flip `relic_cue_enabled`: that also gates buff cues.]
+- **The `xN` counter is a strip on the badge's bottom edge, and the mark moves up.** [A corner pill: it overlaps a neighbour in the wrapped grid.] Badges 30 -> 40 px, font 15 -> 18; 20 relics take 5 x 4.
+- **A "Fire" word pill on every element-pool card, keyed on the pool's kind and tag.** [Kindling and Hot Head only: that keys the UI on card ids.] [A fourth chip: it overflows the chip row.]
+- **New capture-only scenario `ux1a_boss_statuses`.**
+- **game-lead: `status_stacks.min_stacks` stays 2.** Single stacks show as shape pips only. [1: prints "Burn x1" over every enemy in a crowd, the clutter UX1a removes.]
+- The commit trailer reads Sonnet 5.5 instead of the briefed Opus 5.5. It's cosmetic, so it isn't amended (that would rewrite history).

@@ -6,15 +6,17 @@
 Last updated: 2026-11-20 (Milestone 3 closed after the fresh-session review; Milestone 4 briefs written). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- UX1a (ux-designer) started 2026-11-20 after 63f1427. If a cutoff hits, check `git log` for its commits and any `Remaining:` list, then start a fresh ux-designer for the rest. Milestone 3 is closed (DECISIONS "Milestone 3 review"), and the repo runs.
+- **UX1a built** (ux-designer 1abef8c, display only, hashes unchanged, touched UI tests green, full suite not run). Next: qa.
+  - Remaining (from 1abef8c): the relic `xN` counter strip is verified by a layout test only; capture a relic burst (for example Pyre Insurance, `bd2_pyre_explosion` at a few `-After` times, 1152x648). `slice5_qa_test` was not re-run after `style_spread`.
+- Milestone 3 is closed (DECISIONS "Milestone 3 review"). The repo runs.
 
 ## Exact next step
-1. **ux-designer: UX1a, combat HUD readability** (ROADMAP Milestone 4; the brief is complete; `safe to chain`). One sitting, well under 150 calls.
-2. Then qa, then the playtester smoke check and captures, then UX1b, then SIM2a (all `safe to chain`). One tech-writer docs pass can cover UX1a and UX1b if they close back to back. The docs-pass list below needs to go out with UX1a's pass at the latest.
+1. **qa: review UX1a** (1abef8c). Run the full suite in the background, re-run `slice5_qa_test`, and capture the `xN` strip.
+2. Then a playtester smoke check and look, then UX1b, then SIM2a (all `safe to chain`). One tech-writer docs pass can cover UX1a and UX1b if they close back to back. The docs-pass list below goes out with UX1a's pass at the latest.
 3. **At UX1a's close:** eyes 62, 63 and 64 expire with their defaults if they're unanswered.
 4. BAL1 and BD3c wait for the director's play of BD3b ("The one ask" in OPEN_ITEMS).
 
-**Next role:** ux-designer (UX1a).
+**Next role:** qa (UX1a).
 
 ## Current baselines (BD3b qa 664bfec, 2026-11-19)
 - Suite 2813 (TL2 qa), 0 failures; a full run takes about 23 minutes, so run it in the background.
@@ -26,6 +28,13 @@ Last updated: 2026-11-20 (Milestone 3 closed after the fresh-session review; Mil
 
 ## Pending for the next docs pass
 - CHANGELOG: Milestone 3 closed after game-lead's fresh-session review. Milestone 4 order: UX1a -> UX1b -> SIM2a -> BAL1 and BD3c. SIM2's "formulated" profile is pulled forward as SIM2a. Map single-option auto-advance is game-lead's call (UX1b). New director questions: D55 (max HP growth), eyes 62 (time a run), eyes 63 (leftover gold) and eyes 64 (map auto-advance veto). Review commit 0c384cb.
+- UX1a (1abef8c), for README and CHANGELOG:
+  - new capture scenario `ux1a_boss_statuses`;
+  - damage numbers now read `[Arm n]` and `<Res n>` and spread sideways (`damage_numbers.style_spread`);
+  - relic badges 30 -> 40 px, font 15 -> 18;
+  - relic procs pulse their badge instead of floating a name;
+  - an element word pill ("Fire") on element-pool cards;
+  - swap pills hidden on ready cards and while swaps are locked.
 - RESOLVED: nothing answered this session. OPEN_ITEMS lost its "Eyes 61 expired" status text (already in RESOLVED).
 
 ## Known issues

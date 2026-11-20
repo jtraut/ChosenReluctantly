@@ -36,3 +36,6 @@ ChosenReluctantly_Notes
 
 # Claude Code per-machine settings (local only)
 .claude/settings.local.json
+
+# TL2 watch-the-bot screenshots (run_wave_sim.ps1 -Shots shots\...)
+/shots/

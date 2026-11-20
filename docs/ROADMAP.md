@@ -983,6 +983,7 @@ W1b finishes as planned (tech-writer docs pass, then close). Then, in this order
       - The Fire pool tag is filtered off chip rows but kept in the editor's tag line. The pause relic list shows Liquidate Assets' "Now:" value.
       - Captures are in `docs/playtests/img/bd3b-ux/`. Hashes unchanged.
       - The one full run (2792 / 201) had 9 failures, all ux-caused and fixed (85 cases re-run green). **qa re-runs the full suite.** DECISIONS "BD3b-ux calls".
+    - **qa PASS 2026-11-19** (664bfec; `docs/reviews/2026-11-19-bd3b-qa.md`). Suite 2796 / 202 green; hashes and SIM1 match D3; W-B gates pass, but the removal pain margin is thin (+22% with a different replacement card). Non-blocking: Swap: free shows while swaps are locked; Kindling and Hot Head show Fire by colour only (both to the next ux polish); Wizard `relic` median 14.0, at the edge.
   - **Deferred (not in BD3b; they retune slices the director hasn't played). Home: BAL1, the first balance item after the Milestone 3 playtest, `needs your play first`:**
     - Request for Quotation in about 79% of shops; Liquidate Assets is weak.
     - Paperwork Fire rarely fires; Severance Package chains.

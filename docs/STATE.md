@@ -10,14 +10,14 @@ Last updated: 2026-11-19 (BD3b-C2 recorded; D next). Latest tag `playtest-2026-1
 - BD3b-C2 done 2026-11-19 (65be0d9..8fe0560, verified in 069f3ef).
 
 ## Exact next step
-1. **qa reviews BD3b** (the whole slice, 0436585..HEAD, and re-runs the full suite: ux's last full run had 9 failures, since fixed). `safe to chain`. BD3b-ux built d39b156..9040ef4. D3 done 16b1e81..76001b1: W-B passes, W-D goes to the director as D54 (default A: W-D informational, fixed in BAL1). If D54 = B or C, a gameplay-dev D4 sitting comes before qa.
+1. **playtester plays BD3b** (both Wizard archetypes, the Charge counter, the Ward cue, slot pills, a smoke check). `safe to chain`. qa PASS 664bfec. D3 done 16b1e81..76001b1: W-B passes, W-D goes to the director as D54 (default A: W-D informational, fixed in BAL1). If D54 = B or C, a gameplay-dev D4 sitting comes before qa.
 2. Then BD3b-ux, qa, playtester, tech-writer, close. One sitting per agent; a `Remaining:` list gets a fresh agent.
 3. Then the Milestone 3 close and milestone playtest (CLAUDE.md, milestone boundary).
 
-**Next role:** qa (BD3b slice review).
+**Next role:** playtester (BD3b).
 
 ## Current baselines (DF1 qa, 2026-11-17)
-- Suite 2792 (201 suites) after BD3b-ux; the last full run had 9 ux failures, since fixed, and qa re-runs it; a full run takes about 23 minutes, so run it in the background. SIM1 `-Route first` after D3: human Rogue 19/36, Wizard 20/36 (at the ceiling); off 35/36, 31/36. SIM1's human preset presses slots at random (no PlanPolicy).
+- Suite 2796 (202 suites), 0 failures (BD3b qa); a full run takes about 23 minutes, so run it in the background. SIM1 `-Route first` after D3: human Rogue 19/36, Wizard 20/36 (at the ceiling); off 35/36, 31/36. SIM1's human preset presses slots at random (no PlanPolicy).
 - Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 (unchanged; act 1 is untouched).
 - SIM1 `-Route first`: human Rogue 18/36, Wizard 16/36; off 34/36, 34/36. Floors 12 / 10 / 31 / 30, ceiling 21 / 20 (MAP.md §11.4). Rogue losses in rooms 13-15: 8 of 18.
 - Fingerprint 0.79 with relics (qa's BUILD_DEPTH relic sets, now canonical), 0.45 without. Boss parity 92% / 109% / 106%.
@@ -39,8 +39,11 @@ Last updated: 2026-11-19 (BD3b-C2 recorded; D next). Latest tag `playtest-2026-1
 - BD3b-D2 shipped (7d1b197..c678b24): ARCHITECTURE (`PlanPolicy.spender_scale`, `has_trigger_buff`, `SPEND_AT_STACKS`, `SPEND_DECAY_MARGIN`, `TRIGGER_BUFF_RANGE`; `StatusEffectManager.decay_left_of`; view key `self_decay_left` in `SlotSynergyView.view_for` and `SimCaster.live_view_fields`; the wave sim's plan line prints spender casts). CHANGELOG (the plan bot plays Charge and Spiteful Ward; gate results). README (suite count; SIM1's human preset doesn't use PlanPolicy; Wizard fingerprint relic sets W-A `lingering_embers+pyre_insurance+grading_curve`, W-B `reading_list+cc_all_staff+office_supplies`, W-D `thorned_boundary+ergonomic_chair+heavy_sigh`).
 - BD3b-D3 shipped (16b1e81..76001b1): CHANGELOG (Thesis Defense +1.5 -> +10 per Charge; Footnotes and Literature Review 2 -> 3 Charge per cast; cc:All Staff bolt 6 -> 3 and its rule_text; W-B gates pass, W-D's miss is D54). Tests: `bd3b_engine_test` reads `decay_after` from data.
 - BD3b-ux shipped (d39b156..9040ef4): ARCHITECTURE (`StatusReadout`; `HudLayout.status_rect`; `relic_row_rect` now sits below the status rows; `RelicManager.buff_expires_at`; `RunRelics.run_stats`/`current_text`; `ConditionCue.pill_lines`; `ChipRow.texts_for` with `hud.chip_hide_pool_tags`). README (UxCapture modes `bd3b_hud`, `bd3b_hud_fired`, `bd3b_fire_offer`; preset `bd3b_fire_reward`; suite 2792 / 201). CHANGELOG (Charge counter, Ward cue, scale pills, Swap: free, the Fire chip hidden on chip rows, Liquidate Assets "Now:"; new keys under `ui.status_readout`, `ui.slot_condition`, `ui.effect.condition`, `ui.relic.now_format`, and `hud.status_*`).
+- BD3b qa (664bfec): the review is `docs/reviews/2026-11-19-bd3b-qa.md`; its §9 lists what CHANGELOG and README must cover. New suite `bd3b_qa_test` and a static scan for anonymous CombatEvents lambdas.
 
 ## Known issues
+- Next ux polish (from BD3b qa): hide "Swap: free" and the curse swap line while swaps are locked; add a non-colour Fire mark for Kindling and Hot Head; capture the 3+ starter relic label and 1366x768.
+- Thin margins to carry into BAL1: SIM1 human Wizard exactly at its ceiling (20/36), off Wizard 1 above its floor (31/30), Wizard `relic` median 14.0, W-B removal pain +22% to +28%.
 - `w1a_test.gd` `test_the_wizard_bolt_does_not_reach_past_its_12_m_range...` failed once in a full run (32 s) and passes alone; qa re-runs it on a quiet machine.
 - Wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 - Human-bot Kindling boss parity with relics is 67%, under 70% (qa DF1; not a DF1 regression).

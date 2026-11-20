@@ -38,13 +38,15 @@ static func run_room(room: int, act: int, run_room_total: int, acts_total: int) 
 	return (maxi(act, 1) - 1) * rooms_per_act(run_room_total, acts_total) + room
 
 
-## The act-start heal line (D45 = B), for example "You recover 9 HP. Rests are on the map." Empty when nothing healed, which is also the case for
-## an act resumed from a save (the summary's `healed` is 0 there), so a resumed act says nothing about a heal that already happened.
+## The act-start heal line (D45 = B, UX1b): "+9 HP (act heal 30%)". N is the heal actually applied (clamped to max HP by the controller, so it is what HP
+## really rose by); the percent is the summary's `heal_fraction`, which the controller reads from data (`acts.start_heal`), with the config read as the fallback.
+## Empty when nothing healed: at full HP, or an act resumed from a save (the summary's `healed` is 0 there).
 static func heal_line(summary: Dictionary) -> String:
 	var healed: int = roundi(float(summary.get("healed", 0.0)))
 	if healed <= 0:
 		return ""
-	return String(_texts().get("heal", "You recover %d HP. Rests are on the map.")) % healed
+	var fraction: float = float(summary.get("heal_fraction", RunConfig.act_start_heal()))
+	return String(_texts().get("heal", "+%d HP (act heal %d%%)")) % [healed, roundi(fraction * 100.0)]
 
 
 ## True when HP after the heal is at or under `ui.act.low_hp_fraction` of max (default 0.5). No max HP counts as not low.

@@ -134,6 +134,7 @@ const DEFAULT_SETTINGS_SCREEN: Dictionary = {
 
 ## The map screen (MAP1): look and sizes (authored at `reference_height`, scaled by viewport height). Words are data/run.json `ui.map`.
 const DEFAULT_MAP_SCREEN: Dictionary = {
+	"auto_advance_seconds": 1.0,
 	"reference_height": 720,
 	"margin": 20,
 	"title_font_size": 30,
@@ -336,8 +337,9 @@ const DEFAULT_STATUS_STACKS: Dictionary = {
 	"pixel_size": 0.009,
 	"outline_size": 12,
 	"outline_color": "#0d080b",
-	"height": 3.5,
+	"height": 4.1,
 	"min_stacks": 2,
+	"intro_seconds": 3.0,
 	"count_format": "%s x%d",
 	"max_suffix": " MAX",
 	"render_priority": 12,
@@ -376,9 +378,10 @@ const DEFAULT_DAMAGE_NUMBERS: Dictionary = {
 	"outline_size": 14,
 	"outline_color": "#0d080b",
 	"color_lighten": 0.3,
-	"spawn_height": 1.9,
-	"rise_distance": 1.2,
+	"spawn_height": 2.9,
+	"rise_distance": 0.5,
 	"boss_bar_gap": 6,
+	"boss_clamp_drift_px": 96,
 	"duration": 0.8,
 	"big_scale": 1.35,
 	"merge_radius": 0.8,

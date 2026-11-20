@@ -46,10 +46,16 @@ var _last_focus: int = -1
 var _scale: float = 1.0
 ## The layer the PICK screen uses (11: above the run HUD gold badge on layer 10, below the pause screen on 20); VIEW goes above the pause screen.
 var _pick_layer: int = 11
+## UX1b: the single-option beat (a human session only). When exactly one node is reachable the map stays up for `map_screen.auto_advance_seconds`, that node
+## highlighted, then picks it; any key or click skips the wait. -1 = no beat running. Display flow only: no RNG, and never on the bot or headless paths.
+var beat_enabled: bool = false
+var _beat_left: float = -1.0
+var _beat_target: int = -1
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	beat_enabled = human_session()
 	_pick_layer = layer
 	visible = false
 	_build()
@@ -64,6 +70,7 @@ func _ready() -> void:
 
 
 func _exit_tree() -> void:
+	_cancel_beat()
 	if GamePause.paused_changed.is_connected(_on_pause_changed):
 		GamePause.paused_changed.disconnect(_on_pause_changed)
 
@@ -143,6 +150,7 @@ func show_pick(screen_data: Dictionary) -> void:
 		return
 	_data = screen_data
 	_pick_pending = true
+	_cancel_beat()  # a new pick starts a new beat (a held one, across a pause or the act screen, is kept: _open does not reset it)
 	if (GamePause.is_paused() or _act_screen_open()) and _mode != Mode.VIEW:
 		_hide_now()  # the act screen (MAP3 ux) opens in the same call as the next act's pick: the pick waits for its Continue
 		return
@@ -189,6 +197,8 @@ func _open(new_mode: Mode) -> void:
 	if new_mode == Mode.PICK:
 		_dim_until_armed(delay)
 	_focus_start()
+	if new_mode == Mode.PICK:
+		_start_beat()
 
 
 func _hide_now() -> void:
@@ -531,15 +541,96 @@ func _on_node_pressed(node_id: int) -> void:
 	if info.is_empty() or not bool(info.get("reachable", false)):
 		return
 	if _controller == null:
+		_cancel_beat()
 		node_chosen.emit(node_id)
 		return
 	var result: Dictionary = _controller.pick_node(node_id)
 	if not bool(result.get("ok", false)):
 		return
 	_pick_pending = false
+	_cancel_beat()
 	if _mode == Mode.PICK:
 		_hide_now()
 	node_chosen.emit(node_id)
+
+
+# --- the single-option beat (UX1b) ------------------------------------------------------------------
+
+## True in a person's own game: a window (not --headless) hosted by the normal scene tree. The bots (tools/wave_sim.gd, tools/bot_sim) and the test runner
+## run as a script that replaces the SceneTree, so `get_script()` is set there; watch mode is the same bot in a window, so it is skipped too.
+static func human_session() -> bool:
+	var loop: MainLoop = Engine.get_main_loop()
+	return DisplayServer.get_name() != "headless" and loop != null and loop.get_script() == null
+
+
+## Pure: the id of the only reachable node, or -1 when none or several can be picked (no beat then).
+static func single_reachable_id(infos: Array[Dictionary]) -> int:
+	var found: int = -1
+	for info: Dictionary in infos:
+		if bool(info.get("reachable", false)):
+			if found >= 0:
+				return -1
+			found = int(info.get("id", -1))
+	return found
+
+
+## Pure: the beat's clock after `delta`. It holds (unchanged) while `held` (the pause screen, the act screen), and never goes below 0.
+static func beat_step(left: float, delta: float, held: bool) -> float:
+	if left < 0.0 or held:
+		return left
+	return maxf(left - delta, 0.0)
+
+
+## True while a beat is counting down.
+func beat_running() -> bool:
+	return _beat_left >= 0.0
+
+
+func beat_target() -> int:
+	return _beat_target
+
+
+func beat_seconds_left() -> float:
+	return _beat_left
+
+
+func _start_beat() -> void:
+	if not beat_enabled or _mode != Mode.PICK:
+		return
+	if _beat_left < 0.0:
+		var target: int = single_reachable_id(_info_list())
+		var seconds: float = float(UiConfig.map_screen().get("auto_advance_seconds", 0.0))
+		if target < 0 or seconds <= 0.0:
+			return
+		_beat_target = target
+		_beat_left = seconds
+	hint_label.text = String(_texts().get("beat_hint", hint_label.text))
+
+
+func _cancel_beat() -> void:
+	_beat_left = -1.0
+	_beat_target = -1
+
+
+## Picks the beat's node now (the clock ran out, or a key or click skipped the wait). False when it could not (not armed yet, or the pick is gone).
+func skip_beat() -> bool:
+	if _beat_left < 0.0 or _mode != Mode.PICK or not is_armed():
+		return false
+	var target: int = _beat_target
+	_cancel_beat()
+	_on_node_pressed(target)
+	return true
+
+
+func _process(delta: float) -> void:
+	if _beat_left < 0.0:
+		return
+	if _controller != null and not _controller.has_choice():
+		_cancel_beat()  # answered another way: nothing left to pick
+		return
+	_beat_left = beat_step(_beat_left, delta, GamePause.is_paused() or _mode != Mode.PICK or not visible or _act_screen_open())
+	if _beat_left <= 0.0:
+		skip_beat()
 
 
 func _info_of(node_id: int) -> Dictionary:
@@ -599,6 +690,10 @@ func hover_text(node_id: int) -> String:
 ## Enter confirms a node. In the pause screen's view the tree is paused and none of this applies.
 func _input(event: InputEvent) -> void:
 	if _mode == Mode.PICK and visible and not GamePause.is_paused():
+		if _beat_left >= 0.0 and is_armed() and _is_skip_press(event):
+			get_viewport().set_input_as_handled()
+			skip_beat()
+			return
 		var key := event as InputEventKey
 		if key != null:
 			var slot_action: bool = RunPromptScreen.swallows_slot_action(key)
@@ -613,6 +708,17 @@ func _input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"pause", false) or event.is_action_pressed(&"ui_cancel", false):
 		close_view()
 		get_viewport().set_input_as_handled()
+
+
+## Any key press (not a held repeat, not the pause key) or mouse click skips the wait.
+func _is_skip_press(event: InputEvent) -> bool:
+	if event.is_action_pressed(&"pause", false):
+		return false
+	var key := event as InputEventKey
+	if key != null:
+		return key.pressed and not key.echo
+	var mouse := event as InputEventMouseButton
+	return mouse != null and mouse.pressed
 
 
 ## The node buttons look a little dim until the arm delay has passed, so a press that does nothing is not a mystery.

@@ -145,7 +145,7 @@ func test_the_real_path_shows_the_heal_line_on_the_act_screen() -> void:
 	var act_screen: ActScreen = main.get_node("ActScreen") as ActScreen
 	assert_bool(act_screen.is_open()).is_true()
 	assert_bool(act_screen.heal_label.visible).is_true()
-	assert_str(act_screen.heal_label.text).is_equal("You recover 9 HP. Rests are on the map.")
+	assert_str(act_screen.heal_label.text).is_equal("+9 HP (act heal 30%)")
 	assert_str(act_screen.line_label.text).contains("19 of 30")
 	assert_bool(act_screen.line_label.text.contains("Running low")).is_false()  # 19 of 30 is above half
 
@@ -154,7 +154,7 @@ func test_the_real_path_marks_low_hp_after_the_heal() -> void:
 	var main: Main = await _finish_act_one_at(2.0)  # 2 + 9 = 11 of 30, at or under half
 	var act_screen: ActScreen = main.get_node("ActScreen") as ActScreen
 	assert_bool(act_screen.is_open()).is_true()
-	assert_str(act_screen.heal_label.text).is_equal("You recover 9 HP. Rests are on the map.")
+	assert_str(act_screen.heal_label.text).is_equal("+9 HP (act heal 30%)")
 	assert_str(act_screen.line_label.text).contains("Running low").contains("11 of 30")
 
 

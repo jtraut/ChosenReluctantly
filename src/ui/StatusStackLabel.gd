@@ -15,6 +15,11 @@ var _lift: float = 0.0
 var _text_size: Vector2 = Vector2.ZERO
 var _size_text: String = ""
 static var _live: Array[StatusStackLabel] = []
+## UX1b: statuses already introduced this launch. The first time a status shows on any enemy, its name is printed over that enemy for `intro_seconds`, so
+## the bar's coloured mark (a red down triangle is Bleed, an orange up triangle is Burn) is named the way "[Arm n]" and "<Res n>" are. One per status, once.
+static var _introduced: Dictionary = {}
+var _intro_ids: Array[String] = []
+var _intro_left: float = 0.0
 
 
 # ---- Pure rules (unit-tested) ----
@@ -45,6 +50,33 @@ static func compose(entries: Array, cfg: Dictionary) -> String:
 	for row: Dictionary in shown:
 		lines.append(line_text(String(row["name"]), int(row["stacks"]), int(row["max"]), cfg))
 	return "\n".join(lines)
+
+
+## UX1b: `compose` plus a name-only line for each status in `intro_ids` that does not show a count yet (a lone Bleed). entries as for `compose`.
+static func compose_with_intro(entries: Array, cfg: Dictionary, intro_ids: Array[String]) -> String:
+	var lines: Array[String] = []
+	var counted: String = compose(entries, cfg)
+	if counted != "":
+		lines.append(counted)
+	var ids: Array[String] = intro_ids.duplicate()
+	ids.sort()
+	for id: String in ids:
+		for entry: Variant in entries:
+			var row: Dictionary = entry
+			if String(row["id"]) == id and not shows(int(row["stacks"]), cfg):
+				lines.append(String(row["name"]))
+	return "
+".join(lines)
+
+
+## UX1b (pure): whether a status gets its one-time name now: intros are on (`intro_seconds` > 0) and it has not been named yet.
+static func needs_intro(already: Dictionary, status_id: String, cfg: Dictionary) -> bool:
+	return float(cfg.get("intro_seconds", 0.0)) > 0.0 and not already.has(status_id)
+
+
+## Forgets which statuses were named (tests, and a fresh launch).
+static func reset_intros() -> void:
+	_introduced.clear()
 
 
 ## MB1 ux: how far (camera-plane metres) the label of the enemy that is higher on screen must rise to clear the one below it. `dx` and `dy` are
@@ -132,7 +164,18 @@ func refresh() -> void:
 		entries.append({"id": status_id, "name": String(def["display_name"]), "stacks": stacks, "max": _status.max_stacks_of(status_id)})
 		if shows(stacks, _cfg):
 			tint = _status_color(def)
-	text = compose(entries, _cfg)
+	for row: Variant in entries:
+		var id: String = String((row as Dictionary)["id"])
+		if needs_intro(_introduced, id, _cfg):
+			_introduced[id] = true
+			_intro_ids.append(id)
+			_intro_left = float(_cfg["intro_seconds"])
+			if not shows(int((row as Dictionary)["stacks"]), _cfg):
+				tint = _status_color(StatusDatabase.get_status(id))
+	_intro_ids.assign(_intro_ids.filter(func(i: String) -> bool: return _status.has_status(i)))
+	if _intro_ids.is_empty():
+		_intro_left = 0.0
+	text = compose_with_intro(entries, _cfg, _intro_ids if _intro_left > 0.0 else ([] as Array[String]))
 	modulate = tint
 	visible = text != ""
 	set_process(visible)
@@ -166,6 +209,11 @@ func current_lift() -> float:
 ## Eases the label up over any visible label below it on screen (the one that is nearer the camera). Ordering uses the base positions and the amount uses the
 ## other label's current rise, so a column of three stacks upward and nothing can chase its own tail.
 func _process(delta: float) -> void:
+	if _intro_left > 0.0:
+		_intro_left -= delta
+		if _intro_left <= 0.0:
+			_intro_ids.clear()
+			refresh()
 	var camera: Camera3D = get_viewport().get_camera_3d() if is_inside_tree() else null
 	if camera == null or not visible:
 		return

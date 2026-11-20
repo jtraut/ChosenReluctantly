@@ -91,7 +91,13 @@ static func styled_color(style_id: StringName, type: String, cfg: Dictionary) ->
 
 ## The key a merge compares: type plus style.
 func merge_key() -> String:
-	return damage_type + "|" + String(style)
+	return key_for(damage_type, style)
+
+
+## UX1b (pure): the merge key of a hit. An armored number is one flat grey whatever the damage type, so every armored hit on the same spot folds into one
+## "[Arm n]": a Bleed tick and a hit used to print two armored numbers on top of each other (different types, so they never merged).
+static func key_for(type: String, style_id: StringName) -> String:
+	return ("*" if style_id == STYLE_ARMOR else type) + "|" + String(style_id)
 
 
 ## Index of the entry a new hit should merge into, or -1. An entry is
@@ -193,6 +199,13 @@ func is_emphasized() -> bool:
 	return _emphasized
 
 
+## UX1b: where this number was spawned (before the rise and the boss-bar clamp move it). A new hit merges against this, not against `global_position`:
+## the clamp pushes a number down the screen, which moves it away from its enemy on the ground, so the next hit found nothing to merge into and printed
+## a second "[Arm 0.5]" on top of the first.
+func merge_anchor() -> Vector3:
+	return _start_pos
+
+
 ## Seconds since this number was spawned or last merged into.
 func idle_time() -> float:
 	return _elapsed
@@ -229,6 +242,19 @@ func _process(delta: float) -> void:
 	modulate.a = 1.0 - t * t  # holds, then drops away: easier to read than a linear fade
 
 
+## UX1b (pure): how far (pixels) a number pinned under the boss bar has drifted down by `life_fraction` (0 to 1) of its life; `drift` is the full-life drift at 720p.
+static func clamped_drift_px(life_fraction: float, drift: float, screen_scale: float) -> float:
+	return clampf(life_fraction, 0.0, 1.0) * drift * screen_scale
+
+
+## UX1b: half the on-screen height (pixels) of a Label3D line at `world_pos`: its text height in metres (`font_size` x `pixel_size` x `text_scale`) projected
+## along the camera's up axis.
+static func half_height_px(camera: Camera3D, world_pos: Vector3, font_px: int, pixel_m: float, text_scale: float) -> float:
+	var half_m: float = float(font_px) * pixel_m * text_scale * 0.5
+	var top: Vector3 = world_pos + camera.global_transform.basis.y * half_m
+	return absf(camera.unproject_position(world_pos).y - camera.unproject_position(top).y)
+
+
 ## Keeps this number out of the boss bar block: same depth, screen position pushed to just under the bar. Numbers are 3D
 ## text, so a boss near the top of the screen would otherwise have its hits drawn behind the bar and its info text.
 func _keep_clear_of_boss_bar() -> void:
@@ -243,9 +269,16 @@ func _keep_clear_of_boss_bar() -> void:
 	if limit <= 0.0 or camera.is_position_behind(global_position):
 		return
 	var screen: Vector2 = camera.unproject_position(global_position)
-	var wanted: float = clamp_below_bar(screen.y, limit, float(UiConfig.damage_numbers().get("boss_bar_gap", 6.0)))
+	# UX1b: the label is centred on its position, so the gap is kept from its top edge: the clamp adds half the text's height in pixels, and a number
+	# never runs up into the attack banner row under the bar.
+	var half_px: float = half_height_px(camera, global_position, font_size, pixel_size, scale.x)
+	var wanted: float = clamp_below_bar(screen.y, limit, float(UiConfig.damage_numbers().get("boss_bar_gap", 6.0)) + half_px)
 	if wanted <= screen.y:
 		return
 	wanted += clamp_extra_px
+	# UX1b: the clamp pins every number of the boss to one screen row, which took away the rise that kept consecutive hits apart (the "[Arm 0.5]" printed over
+	# an older "[Arm 0.5]"). A pinned number now drifts down the screen as it ages instead, so each hit sits a line under the one before.
+	if not _is_word:
+		wanted += clamped_drift_px(_elapsed / _duration, float(UiConfig.damage_numbers().get("boss_clamp_drift_px", 0.0)), get_viewport().get_visible_rect().size.y / 720.0)
 	var depth: float = -(camera.global_transform.affine_inverse() * global_position).z
 	global_position = camera.project_position(Vector2(screen.x, wanted), depth)

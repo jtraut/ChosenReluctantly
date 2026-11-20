@@ -201,8 +201,8 @@ func test_the_bar_shows_for_a_mini_boss_and_hides_when_it_dies() -> void:
 # --- Act screen: the D45 heal and low HP ---
 
 func test_the_heal_line_shows_the_healed_amount_and_nothing_when_zero() -> void:
-	assert_str(ActText.heal_line({"healed": 9.0})).is_equal("You recover 9 HP. Rests are on the map.")
-	assert_str(ActText.heal_line({"healed": 8.6})).is_equal("You recover 9 HP. Rests are on the map.")
+	assert_str(ActText.heal_line({"healed": 9.0})).is_equal("+9 HP (act heal 30%)")
+	assert_str(ActText.heal_line({"healed": 8.6})).is_equal("+9 HP (act heal 30%)")
 	assert_str(ActText.heal_line({"healed": 0.0})).is_empty()  # a resumed act
 	assert_str(ActText.heal_line({})).is_empty()
 

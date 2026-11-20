@@ -130,7 +130,7 @@ func on_detonated(world_pos: Vector3, amount: float, damage_type: String, word: 
 	_prune_numbers()
 	var entries: Array = []
 	for live: DamageNumber in _live_numbers:
-		entries.append({"pos": live.global_position, "type": live.damage_type, "idle": live.idle_time()})
+		entries.append({"pos": live.merge_anchor(), "type": live.damage_type, "idle": live.idle_time()})
 	var spot: Vector3 = world_pos + Vector3(0.0, float(UiConfig.damage_numbers()["spawn_height"]), 0.0)
 	var at: int = DamageNumber.find_merge_index(entries, spot, damage_type, float(UiConfig.damage_numbers()["merge_radius"]), float(UiConfig.damage_numbers()["merge_window"]))
 	var number: DamageNumber = null
@@ -209,8 +209,8 @@ func spawn_damage_number(world_pos: Vector3, amount: float, damage_type: String,
 	_prune_numbers()
 	var entries: Array = []
 	for live: DamageNumber in _live_numbers:
-		entries.append({"pos": live.global_position, "type": live.merge_key(), "idle": live.idle_time()})
-	var merge_at: int = DamageNumber.find_merge_index(entries, spot, damage_type + "|" + String(style), float(cfg["merge_radius"]), float(cfg["merge_window"]))
+		entries.append({"pos": live.merge_anchor(), "type": live.merge_key(), "idle": live.idle_time()})
+	var merge_at: int = DamageNumber.find_merge_index(entries, spot, DamageNumber.key_for(damage_type, style), float(cfg["merge_radius"]), float(cfg["merge_window"]))
 	if merge_at >= 0:
 		var merged: DamageNumber = _live_numbers[merge_at]
 		merged.merge_hit(amount, is_big)

@@ -1745,6 +1745,7 @@ UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> BAL1 and BD3c (`needs your
   - **GDD:** §11 (presentation), D32 (whole map visible), D45 (the act heal).
   - **Then:** qa, a playtester smoke check, docs, close.
   - **Built 2026-11-20:** ux-designer, two sittings: f7d895e..86eaf8c (items 1-3 and 5-8) and 820d6a4..adf2e8a (crowd digits on a ring around a 6+ pile, preset re-times, clamp tests, first-frame and recheck captures). Hashes and SIM1 (Rogue, 1 act) unchanged; touched tests green. DECISIONS "UX1b calls". Next: qa (full suite).
+  - **qa FAIL 2026-11-20** (b7b102c; `docs/reviews/2026-11-20-ux1b-qa.md`). Suite 2847, 1 failure: a `w1a_test` pin on the old Rogue colour, which qa fixed in c7269ea. Hashes and SIM1 `-Route first` all match. Blockers: B2, the map beat runs in windowed watch mode (`human_session()` is true for a scene-hosted WaveSim); B3, the crowd ring numbers overprint (a second white number on each orange one; the heal number lands on bars). Captures to re-shoot: map-beat, the Bleed intro name, and the 3+ starter relic label. Next: a fresh ux fix sitting, then qa re-review.
 - [ ] **HP1, max HP relics (D55 = B, director 2026-11-20; GDD §9). gameplay-dev, one sitting. `safe to chain`** (new content the director asked for; its numbers go to BAL1). Placed before SIM2a so the bot measures runs with them.
   - **Goal:** two relics that raise max HP during a run.
   - **Engine:**

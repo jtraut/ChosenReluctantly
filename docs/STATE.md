@@ -3,20 +3,20 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-20 (UX1b built; qa next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-20 (UX1b qa FAIL; ux fix sitting next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **UX1b built** (ux f7d895e..86eaf8c, then 820d6a4..adf2e8a). qa is next: review plus the full suite. Nothing half done; the repo runs.
+- **UX1b: qa FAIL** (b7b102c; qa fixed a stale w1a colour pin in c7269ea). A fresh ux fix sitting is next for B2 (map beat in watch mode), B3 (crowd number overprint) and the missing captures. Nothing half done; the repo runs.
 
 ## Exact next step
-1. qa reviews UX1b and runs the full suite.
-2. Then playtester smoke check -> docs -> close (eyes 65 expires at UX1b's close, default kept). Then HP1 (gameplay-dev), then SIM2a.
-3. BAL1 and BD3c wait for the director's play of BD3b ("The one ask" in OPEN_ITEMS).
+1. ux-designer fixes B2 and B3 and re-shoots (map-beat, the Bleed intro name, the 3+ starter relic label).
+2. qa re-review (`ux1b_test`, `w1a_test`, `ProbeHumanSession`, the `ux1b_crowd` capture; a full suite only if sources outside MapScreen, DamageNumber or Juice change).
+3. Then playtester smoke check -> docs -> close (eyes 65 expires at UX1b's close). Then HP1, then SIM2a. BAL1 and BD3c wait for the director's play of BD3b.
 
-**Next role:** qa (UX1b).
+**Next role:** ux-designer (UX1b fixes).
 
 ## Current baselines (BD3b qa 664bfec, 2026-11-19)
-- Suite 2819 (UX1a qa e732d2e), 0 failures; a full run takes about 23 minutes, so run it in the background.
+- Suite 2847 (UX1b qa b7b102c), 0 failures; a full run takes about 23 minutes, so run it in the background.
 - Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 (unchanged; act 1 untouched).
 - SIM1 `-Route first`: human Rogue 19/36, Wizard 20/36 (at the ceiling); off 35/36, 31/36. Floors 12 / 10 / 31 / 30, ceiling 21 / 20 (MAP.md §11.4). SIM1's human preset presses slots at random (no PlanPolicy).
 - Fingerprint 0.79 with relics, 0.45 without (Rogue). W-B vs W-A 0.71 with relics; W-B parity 79%, removal pain +22% to +28%. W-D informational (D54 = A). Boss parity 92% / 109% / 106%.
@@ -31,7 +31,7 @@ Last updated: 2026-11-20 (UX1b built; qa next). Latest tag `playtest-2026-11-20-
 - TL2 watch log nits (qa d2218fb): a bare `--watch-shots` is ignored; "HP at end" is stale on a loss; CROWD/BOSS lines use act-local room numbers; `crowded-fight.png` is overwritten. Fix when convenient.
 - In `docs/playtests/img/ux1b/crowd-1152x648_0.png` an enemy overlaps the top edge of the bottom-right card strip (camera framing or card layering). Not fixed in UX1b; a later ux polish item.
 - Thin margins to carry into BAL1: SIM1 human Wizard exactly at its ceiling (20/36), off Wizard 1 above its floor (31/30), Wizard `relic` median 14.0, W-B removal pain +22% to +28%.
-- `w1a_test.gd` `test_the_wizard_bolt_does_not_reach_past_its_12_m_range...` failed once in a full run (32 s) and passes alone; qa re-runs it on a quiet machine.
+- `w1a_test.gd` bolt-range flake: not reproduced in the UX1b full run or alone (qa b7b102c). Watch for it.
 - Wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 - Human-bot Kindling boss parity with relics is 67%, under 70% (qa DF1; not a DF1 regression).
 - An old git stash (`stash@{0}`, from 85cd564) is still in the repo; the director decides whether to drop it.

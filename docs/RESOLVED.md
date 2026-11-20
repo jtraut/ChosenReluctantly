@@ -2,6 +2,25 @@
 
 The archive of the director's answered, received and acknowledged items, moved here from `docs/OPEN_ITEMS.md`. Owned by tech-writer (director, 2026-11-02). Newest dated section first; IDs (D19, call 16, checklist item 33) are kept so they can be searched. Old entries change only to fix a factual error.
 
+## 2026-11-20
+
+### Answers recorded in 41c0bc9 (D54) and earlier (D53)
+
+Removed from OPEN_ITEMS when you answered. The full text of each, with its options, is in the commit named in the row.
+
+| ID | Question | Your answer | Where it went |
+|---|---|---|---|
+| D54 | Ward Battlemage (BD3b's defensive Wizard build, `wizard-ward-battlemage`) fails its own checks: removing its key card, Spiteful Ward, changes nothing; most of its damage comes from the same single-target attacks as Thesis; it plays almost like the standard deck. The test bot kites, so a blast when hit does about 1% of the damage. Option A (default): ship it as built, its checks informational, you play it in the Milestone 3 playtest. B: fix it now (a bot that fights up close, a ward that reacts to real contact). C: change its goal to survival. Text: `git show 7218752:docs/OPEN_ITEMS.md`. | **A**, 2026-11-20. Your direction for the rework: a melee "spellblade" Wizard with higher defense that dives into packs so the ward pays off; short-range single and AoE bursts at about melee range for slightly more damage; a key relic that makes light and heavy attacks melee. | GDD section 4a (plus a section 5 note that ranged stays the default), BUILD_DEPTH W-D, ROADMAP BD3c (the rework, after the Milestone 3 playtest), DECISIONS "D54 recorded" (41c0bc9). Changelog: 2026-11-20, `[Director decision]`. The "Heads-up" under D54 (Thesis Defense's 67 / 157 damage hit) moved to eyes item 61. |
+| D53 | Starter relics: loadout only, or also found in runs? Four 3d starter relics (Chasing Paper, Spite Knuckles, Ergonomic Chair, Paperwork Fire) still drop from elites, relic rooms and the merchant, against your 2026-11-04 rule. Option A (default): they become loadout-only. Text: `git show 6c77cdf:docs/OPEN_ITEMS.md`. | **B**, 2026-11-18: starter relics may also drop as ordinary relics. | GDD section 4a and BUILD_DEPTH section 4.7 row 6. No data change (the four keep their elite, relic room and merchant sources). Changelog: 2026-11-20, `[Director decision]`, which also corrects the 2026-11-18 entry that called it a conflict. |
+
+### Expired at BD3b's close, default kept
+
+Eyes 60 was added at 3d's close; it expired at the close of the slice after it (BD3b), per your 2026-11-12 rule. game-lead removes it from OPEN_ITEMS in the BD3b close commit. The full text is in `git show 41c0bc9:docs/OPEN_ITEMS.md`.
+
+| ID | What it asked | Default that applied |
+|---|---|---|
+| 60 | Play 3d, loadouts (tag `playtest-2026-11-18-3d`): the run count, the start screen from run 2, the loadout editor, the plan pill, and the 2 s curse swap. | The 3d polish list and nothing else, which BD3b-0 shipped: all 9 items, bc463f5..ddb0d1b (see `docs/CHANGELOG.md` 2026-11-20). |
+
 ## 2026-11-18
 
 ### Answer recorded in ba92f3f (D52)

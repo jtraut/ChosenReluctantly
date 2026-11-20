@@ -1,14 +1,14 @@
 # Director open items
 
-Last updated: 2026-11-20 (Milestone 3 closed after the review; latest tag `playtest-2026-11-20-BD3b`)
-**Status:** **Milestone 3 is done.** The milestone playtest found no blocker, and I've reviewed its report and screenshots. Next come three slices that don't need your play: UX1a (combat readability), UX1b (run screens) and SIM2a (a bot that drafts toward a build). BAL1 and the Battlemage rework (BD3c) wait for you to play BD3b. **One play session unblocks most of it:** see "The one ask" below.
+Last updated: 2026-11-20 (UX1a closed; latest tag `playtest-2026-11-20-BD3b`)
+**Status:** **Milestone 3 is done, and UX1a (fight readability) is done.** D55 = B is recorded and becomes slice HP1. Eyes 62-64 expired with their defaults (see `docs/RESOLVED.md`). Next: UX1b (run screens), then HP1 (the max HP relics), then SIM2a (a bot that drafts toward a build). BAL1 and the Battlemage rework (BD3c) wait for you to play BD3b: see "The one ask" below.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
 ## How to playtest
 
-- **The one ask (it unblocks BAL1, BD3c, the vision check and eyes 62):** check out `playtest-2026-11-20-BD3b`. Then:
-  1. Play one normal three-act run, `godot --path .`, and **time it on a clock** (eyes 62).
+- **The one ask (it unblocks BAL1, BD3c and the vision check):** check out `playtest-2026-11-20-BD3b`. Then:
+  1. Play one normal three-act run, `godot --path .`, and, if you can, note how long it took on a clock (the 15-20 minute target).
   2. Try the Battlemage deck: `godot --path . -- --class=wizard --deck=wizard-ward-battlemage --full-deck --run-room=10`.
   3. Answer the vision check round 2 below.
 - **Latest known-good build:** `git checkout playtest-2026-11-20-BD3b`, play, then `git checkout main`. The one before it is `playtest-2026-11-18-3d`. Try the new Wizard decks with `-- --class=wizard --deck=wizard-thesis --full-deck` or `--deck=wizard-ward-battlemage`. Older tags are in `docs/RESOLVED.md`.
@@ -29,11 +29,8 @@ None right now.
 
 Reply with the number and a word or two. **Each item has a default. If it's still unanswered when the slice after the one that added it closes, the default applies and it moves to `docs/RESOLVED.md` (your rule, 2026-11-12).**
 
-- **62. How long does a real run take?** Your target is 15-20 minutes including decisions (D50). The bot's two wins took about 11 minutes of fighting, and the playtester estimates 20-28 minutes with a human's thinking time. Please time one run on a clock. **Default:** keep the target and change nothing until it's measured. (Added at the Milestone 3 close; expires at UX1a's close.)
-- **63. Leftover gold.** The bot runs ended with 200-600 unspent gold. Your §4a rule is that gold income goes up rather than relic prices coming down, so I won't cut income. The bot rarely visits a merchant, though, so this may be the bot, not the game. **Default:** no change until SIM2a's build-aware bot measures it. One idea for when the between-run currency (§8) is designed: leftover gold could carry over into it. (Added at the Milestone 3 close; expires at UX1a's close.)
 
 - **65. Can you tell which relic fired?** In a fight, a relic that fires now pulses its own badge (a cream frame and its name under the row) instead of floating its name over the action. The bot playtester thinks that may be easy to miss in a burst. When you play, does it work for you? **Default:** keep it as built. (Added at UX1a's close; expires at UX1b's close.)
-- **64. Map: auto-advance when there's only one way forward.** My call, which you can veto: when the map has only one room to go to next, it shows for about a second and then moves on by itself (any key skips). That's about 10 fewer button presses a run. It's built in UX1b. **Default:** build it as described. (Added at the Milestone 3 close; expires at UX1a's close.)
 
 ## Later, optional
 

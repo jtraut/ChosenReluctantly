@@ -1698,7 +1698,7 @@ un_offer_report.ps1`.
 ### Run order
 UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> BAL1 and BD3c (`needs your play first`) -> the meta design pass (passive tree and the §8 account-wide layer; the D55 default points here) -> subclasses, Water, SIM2.
 
-- [ ] **UX1a, combat HUD readability (ux-designer, one sitting, well under 150 calls). `safe to chain`** (it changes no feel or balance; display only).
+- [x] **UX1a, combat HUD readability. Done 2026-11-20** (ux 1abef8c; qa PASS e732d2e; playtest b06a637, no blocker; docs pass d7dc951; no tag, display only). Eyes 62-64 expired at this close, defaults kept. Original header: **UX1a, combat HUD readability (ux-designer, one sitting, well under 150 calls). `safe to chain`** (it changes no feel or balance; display only).
   - **Goal:** a crowded fight reads at a glance. The evidence is the shots `rogue-s3-crowded-fight.png`, `rogue-s3-act2-miniboss.png`, `rogue-s1off-final-boss.png` and `wizard-s1off-final-boss-half-hp.png`, plus STATE Known issues "Next ux polish".
   - **Acceptance:**
     1. Relic procs show no floating name label in the play field. The proc shows on the relic's badge in the badge row instead (a pulse, plus the existing `xN`).

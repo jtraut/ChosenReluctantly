@@ -147,6 +147,7 @@ func setup(status: StatusEffectManager, height: float = -1.0) -> void:
 	_status.status_applied.connect(_on_status_changed)
 	_status.status_expired.connect(_on_status_changed)
 	_status.status_detonated.connect(_on_detonated)
+	refresh()  # a label built after its status was applied (a scenario, a status carried in) shows it now, not at the next change
 
 
 func refresh() -> void:

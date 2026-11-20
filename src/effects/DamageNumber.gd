@@ -175,7 +175,7 @@ static func crowd_spot(pos: Vector3, enemies: Array[Vector3], radius: float, min
 
 ## UX1b (pure): where the player's heal number goes in a pile. The heal spawns over the player, and a pile of `min_count` or more enemies within `radius` of
 ## the player has its HP bars at that screen height, so the "+N" landed on them. It moves to the side of the pile the player is on (the ring, as
-## `crowd_spot` does for a hit), on the camera side when the player is on the pile's centroid, and drops by `front_drop` there. No pile: unchanged.
+## `crowd_spot` does for a hit), on the camera side when the player is on the pile's centroid, and drops by `front_drop` there (and a metre more, under the lowest hit-number lane of that slot). No pile: unchanged.
 static func heal_spot(pos: Vector3, enemies: Array[Vector3], radius: float, min_count: int, margin: float, front_drop: float) -> Vector3:
 	var near: Array[Vector3] = []
 	for at: Vector3 in enemies:
@@ -193,7 +193,7 @@ static func heal_spot(pos: Vector3, enemies: Array[Vector3], radius: float, min_
 	var rel := Vector2(pos.x, pos.z) - centroid
 	var angle: float = rel.angle() if rel.length() > 0.3 else PI * 0.5
 	var ring: Vector2 = centroid + Vector2.from_angle(angle) * (pile_radius + margin)
-	return Vector3(ring.x, pos.y - front_drop * maxf(sin(angle), 0.0) - 0.5, ring.y)
+	return Vector3(ring.x, pos.y - front_drop * maxf(sin(angle), 0.0) - 1.0, ring.y)
 
 
 ## UX1b (pure): the height lift (metres) of a number's lane at a crowd ring slot. Two numbers of different types from one enemy (a Fire hit and a Bleed

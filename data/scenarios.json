@@ -1222,7 +1222,6 @@
         "_note": "UX1b capture: 7 idle enemies in a tight pile at the player, all Burning and Bleeding, an Area card cast so their digits land together (crowd digit placement).",
         "disable_spawner": true,
         "player_max_health": 9999,
-        "player_start_damage": 4000,
         "enemy_max_health": 3000,
         "enemies_idle": true,
         "disable_auto_attack": true,

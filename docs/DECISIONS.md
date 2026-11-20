@@ -2940,3 +2940,14 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **The playtester's two feel questions (Thesis's 67/157 hit; a spender sharing a slot with its builders) go to the director as an eyes item for when he plays BD3b.** Default: keep as built, and revisit in BAL1. They're feel calls on a slice he hasn't played. [Retuning now, which breaks the playtest gate.]
 - **D54 stays open after BD3b's close.** BD3b closes in A's state (W-D informational), and B or C would be follow-up work, so closing doesn't foreclose either. The default A now applies when the Milestone 3 playtest starts, not at BD3b's close, so the director gets time to answer. [Applying A at this close, minutes after asking.]
 
+
+## 2026-11-20 - D54 recorded (game-lead)
+- **The Ward Battlemage rework is a new slice, BD3c, not part of BAL1.** It needs new cards, a relic, two engine hooks and a bot mode. That's content work, and BAL1 is a balance pass. It's tagged `needs your play first` and waits for the milestone playtest review, because A means the director plays W-D first. [Folding it into BAL1: it would make that balance item several sittings long.] [Starting it before the milestone playtest: that breaks A and the playtest gate.]
+- **The starting values in BUILD_DEPTH W-D are mine, marked [PROPOSED]:**
+  - burst reach of at most 2.5 m, the Rogue's heavy reach;
+  - +15% over the comparable ranged card (band +10% to +20%) for the director's "slightly";
+  - the ward nova also fires when you dash into enemies or when 2 or more are within 2.5 m;
+  - the key relic is boss-tier, with melee light 1.8 and heavy 6.5 (the ranged values x1.2).
+
+  [A bigger uplift (+30%): he said "slight".] [A starter relic: the ranged default exists because a new player was confused by melee (GDD §5).]
+- **"Tankier" comes through the kit (ward armor, damage reduction while enemies are close, Thorned Boundary, Sick Day).** Archetypes have no stat block. A Wizard "Battlemage" subclass passive is the natural later home, but subclasses are [OPEN] (GDD §6), so that's offered to the director as a question, not decided. [A new per-archetype stat: there's no such concept, and it would be built for one deck.]

@@ -3,14 +3,14 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-19 (BD3b-C2 recorded; D next). Latest tag `playtest-2026-11-18-3d`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-20 (D54 = A recorded; BD3b docs pass next). Latest tag `playtest-2026-11-18-3d`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
 - **BD3b brief written 2026-11-18** (ROADMAP, BD3b entry below 3d; BUILD_DEPTH §14; DECISIONS "BD3b brief"). BD3b-0 done (bc463f5..ddb0d1b); BD3b-A done (0436585..e9dfacf); BD3b-B done (070ffd6..23370fe); BD3b-C1 done (1865109..97acc3d), but the SIM1 human Wizard is 27/36, over its ceiling of 20; D fixes it. The repo runs.
 - BD3b-C2 done 2026-11-19 (65be0d9..8fe0560, verified in 069f3ef).
 
 ## Exact next step
-1. **tech-writer docs pass for BD3b** (the handoff covers this STATE's pending list plus the RESOLVED entries), then game-lead closes BD3b and tags `playtest-2026-11-19-BD3b`. qa PASS 664bfec; playtest a454d6d, no blocker. D54 stays open; default A applies when the Milestone 3 playtest starts. If he answers B or C, that becomes a short follow-up slice before the milestone playtest.
+1. **tech-writer docs pass for BD3b** (the handoff covers this STATE's pending list plus the RESOLVED entries), then game-lead closes BD3b and tags `playtest-2026-11-19-BD3b`. qa PASS 664bfec; playtest a454d6d, no blocker. D54 = A was answered 2026-11-20 (GDD §4a). The Ward Battlemage rework is BD3c, after the milestone playtest (ROADMAP).
 2. Then TL1 (playtester movement tool; ROADMAP). One sitting per agent; a `Remaining:` list gets a fresh agent.
 3. Then the Milestone 3 close and milestone playtest (CLAUDE.md, milestone boundary).
 
@@ -25,6 +25,7 @@ Last updated: 2026-11-19 (BD3b-C2 recorded; D next). Latest tag `playtest-2026-1
 - Late shares for a Bleed Rogue: Bleed 12.5%, Fire 22.8%, Burn 10.0% (unchanged by C2). Relic Burn share 21.1% (4 of 19).
 
 ## Pending for the next docs pass
+- [Director decision] 2026-11-20: D54 = A. Ward Battlemage ships as built, its checks stay informational, and he plays it in the Milestone 3 playtest. His direction for the rework: a melee "spellblade" Wizard with higher defense, which dives into packs so the ward pays off; short-range single and AoE bursts at about melee range for slightly more damage; and a key relic that makes light and heavy melee. Recorded in GDD §4a (plus a §5 note that ranged stays the default), BUILD_DEPTH W-D, ROADMAP BD3c and DECISIONS "D54 recorded". RESOLVED entry: the D54 text (options A/B/C, default A) is in OPEN_ITEMS at 7218752. The "Heads-up" under it (Thesis's 67/157 hit) moved to eyes item 61.
 - [Director decision] 2026-11-18: D53 = B. Starter relics may also drop as ordinary relics (the four 3d starters keep their elite, relic room and merchant sources; no data change). Recorded in GDD §4a and BUILD_DEPTH §4.7 row 6. CHANGELOG and ARCHITECTURE currently call it a conflict and should be updated. RESOLVED entry: the D53 text (options A/B/C, "if you don't answer: A, in BD3b") is in OPEN_ITEMS at 6c77cdf.
 - BD3b-0 shipped (bc463f5..ddb0d1b): tech-writer removes the 3d polish list from "Known issues" in CHANGELOG and ARCHITECTURE; CHANGELOG entry for the 9 items (old/new: `plan_empty` text, editor columns 3:2 -> 5:4, default name "Loadout %d" -> "%s loadout %d", `TextFit.fit` gains `max_height`); README: new UxCapture modes and the one-row relic keys; ARCHITECTURE: TextFit, `RelicRow.show_start_tag`, `ConditionCue.curse_swap_text`.
 
@@ -50,9 +51,9 @@ Last updated: 2026-11-19 (BD3b-C2 recorded; D next). Latest tag `playtest-2026-1
 - An old git stash (`stash@{0}`, from 85cd564) is still in the repo; the director decides whether to drop it.
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D53 answered; D54 open. Next free: D55. Next eyes number: 61.
+**D-numbers:** D21-D54 answered. Next free: D55. Next eyes number: 62.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths. A role that stops with a `Remaining:` list gets a fresh agent, never a resumed one.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: D54 (Ward Battlemage; default A when the Milestone 3 playtest starts); eyes 60 (play 3d; expires at BD3b's close); the round 2 vision check.
+All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions; eyes 60 (play 3d; expires at BD3b's close) and 61 (Thesis's hit; expires at TL1's close); the round 2 vision check. Asked in chat 2026-11-20, informally: should "Battlemage" be one of the Wizard's two subclasses later (GDD §6)? That would give it a home for its defense passive.

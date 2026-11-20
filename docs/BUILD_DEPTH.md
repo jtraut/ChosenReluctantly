@@ -445,6 +445,26 @@ These are the numbers worked out on paper; BD1/BD3's content test (`CardDamageRu
 - Core: `wizard_spiteful_ward` **NEW, Keystone** (Utility. +25 armor for 4 s; **while it lasts, each hit you take releases a 6-neutral nova r2.5**, 0.5 s internal cooldown.) · `wizard_ward` · `wizard_arcane_nova` · `neutral_leech` · `fire_fine_burn_then`.
 - Relics: Thermal Ward, Heavy Sigh, Grading Curve.
 - Deck (15): single `fire_ember_whatever`, `wizard_overqualified_bolt`, `fire_flaming_nonsense` · AoE `wizard_arcane_nova`, `fire_fine_burn_then`, `neutral_shrug_bomb` · utility `wizard_spiteful_ward`, `wizard_ward`, `fire_hot_head` · movement `wizard_sideways_blink`, `wizard_tactical_hover`, `neutral_backward_leap` · recovery `neutral_leech`, `neutral_healing_potion`, `neutral_regeneration`.
+- **Superseded in part by the director's direction (2026-11-20, D54 = A; GDD §4a).** The "punish what hits you" idea above is the BD3b build, and it plays like a standard Wizard with a bar (BD3b playtest). W-D becomes a **melee Wizard, a "spellblade"**:
+  - it's tankier than the standard Wizard;
+  - it dives into packs on purpose, and the ward pays off from that;
+  - it gets short-range single and AoE bursts that do slightly more than the ranged versions;
+  - a key relic turns the light and heavy attacks into melee.
+
+  The rework runs after the Milestone 3 playtest (ROADMAP BD3c). **Starting values [PROPOSED]** (game-lead, 2026-11-20; DECISIONS "D54 recorded"):
+  - **Burst range.** About melee range, at most 2.5 m, the Rogue's heavy reach (`data/attacks.json`: Rogue light 1.8 m, heavy 2.4 m). Single-target bursts are a short cone or arc. AoE bursts are an area around you.
+  - **"Slightly more" damage.** +15% over the comparable ranged card on its unconditional damage (a band of +10% to +20%). `CardDamageRule` still applies.
+  - **The ward pays off from closing in, not only from being hit.** While the ward is up, the nova also fires when you dash or blink into enemies, or when at least 2 enemies are within 2.5 m. It keeps the 0.5 s internal cooldown.
+  - **"Tankier".** It comes from the kit, because there's no per-archetype stat:
+    - more armor and damage reduction on the ward cards;
+    - damage reduction while enemies are close;
+    - Thorned Boundary and Sick Day.
+
+    A Wizard subclass passive can carry it later (GDD §6, if the director wants a Battlemage subclass).
+  - **Key relic (working name "Hands-On Approach").** A Wizard boss-tier relic. Your light attack becomes an arc of 2.0 m, 1.8 neutral (ranged 1.5 x 1.2). Your heavy becomes a burst around you, r2.5, 6.5 neutral (ranged 5.5 x 1.2). Both keep the Wizard's wind-up and cooldowns.
+    - It's offered through the boss-tier pool, not as a starter, so ranged stays the default for new players (GDD §5).
+    - It needs one generic engine hook: a relic stat that replaces the class's light and heavy attack definitions from `data/attacks.json`.
+  - **Bot.** The kiting `PlanPolicy` can't measure a melee build. A close-range mode (D54's old option B) becomes required work.
 
 **Shared Fire cards.** Fire cards are in both classes' pools, so `fire_fan_the_flames`, `fire_kindling`, `fire_heat_sink` and `fire_slow_burn` show up for both. That's intended: a Wizard can drift into Kindling, and a Rogue into Controlled Burn.
 

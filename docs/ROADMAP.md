@@ -1661,6 +1661,18 @@ un_offer_report.ps1`.
 ## Milestone 4 — Second class/element, subclasses, passive tree prototype, balance sim
 
 - [ ] **BAL1, deferred balance (first balance item after the Milestone 3 playtest). `needs your play first`.** The list is BD3b's "Deferred" (game-lead, 2026-11-18; DECISIONS "BD3b brief"). Brief written after the milestone playtest review.
+- [ ] **BD3c, melee Wizard: the Ward Battlemage rework (director, 2026-11-20, D54 = A; GDD §4a; BUILD_DEPTH W-D). `needs your play first`.**
+  - **Why it waits:** the director plays W-D in the Milestone 3 playtest first. The brief is written after the milestone playtest review, alongside BAL1.
+  - **Goal:** an aggressive, tankier "spellblade" Wizard. It has short-range single and AoE bursts, a ward that pays off when you close in, and a key relic that makes light and heavy melee.
+  - **Known risks, written down now because they decided D54:**
+    - The kiting plan bot can't measure a melee build, so it needs a close-range mode first.
+    - The SIM1 human Wizard sits at its 20/36 ceiling. Point-blank damage is exactly what pushed it to 24-26/36 in BD3b-D3.
+  - **Split sketch (one agent sitting each, smaller than MAP3b's):**
+    - (1) the bot's close-range mode and its gate, with no content;
+    - (2) the engine hooks: the ward's contact or proximity trigger, and the relic's basic-attack override;
+    - (3) the cards and the relic in data, plus the debug deck;
+    - (4) one tuning sitting against the §2 gates and SIM1;
+    - then ux, qa, playtester and docs.
 Not started. Per GDD §13: Wizard + Water added, 2 subclasses each for Rogue/Wizard/Fire/Water, first passive tree prototype (30-40 nodes), headless balance simulation grown out.
 - [ ] **SIM2, decision-skill bots** (director 2026-11-17, GDD §12 "Automated QA"; DECISIONS "SIM2 defaults"). Schedule it with Milestone 4's balance sim, after subclasses and the passive tree give enough build depth for the gap to mean something. It can be pulled earlier if BD3b's depth is already enough.
   - **"winging it" profile:** uniform random over every out-of-combat choice: card rewards (including skip), relic offers and give-ups, merchant buys, events, rests, removals, and the `random` route. It reuses `RouteBot._random` and the seeded policy RNG.

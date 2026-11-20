@@ -12,7 +12,7 @@ Last updated: 2026-11-20 (Milestone 3 closed after the fresh-session review; Mil
 
 ## Exact next step
 1. **qa: review UX1a** (1abef8c). Run the full suite in the background, re-run `slice5_qa_test`, and capture the `xN` strip.
-2. Then a playtester smoke check and look, then UX1b, then SIM2a (all `safe to chain`). One tech-writer docs pass can cover UX1a and UX1b if they close back to back. The docs-pass list below goes out with UX1a's pass at the latest.
+2. Then a playtester smoke check and look, then UX1b, then HP1 (D55 relics), then SIM2a (all `safe to chain`). One tech-writer docs pass can cover UX1a and UX1b if they close back to back. The docs-pass list below goes out with UX1a's pass at the latest.
 3. **At UX1a's close:** eyes 62, 63 and 64 expire with their defaults if they're unanswered.
 4. BAL1 and BD3c wait for the director's play of BD3b ("The one ask" in OPEN_ITEMS).
 
@@ -35,7 +35,7 @@ Last updated: 2026-11-20 (Milestone 3 closed after the fresh-session review; Mil
   - relic procs pulse their badge instead of floating a name;
   - an element word pill ("Fire") on element-pool cards;
   - swap pills hidden on ready cards and while swaps are locked.
-- RESOLVED: nothing answered this session. OPEN_ITEMS lost its "Eyes 61 expired" status text (already in RESOLVED).
+- D55 = B (director, 2026-11-20): max HP grows through two relics, a flat boost and +1 per elite. Recorded in GDD §9; new slice HP1 in ROADMAP. RESOLVED: D55 with the answer (text in OPEN_ITEMS at 43aba3a). CHANGELOG `[Director decision]`. OPEN_ITEMS lost its "Eyes 61 expired" status text (already in RESOLVED).
 
 ## Known issues
 - **Watch mode at `-Scale 4` makes the bot much weaker than headless** (off preset 2/4 wins in watch vs 35/36 and 31/36 in SIM1; human Wizard 0/3 vs 20/36). Don't read difficulty from fast watch runs: the next milestone playtest uses `-Scale 1-2` or headless SIM for difficulty. Fix the fidelity if it's cheap (TL2 follow-up).
@@ -48,9 +48,9 @@ Last updated: 2026-11-20 (Milestone 3 closed after the fresh-session review; Mil
 - An old git stash (`stash@{0}`, from 85cd564) is still in the repo; the director decides whether to drop it.
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D54 answered; D55 open. Next free: D56. Eyes 62, 63 and 64 open. Next eyes number: 65.
+**D-numbers:** D21-D55 answered. Next free: D56. Eyes 62, 63 and 64 open. Next eyes number: 65.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths. A role that stops with a `Remaining:` list gets a fresh agent, never a resumed one.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: D55; eyes 62, 63 and 64; the round 2 vision check; and, under "Later, optional", a second boss per act and Battlemage as a Wizard subclass.
+All director-facing items are in `docs/OPEN_ITEMS.md`: eyes 62, 63 and 64; the round 2 vision check; and, under "Later, optional", a second boss per act and Battlemage as a Wizard subclass.

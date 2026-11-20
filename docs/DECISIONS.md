@@ -3008,3 +3008,14 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
 - **New capture-only scenario `ux1a_boss_statuses`.**
 - **game-lead: `status_stacks.min_stacks` stays 2.** Single stacks show as shape pips only. [1: prints "Burn x1" over every enemy in a crowd, the clutter UX1a removes.]
 - The commit trailer reads Sonnet 5.5 instead of the briefed Opus 5.5. It's cosmetic, so it isn't amended (that would rewrite history).
+
+## 2026-11-20 - D55 recorded (game-lead)
+- **The director's answer (D55 = B) goes in GDD §9 and becomes slice HP1, between UX1b and SIM2a.** It sits before SIM2a so the build-aware bot measures runs that have the relics. [After SIM2a: the bot's first act-3 numbers would go stale at once.]
+- **Defaults for HP1 that the director didn't set:**
+  - flat relic +4 (the value in the D55 option text), tier 1, neutral;
+  - per-elite +1 for each elite room cleared after pickup: not retroactive, no cap, mini-bosses excluded ("elite" taken literally);
+  - sources for both: elite, relic_room and merchant;
+  - gaining max HP also raises current HP by the same amount;
+  - losing the relic removes its boost, and HP is clamped to the new max.
+  [Tier 2 or merchant-only: he called the flat one a common relic.] [Counting mini-bosses: he said elite.] [Max only, no heal: the pickup would feel like nothing until the next rest.]
+- **HP1 is tagged `safe to chain`.** It's new content he asked for, and it retunes no slice he hasn't played. Its numbers go to BAL1.

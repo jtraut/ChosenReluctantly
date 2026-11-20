@@ -23,11 +23,7 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 Next new number: D56.
 
-### D55. Should max HP grow during a run?
-Right now a Rogue has 30 HP and a Wizard 22 from room 1 to room 30. Two events can lower max HP (the Complacency Trap and the vending machine's "Shake it", 10% each), and nothing raises it. The playtester saw every act-3 loss as "one bad room". A caveat: those losses came from the fast watch mode, where the bot plays badly. The normal headless bot wins 31-35 runs of 36 at the same strength, so the "act-3 wall" isn't proven.
-- **A (default): no growth inside a run for now.** Growth comes from the between-run account layer you already asked for (§8: "base health" and similar), which Milestone 4 designs, and BAL1 rechecks act 3 with the new build-aware bot. Nothing changes until then.
-- **B:** a small source inside the run: a common relic "Max HP +4", or +1 max HP per elite beaten.
-- **C:** a third rest-stop choice "+3 max HP", next to heal and remove. This changes D31.
+None right now.
 
 ## Needs your eyes
 

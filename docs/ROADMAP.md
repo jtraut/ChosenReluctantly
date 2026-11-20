@@ -1696,7 +1696,7 @@ un_offer_report.ps1`.
 - **Carried into the next milestone playtest:** the hand-scripted captures of `--deck=wizard-thesis`, `--deck=wizard-ward-battlemage` and the loadout screen, 1366x768, and a run with a build-aware bot.
 
 ### Run order
-UX1a -> UX1b -> SIM2a (all `safe to chain`) -> BAL1 and BD3c (`needs your play first`) -> the meta design pass (passive tree and the §8 account-wide layer; the D55 default points here) -> subclasses, Water, SIM2.
+UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> BAL1 and BD3c (`needs your play first`) -> the meta design pass (passive tree and the §8 account-wide layer; the D55 default points here) -> subclasses, Water, SIM2.
 
 - [ ] **UX1a, combat HUD readability (ux-designer, one sitting, well under 150 calls). `safe to chain`** (it changes no feel or balance; display only).
   - **Goal:** a crowded fight reads at a glance. The evidence is the shots `rogue-s3-crowded-fight.png`, `rogue-s3-act2-miniboss.png`, `rogue-s1off-final-boss.png` and `wizard-s1off-final-boss-half-hp.png`, plus STATE Known issues "Next ux polish".
@@ -1716,6 +1716,23 @@ UX1a -> UX1b -> SIM2a (all `safe to chain`) -> BAL1 and BD3c (`needs your play f
   - **Act screen:** add a line "+N HP (act heal 30%)", so the D45 heal is visible.
   - **Player colour:** the player capsule colour is distinct from every enemy colour, for both classes (data).
   - **Captures:** the 3+ starter relic label, the loadout start screen and 1366x768.
+- [ ] **HP1, max HP relics (D55 = B, director 2026-11-20; GDD §9). gameplay-dev, one sitting. `safe to chain`** (new content the director asked for; its numbers go to BAL1). Placed before SIM2a so the bot measures runs with them.
+  - **Goal:** two relics that raise max HP during a run.
+  - **Engine:**
+    - a run-scoped flat max HP modifier that raises the current HP by the same amount when gained;
+    - a run event for "elite room cleared" that relic triggers can listen to, with an effect that adds max HP permanently for the run;
+    - both work through the existing relic JSON format and `RelicSchema` validation, and save and resume correctly.
+  - **Data (defaults, DECISIONS "D55 recorded"):**
+    - a flat relic, tier 1, neutral, max HP +4;
+    - a per-elite relic, tier 1, neutral, +1 max HP per elite room cleared after you own it (not retroactive; mini-bosses don't count);
+    - sources for both: elite, relic_room and merchant;
+    - names and flavour in the game's tone, from gameplay-dev (story is dormant).
+  - **Acceptance:**
+    - tests for gain, heal-on-gain, the elite count, save/resume, and losing the relic (the boost goes away, and HP is clamped to the new max);
+    - the event `lose_max_hp` still respects `min_max_hp`;
+    - the HUD HP bar shows the new max;
+    - SIM1 and the relic medians are re-run. If a hash or SIM1 bound moves because the relic pools changed, explain it and re-baseline; don't tune it. Note: the human Wizard sits at its ceiling (20/36), so a trip there is reported to game-lead for BAL1, not tuned in HP1.
+  - **Then:** qa, docs (no separate smoke check unless ux adds UI).
 - [ ] **SIM2a, build-aware "formulated" bot (gameplay-dev, one sitting; split it into draft and route if it grows). `safe to chain`** (tooling).
   - **What it is:** SIM2's "formulated" profile, without "winging it" and without the gate:
     - it drafts toward the deck's emerging archetype from card `condition` and tag data, never from card ids;

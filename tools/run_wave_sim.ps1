@@ -21,8 +21,11 @@
 # -BotPreset <name> (SIM1; --bot-preset=): the human-like bot settings from data/bot_presets.json (off = the perfect bot, the default; human = the SIM1 preset). An unknown name exits nonzero with the valid names.
 #   -BotDelay <s>, -BotAimError <degrees>, -BotHesitation <s> (--bot-delay= etc.) override one number of the preset, for sweeps. Seeded: the same -Seed repeats exactly.
 # -Run plays whole seeded runs (Milestone 3a): -Seed is the first run seed, -Runs the number of runs, -RoomTimeout sim seconds before a room counts as a soft lock.
+# -Shots <dir> (needs -Run; --watch-shots=, TL2 watch-the-bot mode): runs WINDOWED (no --headless) and saves screenshots under <dir>\<class>-seed<N>\ plus a text log, log.txt, there: each map pick, reward / relic / shop / event / rest choice (the real
+#   screens), each act's end screen, the boss (and at half HP), the biggest crowd of the run (crowded-fight.png) and the end screen. Use -BotPreset human to watch a human-like bot. A relative <dir> is taken from the folder you run this in.
+#   The same lines are printed as "WATCH ..." in the console. Watching at -Scale 1 is real time (a three-act run is about half an hour); -Scale 3 or 4 is faster (it drops --fixed-fps, so the run does not repeat exactly from its seed).
 # Fails on a failed check OR any ERROR / SCRIPT ERROR / WARNING line in the engine output.
-param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets, [int]$StartRoom = 0, [switch]$Plan, [string]$Relics = "", [int]$RelicCap = 0, [string]$Swap = "", [switch]$NoRelics, [string]$Route = "", [switch]$Map, [switch]$NoMap, [switch]$Merchant, [int]$Acts = 0, [string]$BotPreset = "", [double]$BotDelay = -1, [double]$BotAimError = -1, [double]$BotHesitation = -1)
+param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets, [int]$StartRoom = 0, [switch]$Plan, [string]$Relics = "", [int]$RelicCap = 0, [string]$Swap = "", [switch]$NoRelics, [string]$Route = "", [switch]$Map, [switch]$NoMap, [switch]$Merchant, [int]$Acts = 0, [string]$BotPreset = "", [double]$BotDelay = -1, [double]$BotAimError = -1, [double]$BotHesitation = -1, [string]$Shots = "")
 
 $root = Split-Path -Parent $PSScriptRoot
 $godot = $env:GODOT_BIN
@@ -68,13 +71,20 @@ if ($BotPreset) { $extra += "--bot-preset=$BotPreset" }
 if ($BotDelay -ge 0) { $extra += "--bot-delay=$BotDelay" }
 if ($BotAimError -ge 0) { $extra += "--bot-aim-error=$BotAimError" }
 if ($BotHesitation -ge 0) { $extra += "--bot-hesitation=$BotHesitation" }
+if ($Shots) {
+    if (-not $Run) { Write-Error "-Shots needs -Run (it watches whole runs)"; exit 2 }
+    $shotsFull = if ([System.IO.Path]::IsPathRooted($Shots)) { $Shots } else { Join-Path (Get-Location).Path $Shots }
+    $extra += "--watch-shots=$shotsFull"
+}
 if ($StartRoom -gt 0) { $extra += "--start-room=$StartRoom" }
 if ($Run) { $extra += "--run"; $extra += "--room-timeout=$RoomTimeout" }
 Push-Location $root
 try {
     # BD3a: lines are printed as they arrive (a 12-run -Run takes 12 minutes or more, and the old Out-String buffered all of it, which looked like a hang).
     $lines = New-Object System.Collections.Generic.List[string]
-    & $godot --headless @fixedFps --path . res://tools/WaveSim.tscn -- @extra 2>&1 | ForEach-Object { $text = "$_"; $lines.Add($text); Write-Host $text }
+    $headless = @("--headless")
+    if ($Shots) { $headless = @() }  # TL2: a window is needed to take screenshots
+    & $godot @headless @fixedFps --path . res://tools/WaveSim.tscn -- @extra 2>&1 | ForEach-Object { $text = "$_"; $lines.Add($text); Write-Host $text }
     $code = $LASTEXITCODE
     $out = $lines -join "`n"
     $bad = ($out -split "`n") | Where-Object { $_ -cmatch '^\s*(SCRIPT )?ERROR:|^\s*WARNING:' }

@@ -169,6 +169,14 @@ var _damage_all: Dictionary = {}
 var _damage_by_run: Array[Dictionary] = []
 ## 3b: the reward bot's own stream (seeded per run, so the picks repeat from --seed and never touch the combat bot).
 var _policy_rng := RandomNumberGenerator.new()
+## TL2 watch mode (--watch-shots=<dir>, windowed only): null = off, and then nothing below runs, so the headless sim is unchanged.
+var _watch_dir: String = ""
+var _watch: WatchMode = null
+var _watch_crowd_best: int = 0
+var _watch_boss_shots: int = 0
+var _watch_last_kind: String = ""
+const WATCH_CROWD_MIN := 4
+const WATCH_BOSS_DELAY := 1.5
 const REJECT_CHANCE := 0.25
 const HEAL_BELOW_FRACTION := 0.7
 
@@ -307,6 +315,20 @@ func _ready() -> void:
 			get_tree().quit(2)
 			return
 		RunSession.selected_character = preset_class
+	var user_args: PackedStringArray = OS.get_cmdline_user_args()
+	if WatchMode.is_bare(user_args):
+		push_error("wave sim: --watch-shots needs a folder, as --watch-shots=<dir>")
+		get_tree().quit(2)
+		return
+	_watch_dir = WatchMode.parse_dir(user_args)
+	if _watch_dir != "" and not _run_mode:
+		push_error("wave sim: -Shots needs -Run (it watches whole runs)")
+		get_tree().quit(2)
+		return
+	if _watch_dir != "" and DisplayServer.get_name() == "headless":
+		push_error("wave sim: -Shots needs a window, so it cannot run with --headless (run_wave_sim.ps1 -Shots leaves --headless off)")
+		get_tree().quit(2)
+		return
 	if _route_policy != "" and not _run_mode:
 		push_error("wave sim: -Route and -Map need -Run")
 		get_tree().quit(2)
@@ -1006,6 +1028,12 @@ func _run_whole(run_seed: int) -> void:
 		(result["types"] as Array).append(String(room["type"]))
 	var wall_start := Time.get_ticks_msec()
 	var run_sim_total: float = 0.0
+	if _watch_dir != "":
+		_watch = WatchMode.new()
+		_watch.begin(_watch_dir, RunSession.selected_character, run_seed)
+		_watch_crowd_best = 0
+		_watch.say("RUN seed %d, class %s, bot preset %s, route policy %s, time_scale %.0f" % [run_seed, RunSession.selected_character, _bot_settings.preset_name, _route_policy if _route_policy != "" else "(none: straight run)", _scale])
+		_watch.say("ROUTE act 1 (the bot is placed on the first node, so act 1's opening map pick is not shown): nodes %s, types %s" % [str(_route), _watch_types(rooms)])
 	get_tree().change_scene_to_packed(load(RUN_MAIN_PATH) as PackedScene)
 	var previous: Node = null
 	var room_index: int = clampi(_start_room - 1, 0, rooms.size() - 1) if _start_room > 0 else 0
@@ -1031,7 +1059,12 @@ func _run_whole(run_seed: int) -> void:
 		var controller: RunController = _main.run_controller
 		controller.relic_triggered.connect(func(relic_id: String, _index: int, _event: String) -> void: _trigger_run[relic_id] = int(_trigger_run.get(relic_id, 0)) + 1)
 		_begin_run_room(run_seed, rooms[room_index])
+		_watch_boss_shots = 0
+		if _watch != null:
+			_watch.say("ROOM %d of %d (%s, wave %s): start HP %.0f/%.0f" % [rooms_played + 1, rooms_in_run, String(rooms[room_index]["type"]), String(rooms[room_index]["wave_id"]), controller.state().hp, controller.state().max_hp])
 		var room_result: String = await _play_room(run_seed, controller, rooms[room_index])
+		if _watch != null:
+			_watch.say("ROOM %d result %s: %.1f sim s, lowest HP %.0f, HP now %.0f" % [rooms_played + 1, room_result, _sim_time, _room_min_hp, _player.health.current_health if is_instance_valid(_player) else 0.0])
 		(result["room_s"] as Array).append(snappedf(_sim_time, 0.1))
 		(result["room_min_hp"] as Array).append(snappedf(_room_min_hp, 0.1))
 		if _boss_start >= 0.0:
@@ -1059,18 +1092,25 @@ func _run_whole(run_seed: int) -> void:
 		var next_room_index: int = room_index + 1
 		if controller.has_choice():
 			var guard: int = 0
+			_watch_last_kind = ""
 			while controller.has_choice() and guard < 60:  # a merchant visit is many choices
 				guard += 1
 				if run_state.act != act_before:
+					if _watch != null:
+						await _watch_act_end(run_state, act_before, act_seconds)
 					# The mini-boss rewards are done and the next act's map is open: record the act, plan its route, and the next choice is the first pick.
 					_record_act(run_state, true, act_seconds, act_before)
 					act_seconds = 0.0
 					act_before = run_state.act
 					rooms = _plan_route(run_seed, false)
+					if _watch != null:
+						_watch.say("ROUTE act %d: nodes %s, types %s" % [run_state.act, str(_route), _watch_types(rooms)])
 					for room_entry: Dictionary in rooms:
 						(result["types"] as Array).append(String(room_entry["type"]) if not String(room_entry["type"]).is_empty() else "?")
 					next_room_index = 0
 				var choice_id: String = _policy_choose(controller)
+				if _watch != null:
+					await _watch_choice(controller, choice_id)
 				var outcome: Dictionary = controller.choose(choice_id)
 				if not bool(outcome["ok"]):
 					_fail("run %d room %d: the bot choice '%s' was refused: %s" % [run_seed, room_index + 1, choice_id, str(outcome.get("reason", ""))])
@@ -1084,6 +1124,8 @@ func _run_whole(run_seed: int) -> void:
 			next_room_index = room_index  # MAP4-B2: an event's start_fight swapped in the same room as a fight: it is played as that room again, not as the next one
 		room_index = next_room_index
 		rooms_played += 0 if event_fight_next else 1
+	if _watch != null:
+		await _watch_end(result)
 	if relay != null and relay.hit_landed.is_connected(tally):
 		relay.hit_landed.disconnect(tally)
 	_damage_by_run.append(_damage_run)
@@ -1093,6 +1135,8 @@ func _run_whole(run_seed: int) -> void:
 	result["sim_s"] = run_sim_total
 	result["hp_end"] = snappedf(RunSession.current.hp, 0.1) if RunSession.current != null else -1.0
 	_record_deck_and_hp(result)
+	if _watch != null:
+		_watch_run_summary(result)
 	var final_state: RunState = RunSession.current
 	var curses_now: int = 0
 	var sac_taken: int = 0
@@ -1144,6 +1188,120 @@ func _run_whole(run_seed: int) -> void:
 		get_tree().current_scene = null
 		last.queue_free()
 	RunSession.clear()
+
+
+# ---- TL2 watch mode (--watch-shots=<dir>): every function here runs only when _watch is set, so the headless sim never reaches it ----
+
+func _watch_types(rooms: Array[Dictionary]) -> String:
+	var types: Array[String] = []
+	for room: Dictionary in rooms:
+		types.append(String(room["type"]))
+	return ",".join(types)
+
+
+## Waits in real time (the choice screens animate on the wall clock, and sim speed-up would cut it short) while frames keep drawing.
+func _watch_wait(seconds: float) -> void:
+	var saved: float = Engine.time_scale
+	Engine.time_scale = 1.0
+	var until: int = Time.get_ticks_msec() + roundi(seconds * 1000.0)
+	while Time.get_ticks_msec() < until:
+		await get_tree().process_frame
+	Engine.time_scale = saved
+
+
+func _watch_card_names() -> Dictionary:
+	var names: Dictionary = {}
+	for card: Variant in CardDatabase.all_cards():
+		names[String((card as Dictionary)["id"])] = String((card as Dictionary).get("name", ""))
+	return names
+
+
+func _watch_state_line(state: RunState) -> String:
+	return "HP %.0f/%.0f, gold %d, relics %s, deck %d cards" % [state.hp, state.max_hp, state.gold, str(state.relics), state.deck.size()]
+
+
+## A choice screen the bot is about to answer: log the offers and the pick, and take one shot of the real screen (the first of each run of the same kind, so a merchant is one shot).
+func _watch_choice(controller: RunController, choice_id: String) -> void:
+	var model: Dictionary = controller.current_choice()
+	var kind: String = String(model.get("choice", "?"))
+	var options: Array = model.get("options", [])
+	var picked: String = choice_id
+	for option: Variant in options:
+		if String((option as Dictionary).get("id", "")) == choice_id:
+			picked = WatchMode.option_text(option as Dictionary)
+	_watch.say("CHOICE %s (act %d, room %d of %d): offers: %s | PICK %s | %s" % [kind, int(model.get("act", 1)), int(model.get("run_room_number", 0)), int(model.get("run_room_total", 0)), WatchMode.offers_text(options), picked, _watch_state_line(controller.state())])
+	if kind == _watch_last_kind:
+		return
+	_watch_last_kind = kind
+	await _watch_wait(0.7)
+	var path: String = await _watch.shoot(get_tree(), "map-pick" if kind == "node" else "choice-" + kind)
+	_watch.say("SHOT %s" % path)
+
+
+## An act just ended and the next act's map pick is open: log the act and the deck, shoot the real Act screen, then close it so the map pick shows.
+func _watch_act_end(state: RunState, act_number: int, act_seconds: float) -> void:
+	_watch.say("ACT %d END: %.0f sim s in the act | %s | deck: %s" % [act_number, act_seconds, _watch_state_line(state), WatchMode.deck_text(state.deck, _watch_card_names())])
+	var screen: ActScreen = null
+	for child: Node in _main.get_children():
+		if child is ActScreen:
+			screen = child as ActScreen
+	if screen != null and screen.is_open():
+		await _watch_wait(0.7)
+		var path: String = await _watch.shoot(get_tree(), "act-%d-end" % act_number)
+		_watch.say("SHOT %s" % path)
+		screen.disarm()
+		screen.dismiss()
+		_watch_last_kind = ""  # the map pick right after is its own shot
+
+
+## Mid-fight shots: the boss a moment after it appears and again at half HP, and the biggest crowd of the run (one file, overwritten by a bigger crowd).
+func _watch_fight_shots(enemies: Array[Enemy], room_index: int) -> void:
+	var boss: Boss = null
+	for enemy: Enemy in enemies:
+		if enemy is Boss:
+			boss = enemy as Boss
+	if boss != null:
+		if _watch_boss_shots == 0 and _boss_start >= 0.0 and _sim_time - _boss_start >= WATCH_BOSS_DELAY:
+			_watch_boss_shots = 1
+			var path: String = await _watch.shoot(get_tree(), "boss-%s" % (boss.enemy_id if boss.enemy_id != "" else "boss"))
+			_watch.say("BOSS %s in room %d: HP %.0f of %.0f, player HP %.0f | SHOT %s" % [boss.enemy_id, room_index + 1, boss.health.current_health, boss.health.max_health, _player.health.current_health, path])
+		elif _watch_boss_shots == 1 and boss.health.current_health <= boss.health.max_health * 0.5:
+			_watch_boss_shots = 2
+			var half_path: String = await _watch.shoot(get_tree(), "boss-half-hp")
+			_watch.say("BOSS half HP at %.1f s into the fight, player HP %.0f | SHOT %s" % [_sim_time - _boss_start, _player.health.current_health, half_path])
+		return
+	if enemies.size() > _watch_crowd_best and enemies.size() >= WATCH_CROWD_MIN:
+		_watch_crowd_best = enemies.size()
+		var crowd_path: String = await _watch.shoot(get_tree(), "crowded-fight", "crowded-fight")
+		_watch.say("CROWD %d enemies alive in room %d (crowded-fight.png is overwritten by a bigger crowd): %s" % [enemies.size(), room_index + 1, crowd_path])
+
+
+## The run is over (won, lost or stopped): let the real end screen come up, then shoot it.
+func _watch_end(result: Dictionary) -> void:
+	if not (_main is Main) or not is_instance_valid(_main):
+		return
+	var outcome: String = String(result["outcome"])
+	_watch.say("END %s after %d room(s)" % [outcome.to_upper(), int(result["rooms_reached"])])
+	var saved: float = Engine.time_scale
+	Engine.time_scale = 1.0
+	var until: int = Time.get_ticks_msec() + (12000 if outcome == "lost" else 3000)  # a death has its slow-mo beat before Game Over
+	while Time.get_ticks_msec() < until:
+		await get_tree().process_frame
+		if outcome == "lost" and (_main as Main).is_game_over() and Time.get_ticks_msec() + 9000 > until:
+			break
+	await _watch_wait(0.7)
+	var path: String = await _watch.shoot(get_tree(), "end-screen-%s" % outcome)
+	_watch.say("SHOT %s" % path)
+	Engine.time_scale = saved
+
+
+## The text log's closing lines for one run: result, deck, relics, route.
+func _watch_run_summary(result: Dictionary) -> void:
+	var state: RunState = RunSession.current
+	_watch.say("RESULT seed %d: %s | rooms reached %d of %d | sim %.0f s | HP at end %s | gold %s" % [int(result["seed"]), String(result["outcome"]).to_upper(), int(result["rooms_reached"]), int(result["rooms_total"]), float(result["sim_s"]), str(result.get("hp_end", "?")), str(result.get("gold", "?"))])
+	_watch.say("RESULT room seconds %s | lowest HP in each room %s" % [str(result["room_s"]), str(result["room_min_hp"])])
+	if state != null:
+		_watch.say("RESULT relics %s | final deck (%d): %s" % [str(state.relics), state.deck.size(), WatchMode.deck_text(state.deck, _watch_card_names())])
 
 
 ## The seeded reward policy. It reads the choice model (option kinds and the state HP and deck counts), never a
@@ -1390,6 +1548,8 @@ func _play_room(run_seed: int, controller: RunController, room: Dictionary) -> S
 		_check_cooldowns(run_seed, room)
 		_count_kills(enemies, prev_enemies)
 		_track_boss(enemies)
+		if _watch != null:
+			await _watch_fight_shots(enemies, int(room["index"]))
 		_bot_step(enemies)
 		if _god:
 			_player.health.heal(9999.0)

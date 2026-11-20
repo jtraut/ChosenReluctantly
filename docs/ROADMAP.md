@@ -1711,11 +1711,13 @@ UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> BAL1 and BD3c (`needs your
   - **Files likely touched:** the HUD relic badge row, the floating-text/Juice popups for relic procs, the enemy status label, card slot widgets, and string keys in `data/`.
   - **GDD:** §11 (presentation), and the readability rule in CLAUDE.md "Game feel".
   - **Built 2026-11-20:** ux-designer 1abef8c. All 6 items done, display only; hashes unchanged; touched UI tests green. Remaining: a capture of the `xN` strip during a burst. DECISIONS "UX1a calls". Next: qa.
+  - **qa PASS 2026-11-20** (e732d2e; `docs/reviews/2026-11-20-ux1a-qa.md`). Suite 2819, 0 failures; hashes unchanged. qa captured the `xN` strip in a real run (x6, x13), and it reads cleanly. Non-blocking, to UX1b: `[Arm]`/`<Res>` overprint in the first frame after a hit, and a boss banner over a number. Next: a playtester smoke check.
 - [ ] **UX1b, run-screen readability (one sitting; gameplay-dev first only if the run flow needs a hook). `safe to chain`.**
   - **Single-option map pick:** show the map for about 1 s with the one node highlighted, then advance (any key skips). The bot and SIM paths must not change, so the hashes stay the same.
   - **Act screen:** add a line "+N HP (act heal 30%)", so the D45 heal is visible.
   - **Player colour:** the player capsule colour is distinct from every enemy colour, for both classes (data).
   - **Captures:** the 3+ starter relic label, the loadout start screen and 1366x768.
+  - **From UX1a qa (e732d2e):** `[Arm n]` and `<Res n>` overprint in the first frame after a hit (qa guesses there's no current camera on the first frame, so the sideways shift is skipped; unverified). Also, the boss attack banner overlaps damage numbers. Confirm both on a real fight and fix.
 - [ ] **HP1, max HP relics (D55 = B, director 2026-11-20; GDD §9). gameplay-dev, one sitting. `safe to chain`** (new content the director asked for; its numbers go to BAL1). Placed before SIM2a so the bot measures runs with them.
   - **Goal:** two relics that raise max HP during a run.
   - **Engine:**

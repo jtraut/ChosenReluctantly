@@ -6,20 +6,19 @@
 Last updated: 2026-11-20 (Milestone 3 closed after the fresh-session review; Milestone 4 briefs written). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **UX1a built** (ux-designer 1abef8c, display only, hashes unchanged, touched UI tests green, full suite not run). Next: qa.
-  - Remaining (from 1abef8c): the relic `xN` counter strip is verified by a layout test only; capture a relic burst (for example Pyre Insurance, `bd2_pyre_explosion` at a few `-After` times, 1152x648). `slice5_qa_test` was not re-run after `style_spread`.
-- Milestone 3 is closed (DECISIONS "Milestone 3 review"). The repo runs.
+- **UX1a:** built 1abef8c, qa PASS e732d2e (suite 2819, 0 failures; hashes unchanged). Next: the playtester smoke check, then the docs pass and close.
+- Milestone 3 is closed. The repo runs.
 
 ## Exact next step
-1. **qa: review UX1a** (1abef8c). Run the full suite in the background, re-run `slice5_qa_test`, and capture the `xN` strip.
+1. **playtester: UX1a smoke check and look** (crowded fight, a boss with statuses, relic badges at 1152x648).
 2. Then a playtester smoke check and look, then UX1b, then HP1 (D55 relics), then SIM2a (all `safe to chain`). One tech-writer docs pass can cover UX1a and UX1b if they close back to back. The docs-pass list below goes out with UX1a's pass at the latest.
 3. **At UX1a's close:** eyes 62, 63 and 64 expire with their defaults if they're unanswered.
 4. BAL1 and BD3c wait for the director's play of BD3b ("The one ask" in OPEN_ITEMS).
 
-**Next role:** qa (UX1a).
+**Next role:** playtester (UX1a).
 
 ## Current baselines (BD3b qa 664bfec, 2026-11-19)
-- Suite 2813 (TL2 qa), 0 failures; a full run takes about 23 minutes, so run it in the background.
+- Suite 2819 (UX1a qa e732d2e), 0 failures; a full run takes about 23 minutes, so run it in the background.
 - Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 (unchanged; act 1 untouched).
 - SIM1 `-Route first`: human Rogue 19/36, Wizard 20/36 (at the ceiling); off 35/36, 31/36. Floors 12 / 10 / 31 / 30, ceiling 21 / 20 (MAP.md §11.4). SIM1's human preset presses slots at random (no PlanPolicy).
 - Fingerprint 0.79 with relics, 0.45 without (Rogue). W-B vs W-A 0.71 with relics; W-B parity 79%, removal pain +22% to +28%. W-D informational (D54 = A). Boss parity 92% / 109% / 106%.

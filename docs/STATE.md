@@ -3,16 +3,16 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-20 (UX1b qa PASS; playtester next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-20 (UX1b docs pass running). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **UX1b: qa PASS** (6386562). The playtester smoke check is next. Nothing half done; the repo runs.
+- **UX1b: docs pass running** (tech-writer, range 5ddd3b0..8a3c2de, plus the setting and tone commit 415e217). qa PASS 6386562, playtest 2ae2d92 with no blocker. Nothing half done; the repo runs.
 
 ## Exact next step
-1. playtester: UX1b smoke check and readability look (a live 6+ pile, qa N7; the ivory Wizard next to a stunned boss, qa N3; the map beat in a real window).
-2. Then docs -> close (eyes 65 expires at UX1b's close). Then HP1, then SIM2a. BAL1 and BD3c wait for the director's play of BD3b.
+1. After the docs pass: close UX1b in ROADMAP, remove eyes 65 from OPEN_ITEMS (expired, default kept), and clear "Pending for the next docs pass".
+2. Then HP1 (gameplay-dev; brief in ROADMAP), then SIM2a. BAL1 and BD3c wait for the director's play of BD3b.
 
-**Next role:** playtester (UX1b).
+**Next role:** tech-writer (UX1b docs pass), then gameplay-dev (HP1).
 
 ## Current baselines (BD3b qa 664bfec, 2026-11-19)
 - Suite 2851 (UX1b qa 6386562), 0 failures; a full run takes about 23 minutes, so run it in the background.

@@ -2970,3 +2970,12 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 - **Shot moments:** a crowded fight at each new run-wide peak of 4 or more alive enemies, overwriting one file; each boss 1.5 sim s after it appears and again at half HP; a 0.7 s real-time wait so screens finish fading in; the end screen waits up to 12 s after a death and 3 s after a win. The Act screen is dismissed through its public `disarm`/`dismiss`. [A shot for every merchant purchase: too many files. Every pick is in the log instead.]
 - **The first map pick of act 1 is logged only.** The sim places the bot on the first node before the scene loads. [Reworking the sim's start: it touches the headless path and the hashes.]
 - **`-Scale 4` is the suggested watch speed.** It drops `--fixed-fps`, so the run doesn't replay from its seed. That's fine for a playtest: the screenshots and log are the record. [`-Scale 1`: about 30 minutes per three-act run.]
+
+## 2026-11-20 - TL2 qa triage (game-lead)
+- **TL2 qa PASS (d2218fb), no blocker.** The four non-blocking log nits go to Known issues; they don't stop the milestone playtest:
+  - a bare `--watch-shots` is ignored;
+  - "HP at end" is stale on a loss;
+  - CROWD and BOSS lines use act-local room numbers;
+  - one `crowded-fight.png` is overwritten.
+- **No separate playtester smoke check for TL1 and TL2.** They are tooling, not player-facing. qa opened ten real-UI shots and read the log, and the milestone playtest is the mode's first real use, where a broken mode would show at once. [A separate smoke run: one more agent session to learn what the milestone playtest learns in its first minutes.]
+- **The milestone playtest uses the human preset first and reruns on an early bot loss** (qa: two of the human Wizard's runs died in rooms 2 and 6). If the bot still loses before act 3, the brief allows `-BotPreset off` for the full-run requirement, and the early losses are reported as data.

@@ -3,19 +3,19 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-20 (TL2 built; qa next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-20 (TL2 qa PASS d2218fb; docs pass next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- TL1 built (77e3c9d), qa PASS ad617bf; TL1-1 fixed in e93ffa3. TL2 built dd13031..0e5875e (watch-the-bot `-Shots`). qa reviews TL1-1 and TL2 next. Untracked `tests/unit/tl1_press_test.gd.uid` and `tl1_qa_test.gd.uid` are for qa to commit. BD3b closed 2026-11-20 (ROADMAP; docs pass c84792b..bd45c08). The repo runs.
+- TL1 built (77e3c9d), qa PASS ad617bf; TL1-1 fixed in e93ffa3. TL2 built dd13031..0e5875e (watch-the-bot `-Shots`). qa PASS d2218fb (suite 2813). Docs pass for TL1 and TL2 next, then close both (no tag: tooling only). BD3b closed 2026-11-20 (ROADMAP; docs pass c84792b..bd45c08). The repo runs.
 
 ## Exact next step
 1. **TL2, watch-the-bot mode** (ROADMAP, under TL1; `safe to chain`): gameplay-dev, one sitting, TL1-1 fix as its first commit. Then qa (short), a playtester smoke check of the mode, one tech-writer docs pass for TL1+TL2, close. Eyes 61 expires at TL2's close.
 2. Then the Milestone 3 close: milestone playtest (a full three-act run per class; this report is the baseline), docs pass including the ARCHITECTURE trim (540 lines, target about 400), then a fresh game-lead session reads the report and screenshots before the Milestone 4 brief. BD3c (Battlemage rework, D54) and BAL1 come after the milestone playtest.
 
-**Next role:** qa (TL1-1 and TL2 review).
+**Next role:** tech-writer (TL1+TL2 docs pass).
 
 ## Current baselines (BD3b qa 664bfec, 2026-11-19)
-- Suite 2796 (202 suites), 0 failures; a full run takes about 23 minutes, so run it in the background.
+- Suite 2813 (TL2 qa), 0 failures; a full run takes about 23 minutes, so run it in the background.
 - Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 (unchanged; act 1 untouched).
 - SIM1 `-Route first`: human Rogue 19/36, Wizard 20/36 (at the ceiling); off 35/36, 31/36. Floors 12 / 10 / 31 / 30, ceiling 21 / 20 (MAP.md §11.4). SIM1's human preset presses slots at random (no PlanPolicy).
 - Fingerprint 0.79 with relics, 0.45 without (Rogue). W-B vs W-A 0.71 with relics; W-B parity 79%, removal pain +22% to +28%. W-D informational (D54 = A). Boss parity 92% / 109% / 106%.
@@ -28,6 +28,7 @@ Last updated: 2026-11-20 (TL2 built; qa next). Latest tag `playtest-2026-11-20-B
 - TL1 (77e3c9d): README `--press` row gets the new grammar (gameplay-dev's exact text is in the TL1 commit's hand-back, copied here): `<t>:<action>` taps, `<t>:<action>:<hold>` holds 0 < hold <= 120 s, same-t holds make diagonals, `<t>:aim_nearest` until `<t>:aim_off`; InputMap names move_forward/back/left/right, attack_light, attack_heavy, slot_1..slot_5, dodge; a debug flag; bad steps exit 2 "Launch refused: ..."; the console logs the player's (x, z) per step; example `-- --class=rogue --no-map --run-room=1 --press=0.5:aim_nearest,0.5:move_forward:1.2,2:attack_light,3:slot_1`. `capture_screenshot.ps1 -Actions` takes the same grammar. Add `tests/unit/tl1_press_test.gd`. CHANGELOG: TL1 entry, incl. the save-gap fix. ARCHITECTURE: `ScriptedInput` holds and aim, `Player.aim_point_override`, `CaptureArgs` `press_error`.
 
 ## Known issues
+- TL2 watch log nits (qa d2218fb): a bare `--watch-shots` is ignored; "HP at end" is stale on a loss; CROWD/BOSS lines use act-local room numbers; `crowded-fight.png` is overwritten. Fix when convenient.
 - Next ux polish (from BD3b qa and playtest): "Swap: free" shows permanently, so hide it on ready cards; two-letter relic badges are unreadable in combat; hide "Swap: free" and the curse swap line while swaps are locked; add a non-colour Fire mark for Kindling and Hot Head; capture the 3+ starter relic label and 1366x768.
 - Thin margins to carry into BAL1: SIM1 human Wizard exactly at its ceiling (20/36), off Wizard 1 above its floor (31/30), Wizard `relic` median 14.0, W-B removal pain +22% to +28%.
 - `w1a_test.gd` `test_the_wizard_bolt_does_not_reach_past_its_12_m_range...` failed once in a full run (32 s) and passes alone; qa re-runs it on a quiet machine.

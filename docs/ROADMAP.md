@@ -1648,6 +1648,7 @@ un_offer_report.ps1`.
     - Three-act runs: Rogue seed 3 won 30/30 (83 files); Wizard seed 3 lost at room 29 (78 files).
     - Arena hash unchanged. The first map pick of act 1 is logged only.
     - DECISIONS "TL2 calls". Next: qa.
+  - **qa PASS 2026-11-20** (d2218fb; `docs/reviews/2026-11-20-tl2-qa.md`). Suite 2813, 0 failures. Hashes 916264160 / 1317880580 / 3476063471 unchanged; SIM1 human 19/36 and 20/36 unchanged. `/shots/` is now gitignored. Four non-blocking log nits (DECISIONS "TL2 qa triage"). No separate smoke check (same entry). Next: one tech-writer docs pass for TL1 and TL2, then close.
 - [ ] **Milestone 3 close (after BD3b and TL1).** The tech-writer pass for this close also does the ARCHITECTURE trim (540 lines, target about 400) that BD3b's pass left. playtester runs the milestone playtest (playtester.md "Milestone playtest"): a full three-act run per class, judged against the three pillars. No earlier milestone report exists, so this one is the baseline. Then game-lead reviews the report and the screenshots itself, in a fresh session, before writing the Milestone 4 brief.
 
 ## DF1, difficulty bump (D51 = C, director 2026-11-12; after MAP4, before 3d)

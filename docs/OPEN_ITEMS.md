@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-20 (BD3b closed; latest tag `playtest-2026-11-20-BD3b`)
-**Status:** No decisions waiting. 1 thing to look at (61: Thesis's big hit), plus the round 2 vision check and one optional question (Battlemage as a subclass). **BD3b (Wizard depth) is done**, tag `playtest-2026-11-20-BD3b`: two new Wizard builds, Thesis (Charge) and Ward Battlemage, 7 cards and 5 relics. Eyes 60 (play 3d) expired with its default, which BD3b shipped. Next: TL1 and TL2 (tools so the playtester can play and watch whole runs), then the Milestone 3 close and its full playtest.
+Last updated: 2026-11-20 (TL1 and TL2 closed; latest tag `playtest-2026-11-20-BD3b`)
+**Status:** No decisions waiting and nothing to look at, apart from the round 2 vision check and one optional question (Battlemage as a subclass). **BD3b (Wizard depth) is done**, tag `playtest-2026-11-20-BD3b`. TL1 and TL2 (tools that let the playtester play and watch whole runs) are done too. Eyes 61 (Thesis's big hit) expired with its default: keep it as built, and revisit it in BAL1. Next: the Milestone 3 close, a full three-act playtest per class.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -25,8 +25,7 @@ None right now.
 
 Reply with the number and a word or two. **Each item has a default. If it's still unanswered when the slice after the one that added it closes, the default applies and it moves to `docs/RESOLVED.md` (your rule, 2026-11-12).** 
 
-61. **Thesis Defense's big hit, when you play BD3b.** A Thesis spend at 6 Charge does 67 base damage, and with the Reading List relic up to 157. That was needed for the card to matter. The playtester also asks whether the spender should share the Attack: Single slot with its builders (Footnotes), which means you swap between building and spending.
-    - **Default:** keep both as built, and revisit them in BAL1 with your feel in hand. Expires at TL2's close (TL1 now closes together with TL2).
+None right now.
 
 ## Later, optional
 

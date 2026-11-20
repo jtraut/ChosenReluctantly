@@ -3,16 +3,17 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-20 (TL2 qa PASS d2218fb; docs pass next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-20 (TL1 and TL2 closed; Milestone 3 playtest next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- TL1 built (77e3c9d), qa PASS ad617bf; TL1-1 fixed in e93ffa3. TL2 built dd13031..0e5875e (watch-the-bot `-Shots`). qa PASS d2218fb (suite 2813). Docs pass for TL1 and TL2 next, then close both (no tag: tooling only). BD3b closed 2026-11-20 (ROADMAP; docs pass c84792b..bd45c08). The repo runs.
+- Nothing mid-sitting. TL1 and TL2 closed 2026-11-20 (ROADMAP; docs pass 2c559b1..9e067f5). The repo runs.
 
 ## Exact next step
-1. **TL2, watch-the-bot mode** (ROADMAP, under TL1; `safe to chain`): gameplay-dev, one sitting, TL1-1 fix as its first commit. Then qa (short), a playtester smoke check of the mode, one tech-writer docs pass for TL1+TL2, close. Eyes 61 expires at TL2's close.
-2. Then the Milestone 3 close: milestone playtest (a full three-act run per class; this report is the baseline), docs pass including the ARCHITECTURE trim (540 lines, target about 400), then a fresh game-lead session reads the report and screenshots before the Milestone 4 brief. BD3c (Battlemage rework, D54) and BAL1 come after the milestone playtest.
+1. **Milestone 3 close: the milestone playtest** (ROADMAP "Milestone 3 close"; playtester.md "Milestone playtest"). The playtester runs a full three-act run per class with watch mode: `run_wave_sim.ps1 -Run -Class <c> -Seed <n> -BotPreset human -Scale 4 -Shots ...`. If the human bot loses early, it reruns, then uses `-BotPreset off` (DECISIONS "TL2 qa triage"). It judges the run against the GDD pillars; this report is the baseline. Screenshots go to `docs/playtests/img/`, and the report to `docs/playtests/2026-11-2x-milestone-3.md`.
+2. Then a tech-writer pass for the milestone close, including the ARCHITECTURE trim (540+ lines, target about 400).
+3. Then, **in a fresh session**, game-lead reads the report and its screenshots itself, before writing the Milestone 4 brief. BD3c (Battlemage rework, D54) and BAL1 (`needs your play first`) come after it.
 
-**Next role:** tech-writer (TL1+TL2 docs pass).
+**Next role:** playtester (Milestone 3 playtest).
 
 ## Current baselines (BD3b qa 664bfec, 2026-11-19)
 - Suite 2813 (TL2 qa), 0 failures; a full run takes about 23 minutes, so run it in the background.
@@ -23,9 +24,7 @@ Last updated: 2026-11-20 (TL2 qa PASS d2218fb; docs pass next). Latest tag `play
 - Late shares for a Bleed Rogue: Bleed 12.5%, Fire 22.8%, Burn 10.0%. Relic Burn share 21.1% (4 of 19). Thesis Wizard late Fire share about 26%.
 
 ## Pending for the next docs pass
-- None from BD3b (all covered in c84792b..bd45c08). Carry: the ARCHITECTURE trim at the Milestone 3 close.
-- TL2 (dd13031..0e5875e): README "Watch the bot" paragraph and commands (`run_wave_sim.ps1 -Run -Class rogue -Seed 3 -BotPreset human -Scale 4 -Shots shots\m3`); gameplay-dev's suggested text is in the game-lead session hand-back, summarised in DECISIONS "TL2 calls" and ROADMAP TL2. Files `NN-<what>.png`, `crowded-fight.png`, `log.txt` under `<dir>\<class>-seed<N>\`; `--watch-shots` without `-Run` or with `--headless` exits 2; about 1152x648 window; test `tl2_watch_mode_test.gd`. ARCHITECTURE: `WatchMode`. CHANGELOG: TL1-1 fix and TL2.
-- TL1 (77e3c9d): README `--press` row gets the new grammar (gameplay-dev's exact text is in the TL1 commit's hand-back, copied here): `<t>:<action>` taps, `<t>:<action>:<hold>` holds 0 < hold <= 120 s, same-t holds make diagonals, `<t>:aim_nearest` until `<t>:aim_off`; InputMap names move_forward/back/left/right, attack_light, attack_heavy, slot_1..slot_5, dodge; a debug flag; bad steps exit 2 "Launch refused: ..."; the console logs the player's (x, z) per step; example `-- --class=rogue --no-map --run-room=1 --press=0.5:aim_nearest,0.5:move_forward:1.2,2:attack_light,3:slot_1`. `capture_screenshot.ps1 -Actions` takes the same grammar. Add `tests/unit/tl1_press_test.gd`. CHANGELOG: TL1 entry, incl. the save-gap fix. ARCHITECTURE: `ScriptedInput` holds and aim, `Player.aim_point_override`, `CaptureArgs` `press_error`.
+- The Milestone 3 close pass: the ARCHITECTURE trim; README "Last verification" has no TL1/TL2 entry (tech-writer ran nothing beyond the bad-value checks); fix the README watch text if it says a bare `--watch-shots` exits 2 (qa: only `--watch-shots=` does).
 
 ## Known issues
 - TL2 watch log nits (qa d2218fb): a bare `--watch-shots` is ignored; "HP at end" is stale on a loss; CROWD/BOSS lines use act-local room numbers; `crowded-fight.png` is overwritten. Fix when convenient.
@@ -42,4 +41,4 @@ Last updated: 2026-11-20 (TL2 qa PASS d2218fb; docs pass next). Latest tag `play
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths. A role that stops with a `Remaining:` list gets a fresh agent, never a resumed one.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions; eyes 61 (Thesis's hit; expires at TL2's close); the round 2 vision check; and, under "Later, optional", Battlemage as a Wizard subclass (GDD §6).
+All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions; no eyes items; the round 2 vision check; and, under "Later, optional", Battlemage as a Wizard subclass (GDD §6).

@@ -299,27 +299,27 @@
         "at_boss_attack": "leveraged_dash"
     },
     "map_mini_boss": {
-        "description": "MAP3 ux: act 1's map with the mini-boss as the only way on (seed 1, room 9 (an elite) cleared and its relic offer skipped). Three acts: the HUD shows Act 1 of 3 and Room 9 of 30 behind the screen.",
+        "description": "MAP3 ux: act 1's map with the mini-boss as the only way on (seed 1, room 9 cleared with its card offer rejected). Three acts. UX1b: the map now holds a 1 s single-option beat, so it is on screen only from about 1.3 s to 2.3 s; the line reads 'Only one way on. Taking it in a second.'",
         "class": "rogue",
         "scenario": "",
-        "after": "4.0",
+        "after": "1.7",
         "extra": [
             "--run-seed=1",
             "--run-room=9",
             "--run-clear-after=1",
-            "--run-auto-choose=relic_skip+skip"
+            "--run-auto-choose=skip"
         ]
     },
     "map_act2": {
-        "description": "MAP3 ux: act 2's map after room 14 (seed 1): the column numbers read 11 to 20, the title says Act 2 of 3, the hover says Room 15 and the line says every route ends at the mini-boss. Run mode.",
+        "description": "MAP3 ux: act 2's map after room 12 (seed 1, card offer rejected): the column numbers read 11 to 20, the title says Act 2 of 3, two routes are open (Combat and Elite) so there is no beat, and the line says every route ends at the mini-boss. Run mode. (Room 14 is an event whose pick leads to a single-option room that skips the map.)",
         "class": "rogue",
         "scenario": "",
-        "after": "4.0",
+        "after": "1.6",
         "extra": [
             "--run-seed=1",
-            "--run-room=14",
+            "--run-room=12",
             "--run-clear-after=1",
-            "--run-auto-choose=skip+relic_skip"
+            "--run-auto-choose=skip"
         ]
     },
     "final_boss_act3": {

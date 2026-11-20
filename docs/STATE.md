@@ -3,17 +3,13 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-20 (Milestone 3 playtest done c50c360; close docs pass next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-20 (Milestone 3 close docs pass done c4f14dc..e21a259; fresh-session review next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
 - Milestone 3 close. The milestone playtest is done (c50c360, no blocker, `docs/playtests/2026-11-20-milestone-3.md`). The repo runs.
 
 ## Exact next step
-1. **tech-writer: Milestone 3 close docs pass.**
-   - The ARCHITECTURE trim (540+ lines, target about 400).
-   - README "Last verification".
-   - Check the README watch text: only `--watch-shots=` exits 2; a bare `--watch-shots` is ignored.
-   - A CHANGELOG line for the milestone playtest.
+1. Done: the Milestone 3 close docs pass (c4f14dc..e21a259). ARCHITECTURE went from 543 to about 393 lines, and README gained a Last verification entry.
 2. **Then a FRESH game-lead session** (CLAUDE.md, milestone boundary). Read the report and look at the 16 screenshots in `docs/playtests/img/milestone-3/` directly. Then:
    - Turn the playtester's 4 director questions into OPEN_ITEMS entries: HP growth in a run; the 15-20 min target vs a 20-28 min estimate; auto-advancing single-option map picks; a gold sink. Each needs a default.
    - Write up its 6 proposals for the director.
@@ -23,7 +19,7 @@ Last updated: 2026-11-20 (Milestone 3 playtest done c50c360; close docs pass nex
      - The report's "Remaining" asks for hand-scripted captures of the Wizard decks and the loadout screen.
      - "Max HP 30 -> 27" is unexplained (probably an event; check the log).
 
-**Next role:** tech-writer (Milestone 3 close docs pass), then a fresh game-lead session.
+**Next role:** a FRESH game-lead session (milestone review). Not this one: the review must be done fresh.
 
 ## Current baselines (BD3b qa 664bfec, 2026-11-19)
 - Suite 2813 (TL2 qa), 0 failures; a full run takes about 23 minutes, so run it in the background.
@@ -34,11 +30,7 @@ Last updated: 2026-11-20 (Milestone 3 playtest done c50c360; close docs pass nex
 - Late shares for a Bleed Rogue: Bleed 12.5%, Fire 22.8%, Burn 10.0%. Relic Burn share 21.1% (4 of 19). Thesis Wizard late Fire share about 26%.
 
 ## Pending for the next docs pass
-- The Milestone 3 close pass:
-  - the ARCHITECTURE trim;
-  - README "Last verification" has no TL1/TL2 entry;
-  - fix the README watch text if it says a bare `--watch-shots` exits 2 (qa: only `--watch-shots=` does);
-  - CHANGELOG: the milestone playtest (c50c360), with no blocker and the baseline report.
+- None (covered in c4f14dc..e21a259). After the review: RESOLVED and CHANGELOG entries for whatever it adds or decides.
 
 ## Known issues
 - TL2 watch log nits (qa d2218fb): a bare `--watch-shots` is ignored; "HP at end" is stale on a loss; CROWD/BOSS lines use act-local room numbers; `crowded-fight.png` is overwritten. Fix when convenient.

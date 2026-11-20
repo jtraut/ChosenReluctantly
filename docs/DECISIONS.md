@@ -2951,3 +2951,11 @@ Report: `docs/playtests/2026-11-12-map3b.md`.
 
   [A bigger uplift (+30%): he said "slight".] [A starter relic: the ranged default exists because a new player was confused by melee (GDD §5).]
 - **"Tankier" comes through the kit (ward armor, damage reduction while enemies are close, Thorned Boundary, Sick Day).** Archetypes have no stat block. A Wizard "Battlemage" subclass passive is the natural later home, but subclasses are [OPEN] (GDD §6), so that's offered to the director as a question, not decided. [A new per-archetype stat: there's no such concept, and it would be built for one deck.]
+
+## 2026-11-20 - TL1 calls (gameplay-dev, recorded by game-lead)
+- **`--press` is extended, not joined by a sibling flag.** `<t>:<action>:<hold>` holds an action; `<t>:aim_nearest` / `<t>:aim_off` are pseudo-actions. The same grammar flows through `capture_screenshot.ps1 -Actions`, so no new script parameter. [A separate `--hold`/`--aim` flag: two grammars for one scripted-input system.]
+- **Action names are the real InputMap names** (`move_forward/back/left/right`, `slot_1`..`slot_5`); the brief's `move_up` doesn't exist. [Aliases: more surface to test, no gain.]
+- **`--press` joins `RunSave.DEBUG_FLAG_PREFIXES`.** This also closes an old gap: a `--press` launch could touch the real save. [Leave it out: a capture could overwrite the director's run.]
+- **Hold cap 120 s** (0 < hold <= 120). [No cap: a typo like 1200 hangs a capture.]
+- **Aim targets Enemy nodes that are direct children of the player's parent** (where the spawner puts them; Boss extends Enemy). It keeps the last point when none is left. [A group lookup: no "enemies" group is guaranteed today.]
+- **A bad `--press` is refused in `Main._choose_character`** via a new `press_error` key in `CaptureArgs.parse`; the old `error` key still flags it, so `pl3_tooling_test` stays valid.

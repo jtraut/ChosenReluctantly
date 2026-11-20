@@ -3,16 +3,16 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-20 (BD3b closed; TL1 next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-20 (TL1 built in 77e3c9d; qa next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- Nothing mid-sitting. BD3b closed 2026-11-20 (ROADMAP; docs pass c84792b..bd45c08). The repo runs.
+- TL1 built (77e3c9d, one sitting, nothing remaining); qa reviews it next. BD3b closed 2026-11-20 (ROADMAP; docs pass c84792b..bd45c08). The repo runs.
 
 ## Exact next step
 1. **TL1, playtester movement tool** (ROADMAP, under MAP4's section; `safe to chain`): gameplay-dev, one short sitting. Then qa (short review: tests, README line), then game-lead closes it. No playtest gate of its own beyond the tool working; no tag needed (tooling only). Eyes 61 expires at TL1's close.
 2. Then the Milestone 3 close: milestone playtest (a full three-act run per class; this report is the baseline), docs pass including the ARCHITECTURE trim (540 lines, target about 400), then a fresh game-lead session reads the report and screenshots before the Milestone 4 brief. BD3c (Battlemage rework, D54) and BAL1 come after the milestone playtest.
 
-**Next role:** gameplay-dev (TL1).
+**Next role:** qa (TL1 review).
 
 ## Current baselines (BD3b qa 664bfec, 2026-11-19)
 - Suite 2796 (202 suites), 0 failures; a full run takes about 23 minutes, so run it in the background.
@@ -24,6 +24,7 @@ Last updated: 2026-11-20 (BD3b closed; TL1 next). Latest tag `playtest-2026-11-2
 
 ## Pending for the next docs pass
 - None from BD3b (all covered in c84792b..bd45c08). Carry: the ARCHITECTURE trim at the Milestone 3 close.
+- TL1 (77e3c9d): README `--press` row gets the new grammar (gameplay-dev's exact text is in the TL1 commit's hand-back, copied here): `<t>:<action>` taps, `<t>:<action>:<hold>` holds 0 < hold <= 120 s, same-t holds make diagonals, `<t>:aim_nearest` until `<t>:aim_off`; InputMap names move_forward/back/left/right, attack_light, attack_heavy, slot_1..slot_5, dodge; a debug flag; bad steps exit 2 "Launch refused: ..."; the console logs the player's (x, z) per step; example `-- --class=rogue --no-map --run-room=1 --press=0.5:aim_nearest,0.5:move_forward:1.2,2:attack_light,3:slot_1`. `capture_screenshot.ps1 -Actions` takes the same grammar. Add `tests/unit/tl1_press_test.gd`. CHANGELOG: TL1 entry, incl. the save-gap fix. ARCHITECTURE: `ScriptedInput` holds and aim, `Player.aim_point_override`, `CaptureArgs` `press_error`.
 
 ## Known issues
 - Next ux polish (from BD3b qa and playtest): "Swap: free" shows permanently, so hide it on ready cards; two-letter relic badges are unreadable in combat; hide "Swap: free" and the curse swap line while swaps are locked; add a non-colour Fire mark for Kindling and Hot Head; capture the 3+ starter relic label and 1366x768.

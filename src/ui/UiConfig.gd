@@ -364,7 +364,7 @@ const DEFAULT_POPUPS: Dictionary = {
 	"immune_text": "IMMUNE",
 	"immune_color": "#cfd8dc",
 	"immune_scale": 0.9,
-	"immune_height": 3.3,
+	"immune_height": 4.6,
 	"immune_cooldown": 1.5,
 }
 

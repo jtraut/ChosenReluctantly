@@ -255,15 +255,29 @@ func _enemy_colors() -> Dictionary:
 	return out
 
 
-func test_every_class_colour_is_distinct_from_every_enemy_colour() -> void:
-	var enemies: Dictionary = _enemy_colors()
-	assert_int(enemies.size()).is_greater_equal(5)
+## Every colour an enemy body can show: its resting colour, that colour pulled toward the stun tint, and the wind-up flash.
+func _enemy_body_colors() -> Dictionary:
+	var out: Dictionary = {}
+	var stun: Dictionary = StatusDatabase.body_tint("stun")
+	var stun_color: Color = stun.get("color", Enemy.DEFAULT_STUN_TINT)
+	var amount: float = float(stun.get("amount", Enemy.DEFAULT_STUN_TINT_AMOUNT))
+	var base: Dictionary = _enemy_colors()
+	for file: String in base:
+		out[file] = base[file]
+		out[file + " (stunned)"] = (base[file] as Color).lerp(stun_color, amount)
+	out["telegraph flash"] = Enemy.TELEGRAPH_COLOR
+	return out
+
+
+func test_every_class_colour_is_distinct_from_every_enemy_colour_including_stun_and_wind_up_tints() -> void:
+	var enemies: Dictionary = _enemy_body_colors()
+	assert_int(enemies.size()).is_greater_equal(11)
 	for character_id: String in CharacterDatabase.ids():
 		var mine: Color = CharacterDatabase.body_color(character_id)
-		for file: String in enemies:
-			var theirs: Color = enemies[file]
+		for label: String in enemies:
+			var theirs: Color = enemies[label]
 			var gap: float = Vector3(mine.r - theirs.r, mine.g - theirs.g, mine.b - theirs.b).length()
-			assert_float(gap).override_failure_message("%s is too close to %s (%.2f)" % [character_id, file, gap]).is_greater(0.45)
+			assert_float(gap).override_failure_message("%s is too close to %s (%.2f)" % [character_id, label, gap]).is_greater(0.45)
 
 
 func test_the_two_classes_differ_from_each_other() -> void:

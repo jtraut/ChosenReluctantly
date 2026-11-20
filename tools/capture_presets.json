@@ -177,7 +177,7 @@
         "description": "MAP1-B: room 9. Seed 54, room 9 (an elite) cleared and its relic offer skipped; the only way on is the boss.",
         "class": "rogue",
         "scenario": "",
-        "after": "3.0",
+        "after": "1.3",
         "extra": [
             "--map",
             "--acts=1",

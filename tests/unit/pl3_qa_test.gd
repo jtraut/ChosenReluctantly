@@ -300,7 +300,8 @@ func test_a_damage_number_inside_the_boss_bar_block_is_pushed_below_it() -> void
 	assert_float(limit).is_greater(20.0)
 	var camera: Camera3D = main.get_viewport().get_camera_3d()
 	var number := _number_at_screen(main, Vector2(main.get_viewport().get_visible_rect().size.x * 0.5, limit * 0.4))
-	assert_float(camera.unproject_position(number.global_position).y).is_less(limit)  # starts inside the block
+	# UX1b: the clamp runs when the number is shown, not only on its first _process, so not even its first drawn frame sits over the bar block.
+	assert_float(camera.unproject_position(number.global_position).y).is_greater_equal(limit)
 	await get_tree().process_frame
 	await get_tree().process_frame
 	var y: float = camera.unproject_position(number.global_position).y

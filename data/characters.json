@@ -26,7 +26,7 @@
         "max_hp": 22.0,
         "dodge_charges": 1,
         "slot_base_cooldowns": { "recovery": 14.0 },
-        "body_color": "#ff6fcf",
+        "body_color": "#f4f1ff",
         "attacks": { "light": "wizard", "heavy": "wizard" },
         "starting_deck": [
             "wizard_bolt_volley", "wizard_overqualified_bolt", "fire_flaming_nonsense",

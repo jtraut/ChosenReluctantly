@@ -1643,6 +1643,11 @@ un_offer_report.ps1`.
      - the exact commands go in the hand-back, for README.
   6. **If it's clearly bigger than one sitting,** commit at a clean point with a `Remaining:` list.
   7. **Then:** qa (short) -> playtester smoke check of the mode -> one tech-writer docs pass for TL1 and TL2 -> close.
+  - **Built 2026-11-20:** gameplay-dev e93ffa3 (TL1-1 fix), dd13031..0e5875e (TL2; 3e1c3b6 and 0e5875e share a message, a double commit).
+    - `-Shots <dir>` runs the `-Run` bot windowed and saves real-UI shots and a `log.txt`.
+    - Three-act runs: Rogue seed 3 won 30/30 (83 files); Wizard seed 3 lost at room 29 (78 files).
+    - Arena hash unchanged. The first map pick of act 1 is logged only.
+    - DECISIONS "TL2 calls". Next: qa.
 - [ ] **Milestone 3 close (after BD3b and TL1).** The tech-writer pass for this close also does the ARCHITECTURE trim (540 lines, target about 400) that BD3b's pass left. playtester runs the milestone playtest (playtester.md "Milestone playtest"): a full three-act run per class, judged against the three pillars. No earlier milestone report exists, so this one is the baseline. Then game-lead reviews the report and the screenshots itself, in a fresh session, before writing the Milestone 4 brief.
 
 ## DF1, difficulty bump (D51 = C, director 2026-11-12; after MAP4, before 3d)

@@ -3,16 +3,16 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-20 (TL1 qa PASS ad617bf; TL2 next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-20 (TL2 built; qa next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- TL1 built (77e3c9d), qa PASS ad617bf with TL1-1: **ad617bf commits a red test** (`tl1_qa_test.gd` mid-hold release), fixed first in TL2. TL1 closes with TL2. BD3b closed 2026-11-20 (ROADMAP; docs pass c84792b..bd45c08). The repo runs.
+- TL1 built (77e3c9d), qa PASS ad617bf; TL1-1 fixed in e93ffa3. TL2 built dd13031..0e5875e (watch-the-bot `-Shots`). qa reviews TL1-1 and TL2 next. Untracked `tests/unit/tl1_press_test.gd.uid` and `tl1_qa_test.gd.uid` are for qa to commit. BD3b closed 2026-11-20 (ROADMAP; docs pass c84792b..bd45c08). The repo runs.
 
 ## Exact next step
 1. **TL2, watch-the-bot mode** (ROADMAP, under TL1; `safe to chain`): gameplay-dev, one sitting, TL1-1 fix as its first commit. Then qa (short), a playtester smoke check of the mode, one tech-writer docs pass for TL1+TL2, close. Eyes 61 expires at TL2's close.
 2. Then the Milestone 3 close: milestone playtest (a full three-act run per class; this report is the baseline), docs pass including the ARCHITECTURE trim (540 lines, target about 400), then a fresh game-lead session reads the report and screenshots before the Milestone 4 brief. BD3c (Battlemage rework, D54) and BAL1 come after the milestone playtest.
 
-**Next role:** gameplay-dev (TL2).
+**Next role:** qa (TL1-1 and TL2 review).
 
 ## Current baselines (BD3b qa 664bfec, 2026-11-19)
 - Suite 2796 (202 suites), 0 failures; a full run takes about 23 minutes, so run it in the background.
@@ -24,6 +24,7 @@ Last updated: 2026-11-20 (TL1 qa PASS ad617bf; TL2 next). Latest tag `playtest-2
 
 ## Pending for the next docs pass
 - None from BD3b (all covered in c84792b..bd45c08). Carry: the ARCHITECTURE trim at the Milestone 3 close.
+- TL2 (dd13031..0e5875e): README "Watch the bot" paragraph and commands (`run_wave_sim.ps1 -Run -Class rogue -Seed 3 -BotPreset human -Scale 4 -Shots shots\m3`); gameplay-dev's suggested text is in the game-lead session hand-back, summarised in DECISIONS "TL2 calls" and ROADMAP TL2. Files `NN-<what>.png`, `crowded-fight.png`, `log.txt` under `<dir>\<class>-seed<N>\`; `--watch-shots` without `-Run` or with `--headless` exits 2; about 1152x648 window; test `tl2_watch_mode_test.gd`. ARCHITECTURE: `WatchMode`. CHANGELOG: TL1-1 fix and TL2.
 - TL1 (77e3c9d): README `--press` row gets the new grammar (gameplay-dev's exact text is in the TL1 commit's hand-back, copied here): `<t>:<action>` taps, `<t>:<action>:<hold>` holds 0 < hold <= 120 s, same-t holds make diagonals, `<t>:aim_nearest` until `<t>:aim_off`; InputMap names move_forward/back/left/right, attack_light, attack_heavy, slot_1..slot_5, dodge; a debug flag; bad steps exit 2 "Launch refused: ..."; the console logs the player's (x, z) per step; example `-- --class=rogue --no-map --run-room=1 --press=0.5:aim_nearest,0.5:move_forward:1.2,2:attack_light,3:slot_1`. `capture_screenshot.ps1 -Actions` takes the same grammar. Add `tests/unit/tl1_press_test.gd`. CHANGELOG: TL1 entry, incl. the save-gap fix. ARCHITECTURE: `ScriptedInput` holds and aim, `Player.aim_point_override`, `CaptureArgs` `press_error`.
 
 ## Known issues

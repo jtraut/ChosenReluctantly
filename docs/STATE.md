@@ -6,16 +6,16 @@
 Last updated: 2026-11-20 (Milestone 3 closed after the fresh-session review; Milestone 4 briefs written). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **UX1a:** built 1abef8c, qa PASS e732d2e (suite 2819, 0 failures; hashes unchanged). Next: the playtester smoke check, then the docs pass and close.
+- **UX1a:** built 1abef8c, qa PASS e732d2e (suite 2819, 0 failures; hashes unchanged). Playtest b06a637 no blocker. **Docs pass running (tech-writer, range 3a46fc6..63492cb).** Then game-lead closes UX1a: remove eyes 62-64 from OPEN_ITEMS (expired, defaults kept; in the handoff for RESOLVED), mark UX1a done, then UX1b.
 - Milestone 3 is closed. The repo runs.
 
 ## Exact next step
-1. **playtester: UX1a smoke check and look** (crowded fight, a boss with statuses, relic badges at 1152x648).
+1. **tech-writer docs pass** for the M3 review, D55 and UX1a (running). Then the UX1a close.
 2. Then a playtester smoke check and look, then UX1b, then HP1 (D55 relics), then SIM2a (all `safe to chain`). One tech-writer docs pass can cover UX1a and UX1b if they close back to back. The docs-pass list below goes out with UX1a's pass at the latest.
 3. **At UX1a's close:** eyes 62, 63 and 64 expire with their defaults if they're unanswered.
 4. BAL1 and BD3c wait for the director's play of BD3b ("The one ask" in OPEN_ITEMS).
 
-**Next role:** playtester (UX1a).
+**Next role:** tech-writer (docs pass), then ux-designer (UX1b).
 
 ## Current baselines (BD3b qa 664bfec, 2026-11-19)
 - Suite 2819 (UX1a qa e732d2e), 0 failures; a full run takes about 23 minutes, so run it in the background.

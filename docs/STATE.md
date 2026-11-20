@@ -11,7 +11,7 @@ Last updated: 2026-11-20 (Milestone 3 closed after the fresh-session review; Mil
 ## Exact next step
 1. **ux-designer: UX1a, combat HUD readability** (ROADMAP Milestone 4; the brief is complete; `safe to chain`). One sitting, well under 150 calls.
 2. Then qa, then the playtester smoke check and captures, then UX1b, then SIM2a (all `safe to chain`). One tech-writer docs pass can cover UX1a and UX1b if they close back to back. The docs-pass list below needs to go out with UX1a's pass at the latest.
-3. **At UX1a's close:** eyes 62 and 63 expire with their defaults if they're unanswered.
+3. **At UX1a's close:** eyes 62, 63 and 64 expire with their defaults if they're unanswered.
 4. BAL1 and BD3c wait for the director's play of BD3b ("The one ask" in OPEN_ITEMS).
 
 **Next role:** ux-designer (UX1a).
@@ -25,7 +25,7 @@ Last updated: 2026-11-20 (Milestone 3 closed after the fresh-session review; Mil
 - Late shares for a Bleed Rogue: Bleed 12.5%, Fire 22.8%, Burn 10.0%. Relic Burn share 21.1% (4 of 19). Thesis Wizard late Fire share about 26%.
 
 ## Pending for the next docs pass
-- CHANGELOG: Milestone 3 closed after game-lead's fresh-session review. Milestone 4 order: UX1a -> UX1b -> SIM2a -> BAL1 and BD3c. SIM2's "formulated" profile is pulled forward as SIM2a. Map single-option auto-advance is game-lead's call (UX1b). New director questions: D55 (max HP growth), eyes 62 (time a run) and eyes 63 (leftover gold). Review commit: this session's.
+- CHANGELOG: Milestone 3 closed after game-lead's fresh-session review. Milestone 4 order: UX1a -> UX1b -> SIM2a -> BAL1 and BD3c. SIM2's "formulated" profile is pulled forward as SIM2a. Map single-option auto-advance is game-lead's call (UX1b). New director questions: D55 (max HP growth), eyes 62 (time a run), eyes 63 (leftover gold) and eyes 64 (map auto-advance veto). Review commit 0c384cb.
 - RESOLVED: nothing answered this session. OPEN_ITEMS lost its "Eyes 61 expired" status text (already in RESOLVED).
 
 ## Known issues
@@ -39,9 +39,9 @@ Last updated: 2026-11-20 (Milestone 3 closed after the fresh-session review; Mil
 - An old git stash (`stash@{0}`, from 85cd564) is still in the repo; the director decides whether to drop it.
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D54 answered; D55 open. Next free: D56. Eyes 62 and 63 open. Next eyes number: 64.
+**D-numbers:** D21-D54 answered; D55 open. Next free: D56. Eyes 62, 63 and 64 open. Next eyes number: 65.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths. A role that stops with a `Remaining:` list gets a fresh agent, never a resumed one.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: D55; eyes 62 and 63; the round 2 vision check; and, under "Later, optional", a second boss per act and Battlemage as a Wizard subclass.
+All director-facing items are in `docs/OPEN_ITEMS.md`: D55; eyes 62, 63 and 64; the round 2 vision check; and, under "Later, optional", a second boss per act and Battlemage as a Wizard subclass.

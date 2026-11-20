@@ -3019,3 +3019,8 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
   - losing the relic removes its boost, and HP is clamped to the new max.
   [Tier 2 or merchant-only: he called the flat one a common relic.] [Counting mini-bosses: he said elite.] [Max only, no heal: the pickup would feel like nothing until the next rest.]
 - **HP1 is tagged `safe to chain`.** It's new content he asked for, and it retunes no slice he hasn't played. Its numbers go to BAL1.
+
+## 2026-11-20 - UX1a playtest triage (game-lead)
+- **"Which relic fired?" becomes eyes 65, default keep.** It's a feel question only the director's hands can answer. [Re-open UX1a: the bot can't judge it, and no blocker.]
+- **Hiding "Swap: free" on ready cards stays (game-lead).** The swap key is still on the card, and the pill was clutter flagged by qa and the playtest in BD3b. [Ask the director: low cost, cheap to reverse.]
+- **The red enemy triangle and the crowd damage digits go to UX1b.** [A legend screen: more reading, not less.]

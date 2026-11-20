@@ -4,6 +4,14 @@ The archive of the director's answered, received and acknowledged items, moved h
 
 ## 2026-11-20
 
+### Expired at TL2's close, default kept
+
+Eyes 61 was added at BD3b's playtest triage and was due to expire at TL1's close; TL1 closes together with TL2 (DECISIONS "TL1 qa triage"). game-lead removes it from OPEN_ITEMS in the close commit. Its text is at `git show e408be7:docs/OPEN_ITEMS.md`.
+
+| ID | What it asked | Default that applied | Notes |
+|---|---|---|---|
+| 61 | Thesis Defense's big hit (67 base at 6 Charge, up to 157 with Reading List), and whether the spender should share the Attack: Single slot with its builder Footnotes. | Both stay as built, and are revisited in BAL1 with the director's feel. | Came from the "Heads-up" under D54. |
+
 ### Answers recorded in 41c0bc9 (D54) and earlier (D53)
 
 Removed from OPEN_ITEMS when you answered. The full text of each, with its options, is in the commit named in the row.

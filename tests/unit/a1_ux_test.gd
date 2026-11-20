@@ -187,21 +187,35 @@ func test_armor_and_resisted_numbers_differ_by_shape_not_only_colour() -> void:
 	assert_bool(DamageNumber.styled_color(DamageNumber.STYLE_NONE, "fire", cfg).is_equal_approx(DamageNumber.color_for("fire", float(cfg["color_lighten"])))).is_true()
 
 
+func test_ux1a_armor_and_resist_numbers_name_themselves_in_words() -> void:
+	# `[8]` is an armor-reduced hit and `<7>` a resisted one (they were never statuses): the number says which, so no legend is needed.
+	var cfg := UiConfig.damage_numbers()
+	assert_str(String(DamageNumber.brackets_for(DamageNumber.STYLE_ARMOR, cfg)["open"])).contains("Arm")
+	assert_str(String(DamageNumber.brackets_for(DamageNumber.STYLE_RESIST, cfg)["open"])).contains("Res")
+
+
+func test_ux1a_armor_and_resist_numbers_start_to_either_side_of_a_plain_one() -> void:
+	assert_float(DamageNumber.style_shift(DamageNumber.STYLE_ARMOR, 1.3)).is_equal(-1.3)
+	assert_float(DamageNumber.style_shift(DamageNumber.STYLE_RESIST, 1.3)).is_equal(1.3)
+	assert_float(DamageNumber.style_shift(DamageNumber.STYLE_NONE, 1.3)).is_equal(0.0)
+	assert_float(float(UiConfig.damage_numbers()["style_spread"])).is_greater(0.0)
+
+
 func test_a_styled_number_shows_its_brackets_and_is_smaller() -> void:
 	var cfg := UiConfig.damage_numbers()
 	var number: DamageNumber = auto_free(DamageNumber.new())
 	add_child(number)
 	number.configure(cfg)
 	number.show_amount(9.0, "physical", Color.WHITE, false, "", DamageNumber.STYLE_ARMOR, DamageNumber.brackets_for(DamageNumber.STYLE_ARMOR, cfg))
-	assert_str(number.text).is_equal("[9]")
+	assert_str(number.text).is_equal("[Arm 9]")
 	assert_float(number.scale.x).is_less(1.0)
 	number.merge_hit(3.0, false)
-	assert_str(number.text).is_equal("[12]")
+	assert_str(number.text).is_equal("[Arm 12]")
 	var resisted: DamageNumber = auto_free(DamageNumber.new())
 	add_child(resisted)
 	resisted.configure(cfg)
 	resisted.show_amount(5.0, "fire", Color.WHITE, false, "", DamageNumber.STYLE_RESIST, DamageNumber.brackets_for(DamageNumber.STYLE_RESIST, cfg))
-	assert_str(resisted.text).is_equal("<5>")
+	assert_str(resisted.text).is_equal("<Res 5>")
 
 
 func test_the_validator_rejects_bad_style_data() -> void:
@@ -231,7 +245,7 @@ func test_an_armored_hit_does_not_merge_into_a_plain_number() -> void:
 	var texts: Array[String] = []
 	for live: DamageNumber in Juice._live_numbers:
 		texts.append(live.text)
-	assert_array(texts).contains_exactly_in_any_order(["8", "[9]"])
+	assert_array(texts).contains_exactly_in_any_order(["8", "[Arm 9]"])
 	assert_object(main).is_not_null()
 
 

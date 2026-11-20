@@ -173,6 +173,26 @@ static func pip_height(scale: float) -> float:
 	return maxf(roundf(8.0 * scale), 6.0)
 
 
+## UX1a: where a chip's pieces go, in the chip's own coordinates (top-left = 0,0). The "xN" burst counter used to be a pill over the chip's top-right corner,
+## which sat on the second letter of the mark. Now, while a burst counts (`counting`), the mark moves up and the counter takes a strip along the bottom of the
+## chip's inside; the two never overlap. `mark_px` and `count_px` are font pixels. Returns {mark_center_y: float, mark_half_h: float, strip: Rect2}; the strip is
+## empty when nothing counts. Pure, tested at every supported size.
+static func chip_layout(chip: float, frame_w: float, mark_px: int, count_px: int, counting: bool) -> Dictionary:
+	var half_h: float = float(mark_px) * 0.4  # the height of a capital is about 0.8 of the font size
+	if not counting:
+		return {"mark_center_y": chip * 0.5, "mark_half_h": half_h, "strip": Rect2()}
+	var strip_h: float = float(count_px) + 2.0
+	var strip := Rect2(Vector2(frame_w, chip - frame_w - strip_h), Vector2(chip - 2.0 * frame_w, strip_h))
+	return {"mark_center_y": (frame_w + strip.position.y) * 0.5, "mark_half_h": half_h, "strip": strip}
+
+
+## The font size that fits `text_w` (measured at `px`) into `room`, never under `min_px` (a four-letter mark such as "PyIn" is wider than a chip).
+static func fit_px(px: int, text_w: float, room: float, min_px: int) -> int:
+	if text_w <= room or text_w <= 0.0:
+		return px
+	return maxi(int(floorf(float(px) * room / text_w)), min_px)
+
+
 func counter_text(relic_id: String) -> String:
 	for entry: Dictionary in _entries:
 		if String(entry["id"]) == relic_id:
@@ -204,11 +224,16 @@ func chip_font_px() -> int:
 	return maxi(roundi(float(_cfg.get("relic_font_size", 12)) * _scale), int(_cfg.get("relic_min_font_size", 10)))
 
 
+func count_font_px() -> int:
+	return maxi(roundi(float(_cfg.get("relic_count_font_size", 12)) * _scale), int(_cfg.get("relic_count_min_font_size", 12)))
+
+
 func _draw() -> void:
 	if _cfg.is_empty() or _entries.is_empty():
 		return
 	var font: Font = get_theme_default_font()
 	var px: int = chip_font_px()
+	var count_px: int = count_font_px()
 	var frame_w: float = maxf(roundf(float(_cfg.get("relic_frame_width", 3)) * _scale), 2.0)
 	var lit: Color = Color.html(String(_cfg.get("relic_flash_color", "#fff3c4")))
 	var back: Color = Color.html(String(_cfg.get("relic_chip_color", "#1a1218")))
@@ -218,18 +243,25 @@ func _draw() -> void:
 		var rect: Rect2 = chip_rect(i)
 		var state: Dictionary = _flashes.get(String(entry["id"]), RelicFlash.fresh())
 		var level: float = float(state["level"])
-		draw_rect(rect, back.lerp(lit, level * 0.55))
-		draw_rect(rect.grow(-frame_w * 0.5), entry["color"], false, frame_w)
+		var counter: String = RelicFlash.count_text(state)
+		var bump: float = RelicFlash.bump_px(level, _scale)
+		var tile: Rect2 = rect.grow(bump)  # the pulse: the badge swells a touch as it lights
+		draw_rect(tile, back.lerp(lit, level * 0.55))
+		draw_rect(tile.grow(-frame_w * 0.5), entry["color"], false, frame_w)
 		if level > 0.01:
 			# The flash is a bright outer ring that grows a little as well as a brighter tile, so it does not rest on colour alone.
-			draw_rect(rect.grow(frame_w * (0.5 + level)), Color(lit, level), false, maxf(frame_w * 0.8, 2.0))
+			draw_rect(tile.grow(frame_w * (0.5 + level)), Color(lit, level), false, maxf(frame_w * 0.8, 2.0))
 		var mark: String = String(entry["mark"])
 		var counter_label: String = counter_text(String(entry["id"]))
-		var text_size: Vector2 = font.get_string_size(mark, HORIZONTAL_ALIGNMENT_LEFT, -1.0, px)
-		var mark_mid: float = rect.position.y + rect.size.y * (0.4 if counter_label != "" else 0.5)
-		var base := Vector2(rect.position.x + (rect.size.x - text_size.x) * 0.5, mark_mid + (font.get_ascent(px) - font.get_descent(px)) * 0.5)
-		draw_string(font, base, mark, HORIZONTAL_ALIGNMENT_LEFT, -1.0, px, back if level > 0.6 else text_color)
-		if counter_label != "":
+		var layout: Dictionary = chip_layout(rect.size.y, frame_w, px, count_px, counter != "")
+		var mark_px: int = fit_px(px, font.get_string_size(mark, HORIZONTAL_ALIGNMENT_LEFT, -1.0, px).x, rect.size.x - 2.0 * frame_w - 2.0, 10)
+		var text_size: Vector2 = font.get_string_size(mark, HORIZONTAL_ALIGNMENT_LEFT, -1.0, mark_px)
+		var mark_mid: float = rect.position.y + float(layout["mark_center_y"])
+		if counter == "" and counter_label != "":
+			mark_mid = rect.position.y + rect.size.y * 0.4
+		var base := Vector2(rect.position.x + (rect.size.x - text_size.x) * 0.5, mark_mid + (font.get_ascent(mark_px) - font.get_descent(mark_px)) * 0.5)
+		draw_string(font, base, mark, HORIZONTAL_ALIGNMENT_LEFT, -1.0, mark_px, back if level > 0.6 else text_color)
+		if counter_label != "" and counter == "":
 			# Progress to the next firing of an every-Nth relic, as N pips along the chip's bottom edge: filled = counted so far (the text is
 			# `counter_text`, "2/4"). Pips stay legible at any chip size, where a number would collide with the mark.
 			var nth: int = int(entry["nth"])
@@ -245,12 +277,13 @@ func _draw() -> void:
 					draw_rect(pip, lit)
 				else:
 					draw_rect(pip, Color(text_color, 0.5))
-		var counter: String = RelicFlash.count_text(state)
 		if counter != "":
-			var cs: Vector2 = font.get_string_size(counter, HORIZONTAL_ALIGNMENT_LEFT, -1.0, px)
-			var pill := Rect2(Vector2(rect.end.x - cs.x - 2.0, rect.position.y - cs.y * 0.5), cs + Vector2(4.0, 1.0))
-			draw_rect(pill, lit)
-			draw_string(font, pill.position + Vector2(2.0, (pill.size.y + font.get_ascent(px) - font.get_descent(px)) * 0.5), counter, HORIZONTAL_ALIGNMENT_LEFT, -1.0, px, back)
+			# The burst counter ("x3") sits in a lit strip along the chip's bottom edge, under the mark (chip_layout), never over it.
+			var strip: Rect2 = layout["strip"]
+			strip.position += rect.position
+			draw_rect(strip, lit)
+			var cs: Vector2 = font.get_string_size(counter, HORIZONTAL_ALIGNMENT_LEFT, -1.0, count_px)
+			draw_string(font, Vector2(strip.position.x + (strip.size.x - cs.x) * 0.5, strip.position.y + (strip.size.y + font.get_ascent(count_px) - font.get_descent(count_px)) * 0.5), counter, HORIZONTAL_ALIGNMENT_LEFT, -1.0, count_px, back)
 	if _tag_left > 0.0 and _tag_name != "":
 		var alpha: float = clampf(_tag_left / 0.4, 0.0, 1.0)
 		var ts: Vector2 = font.get_string_size(_tag_name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, px)

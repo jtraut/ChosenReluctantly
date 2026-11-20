@@ -59,6 +59,15 @@ static func swap_free_text(card: Dictionary, texts: Dictionary, penalty: float, 
 	return String(texts.get("swap_free", ""))
 
 
+## UX1a: the word that marks an element card without colour ("Fire"): the card's pool tag when the pool is an element (data/pools.json `kind` and `tag`),
+## "" for a class, neutral or curse card. Read from the pool, never a card id, so a new element needs data only.
+static func element_mark_text(card: Dictionary) -> String:
+	var pool_id: String = String(card.get("pool", ""))
+	if CardSchema.is_curse(card) or not PoolDatabase.has(pool_id) or String(PoolDatabase.get_definition(pool_id).get("kind", "")) != "element":
+		return ""
+	return PoolDatabase.tag_for_pool(pool_id)
+
+
 ## BD3b-ux: the live value of a scaled card ("+10 per Charge, now +60") as candidates, longest first, so the slot picks the first that fits:
 ## the long form, then the short "Now +60". `scaled` is EffectScale.preview_values(card, caster, deck) (same order as the card's scaled effects);
 ## `texts` is ui.slot_condition, `scale_words` is ui.effect.scale. The "uses up your Charge" part stays on the card text; it does not fit a slot.
@@ -102,8 +111,15 @@ static func _number(value: float) -> String:
 ## BD3b-ux: the pills over a slot, most important first, at most `limit` (the slot draws the first one nearest its frame). One place for the priority, since
 ## four things want that space: (1) the curse swap line (a curse is the dud the player must act on), (2) the live scale value, (3) why a conditional
 ## card is not lit, (4) "Swap: free". `scale` is scale_candidates (the slot picks which fits); every entry is [{"text": String, "alternatives": Array[String]}].
-static func pill_lines(curse_line: String, scale: Array[String], condition_line: String, free_line: String, limit: int) -> Array[Dictionary]:
+## UX1a: `swap_ready` (the slot's card is ready to cast) drops "Swap: free", which is only worth saying while the slot is cooling and a swap is the question;
+## `swaps_locked` (The Micromanager) drops both swap lines, since a swap is not on offer. The live scale value and the reason tag are unaffected.
+static func pill_lines(curse_line: String, scale: Array[String], condition_line: String, free_line: String, limit: int, swap_ready: bool = false, swaps_locked: bool = false) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
+	if swaps_locked:
+		curse_line = ""
+		free_line = ""
+	elif swap_ready:
+		free_line = ""
 	if curse_line != "":
 		out.append({"kind": "curse", "text": curse_line, "alternatives": [] as Array[String]})
 	if not scale.is_empty():

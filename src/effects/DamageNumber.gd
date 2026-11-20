@@ -67,6 +67,16 @@ static func brackets_for(style_id: StringName, cfg: Dictionary) -> Dictionary:
 	return {"open": "", "close": ""}
 
 
+## UX1a: the sideways shift (camera-plane metres) of a styled number: armor to the left of the hit, resisted to the right, plain on it.
+static func style_shift(style_id: StringName, spread: float) -> float:
+	match style_id:
+		STYLE_ARMOR:
+			return -spread
+		STYLE_RESIST:
+			return spread
+	return 0.0
+
+
 ## The colour of a styled number: armor is a flat muted grey whatever the type; a resisted number keeps its
 ## element colour, pulled toward grey by `resist_mute`. Plain numbers use `color_for`.
 static func styled_color(style_id: StringName, type: String, cfg: Dictionary) -> Color:

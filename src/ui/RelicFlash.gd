@@ -35,6 +35,13 @@ static func is_active(state: Dictionary) -> bool:
 	return float(state.get("level", 0.0)) > 0.001 or float(state.get("hold_left", 0.0)) > 0.0
 
 
+## UX1a: how many pixels a lit chip swells by (the pulse that replaces the floating name): up to 2 reference px at full level, at least 1 px while visibly lit.
+static func bump_px(level: float, scale: float) -> float:
+	if level <= 0.01:
+		return 0.0
+	return maxf(roundf(2.0 * scale * clampf(level, 0.0, 1.0)), 1.0)
+
+
 ## "x3" for a burst of more than one trigger, else "".
 static func count_text(state: Dictionary) -> String:
 	var count: int = int(state.get("count", 0))

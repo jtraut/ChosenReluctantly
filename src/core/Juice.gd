@@ -198,9 +198,14 @@ func spawn_damage_number(world_pos: Vector3, amount: float, damage_type: String,
 	if tree == null or WorldRef.get_world(tree) == null:
 		return
 	var cfg: Dictionary = UiConfig.damage_numbers()
-	var spot: Vector3 = world_pos + Vector3(0.0, float(cfg["spawn_height"]), 0.0)
 	var is_big: bool = amount >= HEAVY_HIT_THRESHOLD
 	var style: StringName = DamageNumber.style_for(channel, reduction, cfg)
+	var spot: Vector3 = world_pos + Vector3(0.0, float(cfg["spawn_height"]), 0.0)
+	# UX1a: an armored "[Arm 4]" and a resisted "<Res 4>" from the same hit spawn at one point and printed over each other; they now start to either side of it
+	# (display only: the amount, the merge and the timing are unchanged).
+	var camera: Camera3D = tree.root.get_viewport().get_camera_3d() if tree.root != null else null
+	if camera != null:
+		spot += camera.global_transform.basis.x * DamageNumber.style_shift(style, float(cfg["style_spread"]))
 	_prune_numbers()
 	var entries: Array = []
 	for live: DamageNumber in _live_numbers:

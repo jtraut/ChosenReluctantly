@@ -202,3 +202,17 @@ func test_a_covered_slot_says_swap_free_and_a_covered_curse_says_its_swap_is_fre
 	attack_widget.update_from_slot(player.card_slots.get_slot("attack_single"), player.stat_modifiers)
 	assert_str(attack_widget.swap_free_line()).is_empty()
 	BodyFlag.reset()
+
+
+# --- UX1a: the swap pills give way on a ready card and while swaps are locked ---
+
+func test_ux1a_swap_free_hides_on_a_ready_card_and_both_swap_lines_hide_while_swaps_are_locked() -> void:
+	var scale: Array[String] = ["long"]
+	var cooling: Array[Dictionary] = ConditionCue.pill_lines("", scale, "reason", "free", 9, false, false)
+	assert_array(cooling.map(func(line: Dictionary) -> String: return String(line["kind"]))).is_equal(["scale", "condition", "free"])
+	var ready: Array[Dictionary] = ConditionCue.pill_lines("", scale, "reason", "free", 9, true, false)
+	assert_array(ready.map(func(line: Dictionary) -> String: return String(line["kind"]))).is_equal(["scale", "condition"])
+	var curse_ready: Array[Dictionary] = ConditionCue.pill_lines("curse", scale, "", "", 9, true, false)
+	assert_str(String(curse_ready[0]["kind"])).is_equal("curse")  # a ready curse still says it can be swapped
+	var locked: Array[Dictionary] = ConditionCue.pill_lines("curse", scale, "reason", "free", 9, false, true)
+	assert_array(locked.map(func(line: Dictionary) -> String: return String(line["kind"]))).is_equal(["scale", "condition"])

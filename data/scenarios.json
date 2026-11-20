@@ -1217,5 +1217,20 @@
         "columns": 1,
         "groups": [ { "scene": "res://scenes/enemies/BossBrute.tscn", "count": 1 } ],
         "boss_attacks": ["wet_floor"]
+    },
+    "ux1a_boss_statuses": {
+        "_note": "UX1a capture: the boss carries Burn and Bleed, the player holds 20 relics (the cap) and a Fire deck, auto attack on, so armor and resisted numbers, the badge row and the slot Fire mark are all on screen.",
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "enemy_max_health": 9999,
+        "relics": ["fight_club_membership", "heavy_sigh", "pyre_insurance", "spite_knuckles", "action_item", "adrenaline_vial", "as_per_the_attached_document", "asap_notice", "asset_stripping", "bleeding_edge", "blood_oath", "brain_drain", "bureaucratic_red_tape", "burnout_syndrome", "cc_all_staff", "chasing_paper", "closing_argument", "corporate_buyout", "desk_slam", "endowed_chair"],
+        "deck": ["rogue_drive_by", "fire_fine_burn_then", "fire_kindling", "fire_hot_head", "neutral_healing_potion"],
+        "origin_offset": [0.0, 0.0, -5.0],
+        "columns": 1,
+        "groups": [ { "scene": "res://scenes/enemies/BossGuardian.tscn", "count": 1 } ],
+        "burn_indices": [0],
+        "burn_duration": 60.0,
+        "bleed_indices": [0],
+        "bleed_duration": 60.0
     }
 }

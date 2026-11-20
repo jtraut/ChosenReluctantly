@@ -45,6 +45,10 @@ var _condition_short_card: String = UNSET
 var _swap_line: String = ""
 var _condition_only: String = ""
 var _free_line: String = ""
+## UX1a: the element word of the card in the slot ("Fire"), "" for none.
+var _element_mark: String = ""
+## UX1a: the dead-card swap is refused (CardSlotController.swap_locked), so the swap pills stay off.
+var _swaps_locked: bool = false
 var _scale_candidates: Array[String] = []
 var _scale_signature: String = ""
 var _spent: Dictionary = {"level": 0.0, "used": true}
@@ -146,6 +150,7 @@ func _draw_frame() -> void:
 	_draw_live_glow(r)
 	_draw_cues(r, inset)
 	_draw_pills()
+	_draw_element_mark(r)
 	if _has_next:
 		var sw := _px(float(_cfg["slot_next_swatch_width"]))
 		var row := Rect2(preview_label.position, preview_label.size)
@@ -176,6 +181,15 @@ func _draw_live_glow(r: Rect2) -> void:
 	if level >= 0.5:
 		var font_px: int = roundi(float(_cfg["cue_font_size"]) * _scale)
 		_draw_pill(Vector2(r.end.x - _px(7.0), _px(7.0)), true, String(_cfg["live_word"]), font_px, color, Color.html(String(_cfg["live_text_color"])))
+
+
+## UX1a: the card's element as a word ("Fire") in the top-right corner of the key row, on a pill in the family colour with dark text, so Kindling and Hot Head
+## (no Burn chip) are not recognised by colour alone. The LIVE pill owns that corner while it shows. Text from the pool (ConditionCue.element_mark_text).
+func _draw_element_mark(r: Rect2) -> void:
+	if _element_mark == "" or float(_glow["level"]) >= 0.5:
+		return
+	var font_px: int = maxi(roundi(float(_cfg["cue_font_size"]) * _scale), int(_cfg.get("cue_min_font_px", 12)))
+	_draw_pill(Vector2(r.end.x - _px(7.0), _px(7.0)), true, _element_mark, font_px, _frame_color, Color.html(String(_cfg.get("element_mark_text_color", "#1a1218"))))
 
 
 ## A small filled pill with text. `anchor` is its top-right corner when `right_aligned`, else its top-left.
@@ -248,7 +262,7 @@ func _draw_cues(r: Rect2, inset: float) -> void:
 ## the scale value stays (it is a number the player acts on).
 func _draw_pills() -> void:
 	var lit: bool = _primed or float(_glow["level"]) >= 0.5 or float(_spent["level"]) > 0.01
-	var lines: Array[Dictionary] = ConditionCue.pill_lines(_swap_line, _scale_candidates, "" if lit else _condition_only, "" if lit else _free_line, int(_cfg.get("pill_max", 2)))
+	var lines: Array[Dictionary] = ConditionCue.pill_lines(_swap_line, _scale_candidates, "" if lit else _condition_only, "" if lit else _free_line, int(_cfg.get("pill_max", 2)), _ready_state, _swaps_locked)
 	var font: Font = key_label.get_theme_font("font")
 	var min_px: int = int(_cfg.get("condition_min_font_px", 12))
 	var base_px: int = maxi(roundi(float(_cfg.get("condition_font_size", 12)) * _scale), min_px)
@@ -346,8 +360,11 @@ func set_key_hint(text: String) -> void:
 	key_label.text = text
 
 
-func update_from_slot(slot: CardSlot, stat_modifiers: StatModifiers = null) -> void:
+func update_from_slot(slot: CardSlot, stat_modifiers: StatModifiers = null, swaps_locked: bool = false) -> void:
 	_sync_overlay()
+	if swaps_locked != _swaps_locked:
+		_swaps_locked = swaps_locked
+		_redraw_frame()
 	if slot == null or not slot.has_cards():
 		_set_frames("", "")
 		_refresh_condition_short("")
@@ -483,6 +500,7 @@ func _set_frames(card_id: String, next_id: String) -> void:
 	_card_id = card_id
 	_next_id = next_id
 	_frame_color = _frame_color_of(card_id)
+	_element_mark = ConditionCue.element_mark_text(CardDatabase.get_card(card_id)) if card_id != "" else ""
 	_has_next = next_id != ""
 	_next_color = _frame_color_of(next_id)
 	_redraw_frame()

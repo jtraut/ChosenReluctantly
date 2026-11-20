@@ -782,7 +782,7 @@ func test_the_cue_fades_out_and_its_ring_is_quick() -> void:
 	assert_float(float(RelicCues.ring_state(0.2, 0.45)["radius"])).is_between(0.0, 1.0)
 
 
-func test_a_relic_trigger_in_a_run_puts_a_cue_at_the_spot_of_its_last_effect() -> void:
+func test_ux1a_a_relic_trigger_in_a_run_floats_no_name_and_pulses_its_badge_instead() -> void:
 	RunSession.begin_new_run(3)
 	var main: Main = (load(RUN_MAIN_PATH) as PackedScene).instantiate()
 	add_child(main)
@@ -791,18 +791,10 @@ func test_a_relic_trigger_in_a_run_puts_a_cue_at_the_spot_of_its_last_effect() -
 	main.run_controller.relics_changed.emit(["pyre_insurance"] as Array[String])
 	var cues: RelicCueLayer = main.hud.relic_cues
 	assert_object(cues).is_not_null()
-	# An effect owned by the relic lands at a point; the trigger that follows is drawn there.
-	var spot := Vector3(3.0, 0.0, -2.0)
-	CombatEvents.hit_landed.emit(null, 4.0, "fire", &"damage", "relic:pyre_insurance", spot)
+	CombatEvents.hit_landed.emit(null, 4.0, "fire", &"damage", "relic:pyre_insurance", Vector3(3.0, 0.0, -2.0))
 	main.run_controller.relic_triggered.emit("pyre_insurance", 0, "status_ended")
-	assert_int(cues.cues().size()).is_equal(1)
-	assert_object((cues.cues()[0]["world"] as Vector3)).is_equal(spot)
-	assert_str(RelicCues.label(cues.cues()[0])).is_equal("Pyre Insurance")
-	# With no effect to point at, the player's position is used.
-	cues.cues().clear()
-	cues._spots.clear()
-	main.run_controller.relic_triggered.emit("pyre_insurance", 0, "status_ended")
-	assert_object((cues.cues()[0]["world"] as Vector3)).is_equal(main.player.global_position)
+	assert_int(cues.cues().size()).is_equal(0)  # no floating name in the play field
+	assert_bool(RelicFlash.is_active(main.hud.relic_row.flash_state("pyre_insurance"))).is_true()  # the badge in the HUD row lights instead
 
 
 # --- carry-overs: wording and the pause list -------------------------------------------------------------
@@ -843,3 +835,42 @@ func test_three_relics_all_show_in_the_pause_list_on_a_solid_plate_at_1024_by_60
 	assert_bool(screen.map_button.get_parent() == screen.resume_button.get_parent()).is_true()
 	screen.close()
 	await _resize(_window_size)
+
+
+# --- UX1a: the relic chip's counter strip never covers its mark, and an element card carries a word mark ---
+
+func test_ux1a_the_burst_counter_strip_sits_below_the_mark_at_every_supported_size() -> void:
+	var cfg: Dictionary = UiConfig.hud()
+	for size: Vector2 in [Vector2(1024, 600), Vector2(1152, 648), Vector2(1280, 720), Vector2(1366, 768), Vector2(1920, 1080), Vector2(2560, 1440)]:
+		var s: float = HudLayout.ui_scale(size, cfg)
+		var chip: float = float(cfg["relic_chip_size"]) * s
+		var frame_w: float = maxf(roundf(float(cfg["relic_frame_width"]) * s), 2.0)
+		var mark_px: int = maxi(roundi(float(cfg["relic_font_size"]) * s), int(cfg["relic_min_font_size"]))
+		var count_px: int = maxi(roundi(float(cfg["relic_count_font_size"]) * s), int(cfg["relic_count_min_font_size"]))
+		var idle: Dictionary = RelicRow.chip_layout(chip, frame_w, mark_px, count_px, false)
+		assert_bool((idle["strip"] as Rect2).has_area()).is_false()
+		var busy: Dictionary = RelicRow.chip_layout(chip, frame_w, mark_px, count_px, true)
+		var strip: Rect2 = busy["strip"]
+		var mark_bottom: float = float(busy["mark_center_y"]) + float(busy["mark_half_h"])
+		var mark_top: float = float(busy["mark_center_y"]) - float(busy["mark_half_h"])
+		assert_float(mark_bottom).override_failure_message("counter strip covers the mark at %s" % size).is_less_equal(strip.position.y)
+		assert_float(mark_top).override_failure_message("mark leaves the chip at %s" % size).is_greater_equal(frame_w)
+		assert_float(strip.end.y).is_less_equal(chip - frame_w + 0.01)
+		assert_int(count_px).is_greater_equal(12)
+
+
+func test_ux1a_a_wide_mark_shrinks_to_fit_and_the_pulse_swells_only_while_lit() -> void:
+	assert_int(RelicRow.fit_px(18, 30.0, 36.0, 10)).is_equal(18)
+	assert_int(RelicRow.fit_px(18, 54.0, 36.0, 10)).is_equal(12)
+	assert_int(RelicRow.fit_px(18, 200.0, 36.0, 10)).is_equal(10)  # never under the floor
+	assert_float(RelicFlash.bump_px(0.0, 1.0)).is_equal(0.0)
+	assert_float(RelicFlash.bump_px(1.0, 0.9)).is_greater_equal(1.0)
+	assert_float(RelicFlash.bump_px(0.3, 1.0)).is_less_equal(RelicFlash.bump_px(1.0, 1.0))
+
+
+func test_ux1a_only_element_cards_carry_a_word_mark_and_it_comes_from_the_pool() -> void:
+	assert_str(ConditionCue.element_mark_text(CardDatabase.get_card("fire_kindling"))).is_equal("Fire")
+	assert_str(ConditionCue.element_mark_text(CardDatabase.get_card("fire_hot_head"))).is_equal("Fire")
+	assert_str(ConditionCue.element_mark_text(CardDatabase.get_card("neutral_deep_sigh"))).is_empty()
+	assert_str(ConditionCue.element_mark_text(CardDatabase.get_card("curse_mandatory_training"))).is_empty()
+	assert_str(ConditionCue.element_mark_text({})).is_empty()

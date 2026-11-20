@@ -3,23 +3,18 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-20 (Milestone 3 close docs pass done c4f14dc..e21a259; fresh-session review next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-20 (Milestone 3 closed after the fresh-session review; Milestone 4 briefs written). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- Milestone 3 close. The milestone playtest is done (c50c360, no blocker, `docs/playtests/2026-11-20-milestone-3.md`). The repo runs.
+- Nothing is half done. Milestone 3 is closed (DECISIONS "Milestone 3 review"), and the repo runs.
 
 ## Exact next step
-1. Done: the Milestone 3 close docs pass (c4f14dc..e21a259). ARCHITECTURE went from 543 to about 393 lines, and README gained a Last verification entry.
-2. **Then a FRESH game-lead session** (CLAUDE.md, milestone boundary). Read the report and look at the 16 screenshots in `docs/playtests/img/milestone-3/` directly. Then:
-   - Turn the playtester's 4 director questions into OPEN_ITEMS entries: HP growth in a run; the 15-20 min target vs a 20-28 min estimate; auto-advancing single-option map picks; a gold sink. Each needs a default.
-   - Write up its 6 proposals for the director.
-   - Write the Milestone 4 brief, noting what the review changed.
-   - Known context for the review:
-     - BD3c (Battlemage, D54) and BAL1 (`needs your play first`) wait on this.
-     - The report's "Remaining" asks for hand-scripted captures of the Wizard decks and the loadout screen.
-     - "Max HP 30 -> 27" is unexplained (probably an event; check the log).
+1. **ux-designer: UX1a, combat HUD readability** (ROADMAP Milestone 4; the brief is complete; `safe to chain`). One sitting, well under 150 calls.
+2. Then qa, then the playtester smoke check and captures, then UX1b, then SIM2a (all `safe to chain`). One tech-writer docs pass can cover UX1a and UX1b if they close back to back. The docs-pass list below needs to go out with UX1a's pass at the latest.
+3. **At UX1a's close:** eyes 62 and 63 expire with their defaults if they're unanswered.
+4. BAL1 and BD3c wait for the director's play of BD3b ("The one ask" in OPEN_ITEMS).
 
-**Next role:** a FRESH game-lead session (milestone review). Not this one: the review must be done fresh.
+**Next role:** ux-designer (UX1a).
 
 ## Current baselines (BD3b qa 664bfec, 2026-11-19)
 - Suite 2813 (TL2 qa), 0 failures; a full run takes about 23 minutes, so run it in the background.
@@ -30,9 +25,11 @@ Last updated: 2026-11-20 (Milestone 3 close docs pass done c4f14dc..e21a259; fre
 - Late shares for a Bleed Rogue: Bleed 12.5%, Fire 22.8%, Burn 10.0%. Relic Burn share 21.1% (4 of 19). Thesis Wizard late Fire share about 26%.
 
 ## Pending for the next docs pass
-- None (covered in c4f14dc..e21a259). After the review: RESOLVED and CHANGELOG entries for whatever it adds or decides.
+- CHANGELOG: Milestone 3 closed after game-lead's fresh-session review. Milestone 4 order: UX1a -> UX1b -> SIM2a -> BAL1 and BD3c. SIM2's "formulated" profile is pulled forward as SIM2a. Map single-option auto-advance is game-lead's call (UX1b). New director questions: D55 (max HP growth), eyes 62 (time a run) and eyes 63 (leftover gold). Review commit: this session's.
+- RESOLVED: nothing answered this session. OPEN_ITEMS lost its "Eyes 61 expired" status text (already in RESOLVED).
 
 ## Known issues
+- **Watch mode at `-Scale 4` makes the bot much weaker than headless** (off preset 2/4 wins in watch vs 35/36 and 31/36 in SIM1; human Wizard 0/3 vs 20/36). Don't read difficulty from fast watch runs: the next milestone playtest uses `-Scale 1-2` or headless SIM for difficulty. Fix the fidelity if it's cheap (TL2 follow-up).
 - TL2 watch log nits (qa d2218fb): a bare `--watch-shots` is ignored; "HP at end" is stale on a loss; CROWD/BOSS lines use act-local room numbers; `crowded-fight.png` is overwritten. Fix when convenient.
 - Next ux polish (from BD3b qa and playtest): "Swap: free" shows permanently, so hide it on ready cards; two-letter relic badges are unreadable in combat; hide "Swap: free" and the curse swap line while swaps are locked; add a non-colour Fire mark for Kindling and Hot Head; capture the 3+ starter relic label and 1366x768.
 - Thin margins to carry into BAL1: SIM1 human Wizard exactly at its ceiling (20/36), off Wizard 1 above its floor (31/30), Wizard `relic` median 14.0, W-B removal pain +22% to +28%.
@@ -42,9 +39,9 @@ Last updated: 2026-11-20 (Milestone 3 close docs pass done c4f14dc..e21a259; fre
 - An old git stash (`stash@{0}`, from 85cd564) is still in the repo; the director decides whether to drop it.
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D54 answered. Next free: D55. Next eyes number: 62.
+**D-numbers:** D21-D54 answered; D55 open. Next free: D56. Eyes 62 and 63 open. Next eyes number: 64.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths. A role that stops with a `Remaining:` list gets a fresh agent, never a resumed one.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: no decisions; no eyes items; the round 2 vision check; and, under "Later, optional", Battlemage as a Wizard subclass (GDD §6).
+All director-facing items are in `docs/OPEN_ITEMS.md`: D55; eyes 62 and 63; the round 2 vision check; and, under "Later, optional", a second boss per act and Battlemage as a Wizard subclass.

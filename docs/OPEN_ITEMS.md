@@ -1,12 +1,16 @@
 # Director open items
 
-Last updated: 2026-11-20 (TL1 and TL2 closed; latest tag `playtest-2026-11-20-BD3b`)
-**Status:** No decisions waiting and nothing to look at, apart from the round 2 vision check and one optional question (Battlemage as a subclass). **BD3b (Wizard depth) is done**, tag `playtest-2026-11-20-BD3b`. TL1 and TL2 (tools that let the playtester play and watch whole runs) are done too. Eyes 61 (Thesis's big hit) expired with its default: keep it as built, and revisit it in BAL1. Next: the Milestone 3 close, a full three-act playtest per class.
+Last updated: 2026-11-20 (Milestone 3 closed after the review; latest tag `playtest-2026-11-20-BD3b`)
+**Status:** **Milestone 3 is done.** The milestone playtest found no blocker, and I've reviewed its report and screenshots. Next come three slices that don't need your play: UX1a (combat readability), UX1b (run screens) and SIM2a (a bot that drafts toward a build). BAL1 and the Battlemage rework (BD3c) wait for you to play BD3b. **One play session unblocks most of it:** see "The one ask" below.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
 ## How to playtest
 
+- **The one ask (it unblocks BAL1, BD3c, the vision check and eyes 62):** check out `playtest-2026-11-20-BD3b`. Then:
+  1. Play one normal three-act run, `godot --path .`, and **time it on a clock** (eyes 62).
+  2. Try the Battlemage deck: `godot --path . -- --class=wizard --deck=wizard-ward-battlemage --full-deck --run-room=10`.
+  3. Answer the vision check round 2 below.
 - **Latest known-good build:** `git checkout playtest-2026-11-20-BD3b`, play, then `git checkout main`. The one before it is `playtest-2026-11-18-3d`. Try the new Wizard decks with `-- --class=wizard --deck=wizard-thesis --full-deck` or `--deck=wizard-ward-battlemage`. Older tags are in `docs/RESOLVED.md`.
 - **Relics:** `-- --relics=pyre_insurance+heavy_sigh` starts with relics; `-- --relic-cap=1` tries the give-one-up step.
 - **Normal run:** `godot --path .` (three acts of 10 rooms on a branching map; Continue on the class pick resumes a saved run). Extras: `-- --run-seed=5`, `-- --run-room=10` (act 1 mini-boss), `-- --run-room=30` (final boss), `-- --acts=1` (the old one-act run), `-- --no-map` (straight run), `-- --class=wizard`.
@@ -17,17 +21,26 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## Needs your decision
 
-Next new number: D55.
+Next new number: D56.
 
-None right now.
+### D55. Should max HP grow during a run?
+Right now a Rogue has 30 HP and a Wizard 22 from room 1 to room 30. Two events can lower max HP (the Complacency Trap and the vending machine's "Shake it", 10% each), and nothing raises it. The playtester saw every act-3 loss as "one bad room". A caveat: those losses came from the fast watch mode, where the bot plays badly. The normal headless bot wins 31-35 runs of 36 at the same strength, so the "act-3 wall" isn't proven.
+- **A (default): no growth inside a run for now.** Growth comes from the between-run account layer you already asked for (§8: "base health" and similar), which Milestone 4 designs, and BAL1 rechecks act 3 with the new build-aware bot. Nothing changes until then.
+- **B:** a small source inside the run: a common relic "Max HP +4", or +1 max HP per elite beaten.
+- **C:** a third rest-stop choice "+3 max HP", next to heal and remove. This changes D31.
 
 ## Needs your eyes
 
-Reply with the number and a word or two. **Each item has a default. If it's still unanswered when the slice after the one that added it closes, the default applies and it moves to `docs/RESOLVED.md` (your rule, 2026-11-12).** 
+Reply with the number and a word or two. **Each item has a default. If it's still unanswered when the slice after the one that added it closes, the default applies and it moves to `docs/RESOLVED.md` (your rule, 2026-11-12).**
 
-None right now.
+- **62. How long does a real run take?** Your target is 15-20 minutes including decisions (D50). The bot's two wins took about 11 minutes of fighting, and the playtester estimates 20-28 minutes with a human's thinking time. Please time one run on a clock. **Default:** keep the target and change nothing until it's measured. (Added at the Milestone 3 close; expires at UX1a's close.)
+- **63. Leftover gold.** The bot runs ended with 200-600 unspent gold. Your §4a rule is that gold income goes up rather than relic prices coming down, so I won't cut income. The bot rarely visits a merchant, though, so this may be the bot, not the game. **Default:** no change until SIM2a's build-aware bot measures it. One idea for when the between-run currency (§8) is designed: leftover gold could carry over into it. (Added at the Milestone 3 close; expires at UX1a's close.)
+
+Also, my call, which you can veto: when the map has only one room to go to next, it will show the map for about a second and move on by itself (in UX1b). It's about 10 fewer button presses a run.
 
 ## Later, optional
+
+- **A second boss per act?** Every run meets the same three bosses (Brute, Corporate Raider, Guardian). That's within the slice scope (§10: "2 to 3 plus a final boss"), and endless mode already shuffles bosses (§9a). No default needed: it matters at content planning after Milestone 4.
 
 - **Battlemage as a Wizard subclass?** (asked in chat 2026-11-20). GDD §6 gives each class two subclasses later. Should "Battlemage" be one of the Wizard's, which would give its defense passive a home? No default needed: it matters when subclasses are designed (after BD3c).
 

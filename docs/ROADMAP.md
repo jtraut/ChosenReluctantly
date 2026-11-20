@@ -1649,8 +1649,9 @@ un_offer_report.ps1`.
     - Arena hash unchanged. The first map pick of act 1 is logged only.
     - DECISIONS "TL2 calls". Next: qa.
   - **qa PASS 2026-11-20** (d2218fb; `docs/reviews/2026-11-20-tl2-qa.md`). Suite 2813, 0 failures. Hashes 916264160 / 1317880580 / 3476063471 unchanged; SIM1 human 19/36 and 20/36 unchanged. `/shots/` is now gitignored. Four non-blocking log nits (DECISIONS "TL2 qa triage"). No separate smoke check (same entry). Next: one tech-writer docs pass for TL1 and TL2, then close.
-- [ ] **Milestone 3 close (after BD3b and TL1).** The tech-writer pass for this close also does the ARCHITECTURE trim (540 lines, target about 400) that BD3b's pass left. playtester runs the milestone playtest (playtester.md "Milestone playtest"): a full three-act run per class, judged against the three pillars. No earlier milestone report exists, so this one is the baseline. Then game-lead reviews the report and the screenshots itself, in a fresh session, before writing the Milestone 4 brief.
+- [x] **Milestone 3 close. Done 2026-11-20** (milestone playtest c50c360; docs pass c4f14dc..e21a259; fresh-session review by game-lead, DECISIONS "Milestone 3 review"). Original header: **Milestone 3 close (after BD3b and TL1).** The tech-writer pass for this close also does the ARCHITECTURE trim (540 lines, target about 400) that BD3b's pass left. playtester runs the milestone playtest (playtester.md "Milestone playtest"): a full three-act run per class, judged against the three pillars. No earlier milestone report exists, so this one is the baseline. Then game-lead reviews the report and the screenshots itself, in a fresh session, before writing the Milestone 4 brief.
   - **Milestone playtest 2026-11-20, no blocker** (c50c360; `docs/playtests/2026-11-20-milestone-3.md`, 16 shots in `docs/playtests/img/milestone-3/`). 9 windowed watch runs: 2 wins (Rogue and Wizard seed 1, preset off), the human Wizard died by room 9 in 3 of 3 seeds. The fresh-session review turns its findings and director questions into proposals and OPEN_ITEMS. Close docs pass done (c4f14dc..e21a259). Next: the fresh-session review, then the Milestone 4 brief. The milestone is marked done after the review.
+  - **Review 2026-11-20 (fresh session):** the act-3 deaths came from watch mode at `-Scale 4` (headless SIM1 wins 31-35/36 off), so they aren't a balance finding. The max HP drops were the Complacency Trap event. Director questions became D55 (HP growth), eyes 62 (time a run) and eyes 63 (gold). Map auto-advance is game-lead's call (UX1b). The Milestone 4 order is below.
 
 ## DF1, difficulty bump (D51 = C, director 2026-11-12; after MAP4, before 3d)
 - [x] **DF1. Full loop. Tag `playtest-2026-11-17-DF1`. Done 2026-11-17** (qa PASS 4026720; playtest 8f0d595, no blocker; docs pass 6cdbfd3; DECISIONS "DF1 close"). Goal (GDD §9a): a modest bump toward the hard campaign, from a high bot win rate to about 40-50%. Final calibration comes with between-run upgrades in Milestone 4. **Split into two gameplay-dev sittings (game-lead, 2026-11-16; DECISIONS "DF1 brief"):** the MAP4 carry-overs are code and don't fit the "one sitting, no new code" line. A takes them, and B is the director's data-only bump. Order: A -> B -> ux -> qa -> playtest -> docs. One tag at the end.
@@ -1688,6 +1689,42 @@ un_offer_report.ps1`.
 
 ## Milestone 4 — Second class/element, subclasses, passive tree prototype, balance sim
 
+### What the Milestone 3 review changed (game-lead, 2026-11-20; DECISIONS "Milestone 3 review")
+- **Three slices go first, ahead of BAL1:** two readability sittings (UX1a, UX1b) and a build-aware bot (SIM2a). Before the review the plan opened with BAL1 and BD3c, which both wait on the director's play.
+- **SIM2's "formulated" profile is pulled forward** as SIM2a. Pillar 1 got no verdict because the bot drafts at random, and BAL1 needs a real measure of act 3, deck bloat and leftover gold.
+- **Watch-mode fidelity:** watch runs at `-Scale 4` aren't evidence of difficulty. The next milestone playtest judges difficulty at `-Scale 1-2` or from headless SIM.
+- **Carried into the next milestone playtest:** the hand-scripted captures of `--deck=wizard-thesis`, `--deck=wizard-ward-battlemage` and the loadout screen, 1366x768, and a run with a build-aware bot.
+
+### Run order
+UX1a -> UX1b -> SIM2a (all `safe to chain`) -> BAL1 and BD3c (`needs your play first`) -> the meta design pass (passive tree and the §8 account-wide layer; the D55 default points here) -> subclasses, Water, SIM2.
+
+- [ ] **UX1a, combat HUD readability (ux-designer, one sitting, well under 150 calls). `safe to chain`** (it changes no feel or balance; display only).
+  - **Goal:** a crowded fight reads at a glance. The evidence is the shots `rogue-s3-crowded-fight.png`, `rogue-s3-act2-miniboss.png`, `rogue-s1off-final-boss.png` and `wizard-s1off-final-boss-half-hp.png`, plus STATE Known issues "Next ux polish".
+  - **Acceptance:**
+    1. Relic procs show no floating name label in the play field. The proc shows on the relic's badge in the badge row instead (a pulse, plus the existing `xN`).
+    2. The badge's `xN` stack counter doesn't cover the badge letters.
+    3. Relic badges are legible in combat at 1152x648, and still fit 20 relics (the cap).
+    4. The status marks over enemies (today `[8]`, `<7>`, `<1>`) say which status they are without a legend and without colour alone (for example "Bl 8", "Bu 7", or a glyph).
+    5. "Swap: free" is hidden on ready cards and while swaps are locked. The curse swap line is hidden while swaps are locked.
+    6. Kindling and Hot Head get a non-colour Fire mark.
+  - **Checks:** captures at 1152x648, 1280x720 and 1366x768 of a crowded fight and of a boss with 2 statuses on it. Touched UI tests green, and the four state hashes unchanged (display only).
+  - **Files likely touched:** the HUD relic badge row, the floating-text/Juice popups for relic procs, the enemy status label, card slot widgets, and string keys in `data/`.
+  - **GDD:** §11 (presentation), and the readability rule in CLAUDE.md "Game feel".
+- [ ] **UX1b, run-screen readability (one sitting; gameplay-dev first only if the run flow needs a hook). `safe to chain`.**
+  - **Single-option map pick:** show the map for about 1 s with the one node highlighted, then advance (any key skips). The bot and SIM paths must not change, so the hashes stay the same.
+  - **Act screen:** add a line "+N HP (act heal 30%)", so the D45 heal is visible.
+  - **Player colour:** the player capsule colour is distinct from every enemy colour, for both classes (data).
+  - **Captures:** the 3+ starter relic label, the loadout start screen and 1366x768.
+- [ ] **SIM2a, build-aware "formulated" bot (gameplay-dev, one sitting; split it into draft and route if it grows). `safe to chain`** (tooling).
+  - **What it is:** SIM2's "formulated" profile, without "winging it" and without the gate:
+    - it drafts toward the deck's emerging archetype from card `condition` and tag data, never from card ids;
+    - it values relics by their synergy with the deck;
+    - it routes by HP, gold and needs;
+    - it spends gold at merchants;
+    - it casts with `PlanPolicy`.
+  - **Report only, per class, 36 runs, human and off presets:** win rate, the act and room of death, the median deck size, the dominant status share, and leftover gold at the end.
+  - **Checks:** the existing hashes and SIM1 are unchanged (new flag only).
+  - **This answers:** pillar 1 for the milestone report, and eyes 63 (gold).
 - [ ] **BAL1, deferred balance (first balance item after the Milestone 3 playtest). `needs your play first`.** The list is BD3b's "Deferred" (game-lead, 2026-11-18; DECISIONS "BD3b brief"). Brief written after the milestone playtest review.
 - [ ] **BD3c, melee Wizard: the Ward Battlemage rework (director, 2026-11-20, D54 = A; GDD §4a; BUILD_DEPTH W-D). `needs your play first`.**
   - **Why it waits:** the director plays W-D in the Milestone 3 playtest first. The brief is written after the milestone playtest review, alongside BAL1.

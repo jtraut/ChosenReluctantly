@@ -26,6 +26,8 @@ Last updated: 2026-11-20 (UX1b qa PASS; playtester next). Latest tag `playtest-2
 - Setting and tone [Director decision, 2026-11-20]: GDD §11 "Tone" and "Setting", §14 item 10 resolved, §15 "Corporate setting" update, and the story and art role files. Eyes 66 added (the "lightly offensive" line).
 
 ## Known issues
+- Capture tooling gaps (UX1b playtest 2ae2d92), for a TL follow-up: the `act_transition` preset stalls on the boss relic screen (`relic_skip+skip` never advances; `relic:<id>+skip` does); there is no starting-HP flag (to shoot the act heal line hurt); there is no timed key press during a capture (to prove the map beat skip); `-AtBossAttack` takes `smash`/`slam`, not `ground_pound`.
+- Next ux polish: the Rogue's pink-red hit flash briefly reads as an enemy colour; a 6+ pile's HP bars and pips overlap each other (UX1b playtest).
 - **Watch mode at `-Scale 4` makes the bot much weaker than headless** (off preset 2/4 wins in watch vs 35/36 and 31/36 in SIM1; human Wizard 0/3 vs 20/36). Don't read difficulty from fast watch runs: the next milestone playtest uses `-Scale 1-2` or headless SIM for difficulty. Fix the fidelity if it's cheap (TL2 follow-up).
 - TL2 watch log nits (qa d2218fb): a bare `--watch-shots` is ignored; "HP at end" is stale on a loss; CROWD/BOSS lines use act-local room numbers; `crowded-fight.png` is overwritten. Fix when convenient.
 - In `docs/playtests/img/ux1b/crowd-1152x648_0.png` an enemy overlaps the top edge of the bottom-right card strip (camera framing or card layering). Not fixed in UX1b; a later ux polish item.
@@ -35,7 +37,7 @@ Last updated: 2026-11-20 (UX1b qa PASS; playtester next). Latest tag `playtest-2
 - An old git stash (`stash@{0}`, from 85cd564) is still in the repo; the director decides whether to drop it.
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D55 answered. Next free: D56. Eyes 65 and 66 open. Next eyes number: 67.
+**D-numbers:** D21-D55 answered. Next free: D56. Eyes 66 and 67 open (65 expires at UX1b's close). Next eyes number: 68.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths. A role that stops with a `Remaining:` list gets a fresh agent, never a resumed one.
 

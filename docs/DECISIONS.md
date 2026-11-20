@@ -3049,3 +3049,10 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
   - The heal number sits beside the pile, a metre lower (`heal_spot`).
   - `StatusStackLabel.setup()` now refreshes at the end, so a label built after its status was applied shows the intro. Display only.
   - Tests that assert a lone Bleed label must call `StatusStackLabel.reset_intros()` first.
+
+## 2026-11-20 - UX1b playtest triage (game-lead)
+- **The playtester's four eyes candidates become one item, eyes 67** (the map beat's 1 s, ring digits that show the type rather than the owner, and the pale stunned boss next to the ivory Wizard), default keep. [Four eyes items: more reading for the director, and three of them are the same "does it feel right in your hands" question.]
+- **The act heal line wording is not an eyes item.** Unit tests cover its value and its hidden state, and the wording is plain. [Ask him: low value.]
+- **The red/orange triangle "with no word" is the Bleed and Burn pips.** The first-time name is shown in `bleed-intro-*`; the playtester's frames started after it. No action.
+- **Tooling gaps go to STATE Known issues for a TL follow-up:** the `act_transition` preset stall, a starting-HP flag, a timed key press for captures, and `-AtBossAttack` naming. [A slice now: none blocks a slice.]
+- **The Rogue's pink-red hit flash looking like an enemy colour goes to the next ux polish list.** [Fix it in UX1b: it is a feel tweak no one has played.]

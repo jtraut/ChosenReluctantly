@@ -3024,3 +3024,14 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
 - **"Which relic fired?" becomes eyes 65, default keep.** It's a feel question only the director's hands can answer. [Re-open UX1a: the bot can't judge it, and no blocker.]
 - **Hiding "Swap: free" on ready cards stays (game-lead).** The swap key is still on the card, and the pill was clutter flagged by qa and the playtest in BD3b. [Ask the director: low cost, cheap to reverse.]
 - **The red enemy triangle and the crowd damage digits go to UX1b.** [A legend screen: more reading, not less.]
+
+
+## 2026-11-20 - UX1b calls (ux-designer f7d895e..86eaf8c, recorded by game-lead)
+- **The map beat also applies to single-option boss and mini-boss picks.** "Exactly one reachable node" makes no exception, and a boss pick with no choice costs the same screen. game-lead keeps it. [Exempt bosses: a special case with no player benefit.]
+- **The beat is detected by "not a script main loop" (`MapScreen.human_session()`).** Bots, watch mode and tests host the game as a script, so they never see it. [A new flag in `tools/wave_sim.gd`: more surface to keep in sync.]
+- **A status name ("Bleed") shows over its enemy the first time it appears, once per launch, for 3 s (`data/ui.json` `intro_seconds`).** The red triangle was the Bleed pip. [Once per run: repeats the lesson every run. A legend screen: rejected in the Milestone 3 review.]
+- **Armored hits of any damage type merge into one number.** Two grey `[Arm]` numbers stacked otherwise. [A key per damage type: the overprint qa saw.]
+- **Number heights moved:** `spawn_height` 1.9 -> 2.9, `rise_distance` 1.2 -> 0.5, stack label 3.5 -> 4.1, IMMUNE 3.3 -> 4.6. Display only. [Keep the old heights: the digits sat on enemy heads.]
+- **Class colours:** Rogue #338ce6 -> #1fd6c4 (teal), Wizard #8a4fe0 -> #f4f1ff (ivory). Each is an RGB distance above 0.45 from all 13 enemy colours, including the stun and wind-up tints. [Pink Wizard: it clashed with the boss ground-pound ring.]
+- **The act heal line reads "+N HP (act heal 30%)" and drops "Rests are on the map".** [Keep both: a longer line for a known fact.]
+- **qa's "no camera on the first frame" guess wasn't the cause.** The overprint came from merging against the clamped position, per-type armor keys, the boss-bar row pin, and one unclamped first drawn frame. A world-camera fallback was added anyway, harmless. [Remove it: no evidence either way, and it is cheap.]

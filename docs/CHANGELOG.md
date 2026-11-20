@@ -2,6 +2,86 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
+## 2026-11-20 (Slice BD3b: Wizard depth)
+
+Commit range bc463f5..41c0bc9 (committed 2026-11-18 to 2026-11-20). Brief bc463f5. Sittings: BD3b-0 (ux polish) bc463f5..ddb0d1b; A (engine: scale, conditions, Charge) 0436585..e9dfacf; B (buff triggers, line zone, chain depth) 070ffd6..23370fe; C1 (7 Wizard cards) 1865109..97acc3d; C2 (5 relics and the engine work behind them) 65be0d9..8fe0560, verified in 069f3ef (C2's hand-back was lost; the work was checked from the commits); D1 (pool tag to data, sim caster) b9b3687..0477a81; D2 (plan bot plays Charge and Ward) 7d1b197..c678b24; D3 (tuning) 16b1e81..76001b1; ux d39b156..9040ef4. qa PASS 664bfec (`docs/reviews/2026-11-19-bd3b-qa.md`). Playtest a454d6d (`docs/playtests/2026-11-19-bd3b.md`, no blocker). D54 recorded 41c0bc9. Design: `docs/BUILD_DEPTH.md` section 14. Calls: `docs/DECISIONS.md` entries "BD3b brief" through "D54 recorded". Tag: `playtest-2026-11-20-BD3b`. No third-party assets were added (`docs/ASSETS.md` is unchanged). The director has not played BD3b.
+
+### Added
+- **Seven Wizard cards, all `starter`** (C1 ffdc2be, 009cadc): Thesis Defense (Keystone, Payoff, Attack: Single, damage scales with Charge), Footnotes and Literature Review (Primers: each cast gives 3 Charge), Citation Needed (Attack: Single, scales with the Projectile cards in the deck), Hostile Feedback (Attack: AoE, a second hit below 50% HP), Spiteful Ward (Keystone, Utility, armor buff with a nova when an enemy hits you), Sick Day (Recovery, heal plus short armor). Numbers live in `data/cards/`. Two debug decks: `wizard-thesis` (archetype W-B) and `wizard-ward-battlemage` (W-D); `mixed-wizard` now holds the new cards. The Wizard's full pool goes 39 -> 46 cards.
+- **Five relics** (C2 65be0d9, 79a74f0): Exit Strategy (Movement cards leave a short line of fire), Thorned Boundary (with bonus armor, melee attackers are stunned and take a share of the hit back), Reading List (Charge stacks higher), Filing Cabinet (swapping a dead Utility or Movement card costs no cooldown), Hot Streak (Fire casts reset the Attack: AoE cooldown). All sourced from elite, relic room and merchant, not `starter`.
+- **Charge** (A aa3e3c2): a new self status of the new `counter` type. It stacks, has no damage of its own, and drains after a while (`stacking.decay_after`). Data in `data/statuses.json`.
+- **Engine, for data to use** (A d2f31c7, aa3e3c2, a01d834; B 6758827; C2 65be0d9, 79a74f0):
+  - effect `scale` block (damage or heal grows per Charge stack or per matching card in the deck, optional cap, optional consume);
+  - conditions `self_stacks_at_least`, `deck_count_at_least`, `hp_below` (A), `has_bonus_armor` and `cast_within` with a `count` (C2);
+  - buff triggers (a buff can carry triggers that fire effects on events, for example Spiteful Ward's nova), a line zone along a dash path, and a chain-depth guard carried by delayed hits (B);
+  - `player_damaged` now carries the attacker and a melee flag; `at: attacker` triggers; a trigger-level `condition`; `scale` by the event's amount (relics only); the stat `swap_penalty_mult.<slot>` (C2).
+  Details and file names in `docs/ARCHITECTURE.md`.
+- **Pool `tag` in data** (D1 b9b3687): `data/pools.json` gains `"tag": "Fire"` on the Fire pool, so the tag a pool puts on its cards is data, not code. Behaviour is unchanged. Every Fire card now carries the "Fire" tag (C2 79a74f0).
+- **HUD readouts** (ux d39b156..9040ef4):
+  - a Charge counter ("Charge 6/10", with a drain line, gold at the cap) and a Spiteful Ward row (timer, live bar, a flash and a floating "Spiteful Ward x3" when it fires) under the dodge pips; the rows are always reserved, so the relic row does not jump (the Rogue has a small empty gap);
+  - slot pills: the live scale value ("+10/Charge: +60" short form at 1024x600, "+10 per Charge, now +60" at 1600x900), "Below 50% HP", a bonus-armor line, a cast-count line, and "Swap: free" (shows when the swap price is zero); at most 2 pills, priority curse, scale, reason, swap;
+  - the pause relic list shows a "Now:" line for Liquidate Assets;
+  - new `data/ui.json` keys `status_*`, `chip_hide_pool_tags`, `scale_color`, `pill_max`, `relic_now_color`; new `data/run.json` keys under `ui.status_readout`, `ui.slot_condition`, `ui.effect.condition`, `ui.relic.now_format`, plus `ui.effect.scale` and three condition strings (A) and `ui.start_screen.preset_title` (A, replaces the hardcoded "Preset deck", qa N2 from 3d).
+- **Capture tooling:** `UxCapture` modes `loadout_editor_open`, `loadout_editor_plan_full`, `slot_names` (BD3b-0), `bd3b_hud`, `bd3b_hud_fired`, `bd3b_fire_offer` (ux) and the preset `bd3b_fire_reward`. Captures are in `docs/playtests/img/bd3b0/` and `docs/playtests/img/bd3b-ux/`.
+- **Tests:** suite 2796 cases in 202 suites. New suites include `bd3b_*_test.gd` and, from qa, `bd3b_qa_test.gd` (a keyboard walk across the one-row relic buttons, a 24-character name in an editor tab, and a static scan that fails on any `CombatEvents.<signal>.connect(func` lambda in `tests/unit`).
+
+### Changed
+- **BD3b-0 polish, the 3d playtest list** (bc463f5..ddb0d1b, all 9 items; item 8 was not reproduced at first, then was at 1152x648):
+  1. The cursed slot's swap hint shows the price: "Shift+E swaps (2 s)" (`slot_condition.curse_swap_timed`, price read from `data/run.json` `curses`).
+  2. The starter relic is named for 4 s under the relic chips at run start ("Starter relic: <name>", `relic_start_hold` 4.0 in `data/ui.json`); it shows for any relic held at room 0, including debug `--relics` starts.
+  3. The editor explains Plan in one line (`plan_explain`). `plan_empty` text old -> new: "Nothing planned. Reward and locked cards go on the plan; you will see them marked in rewards and shops." -> "Nothing planned yet."
+  4. Editor tabs show the draft's name and an "unsaved" word (`tab_unsaved`) instead of "1. Empty".
+  5. Default loadout name "Loadout %d" -> "%s loadout %d" (for example "Rogue loadout 2"). A blank name is filled with the default on Save; it no longer blocks it.
+  6. The plan box fits at 1024x600: editor columns 3:2 -> 5:4, relic buttons in one row (Left/Right move between them, not Down), the plan as one paragraph.
+  7. The collection list resets to its top on open and on a tab change.
+  8. Slot names keep their second line below 720 px (958fdba): `TextFit.fit` gains a `max_height` argument (default 0 = unlimited) and `TextFit.line_count` counts a measured line wider than the width as wrapped. It first did not reproduce at 1280x720; it did at 1152x648.
+  9. The detail strip shows keywords (right of the name) and slot-mates (one line).
+- **Balance and text (old -> new):**
+  - Office Supplies and Bureaucratic Red Tape `rule_text`: "... stuns the target for 0.5 s." / "... stuns enemies within 3 m for 1.5 s." gain "(halved on elites)" (A a01d834). Text only; the relics' data is unchanged.
+  - Hostile Feedback damage 12 -> 13 and Literature Review 13 -> 14.5, against the design sketch, forced by `CardDamageRule` (C1).
+  - Thesis Defense per Charge +1.5 -> +10 (so a cast at 6 Charge does 67 base damage, and 157 with Reading List's 15 stacks); Footnotes and Literature Review give 2 -> 3 Charge per cast; cc:All Staff bolt damage 6 -> 3, with its `rule_text` "6-damage bolt" -> "3-damage bolt" (D3 8115904). D3 tried Thesis 24 per Charge and Charge `decay_after` 8 and a Spiteful Ward nova on every hit first; the final state keeps `decay_after` 4 and the nova on `player_damaged` only, because a nova on the player's own hits took the SIM1 human Wizard to 24-26/36.
+  - `map3b_content_test` relic upper bound per class 26 -> 32 (C2). BUILD_DEPTH section 12.1's "about 22 tier 1-3 relics" is now a floor (Rogue 29, Wizard 30 by game-lead's count).
+  - Relic Burn share 25.0% -> 21.1% (4 of 16 -> 4 of 19 relics, with the 5 new ones); Hot Streak was kept because the card offer shares held (79a74f0).
+  - Thesis Wizard's late Fire share 32.7% -> 25.8% (C1; target was 5 points lower, met).
+  - SIM1 human Wizard `-Route first`: 27/36 after C1 (over the ceiling) -> 20/36 after C2 (at the ceiling). The drop came from C2's data, not from a fix aimed at it (DECISIONS "BD3b-D2 triage" corrects the earlier "machine load" reading).
+- **Sim tooling** (D1, D2):
+  - the bot sim's caster (`tools/sim_caster.gd`) now has a Hurtbox and a status manager, so plan mode sees Charge, `hp_below` and the other live fields; the plan view gains `self_stacks`, `hp_fraction`, `deck_card_ids`, and later `self_decay_left`;
+  - `PlanPolicy` plays Charge (spends at 6 or more stacks, or before decay) and Spiteful Ward (casts it before contact); the wave sim's plan line prints the spender's casts and stacks spent;
+  - the offer report gets a Wizard "thesis" bot;
+  - D1's melee audit found nothing missing: enemy and boss cones and the boss charge were already marked melee; projectiles, ground aoes, damage over time and zones are not.
+- **Measured at qa's review (664bfec):**
+  - suite 2796 cases in 202 suites, 0 failures, 0 flaky, 0 skipped, 0 orphans; a full run takes about 23 minutes on a quiet machine (about 90 under heavy sim load);
+  - hashes unchanged: 3172486861 / 916264160 / `-Plan` 1317880580 / bot sim 3476063471;
+  - SIM1 `-Route first`, 36 pooled runs: human Rogue 19/36 (was 18), Wizard 20/36 (was 16; at the 20 ceiling); off bot Rogue 35/36 (was 34), Wizard 31/36 (was 34; 1 over the 30 floor);
+  - `-Route relic` medians (seeds 1/13/25): Rogue 14.5 / 14 / 14; Wizard 14.5 / 13.5 / 13.5, pooled Wizard median 14.0 (mean 13.5); `safe` 5 to 6.5; boss relics exactly 2 per won run in all 24 logs;
+  - W-B (Thesis, boss-room form, no relics) boss time 79% of the standard Wizard deck (gate 70 to 130%); removal pain +28% with D3's swap (Thesis -> Overqualified Bolt) and +22% with a Pointy Stick swap (bar +25%); fingerprint against W-A 0.71 with relics (needs 0.6, different top source);
+  - W-D (Ward Battlemage) reported, not gated: parity 109%, L1 0.33 against W-B with the same top source, removal pain +1%.
+- `[Director decision]` D54 = A, 2026-11-20: Ward Battlemage ships as built and its checks stay informational. The director plays it in the Milestone 3 playtest. His direction for the rework (new slice BD3c, after that playtest): a melee "spellblade" Wizard with higher defense that dives into packs so the ward pays off, short-range single and AoE bursts at about melee range for slightly more damage, and a key relic that makes light and heavy attacks melee. Recorded in GDD section 4a (plus a section 5 note that ranged stays the default), BUILD_DEPTH W-D, ROADMAP BD3c and DECISIONS "D54 recorded". Moved to `docs/RESOLVED.md`.
+- `[Director decision]` D53 = B, 2026-11-18: starter relics may also drop as ordinary relics. The four 3d starters keep their elite, relic room and merchant sources; no data change. Recorded in GDD section 4a and BUILD_DEPTH section 4.7 row 6. Moved to `docs/RESOLVED.md`.
+
+### Fixed
+- **Buff trigger host without a relay** (B 23370fe): no buff-trigger host is made when the caster has no CombatEvents relay.
+- **Sim caster** (D1 0477a81): the bot sim could not see Charge or `hp_below` (no status manager), so any Thesis measurement would have run a Thesis that never scales.
+- **A listener leak in tests** (qa 664bfec): `tests/unit/bd3b_test.gd` (BD3a era) connected two anonymous lambdas to `CombatEvents.dash_passed_through` and never disconnected them. They are now named and disconnected. Test side only.
+- **C2 test leak** (069f3ef): the C2 test stopped no RelayLog, and the stale listener broke 8 later suites; it now stops it. Three old tag tests got Fire pool tag expectations.
+- **A CRLF in a `.gd` string** (ux 9040ef4): a scripted edit turned an embedded newline in `CardSummary` into CRLF, which broke 7 tests. Fixed; qa found no carriage return in any `.gd` file under `src`, `tools` or `tests`.
+- **The 3d polish list** above, items 1 to 9, closes the 3d "BD3b-0 polish list" known issue.
+
+### Docs and process
+- Eyes item 60 (play the 3d loadouts) expired at BD3b's close with its default kept: the 3d polish list and nothing else, which BD3b-0 shipped. Moved to `docs/RESOLVED.md`.
+- **Correction to the 2026-11-18 entry below** (factual fix): its "Known issues" called D53 a conflict with a director rule. The director answered D53 = B on 2026-11-18: starter relics may also drop as ordinary relics, so there is no conflict and no data change.
+- Playtest triage (DECISIONS "BD3b playtest triage"): a TL1 movement and aim hold for `--press` goes before the Milestone 3 playtest; Thesis's 67 / 157 hit and a spender sharing a slot with its builders are an eyes item (61) for when the director plays BD3b.
+- Process lesson from ux: scripted edits of source files must keep line endings (`.gitattributes` forces `eol=lf` for `.gd`, `.md`, `.json`).
+
+### Known issues, left open
+- "Swap: free" shows permanently, and also while swaps are locked (The Micromanager), a false promise; the curse swap line has the same gap (qa, code reading, not run in a scene).
+- Two-letter relic badges are unreadable in combat (playtest).
+- Kindling and Hot Head show Fire by colour only (orange frame, no Fire chip). The editor's tag line does show it.
+- Thin balance margins carried into BAL1: the human Wizard is at its 20/36 ceiling with no headroom; the off Wizard is 1 above its 30 floor; the Wizard `relic` median is 14.0 (seeds 13 and 25 are 13.5); W-B keystone removal pain is +22% to +28% depending on the replacement card (bar +25%).
+- W-D fails its own checks (D54 = A: informational until the Milestone 3 playtest).
+- `w1a_test`'s bolt-range case failed once in a full run under load (D2) and passed alone and in qa's loaded run; it stays here until it passes a few quiet runs.
+- Not verified by qa: real key events on the relic buttons (the focus-neighbour search is tested), a HUD capture with 3 or more relics and no pause panel, any capture at 1366x768, a save round trip with Charge held and Ward live.
+
 ## 2026-11-18 (Slice 3d: loadouts)
 
 Commit range 0a321ad..58c73cc (sittings A and B were committed on 2026-11-17, the rest on 2026-11-18). Five build sittings, then qa and a playtest. gameplay-dev A eea038b..dc39f28, B 41b6b01..501dcd0, C 221768b and 68e38d6..25b010d; ux D 0bc25be..a95c3ac, E 9eef38b..4e7f104; qa 7e22f98 and 0f2a0a2 (PASS: `docs/reviews/2026-11-18-3d-qa.md`); playtest 5520044 (`docs/playtests/2026-11-18-3d.md`, no blocker; the playtester used scripted launches and captures, not hand play). Calls: `docs/DECISIONS.md` entries "3d brief" through "3d playtest triage". GDD section 9 "Loadouts" is the design.
@@ -10,7 +90,7 @@ Commit range 0a321ad..58c73cc (sittings A and B were committed on 2026-11-17, th
 - **Run counting and a start screen** (C 68e38d6, D 0bc25be, a95c3ac): the game counts finished runs (won or lost, once per run) in `user://profile.json`. Run 1 starts straight away with the class's preset deck. From run 2 a start screen opens after the class pick: the preset, each saved loadout (card count, plan size, starter relic), skipped loadouts with the checker's reason, and "Edit or create a loadout". The last used row is preselected with a "Last used" pill, so one Enter starts the run. Up/Down and Enter, or the mouse.
 - **Loadouts** (B 41b6b01, 9b59312): saved in `user://loadouts.json`, limits in the new `data/loadouts.json` (slots per class, copies, deck size, name length). A loadout is a name, a deck of `starter` cards, a plan of `reward` and `locked` cards, and an optional starter relic. Code in the new `src/loadouts/` group; see `docs/ARCHITECTURE.md` "Loadouts (3d)".
 - **Card `availability`** (B 41b6b01, `[Director decision]` D52 = A, answered 2026-11-18, GDD section 9): 48 cards are `starter`, 17 are `reward` (every rare and legendary card), and the 3 curses have none. Before, the GDD line said every card that existed on 2026-11-02 is `starter`; that line predated card rarity.
-- **Starter relics** (B 41b6b01): `starter` is now a relic source, set on Chasing Paper, Spite Knuckles (Rogue) and Ergonomic Chair, Paperwork Fire (Wizard). See "Known issues" for the D53 conflict.
+- **Starter relics** (B 41b6b01): `starter` is now a relic source, set on Chasing Paper, Spite Knuckles (Rogue) and Ergonomic Chair, Paperwork Fire (Wizard). See D53 under "Known issues" (corrected 2026-11-20: no conflict).
 - **Plan and the "On your plan" pill** (C 221768b, D 0bc25be): `RunState.plan` is saved (optional, empty by default, so a DF1-era save still loads; `SAVE_VERSION` is unchanged). Card offers after a fight and after a mini-boss, and merchant cards, show a green "On your plan" pill when the card is on the plan and not in the deck yet.
 - **The loadout editor** (C 68e38d6 placeholder, E 9eef38b, cc13628, 4e7f104): slot tabs, the collection grouped by slot with a Starter, Reward or Locked badge and copy counts, live counts and the checker's own reasons, a plan list, a starter relic pick, and Save, Delete and Back. Up/Down, Enter or click to add, Delete, Backspace, Minus or right-click to remove, Left/Right to switch panels, Esc to go back, Ctrl+S to save. Leaving or switching slots with unsaved edits, and Delete, ask once. Save is blocked while the deck breaks a rule.
 - **Launch flags** (A dc39f28, C 68e38d6): `--run-curse-first=<id>`, `--runs-finished=N`, `--profile-path=<file>`, `--loadouts-path=<file>` and `--loadout=<n|preset>` (needs `--loadouts-path`). All are debug flags: the launch never reads, writes or deletes the save, the profile or the loadouts, except the scratch files it names. Bad values exit 2 with "Launch refused: ...". Details in the README launch table.
@@ -34,8 +114,8 @@ Commit range 0a321ad..58c73cc (sittings A and B were committed on 2026-11-17, th
 - `[Director decision]` 2026-11-17: SIM2, see the 2026-11-17 section below.
 
 ### Known issues, left open
-- **D53 (open, director):** four relics (Chasing Paper, Spite Knuckles, Ergonomic Chair, Paperwork Fire) carry the `starter` source but are also found in runs. BUILD_DEPTH 4.7 says a starter relic is found nowhere else, so this contradicts a director rule (qa N1). game-lead's default (starter-only) lands in BD3b.
-- **BD3b-0 polish list** (playtest, DECISIONS "3d playtest triage"): show the curse swap price on the cursed slot's swap hint; name the starter relic in the run (the HUD shows only a two-letter chip); explain "Plan" in the editor; editor tabs read "1. Empty" while a draft is filled; give new loadouts a default name; the plan box clips at 1024x600 (blocked Wizard); the card list opens scrolled partway down; slot names are cut off; keywords and slot-mates in the detail strip. Also "Preset deck" is hardcoded in `LoadoutChoices` (qa N2).
+- **D53 (corrected 2026-11-20, factual fix):** this entry first called it a conflict with a director rule (qa N1) and said game-lead's default (starter-only) would land in BD3b. Wrong: the director answered D53 = B on 2026-11-18, so the four 3d starter relics (Chasing Paper, Spite Knuckles, Ergonomic Chair, Paperwork Fire) may also drop as ordinary relics. No data change. See `docs/RESOLVED.md`.
+- **BD3b-0 polish list (all 9 items shipped in BD3b-0, see the 2026-11-20 entry):** (playtest, DECISIONS "3d playtest triage"): show the curse swap price on the cursed slot's swap hint; name the starter relic in the run (the HUD shows only a two-letter chip); explain "Plan" in the editor; editor tabs read "1. Empty" while a draft is filled; give new loadouts a default name; the plan box clips at 1024x600 (blocked Wizard); the card list opens scrolled partway down; slot names are cut off; keywords and slot-mates in the detail strip. Also "Preset deck" is hardcoded in `LoadoutChoices` (qa N2).
 - Nobody has hand-played the start screen or editor with a real mouse and keyboard (scripted keys and captures only), and a real window has not finished a run into the default `user://profile.json` (covered by tests with scratch paths).
 
 ## 2026-11-17 (Slice DF1: the difficulty bump, D51 = C)

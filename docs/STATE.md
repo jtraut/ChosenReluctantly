@@ -3,17 +3,16 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-20 (UX1b qa FAIL; ux fix sitting next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-20 (UX1b fixes in; qa re-review next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **UX1b: qa FAIL** (b7b102c; qa fixed a stale w1a colour pin in c7269ea). A fresh ux fix sitting is next for B2 (map beat in watch mode), B3 (crowd number overprint) and the missing captures. Nothing half done; the repo runs.
+- **UX1b: fixes in** (ux 69fafd7, 57660d4) after qa FAIL b7b102c. qa re-review is next. Nothing half done; the repo runs.
 
 ## Exact next step
-1. ux-designer fixes B2 and B3 and re-shoots (map-beat, the Bleed intro name, the 3+ starter relic label).
-2. qa re-review (`ux1b_test`, `w1a_test`, `ProbeHumanSession`, the `ux1b_crowd` capture; a full suite only if sources outside MapScreen, DamageNumber or Juice change).
-3. Then playtester smoke check -> docs -> close (eyes 65 expires at UX1b's close). Then HP1, then SIM2a. BAL1 and BD3c wait for the director's play of BD3b.
+1. qa re-reviews UX1b, with the full suite (StatusStackLabel and `tools/wave_sim.gd` changed).
+2. Then playtester smoke check -> docs -> close (eyes 65 expires at UX1b's close). Then HP1, then SIM2a. BAL1 and BD3c wait for the director's play of BD3b.
 
-**Next role:** ux-designer (UX1b fixes).
+**Next role:** qa (UX1b re-review).
 
 ## Current baselines (BD3b qa 664bfec, 2026-11-19)
 - Suite 2847 (UX1b qa b7b102c), 0 failures; a full run takes about 23 minutes, so run it in the background.

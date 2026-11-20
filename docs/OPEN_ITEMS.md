@@ -32,9 +32,13 @@ Reply with the number and a word or two. **Each item has a default. If it's stil
 
 - **65. Can you tell which relic fired?** In a fight, a relic that fires now pulses its own badge (a cream frame and its name under the row) instead of floating its name over the action. The bot playtester thinks that may be easy to miss in a burst. When you play, does it work for you? **Default:** keep it as built. (Added at UX1a's close; expires at UX1b's close.)
 
+- **66. Where is the line for "lightly offensive"?** Your tone direction (edgy, lightly offensive, Borderlands / South Park / Disco Elysium) is now in GDD §11 and the story role. I added a working line so the story role knows where to stop: no slurs, no punchline that targets a real-world group's ethnicity, religion, disability, gender or sexuality, and no real people or brands. Crude and dark are fine. Move the line if you want it looser or tighter. **Default:** keep this line. (Added 2026-11-20; expires at HP1's close.)
+
 ## Later, optional
 
 - **A second boss per act?** Every run meets the same three bosses (Brute, Corporate Raider, Guardian). That's within the slice scope (§10: "2 to 3 plus a final boss"), and endless mode already shuffles bosses (§9a). No default needed: it matters at content planning after Milestone 4.
+
+- **Modern class names?** The Wizard may become the "IT Wizard" (your lean) and the others get modern names too (GDD §11 "Setting"). No default needed: names change in a naming pass when story work is scheduled. Send other name ideas whenever you have them.
 
 - **Battlemage as a Wizard subclass?** (asked in chat 2026-11-20). GDD §6 gives each class two subclasses later. Should "Battlemage" be one of the Wizard's, which would give its defense passive a home? No default needed: it matters when subclasses are designed (after BD3c).
 

@@ -24,7 +24,7 @@ Last updated: 2026-11-20 (UX1b qa FAIL; ux fix sitting next). Latest tag `playte
 - Late shares for a Bleed Rogue: Bleed 12.5%, Fire 22.8%, Burn 10.0%. Relic Burn share 21.1% (4 of 19). Thesis Wizard late Fire share about 26%.
 
 ## Pending for the next docs pass
-- None (covered in d7dc951).
+- Setting and tone [Director decision, 2026-11-20]: GDD §11 "Tone" and "Setting", §14 item 10 resolved, §15 "Corporate setting" update, and the story and art role files. Eyes 66 added (the "lightly offensive" line).
 
 ## Known issues
 - **Watch mode at `-Scale 4` makes the bot much weaker than headless** (off preset 2/4 wins in watch vs 35/36 and 31/36 in SIM1; human Wizard 0/3 vs 20/36). Don't read difficulty from fast watch runs: the next milestone playtest uses `-Scale 1-2` or headless SIM for difficulty. Fix the fidelity if it's cheap (TL2 follow-up).
@@ -37,7 +37,7 @@ Last updated: 2026-11-20 (UX1b qa FAIL; ux fix sitting next). Latest tag `playte
 - An old git stash (`stash@{0}`, from 85cd564) is still in the repo; the director decides whether to drop it.
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D55 answered. Next free: D56. Eyes 65 open. Next eyes number: 66.
+**D-numbers:** D21-D55 answered. Next free: D56. Eyes 65 and 66 open. Next eyes number: 67.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths. A role that stops with a `Remaining:` list gets a fresh agent, never a resumed one.
 

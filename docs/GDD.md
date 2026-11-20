@@ -405,9 +405,14 @@ If the slice is fun, scale outward. Scaling should be mostly data entry.
 - Card animations and effects use reusable **effect templates** (projectile, cone, AoE, dash, buff aura, summon) recolored and rescaled per element.
 - Art and audio start as placeholders and free (CC0 or licensed) assets. Custom or generated assets come after the combat is proven fun.
 - **Art style:** whatever is easiest to produce and keep consistent. Low-poly 3D is the working direction. Pixel-art-inspired looks are acceptable if cheaper.
-- **Tone (leaning, not final):** satire and humor. The world is bright, vibrant, and friendly, while the heroes are weary pessimists who find saving the world a total drag (think Shikamaru from Naruto). The contrast between cheerful world and reluctant heroes is the joke engine. **[OPEN]** how far to push it.
+- **Tone:** satire and humor. The world is bright, vibrant, and friendly, while the heroes are weary pessimists who find saving the world a total drag (think Shikamaru from Naruto). The contrast between cheerful world and reluctant heroes is the joke engine.
+- **How far to push it [DIRECTOR DECISION, 2026-11-20]:** edgy, lightly offensive jokes are encouraged. The main character(s) are lazy and self-deprecating.
+  - Tone references: **Borderlands 1-3, South Park: The Fractured But Whole, Disco Elysium.**
+  - The working line for "lightly offensive" is in `.claude/agents/story.md` (game-lead's default, DECISIONS 2026-11-20 "Setting and tone recorded").
 - Story and lore: minimal flavor text only, in that voice (card names, flavor lines, boss quips).
-- **Setting idea (director, 2026-11-04, not decided):** a modern corporate office instead of a fantasy world. See §15 "Corporate setting".
+- **Setting [DIRECTOR DECISION, 2026-11-20]:** a modern-day metropolis where magic is real. Most people are easily attuned to an element, but they still live ordinary modern lives: office jobs, pencil pushers, commutes. Think San Francisco or New York, except for the magic.
+  - **Why:** the class + element builds (§5) keep their elements without any advanced technology, and the world still fits the office and corrupt-corporation direction (§15 "Corporate setting").
+  - **Class names get modernized later.** For example, the Wizard may become the "IT Wizard" (the director's current lean; alternative "Geek"). Not final. Today's names (Rogue, Wizard, and so on) stay in the data and UI until a naming pass is scheduled.
 
 ---
 
@@ -449,7 +454,7 @@ The director provides top-level design direction only. Roles are defined as docu
 7. Final subclass lists (2 per class and element).
 8. Subclass pick timing in a run.
 9. Game name. Front-runner: **Chosen, Reluctantly** (also fits the "choose your cards carefully" mechanic).
-10. Final tone: how far to push the satire.
+10. ~~Final tone: how far to push the satire.~~ Resolved 2026-11-20 (§11): edgy and lightly offensive, with lazy, self-deprecating heroes. Open: the modernized class names (§11 "Setting").
 11. Card unlock conditions for `locked` cards (§9 Loadouts).
 12. ~~Relic sources and how many per run; whether Burn and Bleed stack.~~ Resolved 2026-11-02 (D22 = C, D25 = A, §4a). Merchant relic prices proposed in `docs/MAP.md` §4.4 (MAP0).
 13. Branching map: node types, choices per step, layout, and the reward currencies (gold, XP, between-run points) (§9). Proposed in `docs/MAP.md` (MAP0, 2026-11-03); D31-D35 answered 2026-11-04. XP and between-run points stay open with §8.
@@ -489,7 +494,8 @@ The director's words: "just an idea to note, not a hard plan yet." It's a possib
 - **Encounters:**
   - **Friends:** like-minded skeptics, still cheerful, who give you the tools to win and shut the company down. They're merchants (§9, MAP2) and helpful random events (MAP4).
   - **Corporate loyalists:** random encounters with people who sided with the company. They give a curse (D38) or make you pay a chunk of gold.
-- **Not decided:** how classes (Rogue, Wizard), elements and card names map onto office life, for example job roles. This also stays open: whether it replaces the fantasy setting or becomes one flavour of it.
+- **Not decided:** how classes (Rogue, Wizard), elements and card names map onto office life, for example job roles.
+  - **Update (director, 2026-11-20):** the world is now a modern magic metropolis (§11 "Setting"), so the fantasy-world question is settled. Classes keep their roles and get modernized names later (the Wizard may become the "IT Wizard"). The premise, the enemy ladder and the skyscraper above stay ideas until the director schedules story work.
 - **No work starts on this** until the director decides. The art, audio and story roles stay dormant. Mechanics are unaffected: friend and loyalist encounters fit the planned merchant, event and curse systems as they are.
 
 ### Survivor-style level-up layer **[IDEA, not scheduled]**

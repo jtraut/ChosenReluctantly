@@ -3,16 +3,17 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-20 (UX1b docs pass running). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-20 (UX1b closed; docs pass 4633c02). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **UX1b: docs pass running** (tech-writer, range 5ddd3b0..8a3c2de, plus the setting and tone commit 415e217). qa PASS 6386562, playtest 2ae2d92 with no blocker. Nothing half done; the repo runs.
+- Nothing is half done. UX1b is closed (docs pass 4633c02), and the repo runs.
 
 ## Exact next step
-1. After the docs pass: close UX1b in ROADMAP, remove eyes 65 from OPEN_ITEMS (expired, default kept), and clear "Pending for the next docs pass".
-2. Then HP1 (gameplay-dev; brief in ROADMAP), then SIM2a. BAL1 and BD3c wait for the director's play of BD3b.
+1. **gameplay-dev: HP1, the max HP relics** (ROADMAP Milestone 4; `safe to chain`). Then qa -> docs -> close (no smoke check unless ux adds UI). Eyes 66 and 67 expire at HP1's close.
+2. Then SIM2a (gameplay-dev).
+3. BAL1 and BD3c wait for the director's play of BD3b ("The one ask" in OPEN_ITEMS).
 
-**Next role:** tech-writer (UX1b docs pass), then gameplay-dev (HP1).
+**Next role:** gameplay-dev (HP1).
 
 ## Current baselines (BD3b qa 664bfec, 2026-11-19)
 - Suite 2851 (UX1b qa 6386562), 0 failures; a full run takes about 23 minutes, so run it in the background.
@@ -23,7 +24,7 @@ Last updated: 2026-11-20 (UX1b docs pass running). Latest tag `playtest-2026-11-
 - Late shares for a Bleed Rogue: Bleed 12.5%, Fire 22.8%, Burn 10.0%. Relic Burn share 21.1% (4 of 19). Thesis Wizard late Fire share about 26%.
 
 ## Pending for the next docs pass
-- Setting and tone [Director decision, 2026-11-20]: GDD §11 "Tone" and "Setting", §14 item 10 resolved, §15 "Corporate setting" update, and the story and art role files. Eyes 66 added (the "lightly offensive" line).
+- None (covered in 4633c02).
 
 ## Known issues
 - Capture tooling gaps (UX1b playtest 2ae2d92), for a TL follow-up: the `act_transition` preset stalls on the boss relic screen (`relic_skip+skip` never advances; `relic:<id>+skip` does); there is no starting-HP flag (to shoot the act heal line hurt); there is no timed key press during a capture (to prove the map beat skip); `-AtBossAttack` takes `smash`/`slam`, not `ground_pound`.
@@ -37,7 +38,7 @@ Last updated: 2026-11-20 (UX1b docs pass running). Latest tag `playtest-2026-11-
 - An old git stash (`stash@{0}`, from 85cd564) is still in the repo; the director decides whether to drop it.
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D55 answered. Next free: D56. Eyes 66 and 67 open (65 expires at UX1b's close). Next eyes number: 68.
+**D-numbers:** D21-D55 answered. Next free: D56. Eyes 66 and 67 open. Next eyes number: 68.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths. A role that stops with a `Remaining:` list gets a fresh agent, never a resumed one.
 

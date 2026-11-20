@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-20 (UX1a closed; latest tag `playtest-2026-11-20-BD3b`)
-**Status:** **Milestone 3 is done, and UX1a (fight readability) is done.** D55 = B is recorded and becomes slice HP1. Eyes 62-64 expired with their defaults (see `docs/RESOLVED.md`). Next: UX1b (run screens), then HP1 (the max HP relics), then SIM2a (a bot that drafts toward a build). BAL1 and the Battlemage rework (BD3c) wait for you to play BD3b: see "The one ask" below.
+Last updated: 2026-11-20 (UX1b closed; latest tag `playtest-2026-11-20-BD3b`)
+**Status:** **Milestone 3 is done, and UX1a and UX1b (fight and run-screen readability) are done.** Eyes 65 expired with its default (see `docs/RESOLVED.md`). Your setting and tone direction is in GDD §11. Next: HP1 (the max HP relics), then SIM2a (a bot that drafts toward a build). BAL1 and the Battlemage rework (BD3c) wait for you to play BD3b: see "The one ask" below.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -29,8 +29,6 @@ None right now.
 
 Reply with the number and a word or two. **Each item has a default. If it's still unanswered when the slice after the one that added it closes, the default applies and it moves to `docs/RESOLVED.md` (your rule, 2026-11-12).**
 
-
-- **65. Can you tell which relic fired?** In a fight, a relic that fires now pulses its own badge (a cream frame and its name under the row) instead of floating its name over the action. The bot playtester thinks that may be easy to miss in a burst. When you play, does it work for you? **Default:** keep it as built. (Added at UX1a's close; expires at UX1b's close.)
 
 - **66. Where is the line for "lightly offensive"?** Your tone direction (edgy, lightly offensive, Borderlands / South Park / Disco Elysium) is now in GDD §11 and the story role. I added a working line so the story role knows where to stop: no slurs, no punchline that targets a real-world group's ethnicity, religion, disability, gender or sexuality, and no real people or brands. Crude and dark are fine. Move the line if you want it looser or tighter. **Default:** keep this line. (Added 2026-11-20; expires at HP1's close.)
 

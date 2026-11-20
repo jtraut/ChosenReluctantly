@@ -416,7 +416,9 @@ func test_wizard_body_is_a_different_colour_with_26_hp_and_the_rogue_unchanged()
 	var rogue_color: Color = (rogue.body_mesh.material_override as StandardMaterial3D).albedo_color
 	assert_bool(wizard_color.is_equal_approx(rogue_color)).is_false()
 	assert_bool(wizard_color.is_equal_approx(CharacterDatabase.body_color("wizard"))).is_true()
-	assert_float(absf(rogue_color.r - 0.2) + absf(rogue_color.g - 0.55) + absf(rogue_color.b - 0.9)).is_less(0.01)  # the scene's blue, to within a hex digit
+	# UX1b item 6 moved the class colours (Rogue #338ce6 -> #1fd6c4) so the player reads apart from every enemy; this pin held the old blue and went stale.
+	# The Rogue's body is its data colour (the intent of "the Rogue unchanged": the class colour comes from characters.json, not from the wizard's).
+	assert_bool(rogue_color.is_equal_approx(CharacterDatabase.body_color("rogue"))).is_true()
 
 
 func test_wizard_light_is_50_percent_of_the_rogues_and_neutral_with_12_m_range() -> void:

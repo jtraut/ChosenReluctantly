@@ -3082,3 +3082,15 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
 - **Relics:** base 0.5, plus up to 1.5 for supplied keys, minus 1.0 for dead keys, plus 1.0 for basic-attack relics when the deck buffs light or heavy attacks. The bot skips under -0.5 and gives up the lowest-scoring relic.
 - **The flag is `-BotProfile formulated`** (to avoid PowerShell's `$PROFILE`); it requires `-Run` and turns on plan casts.
 - **"Dominant status share" = the share of the final deck that applies the dominant enemy status.** SIM2a-2 adds the self-status (Charge, Ward) and a plan-only control row (game-lead).
+
+## 2026-11-20 - SIM2a-1 correction and SIM2a-2 calls (gameplay-dev ce0c54b, 552b116, recorded by game-lead)
+- **Correction:** SIM2a-1's drafter was never called by the sim; `DraftPolicy` fed only the report line. "SIM2a-1 calls" describes the scorer correctly, but its first report was plan casts with a random draft. The `plan` control row reproduces it exactly.
+- **Route (`FormulatedRoute.THRESHOLDS`):** re-scores every whole path at each pick. Priorities in order:
+  - rest when HP is under 0.55 and a rest is within 3 nodes;
+  - a merchant when gold is at least 55;
+  - elites when HP is at least 0.70 and the deck build share is at least 0.25 (otherwise they count against the path);
+  - growth (relic room 3, combat 2, event 1).
+  [`first` with a rest override: no elite or merchant logic.]
+- **Shop (`FormulatedShop.TABLE`):** one margin scale, and it buys the largest margin above 0. Cards are scored against the reward skip bar, relics against 0.5 (a give-up must beat the lowest held relic by 0.5). Removals only above 15 cards; a curse counts 5.0. A free reroll when nothing clears its bar. The same removal rule applies to rest and event removals under the profile.
+- **The extra profiles `plan` (plan casts only) and `report` (flag off plus the report line)** are the control rows.
+- **game-lead: SIM2a gets a third small sitting (SIM2a-3, report only) before qa.** Formulated losing to plan-only (human Wizard 14 against 25) may be the bot's untuned weights, not the design, so it isn't a design flag for the director yet. The SIM2 gate rule ("a small gap is a design flag") applies to the full SIM2 with a tuned bot. [Flag pillar 1 to the director now: the bot is a first guess, and he'd be judging the bot. Go straight to qa: the milestone report would carry an unexplained number.]

@@ -1821,11 +1821,13 @@ UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> BAL1 and BD3c (`needs your
         - **Most likely cause (Wizard): the formulated removal scorer.** It is Burn-first and strips the Wizard's own starters (Arcane Nova survives in 32% of death decks, 100% with removals off). Removals cost about +10 wins, the shop about +7, the route about +4 (overlapping). No slot is starved; 6 of the 12 act 2 deaths are in an elite room, none right after one. Rogue: every factor within 2 of the control (noise).
         - Not a plain bug (a weight issue), so no fix in SIM2a-3. game-lead: a SIM2a-4 follow-up (below), not BAL1.
     - Then qa (once, SIM2a-1 to SIM2a-3), docs, close. No playtest (tooling).
+    - **qa PASS 2026-11-21** (1c5250f; `docs/reviews/2026-11-21-sim2a-qa.md`). Suite 2902 (2875 + 27), 0 failures. Hashes and SIM1 human (Rogue 25, Wizard 19) unchanged; formulated Wizard human 14, removals off 24, shop off 21 reproduced exactly. No ids or RNG in the drafter. Nits to SIM2a-4.
     - [ ] **SIM2a-4, formulated removal and shop weights (gameplay-dev, a small sitting, after SIM2a closes). `safe to chain`** (bot tooling, no game data).
       - A class-core and slot-coverage guard in `FormulatedShop.removal_choice`: never remove the last card of a slot, and value the class's starting cards on their own terms, not only against the dominant status.
       - Re-check the merchant card buys against the same read.
       - Acceptance: the human Wizard formulated row is at least the removals-off row (24/36) minus noise (about 3), Rogue not below 22; flag off: hashes and SIM1 unchanged; tests for the guard.
       - Report the four formulated rows again. No game balance changes.
+      - qa nits (1c5250f): the profile error text says `-Profile` (the flag is `-BotProfile`); warn when `-FormulatedOff` is given without `-BotProfile formulated`; a gdUnit case for the `--sim-formulated-off=` rejection; a route/off-switch field on the `FORMULATED RUN` line so mixed logs pool apart.
 - [ ] **BAL1, deferred balance (first balance item after the Milestone 3 playtest). `needs your play first`.** The list is BD3b's "Deferred" (game-lead, 2026-11-18; DECISIONS "BD3b brief"). Brief written after the milestone playtest review.
 - [ ] **BD3c, melee Wizard: the Ward Battlemage rework (director, 2026-11-20, D54 = A; GDD §4a; BUILD_DEPTH W-D). `needs your play first`.**
   - **Why it waits:** the director plays W-D in the Milestone 3 playtest first. The brief is written after the milestone playtest review, alongside BAL1.

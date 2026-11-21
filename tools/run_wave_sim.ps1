@@ -27,7 +27,7 @@
 #   screens), each act's end screen, the boss (and at half HP), the biggest crowd of the run (crowded-fight.png) and the end screen. Use -BotPreset human to watch a human-like bot. A relative <dir> is taken from the folder you run this in.
 #   The same lines are printed as "WATCH ..." in the console. Watching at -Scale 1 is real time (a three-act run is about half an hour); -Scale 3 or 4 is faster (it drops --fixed-fps, so the run does not repeat exactly from its seed).
 # Fails on a failed check OR any ERROR / SCRIPT ERROR / WARNING line in the engine output.
-param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets, [int]$StartRoom = 0, [switch]$Plan, [string]$Relics = "", [int]$RelicCap = 0, [string]$Swap = "", [switch]$NoRelics, [string]$Route = "", [switch]$Map, [switch]$NoMap, [switch]$Merchant, [int]$Acts = 0, [string]$BotPreset = "", [double]$BotDelay = -1, [double]$BotAimError = -1, [double]$BotHesitation = -1, [string]$Shots = "", [string]$BotProfile = "")
+param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets, [int]$StartRoom = 0, [switch]$Plan, [string]$Relics = "", [int]$RelicCap = 0, [string]$Swap = "", [switch]$NoRelics, [string]$Route = "", [switch]$Map, [switch]$NoMap, [switch]$Merchant, [int]$Acts = 0, [string]$BotPreset = "", [double]$BotDelay = -1, [double]$BotAimError = -1, [double]$BotHesitation = -1, [string]$Shots = "", [string]$BotProfile = "", [string]$FormulatedOff = "")
 
 $root = Split-Path -Parent $PSScriptRoot
 $godot = $env:GODOT_BIN
@@ -61,6 +61,7 @@ if ($BossLog) { $extra += "--boss-log" }
 if ($DodgePellets) { $extra += "--dodge-pellets" }
 if ($Plan) { $extra += "--plan" }
 if ($BotProfile) { $extra += "--sim-profile=$BotProfile" }
+if ($FormulatedOff) { $extra += "--sim-formulated-off=$FormulatedOff" }
 if ($Relics) { $extra += "--sim-relics=$Relics" }
 if ($RelicCap -gt 0) { $extra += "--sim-relic-cap=$RelicCap" }
 if ($NoRelics) { $extra += "--sim-no-relics" }

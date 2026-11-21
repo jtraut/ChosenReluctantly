@@ -7,6 +7,14 @@ const BURN_DECK: Array[String] = ["fire_ember_whatever", "fire_fine_burn_then", 
 const WEAK_DECK: Array[String] = ["rogue_quick_slash", "neutral_deep_sigh", "rogue_nap_time"]
 
 
+func before_test() -> void:
+	FormulatedBot.off = {}
+
+
+func after_test() -> void:
+	FormulatedBot.off = {}
+
+
 ## Room 1 (node 1), then one node per type at room 2 (ids 2 combat, 3 rest, 4 elite, 5 merchant, 6 relic_room), then the boss (7). The pick is at node 1.
 func _map() -> Dictionary:
 	var nodes: Array = [{"id": 1, "room": 1, "column": 0, "type": "combat", "wave_id": "w"}]
@@ -142,3 +150,30 @@ func test_the_per_run_report_names_the_dominant_self_status() -> void:
 	assert_str(String(summary["self_status"])).is_equal("charge")
 	assert_float(float(summary["self_share"])).is_greater(0.5)
 	assert_str(String(DraftPolicy.deck_summary(WEAK_DECK)["self_status"])).is_not_equal("charge")
+
+
+# ---- SIM2a-3 attribution switches ----
+
+func test_the_off_switches_hand_the_shop_and_removals_back() -> void:
+	var state: RunState = _state(BURN_DECK, 200)
+	var shop: Array = [{"id": "merchant_leave", "kind": "back", "enabled": true}]
+	var removals: Array = [{"id": "remove:fire_kindling", "kind": "remove", "card_id": "fire_kindling", "enabled": true}, {"id": "back", "kind": "back", "enabled": true}]
+	FormulatedBot.off = {}
+	assert_str(FormulatedBot.choose("formulated", true, RunState.PENDING_MERCHANT, shop, state, 7)).is_equal("merchant_leave")
+	assert_str(FormulatedBot.choose("formulated", true, RunState.PENDING_REST_REMOVE, removals, state, 7)).is_not_equal("")
+	FormulatedBot.off = {"shop": true}
+	assert_str(FormulatedBot.choose("formulated", true, RunState.PENDING_MERCHANT, shop, state, 7)).is_equal("")
+	assert_str(FormulatedBot.choose("formulated", true, RunState.PENDING_MERCHANT_REMOVE, removals, state, 7)).is_equal("")
+	assert_str(FormulatedBot.choose("formulated", true, RunState.PENDING_REST_REMOVE, removals, state, 7)).is_not_equal("")  # shop off leaves rests alone
+	FormulatedBot.off = {"removal": true}
+	assert_str(FormulatedBot.choose("formulated", true, RunState.PENDING_REST_REMOVE, removals, state, 7)).is_equal("")
+	assert_str(FormulatedBot.choose("formulated", true, RunState.PENDING_EVENT_REMOVE, removals, state, 7)).is_equal("")
+	var with_removal: Array = [{"id": "buy_removal", "kind": "buy_removal", "enabled": true}, {"id": "merchant_leave", "kind": "back", "enabled": true}]
+	var big: Array[String] = []
+	for i: int in range(20):
+		big.append("rogue_nap_time")
+	state.deck = big
+	assert_str(FormulatedBot.choose("formulated", true, RunState.PENDING_MERCHANT, with_removal, state, 7)).is_equal("merchant_leave")
+	FormulatedBot.off = {}
+	assert_str(FormulatedBot.choose("formulated", true, RunState.PENDING_MERCHANT, with_removal, state, 7)).is_equal("buy_removal")
+

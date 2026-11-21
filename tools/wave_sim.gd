@@ -225,6 +225,13 @@ func _ready() -> void:
 				get_tree().quit(2)
 				return
 			_plan = _profile != "report"
+		elif arg.begins_with("--sim-formulated-off="):
+			for part: String in arg.substr(21).split(","):
+				if not ["shop", "removal"].has(part.strip_edges()):
+					push_error("wave sim: -FormulatedOff must be shop and/or removal (comma separated), got '%s'" % part)
+					get_tree().quit(2)
+					return
+				FormulatedBot.off[part.strip_edges()] = true
 		elif arg.begins_with("--start-room="):
 			_start_room = maxi(int(arg.substr(13)), 0)
 		elif arg.begins_with("--sim-deck="):
@@ -1823,6 +1830,37 @@ func _print_formulated_run(result: Dictionary) -> void:
 		deck.size(), String(result["f_status"]) if String(result["f_status"]) != "" else "none", float(result["f_share"]),
 		String(result["f_self"]) if String(result["f_self"]) != "" else "none", float(result["f_self_share"]),
 		String(result["f_top_tag"]) if String(result["f_top_tag"]) != "" else "none", left, int(result.get("gold_spent", 0)), int(result.get("shop_removals", 0)), int(result.get("relics_held", 0))])
+	if String(result["outcome"]) != "won" and state != null:
+		# SIM2a-3 diagnostic: one line per death. deck_slots = slot:unique/total[ids*copies] (curses are excluded from the unique count).
+		var per_slot: Dictionary = {}
+		for card_id: String in deck:
+			var card: Dictionary = CardDatabase.get_card(card_id)
+			var slot: String = String(card.get("slot_type", "?"))
+			var entry: Dictionary = per_slot.get(slot, {"total": 0, "ids": {}})
+			entry["total"] = int(entry["total"]) + 1
+			if not CardSchema.is_curse(card):
+				var ids_in: Dictionary = entry["ids"]
+				ids_in[card_id] = int(ids_in.get(card_id, 0)) + 1
+			per_slot[slot] = entry
+		var slot_keys: Array = per_slot.keys()
+		slot_keys.sort()
+		var parts: Array[String] = []
+		for slot: Variant in slot_keys:
+			var entry: Dictionary = per_slot[slot]
+			var ids_out: Dictionary = entry["ids"]
+			var ids: Array[String] = []
+			for card_id: Variant in ids_out.keys():
+				ids.append("%s*%d" % [card_id, int(ids_out[card_id])])
+			parts.append("%s:%d/%d[%s]" % [slot, ids_out.size(), int(entry["total"]), ",".join(ids)])
+		# The rooms actually played (state.history) and the room the run died in (the planned type at that index, which each pick keeps in step with the walked route).
+		var type_letters: Array[String] = []
+		for entry_h: Dictionary in state.history:
+			type_letters.append(String(entry_h["type"]))
+		var all_types: Array = result["types"]
+		var death_type: String = String(all_types[state.history.size()]) if state.history.size() < all_types.size() else "?"
+		print("FORMULATED DEATH profile=%s class=%s preset=%s seed=%d act=%d room=%d death_type=%s played=%s hp_end=%s max_hp=%s status=%s deck_slots=%s" % [
+			_profile, _sim_class if _sim_class != "" else CharacterDatabase.DEFAULT_ID, _bot_settings.preset_name, int(result["seed"]), int(result["f_act"]), int(result["rooms_reached"]),
+			death_type, ",".join(type_letters), str(result["room_hp_end"]).replace(" ", ""), str(result["room_max_hp"]).replace(" ", ""), String(result["f_status"]), " ".join(parts)])
 
 
 ## SIM2a-1: this process's runs in the SIM summary style (report only, no gate). The pooled 36-run summary is tools/pool_formulated.ps1 over three of these.

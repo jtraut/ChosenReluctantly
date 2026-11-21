@@ -50,7 +50,7 @@ static func lowest_card(deck_ids: Array[String]) -> Array:
 
 
 ## The option id for a PENDING_MERCHANT choice.
-static func shop_choice(options: Array, state: RunState, free_size: int) -> String:
+static func shop_choice(options: Array, state: RunState, free_size: int, no_removal: bool = false) -> String:
 	var deck_ids: Array[String] = state.deck
 	var deck: Array[Dictionary] = _deck_cards(deck_ids)
 	var prof: Dictionary = DraftPolicy.profile(deck)
@@ -77,7 +77,7 @@ static func shop_choice(options: Array, state: RunState, free_size: int) -> Stri
 					if bool(entry.get("needs_swap", false)):
 						margin = minf(margin, value - worst_relic - float(TABLE["SWAP_MARGIN"]))
 			"buy_removal":
-				if bool(entry.get("enabled", false)) and deck_ids.size() > int(TABLE["REMOVE_MIN_DECK"]):
+				if not no_removal and bool(entry.get("enabled", false)) and deck_ids.size() > int(TABLE["REMOVE_MIN_DECK"]):
 					var low: Array = lowest_card(deck_ids)
 					margin = float(TABLE["REMOVE_CURSE"]) if float(low[1]) == -INF else float(TABLE["REMOVE_BELOW"]) - float(low[1])
 			"reroll":

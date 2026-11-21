@@ -8,6 +8,9 @@ extends RefCounted
 ## `free_size` is the class's starting deck size (the deck that is free of the skip bar).
 
 const PROFILE := "formulated"
+## SIM2a-3 attribution switches (debug only, default empty = nothing changes): "shop" hands every merchant choice back to today's policy; "removal" stops merchant removals being bought
+## and hands every removal list back to today's policy. Set from `--sim-formulated-off=shop,removal`.
+static var off: Dictionary = {}
 
 
 static func choose(profile: String, route_formulated: bool, choice: String, options: Array, state: RunState, free_size: int) -> String:
@@ -18,11 +21,19 @@ static func choose(profile: String, route_formulated: bool, choice: String, opti
 			return DraftPolicy.reward_choice(options, state.deck, free_size)
 		RunState.PENDING_RELIC:
 			return DraftPolicy.relic_choice(options, state.deck)
-		RunState.PENDING_RELIC_SWAP, RunState.PENDING_MERCHANT_SWAP:
+		RunState.PENDING_RELIC_SWAP:
+			return DraftPolicy.giveup_choice(options, state.deck)
+		RunState.PENDING_MERCHANT_SWAP:
+			if off.has("shop"):
+				return ""
 			return DraftPolicy.giveup_choice(options, state.deck)
 		RunState.PENDING_MERCHANT:
-			return FormulatedShop.shop_choice(options, state, free_size)
+			if off.has("shop"):
+				return ""
+			return FormulatedShop.shop_choice(options, state, free_size, off.has("removal"))
 		RunState.PENDING_MERCHANT_REMOVE, RunState.PENDING_REST_REMOVE, RunState.PENDING_EVENT_REMOVE:
+			if off.has("removal") or (off.has("shop") and choice == RunState.PENDING_MERCHANT_REMOVE):
+				return ""
 			return FormulatedShop.removal_choice(options, state)
 		RunState.PENDING_NODE:
 			if route_formulated:

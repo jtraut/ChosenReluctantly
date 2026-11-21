@@ -2,6 +2,12 @@
 
 The archive of the director's answered, received and acknowledged items, moved here from `docs/OPEN_ITEMS.md`. Owned by tech-writer (director, 2026-11-02). Newest dated section first; IDs (D19, call 16, checklist item 33) are kept so they can be searched. Old entries change only to fix a factual error.
 
+## 2026-11-21 (SIM2a close)
+
+### Director play note, 2026-11-20 (partial run)
+
+Recorded as feedback; source commit 008f756 (`docs/STATE.md`). The loadouts change is nice; he built his first deck and enjoyed the Bleed Rogue. The game closed on its own in act 1, room 6 (cause unknown; logged in STATE Known issues). His autosave survived (act 1, room index 5, 21/30 HP, 124 gold, Spite Knuckles).
+
 ## 2026-11-20 (HP1 close)
 
 ### Answer recorded in 3b1d924 (eyes 66)

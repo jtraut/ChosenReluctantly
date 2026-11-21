@@ -2,6 +2,31 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
+## 2026-11-21 (SIM2a, formulated bot)
+
+### Slice SIM2a, build-aware "formulated" bot (bot tooling only, no game data changes)
+
+Commit range 89d5a4e..1c5250f. Code 89d5a4e, 2ee9665, ce0c54b, 552b116, 87b944b. qa 1c5250f (PASS, `docs/reviews/2026-11-21-sim2a-qa.md`; suite 2902 cases, 0 failures).
+
+**Added**
+- `-BotProfile plan|report|formulated` for the wave sim (needs `-Run`): `formulated` drafts, routes, shops and removes against the deck's archetype and casts with PlanPolicy; `plan` is the control row; `report` is today's behaviour with the report printed (2ee9665, ce0c54b). New: `src/debug/DraftPolicy.gd`, `FormulatedBot.gd`, `FormulatedRoute.gd`, `FormulatedShop.gd`.
+- `-FormulatedOff shop,removal` attribution switches (an unknown part exits 2), and a per-death `FORMULATED DEATH` line (87b944b).
+- `FORMULATED RUN` per-run line and FORMULATED SUMMARY; `tools/pool_formulated.ps1` pools three seed logs into a 36-run summary (2ee9665).
+- Tests: `tests/unit/sim2a1_test.gd`, `sim2a2_test.gd` (552b116). Suite is now 2902 cases.
+
+**Fixed**
+- SIM2a-1 correction: its drafter was written but never called by the sim, so the SIM2a-1 numbers did not measure it. It was wired in SIM2a-2 (ce0c54b).
+
+**Results** (wins of 36, pooled seeds 1/13/25; Rogue human / Wizard human / Rogue off / Wizard off)
+- off 25/19/34/34; plan 27/25/36/33; formulated 23/14/35/33; formulated `-Route first` 25/18/36/34; shop off 23/21 (human); removals off 22/24 (human).
+- Cause of the formulated Wizard drop: the formulated removal scorer strips Wizard starters. Follow-up: SIM2a-4.
+- Leftover gold median is 317 to 391 even with spending.
+- The README SIM1 human `-Route first` baselines are now Rogue 25/36 and Wizard 19/36.
+
+**Docs and process**
+- `docs/OPEN_ITEMS.md` now advises the director to play from a separate worktree or with no agent running: his game closed on its own on 2026-11-20 while sims ran from the same tree (cause unknown; logged in STATE Known issues) (e51fcaa).
+- Recorded director feedback (2026-11-20, partial run, source 008f756): the loadouts change is nice; he built his first deck and enjoyed the Bleed Rogue. The game closed on its own in act 1, room 6 (cause unknown). His autosave survived.
+
 ## 2026-11-20 (HP1, UX1b, setting and tone; Milestone 3 review, D55, UX1a, BD3b)
 
 ### Slice HP1, max HP relics

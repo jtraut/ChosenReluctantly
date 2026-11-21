@@ -3075,3 +3075,10 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
 
 ## 2026-11-20 - SIM2a split (game-lead)
 - **SIM2a is split into SIM2a-1 (the draft and relic brain, PlanPolicy casts, the report) and SIM2a-2 (the formulated route and merchant spending) before it starts.** The full brief is five bot behaviours plus a report, MAP3b-sized. qa runs once, after SIM2a-2. [One sitting that stops with `Remaining:`: likely mid-feature.]
+
+## 2026-11-20 - SIM2a-1 calls (gameplay-dev 2ee9665, recorded by game-lead)
+- **`DraftPolicy` scores cards from data only.** Each card "provides" keys (enemy status, self status, slot, tag) and "needs" keys (conditions, status scaling, status-stat buffs, detonate). Weights live in one `WEIGHTS` const table: PAYOFF 1.5, DEAD -1.5, PRIMER 1.0, TAG 1.0, LEAN +0.8, OFF_LEAN -0.8, KEYSTONE up to +1.0, COVERAGE +0.7 per missing unique card (cap 2), DUPLICATE -0.6. The bot skips when the best card scores under 0.8 + 0.15 x (deck size - 15). First guesses, not tuned.
+- **Statuses are read generically,** so Charge and Ward count. A self-applied status meets a `status:` need, and a card's own provides count toward its needs. `hp_below` and `has_bonus_armor` conditions are neutral.
+- **Relics:** base 0.5, plus up to 1.5 for supplied keys, minus 1.0 for dead keys, plus 1.0 for basic-attack relics when the deck buffs light or heavy attacks. The bot skips under -0.5 and gives up the lowest-scoring relic.
+- **The flag is `-BotProfile formulated`** (to avoid PowerShell's `$PROFILE`); it requires `-Run` and turns on plan casts.
+- **"Dominant status share" = the share of the final deck that applies the dominant enemy status.** SIM2a-2 adds the self-status (Charge, Ward) and a plan-only control row (game-lead).

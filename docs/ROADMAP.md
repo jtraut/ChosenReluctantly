@@ -1788,11 +1788,17 @@ UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> BAL1 and BD3c (`needs your
       - The per-run report: win, the act and room of death, the final deck size, the dominant status share and the leftover gold, with a 36-run summary per class and preset.
       - Tests: the scorer prefers on-archetype cards in a hand-built deck, ignores ids, and is deterministic per seed; the flag-off path is unchanged.
       - Commit the untracked `tools/probe_human_session.gd.uid` (Godot metadata left from UX1b).
+      - **Built 2026-11-20:** gameplay-dev 89d5a4e, 2ee9665 (`src/debug/DraftPolicy.gd`, `-BotProfile formulated`, `tools/pool_formulated.ps1`; 13 tests). Flag off: hashes and SIM1 unchanged. First report (pooled 36, `-Route first`, plan casts): Rogue human 27, off 36; Wizard human 25, off 33. Deaths mostly in act 2, rooms 11-18. Median deck 23.5-25. Leftover gold median 374-576. Dominant status deck share 0.15-0.19, with Burn dominant even for the Wizard. qa runs after SIM2a-2.
     - [ ] **SIM2a-2, routing and merchants.**
       - A `formulated` route: rest when HP is low, elites when strong, merchants when gold can buy something the scorer wants.
       - Merchant spending through the same scorer (cards, relics and removals).
       - The full report: per class, 36 runs, human and off presets.
       - Checks: hashes and SIM1 unchanged.
+      - **From SIM2a-1's first report (game-lead):**
+        - Leftover gold is large (median 374-576): merchant spending must actually spend it, and removals count, so the report can answer eyes 63.
+        - Decks reach 25+ cards: the merchant removal choice uses the same scorer, so the lowest-scoring card goes.
+        - Add a "plan-only" control row (PlanPolicy casts with today's random draft and `first` route), so the report separates the drafter and route from the plan casts.
+        - Report the dominant self-status too (Charge, Ward), since the enemy-status share alone calls nearly every Wizard deck "Burn".
     - Then qa (once, after SIM2a-2), docs, close. No playtest (tooling).
 - [ ] **BAL1, deferred balance (first balance item after the Milestone 3 playtest). `needs your play first`.** The list is BD3b's "Deferred" (game-lead, 2026-11-18; DECISIONS "BD3b brief"). Brief written after the milestone playtest review.
 - [ ] **BD3c, melee Wizard: the Ward Battlemage rework (director, 2026-11-20, D54 = A; GDD §4a; BUILD_DEPTH W-D). `needs your play first`.**

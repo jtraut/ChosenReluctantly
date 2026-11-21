@@ -3,16 +3,17 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-20 (HP1 closed; docs pass 91086b1). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-20 (SIM2a-1 built; SIM2a-2 next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- Nothing is half done. HP1 is closed (docs pass 91086b1), and the repo runs.
+- **SIM2a-1 built** (gameplay-dev 89d5a4e, 2ee9665; no qa yet, qa runs after SIM2a-2). Nothing half done; the repo runs.
 
 ## Exact next step
-1. **gameplay-dev: SIM2a-1, the draft brain and the report** (ROADMAP Milestone 4; `safe to chain`). Then SIM2a-2 (routing and merchants) in a fresh agent, then qa, docs, close.
-2. BAL1 (also owns the human Rogue 25/36 trip, mostly offer reshuffle per qa 5c516d8, and the DF1 ceiling text in MAP.md §11.4 and the README) and BD3c wait for the director's play of BD3b.
+1. **gameplay-dev (a fresh agent): SIM2a-2, routing and merchants** (ROADMAP, the SIM2a-2 sub-item, including game-lead's additions from the first report).
+2. Then qa (SIM2a-1 and SIM2a-2 together) -> docs -> close.
+3. BAL1 (also owns the human Rogue 25/36 trip and the DF1 ceiling text) and BD3c wait for the director's play of BD3b.
 
-**Next role:** gameplay-dev (SIM2a-1).
+**Next role:** gameplay-dev (SIM2a-2).
 
 ## Current baselines (HP1 qa 5c516d8, 2026-11-20)
 - Suite 2875 expected (2869 measured at 3701cf5 plus qa's 6 HP1 cases; HP1 qa 5c516d8), 0 failures; a full run takes about 23 minutes, so run it in the background.

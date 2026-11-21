@@ -3,13 +3,14 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-20 (SIM2a-2 built; SIM2a-3 next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-21 (SIM2a-3 cut off half done; fresh gameplay-dev next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **SIM2a-2 built** (gameplay-dev ce0c54b, 552b116). SIM2a-1's drafter was not wired until SIM2a-2 (correction in ROADMAP and DECISIONS). Formulated doesn't beat plan-only (human Wizard 14 against 25). SIM2a-3 (attribution and diagnostic, report only) is next, then qa for all of SIM2a. Nothing half done; the repo runs.
+- **SIM2a-3 half done, uncommitted** (the gameplay-dev session was cut off; no commit, no `Remaining:` list). In the working tree: `src/debug/FormulatedBot.gd` and `FormulatedShop.gd` (the `off` switches `shop` / `removal`), `tools/wave_sim.gd` (`--sim-formulated-off=` and the `FORMULATED DEATH` diagnostic line), `tools/run_wave_sim.ps1` (`-FormulatedOff`), `tests/unit/sim2a2_test.gd` (1 case). No report rows have run (no result files survived). SIM2a-1 and SIM2a-2 are built (89d5a4e, 2ee9665, ce0c54b, 552b116).
+- Remaining for SIM2a-3: review and commit the diff; check the sim falls back to today's policy on `""`; reset `FormulatedBot.off` in the test's before/after; run the four rows and the human Wizard diagnostic; one table and a "most likely cause".
 
 ## Exact next step
-1. **gameplay-dev (a fresh agent): SIM2a-3** (ROADMAP: the formulated `-Route first` row, the shop-off and removals-off rows, the human Wizard diagnostic).
+1. **gameplay-dev (a fresh agent): SIM2a-3 sitting 1**: review, fix and commit the uncommitted diff (with a `Remaining:` body), then the rows if the sitting has room. Cap parallel sims at 3. If the rows don't fit, sitting 2 runs them.
 2. Then qa (SIM2a-1 to SIM2a-3) -> docs -> close.
 3. BAL1 (the human Rogue 25/36 trip, the DF1 ceiling text, gold left at 317-391 even with spending) and BD3c wait for the director's play of BD3b.
 

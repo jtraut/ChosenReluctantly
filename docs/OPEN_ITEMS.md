@@ -7,6 +7,7 @@ Only active items live here. Everything you've answered or acknowledged is in `d
 
 ## How to playtest
 
+- **Play while no agent is running, or from a separate copy** (your run closed on its own on 2026-11-20 while bot sims ran from the same folder; the cause is unknown): `git worktree add ../cr-play playtest-2026-11-20-BD3b`, then `godot --path ../cr-play`.
 - **The one ask (it unblocks BAL1, BD3c and the vision check):** check out `playtest-2026-11-20-BD3b`. Then:
   1. Play one normal three-act run, `godot --path .`, and, if you can, note how long it took on a clock (the 15-20 minute target).
   2. Try the Battlemage deck: `godot --path . -- --class=wizard --deck=wizard-ward-battlemage --full-deck --run-room=10`.

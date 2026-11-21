@@ -297,6 +297,10 @@ static func _validate_trigger(trigger: Dictionary, index: int, errors: Array[Str
 		return
 	var effect_errors: Array[String] = []
 	for j in range((effects as Array).size()):
+		var max_hp_entry: Variant = (effects as Array)[j]
+		if typeof(max_hp_entry) == TYPE_DICTIONARY and String((max_hp_entry as Dictionary).get("template", "")) == RunMaxHp.EFFECT:
+			if not (event_known and String(event_id) == "room_cleared"):
+				effect_errors.append("effects[%d]: gain_max_hp only works on the event room_cleared (the run applies it when a room is cleared)" % j)
 		CardSchema.validate_effect_entry((effects as Array)[j], j, effect_errors)
 		var scale_entry: Variant = (effects as Array)[j]
 		if typeof(scale_entry) == TYPE_DICTIONARY and typeof((scale_entry as Dictionary).get("scale")) == TYPE_DICTIONARY and String(((scale_entry as Dictionary)["scale"] as Dictionary).get("by", "")) == EffectScale.EVENT_AMOUNT:

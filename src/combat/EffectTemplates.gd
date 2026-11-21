@@ -244,6 +244,11 @@ static func _validate_buff_triggers(params: Dictionary, errors: Array[String]) -
 	for i in range((triggers as Array).size()):
 		for problem: String in RelicSchema.validate_trigger((triggers as Array)[i], i):
 			errors.append("buff %s" % problem)
+		var buff_trigger: Variant = (triggers as Array)[i]
+		if typeof(buff_trigger) == TYPE_DICTIONARY and typeof((buff_trigger as Dictionary).get("effects")) == TYPE_ARRAY:
+			for effect: Variant in ((buff_trigger as Dictionary)["effects"] as Array):
+				if typeof(effect) == TYPE_DICTIONARY and String((effect as Dictionary).get("template", "")) == RunMaxHp.EFFECT:
+					errors.append("buff triggers[%d]: gain_max_hp is for relics only (the run owns max HP)" % i)
 
 
 static func _validate_zone(params: Dictionary, errors: Array[String]) -> void:

@@ -43,6 +43,13 @@ func test_the_schema_rejects_bad_max_hp_data() -> void:
 	relic = RelicDatabase.get_relic(PER_ELITE).duplicate(true)
 	relic["triggers"][0]["effects"][0]["params"]["amount"] = 0
 	assert_array(RelicSchema.validate(relic, PER_ELITE)).is_not_empty()
+	relic = RelicDatabase.get_relic(PER_ELITE).duplicate(true)
+	relic["triggers"][0]["event"] = "enemy_killed"
+	relic["triggers"][0]["filter"] = {}
+	assert_array(RelicSchema.validate(relic, PER_ELITE)).is_not_empty()  # only room_cleared applies it
+	var buff_errors: Array[String] = EffectTemplates.validate_params("buff", {"stat": "damage_mult", "modifier_type": "multiplicative", "value": 0.1, "duration": 5.0,
+			"triggers": [RelicDatabase.get_relic(PER_ELITE)["triggers"][0]]})
+	assert_array(buff_errors).is_not_empty()  # a card buff cannot carry it
 
 
 func test_a_card_cannot_use_the_gain_max_hp_effect() -> void:
@@ -245,8 +252,8 @@ func test_a_cleared_elite_room_raises_the_live_players_max_hp_and_the_hud_reads_
 	assert_float(main.player.health.max_health).is_equal(31.0)
 	assert_float(main.player.health.current_health).is_equal(26.0)
 	assert_float(state.hp).is_equal(26.0)
-	assert_array(triggers).contains([PER_ELITE])
 	await _frames(2)
+	assert_array(triggers).is_equal([PER_ELITE])  # one pulse: the manager's own trigger fire, not a second signal
 	assert_float(main.hud.health_bar.max_value).is_equal(31.0)
 	assert_str(main.hud.health_label.text).is_equal("HP 26 / 31")
 	RunSession.map_override = -1
@@ -273,6 +280,28 @@ func test_taking_and_losing_the_flat_relic_moves_the_live_players_max_hp() -> vo
 	main.run_controller._sync_relics()
 	assert_float(main.player.health.max_health).is_equal(30.0)
 	assert_float(main.player.health.current_health).is_equal(24.0)
+	RunSession.map_override = -1
+	RunSession.clear()
+	Juice.reset()
+	GamePause.reset()
+
+
+func test_a_debug_start_with_the_flat_relic_begins_at_the_class_base_plus_four() -> void:
+	RunSession.map_override = 0
+	RunSession.clear()
+	RunSession.start_relics = [FLAT] as Array[String]
+	var state: RunState = RunSession.begin_new_run(5)
+	assert_bool(state.has_hp()).is_false()
+	var main: Main = (load(RUN_MAIN_PATH) as PackedScene).instantiate()
+	add_child(main)
+	auto_free(main)
+	await _frames(1)
+	var base: float = CharacterDatabase.max_hp(state.character_id)
+	assert_float(state.max_hp).is_equal(base + 4.0)
+	assert_float(state.hp).is_equal(base + 4.0)
+	assert_float(main.player.health.max_health).is_equal(base + 4.0)
+	assert_float(main.player.health.current_health).is_equal(base + 4.0)
+	RunSession.start_relics = []
 	RunSession.map_override = -1
 	RunSession.clear()
 	Juice.reset()

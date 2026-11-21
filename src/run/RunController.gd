@@ -587,14 +587,12 @@ func _finish_room(healed: float) -> void:
 	}
 	if earned > 0:
 		gold_changed.emit(_state.gold, earned)
-	# HP1: a cleared room can raise max HP (the per-elite relic). The run owns the number; the live player follows, and the relic's badge pulses.
+	# HP1: a cleared room can raise max HP (the per-elite relic). The run owns the number; the live player follows (the badge pulse is the relic manager's own trigger fire).
 	var max_hp_gains: Dictionary = RunMaxHp.on_room_cleared(_state, String(room["type"]))
 	if not max_hp_gains.is_empty():
 		_push_state_hp_to_player()
 		_summary["hp"] = health.current_health
 		_summary["max_hp"] = health.max_health
-		for gained_id: Variant in max_hp_gains.keys():
-			relic_triggered.emit(String(gained_id), 0, "room_cleared")
 	var relay := CombatLink.events()
 	if relay != null:
 		relay.notify_room_cleared(int(room["index"]), String(room["type"]))

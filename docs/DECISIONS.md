@@ -3056,3 +3056,18 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
 - **The red/orange triangle "with no word" is the Bleed and Burn pips.** The first-time name is shown in `bleed-intro-*`; the playtester's frames started after it. No action.
 - **Tooling gaps go to STATE Known issues for a TL follow-up:** the `act_transition` preset stall, a starting-HP flag, a timed key press for captures, and `-AtBossAttack` naming. [A slice now: none blocks a slice.]
 - **The Rogue's pink-red hit flash looking like an enemy colour goes to the next ux polish list.** [Fix it in UX1b: it is a feel tweak no one has played.]
+
+## 2026-11-20 - HP1 calls (gameplay-dev dd4f802..a55dde2, recorded by game-lead)
+- **The flat boost is a relic `modifiers` entry (`stat: "max_hp"`), applied by the run layer, not by `StatModifiers`.** `RunState.max_hp` is copied back from the player, so a per-room modifier would compound every room. [Through `StatModifiers`: it compounds.]
+- **The per-elite gain runs synchronously in `RunController._finish_room` (`RunMaxHp.on_room_cleared`).** The manager's own trigger fire only pulses the badge, exactly once. [The manager's deferred trigger: it loses the state copy.]
+- **`gain_max_hp` is allowed only in relic triggers on `room_cleared`;** the card and buff schemas reject it.
+- **Elite fights inside events don't count** (no `room_cleared`). The elite that drops the relic doesn't count it (the offer opens after the clear). No cap on the per-elite relic (the D55 default).
+- **Losing a relic removes its whole boost, floors max HP at `events.min_max_hp` and clamps HP. The heal from the gain is kept.** [Take the heal back: punishes a give-up twice.]
+- **The relics do nothing in the endless arena or scenarios** (there is no RunState there).
+- **Old saves load with an empty `relic_max_hp`;** no save format bump.
+
+## 2026-11-20 - HP1 build triage (game-lead)
+- **The SIM1 human Rogue ceiling trip (25/36 against 21) is waived for HP1, explicitly, and carried to BAL1.** The ceiling exists so a slice can't undo DF1's bump *silently*. This trip is reported, comes from director-chosen content and defaults (D55), and the brief says don't tune it in HP1. BAL1 owns the numbers and waits on the director's play anyway. [Cut the flat relic to +2 now: it tunes a director default without his play. Hold HP1 until BAL1: blocks SIM2a, which BAL1 needs.]
+- **qa runs a with/without attribution first:** SIM1 human Rogue with the two relics in the pools but their effects zeroed (or the relics removed from the pools), against HP1 as built. That separates the max HP effect from the offer reshuffle. If the reshuffle alone explains most of it, it's noise plus pool dilution, and BAL1 re-reads it.
+- **The new SIM1 baselines after HP1 are human Rogue 25, Wizard 19; off Rogue 34, Wizard 34.** The DF1 ceilings in MAP.md §11.4 stay as they are: BAL1 decides whether to move them or retune.
+- **The Performance Review running-total readout ("now +N") goes to the next ux polish list,** not to HP1. [Add it to HP1: a ux hop and a smoke check for a number that is also visible on the HP bar.]

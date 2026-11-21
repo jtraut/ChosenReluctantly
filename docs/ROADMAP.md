@@ -1766,6 +1766,7 @@ UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> BAL1 and BD3c (`needs your
     - the HUD HP bar shows the new max;
     - SIM1 and the relic medians are re-run. If a hash or SIM1 bound moves because the relic pools changed, explain it and re-baseline; don't tune it. Note: the human Wizard sits at its ceiling (20/36), so a trip there is reported to game-lead for BAL1, not tuned in HP1.
   - **Then:** qa, docs (no separate smoke check unless ux adds UI).
+  - **Built 2026-11-20:** gameplay-dev dd4f802, efe7c58, a55dde2. `wellness_pack` "Mandatory Wellness Pack" (+4 max HP) and `performance_review` "Performance Review" (+1 per elite clear), with the engine in `RunMaxHp`, `RunState.relic_max_hp` and `gain_max_hp`. HP1 suite 18 cases; touched suites green; hashes unchanged. **SIM1 human Rogue 19 -> 25/36, over its 21 ceiling** (Wizard human 20 -> 19, off Rogue 35 -> 34, off Wizard 31 -> 34). Not tuned, per the brief; game-lead's call is in DECISIONS "HP1 build triage". Next: qa, with a with/without attribution run.
 - [ ] **SIM2a, build-aware "formulated" bot (gameplay-dev, one sitting; split it into draft and route if it grows). `safe to chain`** (tooling).
   - **What it is:** SIM2's "formulated" profile, without "winging it" and without the gate:
     - it drafts toward the deck's emerging archetype from card `condition` and tag data, never from card ids;

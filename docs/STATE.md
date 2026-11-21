@@ -3,17 +3,17 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-20 (UX1b closed; docs pass 4633c02). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-20 (HP1 built; qa next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- Nothing is half done. UX1b is closed (docs pass 4633c02), and the repo runs.
+- **HP1: built** (gameplay-dev dd4f802, efe7c58, a55dde2). qa is next, with a with/without attribution run for the human Rogue ceiling trip (DECISIONS "HP1 build triage"). Nothing half done; the repo runs.
 
 ## Exact next step
-1. **gameplay-dev: HP1, the max HP relics** (ROADMAP Milestone 4; `safe to chain`). Then qa -> docs -> close (no smoke check unless ux adds UI). Eyes 66 and 67 expire at HP1's close.
-2. Then SIM2a (gameplay-dev).
-3. BAL1 and BD3c wait for the director's play of BD3b ("The one ask" in OPEN_ITEMS).
+1. qa: the HP1 review, the full suite, and the SIM1 human Rogue attribution (relic effects zeroed against as built).
+2. Then docs -> close (no smoke check; no new UI). Eyes 66 and 67 expire at HP1's close. Then SIM2a.
+3. BAL1 (now also owns the human Rogue 25/36 ceiling trip) and BD3c wait for the director's play of BD3b.
 
-**Next role:** gameplay-dev (HP1).
+**Next role:** qa (HP1).
 
 ## Current baselines (BD3b qa 664bfec, 2026-11-19)
 - Suite 2851 (UX1b qa 6386562), 0 failures; a full run takes about 23 minutes, so run it in the background.
@@ -28,11 +28,11 @@ Last updated: 2026-11-20 (UX1b closed; docs pass 4633c02). Latest tag `playtest-
 
 ## Known issues
 - Capture tooling gaps (UX1b playtest 2ae2d92), for a TL follow-up: the `act_transition` preset stalls on the boss relic screen (`relic_skip+skip` never advances; `relic:<id>+skip` does); there is no starting-HP flag (to shoot the act heal line hurt); there is no timed key press during a capture (to prove the map beat skip); `-AtBossAttack` takes `smash`/`slam`, not `ground_pound`.
-- Next ux polish: the Rogue's pink-red hit flash briefly reads as an enemy colour; a 6+ pile's HP bars and pips overlap each other (UX1b playtest).
+- Next ux polish: a "now +N" readout for Performance Review (HP1); the Rogue's pink-red hit flash briefly reads as an enemy colour; a 6+ pile's HP bars and pips overlap each other (UX1b playtest).
 - **Watch mode at `-Scale 4` makes the bot much weaker than headless** (off preset 2/4 wins in watch vs 35/36 and 31/36 in SIM1; human Wizard 0/3 vs 20/36). Don't read difficulty from fast watch runs: the next milestone playtest uses `-Scale 1-2` or headless SIM for difficulty. Fix the fidelity if it's cheap (TL2 follow-up).
 - TL2 watch log nits (qa d2218fb): a bare `--watch-shots` is ignored; "HP at end" is stale on a loss; CROWD/BOSS lines use act-local room numbers; `crowded-fight.png` is overwritten. Fix when convenient.
 - In `docs/playtests/img/ux1b/crowd-1152x648_0.png` an enemy overlaps the top edge of the bottom-right card strip (camera framing or card layering). Not fixed in UX1b; a later ux polish item.
-- Thin margins to carry into BAL1: SIM1 human Wizard exactly at its ceiling (20/36), off Wizard 1 above its floor (31/30), Wizard `relic` median 14.0, W-B removal pain +22% to +28%.
+- **BAL1: the SIM1 human Rogue is 25/36 after HP1, over its 21 ceiling** (waived for HP1, DECISIONS "HP1 build triage"). Thin margins to carry into BAL1: SIM1 human Wizard exactly at its ceiling (20/36), off Wizard 1 above its floor (31/30), Wizard `relic` median 14.0, W-B removal pain +22% to +28%.
 - Wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 - Human-bot Kindling boss parity with relics is 67%, under 70% (qa DF1; not a DF1 regression).
 - An old git stash (`stash@{0}`, from 85cd564) is still in the repo; the director decides whether to drop it.

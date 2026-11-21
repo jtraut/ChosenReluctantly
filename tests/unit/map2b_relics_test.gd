@@ -95,7 +95,7 @@ func test_each_class_can_be_offered_eight_relics_from_elites_and_eleven_at_the_m
 	var tiers: Array[String] = ["tier1", "tier2"]
 	for who: String in ["rogue", "wizard"]:
 		var pools: Array[String] = CharacterDatabase.pools(who)
-		var extra: int = 11 if who == "rogue" else 12  # BD3b C2: + Exit Strategy, Thorned Boundary, Hot Streak (both classes), and the Wizard's Reading List and Filing Cabinet (8 and 7 before);  # MAP3b B: + Desk Slam and Adrenaline Vial (both classes), and the Wizard's cc: All Staff, Office Supplies and Ergonomic Chair
+		var extra: int = 13 if who == "rogue" else 14  # HP1: + Mandatory Wellness Pack and Performance Review (11 and 12 before);  # BD3b C2: + Exit Strategy, Thorned Boundary, Hot Streak (both classes), and the Wizard's Reading List and Filing Cabinet (8 and 7 before);  # MAP3b B: + Desk Slam and Adrenaline Vial (both classes), and the Wizard's cc: All Staff, Office Supplies and Ergonomic Chair
 		#  # BD3a: six new rogue and neutral relics; the Wizard sees only the two neutral ones
 		var elite: Array[String] = RelicOffer.offer("elite", 30, rng, weights, empty, empty, pools, RelicDatabase.all_relics(), tiers)
 		var shop: Array[String] = RelicOffer.offer("merchant", 30, rng, weights, empty, empty, pools, RelicDatabase.all_relics(), tiers)

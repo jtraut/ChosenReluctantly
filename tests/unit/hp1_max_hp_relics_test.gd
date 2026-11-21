@@ -12,6 +12,10 @@ func before_test() -> void:
 	RelicDatabase.load_all()
 
 
+func after() -> void:
+	LoadoutSession.reset()
+
+
 func _state(hp: float = 30.0, max_hp: float = 30.0) -> RunState:
 	var state: RunState = RunState.new_run(11, ["x"] as Array[String], 3)
 	state.hp = hp

@@ -8,8 +8,9 @@ extends RefCounted
 ##   removal   REMOVE_BELOW - (the lowest-scoring card's score), only above REMOVE_MIN_DECK cards; a curse in the deck is always worth REMOVE_CURSE
 ## With nothing over its bar and gold of at least REROLL_MIN_GOLD, a free reroll is taken (the gold is kept); then the bot leaves.
 ## A removal takes the lowest-scoring card of those the list allows (a curse first), each card scored against the deck without that copy.
-## SIM2a-4 guards (data-driven, no ids): a card is never removed when it is the last non-curse card of its slot type in the deck, and a card of the class's starting deck
-## (`starters`, read from CharacterDatabase) is valued on its own terms too: its score is the better of "against the current deck" and "against the starting deck's profile".
+## SIM2a-4 guards (data-driven, no ids): a card is never removed when it is the last non-curse card of its slot type in the deck, and the class's starting cards
+## (`starters`, read from CharacterDatabase) are valued on their own terms: a starter's score is the better of "against the current deck" and "against the starting deck's profile",
+## and the starting copies are protected outright (first revision: the valuation alone left Arcane Nova in only 26% of Wizard death decks, as before).
 
 const TABLE: Dictionary = {
 	"RELIC_BUY_MIN": 0.5,
@@ -41,6 +42,11 @@ static func card_value(card_id: String, deck_ids: Array[String], starters: Array
 	return value
 
 
+## True when `card_id` is a starter and the deck holds no more copies of it than the starting deck did (the class's core stays; extra copies and what the run added can go).
+static func is_protected_starter(card_id: String, deck_ids: Array[String], starters: Array[String]) -> bool:
+	return starters.count(card_id) > 0 and deck_ids.count(card_id) <= starters.count(card_id)
+
+
 ## True when taking one copy of `card_id` out would leave the deck with no non-curse card of that card's slot type (a curse is never guarded).
 static func is_last_of_slot(card_id: String, deck_ids: Array[String]) -> bool:
 	var card: Dictionary = CardDatabase.get_card(card_id)
@@ -65,7 +71,7 @@ static func lowest_card(deck_ids: Array[String], starters: Array[String] = []) -
 			continue
 		seen[card_id] = true
 		var is_curse: bool = CardSchema.is_curse(CardDatabase.get_card(card_id))
-		if not is_curse and is_last_of_slot(card_id, deck_ids):
+		if not is_curse and (is_last_of_slot(card_id, deck_ids) or is_protected_starter(card_id, deck_ids, starters)):
 			continue
 		var value: float = -INF if is_curse else card_value(card_id, deck_ids, starters)
 		if value < worst:
@@ -139,7 +145,7 @@ static func removal_choice(options: Array, state: RunState, starters: Array[Stri
 					continue
 				if bool(entry.get("curse", false)):
 					return String(entry["id"])
-				if is_last_of_slot(String(entry["card_id"]), state.deck):
+				if is_last_of_slot(String(entry["card_id"]), state.deck) or is_protected_starter(String(entry["card_id"]), state.deck, starters):
 					continue
 				var value: float = card_value(String(entry["card_id"]), state.deck, starters)
 				if value < best:

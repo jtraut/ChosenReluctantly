@@ -124,3 +124,35 @@ func test_the_off_label_is_stable() -> void:
 	assert_str(FormulatedBot.off_label()).is_equal("none")
 	FormulatedBot.off = {"shop": true, "removal": true}
 	assert_str(FormulatedBot.off_label()).is_equal("removal+shop")
+
+
+func test_starting_copies_are_protected_extra_copies_are_not() -> void:
+	var start: Array[String] = CharacterDatabase.starting_deck("wizard")
+	var core: String = start[0]
+	assert_bool(FormulatedShop.is_protected_starter(core, start, start)).is_true()
+	var extra: Array[String] = start.duplicate()
+	extra.append(core)
+	assert_bool(FormulatedShop.is_protected_starter(core, extra, start)).is_false()  # a second copy can go
+	assert_bool(FormulatedShop.is_protected_starter(core, start, [] as Array[String])).is_false()  # no starters known: nothing is protected
+
+
+func test_a_protected_starter_is_not_in_the_removal_pick_but_is_without_the_rule() -> void:
+	var start: Array[String] = CharacterDatabase.starting_deck("wizard")
+	var deck: Array[String] = start.duplicate()
+	for _i: int in range(4):  # pad past the merchant's deck-size floor with cards that are not starters
+		deck.append("neutral_deep_sigh" if not start.has("neutral_deep_sigh") else "rogue_nap_time")
+	var options: Array = []
+	var seen: Dictionary = {}
+	for card_id: String in deck:
+		if not seen.has(card_id):
+			seen[card_id] = true
+			options.append(_remove_option(card_id))
+	options.append({"id": "back", "kind": "back"})
+	var state: RunState = _state(deck)
+	var without: String = FormulatedShop.removal_choice(options, state)
+	var with_rule: String = FormulatedShop.removal_choice(options, state, start)
+	var with_id: String = with_rule.trim_prefix("remove:")
+	assert_bool(FormulatedShop.is_protected_starter(with_id, deck, start) or with_rule == "back").is_false()
+	assert_str(with_rule).is_not_equal("")
+	# The rule picks a non-protected card whenever one is removable, so it never names a protected starter.
+	assert_str(without).is_not_equal("")

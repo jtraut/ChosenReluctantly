@@ -3,28 +3,28 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-21 (SIM2a-3 cut off half done; fresh gameplay-dev next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-21 (SIM2a-3 built; qa next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **SIM2a-3 half done, uncommitted** (the gameplay-dev session was cut off; no commit, no `Remaining:` list). In the working tree: `src/debug/FormulatedBot.gd` and `FormulatedShop.gd` (the `off` switches `shop` / `removal`), `tools/wave_sim.gd` (`--sim-formulated-off=` and the `FORMULATED DEATH` diagnostic line), `tools/run_wave_sim.ps1` (`-FormulatedOff`), `tests/unit/sim2a2_test.gd` (1 case). No report rows have run (no result files survived). SIM2a-1 and SIM2a-2 are built (89d5a4e, 2ee9665, ce0c54b, 552b116).
-- Remaining for SIM2a-3: review and commit the diff; check the sim falls back to today's policy on `""`; reset `FormulatedBot.off` in the test's before/after; run the four rows and the human Wizard diagnostic; one table and a "most likely cause".
+- **SIM2a-3 built** (gameplay-dev 87b944b). SIM2a-1 to SIM2a-3 are all built; nothing half done; the repo runs. Result: the human Wizard's formulated 14/36 is mostly the bot's removal scorer stripping its starters (removals off: 24/36). The fix is SIM2a-4 (ROADMAP), after SIM2a closes.
 
 ## Exact next step
-1. **gameplay-dev (a fresh agent): SIM2a-3 sitting 1**: review, fix and commit the uncommitted diff (with a `Remaining:` body), then the rows if the sitting has room. Cap parallel sims at 3. If the rows don't fit, sitting 2 runs them.
-2. Then qa (SIM2a-1 to SIM2a-3) -> docs -> close.
-3. BAL1 (the human Rogue 25/36 trip, the DF1 ceiling text, gold left at 317-391 even with spending) and BD3c wait for the director's play of BD3b.
+1. **qa: SIM2a-1 to SIM2a-3 review** (89d5a4e, 2ee9665, ce0c54b, 552b116, 87b944b). Includes the full suite (in the background).
+2. Then tech-writer docs pass -> close SIM2a -> SIM2a-4 (gameplay-dev).
+3. BAL1 and BD3c wait for the director's play of BD3b.
 
-**Next role:** gameplay-dev (SIM2a-3).
+**Next role:** qa (SIM2a).
 
 ## Current baselines (HP1 qa 5c516d8, 2026-11-20)
 - Suite 2875 expected (2869 measured at 3701cf5 plus qa's 6 HP1 cases; HP1 qa 5c516d8), 0 failures; a full run takes about 23 minutes, so run it in the background.
 - Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 (unchanged; act 1 untouched).
-- SIM1 `-Route first`: human Rogue 25/36 (over its 21 ceiling, waived for HP1, to BAL1), Wizard 19/36; off 34/36, 34/36. Floors 12 / 10 / 31 / 30, ceiling 21 / 20 (MAP.md §11.4). SIM1's human preset presses slots at random (no PlanPolicy).
+- SIM1 `-Route first`: human Rogue 25/36 (over its 21 ceiling, waived for HP1, to BAL1), Wizard 19/36 (re-measured 87b944b; README still says 19 and 20, fix in the docs pass); off 34/36, 34/36. Floors 12 / 10 / 31 / 30, ceiling 21 / 20 (MAP.md §11.4). SIM1's human preset presses slots at random (no PlanPolicy).
 - Fingerprint 0.79 with relics, 0.45 without (Rogue). W-B vs W-A 0.71 with relics; W-B parity 79%, removal pain +22% to +28%. W-D informational (D54 = A). Boss parity 92% / 109% / 106%.
 - Relic medians (per seed 1/13/25): Rogue `relic` 14.5/14/14, `safe` 6/5/5.5, `first` 8.5/10/7.0; Wizard `relic` 15/14/14. Exactly 2 boss relics. Map generator worst attempts per act over seeds 1001-4000: 421 / 341 / 751 of 2000.
 - Late shares for a Bleed Rogue: Bleed 12.5%, Fire 22.8%, Burn 10.0%. Relic Burn share 21.1% (4 of 19). Thesis Wizard late Fire share about 26%.
 
 ## Pending for the next docs pass
+- SIM2a (89d5a4e..87b944b): README for `-BotProfile plan|report|formulated`, `-FormulatedOff shop,removal`, `tools/pool_formulated.ps1`, the `FORMULATED RUN` and `FORMULATED DEATH` lines, SIM1 baselines Rogue 25 / Wizard 19; CHANGELOG; ARCHITECTURE for `DraftPolicy`, `FormulatedBot`, `FormulatedRoute`, `FormulatedShop`.
 - Director play note (2026-11-20, partial run, not the full "one ask"): the loadouts change is nice; he built his first deck and enjoyed the Bleed Rogue. The game closed on its own in act 1, room 6 (cause unknown, see Known issues). His autosave survived (act 1, room index 5, 21/30 HP, 124 gold, Spite Knuckles), so Continue should resume it. For RESOLVED and CHANGELOG as recorded feedback.
 
 ## Known issues

@@ -1815,7 +1815,17 @@ UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> BAL1 and BD3c (`needs your
       - A human Wizard diagnostic: for its act 2 deaths, the deck list, the slot coverage, and whether the run took an elite at the death or the room before.
       - Output: one table and a short "most likely cause". No tuning, no weight changes.
       - If a cause is a plain bot bug (for example the scorer starving a slot, or the route ignoring HP), fix it, and say so; otherwise leave the weights for BAL1.
-    - Then qa (once, after SIM2a-2), docs, close. No playtest (tooling).
+      - **Built 2026-11-21:** gameplay-dev 87b944b (finished a cut-off session's uncommitted switches; `-FormulatedOff shop,removal`, an unknown part exits 2; `FORMULATED DEATH` line; the test resets `FormulatedBot.off`). Flag off: hashes and SIM1 unchanged (human `-Route first` Rogue 25, Wizard 19).
+        - "Removals off" = merchant removals never bought; rest and event removal lists go to today's policy (curse first, then a duplicate). "Shop off" = the whole merchant goes to today's policy.
+        - Wins of 36 (Rogue human / Wizard human / Rogue off / Wizard off): off 25 / 19 / 34 / 34; plan 27 / 25 / 36 / 33; formulated 23 / 14 / 35 / 33 (re-run, reproduced); formulated `-Route first` 25 / 18 / 36 / 34; shop off 23 / 21 / - / -; removals off 22 / 24 / - / -.
+        - **Most likely cause (Wizard): the formulated removal scorer.** It is Burn-first and strips the Wizard's own starters (Arcane Nova survives in 32% of death decks, 100% with removals off). Removals cost about +10 wins, the shop about +7, the route about +4 (overlapping). No slot is starved; 6 of the 12 act 2 deaths are in an elite room, none right after one. Rogue: every factor within 2 of the control (noise).
+        - Not a plain bug (a weight issue), so no fix in SIM2a-3. game-lead: a SIM2a-4 follow-up (below), not BAL1.
+    - Then qa (once, SIM2a-1 to SIM2a-3), docs, close. No playtest (tooling).
+    - [ ] **SIM2a-4, formulated removal and shop weights (gameplay-dev, a small sitting, after SIM2a closes). `safe to chain`** (bot tooling, no game data).
+      - A class-core and slot-coverage guard in `FormulatedShop.removal_choice`: never remove the last card of a slot, and value the class's starting cards on their own terms, not only against the dominant status.
+      - Re-check the merchant card buys against the same read.
+      - Acceptance: the human Wizard formulated row is at least the removals-off row (24/36) minus noise (about 3), Rogue not below 22; flag off: hashes and SIM1 unchanged; tests for the guard.
+      - Report the four formulated rows again. No game balance changes.
 - [ ] **BAL1, deferred balance (first balance item after the Milestone 3 playtest). `needs your play first`.** The list is BD3b's "Deferred" (game-lead, 2026-11-18; DECISIONS "BD3b brief"). Brief written after the milestone playtest review.
 - [ ] **BD3c, melee Wizard: the Ward Battlemage rework (director, 2026-11-20, D54 = A; GDD §4a; BUILD_DEPTH W-D). `needs your play first`.**
   - **Why it waits:** the director plays W-D in the Milestone 3 playtest first. The brief is written after the milestone playtest review, alongside BAL1.

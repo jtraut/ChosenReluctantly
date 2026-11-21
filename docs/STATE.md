@@ -3,24 +3,24 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-20 (HP1 built; qa next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-20 (HP1 qa PASS; docs next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **HP1: built** (gameplay-dev dd4f802, efe7c58, a55dde2). qa is next, with a with/without attribution run for the human Rogue ceiling trip (DECISIONS "HP1 build triage"). Nothing half done; the repo runs.
+- **HP1: qa PASS** (5c516d8). The docs pass is next. Nothing half done; the repo runs.
 
 ## Exact next step
-1. qa: the HP1 review, the full suite, and the SIM1 human Rogue attribution (relic effects zeroed against as built).
-2. Then docs -> close (no smoke check; no new UI). Eyes 67 expires at HP1's close. Then SIM2a.
-3. BAL1 (now also owns the human Rogue 25/36 ceiling trip) and BD3c wait for the director's play of BD3b.
+1. tech-writer: HP1 docs pass (range 3b1d924..HEAD for HP1, plus the eyes 66 pending item).
+2. Close HP1: eyes 67 expires (default kept), and goes to the RESOLVED handoff. Then SIM2a (gameplay-dev).
+3. BAL1 (also owns the human Rogue 25/36 trip, mostly offer reshuffle per qa) and BD3c wait for the director's play of BD3b.
 
-**Next role:** qa (HP1).
+**Next role:** tech-writer (HP1), then gameplay-dev (SIM2a).
 
-## Current baselines (BD3b qa 664bfec, 2026-11-19)
-- Suite 2851 (UX1b qa 6386562), 0 failures; a full run takes about 23 minutes, so run it in the background.
+## Current baselines (HP1 qa 5c516d8, 2026-11-20)
+- Suite 2875 expected (2869 measured at 3701cf5 plus qa's 6 HP1 cases; HP1 qa 5c516d8), 0 failures; a full run takes about 23 minutes, so run it in the background.
 - Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 (unchanged; act 1 untouched).
-- SIM1 `-Route first`: human Rogue 19/36, Wizard 20/36 (at the ceiling); off 35/36, 31/36. Floors 12 / 10 / 31 / 30, ceiling 21 / 20 (MAP.md §11.4). SIM1's human preset presses slots at random (no PlanPolicy).
+- SIM1 `-Route first`: human Rogue 25/36 (over its 21 ceiling, waived for HP1, to BAL1), Wizard 19/36; off 34/36, 34/36. Floors 12 / 10 / 31 / 30, ceiling 21 / 20 (MAP.md §11.4). SIM1's human preset presses slots at random (no PlanPolicy).
 - Fingerprint 0.79 with relics, 0.45 without (Rogue). W-B vs W-A 0.71 with relics; W-B parity 79%, removal pain +22% to +28%. W-D informational (D54 = A). Boss parity 92% / 109% / 106%.
-- Relic medians (per seed 1/13/25): Rogue `relic` 14.5/14/14, `safe` 6/5/5.5, `first` 8.5/10/7.5; Wizard `relic` 14.5/13.5/14. Exactly 2 boss relics. Map generator worst attempts per act over seeds 1001-4000: 421 / 341 / 751 of 2000.
+- Relic medians (per seed 1/13/25): Rogue `relic` 14.5/14/14, `safe` 6/5/5.5, `first` 8.5/10/7.0; Wizard `relic` 15/14/14. Exactly 2 boss relics. Map generator worst attempts per act over seeds 1001-4000: 421 / 341 / 751 of 2000.
 - Late shares for a Bleed Rogue: Bleed 12.5%, Fire 22.8%, Burn 10.0%. Relic Burn share 21.1% (4 of 19). Thesis Wizard late Fire share about 26%.
 
 ## Pending for the next docs pass

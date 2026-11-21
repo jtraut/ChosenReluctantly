@@ -3072,3 +3072,6 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
 - **The new SIM1 baselines after HP1 are human Rogue 25, Wizard 19; off Rogue 34, Wizard 34.** The DF1 ceilings in MAP.md §11.4 stay as they are: BAL1 decides whether to move them or retune.
 - **The Performance Review running-total readout ("now +N") goes to the next ux polish list,** not to HP1. [Add it to HP1: a ux hop and a smoke check for a number that is also visible on the HP bar.]
 - **Attribution (qa 5c516d8):** removed 19, zeroed 24, built 25 for the human Rogue; off Wizard 31 / 33 / 34. The trip is mostly offer reshuffle, not max HP, which confirms the waiver. BAL1 re-reads it with more seeds before touching the +4 or the ceiling.
+
+## 2026-11-20 - SIM2a split (game-lead)
+- **SIM2a is split into SIM2a-1 (the draft and relic brain, PlanPolicy casts, the report) and SIM2a-2 (the formulated route and merchant spending) before it starts.** The full brief is five bot behaviours plus a report, MAP3b-sized. qa runs once, after SIM2a-2. [One sitting that stops with `Remaining:`: likely mid-feature.]

@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-20 (UX1b closed; latest tag `playtest-2026-11-20-BD3b`)
-**Status:** **Milestone 3 is done, and UX1a and UX1b (fight and run-screen readability) are done.** Eyes 65 expired with its default (see `docs/RESOLVED.md`). Your setting and tone direction is in GDD §11. Next: HP1 (the max HP relics), then SIM2a (a bot that drafts toward a build). BAL1 and the Battlemage rework (BD3c) wait for you to play BD3b: see "The one ask" below.
+Last updated: 2026-11-20 (HP1 closed; latest tag `playtest-2026-11-20-BD3b`)
+**Status:** **Milestone 3 is done; UX1a, UX1b and HP1 (the max HP relics) are done.** Eyes 66 answered and 67 expired with its default (see `docs/RESOLVED.md`). Next: SIM2a (a bot that drafts toward a build), in two sittings. BAL1 and the Battlemage rework (BD3c) wait for you to play BD3b: see "The one ask" below.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -29,8 +29,7 @@ None right now.
 
 Reply with the number and a word or two. **Each item has a default. If it's still unanswered when the slice after the one that added it closes, the default applies and it moves to `docs/RESOLVED.md` (your rule, 2026-11-12).**
 
-
-- **67. Do the UX1b run-screen changes feel right in your hands?** Three things the bot playtester can't judge: (a) when only one map node is open, the map shows for about 1 second and then moves on (any key skips); (b) in a crowd of 6+, damage numbers move to a ring around the pile, so you can tell the damage type (white Bleed, orange Burn) but not always which enemy; (c) a stunned or hit-flashed boss turns pale, close to the new ivory Wizard. **Default:** keep all three as built. (Added at UX1b's close; expires at HP1's close.)
+None right now.
 
 ## Later, optional
 

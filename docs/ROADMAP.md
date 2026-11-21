@@ -1749,7 +1749,7 @@ UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> BAL1 and BD3c (`needs your
   - **Fixed 2026-11-20:** ux 69fafd7, 57660d4. B2: an explicit `MapScreen.automated_session` opt-out set by `tools/wave_sim.gd`. B3: one lane per damage type at a crowd slot, a bump to a free lane, and the heal beside the pile. Also: `StatusStackLabel.setup()` now refreshes, which the Bleed intro needed. Ring margin 1.7 -> 2.6 and front drop 1.8 -> 2.3. Captures re-shot: map-beat, bleed-intro, crowd-pile, starter-relics (including 1024x600). Touched suites green; hashes and SIM1 unchanged. Next: qa re-review.
   - **qa PASS 2026-11-20** (re-review 6386562). Suite 2851, 0 failures; hashes and SIM1 `-Route first` (19/20/35/31 of 36) unchanged. B2 and B3 fixed, and all re-shot captures checked. Non-blocking: N7, mid-fade crowd numbers can touch (for the playtester on a live 6+ pile); N3, a stunned boss is near the ivory Wizard. Next: a playtester smoke check.
   - **Playtest 2026-11-20, no blocker** (2ae2d92; `docs/playtests/2026-11-20-ux1b.md`). The smoke check passes for both classes. Teal and ivory read well, and so do the ring digits, the first-time status names, Arm/Res and the map beat. Feel calls go to eyes 67. Tooling gaps go to STATE Known issues. Next: docs pass, close.
-- [ ] **HP1, max HP relics (D55 = B, director 2026-11-20; GDD §9). gameplay-dev, one sitting. `safe to chain`** (new content the director asked for; its numbers go to BAL1). Placed before SIM2a so the bot measures runs with them.
+- [x] **HP1, max HP relics. Done 2026-11-20** (gameplay-dev dd4f802..a55dde2; qa PASS 5c516d8; docs pass 91086b1; no smoke check, no new UI). Eyes 67 expired at this close, default kept. Original header: **HP1, max HP relics (D55 = B, director 2026-11-20; GDD §9). gameplay-dev, one sitting. `safe to chain`** (new content the director asked for; its numbers go to BAL1). Placed before SIM2a so the bot measures runs with them.
   - **Goal:** two relics that raise max HP during a run.
   - **Engine:**
     - a run-scoped flat max HP modifier that raises the current HP by the same amount when gained;
@@ -1768,7 +1768,7 @@ UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> BAL1 and BD3c (`needs your
   - **Then:** qa, docs (no separate smoke check unless ux adds UI).
   - **Built 2026-11-20:** gameplay-dev dd4f802, efe7c58, a55dde2. `wellness_pack` "Mandatory Wellness Pack" (+4 max HP) and `performance_review` "Performance Review" (+1 per elite clear), with the engine in `RunMaxHp`, `RunState.relic_max_hp` and `gain_max_hp`. HP1 suite 18 cases; touched suites green; hashes unchanged. **SIM1 human Rogue 19 -> 25/36, over its 21 ceiling** (Wizard human 20 -> 19, off Rogue 35 -> 34, off Wizard 31 -> 34). Not tuned, per the brief; game-lead's call is in DECISIONS "HP1 build triage". Next: qa, with a with/without attribution run.
   - **qa PASS 2026-11-20** (5c516d8; `docs/reviews/2026-11-20-hp1-qa.md`). Full suite 2869, 0 HP1 failures; qa added 6 cases (expect 2875). Hashes unchanged; SIM1 and medians reproduced exactly; map sweep clean. **Attribution:** human Rogue with the relics removed is 19/36 (the baseline exactly), with the effects zeroed 24, and as built 25. About 5 of the +6 is the offer reshuffle, and about +1 is the max HP, which is within noise (SD about 2.9). Next: docs pass, close.
-- [ ] **SIM2a, build-aware "formulated" bot (gameplay-dev, one sitting; split it into draft and route if it grows). `safe to chain`** (tooling).
+- [ ] **SIM2a, build-aware "formulated" bot (gameplay-dev). `safe to chain`** (tooling).
   - **What it is:** SIM2's "formulated" profile, without "winging it" and without the gate:
     - it drafts toward the deck's emerging archetype from card `condition` and tag data, never from card ids;
     - it values relics by their synergy with the deck;
@@ -1778,6 +1778,22 @@ UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> BAL1 and BD3c (`needs your
   - **Report only, per class, 36 runs, human and off presets:** win rate, the act and room of death, the median deck size, the dominant status share, and leftover gold at the end.
   - **Checks:** the existing hashes and SIM1 are unchanged (new flag only).
   - **This answers:** pillar 1 for the milestone report, and eyes 63 (gold).
+  - **Split (game-lead, 2026-11-20, before starting; MAP3b sittings were too big):**
+    - [ ] **SIM2a-1, the draft brain and the report.**
+      - A new opt-in profile flag, for example `-Profile formulated` on the run sim. Without the flag, every existing path is byte-identical.
+      - Card rewards: score each offered card (and skip) against the deck's emerging archetype, read from card `condition`, tags and keywords (Primer, Payoff, Keystone) in data, never ids.
+      - Relic offers and give-ups: score by synergy with the same archetype read.
+      - Combat casts with `PlanPolicy`.
+      - Routing and merchants stay as today's `first` route policy in this sitting.
+      - The per-run report: win, the act and room of death, the final deck size, the dominant status share and the leftover gold, with a 36-run summary per class and preset.
+      - Tests: the scorer prefers on-archetype cards in a hand-built deck, ignores ids, and is deterministic per seed; the flag-off path is unchanged.
+      - Commit the untracked `tools/probe_human_session.gd.uid` (Godot metadata left from UX1b).
+    - [ ] **SIM2a-2, routing and merchants.**
+      - A `formulated` route: rest when HP is low, elites when strong, merchants when gold can buy something the scorer wants.
+      - Merchant spending through the same scorer (cards, relics and removals).
+      - The full report: per class, 36 runs, human and off presets.
+      - Checks: hashes and SIM1 unchanged.
+    - Then qa (once, after SIM2a-2), docs, close. No playtest (tooling).
 - [ ] **BAL1, deferred balance (first balance item after the Milestone 3 playtest). `needs your play first`.** The list is BD3b's "Deferred" (game-lead, 2026-11-18; DECISIONS "BD3b brief"). Brief written after the milestone playtest review.
 - [ ] **BD3c, melee Wizard: the Ward Battlemage rework (director, 2026-11-20, D54 = A; GDD §4a; BUILD_DEPTH W-D). `needs your play first`.**
   - **Why it waits:** the director plays W-D in the Milestone 3 playtest first. The brief is written after the milestone playtest review, alongside BAL1.

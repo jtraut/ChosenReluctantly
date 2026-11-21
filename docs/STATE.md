@@ -10,7 +10,7 @@ Last updated: 2026-11-20 (HP1 built; qa next). Latest tag `playtest-2026-11-20-B
 
 ## Exact next step
 1. qa: the HP1 review, the full suite, and the SIM1 human Rogue attribution (relic effects zeroed against as built).
-2. Then docs -> close (no smoke check; no new UI). Eyes 66 and 67 expire at HP1's close. Then SIM2a.
+2. Then docs -> close (no smoke check; no new UI). Eyes 67 expires at HP1's close. Then SIM2a.
 3. BAL1 (now also owns the human Rogue 25/36 ceiling trip) and BD3c wait for the director's play of BD3b.
 
 **Next role:** qa (HP1).
@@ -24,7 +24,7 @@ Last updated: 2026-11-20 (HP1 built; qa next). Latest tag `playtest-2026-11-20-B
 - Late shares for a Bleed Rogue: Bleed 12.5%, Fire 22.8%, Burn 10.0%. Relic Burn share 21.1% (4 of 19). Thesis Wizard late Fire share about 26%.
 
 ## Pending for the next docs pass
-- None (covered in 4633c02).
+- Eyes 66 answered [Director decision, 2026-11-20]: the line holds, and in-world groups (classes, elemental affinities) are fair game for NPC stereotype jokes ("Fire people are always so hot-headed"). Recorded in GDD §11 and `.claude/agents/story.md`; removed from OPEN_ITEMS (text in 3701cf5). For RESOLVED and CHANGELOG.
 
 ## Known issues
 - Capture tooling gaps (UX1b playtest 2ae2d92), for a TL follow-up: the `act_transition` preset stalls on the boss relic screen (`relic_skip+skip` never advances; `relic:<id>+skip` does); there is no starting-HP flag (to shoot the act heal line hurt); there is no timed key press during a capture (to prove the map beat skip); `-AtBossAttack` takes `smash`/`slam`, not `ground_pound`.
@@ -38,7 +38,7 @@ Last updated: 2026-11-20 (HP1 built; qa next). Latest tag `playtest-2026-11-20-B
 - An old git stash (`stash@{0}`, from 85cd564) is still in the repo; the director decides whether to drop it.
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D55 answered. Next free: D56. Eyes 66 and 67 open. Next eyes number: 68.
+**D-numbers:** D21-D55 answered. Next free: D56. Eyes 67 open. Next eyes number: 68.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths. A role that stops with a `Remaining:` list gets a fresh agent, never a resumed one.
 

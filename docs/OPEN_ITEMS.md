@@ -30,8 +30,6 @@ None right now.
 Reply with the number and a word or two. **Each item has a default. If it's still unanswered when the slice after the one that added it closes, the default applies and it moves to `docs/RESOLVED.md` (your rule, 2026-11-12).**
 
 
-- **66. Where is the line for "lightly offensive"?** Your tone direction (edgy, lightly offensive, Borderlands / South Park / Disco Elysium) is now in GDD §11 and the story role. I added a working line so the story role knows where to stop: no slurs, no punchline that targets a real-world group's ethnicity, religion, disability, gender or sexuality, and no real people or brands. Crude and dark are fine. Move the line if you want it looser or tighter. **Default:** keep this line. (Added 2026-11-20; expires at HP1's close.)
-
 - **67. Do the UX1b run-screen changes feel right in your hands?** Three things the bot playtester can't judge: (a) when only one map node is open, the map shows for about 1 second and then moves on (any key skips); (b) in a crowd of 6+, damage numbers move to a ring around the pile, so you can tell the damage type (white Bleed, orange Burn) but not always which enemy; (c) a stunned or hit-flashed boss turns pale, close to the new ivory Wizard. **Default:** keep all three as built. (Added at UX1b's close; expires at HP1's close.)
 
 ## Later, optional

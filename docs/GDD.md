@@ -408,7 +408,13 @@ If the slice is fun, scale outward. Scaling should be mostly data entry.
 - **Tone:** satire and humor. The world is bright, vibrant, and friendly, while the heroes are weary pessimists who find saving the world a total drag (think Shikamaru from Naruto). The contrast between cheerful world and reluctant heroes is the joke engine.
 - **How far to push it [DIRECTOR DECISION, 2026-11-20]:** edgy, lightly offensive jokes are encouraged. The main character(s) are lazy and self-deprecating.
   - Tone references: **Borderlands 1-3, South Park: The Fractured But Whole, Disco Elysium.**
-  - The working line for "lightly offensive" is in `.claude/agents/story.md` (game-lead's default, DECISIONS 2026-11-20 "Setting and tone recorded").
+  - **The line [DIRECTOR DECISION, 2026-11-20] (eyes 66):**
+    - no slurs;
+    - no punchline that is a real-world group's ethnicity, religion, disability, gender or sexuality;
+    - no real people or brands.
+    - Crude and dark are fine.
+    - In-world groups are fair game: NPCs can stereotype the game's classes and elemental affinities, like office gossip ("Fire people are always so hot-headed").
+    - The full wording is in `.claude/agents/story.md`.
 - Story and lore: minimal flavor text only, in that voice (card names, flavor lines, boss quips).
 - **Setting [DIRECTOR DECISION, 2026-11-20]:** a modern-day metropolis where magic is real. Most people are easily attuned to an element, but they still live ordinary modern lives: office jobs, pencil pushers, commutes. Think San Francisco or New York, except for the magic.
   - **Why:** the class + element builds (§5) keep their elements without any advanced technology, and the world still fits the office and corrupt-corporation direction (§15 "Corporate setting").

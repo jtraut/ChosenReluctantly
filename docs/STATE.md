@@ -3,29 +3,29 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-21 (SIM2a closed; SIM2a-4 next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-21 (SIM2a-4 built; qa next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **SIM2a closed** (qa 1c5250f, docs 61ae6f6). Nothing half done; the repo runs.
+- **SIM2a-4 built** (gameplay-dev ba86ffc, 598b26e, bbdcb09); acceptance met (formulated human Wizard 25/36, Rogue 22/36). Nothing half done; the repo runs.
 
 ## Exact next step
-1. **gameplay-dev (a fresh agent): SIM2a-4** (ROADMAP: the removal guard, the merchant buy check, qa's nits, the four formulated rows again).
-2. Then qa -> docs -> close.
-3. BAL1 and BD3c wait for the director's play of BD3b.
+1. **qa: SIM2a-4 review** (ba86ffc..bbdcb09), full suite in the background.
+2. Then tech-writer docs pass -> close SIM2a-4.
+3. BAL1 and BD3c wait for the director's play of BD3b. After SIM2a-4 the `safe to chain` queue is empty: stop and wait for the director.
 
-**Next role:** gameplay-dev (SIM2a-4).
+**Next role:** qa (SIM2a-4).
 
 ## Current baselines (SIM2a qa 1c5250f, 2026-11-21)
 - Suite 2902 measured (SIM2a qa 1c5250f), 0 failures; a full run takes about 26 minutes, so run it in the background.
 - Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 (unchanged; act 1 untouched).
-- Formulated (`-BotProfile formulated`, pooled 36, human): Rogue 23, Wizard 14; Wizard removals off 24, shop off 21; formulated `-Route first` Rogue 25, Wizard 18.
+- Formulated (`-BotProfile formulated`, pooled 36, SIM2a-4 ba86ffc..bbdcb09): human Rogue 22, Wizard 25; off 36, 34. `-Route first` human 24 / 17; shop off human 26 / 25; Wizard removals off 24.
 - SIM1 `-Route first`: human Rogue 25/36 (over its 21 ceiling, waived for HP1, to BAL1), Wizard 19/36 (re-measured 87b944b and 1c5250f); off 34/36, 34/36. Floors 12 / 10 / 31 / 30, ceiling 21 / 20 (MAP.md §11.4). SIM1's human preset presses slots at random (no PlanPolicy).
 - Fingerprint 0.79 with relics, 0.45 without (Rogue). W-B vs W-A 0.71 with relics; W-B parity 79%, removal pain +22% to +28%. W-D informational (D54 = A). Boss parity 92% / 109% / 106%.
 - Relic medians (per seed 1/13/25): Rogue `relic` 14.5/14/14, `safe` 6/5/5.5, `first` 8.5/10/7.0; Wizard `relic` 15/14/14. Exactly 2 boss relics. Map generator worst attempts per act over seeds 1001-4000: 421 / 341 / 751 of 2000.
 - Late shares for a Bleed Rogue: Bleed 12.5%, Fire 22.8%, Burn 10.0%. Relic Burn share 21.1% (4 of 19). Thesis Wizard late Fire share about 26%.
 
 ## Pending for the next docs pass
-- None.
+- SIM2a-4 (ba86ffc..bbdcb09 plus qa): README "Formulated bot" (the `route=` and `off=` run-line fields, the `-BotProfile` error text, the `-FormulatedOff` warning, the new results table); ARCHITECTURE (`sim2a4_test.gd`, `parse_off`, `off_label`, the removal guard); CHANGELOG.
 
 ## Known issues
 - **The game closed on its own during the director's run (2026-11-20, about 21:44), while gameplay-dev's SIM2a-3 sims ran from the same working tree.** The cause is unknown. Suspects: (a) the headless sims rewriting the shared `.godot` import cache while the game loads a room; (b) machine load from many parallel sims; (c) a real crash. The evidence is gone: the sims share `user://logs`, and Godot keeps only 5 log files, so his log rotated out. Fixes to schedule (a TL follow-up): the sims log to their own folder or disable file logging, and the director plays from a separate worktree of the tag (`git worktree add ../cr-play <tag>`) or while no agent runs.

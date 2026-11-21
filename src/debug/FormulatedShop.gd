@@ -8,6 +8,8 @@ extends RefCounted
 ##   removal   REMOVE_BELOW - (the lowest-scoring card's score), only above REMOVE_MIN_DECK cards; a curse in the deck is always worth REMOVE_CURSE
 ## With nothing over its bar and gold of at least REROLL_MIN_GOLD, a free reroll is taken (the gold is kept); then the bot leaves.
 ## A removal takes the lowest-scoring card of those the list allows (a curse first), each card scored against the deck without that copy.
+## SIM2a-4 guards (data-driven, no ids): a card is never removed when it is the last non-curse card of its slot type in the deck, and a card of the class's starting deck
+## (`starters`, read from CharacterDatabase) is valued on its own terms too: its score is the better of "against the current deck" and "against the starting deck's profile".
 
 const TABLE: Dictionary = {
 	"RELIC_BUY_MIN": 0.5,
@@ -26,15 +28,35 @@ static func _deck_cards(deck_ids: Array[String]) -> Array[Dictionary]:
 	return deck
 
 
-## The score of one deck card against the rest of the deck (one copy of it taken out).
-static func card_value(card_id: String, deck_ids: Array[String]) -> float:
+## The score of one deck card against the rest of the deck (one copy of it taken out). A starter is also scored against the starting deck's profile; the better counts.
+static func card_value(card_id: String, deck_ids: Array[String], starters: Array[String] = []) -> float:
 	var rest: Array[String] = deck_ids.duplicate()
 	rest.erase(card_id)
-	return DraftPolicy.score_card(CardDatabase.get_card(card_id), DraftPolicy.profile(_deck_cards(rest)))
+	var card: Dictionary = CardDatabase.get_card(card_id)
+	var value: float = DraftPolicy.score_card(card, DraftPolicy.profile(_deck_cards(rest)))
+	if starters.has(card_id):
+		var base: Array[String] = starters.duplicate()
+		base.erase(card_id)
+		value = maxf(value, DraftPolicy.score_card(card, DraftPolicy.profile(_deck_cards(base))))
+	return value
 
 
-## [card id, score] of the deck's lowest-scoring card, a curse counted lowest (score -INF); ["", INF] for an empty deck. The first of equal scores (deck order) wins.
-static func lowest_card(deck_ids: Array[String]) -> Array:
+## True when taking one copy of `card_id` out would leave the deck with no non-curse card of that card's slot type (a curse is never guarded).
+static func is_last_of_slot(card_id: String, deck_ids: Array[String]) -> bool:
+	var card: Dictionary = CardDatabase.get_card(card_id)
+	if CardSchema.is_curse(card):
+		return false
+	var slot: String = String(card.get("slot_type", ""))
+	var copies: int = 0
+	for other_id: String in deck_ids:
+		var other: Dictionary = CardDatabase.get_card(other_id)
+		if not CardSchema.is_curse(other) and String(other.get("slot_type", "")) == slot:
+			copies += 1
+	return copies <= 1
+
+
+## [card id, score] of the deck's lowest-scoring card that may be removed, a curse counted lowest (score -INF); ["", INF] when none can go. The first of equal scores (deck order) wins.
+static func lowest_card(deck_ids: Array[String], starters: Array[String] = []) -> Array:
 	var worst_id: String = ""
 	var worst: float = INF
 	var seen: Dictionary = {}
@@ -42,7 +64,10 @@ static func lowest_card(deck_ids: Array[String]) -> Array:
 		if seen.has(card_id):
 			continue
 		seen[card_id] = true
-		var value: float = -INF if CardSchema.is_curse(CardDatabase.get_card(card_id)) else card_value(card_id, deck_ids)
+		var is_curse: bool = CardSchema.is_curse(CardDatabase.get_card(card_id))
+		if not is_curse and is_last_of_slot(card_id, deck_ids):
+			continue
+		var value: float = -INF if is_curse else card_value(card_id, deck_ids, starters)
 		if value < worst:
 			worst = value
 			worst_id = card_id
@@ -50,7 +75,7 @@ static func lowest_card(deck_ids: Array[String]) -> Array:
 
 
 ## The option id for a PENDING_MERCHANT choice.
-static func shop_choice(options: Array, state: RunState, free_size: int, no_removal: bool = false) -> String:
+static func shop_choice(options: Array, state: RunState, free_size: int, no_removal: bool = false, starters: Array[String] = []) -> String:
 	var deck_ids: Array[String] = state.deck
 	var deck: Array[Dictionary] = _deck_cards(deck_ids)
 	var prof: Dictionary = DraftPolicy.profile(deck)
@@ -78,8 +103,11 @@ static func shop_choice(options: Array, state: RunState, free_size: int, no_remo
 						margin = minf(margin, value - worst_relic - float(TABLE["SWAP_MARGIN"]))
 			"buy_removal":
 				if not no_removal and bool(entry.get("enabled", false)) and deck_ids.size() > int(TABLE["REMOVE_MIN_DECK"]):
-					var low: Array = lowest_card(deck_ids)
-					margin = float(TABLE["REMOVE_CURSE"]) if float(low[1]) == -INF else float(TABLE["REMOVE_BELOW"]) - float(low[1])
+					var low: Array = lowest_card(deck_ids, starters)
+					if float(low[1]) == -INF:
+						margin = float(TABLE["REMOVE_CURSE"])
+					elif float(low[1]) != INF:
+						margin = float(TABLE["REMOVE_BELOW"]) - float(low[1])
 			"reroll":
 				if bool(entry.get("enabled", false)):
 					reroll = String(entry["id"])
@@ -97,7 +125,7 @@ static func shop_choice(options: Array, state: RunState, free_size: int, no_remo
 
 ## The option id to take from a removal list (a merchant's, a rest's or an event's: options of kind "remove"): a curse first, else the lowest-scoring card the list allows;
 ## the list's back option when none can go.
-static func removal_choice(options: Array, state: RunState) -> String:
+static func removal_choice(options: Array, state: RunState, starters: Array[String] = []) -> String:
 	var back: String = ""
 	var best_id: String = ""
 	var best: float = INF
@@ -111,7 +139,9 @@ static func removal_choice(options: Array, state: RunState) -> String:
 					continue
 				if bool(entry.get("curse", false)):
 					return String(entry["id"])
-				var value: float = card_value(String(entry["card_id"]), state.deck)
+				if is_last_of_slot(String(entry["card_id"]), state.deck):
+					continue
+				var value: float = card_value(String(entry["card_id"]), state.deck, starters)
 				if value < best:
 					best = value
 					best_id = String(entry["id"])

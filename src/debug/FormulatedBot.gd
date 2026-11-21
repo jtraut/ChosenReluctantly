@@ -5,15 +5,36 @@ extends RefCounted
 ##   PENDING_REWARD, PENDING_RELIC, PENDING_RELIC_SWAP   DraftPolicy (SIM2a-1: it was written but never called by the sim until this slice)
 ##   PENDING_MERCHANT*, PENDING_REST_REMOVE, PENDING_EVENT_REMOVE   FormulatedShop (the same scorer)
 ##   PENDING_NODE   FormulatedRoute, only when `route_formulated` (the profile is on and no -Route was given; `-Route first` keeps the first route)
-## `free_size` is the class's starting deck size (the deck that is free of the skip bar).
+## `free_size` is the class's starting deck size (the deck that is free of the skip bar); `starters` is that starting deck (SIM2a-4: the removal scorer values them on their own terms).
 
 const PROFILE := "formulated"
 ## SIM2a-3 attribution switches (debug only, default empty = nothing changes): "shop" hands every merchant choice back to today's policy; "removal" stops merchant removals being bought
 ## and hands every removal list back to today's policy. Set from `--sim-formulated-off=shop,removal`.
 static var off: Dictionary = {}
+const OFF_PARTS: Array[String] = ["shop", "removal"]
 
 
-static func choose(profile: String, route_formulated: bool, choice: String, options: Array, state: RunState, free_size: int) -> String:
+## Parses the `--sim-formulated-off=` value: {"off": {part: true}, "error": ""}; an unknown part gives an error text and an empty off set.
+static func parse_off(text: String) -> Dictionary:
+	var parsed: Dictionary = {}
+	for part: String in text.split(","):
+		var name: String = part.strip_edges()
+		if not OFF_PARTS.has(name):
+			return {"off": {}, "error": "must be shop and/or removal (comma separated), got '%s'" % part}
+		parsed[name] = true
+	return {"off": parsed, "error": ""}
+
+
+## The off switches as a log field: "none" or "removal+shop" (sorted).
+static func off_label() -> String:
+	if off.is_empty():
+		return "none"
+	var names: Array = off.keys()
+	names.sort()
+	return "+".join(names)
+
+
+static func choose(profile: String, route_formulated: bool, choice: String, options: Array, state: RunState, free_size: int, starters: Array[String] = []) -> String:
 	if profile != PROFILE:
 		return ""
 	match choice:
@@ -30,11 +51,11 @@ static func choose(profile: String, route_formulated: bool, choice: String, opti
 		RunState.PENDING_MERCHANT:
 			if off.has("shop"):
 				return ""
-			return FormulatedShop.shop_choice(options, state, free_size, off.has("removal"))
+			return FormulatedShop.shop_choice(options, state, free_size, off.has("removal"), starters)
 		RunState.PENDING_MERCHANT_REMOVE, RunState.PENDING_REST_REMOVE, RunState.PENDING_EVENT_REMOVE:
 			if off.has("removal") or (off.has("shop") and choice == RunState.PENDING_MERCHANT_REMOVE):
 				return ""
-			return FormulatedShop.removal_choice(options, state)
+			return FormulatedShop.removal_choice(options, state, starters)
 		RunState.PENDING_NODE:
 			if route_formulated:
 				var picked: int = FormulatedRoute.pick(state.map, state.path, state.hp_fraction(), state.gold, state.deck)

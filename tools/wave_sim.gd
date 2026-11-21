@@ -221,7 +221,7 @@ func _ready() -> void:
 		elif arg.begins_with("--sim-profile="):
 			_profile = arg.substr(14)
 			if not PROFILES.has(_profile):
-				push_error("wave sim: -Profile must be one of %s, got '%s'" % [", ".join(PROFILES), _profile])
+				push_error("wave sim: -BotProfile must be one of %s, got '%s'" % [", ".join(PROFILES), _profile])
 				get_tree().quit(2)
 				return
 			_plan = _profile != "report"
@@ -356,6 +356,8 @@ func _ready() -> void:
 		push_error("wave sim: -BotProfile needs -Run")
 		get_tree().quit(2)
 		return
+	if not FormulatedBot.off.is_empty() and _profile != FormulatedBot.PROFILE:
+		push_warning("wave sim: -FormulatedOff only applies with -BotProfile formulated; it is ignored for profile '%s'" % _profile)
 	_route_formulated = _profile == FormulatedBot.PROFILE and _route_policy == "" and not _no_map
 	if _route_policy != "" and not _run_mode:
 		push_error("wave sim: -Route and -Map need -Run")
@@ -1344,7 +1346,7 @@ func _policy_choose(controller: RunController) -> String:
 	var options: Array = model["options"]
 	var state: RunState = controller.state()
 	_scan_offer(options, state.room_index)
-	var formulated_pick: String = FormulatedBot.choose(_profile, _route_formulated, String(model["choice"]), options, state, CharacterDatabase.starting_deck(RunSession.selected_character).size())
+	var formulated_pick: String = FormulatedBot.choose(_profile, _route_formulated, String(model["choice"]), options, state, CharacterDatabase.starting_deck(RunSession.selected_character).size(), CharacterDatabase.starting_deck(RunSession.selected_character))
 	if formulated_pick != "":
 		return formulated_pick
 	match String(model["choice"]):
@@ -1825,8 +1827,8 @@ func _print_formulated_run(result: Dictionary) -> void:
 	result["f_self"] = String(summary["self_status"])
 	result["f_self_share"] = float(summary["self_share"])
 	var left: int = int(result.get("gold", 0))
-	print("FORMULATED RUN profile=%s class=%s preset=%s seed=%d outcome=%s act=%d room=%d deck=%d status=%s status_share=%.3f self=%s self_share=%.3f top_tag=%s gold=%d spent=%d removals=%d relics=%d" % [
-		_profile, _sim_class if _sim_class != "" else CharacterDatabase.DEFAULT_ID, _bot_settings.preset_name, int(result["seed"]), String(result["outcome"]), int(result["f_act"]), int(result["rooms_reached"]),
+	print("FORMULATED RUN profile=%s class=%s preset=%s seed=%d route=%s off=%s outcome=%s act=%d room=%d deck=%d status=%s status_share=%.3f self=%s self_share=%.3f top_tag=%s gold=%d spent=%d removals=%d relics=%d" % [
+		_profile, _sim_class if _sim_class != "" else CharacterDatabase.DEFAULT_ID, _bot_settings.preset_name, int(result["seed"]), "formulated" if _route_formulated else (_route_policy if _route_policy != "" else "default"), FormulatedBot.off_label(), String(result["outcome"]), int(result["f_act"]), int(result["rooms_reached"]),
 		deck.size(), String(result["f_status"]) if String(result["f_status"]) != "" else "none", float(result["f_share"]),
 		String(result["f_self"]) if String(result["f_self"]) != "" else "none", float(result["f_self_share"]),
 		String(result["f_top_tag"]) if String(result["f_top_tag"]) != "" else "none", left, int(result.get("gold_spent", 0)), int(result.get("shop_removals", 0)), int(result.get("relics_held", 0))])

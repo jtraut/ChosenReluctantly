@@ -1,6 +1,7 @@
 # SIM2a-1: pools the "FORMULATED RUN" lines of one or more wave-sim logs into the per-class, per-preset 36-run summary (report only, no gate).
 # Usage: powershell -File tools\pool_formulated.ps1 log1.txt log2.txt ...   (e.g. the three seeds 1/13/25 x 12 runs of one class and preset)
 # A run line: FORMULATED RUN profile=formulated class=rogue preset=human seed=1 outcome=won act=3 room=15 deck=20 status=burn status_share=0.30 self=charge self_share=0.20 top_tag=Melee gold=45 spent=240 removals=2 relics=6
+# (SIM2a-4: route=formulated|first|... and off=none|shop|removal|removal+shop are in the line and the group name; older logs without them pool as '-'.)
 # (SIM2a-2: profile = formulated | plan | report. "report" is the flag-off row: the same behaviour as no flag, with the lines printed.) Groups by profile, class and preset.
 param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Logs)
 function Get-Median([double[]]$v) { if ($v.Count -eq 0) { return 0 }; $s = $v | Sort-Object; $m = [int][math]::Floor($s.Count / 2); if ($s.Count % 2 -eq 1) { return $s[$m] } else { return ($s[$m - 1] + $s[$m]) / 2 } }
@@ -8,14 +9,14 @@ $runs = @()
 foreach ($log in $Logs) {
     foreach ($line in (Get-Content $log)) {
         if ($line -match '^FORMULATED RUN ') {
-            $o = @{ profile = '?'; self = 'none'; self_share = '0'; spent = '0'; removals = '0'; relics = '0' }
+            $o = @{ profile = '?'; route = '-'; off = '-'; self = 'none'; self_share = '0'; spent = '0'; removals = '0'; relics = '0' }
             foreach ($pair in ($line.Substring(15) -split ' ')) { $kv = $pair -split '=', 2; if ($kv.Count -eq 2) { $o[$kv[0]] = $kv[1] } }
             $runs += [pscustomobject]$o
         }
     }
 }
 if ($runs.Count -eq 0) { Write-Host "no FORMULATED RUN lines found"; exit 1 }
-foreach ($group in ($runs | Group-Object { "$($_.profile) / $($_.class) / $($_.preset)" })) {
+foreach ($group in ($runs | Group-Object { "$($_.profile) / $($_.class) / $($_.preset) / route $($_.route) / off $($_.off)" })) {
     $g = $group.Group
     $won = ($g | Where-Object { $_.outcome -eq 'won' }).Count
     $deaths = ($g | Where-Object { $_.outcome -ne 'won' } | Group-Object { "act $($_.act) room $($_.room)" } | Sort-Object Name | ForEach-Object { "$($_.Name): $($_.Count)" }) -join ', '

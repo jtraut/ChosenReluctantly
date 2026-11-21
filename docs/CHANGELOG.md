@@ -2,7 +2,35 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-11-20 (UX1b, setting and tone; Milestone 3 review, D55, UX1a, BD3b)
+## 2026-11-20 (HP1, UX1b, setting and tone; Milestone 3 review, D55, UX1a, BD3b)
+
+### Slice HP1, max HP relics
+
+Commit range 4633c02..HEAD. gameplay-dev dd4f802, efe7c58, a55dde2. qa 5c516d8 (PASS, `docs/reviews/2026-11-20-hp1-qa.md`, plus `tests/unit/hp1_qa_test.gd`). game-lead 3701cf5, ef74297.
+
+**Added**
+- **[Director decision] D55 = B (2026-11-20) is built:** two neutral tier 1 relics, sources elite, relic_room and merchant (`data/relics/`). Their values are defaults for BAL1 to tune.
+  - `wellness_pack`, "Mandatory Wellness Pack": +4 max HP, and heals 4 when gained. Flavor: "A stress ball, a granola bar and a pamphlet. You are the stress ball."
+  - `performance_review`, "Performance Review": +1 max HP, and heals 1, for each elite room cleared after you own it. Not retroactive; mini-bosses and elite fights inside events do not count; no cap. Flavor: "Exceeds expectations. The expectations were to not die."
+- **Engine:** `src/run/RunMaxHp.gd` (pure statics); `RunState.relic_max_hp` `{relic_id: boost}`, saved (an old save loads it empty, no save format bump); a relic modifier `{stat: "max_hp", additive}` applied by the run layer (`RunState.add_relic`, `give_up_relic`) and skipped by `RelicManager`; a new effect template `gain_max_hp {amount}`, allowed only in relic triggers on `room_cleared` (`CardSchema` and `EffectTemplates` reject it elsewhere).
+- **Tests:** `tests/unit/hp1_max_hp_relics_test.gd` (18 cases) and qa's `tests/unit/hp1_qa_test.gd` (6 cases: merchant buy, cap swap, clamp).
+
+**Changed**
+- `RunController._finish_room` calls `RunMaxHp.on_room_cleared`; `_sync_relics` pushes the run's HP to the live player. The relic badge pulses exactly once per elite clear.
+- Losing the relic (give-one-up) removes its boost, floors max HP at `events.min_max_hp` (`data/run.json`) and clamps HP; HP that was healed stays.
+- Catalog pins: `bd2b_relics_test` Rogue offer pool 19 -> 21 and Wizard 20 -> 22; `map2b_relics_test` `extra` 11 -> 13 (Rogue) and 12 -> 14 (Wizard).
+- **SIM1 baselines** (`-Run -Route first`, pooled seeds 1/13/25, 36 runs; old -> new):
+  - human Rogue 19 -> 25 (above the DF1 ceiling of 21; waived for HP1 by game-lead and carried to BAL1);
+  - human Wizard 20 -> 19;
+  - off Rogue 35 -> 34;
+  - off Wizard 31 -> 34.
+- qa's attribution (human Rogue): relics removed 19, effects zeroed 24, built 25. About 5 of the +6 is the offer reshuffle from two more relics in the pools, and about +1 is the max HP, which is within noise (36 runs, SD about 2.9). BAL1 should re-read it with more seeds.
+- Relic medians: Rogue `first` seed 25 7.5 -> 7.0; Wizard `relic` 14.5 / 13.5 / 14 -> 15 / 14 / 14; the rest unchanged. Seed hashes unchanged.
+- Suite: 2869 cases measured by gameplay-dev; 2875 expected with qa's 6 (unverified, not re-run in this pass).
+
+**Docs and process**
+- **[Director decision] Eyes 66, the humor line (2026-11-20, 3b1d924):** the line holds. No slurs; no punchline that is a real-world group's ethnicity, religion, disability, gender or sexuality; no real people or brands. Crude and dark are fine. In-world groups are fair game: NPCs can stereotype the game's classes and elemental affinities, like office gossip ("Fire people are always so hot-headed"). Recorded in GDD section 11 and `.claude/agents/story.md`.
+- Eyes 67 (the UX1b run-screen changes) expired at HP1's close with the default kept: all three as built. See `docs/RESOLVED.md`.
 
 ### Slice UX1b, run-screen readability
 

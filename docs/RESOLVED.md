@@ -2,6 +2,22 @@
 
 The archive of the director's answered, received and acknowledged items, moved here from `docs/OPEN_ITEMS.md`. Owned by tech-writer (director, 2026-11-02). Newest dated section first; IDs (D19, call 16, checklist item 33) are kept so they can be searched. Old entries change only to fix a factual error.
 
+## 2026-11-20 (HP1 close)
+
+### Answer recorded in 3b1d924 (eyes 66)
+
+| ID | Question | Your answer | Where it went |
+|---|---|---|---|
+| 66 | Does the humor line hold, and may NPCs stereotype the game's own classes and elements? | **The line holds** (2026-11-20): no slurs; no punchline that is a real-world group's ethnicity, religion, disability, gender or sexuality; no real people or brands. Crude and dark are fine. **In-world groups are fair game:** NPCs can stereotype the classes and elemental affinities, like office gossip ("Fire people are always so hot-headed"). | GDD section 11 and `.claude/agents/story.md`. Changelog: 2026-11-20, `[Director decision]`. The original text is at `git show 3701cf5:docs/OPEN_ITEMS.md`. |
+
+### Expired at HP1's close, default kept
+
+Eyes 67 was added at UX1b's close and got no answer by the close of the slice after it, so the default applied. The original text is at `git show ef74297:docs/OPEN_ITEMS.md`.
+
+| ID | What it asked | Default that applied |
+|---|---|---|
+| 67 | Do the UX1b run-screen changes feel right in your hands? (a) the 1 s map beat when one node is reachable, (b) crowd ring digits that show the type rather than the owner, (c) the pale stunned boss next to the ivory Wizard. | Keep all three as built. |
+
 ## 2026-11-20 (UX1b close)
 
 ### Expired at UX1b's close, default kept

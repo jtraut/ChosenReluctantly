@@ -122,7 +122,10 @@ var _plan_stats: Dictionary = {"casts": 0, "swaps": 0, "live_casts": 0, "held_ca
 ## (scored against the deck's archetype, read from card data), and combat casts with PlanPolicy (it sets `_plan`). Routing and merchants stay as the route
 ## policy says. "" = off: every path, RNG draw and output line is unchanged. The per-run FORMULATED line and the FORMULATED SUMMARY print only with the profile.
 var _profile: String = ""
-const PROFILES: Array[String] = ["formulated"]
+## SIM2a-2: "plan" = PlanPolicy casts only (today's random draft, route and merchant: the control row); "report" = flag-off behaviour that only prints the FORMULATED lines.
+const PROFILES: Array[String] = ["formulated", "plan", "report"]
+## SIM2a-2: true when the formulated profile walks FormulatedRoute (the profile is on and no -Route was given; an explicit `-Route first` keeps the first route for a comparison).
+var _route_formulated: bool = false
 
 ## `--start-room=N` (wave sim -StartRoom, run mode): every run starts at room N (1-based) with the class's starter deck and full HP, so a
 ## boss-room measurement needs no 9 rooms of luck first. 0 = from room 1.
@@ -221,7 +224,7 @@ func _ready() -> void:
 				push_error("wave sim: -Profile must be one of %s, got '%s'" % [", ".join(PROFILES), _profile])
 				get_tree().quit(2)
 				return
-			_plan = true
+			_plan = _profile != "report"
 		elif arg.begins_with("--start-room="):
 			_start_room = maxi(int(arg.substr(13)), 0)
 		elif arg.begins_with("--sim-deck="):
@@ -342,6 +345,11 @@ func _ready() -> void:
 		push_error("wave sim: -Shots needs a window, so it cannot run with --headless (run_wave_sim.ps1 -Shots leaves --headless off)")
 		get_tree().quit(2)
 		return
+	if _profile != "" and not _run_mode:
+		push_error("wave sim: -BotProfile needs -Run")
+		get_tree().quit(2)
+		return
+	_route_formulated = _profile == FormulatedBot.PROFILE and _route_policy == "" and not _no_map
 	if _route_policy != "" and not _run_mode:
 		push_error("wave sim: -Route and -Map need -Run")
 		get_tree().quit(2)
@@ -1122,6 +1130,8 @@ func _run_whole(run_seed: int) -> void:
 						(result["types"] as Array).append(String(room_entry["type"]) if not String(room_entry["type"]).is_empty() else "?")
 					next_room_index = 0
 				var choice_id: String = _policy_choose(controller)
+				if _route_formulated and choice_id.begins_with("node:"):
+					rooms = _follow_pick(run_state, choice_id.substr(5).to_int(), result, rooms.size())  # SIM2a-2: the pick may leave the planned route
 				if _watch != null:
 					await _watch_choice(controller, choice_id)
 				var outcome: Dictionary = controller.choose(choice_id)
@@ -1327,6 +1337,9 @@ func _policy_choose(controller: RunController) -> String:
 	var options: Array = model["options"]
 	var state: RunState = controller.state()
 	_scan_offer(options, state.room_index)
+	var formulated_pick: String = FormulatedBot.choose(_profile, _route_formulated, String(model["choice"]), options, state, CharacterDatabase.starting_deck(RunSession.selected_character).size())
+	if formulated_pick != "":
+		return formulated_pick
 	match String(model["choice"]):
 		RunState.PENDING_REWARD:
 			var skip_id: String = ""
@@ -1802,9 +1815,14 @@ func _print_formulated_run(result: Dictionary) -> void:
 	result["f_status"] = String(summary["dominant_status"])
 	result["f_share"] = float(summary["share"])
 	result["f_top_tag"] = String(summary["top_tag"])
-	print("FORMULATED RUN class=%s preset=%s seed=%d outcome=%s act=%d room=%d deck=%d status=%s status_share=%.3f top_tag=%s gold=%d" % [
-		_sim_class if _sim_class != "" else CharacterDatabase.DEFAULT_ID, _bot_settings.preset_name, int(result["seed"]), String(result["outcome"]), int(result["f_act"]), int(result["rooms_reached"]),
-		deck.size(), String(result["f_status"]) if String(result["f_status"]) != "" else "none", float(result["f_share"]), String(result["f_top_tag"]) if String(result["f_top_tag"]) != "" else "none", int(result.get("gold", 0))])
+	result["f_self"] = String(summary["self_status"])
+	result["f_self_share"] = float(summary["self_share"])
+	var left: int = int(result.get("gold", 0))
+	print("FORMULATED RUN profile=%s class=%s preset=%s seed=%d outcome=%s act=%d room=%d deck=%d status=%s status_share=%.3f self=%s self_share=%.3f top_tag=%s gold=%d spent=%d removals=%d relics=%d" % [
+		_profile, _sim_class if _sim_class != "" else CharacterDatabase.DEFAULT_ID, _bot_settings.preset_name, int(result["seed"]), String(result["outcome"]), int(result["f_act"]), int(result["rooms_reached"]),
+		deck.size(), String(result["f_status"]) if String(result["f_status"]) != "" else "none", float(result["f_share"]),
+		String(result["f_self"]) if String(result["f_self"]) != "" else "none", float(result["f_self_share"]),
+		String(result["f_top_tag"]) if String(result["f_top_tag"]) != "" else "none", left, int(result.get("gold_spent", 0)), int(result.get("shop_removals", 0)), int(result.get("relics_held", 0))])
 
 
 ## SIM2a-1: this process's runs in the SIM summary style (report only, no gate). The pooled 36-run summary is tools/pool_formulated.ps1 over three of these.
@@ -1941,10 +1959,31 @@ func _plan_route(run_seed: int, skip_pick: bool) -> Array[Dictionary]:
 		state.path = [_route[0]] as Array[int]
 		state.pending = RunState.PENDING_NONE
 		state.room_index = 0
+	return _rooms_of_route(state)
+
+
+## The room list of `_route` ({index, type, wave_id, node_id, chest}, like RunController's).
+func _rooms_of_route(state: RunState) -> Array[Dictionary]:
 	var rooms: Array[Dictionary] = []
 	for index in range(_route.size()):
 		var node: Dictionary = MapGraph.node(state.map, _route[index])
 		rooms.append({"index": index, "type": String(node["type"]), "wave_id": String(node["wave_id"]), "node_id": int(node["id"]), "chest": RunNodes.chest_of(node) if String(node["type"]) == RunConfig.RELIC_ROOM else ""})
+	return rooms
+
+
+## SIM2a-2: the formulated route picked `picked` at a node choice. The route becomes the nodes walked, the pick, and the lowest-column tail (FormulatedRoute.fill_route; the bot replans
+## at every pick), and the room list, this act's entries of the run's room types and the act's route summary follow it, so the room loop plays the node that was really taken.
+func _follow_pick(state: RunState, picked: int, result: Dictionary, old_count: int) -> Array[Dictionary]:
+	var walked: Array[int] = state.path.duplicate()
+	walked.append(picked)
+	_route = FormulatedRoute.fill_route(state.map, walked)
+	var rooms: Array[Dictionary] = _rooms_of_route(state)
+	var types: Array = result["types"]
+	var offset: int = types.size() - old_count
+	for index in range(mini(rooms.size(), old_count)):
+		types[offset + index] = String(rooms[index]["type"])
+	if not _route_summaries.is_empty():
+		_route_summaries[_route_summaries.size() - 1] = RouteBot.summary(state.map, _route)
 	return rooms
 
 

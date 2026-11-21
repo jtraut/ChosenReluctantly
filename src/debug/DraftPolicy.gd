@@ -410,7 +410,7 @@ static func giveup_choice(options: Array, deck_ids: Array[String]) -> String:
 
 # ---- the report ----
 
-## {dominant_status, share, top_tag, top_tag_count}: the status most deck cards apply, and that count over the deck size; the derived tag most cards carry.
+## {dominant_status, share, top_tag, top_tag_count, self_status, self_share}: the status most deck cards apply, and that count over the deck size; the derived tag most cards carry.
 static func deck_summary(deck_ids: Array[String]) -> Dictionary:
 	var deck: Array[Dictionary] = []
 	for card_id: String in deck_ids:
@@ -425,4 +425,14 @@ static func deck_summary(deck_ids: Array[String]) -> Dictionary:
 			top_count = int((prof["tag_cards"] as Dictionary)[tag])
 			top_tag = String(tag)
 	var share: float = float(int(prof["dominant_count"])) / maxf(float(deck_ids.size()), 1.0)
-	return {"dominant_status": String(prof["dominant"]), "share": share, "top_tag": top_tag, "top_tag_count": top_count}
+	# SIM2a-2: the dominant status the deck puts on the caster (Charge, Ward), counted from the "self:" provides.
+	var self_status: String = ""
+	var self_count: int = 0
+	var provides_keys: Array = (prof["provides"] as Dictionary).keys()
+	provides_keys.sort()
+	for key: Variant in provides_keys:
+		if String(key).begins_with("self:") and int((prof["provides"] as Dictionary)[key]) > self_count:
+			self_count = int((prof["provides"] as Dictionary)[key])
+			self_status = String(key).substr(5)
+	return {"dominant_status": String(prof["dominant"]), "share": share, "top_tag": top_tag, "top_tag_count": top_count,
+		"self_status": self_status, "self_share": float(self_count) / maxf(float(deck_ids.size()), 1.0)}

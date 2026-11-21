@@ -16,6 +16,8 @@
 # -Merchant (needs the map: -Route or -Map; --sim-merchant, MAP2-B): turn the merchant on for this process (data/merchant_on.json is merged into data/map.json and run.json: weight 8, relic_route [6, 8]).
 #   The bots then visit merchant nodes on their route: the `relic` route buys relics first (cheapest first), then a removal, then a card; `safe`, `first` and `random` buy a removal, then a card, and no relics (MerchantPolicy).
 #   The run line and the ROUTE SUMMARY add gold spent, relics bought and removals.
+# -BotProfile formulated (needs -Run; --sim-profile=, SIM2a-1): the build-aware drafter. Card rewards and relic offers and give-ups are scored against the deck's archetype (src/debug/DraftPolicy.gd, read from card data, never ids) and combat casts with PlanPolicy (implies -Plan).
+#   Routing and merchants stay as -Route says. Prints a "FORMULATED RUN ..." line per run and a FORMULATED SUMMARY; tools\pool_formulated.ps1 pools several logs. Without the flag nothing changes.
 # -Run also prints the damage the player's side dealt by source (light, heavy, each slot type, each status, each relic) per run and over all runs with the fingerprint spread, relic pick/skip/swap counts, and BOSS TIMES with timed-out boss fights listed apart.
 # -StartRoom N (needs -Run): start every run at room N (10 = the boss) with the starter deck and full HP (--start-room).
 # -BotPreset <name> (SIM1; --bot-preset=): the human-like bot settings from data/bot_presets.json (off = the perfect bot, the default; human = the SIM1 preset). An unknown name exits nonzero with the valid names.
@@ -25,7 +27,7 @@
 #   screens), each act's end screen, the boss (and at half HP), the biggest crowd of the run (crowded-fight.png) and the end screen. Use -BotPreset human to watch a human-like bot. A relative <dir> is taken from the folder you run this in.
 #   The same lines are printed as "WATCH ..." in the console. Watching at -Scale 1 is real time (a three-act run is about half an hour); -Scale 3 or 4 is faster (it drops --fixed-fps, so the run does not repeat exactly from its seed).
 # Fails on a failed check OR any ERROR / SCRIPT ERROR / WARNING line in the engine output.
-param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets, [int]$StartRoom = 0, [switch]$Plan, [string]$Relics = "", [int]$RelicCap = 0, [string]$Swap = "", [switch]$NoRelics, [string]$Route = "", [switch]$Map, [switch]$NoMap, [switch]$Merchant, [int]$Acts = 0, [string]$BotPreset = "", [double]$BotDelay = -1, [double]$BotAimError = -1, [double]$BotHesitation = -1, [string]$Shots = "")
+param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets, [int]$StartRoom = 0, [switch]$Plan, [string]$Relics = "", [int]$RelicCap = 0, [string]$Swap = "", [switch]$NoRelics, [string]$Route = "", [switch]$Map, [switch]$NoMap, [switch]$Merchant, [int]$Acts = 0, [string]$BotPreset = "", [double]$BotDelay = -1, [double]$BotAimError = -1, [double]$BotHesitation = -1, [string]$Shots = "", [string]$BotProfile = "")
 
 $root = Split-Path -Parent $PSScriptRoot
 $godot = $env:GODOT_BIN
@@ -58,6 +60,7 @@ if ($WizardNoKite) { $extra += "--wizard-no-kite" }
 if ($BossLog) { $extra += "--boss-log" }
 if ($DodgePellets) { $extra += "--dodge-pellets" }
 if ($Plan) { $extra += "--plan" }
+if ($BotProfile) { $extra += "--sim-profile=$BotProfile" }
 if ($Relics) { $extra += "--sim-relics=$Relics" }
 if ($RelicCap -gt 0) { $extra += "--sim-relic-cap=$RelicCap" }
 if ($NoRelics) { $extra += "--sim-no-relics" }

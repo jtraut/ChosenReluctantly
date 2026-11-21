@@ -118,6 +118,11 @@ var _plan_policy: PlanPolicy = PlanPolicy.new()
 var _plan_busy_until: Dictionary = {}
 const PLAN_PRESS_GAP := 0.1
 var _plan_stats: Dictionary = {"casts": 0, "swaps": 0, "live_casts": 0, "held_casts": 0}
+## SIM2a-1 `--sim-profile=formulated` (wave sim -Profile, run mode): the build-aware drafter. Card rewards and relic offers/give-ups go through DraftPolicy
+## (scored against the deck's archetype, read from card data), and combat casts with PlanPolicy (it sets `_plan`). Routing and merchants stay as the route
+## policy says. "" = off: every path, RNG draw and output line is unchanged. The per-run FORMULATED line and the FORMULATED SUMMARY print only with the profile.
+var _profile: String = ""
+const PROFILES: Array[String] = ["formulated"]
 
 ## `--start-room=N` (wave sim -StartRoom, run mode): every run starts at room N (1-based) with the class's starter deck and full HP, so a
 ## boss-room measurement needs no 9 rooms of luck first. 0 = from room 1.
@@ -209,6 +214,13 @@ func _ready() -> void:
 		elif arg == "--dodge-pellets":
 			_dodge_pellets = true
 		elif arg == "--plan":
+			_plan = true
+		elif arg.begins_with("--sim-profile="):
+			_profile = arg.substr(14)
+			if not PROFILES.has(_profile):
+				push_error("wave sim: -Profile must be one of %s, got '%s'" % [", ".join(PROFILES), _profile])
+				get_tree().quit(2)
+				return
 			_plan = true
 		elif arg.begins_with("--start-room="):
 			_start_room = maxi(int(arg.substr(13)), 0)
@@ -1181,6 +1193,8 @@ func _run_whole(run_seed: int) -> void:
 		print("    route (%s): nodes %s | fights %d, elites %d, relic stages %d (chests %s), rests %d | gold %d, relics held %d" % [_route_policy, str(_route), int(route_info["fights"]), int(route_info["elites"]), int(route_info["relic_nodes"]), str(route_info["chests"]), int(route_info["rest"]), int(result["gold"]), int(result["relics_held"])])
 	if _merchant or (result.has("route_summary") and MerchantSwitch.shipped_is_on()):  # qa MAP2: the merchant ships on, so a plain -Route reports it too
 		print("    merchant: visited %s | gold spent %d | relics bought %d, cards bought %d, removals %d, rerolls %d" % [str(_visited_merchant(result)), int(result["gold_spent"]), int(result["shop_relics"]), int(result["shop_cards"]), int(result["shop_removals"]), int(result["shop_rerolls"])])
+	if _profile != "":
+		_print_formulated_run(result)
 	if _plan:
 		print("    plan policy: %d card casts (%d with the condition live, %d held payoff casts), %d dead-card swaps%s" % [int(_plan_stats["casts"]), int(_plan_stats["live_casts"]), int(_plan_stats["held_casts"]), int(_plan_stats["swaps"]), _spender_note()])
 	# Leave nothing of this run behind for the next one.
@@ -1751,6 +1765,8 @@ func _run_summary() -> void:
 	if _route_policy != "":
 		_print_route_summary()
 	_print_act_summary()
+	if _profile != "":
+		_print_formulated_summary()
 	# Distribution of the generator alone over many seeds (cheap and pure).
 	var counts: Dictionary = {}
 	var index_counts: Dictionary = {}
@@ -1774,6 +1790,46 @@ func _run_summary() -> void:
 	_print_pick_rates()
 	if _boss_log:
 		_boss_summary()
+
+
+## SIM2a-1: the per-run report line of the formulated profile (greppable key=value pairs; tools/pool_formulated.ps1 pools them across seeds).
+## The death point is the act and the run-wide room number; "status_share" is the dominant status's share of the final DECK (cards applying it over deck size).
+func _print_formulated_run(result: Dictionary) -> void:
+	var state: RunState = RunSession.current
+	var deck: Array[String] = state.deck if state != null else ([] as Array[String])
+	var summary: Dictionary = DraftPolicy.deck_summary(deck)
+	result["f_act"] = state.act if state != null else 0
+	result["f_status"] = String(summary["dominant_status"])
+	result["f_share"] = float(summary["share"])
+	result["f_top_tag"] = String(summary["top_tag"])
+	print("FORMULATED RUN class=%s preset=%s seed=%d outcome=%s act=%d room=%d deck=%d status=%s status_share=%.3f top_tag=%s gold=%d" % [
+		_sim_class if _sim_class != "" else CharacterDatabase.DEFAULT_ID, _bot_settings.preset_name, int(result["seed"]), String(result["outcome"]), int(result["f_act"]), int(result["rooms_reached"]),
+		deck.size(), String(result["f_status"]) if String(result["f_status"]) != "" else "none", float(result["f_share"]), String(result["f_top_tag"]) if String(result["f_top_tag"]) != "" else "none", int(result.get("gold", 0))])
+
+
+## SIM2a-1: this process's runs in the SIM summary style (report only, no gate). The pooled 36-run summary is tools/pool_formulated.ps1 over three of these.
+func _print_formulated_summary() -> void:
+	var wins: int = 0
+	var deaths: Dictionary = {}
+	var decks: Array[float] = []
+	var shares: Array[float] = []
+	var golds: Array[float] = []
+	var top_tags: Dictionary = {}
+	for result: Dictionary in _run_results:
+		if not result.has("f_act"):
+			continue
+		if String(result["outcome"]) == "won":
+			wins += 1
+		else:
+			var key: String = "act %d room %d" % [int(result["f_act"]), int(result["rooms_reached"])]
+			deaths[key] = int(deaths.get(key, 0)) + 1
+		decks.append(float(result["deck_size"]))
+		shares.append(float(result["f_share"]))
+		golds.append(float(result.get("gold", 0)))
+		var tag: String = String(result["f_top_tag"])
+		top_tags[tag] = int(top_tags.get(tag, 0)) + 1
+	print("  FORMULATED SUMMARY (%s, %s, preset %s): %d of %d run(s) won | deaths (act, run room: runs) %s | deck size median %.1f mean %.1f | dominant status share median %.2f | leftover gold median %.0f mean %.1f | top tags %s" % [
+		_profile, _sim_class if _sim_class != "" else CharacterDatabase.DEFAULT_ID, _bot_settings.preset_name, wins, decks.size(), str(deaths), _median(decks), _mean(decks), _median(shares), _median(golds), _mean(golds), str(top_tags)])
 
 
 ## True when the run's route held a merchant node (MAP2-B report line).

@@ -3,20 +3,20 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-21 (SIM2a-4 built; qa next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-21 (SIM2a-4 qa PASS; docs pass next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **SIM2a-4 built** (gameplay-dev ba86ffc, 598b26e, bbdcb09); acceptance met (formulated human Wizard 25/36, Rogue 22/36). Nothing half done; the repo runs.
+- **SIM2a-4 qa PASS** (f6c9db1). Nothing half done; the repo runs.
 
 ## Exact next step
-1. **qa: SIM2a-4 review** (ba86ffc..bbdcb09), full suite in the background.
-2. Then tech-writer docs pass -> close SIM2a-4.
-3. BAL1 and BD3c wait for the director's play of BD3b. After SIM2a-4 the `safe to chain` queue is empty: stop and wait for the director.
+1. **tech-writer: SIM2a-4 docs pass** (handoff in "Pending for the next docs pass").
+2. game-lead closes SIM2a-4. The `safe to chain` queue is then empty: stop and wait for the director.
+3. BAL1 and BD3c wait for the director's play of BD3b.
 
-**Next role:** qa (SIM2a-4).
+**Next role:** tech-writer (SIM2a-4 docs pass).
 
-## Current baselines (SIM2a qa 1c5250f, 2026-11-21)
-- Suite 2902 measured (SIM2a qa 1c5250f), 0 failures; a full run takes about 26 minutes, so run it in the background.
+## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21)
+- Suite 2913 expected (2911 measured at SIM2a-4 qa plus its 2 cases; f6c9db1), 0 failures; a full run takes about 27 minutes, so run it in the background.
 - Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 (unchanged; act 1 untouched).
 - Formulated (`-BotProfile formulated`, pooled 36, SIM2a-4 ba86ffc..bbdcb09): human Rogue 22, Wizard 25; off 36, 34. `-Route first` human 24 / 17; shop off human 26 / 25; Wizard removals off 24.
 - SIM1 `-Route first`: human Rogue 25/36 (over its 21 ceiling, waived for HP1, to BAL1), Wizard 19/36 (re-measured 87b944b and 1c5250f); off 34/36, 34/36. Floors 12 / 10 / 31 / 30, ceiling 21 / 20 (MAP.md §11.4). SIM1's human preset presses slots at random (no PlanPolicy).
@@ -25,7 +25,7 @@ Last updated: 2026-11-21 (SIM2a-4 built; qa next). Latest tag `playtest-2026-11-
 - Late shares for a Bleed Rogue: Bleed 12.5%, Fire 22.8%, Burn 10.0%. Relic Burn share 21.1% (4 of 19). Thesis Wizard late Fire share about 26%.
 
 ## Pending for the next docs pass
-- SIM2a-4 (ba86ffc..bbdcb09 plus qa): README "Formulated bot" (the `route=` and `off=` run-line fields, the `-BotProfile` error text, the `-FormulatedOff` warning, the new results table); ARCHITECTURE (`sim2a4_test.gd`, `parse_off`, `off_label`, the removal guard); CHANGELOG.
+- SIM2a-4 (ba86ffc..bbdcb09 plus qa): README "Formulated bot" (the `route=` and `off=` run-line fields, the `-BotProfile` error text, the `-FormulatedOff` warning, the new results table; that the wrapper exits 1 on the `-FormulatedOff` warning; the ps1 header comment is qa-noted as missing `-FormulatedOff`, a code comment for gameplay-dev later); ARCHITECTURE (`sim2a4_test.gd`, `sim2a4_qa_test.gd`, `parse_off`, `off_label`, `is_last_of_slot`, `is_protected_starter`); CHANGELOG. Range ba86ffc..f6c9db1.
 
 ## Known issues
 - **The game closed on its own during the director's run (2026-11-20, about 21:44), while gameplay-dev's SIM2a-3 sims ran from the same working tree.** The cause is unknown. Suspects: (a) the headless sims rewriting the shared `.godot` import cache while the game loads a room; (b) machine load from many parallel sims; (c) a real crash. The evidence is gone: the sims share `user://logs`, and Godot keeps only 5 log files, so his log rotated out. Fixes to schedule (a TL follow-up): the sims log to their own folder or disable file logging, and the director plays from a separate worktree of the tag (`git worktree add ../cr-play <tag>`) or while no agent runs.

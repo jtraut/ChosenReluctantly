@@ -2,7 +2,24 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
-## 2026-11-21 (SIM2a, formulated bot)
+## 2026-11-21 (SIM2a, formulated bot; SIM2a-4)
+
+### Slice SIM2a-4, removal guard for the formulated bot (bot tooling only, no game data or game code changes)
+
+Commit range ba86ffc..f6c9db1. Code ba86ffc, 598b26e, bbdcb09. qa f6c9db1 (PASS, `docs/reviews/2026-11-21-sim2a4-qa.md`; suite 2913 expected: 2911 measured + 2 qa cases).
+
+**Fixed**
+- The formulated removal scorer stripped Wizard starters (the SIM2a cause of the Wizard drop). `src/debug/FormulatedShop.gd` now has a guard, with starters read from `CharacterDatabase.starting_deck` (no ids): the last non-curse card of a slot type never goes; a starter scores the better of the current deck and the starting deck's profile; a card cannot go while the deck holds no more copies than the starting deck; merchant `buy_removal` gives no margin when nothing can go. Helpers `is_last_of_slot`, `is_protected_starter`; `FormulatedBot.parse_off`, `off_label` (ba86ffc, 598b26e, bbdcb09).
+
+**Changed**
+- `FORMULATED RUN` gains `route=` and `off=`; `tools/pool_formulated.ps1` groups by profile, class, preset, route and off (older logs pool as `-`). The bad-profile error text now says `-BotProfile`.
+- `-FormulatedOff` without `-BotProfile formulated` now warns and is ignored; `tools/run_wave_sim.ps1` fails on any WARNING line, so it exits 1 in that case.
+- Tests: `tests/unit/sim2a4_test.gd` (9 cases), `sim2a4_qa_test.gd` (2, f6c9db1).
+
+**Results** (wins of 36; Rogue human / Wizard human / Rogue off / Wizard off), old -> new
+- formulated 23/14/35/33 -> 22/25/36/34; `-Route first` 25/18/36/34 -> 24/17/-/31; shop off (human) 23/21 -> 26/25; Wizard removals off 24 -> 24. Flag off unchanged (hashes, SIM1 Rogue 25 / Wizard 19).
+
+### Slice SIM2a (below)
 
 ### Slice SIM2a, build-aware "formulated" bot (bot tooling only, no game data changes)
 

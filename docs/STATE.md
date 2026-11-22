@@ -3,17 +3,16 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-21 (SIM2a-4 qa PASS; docs pass next). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-21 (SIM2a-4 closed; waiting for the director's BD3b play). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **SIM2a-4 qa PASS** (f6c9db1). Nothing half done; the repo runs.
+- **Nothing in progress. SIM2a and SIM2a-4 are closed** (docs e1788ff). The repo runs. The `safe to chain` queue is empty.
 
 ## Exact next step
-1. **tech-writer: SIM2a-4 docs pass** (handoff in "Pending for the next docs pass").
-2. game-lead closes SIM2a-4. The `safe to chain` queue is then empty: stop and wait for the director.
-3. BAL1 and BD3c wait for the director's play of BD3b.
+1. **Wait for the director's BD3b play** ("The one ask" in OPEN_ITEMS). It unblocks BAL1 and BD3c (both `needs your play first`; their briefs are written after the milestone playtest review).
+2. When he has played: game-lead records his notes, then writes the BAL1 brief. Inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot).
 
-**Next role:** tech-writer (SIM2a-4 docs pass).
+**Next role:** none until the director plays (game-lead then).
 
 ## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21)
 - Suite 2913 expected (2911 measured at SIM2a-4 qa plus its 2 cases; f6c9db1), 0 failures; a full run takes about 27 minutes, so run it in the background.
@@ -25,10 +24,11 @@ Last updated: 2026-11-21 (SIM2a-4 qa PASS; docs pass next). Latest tag `playtest
 - Late shares for a Bleed Rogue: Bleed 12.5%, Fire 22.8%, Burn 10.0%. Relic Burn share 21.1% (4 of 19). Thesis Wizard late Fire share about 26%.
 
 ## Pending for the next docs pass
-- SIM2a-4 (ba86ffc..bbdcb09 plus qa): README "Formulated bot" (the `route=` and `off=` run-line fields, the `-BotProfile` error text, the `-FormulatedOff` warning, the new results table; that the wrapper exits 1 on the `-FormulatedOff` warning; the ps1 header comment is qa-noted as missing `-FormulatedOff`, a code comment for gameplay-dev later); ARCHITECTURE (`sim2a4_test.gd`, `sim2a4_qa_test.gd`, `parse_off`, `off_label`, `is_last_of_slot`, `is_protected_starter`); CHANGELOG. Range ba86ffc..f6c9db1.
+- None.
 
 ## Known issues
 - **The game closed on its own during the director's run (2026-11-20, about 21:44), while gameplay-dev's SIM2a-3 sims ran from the same working tree.** The cause is unknown. Suspects: (a) the headless sims rewriting the shared `.godot` import cache while the game loads a room; (b) machine load from many parallel sims; (c) a real crash. The evidence is gone: the sims share `user://logs`, and Godot keeps only 5 log files, so his log rotated out. Fixes to schedule (a TL follow-up): the sims log to their own folder or disable file logging, and the director plays from a separate worktree of the tag (`git worktree add ../cr-play <tag>`) or while no agent runs.
+- Tool header comments in `tools/run_wave_sim.ps1` and `tools/pool_formulated.ps1` don't mention `-FormulatedOff` or the `route=`/`off=` fields (qa and tech-writer, SIM2a-4); fix in the next gameplay-dev tooling sitting.
 - Capture tooling gaps (UX1b playtest 2ae2d92), for a TL follow-up: the `act_transition` preset stalls on the boss relic screen (`relic_skip+skip` never advances; `relic:<id>+skip` does); there is no starting-HP flag (to shoot the act heal line hurt); there is no timed key press during a capture (to prove the map beat skip); `-AtBossAttack` takes `smash`/`slam`, not `ground_pound`.
 - Next ux polish: a "now +N" readout for Performance Review (HP1); the Rogue's pink-red hit flash briefly reads as an enemy colour; a 6+ pile's HP bars and pips overlap each other (UX1b playtest).
 - **Watch mode at `-Scale 4` makes the bot much weaker than headless** (off preset 2/4 wins in watch vs 35/36 and 31/36 in SIM1; human Wizard 0/3 vs 20/36). Don't read difficulty from fast watch runs: the next milestone playtest uses `-Scale 1-2` or headless SIM for difficulty. Fix the fidelity if it's cheap (TL2 follow-up).

@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-21 (SIM2a closed; latest tag `playtest-2026-11-20-BD3b`)
-**Status:** **Milestone 3 is done; UX1a, UX1b, HP1 and SIM2a (a bot that drafts toward a build) are done.** SIM2a found the bot itself loses by removing the Wizard's starting cards; SIM2a-4 fixes the bot (tooling, no game change). BAL1 and the Battlemage rework (BD3c) wait for you to play BD3b: see "The one ask" below.
+Last updated: 2026-11-21 (SIM2a-4 closed; latest tag `playtest-2026-11-20-BD3b`)
+**Status:** **Milestone 3 is done; UX1a, UX1b, HP1, SIM2a and SIM2a-4 are done.** The build-aware test bot now plays sensibly (human-like Wizard 25/36, Rogue 22/36). Nothing else can move without you: BAL1 and the Battlemage rework (BD3c) wait for you to play BD3b. See "The one ask" below.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 

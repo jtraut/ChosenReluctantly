@@ -3116,3 +3116,9 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
 - **Watch nit wording lives in `tools/watch_text.gd`**, keeping `src/debug/WatchMode.gd` untouched. "HP at end" is fixed only for losses; a timeout or soft-lock still shows room-start HP (minor, left).
 - Any new `OS.execute` Godot spawn in tests must pass `ToolLog.args(...)`; qa greps for it.
 
+## 2026-11-23 - TL3b calls (gameplay-dev d6122ba, recorded by game-lead)
+- **`act_transition` fixed in the preset, not the game:** the boss relic screen is mandatory by design, so the preset takes `burnout_syndrome` (seed 1's offer). Rejected: adding a skip to the boss relic screen.
+- **Debug-only hooks under `src/`** (`--run-hp`, `any_key`): HP lives in RunState and the map beat reads a raw key, so neither is reachable from `tools/`. `--run-hp` is in RunSave's debug-flag prefixes and never touches the save.
+- **`any_key` sends F13**, bound to nothing, so it can't fire a combat action.
+- **Watch fidelity left unfixed in TL3** (game-lead): the cause is unconfirmed and the fix touches the hashed sim loop. It stays a Known issue, not a scheduled slice, until a milestone playtest needs fast watch runs. Rejected: a TL4 now (not blocking; the playtest uses `-Scale 1-2`).
+

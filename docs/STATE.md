@@ -6,16 +6,17 @@
 Last updated: 2026-11-23 (TL3 briefed; TL3a with gameplay-dev; still waiting for the director's BD3b play). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **TL3a built** (gameplay-dev 293572a..bfeec3a; no `Remaining:`). Tool runs log to `logs/sim/` via `--log-file`; watch log nits fixed; header comments done. Hashes, SIM1 and formulated rows reproduce exactly; **qa PASS a5201fa** (suite 2922 / 213, 0 failures). **TL3b next (gameplay-dev).** After pulling, run `godot --headless --path . --import` once (new `class_name` scripts `WatchText`, `ToolLog`). The repo runs.
+- **TL3b built** (gameplay-dev d6122ba; no `Remaining:`). Four capture fixes proven by real captures; `--run-hp=N`, `--press=<t>:any_key`, `-AtBossAttack` label names (`tools/boss_attack.ps1`), presets `act_transition_hurt` and `map_beat_skip`. Debug-only hooks in `src/debug/`, `MapLaunch.gd`, `RunController.gd`, `RunSave.gd`. Hashes and SIM1 human Rogue 25/36 unchanged; suite 2933. **qa next.**
+- **TL3a built** (gameplay-dev 293572a..bfeec3a; no `Remaining:`). Tool runs log to `logs/sim/` via `--log-file`; watch log nits fixed; header comments done. Hashes, SIM1 and formulated rows reproduce exactly; **qa PASS a5201fa** (suite 2922 / 213, 0 failures). TL3b built next. After pulling, run `godot --headless --path . --import` once (new `class_name` scripts `WatchText`, `ToolLog`). The repo runs.
 
 ## Exact next step
-1. gameplay-dev builds TL3b (capture gaps; ROADMAP "TL3"). Then (gameplay-dev), qa, a playtester smoke of the fixed capture presets, one tech-writer docs pass, close.
+1. qa reviews TL3b (d6122ba). Then (gameplay-dev), qa, a playtester smoke of the fixed capture presets, one tech-writer docs pass, close.
 2. In parallel, waiting: the director's BD3b play ("The one ask" in OPEN_ITEMS). It unblocks BAL1 and BD3c (both `needs your play first`). When he has played, game-lead records his notes and writes the BAL1 brief. Inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot).
 
-**Next role:** gameplay-dev (TL3b).
+**Next role:** qa (TL3b).
 
 ## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21; suite from TL3a qa a5201fa)
-- Suite 2922 in 213 suites (TL3a qa a5201fa), 0 failures; a full run takes about 27 minutes, so run it in the background.
+- Suite 2933 expected (2922 at TL3a qa a5201fa plus TL3b's 11), 0 failures; a full run takes about 27 minutes, so run it in the background.
 - Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 (unchanged; act 1 untouched).
 - Formulated (`-BotProfile formulated`, pooled 36, SIM2a-4 ba86ffc..bbdcb09): human Rogue 22, Wizard 25; off 36, 34. `-Route first` human 24 / 17; shop off human 26 / 25; Wizard removals off 24.
 - SIM1 `-Route first`: human Rogue 25/36 (over its 21 ceiling, waived for HP1, to BAL1), Wizard 19/36 (re-measured 87b944b and 1c5250f); off 34/36, 34/36. Floors 12 / 10 / 31 / 30, ceiling 21 / 20 (MAP.md §11.4). SIM1's human preset presses slots at random (no PlanPolicy).
@@ -25,13 +26,13 @@ Last updated: 2026-11-23 (TL3 briefed; TL3a with gameplay-dev; still waiting for
 
 ## Pending for the next docs pass
 - TL3a (293572a..bfeec3a): README line 326 `NN-crowded-fight.png`; runners log to `logs\sim\<name>-<time>-<pid>.log`, never `user://logs`; BOSS/CROWD lines show run-wide and act room; "HP at end" current on a loss; bare `--watch-shots` exits 2; no new flags; new Godot-spawning `OS.execute` in tests must pass `ToolLog.args`; suite 2922 in 213 suites. CHANGELOG entry. qa nits (a5201fa): `logs/sim` keeps 60 + the new file; child logs aren't pruned (fixed names, bounded); parallel children of one test share a log name.
+- TL3b (d6122ba): README for `--run-hp=N` (first run only, whole number from 1, capped to max HP, bad value exits 2; e.g. `-- --run-seed=1 --run-room=10 --run-hp=8`); `--press=<t>:any_key` (raw F13 tap for "any key" screens, no hold time); `-AtBossAttack` takes id or label (`ground_pound` = `slam`), bad name exits 2 and lists valid ones; presets `act_transition_hurt`, `map_beat_skip`; `act_transition` now takes the boss relic (no skip there); new `tools/boss_attack.ps1`. CHANGELOG entry.
 
 ## Known issues
 - **The game closed on its own during the director's run (2026-11-20, about 21:44), while gameplay-dev's SIM2a-3 sims ran from the same working tree.** The cause is unknown. Suspects: (a) the headless sims rewriting the shared `.godot` import cache while the game loads a room; (b) machine load from many parallel sims; (c) a real crash. The evidence is gone: the sims share `user://logs`, and Godot keeps only 5 log files, so his log rotated out. Fixes to schedule (a TL follow-up): the sims log to their own folder or disable file logging, and the director plays from a separate worktree of the tag (`git worktree add ../cr-play <tag>`) or while no agent runs.
 - Tool header comments in `tools/run_wave_sim.ps1` and `tools/pool_formulated.ps1` don't mention `-FormulatedOff` or the `route=`/`off=` fields (qa and tech-writer, SIM2a-4); fix in the next gameplay-dev tooling sitting.
-- Capture tooling gaps (UX1b playtest 2ae2d92), for a TL follow-up: the `act_transition` preset stalls on the boss relic screen (`relic_skip+skip` never advances; `relic:<id>+skip` does); there is no starting-HP flag (to shoot the act heal line hurt); there is no timed key press during a capture (to prove the map beat skip); `-AtBossAttack` takes `smash`/`slam`, not `ground_pound`.
 - Next ux polish: a "now +N" readout for Performance Review (HP1); the Rogue's pink-red hit flash briefly reads as an enemy colour; a 6+ pile's HP bars and pips overlap each other (UX1b playtest).
-- **Watch mode at `-Scale 4` makes the bot much weaker than headless** (off preset 2/4 wins in watch vs 35/36 and 31/36 in SIM1; human Wizard 0/3 vs 20/36). Don't read difficulty from fast watch runs: the next milestone playtest uses `-Scale 1-2` or headless SIM for difficulty. Fix the fidelity if it's cheap (TL2 follow-up).
+- **Watch mode at `-Scale 4` makes the bot much weaker than headless** (off preset 2/4 watched vs 35/36 SIM1). TL3b finding (d6122ba): not reproduced headless at `-Scale 4` (4/4). Likely cause, unconfirmed: the windowed bot decides once per rendered frame (`tools/wave_sim.gd` `await process_frame`), so at scale 4 it reacts at about 15 Hz of game time. Next: a windowed A/B with vsync off; fix about 0.5-1 sitting (decision step on physics ticks, or a windowed-only tick), with a hash re-check. Until then, judge difficulty at `-Scale 1-2` or headless.
 - TL2 watch log nits (qa d2218fb): a bare `--watch-shots` is ignored; "HP at end" is stale on a loss; CROWD/BOSS lines use act-local room numbers; `crowded-fight.png` is overwritten. Fix when convenient.
 - In `docs/playtests/img/ux1b/crowd-1152x648_0.png` an enemy overlaps the top edge of the bottom-right card strip (camera framing or card layering). Not fixed in UX1b; a later ux polish item.
 - **BAL1: the SIM1 human Rogue is 25/36 after HP1, over its 21 ceiling** (waived for HP1, DECISIONS "HP1 build triage"). Thin margins to carry into BAL1: SIM1 human Wizard exactly at its ceiling (20/36), off Wizard 1 above its floor (31/30), Wizard `relic` median 14.0, W-B removal pain +22% to +28%.

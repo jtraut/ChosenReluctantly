@@ -1,5 +1,5 @@
 # Windowed screenshot capture of the real game (needs a renderer; headless cannot capture).
-# Usage: powershell -File tools\capture_screenshot.ps1 [-Preset reward_screen] [-After "3.0,5.0"] [-Out screenshots\shot.png] [-Scenario hp_bars] [-Resolution 1920x1080] [-TrueSize 2560x1440] [-Extra "--run-seed=7"] [-Class wizard] [-Actions "0.5:dodge"] [-AtBossAttack volley]
+# Usage: powershell -File tools\capture_screenshot.ps1 [-Preset reward_screen] [-After "3.0,5.0"] [-Out screenshots\shot.png] [-Scenario hp_bars] [-Resolution 1920x1080] [-TrueSize 2560x1440] [-Extra "--run-seed=7"] [-Class wizard] [-Actions "0.5:dodge"] [-AtBossAttack volley|ground_pound]
 # A normal launch is a run (RunMain): use -Scenario "" to capture it. With a scenario you get the endless arena.
 # Resolves Godot like tools\run_tests.ps1 (GODOT_BIN, else godot_console/godot on PATH, preferring *_console.exe).
 param(
@@ -16,6 +16,7 @@ param(
 )
 
 . "$PSScriptRoot/sim_log.ps1"
+. "$PSScriptRoot/boss_attack.ps1"
 $root = Split-Path -Parent $PSScriptRoot
 
 $godot = $env:GODOT_BIN
@@ -50,6 +51,16 @@ if ($Preset) {
     if (-not $PSBoundParameters.ContainsKey("Actions") -and $entry.actions) { $Actions = [string]$entry.actions }
     if (-not $PSBoundParameters.ContainsKey("Extra") -and $entry.extra) { $Extra = @($entry.extra) }
     if (-not $PSBoundParameters.ContainsKey("Out")) { $Out = "screenshots\$Preset.png" }
+}
+# TL3b: -AtBossAttack takes an attack id from data/bosses.json (smash, slam, volley, ...) or the attack's label as a name (ground_pound for "Ground pound",
+# which is the slam). A bad name exits 2 and lists the valid ones, instead of the game refusing the launch after the window opens.
+if ($AtBossAttack) {
+    $resolved = Resolve-BossAttack -Name $AtBossAttack -BossesFile (Join-Path $root "data/bosses.json")
+    if (-not $resolved.Id) {
+        Write-Error ("Unknown -AtBossAttack '{0}'. Valid: {1}" -f $AtBossAttack, ($resolved.Valid -join ", "))
+        exit 2
+    }
+    $AtBossAttack = $resolved.Id
 }
 if (-not [System.IO.Path]::IsPathRooted($Out)) { $Out = Join-Path $root $Out }
 $userArgs = @("--screenshot-after=$After", "--screenshot-out=$Out")

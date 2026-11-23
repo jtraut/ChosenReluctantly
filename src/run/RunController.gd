@@ -63,6 +63,8 @@ var _launch_node: int = -1
 ## DF1-A: `--merchant` was given (the run opens on the merchant when no room or node was named).
 var _launch_merchant: bool = false
 var _launch_gold: int = -1
+## `--run-hp=N` (TL3b): the first run starts with this much HP (-1 = full).
+var _launch_hp: int = -1
 var _launch_clear_after: float = -1.0
 var _prepared: bool = false
 var _launch_ok: bool = true
@@ -89,7 +91,7 @@ func begin(main: Main) -> void:
 	var player: Player = main.player
 	if not _state.has_hp():
 		_state.max_hp = player.health.max_health + RunMaxHp.pending_total(_state)  # HP1: boosts held before the run had HP (a debug --relics start)
-		_state.hp = _state.max_hp
+		_state.hp = _state.max_hp if not (_fresh_launch and _launch_hp > 0) else minf(float(_launch_hp), _state.max_hp)
 		player.health.max_health = _state.max_hp
 		player.health.current_health = _state.hp
 		player.health.health_changed.emit(player.health.current_health, player.health.max_health)
@@ -432,6 +434,13 @@ func _apply_launch_args(tree: SceneTree) -> bool:
 		return false
 	_launch_node = int(run_launch["node"])
 	_launch_gold = int(run_launch["gold"])
+	var hp_launch: Dictionary = MapLaunch.resolve_hp(args)
+	if not (hp_launch["errors"] as Array[String]).is_empty():
+		for problem: String in (hp_launch["errors"] as Array[String]):
+			printerr("Launch refused: " + problem)
+		tree.quit(2)
+		return false
+	_launch_hp = int(hp_launch["hp"])
 	if int(map_launch["override"]) != MapLaunch.OVERRIDE_NONE:
 		RunSession.map_override = int(map_launch["override"])
 	var room_problem: String = MapLaunch.run_room_problem(args, RunSession.acts_total() * int(MapConfig.get_config().get("rooms", 10)))

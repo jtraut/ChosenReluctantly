@@ -101,3 +101,25 @@ static func resolve_run_args(args: PackedStringArray) -> Dictionary:
 		node = -1
 		gold = -1
 	return {"node": node, "gold": gold, "errors": errors}
+
+
+## `--run-hp=N` (TL3b capture flag): the first run starts with N HP instead of full, so a capture can show a hurt state (the act heal line). A whole number from 1;
+## it may be given once; it is capped to max HP when applied. {hp: int (-1 = not given), errors: Array[String]}. Any error refuses the launch (exit 2).
+static func resolve_hp(args: PackedStringArray) -> Dictionary:
+	var errors: Array[String] = []
+	var hp: int = -1
+	var seen: int = 0
+	for arg: String in args:
+		if arg != "--run-hp" and not arg.begins_with("--run-hp="):
+			continue
+		seen += 1
+		var value: String = arg.substr(9) if arg.begins_with("--run-hp=") else ""
+		if not value.is_valid_int() or value.to_int() < 1:
+			errors.append("--run-hp needs a whole number from 1, as --run-hp=8 (got '%s')" % value)
+		else:
+			hp = value.to_int()
+	if seen > 1:
+		errors.append("--run-hp was given %d times; give it once" % seen)
+	if not errors.is_empty():
+		hp = -1
+	return {"hp": hp, "errors": errors}

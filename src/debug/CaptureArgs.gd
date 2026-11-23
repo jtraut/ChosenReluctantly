@@ -14,6 +14,8 @@ const DEFAULT_OUT := "user://screenshot.png"
 const DEFAULT_INTERVAL := 1.0
 ## --press pseudo-actions (not InputMap names): aim at the nearest live enemy, and stop.
 const AIM_ACTIONS: Array[String] = ["aim_nearest", "aim_off"]
+## TL3b: `<t>:any_key` taps a raw key (not an InputMap action), for screens that wait on "any key" (the map beat).
+const KEY_ACTION := "any_key"
 ## Longest hold one --press step may ask for, seconds.
 const MAX_HOLD := 120.0
 
@@ -91,7 +93,7 @@ static func parse_press_step(part: String) -> Dictionary:
 	var action: String = fields[1]
 	if not when.is_valid_float() or when.to_float() < 0.0 or action == "":
 		return {}
-	var is_aim: bool = AIM_ACTIONS.has(action)
+	var is_aim: bool = AIM_ACTIONS.has(action) or action == KEY_ACTION
 	if not is_aim and not InputMap.has_action(action):
 		return {}
 	var hold: float = 0.0

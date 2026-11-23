@@ -28,7 +28,10 @@ func _ready() -> void:
 ## A scene swap (or quit) must not leave a scripted hold stuck down: release every pending hold.
 func _exit_tree() -> void:
 	for release: Dictionary in _releases:
-		_send(release["action"], false)
+		if release["action"] == &"any_key":
+			_send_key(false)
+		else:
+			_send(release["action"], false)
 	_releases.clear()
 
 
@@ -40,7 +43,10 @@ func _process(delta: float) -> void:
 	var pending: Array[Dictionary] = []
 	for release: Dictionary in _releases:
 		if _elapsed >= float(release["at"]):
-			_send(release["action"], false)
+			if release["action"] == &"any_key":
+				_send_key(false)
+			else:
+				_send(release["action"], false)
 		else:
 			pending.append(release)
 	_releases = pending
@@ -59,6 +65,11 @@ func _run_step(step: Dictionary) -> void:
 		if player != null:
 			player.aim_point_override = null
 		print("ScriptedInput: t=%.2f aim_off" % _elapsed)
+		return
+	if action == &"any_key":
+		_send_key(true)
+		print("ScriptedInput: t=%.2f press any_key" % _elapsed)
+		_releases.append({"at": _elapsed + TAP_SECONDS, "action": action})
 		return
 	var hold: float = float(step.get("hold", 0.0))
 	_send(action, true)
@@ -97,6 +108,15 @@ static func nearest_point(origin: Vector3, points: Array[Vector3]) -> Variant:
 			best_distance = distance
 			best = point
 	return best
+
+
+## A raw key event (TL3b), the way a keyboard press arrives: F13 is bound to nothing, so only an "any key" wait reacts.
+static func _send_key(pressed: bool) -> void:
+	var event := InputEventKey.new()
+	event.keycode = KEY_F13
+	event.physical_keycode = KEY_F13
+	event.pressed = pressed
+	Input.parse_input_event(event)
 
 
 static func _send(action: StringName, pressed: bool) -> void:

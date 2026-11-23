@@ -263,7 +263,7 @@
         ]
     },
     "act_transition": {
-        "description": "MAP3 ux: the act transition screen. The act 1 mini-boss (room 10) is cleared at 1 s, the relic and the card offers are skipped, and the Act 2 screen opens over the new map. Run mode, seed 1.",
+        "description": "MAP3 ux: the act transition screen. The act 1 mini-boss (room 10) is cleared at 1 s, the boss relic is taken (Burnout Syndrome, which seed 1 offers; the boss relic screen has no skip, so relic_skip would stall there) and the card offer is skipped, and the Act 2 screen opens over the new map. Run mode, seed 1.",
         "class": "rogue",
         "scenario": "",
         "after": "6.0",
@@ -271,7 +271,33 @@
             "--run-seed=1",
             "--run-room=10",
             "--run-clear-after=1",
-            "--run-auto-choose=relic_skip+skip"
+            "--run-auto-choose=relic:burnout_syndrome+skip"
+        ]
+    },
+    "act_transition_hurt": {
+        "description": "TL3b: the act transition screen with the player hurt: the run starts at 8 HP (--run-hp=8), so the Act 2 screen shows the act heal line. Same route as act_transition.",
+        "class": "rogue",
+        "scenario": "",
+        "after": "6.0",
+        "extra": [
+            "--run-seed=1",
+            "--run-room=10",
+            "--run-hp=8",
+            "--run-clear-after=1",
+            "--run-auto-choose=relic:burnout_syndrome+skip"
+        ]
+    },
+    "map_beat_skip": {
+        "description": "TL3b: proves the map beat's key skip. Same run as map_mini_boss, but a key is tapped at 1.8 s (--press=1.8:any_key, just after the map arms at about 0.4 s in) and the shot is at 2.0 s, when the beat would still be showing; the fight screen should be up instead of the map.",
+        "class": "rogue",
+        "scenario": "",
+        "after": "2.0",
+        "actions": "1.8:any_key",
+        "extra": [
+            "--run-seed=1",
+            "--run-room=9",
+            "--run-clear-after=1",
+            "--run-auto-choose=skip"
         ]
     },
     "mini_boss_act2": {

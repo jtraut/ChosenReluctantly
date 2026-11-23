@@ -3111,3 +3111,8 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
 - **Scope note:** log isolation keeps evidence; it doesn't address the shared `.godot` import cache suspect. Playing from a separate worktree stays the mitigation.
 - **Rejected:** staying idle until he plays (wastes a free window on known, cheap debts); folding watch fidelity in as a required item (unknown size, not blocking).
 
+## 2026-11-23 - TL3a calls (gameplay-dev 293572a..bfeec3a, recorded by game-lead)
+- **Log isolation via `--log-file <repo>/logs/sim/<name>-<time>-<pid>.log`** on every tool runner and child-spawning test (Godot 4.7.2 `--help` lists it; works with `--headless`). Rejected: `debug/file_logging` off, which is project-wide (would silence the director's game) and leaves no per-run evidence.
+- **Watch nit wording lives in `tools/watch_text.gd`**, keeping `src/debug/WatchMode.gd` untouched. "HP at end" is fixed only for losses; a timeout or soft-lock still shows room-start HP (minor, left).
+- Any new `OS.execute` Godot spawn in tests must pass `ToolLog.args(...)`; qa greps for it.
+

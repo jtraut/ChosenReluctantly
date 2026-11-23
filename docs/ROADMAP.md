@@ -1840,6 +1840,7 @@ UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> TL3 (`safe to chain`, whil
     2. Header comments in `tools/run_wave_sim.ps1` and `tools/pool_formulated.ps1` cover `-FormulatedOff` and the `route=`/`off=` fields.
     3. The four TL2 watch log nits (qa d2218fb): a bare `--watch-shots` is honoured or rejected with a message; "HP at end" is current on a loss; CROWD/BOSS lines use run-wide room numbers (or show both); `crowded-fight.png` isn't overwritten (number it).
     - Then qa (short). No smoke check (no player-visible change; as TL2, DECISIONS "TL2 qa triage").
+    - **Built 2026-11-23:** gameplay-dev 293572a, 1dccbc5, bfeec3a. `tools/sim_log.ps1` (`Get-ToolLogArgs`) and `tools/tool_log.gd` (`ToolLog.args`) give every runner and child-spawning test `--log-file logs/sim/...` (newest 60 kept). Four parallel sims left `user://logs` unchanged by name (it sits at Godot's 5-file cap). Watch nits in `tools/watch_text.gd`; `src/` untouched. 10 tests (`tl3a_tooling_test.gd`). Hashes, SIM1 25/19/34/34 and formulated 22/25/36/34 reproduce. Suite 2921 measured + 1 (expect 2922). Next: qa.
   - **TL3b, capture gaps (gameplay-dev, one small sitting, after TL3a's qa PASS).** From the UX1b playtest (2ae2d92):
     1. The `act_transition` preset no longer stalls on the boss relic screen with `relic_skip+skip`.
     2. A starting-HP flag for captures (to shoot the act heal line while hurt).

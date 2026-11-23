@@ -71,3 +71,15 @@ func test_room_text_shows_run_wide_and_act_local() -> void:
 func test_numbered_crowd_shots_do_not_collide() -> void:
 	assert_str(WatchMode.shot_path("out", "rogue", 1, 4, "crowded-fight")).is_equal("out/rogue-seed1/04-crowded-fight.png")
 	assert_str(WatchMode.shot_path("out", "rogue", 1, 9, "crowded-fight")).is_not_equal(WatchMode.shot_path("out", "rogue", 1, 4, "crowded-fight"))
+
+
+func test_no_tool_script_has_a_stray_carriage_return() -> void:
+	var dir: DirAccess = DirAccess.open("res://tools")
+	for file_name: String in dir.get_files():
+		if not file_name.ends_with(".ps1"):
+			continue
+		var bytes: PackedByteArray = FileAccess.get_file_as_bytes("res://tools/" + file_name)
+		for i: int in range(bytes.size()):
+			if bytes[i] == 13 and (i + 1 >= bytes.size() or bytes[i + 1] != 10):
+				fail("%s has a carriage return not followed by a line feed at byte %d (a comment edit with a backslash-r?)" % [file_name, i])
+				break

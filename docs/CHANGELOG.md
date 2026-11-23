@@ -2,6 +2,28 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
+## 2026-11-23 (TL3, tooling hygiene: TL3a + TL3b)
+
+Tooling only: no game data, balance or game-rule changes, no tag, no new third-party assets. Commit range 307b8f5..9c5cbb7. Code: TL3a 293572a, 1dccbc5, bfeec3a; TL3b d6122ba. qa: TL3a a5201fa (`docs/reviews/2026-11-23-tl3a-qa.md`), TL3b 5bcb17a (`docs/reviews/2026-11-23-tl3b-qa.md`), both PASS; suite 2937 cases in 215 suites (as reported in the handoff; not re-run in this docs pass). Sim hashes and SIM1 unchanged (qa).
+
+**Added**
+- Log isolation (TL3a): every tool runner (`tools/sim_log.ps1`, `Get-ToolLogArgs`) and every Godot-spawning test (`tools/tool_log.gd`, `ToolLog.args`) passes `--log-file`, so engine logs go to `logs/sim/<name>-<time>-<pid>.log` (gitignored, newest 60 kept) and never to `user://logs`; a sim can no longer push a played game's log out of Godot's log window. New rule: a new Godot-spawning `OS.execute` in a test must pass `ToolLog.args` (293572a, 1dccbc5, bfeec3a).
+- `tools/watch_text.gd` (`WatchText`): the watch log's wording and argument rules (TL3a).
+- `--run-hp=N` (debug, first run only): start the run at N HP, whole number from 1, capped to max HP; a bad or repeated value exits 2. In the debug-flag list, so the save is untouched (d6122ba).
+- `--press=<t>:any_key`: a raw F13 tap for "any key" screens such as the map beat; no hold time (d6122ba).
+- `capture_screenshot.ps1 -AtBossAttack` accepts an attack id or its label name (`ground_pound` is `slam`); a bad name exits 2 and lists the valid names (new `tools/boss_attack.ps1`) (d6122ba).
+- Capture presets `act_transition_hurt` (`--run-hp=8`) and `map_beat_skip` (proves the map beat's key skip) (d6122ba).
+
+**Changed**
+- Watch log (TL3a): a bare `--watch-shots` exits 2; "HP at end" is the current HP on a loss; BOSS and CROWD lines show the run-wide room and the act room; crowd shots are numbered `NN-crowded-fight.png` instead of one overwritten `crowded-fight.png`.
+- Preset `act_transition` now takes the boss relic (Burnout Syndrome on seed 1), because that screen has no skip; the old `relic_skip` stalled there (d6122ba).
+
+**Docs and process**
+- Header comments of `tools/run_wave_sim.ps1` and `tools/pool_formulated.ps1` now cover `-FormulatedOff` and the `route=` / `off=` fields (TL3a).
+- After pulling, run `godot --headless --path . --import` once (new `class_name` scripts).
+- README: `--run-hp`, `any_key`, `-AtBossAttack` names, the two presets, the watch-log section and an "Engine logs" note. ARCHITECTURE: the TL3a and TL3b tool and debug-hook notes.
+- Known nits left for the next tooling sitting (qa 5bcb17a): `press any_key` logs twice when the tap swaps the scene; the `act_transition` test checks the preset string only; the `leveraged_dash` alias is unreachable; `-AtBossAttack` with no boss attack waits for the anchor timeout and can orphan the Godot child if the wrapper is killed. TL3a qa: child logs are not pruned (fixed names, bounded); parallel children of one test share a log name.
+
 ## 2026-11-21 (SIM2a, formulated bot; SIM2a-4)
 
 ### Slice SIM2a-4, removal guard for the formulated bot (bot tooling only, no game data or game code changes)

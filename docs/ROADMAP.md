@@ -1696,7 +1696,7 @@ un_offer_report.ps1`.
 - **Carried into the next milestone playtest:** the hand-scripted captures of `--deck=wizard-thesis`, `--deck=wizard-ward-battlemage` and the loadout screen, 1366x768, and a run with a build-aware bot.
 
 ### Run order
-UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> BAL1 and BD3c (`needs your play first`) -> the meta design pass (passive tree and the §8 account-wide layer; the D55 default points here) -> subclasses, Water, SIM2.
+UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> TL3 (`safe to chain`, while the director plays BD3b) -> BAL1 and BD3c (`needs your play first`) -> the meta design pass (passive tree and the §8 account-wide layer; the D55 default points here) -> subclasses, Water, SIM2.
 
 - [x] **UX1a, combat HUD readability. Done 2026-11-20** (ux 1abef8c; qa PASS e732d2e; playtest b06a637, no blocker; docs pass d7dc951; no tag, display only). Eyes 62-64 expired at this close, defaults kept. Original header: **UX1a, combat HUD readability (ux-designer, one sitting, well under 150 calls). `safe to chain`** (it changes no feel or balance; display only).
   - **Goal:** a crowded fight reads at a glance. The evidence is the shots `rogue-s3-crowded-fight.png`, `rogue-s3-act2-miniboss.png`, `rogue-s1off-final-boss.png` and `wizard-s1off-final-boss-half-hp.png`, plus STATE Known issues "Next ux polish".
@@ -1833,6 +1833,21 @@ UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> BAL1 and BD3c (`needs your
         - Wins of 36 (Rogue human / Wizard human / Rogue off / Wizard off): formulated 22 / **25** / 36 / 34 (was 23 / 14 / 35 / 33); `-Route first` 24 / 17 / - / 31; shop off 26 / 25; Wizard removals off 24 (reproduced). Acceptance met (Wizard 25 at least 21; Rogue 22 not below 22). Arcane Nova in 11 of 11 Wizard death decks. Leftover gold median 496-535.
       - **Closed 2026-11-21** (game-lead): qa PASS, docs pass e1788ff, no playtest (tooling).
       - **qa PASS 2026-11-21** (f6c9db1; `docs/reviews/2026-11-21-sim2a4-qa.md`). Suite 2911 measured, plus qa's 2 cases (expect 2913). No data or game code in the range; hashes, SIM1 and both acceptance rows reproduced exactly. qa strengthened the removal-pick test.
+- [ ] **TL3, tooling hygiene (game-lead, 2026-11-23; DECISIONS "TL3 brief"). `safe to chain`** (tools only; no game code or data). Runs while BAL1 and BD3c wait for the director's BD3b play. Two sittings, each well under 150 tool calls.
+  - **Shared acceptance (both sittings):** no file under `src/`, `scenes/` or `data/` changes, unless a capture fix needs a debug-only hook (then say why); the four hashes unchanged (3172486861 / 916264160 / 1317880580 / 3476063471); SIM1 `-Route first` (25 / 19 / 34 / 34) and the formulated rows (22 / 25 / 36 / 34) reproduce exactly; a test for each new flag or fix; suite 2913 plus the new cases, 0 failures (run the full suite in the background, about 27 minutes).
+  - **TL3a, sim logs and log nits (gameplay-dev, one small sitting).**
+    1. **Sim log isolation.** Headless sims and the test runner must stop writing into the shared `user://logs`, so a director's game log can't rotate out while agents run (the 2026-11-20 lost-evidence case). Confirm the mechanism against Godot 4.7.2 (`godot --help`, project settings): a per-run log file under the repo's gitignored `shots/` or a new gitignored folder, or file logging off for headless runs. Log the choice in the hand-back. Acceptance: running 4 sims in parallel adds no files to `user://logs` (count before and after); a normal `godot --path .` still logs there. **This keeps evidence; it does not fix the shared `.godot` import cache suspect.** Playing from a separate worktree stays the mitigation for that (OPEN_ITEMS "How to playtest").
+    2. Header comments in `tools/run_wave_sim.ps1` and `tools/pool_formulated.ps1` cover `-FormulatedOff` and the `route=`/`off=` fields.
+    3. The four TL2 watch log nits (qa d2218fb): a bare `--watch-shots` is honoured or rejected with a message; "HP at end" is current on a loss; CROWD/BOSS lines use run-wide room numbers (or show both); `crowded-fight.png` isn't overwritten (number it).
+    - Then qa (short). No smoke check (no player-visible change; as TL2, DECISIONS "TL2 qa triage").
+  - **TL3b, capture gaps (gameplay-dev, one small sitting, after TL3a's qa PASS).** From the UX1b playtest (2ae2d92):
+    1. The `act_transition` preset no longer stalls on the boss relic screen with `relic_skip+skip`.
+    2. A starting-HP flag for captures (to shoot the act heal line while hurt).
+    3. A timed key press during a capture (to prove the map beat skip).
+    4. `-AtBossAttack` accepts `ground_pound` (and lists the valid names on a bad one).
+    - **Optional, time-boxed (stop and report, don't fix if large):** why watch mode at `-Scale 4` plays much weaker than headless. A lead to check, not a known cause: physics ticks per second vs time scale starving the bot's decision cadence. Report the cause and a cost estimate; a fix is its own slice unless it's a few lines.
+    - Then qa, then a short playtester smoke of the fixed presets (they are the playtester's own tools).
+  - **Then:** one tech-writer docs pass for TL3a and TL3b (README lines for new flags, CHANGELOG), then close. No tag (tooling only).
 - [ ] **BAL1, deferred balance (first balance item after the Milestone 3 playtest). `needs your play first`.** The list is BD3b's "Deferred" (game-lead, 2026-11-18; DECISIONS "BD3b brief"). Brief written after the milestone playtest review.
 - [ ] **BD3c, melee Wizard: the Ward Battlemage rework (director, 2026-11-20, D54 = A; GDD §4a; BUILD_DEPTH W-D). `needs your play first`.**
   - **Why it waits:** the director plays W-D in the Milestone 3 playtest first. The brief is written after the milestone playtest review, alongside BAL1.

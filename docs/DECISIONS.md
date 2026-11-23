@@ -3104,3 +3104,10 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
 - **Starter copies are protected outright** (a card can't be removed while the deck holds no more copies of it than the starting deck). Added after the valuation-only guard gave the Wizard 17/36 with Arcane Nova still stripped from most death decks. [Raise the starter scores further: that's weight tuning, and the brief said not to tune.]
 - **Merchant card buys left as they were:** they add cards and never strip the class core, so they don't share the removal flaw.
 - **game-lead: the Rogue rows are read as noise** (formulated 22, shop off 26, `-Route first` 24, SD about 3); the Wizard `-Route first` 17 under formulated 25 means the formulated route now helps the Wizard. No further tuning before SIM2; the formulated bot is a reference for the milestone report, not a gate. [Chase the Rogue shop-off gap now: within noise at n=36.]
+
+## 2026-11-23 - TL3 brief (game-lead)
+- **Call:** with the `safe to chain` queue empty and BAL1 / BD3c waiting on the director's BD3b play, schedule TL3: the tooling follow-ups already routed to "a TL follow-up" in STATE Known issues (sim log isolation, tool header comments, TL2 watch log nits, capture gaps), split into two small sittings (TL3a, TL3b). Watch-mode fidelity at `-Scale 4` is only an optional, time-boxed diagnosis in TL3b, because the next milestone playtest already avoids `-Scale 4` and it is the item most likely to overrun a sitting.
+- **Why:** every item is tools-only, so none tunes a slice the director hasn't played. Log isolation matters before he plays: the 2026-11-20 closure lost its evidence to log rotation from parallel sims.
+- **Scope note:** log isolation keeps evidence; it doesn't address the shared `.godot` import cache suspect. Playing from a separate worktree stays the mitigation.
+- **Rejected:** staying idle until he plays (wastes a free window on known, cheap debts); folding watch fidelity in as a required item (unknown size, not blocking).
+

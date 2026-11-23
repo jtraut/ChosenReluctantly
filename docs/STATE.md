@@ -3,16 +3,16 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-21 (SIM2a-4 closed; waiting for the director's BD3b play). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-23 (TL3 briefed; TL3a with gameplay-dev; still waiting for the director's BD3b play). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **Nothing in progress. SIM2a and SIM2a-4 are closed** (docs e1788ff). The repo runs. The `safe to chain` queue is empty.
+- **TL3a, sim logs and log nits** (ROADMAP "TL3", `safe to chain`, tools only): briefed 2026-11-23, handed to gameplay-dev. Nothing committed for it yet. The repo runs.
 
 ## Exact next step
-1. **Wait for the director's BD3b play** ("The one ask" in OPEN_ITEMS). It unblocks BAL1 and BD3c (both `needs your play first`; their briefs are written after the milestone playtest review).
-2. When he has played: game-lead records his notes, then writes the BAL1 brief. Inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot).
+1. gameplay-dev builds TL3a (ROADMAP "TL3" brief). Then qa (short), then TL3b (gameplay-dev), qa, a playtester smoke of the fixed capture presets, one tech-writer docs pass, close.
+2. In parallel, waiting: the director's BD3b play ("The one ask" in OPEN_ITEMS). It unblocks BAL1 and BD3c (both `needs your play first`). When he has played, game-lead records his notes and writes the BAL1 brief. Inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot).
 
-**Next role:** none until the director plays (game-lead then).
+**Next role:** gameplay-dev (TL3a).
 
 ## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21)
 - Suite 2913 expected (2911 measured at SIM2a-4 qa plus its 2 cases; f6c9db1), 0 failures; a full run takes about 27 minutes, so run it in the background.
@@ -45,4 +45,4 @@ Last updated: 2026-11-21 (SIM2a-4 closed; waiting for the director's BD3b play).
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths. A role that stops with a `Remaining:` list gets a fresh agent, never a resumed one.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: eyes 65; the round 2 vision check; and, under "Later, optional", a second boss per act and Battlemage as a Wizard subclass.
+All director-facing items are in `docs/OPEN_ITEMS.md`: the BD3b play; the round 2 vision check; and, under "Later, optional", a second boss per act and Battlemage as a Wizard subclass.

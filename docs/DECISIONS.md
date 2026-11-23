@@ -3126,3 +3126,8 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
 - **No playtester smoke for TL3b**, though the brief listed one: qa ran all three presets for real and checked each PNG's content (Act 2 screen, the hurt heal line, the fight screen after the beat skip), which is what the smoke would check. Nothing player-visible changed. Same call as TL2 ("TL2 qa triage"). Rejected: a playtester session repeating qa's runs.
 - qa's four nits go to Known issues for the next tooling sitting; none blocks.
 
+
+## 2026-11-23 - Re-tag the director's play build (game-lead)
+- **Call:** the BD3b play ask points at `playtest-2026-11-20-BD3b` (492078f), which predates HP1 (dd4f802), UX1a and UX1b (106 commits behind main). BAL1 tunes HP1's relic numbers, so a play of the old tag wouldn't clear BAL1's `needs your play first` gate. Run one playtester smoke check on main (HP1 had none; TL3b added debug hooks under `src/`), then cut `playtest-2026-11-23-M4a` on main and repoint "The one ask" to it.
+- **Why:** cheaper than any new slice, and it must land before he starts playing the old tag.
+- **Rejected:** keeping the old tag (BAL1 would tune unplayed HP1 numbers); a ux polish slice first (would delay the tag; it can follow).

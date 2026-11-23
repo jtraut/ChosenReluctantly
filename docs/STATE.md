@@ -6,13 +6,14 @@
 Last updated: 2026-11-23 (TL3 closed; waiting for the director's BD3b play). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **Nothing in progress. TL3 is closed** (docs d4b6a97). The repo runs. The `safe to chain` queue is empty. After pulling, run `godot --headless --path . --import` once (new `class_name` scripts).
+- **Re-tagging the director's play build** (DECISIONS "Re-tag the director's play build"). `playtest-2026-11-20-BD3b` lacks HP1, UX1a and UX1b, so a playtester smoke check runs on main, then game-lead tags `playtest-2026-11-23-M4a` and repoints "The one ask" in OPEN_ITEMS. The repo runs. After pulling, run `godot --headless --path . --import` once.
 
 ## Exact next step
-1. **Wait for the director's BD3b play** ("The one ask" in OPEN_ITEMS). It unblocks BAL1 and BD3c (both `needs your play first`).
-2. When he has played: game-lead records his notes, then writes the BAL1 brief. Inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot).
+1. playtester: smoke check on main (normal launch, an HP1 relic offered and applied, the Battlemage deck command, act transition). A blocker stops the tag.
+2. No blocker: game-lead tags main `playtest-2026-11-23-M4a`, updates OPEN_ITEMS "How to playtest" and "The one ask", commits.
+3. Then wait for the director's play; it unblocks BAL1 and BD3c (both `needs your play first`). BAL1 inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot), HP1's relic numbers.
 
-**Next role:** none until the director plays (game-lead then).
+**Next role:** playtester (smoke check), then game-lead.
 
 ## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21; suite from TL3b qa 5bcb17a)
 - Suite 2937 in 215 suites expected (2933 / 214 measured at TL3b qa 5bcb17a, plus its 4 cases), 0 failures; a full run takes about 27 minutes, so run it in the background.

@@ -143,7 +143,7 @@ func test_filter_with_everything_off_passes_aim_through() -> void:
 
 func _tool(args: PackedStringArray) -> Dictionary:
 	var output: Array = []
-	var full: PackedStringArray = ["--headless", "--fixed-fps", "60", "--path", ProjectSettings.globalize_path("res://")]
+	var full: PackedStringArray = ["--headless", "--fixed-fps", "60"] + ToolLog.args("sim1bot") + ["--path", ProjectSettings.globalize_path("res://")]
 	full.append_array(args)
 	var code: int = OS.execute(OS.get_executable_path(), full, output, true)
 	return {"code": code, "text": String(output[0]) if not output.is_empty() else ""}

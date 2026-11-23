@@ -7,6 +7,7 @@
 # process or receive its stdout, which silently made this script "pass" even
 # when a test failed. See docs/DECISIONS.md.
 
+. "$PSScriptRoot/sim_log.ps1"
 $root = Split-Path -Parent $PSScriptRoot
 
 $godot = $env:GODOT_BIN
@@ -33,7 +34,7 @@ if ($godot -notmatch "_console\.exe$") {
 
 Push-Location $root
 try {
-    & $godot --path . -s --remote-debug tcp://127.0.0.1:0 res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://tests -c
+    & $godot @(Get-ToolLogArgs "tests") --path . -s --remote-debug tcp://127.0.0.1:0 res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://tests -c
     exit $LASTEXITCODE
 } finally {
     Pop-Location

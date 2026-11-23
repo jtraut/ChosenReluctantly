@@ -3,6 +3,7 @@
 # Fails on a failed check OR any ERROR / SCRIPT ERROR / WARNING line in the engine output.
 param([int]$Cycles = 5, [string]$Class = "", [switch]$Map)
 
+. "$PSScriptRoot/sim_log.ps1"
 $root = Split-Path -Parent $PSScriptRoot
 $godot = $env:GODOT_BIN
 if (-not $godot) {
@@ -24,7 +25,7 @@ if ($Class) { $classArg = @("--class=$Class") }
 if ($Map) { $classArg += "--map" }  # MAP1: the run part walks the branching map; without it the soak pins the straight run
 Push-Location $root
 try {
-    $out = & $godot --headless --path . res://tools/ReloadCycle.tscn -- "--cycles=$Cycles" @classArg 2>&1 | Out-String
+    $out = & $godot --headless @(Get-ToolLogArgs "reload_cycle") --path . res://tools/ReloadCycle.tscn -- "--cycles=$Cycles" @classArg 2>&1 | Out-String
     $code = $LASTEXITCODE
     Write-Host $out
     $bad = ($out -split "`n") | Where-Object { $_ -cmatch '^\s*(SCRIPT )?ERROR:|^\s*WARNING:' }

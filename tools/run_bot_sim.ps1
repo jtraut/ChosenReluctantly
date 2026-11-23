@@ -14,6 +14,7 @@ param(
     [string]$BotPreset = ""
 )
 
+. "$PSScriptRoot/sim_log.ps1"
 $root = Split-Path -Parent $PSScriptRoot
 
 $godot = $env:GODOT_BIN
@@ -41,7 +42,7 @@ try {
     if ($Deck) { $extra += "--deck=$Deck" }
     if ($Swap) { $extra += "--swap=$Swap" }
     if ($BotPreset) { $extra += "--bot-preset=$BotPreset" }
-    $out = & $godot --headless --path . -s res://tools/bot_sim.gd -- @extra 2>&1 | Out-String
+    $out = & $godot --headless @(Get-ToolLogArgs "bot_sim") --path . -s res://tools/bot_sim.gd -- @extra 2>&1 | Out-String
     $code = $LASTEXITCODE
     Write-Host $out
     # qa (Slice 5): the sim used to print "Bot-sim OK" and exit 0 while the script had failed to compile

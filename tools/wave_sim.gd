@@ -182,6 +182,7 @@ var _watch_dir: String = ""
 var _watch: WatchMode = null
 var _watch_crowd_best: int = 0
 var _watch_boss_shots: int = 0
+var _watch_run_room: int = 1  # TL3a: the run-wide room number of the room being played (the fight shots quote it)
 var _watch_last_kind: String = ""
 const WATCH_CROWD_MIN := 4
 const WATCH_BOSS_DELAY := 1.5
@@ -339,7 +340,7 @@ func _ready() -> void:
 			return
 		RunSession.selected_character = preset_class
 	var user_args: PackedStringArray = OS.get_cmdline_user_args()
-	if WatchMode.is_bare(user_args):
+	if WatchText.is_bare(user_args):
 		push_error("wave sim: --watch-shots needs a folder, as --watch-shots=<dir>")
 		get_tree().quit(2)
 		return
@@ -1090,6 +1091,7 @@ func _run_whole(run_seed: int) -> void:
 		controller.relic_triggered.connect(func(relic_id: String, _index: int, _event: String) -> void: _trigger_run[relic_id] = int(_trigger_run.get(relic_id, 0)) + 1)
 		_begin_run_room(run_seed, rooms[room_index])
 		_watch_boss_shots = 0
+		_watch_run_room = rooms_played + 1
 		if _watch != null:
 			_watch.say("ROOM %d of %d (%s, wave %s): start HP %.0f/%.0f" % [rooms_played + 1, rooms_in_run, String(rooms[room_index]["type"]), String(rooms[room_index]["wave_id"]), controller.state().hp, controller.state().max_hp])
 		var room_result: String = await _play_room(run_seed, controller, rooms[room_index])
@@ -1288,7 +1290,7 @@ func _watch_act_end(state: RunState, act_number: int, act_seconds: float) -> voi
 		_watch_last_kind = ""  # the map pick right after is its own shot
 
 
-## Mid-fight shots: the boss a moment after it appears and again at half HP, and the biggest crowd of the run (one file, overwritten by a bigger crowd).
+## Mid-fight shots: the boss a moment after it appears and again at half HP, and the biggest crowd so far (numbered shots; each bigger crowd adds one).
 func _watch_fight_shots(enemies: Array[Enemy], room_index: int) -> void:
 	var boss: Boss = null
 	for enemy: Enemy in enemies:
@@ -1298,16 +1300,16 @@ func _watch_fight_shots(enemies: Array[Enemy], room_index: int) -> void:
 		if _watch_boss_shots == 0 and _boss_start >= 0.0 and _sim_time - _boss_start >= WATCH_BOSS_DELAY:
 			_watch_boss_shots = 1
 			var path: String = await _watch.shoot(get_tree(), "boss-%s" % (boss.enemy_id if boss.enemy_id != "" else "boss"))
-			_watch.say("BOSS %s in room %d: HP %.0f of %.0f, player HP %.0f | SHOT %s" % [boss.enemy_id, room_index + 1, boss.health.current_health, boss.health.max_health, _player.health.current_health, path])
+			_watch.say("BOSS %s in %s: HP %.0f of %.0f, player HP %.0f | SHOT %s" % [boss.enemy_id, WatchText.room_text(_watch_run_room, room_index + 1), boss.health.current_health, boss.health.max_health, _player.health.current_health, path])
 		elif _watch_boss_shots == 1 and boss.health.current_health <= boss.health.max_health * 0.5:
 			_watch_boss_shots = 2
 			var half_path: String = await _watch.shoot(get_tree(), "boss-half-hp")
-			_watch.say("BOSS half HP at %.1f s into the fight, player HP %.0f | SHOT %s" % [_sim_time - _boss_start, _player.health.current_health, half_path])
+			_watch.say("BOSS half HP in %s at %.1f s into the fight, player HP %.0f | SHOT %s" % [WatchText.room_text(_watch_run_room, room_index + 1), _sim_time - _boss_start, _player.health.current_health, half_path])
 		return
 	if enemies.size() > _watch_crowd_best and enemies.size() >= WATCH_CROWD_MIN:
 		_watch_crowd_best = enemies.size()
-		var crowd_path: String = await _watch.shoot(get_tree(), "crowded-fight", "crowded-fight")
-		_watch.say("CROWD %d enemies alive in room %d (crowded-fight.png is overwritten by a bigger crowd): %s" % [enemies.size(), room_index + 1, crowd_path])
+		var crowd_path: String = await _watch.shoot(get_tree(), "crowded-fight")  # TL3a: numbered, so a bigger crowd later never overwrites this one
+		_watch.say("CROWD %d enemies alive in %s: %s" % [enemies.size(), WatchText.room_text(_watch_run_room, room_index + 1), crowd_path])
 
 
 ## The run is over (won, lost or stopped): let the real end screen come up, then shoot it.
@@ -1332,7 +1334,7 @@ func _watch_end(result: Dictionary) -> void:
 ## The text log's closing lines for one run: result, deck, relics, route.
 func _watch_run_summary(result: Dictionary) -> void:
 	var state: RunState = RunSession.current
-	_watch.say("RESULT seed %d: %s | rooms reached %d of %d | sim %.0f s | HP at end %s | gold %s" % [int(result["seed"]), String(result["outcome"]).to_upper(), int(result["rooms_reached"]), int(result["rooms_total"]), float(result["sim_s"]), str(result.get("hp_end", "?")), str(result.get("gold", "?"))])
+	_watch.say("RESULT seed %d: %s | rooms reached %d of %d | sim %.0f s | HP at end %s | gold %s" % [int(result["seed"]), String(result["outcome"]).to_upper(), int(result["rooms_reached"]), int(result["rooms_total"]), float(result["sim_s"]), WatchText.hp_at_end(String(result["outcome"]), float(result.get("hp_end", 0.0)), _player.health.current_health if is_instance_valid(_player) else 0.0, is_instance_valid(_player)), str(result.get("gold", "?"))])
 	_watch.say("RESULT room seconds %s | lowest HP in each room %s" % [str(result["room_s"]), str(result["room_min_hp"])])
 	if state != null:
 		_watch.say("RESULT relics %s | final deck (%d): %s" % [str(state.relics), state.deck.size(), WatchMode.deck_text(state.deck, _watch_card_names())])

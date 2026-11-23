@@ -15,6 +15,7 @@ param(
     [string[]]$Extra = @()   # more user args, e.g. "--run-room=10","--run-clear-after=2" (Milestone 3a run launch args)
 )
 
+. "$PSScriptRoot/sim_log.ps1"
 $root = Split-Path -Parent $PSScriptRoot
 
 $godot = $env:GODOT_BIN
@@ -63,9 +64,9 @@ Push-Location $root
 try {
     if ($TrueSize) {
         # tools/VpCapture.tscn hosts Main in a SubViewport of exactly this size; same scenario/capture args.
-        & $godot --path . res://tools/VpCapture.tscn -- "--size=$TrueSize" @userArgs
+        & $godot @(Get-ToolLogArgs "capture") --path . res://tools/VpCapture.tscn -- "--size=$TrueSize" @userArgs
     } else {
-        & $godot --path . --resolution $Resolution -- @userArgs
+        & $godot @(Get-ToolLogArgs "capture") --path . --resolution $Resolution -- @userArgs
     }
     exit $LASTEXITCODE
 } finally {

@@ -2,6 +2,7 @@
 # Usage: powershell -File tools\pool_formulated.ps1 log1.txt log2.txt ...   (e.g. the three seeds 1/13/25 x 12 runs of one class and preset)
 # A run line: FORMULATED RUN profile=formulated class=rogue preset=human seed=1 outcome=won act=3 room=15 deck=20 status=burn status_share=0.30 self=charge self_share=0.20 top_tag=Melee gold=45 spent=240 removals=2 relics=6
 # (SIM2a-4: route=formulated|first|... and off=none|shop|removal|removal+shop are in the line and the group name; older logs without them pool as '-'.)
+# (-FormulatedOff in toolsun_wave_sim.ps1, "shop,removal": hands those formulated decisions back to today's policy; off=none|shop|removal|removal+shop in the line says which, and route=<policy> is the -Route used. Each combination is its own group.)
 # (SIM2a-2: profile = formulated | plan | report. "report" is the flag-off row: the same behaviour as no flag, with the lines printed.) Groups by profile, class and preset.
 param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Logs)
 function Get-Median([double[]]$v) { if ($v.Count -eq 0) { return 0 }; $s = $v | Sort-Object; $m = [int][math]::Floor($s.Count / 2); if ($s.Count % 2 -eq 1) { return $s[$m] } else { return ($s[$m - 1] + $s[$m]) / 2 } }

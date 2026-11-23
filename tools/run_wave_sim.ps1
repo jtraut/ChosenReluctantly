@@ -18,17 +18,22 @@
 #   The run line and the ROUTE SUMMARY add gold spent, relics bought and removals.
 # -BotProfile formulated (needs -Run; --sim-profile=, SIM2a-1): the build-aware drafter. Card rewards and relic offers and give-ups are scored against the deck's archetype (src/debug/DraftPolicy.gd, read from card data, never ids) and combat casts with PlanPolicy (implies -Plan).
 #   Routing and merchants stay as -Route says. Prints a "FORMULATED RUN ..." line per run and a FORMULATED SUMMARY; tools\pool_formulated.ps1 pools several logs. Without the flag nothing changes.
+# -FormulatedOff "shop,removal" (needs -BotProfile formulated; --sim-formulated-off=, SIM2a-4): hands the named formulated decisions back to today's policy, to measure what each is worth. Parts: shop (the merchant buys), removal (every removal list); "shop,removal" = both. Unknown part = exit 2 with the valid names; ignored with a warning under another profile.
+#   The FORMULATED RUN / DEATH lines carry route=<-Route policy> and off=none|shop|removal|removal+shop (older logs have neither; tools\pool_formulated.ps1 pools them as '-' and groups by both).
+# Log files (TL3a): every run writes its engine log to logs\sim\wave_sim-<time>-<pid>.log (gitignored, newest 60 kept) and never to user://logs, so a sim cannot rotate out a played game's log (tools\sim_log.ps1).
 # -Run also prints the damage the player's side dealt by source (light, heavy, each slot type, each status, each relic) per run and over all runs with the fingerprint spread, relic pick/skip/swap counts, and BOSS TIMES with timed-out boss fights listed apart.
 # -StartRoom N (needs -Run): start every run at room N (10 = the boss) with the starter deck and full HP (--start-room).
 # -BotPreset <name> (SIM1; --bot-preset=): the human-like bot settings from data/bot_presets.json (off = the perfect bot, the default; human = the SIM1 preset). An unknown name exits nonzero with the valid names.
 #   -BotDelay <s>, -BotAimError <degrees>, -BotHesitation <s> (--bot-delay= etc.) override one number of the preset, for sweeps. Seeded: the same -Seed repeats exactly.
 # -Run plays whole seeded runs (Milestone 3a): -Seed is the first run seed, -Runs the number of runs, -RoomTimeout sim seconds before a room counts as a soft lock.
 # -Shots <dir> (needs -Run; --watch-shots=, TL2 watch-the-bot mode): runs WINDOWED (no --headless) and saves screenshots under <dir>\<class>-seed<N>\ plus a text log, log.txt, there: each map pick, reward / relic / shop / event / rest choice (the real
-#   screens), each act's end screen, the boss (and at half HP), the biggest crowd of the run (crowded-fight.png) and the end screen. Use -BotPreset human to watch a human-like bot. A relative <dir> is taken from the folder you run this in.
+#   screens), each act's end screen, the boss (and at half HP), each new biggest crowd of 4+ enemies (a numbered NN-crowded-fight.png, never overwritten) and the end screen. Use -BotPreset human to watch a human-like bot. A relative <dir> is taken from the folder you run this in.
+#   A bare --watch-shots (no folder) is refused with a message. CROWD and BOSS lines quote the run-wide room number and the act-local one; "HP at end" is the player's current HP on a loss.
 #   The same lines are printed as "WATCH ..." in the console. Watching at -Scale 1 is real time (a three-act run is about half an hour); -Scale 3 or 4 is faster (it drops --fixed-fps, so the run does not repeat exactly from its seed).
 # Fails on a failed check OR any ERROR / SCRIPT ERROR / WARNING line in the engine output.
 param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets, [int]$StartRoom = 0, [switch]$Plan, [string]$Relics = "", [int]$RelicCap = 0, [string]$Swap = "", [switch]$NoRelics, [string]$Route = "", [switch]$Map, [switch]$NoMap, [switch]$Merchant, [int]$Acts = 0, [string]$BotPreset = "", [double]$BotDelay = -1, [double]$BotAimError = -1, [double]$BotHesitation = -1, [string]$Shots = "", [string]$BotProfile = "", [string]$FormulatedOff = "")
 
+. "$PSScriptRoot/sim_log.ps1"
 $root = Split-Path -Parent $PSScriptRoot
 $godot = $env:GODOT_BIN
 if (-not $godot) {
@@ -88,7 +93,7 @@ try {
     $lines = New-Object System.Collections.Generic.List[string]
     $headless = @("--headless")
     if ($Shots) { $headless = @() }  # TL2: a window is needed to take screenshots
-    & $godot @headless @fixedFps --path . res://tools/WaveSim.tscn -- @extra 2>&1 | ForEach-Object { $text = "$_"; $lines.Add($text); Write-Host $text }
+    & $godot @headless @fixedFps @(Get-ToolLogArgs "wave_sim") --path . res://tools/WaveSim.tscn -- @extra 2>&1 | ForEach-Object { $text = "$_"; $lines.Add($text); Write-Host $text }
     $code = $LASTEXITCODE
     $out = $lines -join "`n"
     $bad = ($out -split "`n") | Where-Object { $_ -cmatch '^\s*(SCRIPT )?ERROR:|^\s*WARNING:' }

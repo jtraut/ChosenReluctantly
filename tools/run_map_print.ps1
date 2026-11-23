@@ -20,6 +20,7 @@ param(
     [string[]]$Set = @()
 )
 
+. "$PSScriptRoot/sim_log.ps1"
 $root = Split-Path -Parent $PSScriptRoot
 $godot = $env:GODOT_BIN
 if (-not $godot) {
@@ -46,7 +47,7 @@ try {
     if ($Act -gt 0) { $extra += "--act=$Act" }
     if ($Acts -gt 0) { $extra += "--acts=$Acts" }
     foreach ($s in $Set) { $extra += "--set=$s" }
-    & $godot --headless --path . -s res://tools/map_print.gd -- @extra
+    & $godot --headless @(Get-ToolLogArgs "map_print") --path . -s res://tools/map_print.gd -- @extra
     exit $LASTEXITCODE
 } finally {
     Pop-Location

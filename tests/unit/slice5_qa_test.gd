@@ -867,7 +867,7 @@ func test_new_scenario_flags_reject_bad_values_and_all_shipped_scenarios_validat
 ## autoloads, so only a child process catches this.
 func test_old_bot_sim_script_compiles_and_runs_without_script_errors() -> void:
 	var output: Array = []
-	var args: PackedStringArray = ["--headless", "--path", ProjectSettings.globalize_path("res://"), "-s", "res://tools/bot_sim.gd", "--", "--rooms=2"]
+	var args: PackedStringArray = ["--headless"] + ToolLog.args("slice5") + ["--path", ProjectSettings.globalize_path("res://"), "-s", "res://tools/bot_sim.gd", "--", "--rooms=2"]
 	var code: int = OS.execute(OS.get_executable_path(), args, output, true)
 	var text: String = "
 ".join(PackedStringArray(output))

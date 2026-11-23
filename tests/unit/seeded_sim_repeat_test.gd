@@ -5,7 +5,7 @@ extends GdUnitTestSuite
 
 func _run_tool(args: PackedStringArray) -> String:
 	var output: Array = []
-	var full: PackedStringArray = ["--headless", "--fixed-fps", "60", "--path", ProjectSettings.globalize_path("res://")]
+	var full: PackedStringArray = ["--headless", "--fixed-fps", "60"] + ToolLog.args("seeded") + ["--path", ProjectSettings.globalize_path("res://")]
 	full.append_array(args)
 	OS.execute(OS.get_executable_path(), full, output, true)
 	return String(output[0]) if not output.is_empty() else ""

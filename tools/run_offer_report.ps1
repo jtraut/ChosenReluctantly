@@ -5,6 +5,7 @@
 # -SkipStarter: force it true. -CountStarter: force it false. Only cards beyond the starting deck count toward the lean. -Matrix: the lean 0/0.1/0.25 x starter counted/not counted table.
 param([int]$Seeds = 1000, [int]$Offers = 18, [double]$Lean = -1, [string]$Class = "rogue", [switch]$SkipStarter, [switch]$CountStarter, [switch]$Matrix)
 
+. "$PSScriptRoot/sim_log.ps1"
 $root = Split-Path -Parent $PSScriptRoot
 $godot = $env:GODOT_BIN
 if (-not $godot) {
@@ -28,7 +29,7 @@ try {
     if ($SkipStarter) { $extra += "--skip-starter" }
     if ($CountStarter) { $extra += "--count-starter" }
     if ($Matrix) { $extra += "--matrix" }
-    & $godot --headless --path . -s res://tools/offer_report.gd -- @extra
+    & $godot --headless @(Get-ToolLogArgs "offer_report") --path . -s res://tools/offer_report.gd -- @extra
     exit $LASTEXITCODE
 } finally {
     Pop-Location

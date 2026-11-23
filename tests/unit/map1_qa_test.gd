@@ -310,7 +310,7 @@ func test_a_separate_process_prints_the_same_maps() -> void:
 	var project: String = ProjectSettings.globalize_path("res://")
 	for s in [3, 11, 777]:
 		var output: Array = []
-		var code: int = OS.execute(exe, ["--headless", "--path", project, "-s", "res://tools/map_print.gd", "--", "--seed=%d" % s, "--acts=1"], output, true)
+		var code: int = OS.execute(exe, ["--headless"] + ToolLog.args("map1") + ["--path", project, "-s", "res://tools/map_print.gd", "--", "--seed=%d" % s, "--acts=1"], output, true)
 		assert_int(code).is_equal(0)
 		var printed: String = "\n".join(output)
 		var map: Dictionary = MapGenerator.generate(s)

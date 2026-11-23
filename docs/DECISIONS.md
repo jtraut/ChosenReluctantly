@@ -3122,3 +3122,7 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
 - **`any_key` sends F13**, bound to nothing, so it can't fire a combat action.
 - **Watch fidelity left unfixed in TL3** (game-lead): the cause is unconfirmed and the fix touches the hashed sim loop. It stays a Known issue, not a scheduled slice, until a milestone playtest needs fast watch runs. Rejected: a TL4 now (not blocking; the playtest uses `-Scale 1-2`).
 
+## 2026-11-23 - TL3b qa triage (game-lead)
+- **No playtester smoke for TL3b**, though the brief listed one: qa ran all three presets for real and checked each PNG's content (Act 2 screen, the hurt heal line, the fight screen after the beat skip), which is what the smoke would check. Nothing player-visible changed. Same call as TL2 ("TL2 qa triage"). Rejected: a playtester session repeating qa's runs.
+- qa's four nits go to Known issues for the next tooling sitting; none blocks.
+

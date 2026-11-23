@@ -6,17 +6,17 @@
 Last updated: 2026-11-23 (TL3a qa PASS, TL3b built, qa next; still waiting for the director's BD3b play). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **TL3b built** (gameplay-dev d6122ba; no `Remaining:`). Four capture fixes proven by real captures; `--run-hp=N`, `--press=<t>:any_key`, `-AtBossAttack` label names (`tools/boss_attack.ps1`), presets `act_transition_hurt` and `map_beat_skip`. Debug-only hooks in `src/debug/`, `MapLaunch.gd`, `RunController.gd`, `RunSave.gd`. Hashes and SIM1 human Rogue 25/36 unchanged; suite 2933. **qa next.**
+- **TL3b built** (gameplay-dev d6122ba; no `Remaining:`). Four capture fixes proven by real captures; `--run-hp=N`, `--press=<t>:any_key`, `-AtBossAttack` label names (`tools/boss_attack.ps1`), presets `act_transition_hurt` and `map_beat_skip`. Debug-only hooks in `src/debug/`, `MapLaunch.gd`, `RunController.gd`, `RunSave.gd`. Hashes and SIM1 human Rogue 25/36 unchanged; **qa PASS 5bcb17a** (suite 2933 measured + qa's 4 = 2937 / 215). **Docs pass next (tech-writer, TL3a + TL3b).**
 - **TL3a built** (gameplay-dev 293572a..bfeec3a; no `Remaining:`). Tool runs log to `logs/sim/` via `--log-file`; watch log nits fixed; header comments done. Hashes, SIM1 and formulated rows reproduce exactly; **qa PASS a5201fa** (suite 2922 / 213, 0 failures). After pulling, run `godot --headless --path . --import` once (new `class_name` scripts `WatchText`, `ToolLog`). The repo runs.
 
 ## Exact next step
-1. qa reviews TL3b (d6122ba). Then a playtester smoke of the fixed capture presets, one tech-writer docs pass, close.
+1. tech-writer docs pass for TL3a and TL3b (the pending list below), then game-lead closes TL3. No playtester smoke (DECISIONS "TL3b qa triage").
 2. In parallel, waiting: the director's BD3b play ("The one ask" in OPEN_ITEMS). It unblocks BAL1 and BD3c (both `needs your play first`). When he has played, game-lead records his notes and writes the BAL1 brief. Inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot).
 
-**Next role:** qa (TL3b).
+**Next role:** tech-writer (TL3 docs pass).
 
 ## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21; suite from TL3a qa a5201fa)
-- Suite 2933 expected (2922 at TL3a qa a5201fa plus TL3b's 11), 0 failures; a full run takes about 27 minutes, so run it in the background.
+- Suite 2937 in 215 suites expected (2933 / 214 measured at TL3b qa 5bcb17a, plus its 4 cases), 0 failures; a full run takes about 27 minutes, so run it in the background.
 - Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 (unchanged; act 1 untouched).
 - Formulated (`-BotProfile formulated`, pooled 36, SIM2a-4 ba86ffc..bbdcb09): human Rogue 22, Wizard 25; off 36, 34. `-Route first` human 24 / 17; shop off human 26 / 25; Wizard removals off 24.
 - SIM1 `-Route first`: human Rogue 25/36 (over its 21 ceiling, waived for HP1, to BAL1), Wizard 19/36 (re-measured 87b944b and 1c5250f); off 34/36, 34/36. Floors 12 / 10 / 31 / 30, ceiling 21 / 20 (MAP.md §11.4). SIM1's human preset presses slots at random (no PlanPolicy).
@@ -26,7 +26,7 @@ Last updated: 2026-11-23 (TL3a qa PASS, TL3b built, qa next; still waiting for t
 
 ## Pending for the next docs pass
 - TL3a (293572a..bfeec3a): README line 326 `NN-crowded-fight.png`; runners log to `logs\sim\<name>-<time>-<pid>.log`, never `user://logs`; BOSS/CROWD lines show run-wide and act room; "HP at end" current on a loss; bare `--watch-shots` exits 2; no new flags; new Godot-spawning `OS.execute` in tests must pass `ToolLog.args`; suite 2922 in 213 suites. CHANGELOG entry. qa nits (a5201fa): `logs/sim` keeps 60 + the new file; child logs aren't pruned (fixed names, bounded); parallel children of one test share a log name.
-- TL3b (d6122ba): README for `--run-hp=N` (first run only, whole number from 1, capped to max HP, bad value exits 2; e.g. `-- --run-seed=1 --run-room=10 --run-hp=8`); `--press=<t>:any_key` (raw F13 tap for "any key" screens, no hold time); `-AtBossAttack` takes id or label (`ground_pound` = `slam`), bad name exits 2 and lists valid ones; presets `act_transition_hurt`, `map_beat_skip`; `act_transition` now takes the boss relic (no skip there); new `tools/boss_attack.ps1`. CHANGELOG entry.
+- TL3b (d6122ba): README for `--run-hp=N` (first run only, whole number from 1, capped to max HP, bad value exits 2; e.g. `-- --run-seed=1 --run-room=10 --run-hp=8`); `--press=<t>:any_key` (raw F13 tap for "any key" screens, no hold time); `-AtBossAttack` takes id or label (`ground_pound` = `slam`), bad name exits 2 and lists valid ones; presets `act_transition_hurt`, `map_beat_skip`; `act_transition` now takes the boss relic (no skip there); new `tools/boss_attack.ps1`. CHANGELOG entry. Suite 2937 / 215.
 
 ## Known issues
 - **The game closed on its own during the director's run (2026-11-20, about 21:44), while gameplay-dev's SIM2a-3 sims ran from the same working tree.** The cause is unknown. Suspects: (a) the headless sims rewriting the shared `.godot` import cache while the game loads a room; (b) machine load from many parallel sims; (c) a real crash. The evidence is gone: the sims share `user://logs`, and Godot keeps only 5 log files, so his log rotated out. Fixes to schedule (a TL follow-up): the sims log to their own folder or disable file logging, and the director plays from a separate worktree of the tag (`git worktree add ../cr-play <tag>`) or while no agent runs.
@@ -39,6 +39,7 @@ Last updated: 2026-11-23 (TL3a qa PASS, TL3b built, qa next; still waiting for t
 - Wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 - Human-bot Kindling boss parity with relics is 67%, under 70% (qa DF1; not a DF1 regression).
 - An old git stash (`stash@{0}`, from 85cd564) is still in the repo; the director decides whether to drop it.
+- TL3b qa nits (5bcb17a): `press any_key` logs twice when the tap swaps the scene (harmless, F13 unbound; look if a bound action is pressed at a scene swap); the `act_transition` test checks the preset string only, not that seed 1 still offers `burnout_syndrome`; the `leveraged_dash` alias is unreachable; `-AtBossAttack` with no boss attack waits for ANCHOR_TIMEOUT and can orphan the Godot child if the wrapper is killed. Fix in the next tooling sitting.
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
 **D-numbers:** D21-D55 answered. Next free: D56. No eyes open. Next eyes number: 68.

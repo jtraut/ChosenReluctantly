@@ -1,18 +1,18 @@
 # Director open items
 
-Last updated: 2026-11-23 (TL3 closed; latest tag `playtest-2026-11-20-BD3b`)
-**Status:** **Milestone 3 is done; UX1a, UX1b, HP1, SIM2a, SIM2a-4 and TL3 (tool cleanup: agent sims no longer touch the game's log folder) are done.** The build-aware test bot now plays sensibly (human-like Wizard 25/36, Rogue 22/36). Nothing else can move without you: BAL1 and the Battlemage rework (BD3c) wait for you to play BD3b. See "The one ask" below.
+Last updated: 2026-11-23 (new play tag `playtest-2026-11-23-M4a`)
+**Status:** **Milestone 3 is done; UX1a, UX1b, HP1, SIM2a, SIM2a-4 and TL3 (tool cleanup: agent sims no longer touch the game's log folder) are done.** The build-aware test bot now plays sensibly (human-like Wizard 25/36, Rogue 22/36). Nothing else can move without you: BAL1 and the Battlemage rework (BD3c) wait for your play. **Play the new tag `playtest-2026-11-23-M4a`, not the old BD3b one:** the BD3b tag predated the max HP relics (Mandatory Wellness Pack, Performance Review) and the HUD and run-screen readability work, and BAL1 will tune those relics. A smoke check on it found no blocker. See "The one ask" below.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
 ## How to playtest
 
-- **Play while no agent is running, or from a separate copy** (your run closed on its own on 2026-11-20 while bot sims ran from the same folder; the cause is unknown): `git worktree add ../cr-play playtest-2026-11-20-BD3b`, then `godot --path ../cr-play`.
-- **The one ask (it unblocks BAL1, BD3c and the vision check):** check out `playtest-2026-11-20-BD3b`. Then:
+- **Play while no agent is running, or from a separate copy** (your run closed on its own on 2026-11-20 while bot sims ran from the same folder; the cause is unknown): `git worktree add ../cr-play playtest-2026-11-23-M4a`, then `godot --path ../cr-play`.
+- **The one ask (it unblocks BAL1, BD3c and the vision check):** check out `playtest-2026-11-23-M4a` (BD3b plus the max HP relics and the readability work). Then:
   1. Play one normal three-act run, `godot --path .`, and, if you can, note how long it took on a clock (the 15-20 minute target).
   2. Try the Battlemage deck: `godot --path . -- --class=wizard --deck=wizard-ward-battlemage --full-deck --run-room=10`.
   3. Answer the vision check round 2 below.
-- **Latest known-good build:** `git checkout playtest-2026-11-20-BD3b`, play, then `git checkout main`. The one before it is `playtest-2026-11-18-3d`. Try the new Wizard decks with `-- --class=wizard --deck=wizard-thesis --full-deck` or `--deck=wizard-ward-battlemage`. Older tags are in `docs/RESOLVED.md`.
+- **Latest known-good build:** `git checkout playtest-2026-11-23-M4a`, play, then `git checkout main`. The one before it is `playtest-2026-11-20-BD3b`. Try the new Wizard decks with `-- --class=wizard --deck=wizard-thesis --full-deck` or `--deck=wizard-ward-battlemage`. Older tags are in `docs/RESOLVED.md`.
 - **Relics:** `-- --relics=pyre_insurance+heavy_sigh` starts with relics; `-- --relic-cap=1` tries the give-one-up step.
 - **Normal run:** `godot --path .` (three acts of 10 rooms on a branching map; Continue on the class pick resumes a saved run). Extras: `-- --run-seed=5`, `-- --run-room=10` (act 1 mini-boss), `-- --run-room=30` (final boss), `-- --acts=1` (the old one-act run), `-- --no-map` (straight run), `-- --class=wizard`.
 - **Preset decks:** `godot --path . -- --list-decks`, then for example `-- --deck=fire-heavy-rogue --full-deck --run-room=10`.

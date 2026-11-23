@@ -3,17 +3,17 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-23 (TL3 closed; waiting for the director's BD3b play). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-23 (re-tagged; waiting for the director's play). Latest tag `playtest-2026-11-23-M4a`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **Re-tagging the director's play build** (DECISIONS "Re-tag the director's play build"). `playtest-2026-11-20-BD3b` lacks HP1, UX1a and UX1b, so a playtester smoke check runs on main, then game-lead tags `playtest-2026-11-23-M4a` and repoints "The one ask" in OPEN_ITEMS. The repo runs. After pulling, run `godot --headless --path . --import` once.
+- **Nothing in progress.** The director's play build is now `playtest-2026-11-23-M4a` (main after TL3; smoke check fcfa8d5, no blocker; DECISIONS "Re-tag the director's play build"). The repo runs. After pulling, run `godot --headless --path . --import` once.
 
 ## Exact next step
-1. playtester: smoke check on main (normal launch, an HP1 relic offered and applied, the Battlemage deck command, act transition). A blocker stops the tag.
-2. No blocker: game-lead tags main `playtest-2026-11-23-M4a`, updates OPEN_ITEMS "How to playtest" and "The one ask", commits.
-3. Then wait for the director's play; it unblocks BAL1 and BD3c (both `needs your play first`). BAL1 inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot), HP1's relic numbers.
+1. **Wait for the director's play of `playtest-2026-11-23-M4a`** ("The one ask" in OPEN_ITEMS). It unblocks BAL1 and BD3c (both `needs your play first`).
+2. When he has played: game-lead records his notes, then writes the BAL1 brief. Inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot), HP1's relic numbers.
+3. Optional while waiting (`safe to chain`, not briefed): a ux polish sitting from Known issues (display only; no camera framing or flash timing changes), and a tooling sitting for the TL3b qa nits.
 
-**Next role:** playtester (smoke check), then game-lead.
+**Next role:** none until the director plays (game-lead then).
 
 ## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21; suite from TL3b qa 5bcb17a)
 - Suite 2937 in 215 suites expected (2933 / 214 measured at TL3b qa 5bcb17a, plus its 4 cases), 0 failures; a full run takes about 27 minutes, so run it in the background.

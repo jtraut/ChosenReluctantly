@@ -3,14 +3,14 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-23 (TL3 briefed; TL3a with gameplay-dev; still waiting for the director's BD3b play). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-23 (TL3a qa PASS, TL3b built, qa next; still waiting for the director's BD3b play). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
 - **TL3b built** (gameplay-dev d6122ba; no `Remaining:`). Four capture fixes proven by real captures; `--run-hp=N`, `--press=<t>:any_key`, `-AtBossAttack` label names (`tools/boss_attack.ps1`), presets `act_transition_hurt` and `map_beat_skip`. Debug-only hooks in `src/debug/`, `MapLaunch.gd`, `RunController.gd`, `RunSave.gd`. Hashes and SIM1 human Rogue 25/36 unchanged; suite 2933. **qa next.**
-- **TL3a built** (gameplay-dev 293572a..bfeec3a; no `Remaining:`). Tool runs log to `logs/sim/` via `--log-file`; watch log nits fixed; header comments done. Hashes, SIM1 and formulated rows reproduce exactly; **qa PASS a5201fa** (suite 2922 / 213, 0 failures). TL3b built next. After pulling, run `godot --headless --path . --import` once (new `class_name` scripts `WatchText`, `ToolLog`). The repo runs.
+- **TL3a built** (gameplay-dev 293572a..bfeec3a; no `Remaining:`). Tool runs log to `logs/sim/` via `--log-file`; watch log nits fixed; header comments done. Hashes, SIM1 and formulated rows reproduce exactly; **qa PASS a5201fa** (suite 2922 / 213, 0 failures). After pulling, run `godot --headless --path . --import` once (new `class_name` scripts `WatchText`, `ToolLog`). The repo runs.
 
 ## Exact next step
-1. qa reviews TL3b (d6122ba). Then (gameplay-dev), qa, a playtester smoke of the fixed capture presets, one tech-writer docs pass, close.
+1. qa reviews TL3b (d6122ba). Then a playtester smoke of the fixed capture presets, one tech-writer docs pass, close.
 2. In parallel, waiting: the director's BD3b play ("The one ask" in OPEN_ITEMS). It unblocks BAL1 and BD3c (both `needs your play first`). When he has played, game-lead records his notes and writes the BAL1 brief. Inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot).
 
 **Next role:** qa (TL3b).

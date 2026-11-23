@@ -6,16 +6,16 @@
 Last updated: 2026-11-23 (TL3 briefed; TL3a with gameplay-dev; still waiting for the director's BD3b play). Latest tag `playtest-2026-11-20-BD3b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **TL3a built** (gameplay-dev 293572a..bfeec3a; no `Remaining:`). Tool runs log to `logs/sim/` via `--log-file`; watch log nits fixed; header comments done. Hashes, SIM1 and formulated rows reproduce exactly; suite expected 2922. **qa next.** After pulling, run `godot --headless --path . --import` once (new `class_name` scripts `WatchText`, `ToolLog`). The repo runs.
+- **TL3a built** (gameplay-dev 293572a..bfeec3a; no `Remaining:`). Tool runs log to `logs/sim/` via `--log-file`; watch log nits fixed; header comments done. Hashes, SIM1 and formulated rows reproduce exactly; **qa PASS a5201fa** (suite 2922 / 213, 0 failures). **TL3b next (gameplay-dev).** After pulling, run `godot --headless --path . --import` once (new `class_name` scripts `WatchText`, `ToolLog`). The repo runs.
 
 ## Exact next step
-1. qa reviews TL3a (short). Then TL3b (gameplay-dev), qa, a playtester smoke of the fixed capture presets, one tech-writer docs pass, close.
+1. gameplay-dev builds TL3b (capture gaps; ROADMAP "TL3"). Then (gameplay-dev), qa, a playtester smoke of the fixed capture presets, one tech-writer docs pass, close.
 2. In parallel, waiting: the director's BD3b play ("The one ask" in OPEN_ITEMS). It unblocks BAL1 and BD3c (both `needs your play first`). When he has played, game-lead records his notes and writes the BAL1 brief. Inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot).
 
-**Next role:** qa (TL3a).
+**Next role:** gameplay-dev (TL3b).
 
-## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21)
-- Suite 2913 expected (2911 measured at SIM2a-4 qa plus its 2 cases; f6c9db1), 0 failures; a full run takes about 27 minutes, so run it in the background.
+## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21; suite from TL3a qa a5201fa)
+- Suite 2922 in 213 suites (TL3a qa a5201fa), 0 failures; a full run takes about 27 minutes, so run it in the background.
 - Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 (unchanged; act 1 untouched).
 - Formulated (`-BotProfile formulated`, pooled 36, SIM2a-4 ba86ffc..bbdcb09): human Rogue 22, Wizard 25; off 36, 34. `-Route first` human 24 / 17; shop off human 26 / 25; Wizard removals off 24.
 - SIM1 `-Route first`: human Rogue 25/36 (over its 21 ceiling, waived for HP1, to BAL1), Wizard 19/36 (re-measured 87b944b and 1c5250f); off 34/36, 34/36. Floors 12 / 10 / 31 / 30, ceiling 21 / 20 (MAP.md §11.4). SIM1's human preset presses slots at random (no PlanPolicy).
@@ -24,7 +24,7 @@ Last updated: 2026-11-23 (TL3 briefed; TL3a with gameplay-dev; still waiting for
 - Late shares for a Bleed Rogue: Bleed 12.5%, Fire 22.8%, Burn 10.0%. Relic Burn share 21.1% (4 of 19). Thesis Wizard late Fire share about 26%.
 
 ## Pending for the next docs pass
-- TL3a (293572a..bfeec3a): README line 326 `NN-crowded-fight.png`; runners log to `logs\sim\<name>-<time>-<pid>.log`, never `user://logs`; BOSS/CROWD lines show run-wide and act room; "HP at end" current on a loss; bare `--watch-shots` exits 2; no new flags. CHANGELOG entry.
+- TL3a (293572a..bfeec3a): README line 326 `NN-crowded-fight.png`; runners log to `logs\sim\<name>-<time>-<pid>.log`, never `user://logs`; BOSS/CROWD lines show run-wide and act room; "HP at end" current on a loss; bare `--watch-shots` exits 2; no new flags; new Godot-spawning `OS.execute` in tests must pass `ToolLog.args`; suite 2922 in 213 suites. CHANGELOG entry. qa nits (a5201fa): `logs/sim` keeps 60 + the new file; child logs aren't pruned (fixed names, bounded); parallel children of one test share a log name.
 
 ## Known issues
 - **The game closed on its own during the director's run (2026-11-20, about 21:44), while gameplay-dev's SIM2a-3 sims ran from the same working tree.** The cause is unknown. Suspects: (a) the headless sims rewriting the shared `.godot` import cache while the game loads a room; (b) machine load from many parallel sims; (c) a real crash. The evidence is gone: the sims share `user://logs`, and Godot keeps only 5 log files, so his log rotated out. Fixes to schedule (a TL follow-up): the sims log to their own folder or disable file logging, and the director plays from a separate worktree of the tag (`git worktree add ../cr-play <tag>`) or while no agent runs.

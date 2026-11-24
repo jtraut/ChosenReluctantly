@@ -17,6 +17,7 @@ param(
 
 . "$PSScriptRoot/sim_log.ps1"
 . "$PSScriptRoot/boss_attack.ps1"
+. "$PSScriptRoot/job_guard.ps1"
 $root = Split-Path -Parent $PSScriptRoot
 
 $godot = $env:GODOT_BIN
@@ -83,6 +84,8 @@ if ($AtBossAttack) { $userArgs += "--at-boss-attack=$AtBossAttack" }
 $userArgs += ($Extra | ForEach-Object { $_ -split "," } | Where-Object { $_ })  # "-File" passes "a","b" as one comma string, so split it
 if ($TrueSize -and -not $Scenario) { $userArgs += "--run" }  # VpCapture hosts RunMain only with --run
 
+# TL4: join a kill-on-close job so a hard-killed wrapper takes the Godot child with it (tools/job_guard.ps1).
+$null = Add-KillOnCloseJob
 Push-Location $root
 try {
     if ($TrueSize) {

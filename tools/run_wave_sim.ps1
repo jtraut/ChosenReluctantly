@@ -34,6 +34,7 @@
 param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets, [int]$StartRoom = 0, [switch]$Plan, [string]$Relics = "", [int]$RelicCap = 0, [string]$Swap = "", [switch]$NoRelics, [string]$Route = "", [switch]$Map, [switch]$NoMap, [switch]$Merchant, [int]$Acts = 0, [string]$BotPreset = "", [double]$BotDelay = -1, [double]$BotAimError = -1, [double]$BotHesitation = -1, [string]$Shots = "", [string]$BotProfile = "", [string]$FormulatedOff = "", [switch]$DecisionLog, [switch]$NoVsync, [switch]$LegacyCadence)
 
 . "$PSScriptRoot/sim_log.ps1"
+. "$PSScriptRoot/job_guard.ps1"
 $root = Split-Path -Parent $PSScriptRoot
 $godot = $env:GODOT_BIN
 if (-not $godot) {
@@ -89,6 +90,8 @@ if ($Shots) {
 }
 if ($StartRoom -gt 0) { $extra += "--start-room=$StartRoom" }
 if ($Run) { $extra += "--run"; $extra += "--room-timeout=$RoomTimeout" }
+# TL4: join a kill-on-close job so a hard-killed wrapper takes the Godot child with it (tools/job_guard.ps1).
+$null = Add-KillOnCloseJob
 Push-Location $root
 try {
     # BD3a: lines are printed as they arrive (a 12-run -Run takes 12 minutes or more, and the old Out-String buffered all of it, which looked like a hang).

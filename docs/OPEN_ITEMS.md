@@ -1,18 +1,18 @@
 # Director open items
 
-Last updated: 2026-11-23 (TL4 and UX1c done)
-**Status:** **Milestone 3 is done; UX1a, UX1b, HP1, SIM2a, SIM2a-4 TL3 (tool cleanup: agent sims no longer touch the game's log folder) TL4 (the watched test bot now plays at full strength at any speed) and UX1c (small display fixes, eyes 68-70) are done.** The build-aware test bot now plays sensibly (human-like Wizard 25/36, Rogue 22/36). Nothing else can move without you: BAL1 and the Battlemage rework (BD3c) wait for your play. **Play the new tag `playtest-2026-11-23-M4a`, not the old BD3b one:** the BD3b tag predated the max HP relics (Mandatory Wellness Pack, Performance Review) and the HUD and run-screen readability work, and BAL1 will tune those relics. A smoke check on it found no blocker. See "The one ask" below.
+Last updated: 2026-11-23 (TL4 and UX1c done; new play tag `playtest-2026-11-23-M4b`)
+**Status:** **Milestone 3 is done; UX1a, UX1b, HP1, SIM2a, SIM2a-4, TL3 (tool cleanup: agent sims no longer touch the game's log folder), TL4 (the watched test bot now plays at full strength at any speed) and UX1c (small display fixes, eyes 68-70) are done.** The build-aware test bot now plays sensibly (human-like Wizard 25/36, Rogue 22/36). Nothing else can move without you: BAL1 and the Battlemage rework (BD3c) wait for your play. **Play the new tag `playtest-2026-11-23-M4b`** (M4a plus the UX1c display fixes, so you see them live for eyes 68-70). Don't play the BD3b tag: it predates the max HP relics (Mandatory Wellness Pack, Performance Review), which BAL1 will tune. Smoke checks on M4a and on UX1c found no blocker. See "The one ask" below.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
 ## How to playtest
 
-- **Play while no agent is running, or from a separate copy** (your run closed on its own on 2026-11-20 while bot sims ran from the same folder; the cause is unknown): `git worktree add ../cr-play playtest-2026-11-23-M4a`, then `godot --path ../cr-play`.
-- **The one ask (it unblocks BAL1, BD3c and the vision check):** check out `playtest-2026-11-23-M4a` (BD3b plus the max HP relics and the readability work). Then:
+- **Play while no agent is running, or from a separate copy** (your run closed on its own on 2026-11-20 while bot sims ran from the same folder; the cause is unknown): `git worktree add ../cr-play playtest-2026-11-23-M4b`, then `godot --path ../cr-play`.
+- **The one ask (it unblocks BAL1, BD3c and the vision check):** check out `playtest-2026-11-23-M4b` (BD3b plus the max HP relics, the readability work and the UX1c fixes). Then:
   1. Play one normal three-act run, `godot --path .`, and, if you can, note how long it took on a clock (the 15-20 minute target).
   2. Try the Battlemage deck: `godot --path . -- --class=wizard --deck=wizard-ward-battlemage --full-deck --run-room=10`.
   3. Answer the vision check round 2 below.
-- **Latest known-good build:** `git checkout playtest-2026-11-23-M4a`, play, then `git checkout main`. The one before it is `playtest-2026-11-20-BD3b`. Try the new Wizard decks with `-- --class=wizard --deck=wizard-thesis --full-deck` or `--deck=wizard-ward-battlemage`. Older tags are in `docs/RESOLVED.md`.
+- **Latest known-good build:** `git checkout playtest-2026-11-23-M4b`, play, then `git checkout main`. The one before it is `playtest-2026-11-23-M4a`, and before that `playtest-2026-11-20-BD3b`. Try the new Wizard decks with `-- --class=wizard --deck=wizard-thesis --full-deck` or `--deck=wizard-ward-battlemage`. Older tags are in `docs/RESOLVED.md`.
 - **Relics:** `-- --relics=pyre_insurance+heavy_sigh` starts with relics; `-- --relic-cap=1` tries the give-one-up step.
 - **Normal run:** `godot --path .` (three acts of 10 rooms on a branching map; Continue on the class pick resumes a saved run). Extras: `-- --run-seed=5`, `-- --run-room=10` (act 1 mini-boss), `-- --run-room=30` (final boss), `-- --acts=1` (the old one-act run), `-- --no-map` (straight run), `-- --class=wizard`.
 - **Preset decks:** `godot --path . -- --list-decks`, then for example `-- --deck=fire-heavy-rogue --full-deck --run-room=10`.
@@ -30,9 +30,9 @@ None right now.
 
 Reply with the number and a word or two. **Each item has a default. If it's still unanswered when the slice after the one that added it closes, the default applies and it moves to `docs/RESOLVED.md` (your rule, 2026-11-12).**
 
-Added by UX1c (on main, not in the M4a tag yet). Pictures are in `docs/playtests/img/ux1c/`. Each has a before and an after shot.
+Added by UX1c (in the M4b tag). Pictures are in `docs/playtests/img/ux1c/`. Each has a before and an after shot. **These expire only after your play:** no slice closes before then.
 
-- **68. Getting hit now flashes violet** (it was pink-red, which looked like an enemy colour; both classes flash violet now). See `hit-after-1366x768.png`. Is violet OK? **Default: keep violet.** The fallback is dark navy.
+- **68. Getting hit now flashes violet** (it was pink-red, which looked like an enemy colour; both classes flash violet now). See `hit-after-1366x768.png`. Is violet OK? It's worth a look on the Wizard too: take a hit right after a right-click Heavy (also violet) and check you can tell them apart (`godot --path ../cr-play -- --class=wizard`). **Default: keep violet.** The fallback is dark navy.
 - **69. When 6+ enemies bunch up, their HP bars stack into rows** instead of overlapping (at most 5 rows). See `crowd-after-1366x768.png`. Does the stack read clearly, and is its height OK? **Default: keep.** The fallback is at most 3 rows, or off.
 - **70. The card strip's backing is darker**, so an enemy walking under it no longer fights the card text. The enemy is dimmed, not hidden. See `strip-after-1366x768.png`. **Default: keep.** Keeping enemies out from under the strip would mean moving the camera; that's a feel change for after your play. (The playtester notes that ready and cooling cards now look closer; cooling shows through dimmed text and the bar. Say "70 stronger cue" if you want that boosted.)
 

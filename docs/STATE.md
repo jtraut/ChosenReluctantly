@@ -3,15 +3,16 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-23 (TL4 and UX1c closed; waiting for the director's play). Latest tag `playtest-2026-11-23-M4a`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-23 (TL4 and UX1c closed; re-tagged M4b; waiting for the director's play). Latest tag `playtest-2026-11-23-M4b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **Nothing in progress.** TL4 and UX1c are closed (optional `safe to chain` work while the director plays). The director's play build is still `playtest-2026-11-23-M4a`; main adds TL4 (tools) and UX1c (display) on top of it. The repo runs. After pulling, run `godot --headless --path . --import` once.
+- **Nothing in progress.** TL4 and UX1c are closed (optional `safe to chain` work while the director plays). The director's play build is now `playtest-2026-11-23-M4b` (e7ebd14: M4a plus TL4 tools and UX1c display; smoke 76be1c5 on main, no blocker; DECISIONS "Re-tag as M4b"). The repo runs. After pulling, run `godot --headless --path . --import` once.
 
 ## Exact next step
-1. **Wait for the director's play of `playtest-2026-11-23-M4a`** ("The one ask" in OPEN_ITEMS). It unblocks BAL1 and BD3c (both `needs your play first`).
+1. **Wait for the director's play of `playtest-2026-11-23-M4b`** ("The one ask" in OPEN_ITEMS). It unblocks BAL1 and BD3c (both `needs your play first`).
 2. When he has played: game-lead records his notes and the answers to eyes 68-70, then writes the BAL1 brief. Inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot), HP1's relic numbers.
-3. Optional while waiting (`safe to chain`, not briefed): a tooling sitting for the TL4 qa nits and the capture hook for the hit flash.
+3. **Don't close another slice before he plays:** that would expire eyes 68-70 unseen. The TL4 qa nits and the hit-flash capture hook wait for a tooling sitting after his play.
+4. The suite baseline 2972 / 220 is expected, not measured (the last full run, 2965 / 219, was red on one guard test qa then fixed). BAL1's qa measures it.
 
 **Next role:** none until the director plays (game-lead then).
 

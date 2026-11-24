@@ -262,7 +262,7 @@
             "title": "Choose your path", "line": "Pick the next room. Every route ends at the boss.",
             "gold_label": "Gold", "gold_format": "%d gold", "gold_earned": "+%d gold", "gold_earned_short": "+%d", "start_hint": "Pick the room to start in.",
             "room_format": "Room %d  -  %s", "current_note": "You are here.", "taken_note": "You came this way.", "future_note": "Not reachable from here yet.",
-            "pick_hint": "Arrow keys move, Enter or click picks the room", "beat_line": "Only one way on. Taking it in a second.", "beat_hint": "Any key skips the wait.", "view_title": "Your route", "view_line": "Where you have been, and where you could still go.",
+            "pick_hint": "Arrow keys move, Enter or click picks the room", "view_title": "Your route", "view_line": "Where you have been, and where you could still go.",
             "view_hint": "Arrow keys look around. Esc, Enter or Back closes", "back_label": "Back", "button_label": "Map",
             "legend_chest": "Dots show a relic stage's size: 1 small, 2 medium, 3 large.", "legend_states": "Gold ring: you are here.  White ring: you can pick it.  Dim: later.",
             "legend_title": "Key", "title_with_act": "%s  -  %s", "line_act": "Pick the next room. Every route ends at the mini-boss.", "mini_boss_title": "Face the mini-boss", "mini_boss_line": "Nothing else is left. Pick the mini-boss when you are ready. It ends the act.", "boss_title": "Face the boss", "boss_line": "Nothing else is left. Pick the boss when you are ready.", "spend_line": "Spend your gold at the merchant (the square with the coin).",

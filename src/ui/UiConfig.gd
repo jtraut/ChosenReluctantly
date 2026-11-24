@@ -140,7 +140,6 @@ const DEFAULT_SETTINGS_SCREEN: Dictionary = {
 
 ## The map screen (MAP1): look and sizes (authored at `reference_height`, scaled by viewport height). Words are data/run.json `ui.map`.
 const DEFAULT_MAP_SCREEN: Dictionary = {
-	"auto_advance_seconds": 1.0,
 	"reference_height": 720,
 	"margin": 20,
 	"title_font_size": 30,

@@ -497,7 +497,6 @@
         "swatch_border_color": "#f4ece8"
     },
     "map_screen": {
-        "auto_advance_seconds": 1.0,
         "reference_height": 720,
         "margin": 20,
         "title_font_size": 30,

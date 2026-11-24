@@ -2,6 +2,28 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
+## 2026-11-23 (TL4, watch-mode fidelity and TL3b nits)
+
+Tooling only: no game data, balance or game-rule changes, no tag, no new third-party assets, no director decisions. Commit range 0eeb22f..f072262. Code: 3103566, 92e9342, 1106a39, 4e2b9d2, 84d3cf3; qa f072262 (`docs/reviews/2026-11-23-tl4-qa.md`, PASS). Suite: 2952 cases in 218 suites, 0 failures (from qa; was 2869 at HP1 and 2813 at TL2 in the README). Headless is unchanged: hashes 3172486861 / 916264160 / 1317880580 / 3476063471, SIM1 human Rogue 25, Wizard 19, off 34 / 34.
+
+**Fixed**
+- Watch mode cadence (3103566): the bot now decides once per physics tick at 60 Hz of game time at any `-Scale`, in watch mode only. Physics ticks are 60 x scale, the steps cap is max(8, 2 x scale), and input is unbuffered; all three are restored at run end. Before: about 15 decisions per game second at `-Scale 4` (14.9 measured); now about 60 (59.6-60.0). The watched off-preset Rogue (`-Route first`, seeds 1-4) won 2/4 at `-Scale 4` before; it wins 4/4 at `-Scale 4` and at `-Scale 1`.
+- `ScriptedInput` (`--press`) carries its position across a scene swap instead of replaying from t=0, which fired bound actions twice (1106a39; TL3b nit 1).
+- `capture_screenshot.ps1 -AtBossAttack` exits 2 at once when there is no boss (it needs a `boss*` scenario key or `--run-room=` / `--run-node=`); it used to wait out a 90 s anchor timeout (3103566, kept in 92e9342; TL3b nit 3).
+- Removed the unreachable `leveraged_dash` alias from `tools/boss_attack.ps1` (3103566; TL3b nit 4).
+
+**Added**
+- `run_wave_sim.ps1` switches: `-DecisionLog` (prints `DECISIONS room N:` lines), `-NoVsync` (`--disable-vsync`), `-LegacyCadence` (the old behaviour, for A/B runs only).
+- `tools/job_guard.ps1` (`Add-KillOnCloseJob`): `capture_screenshot.ps1` and `run_wave_sim.ps1` join a kill-on-close Job Object, so a hard-killed wrapper takes Godot with it. Exit codes are unchanged. `tools/run_tests.ps1` is not covered (4e2b9d2, 84d3cf3).
+- Tests: `tests/unit/tl4_watch_cadence_test.gd`, `tl4_job_guard_test.gd`, `tl4_qa_test.gd`, support scripts `tests/support/job_guard_probe.ps1` and `job_guard_check.ps1`; `tl3b_capture_test.gd` extended, including a test that seed 1's act 1 boss offer includes `burnout_syndrome` (1106a39; TL3b nit 2).
+
+**Changed**
+- `src/main/Main.gd`: one debug line in `_setup_debug_capture` (sets `carry_across_swaps`).
+
+**Docs and process**
+- README: watch-mode cadence note, new switches, job guard section, caveats (run watched runs one at a time: parallel runs share `user://run_save.json`, warn, and can exit 1 on a won batch; dot-running a wrapper in an interactive shell puts that shell in the job), counts updated. A won `-Scale 1` watched run takes about 9-10 minutes of wall clock; the README said about 30 minutes.
+- Not verified: watched Wizard and human-preset win rates at the new cadence; the `-LegacyCadence` A/B arm was not re-run by qa.
+
 ## 2026-11-23 (TL3, tooling hygiene: TL3a + TL3b)
 
 Tooling only: no game data, balance or game-rule changes, no tag, no new third-party assets. Commit range 307b8f5..9c5cbb7. Code: TL3a 293572a, 1dccbc5, bfeec3a; TL3b d6122ba. qa: TL3a a5201fa (`docs/reviews/2026-11-23-tl3a-qa.md`), TL3b 5bcb17a (`docs/reviews/2026-11-23-tl3b-qa.md`), both PASS; suite 2937 cases in 215 suites (as reported in the handoff; not re-run in this docs pass). Sim hashes and SIM1 unchanged (qa).

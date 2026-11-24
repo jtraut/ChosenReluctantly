@@ -1,7 +1,7 @@
 # Director open items
 
-Last updated: 2026-11-23 (new play tag `playtest-2026-11-23-M4a`)
-**Status:** **Milestone 3 is done; UX1a, UX1b, HP1, SIM2a, SIM2a-4 and TL3 (tool cleanup: agent sims no longer touch the game's log folder) are done.** The build-aware test bot now plays sensibly (human-like Wizard 25/36, Rogue 22/36). Nothing else can move without you: BAL1 and the Battlemage rework (BD3c) wait for your play. **Play the new tag `playtest-2026-11-23-M4a`, not the old BD3b one:** the BD3b tag predated the max HP relics (Mandatory Wellness Pack, Performance Review) and the HUD and run-screen readability work, and BAL1 will tune those relics. A smoke check on it found no blocker. See "The one ask" below.
+Last updated: 2026-11-23 (TL4 done; UX1c in progress)
+**Status:** **Milestone 3 is done; UX1a, UX1b, HP1, SIM2a, SIM2a-4 TL3 (tool cleanup: agent sims no longer touch the game's log folder) and TL4 (the watched test bot now plays at full strength at any speed) are done. UX1c (small display fixes) is in progress.** The build-aware test bot now plays sensibly (human-like Wizard 25/36, Rogue 22/36). Nothing else can move without you: BAL1 and the Battlemage rework (BD3c) wait for your play. **Play the new tag `playtest-2026-11-23-M4a`, not the old BD3b one:** the BD3b tag predated the max HP relics (Mandatory Wellness Pack, Performance Review) and the HUD and run-screen readability work, and BAL1 will tune those relics. A smoke check on it found no blocker. See "The one ask" below.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 

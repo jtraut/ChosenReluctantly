@@ -6,18 +6,17 @@
 Last updated: 2026-11-24 (director's M4b play notes recorded; UX1d briefed). Latest tag `playtest-2026-11-23-M4b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **UX1d (no auto-start on the map): built (ux 638b787, c41a17f), qa next.** Audit: no other screen starts a room without a press. Hashes and full suite not yet run. The `map_beat_skip` capture preset is now meaningless (kept: `tl3b_capture_test` asserts it); retire it in a tools sitting. The director played M4b on 2026-11-24. The repo runs. After pulling, run `godot --headless --path . --import` once.
+- **UX1d (no auto-start on the map): built (ux 638b787, c41a17f), qa PASS 1c2bee7 (suite 2966 / 221 measured, 0 failures; hashes unchanged), docs pass next.** Audit: no other screen starts a room without a press. The `map_beat_skip` capture preset is now meaningless (kept: `tl3b_capture_test` asserts it); retire it in a tools sitting. The director played M4b on 2026-11-24. The repo runs. After pulling, run `godot --headless --path . --import` once.
 
 ## Exact next step
-1. **qa reviews UX1d** (ROADMAP brief), then then the docs pass, then game-lead closes it. No smoke check (DECISIONS "Director's M4b play recorded").
+1. **tech-writer docs pass for UX1d**, then then the docs pass, then game-lead closes it. No smoke check (DECISIONS "Director's M4b play recorded").
 2. **Then game-lead writes the BAL1 brief** (now unblocked). Inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot), HP1's relic numbers, BD3b's "Deferred" list. BAL1 must not tune the Battlemage deck away from how it plays now while D56 is open.
 3. **BD3c waits on D56.** The TL4 qa nits and the hit-flash capture hook wait for a tooling sitting (optional, `safe to chain`).
-4. The suite baseline 2972 / 220 is expected, not measured. UX1d's qa measures it.
 
-**Next role:** qa (UX1d).
+**Next role:** tech-writer (UX1d docs pass).
 
 ## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21; suite from TL4 qa f072262)
-- Suite 2972 in 220 suites expected (UX1c qa 91dfbe4: 2965 / 219 measured with one guard test red, then fixed, plus 7 qa cases; re-measure at the next full run), 0 failures; a full run takes about 23-27 minutes, so run it in the background.
+- Suite 2966 in 221 suites measured (UX1d qa 1c2bee7), 0 failures; a full run takes about 23-27 minutes, so run it in the background.
 - Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 (unchanged; act 1 untouched).
 - Formulated (`-BotProfile formulated`, pooled 36, SIM2a-4 ba86ffc..bbdcb09): human Rogue 22, Wizard 25; off 36, 34. `-Route first` human 24 / 17; shop off human 26 / 25; Wizard removals off 24.
 - SIM1 `-Route first`: human Rogue 25/36 (over its 21 ceiling, waived for HP1, to BAL1), Wizard 19/36 (re-measured 87b944b and 1c5250f); off 34/36, 34/36. Floors 12 / 10 / 31 / 30, ceiling 21 / 20 (MAP.md §11.4). SIM1's human preset presses slots at random (no PlanPolicy).

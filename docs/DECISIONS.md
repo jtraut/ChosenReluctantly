@@ -3138,3 +3138,11 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
 - **Why tooling first:** watch mode at `-Scale 4` decides whether playtester evidence on difficulty can be trusted at BAL1 and the next milestone playtest. The ux items are cosmetic and can wait a sitting.
 - **Scope guard:** TL4 confirms the cause with a windowed A/B before fixing anything. If the cause isn't the bot's per-frame decision cadence, it reports and stops. The fix may not change headless results (four hashes, SIM1 25/19/34/34).
 - **Rejected:** ux polish first (less evidence value); idling until the director plays (wastes a free window on work that doesn't depend on him); fixing without the A/B (the cause is unconfirmed).
+
+
+## 2026-11-23 - TL4 build calls (gameplay-dev; logged by game-lead)
+- **Watch mode only:** `Engine.physics_ticks_per_second` = 60 x scale, `max_physics_steps_per_frame` = max(8, 2 x scale). Bot decisions run per physics tick (`physics_frame`), and `Input.use_accumulated_input` is off. All of these are restored at run end. Headless is untouched, since every change sits behind `_watch != null`. Rejected: awaiting `physics_frame` alone (measured 15.0 decisions per game-second, no change); stepping `_process` systems too (1 to 2 `src` sittings, and the 4/4 result doesn't call for it yet).
+- **`-LegacyCadence` is kept** as an A/B switch, so the old behaviour stays reproducible.
+- **`-AtBossAttack` fail-fast is a heuristic:** it needs a `boss*` scenario key, or `--run-room=` / `--run-node=`. A non-boss room still waits for the timeout. Rejected: resolving the room's real content in the wrapper (too much for a nit).
+- **The orphaned-child fix was reverted:** an owned `Start-Process` lost the exit code on PowerShell 5.1. It goes to the Remaining list as a Job Object fix.
+- **game-lead:** the Remaining item 4 (re-watching `-Scale 1` on the final code) goes to qa's review, not to the fresh gameplay-dev sitting. qa re-watches anyway, so a separate run would be paid for twice.

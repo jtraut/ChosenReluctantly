@@ -19,20 +19,37 @@ var _next: int = 0
 ## {at: float, action: StringName} releases still to send.
 var _releases: Array[Dictionary] = []
 var _aiming: bool = false
+## Main sets this: a scene swap (Try again, the next room) builds a fresh Main with a fresh ScriptedInput, which would replay every
+## step from t=0 (a bound action pressed at the swap fired twice, once per scene). With it set, the fresh one resumes where the old one stopped.
+var carry_across_swaps: bool = false
+
+## {key: String, elapsed: float, next: int, aiming: bool}: the script position the last carrying ScriptedInput left; empty when none.
+static var _carried: Dictionary = {}
 
 
 func _ready() -> void:
 	presses.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return float(a["at"]) < float(b["at"]))
+	if carry_across_swaps and not _carried.is_empty() and String(_carried["key"]) == str(presses):
+		_elapsed = float(_carried["elapsed"])
+		_next = int(_carried["next"])
+		_aiming = bool(_carried["aiming"])
 
 
 ## A scene swap (or quit) must not leave a scripted hold stuck down: release every pending hold.
 func _exit_tree() -> void:
+	if carry_across_swaps:
+		_carried = {"key": str(presses), "elapsed": _elapsed, "next": _next, "aiming": _aiming}
 	for release: Dictionary in _releases:
 		if release["action"] == &"any_key":
 			_send_key(false)
 		else:
 			_send(release["action"], false)
 	_releases.clear()
+
+
+## Forgets a carried position (tests, so one case's script never leaks into the next).
+static func reset_carry() -> void:
+	_carried = {}
 
 
 func _process(delta: float) -> void:

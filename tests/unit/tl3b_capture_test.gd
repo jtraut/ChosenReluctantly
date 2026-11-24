@@ -76,6 +76,62 @@ func test_any_key_sends_a_raw_key_event_the_map_beat_accepts() -> void:
 	assert_bool(seen[0].pressed).is_true()
 	assert_bool(seen[0].echo).is_false()  # the map beat ignores held repeats
 
+func test_act_transition_seed_1_still_offers_the_boss_relic_the_preset_takes() -> void:
+	# The preset's --run-auto-choose=relic:burnout_syndrome only works while seed 1 at room 10 (--run-room=10 is room_index 9) offers it.
+	var ctx: Dictionary = RunChoices.shipped_context(CharacterDatabase.pools("rogue"))
+	var state: RunState = RunState.new_run(1, CharacterDatabase.starting_deck("rogue"), 3, "rogue")
+	state.acts_total = 3
+	state.room_index = 9
+	assert_str(RunRelics.open_for_room(state, "mini_boss", false, ctx)).is_equal(RunState.PENDING_RELIC)
+	assert_bool(RunRelics.is_boss_offer(state)).is_true()
+	assert_array(state.offer).override_failure_message("seed 1 room 10 offers " + str(state.offer)).contains(["burnout_syndrome"])
+
+
+func test_a_bound_action_pressed_at_a_scene_swap_fires_once() -> void:
+	# Nit 1: the swapped-in Main builds a fresh ScriptedInput; it used to replay the whole script from t=0, so the tap fired once per scene.
+	ScriptedInput.reset_carry()
+	var presses: Array[Dictionary] = [{"at": 0.1, "action": &"dodge", "hold": 0.0}]
+	var counter := ActionCounter.new()
+	add_child(counter)
+	auto_free(counter)
+	var first := ScriptedInput.new()
+	first.presses = presses
+	first.carry_across_swaps = true
+	add_child(first)
+	first._process(0.2)  # the tap fires
+	Input.flush_buffered_events()
+	remove_child(first)  # the swap: Main leaves the tree ...
+	first.free()
+	var second := ScriptedInput.new()  # ... and the fresh Main builds its own
+	second.presses = presses
+	second.carry_across_swaps = true
+	add_child(second)
+	second._process(0.2)
+	second._process(0.2)
+	Input.flush_buffered_events()
+	remove_child(second)
+	second.free()
+	Input.flush_buffered_events()
+	ScriptedInput.reset_carry()
+	assert_int(counter.pressed).is_equal(1)
+	# Without carrying (the old behaviour, and what plain tests get) a fresh one starts over.
+	var replay := ScriptedInput.new()
+	replay.presses = presses
+	add_child(replay)
+	replay._process(0.2)
+	Input.flush_buffered_events()
+	remove_child(replay)
+	replay.free()
+	assert_int(counter.pressed).is_equal(2)
+
+
+class ActionCounter extends Node:
+	var pressed: int = 0
+
+	func _input(event: InputEvent) -> void:
+		if event.is_action_pressed(&"dodge"):
+			pressed += 1
+
 
 class KeyCatcher extends Node:
 	var seen: Array[InputEventKey] = []

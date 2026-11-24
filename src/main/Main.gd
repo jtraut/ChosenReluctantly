@@ -275,4 +275,5 @@ func _setup_debug_capture() -> void:
 		scripted.process_mode = Node.PROCESS_MODE_ALWAYS
 		scripted.presses = presses
 		scripted.player = player
+		scripted.carry_across_swaps = true  # a swapped-in Main resumes the script instead of replaying it
 		add_child(scripted)

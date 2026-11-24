@@ -2,6 +2,28 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
+## 2026-11-23 (UX1c, display polish)
+
+Display only: gameplay numbers and the four sim hashes are unchanged (3172486861 / 916264160 / 1317880580 / 3476063471). No tag, no new third-party assets, no director decisions. Commit range 0371dd0..76be1c5. Code: ux-designer 0371dd0; qa 91dfbe4 (`docs/reviews/2026-11-23-ux1c-qa.md`, PASS); playtester smoke 76be1c5 (`docs/playtests/2026-11-23-ux1c-smoke.md`, NO BLOCKER). Suite: 2972 cases in 220 suites expected, not measured (the last full run, 2965 in 219, was before qa's guard fix and 7 new cases).
+
+**Added**
+- Performance Review readout: the pause relic list shows "Now: +N max HP" for a relic that has given max HP. It also covers Mandatory Wellness Pack. New `RunRelics.max_hp_text`; the string is `data/run.json` `ui.relic.max_hp_now` ("+%d max HP") (0371dd0).
+- Crowd HP bars: overlapping enemy bars stack upward into rows. New `src/ui/HpBarLayout.gd` (layout math) and `src/ui/HpBarStacker.gd` (node); `EnemyHpBar` registers with the stacker. New `data/ui.json` `hp_bars` keys, validated in `UiConfig`: `stack_row_height` 0.3, `stack_gap` 0.04, `stack_max_rows` 5 (0 = off), `stack_smooth` 14 (0371dd0).
+- Capture scenarios `ux1c_strip` and `ux1c_hit` in `data/scenarios.json`. `ux1c_hit` cannot reliably time the 0.15 s flash (0371dd0).
+- Tests: `tests/unit/ux1c_test.gd` (13 cases), `tests/unit/ux1c_qa_test.gd` (7 cases) (0371dd0, 91dfbe4).
+- Captures: `docs/playtests/img/ux1c/` (16 before and after PNGs), `docs/playtests/img/ux1c-smoke/`.
+
+**Changed**
+- Player hit flash colour (both classes): `Player.HIT_FLASH_COLOR` Color(1, 0.3, 0.3) to violet Color(0.65, 0.35, 1.0). `HIT_FLASH_DURATION` stays 0.15 (0371dd0).
+- Card slot plates denser: ready `slot_plate_ready_color` `#0d080b50` to `#0d080bb0`; cooling `slot_plate_cooling_color` `#0d080bc0` to `#0d080bee`. An enemy under the strip is dimmed, not hidden. Camera framing is not changed (deferred: it is feel) (0371dd0).
+
+**Fixed**
+- `tests/unit/slice5_qa_test.gd`: guard cases for the four new `hp_bars` keys. The suite was red (4 failures) as handed off, because the guard needs a bad-value case for every key (91dfbe4).
+
+**Docs and process**
+- qa found: the readout is keyed on `RunState.relic_max_hp`, so Mandatory Wellness Pack also gets a "+4" line (game-lead to keep or restrict); ready and cooling plates now differ less in tone (the cooling cue is dimmer text and the bar colour). Smoke: the readout shows only on pause; the bar tower plus status text is tight at 1152x648 for a pile of 7; the violet flash was not seen in motion. Eyes items 68 to 70 are still open in `docs/OPEN_ITEMS.md` (smoke says keep on all three).
+- qa committed `tests/unit/tl4_qa_test.gd.uid` (91dfbe4).
+
 ## 2026-11-23 (TL4, watch-mode fidelity and TL3b nits)
 
 Tooling only: no game data, balance or game-rule changes, no tag, no new third-party assets, no director decisions. Commit range 0eeb22f..f072262. Code: 3103566, 92e9342, 1106a39, 4e2b9d2, 84d3cf3; qa f072262 (`docs/reviews/2026-11-23-tl4-qa.md`, PASS). Suite: 2952 cases in 218 suites, 0 failures (from qa; was 2869 at HP1 and 2813 at TL2 in the README). Headless is unchanged: hashes 3172486861 / 916264160 / 1317880580 / 3476063471, SIM1 human Rogue 25, Wizard 19, off 34 / 34.

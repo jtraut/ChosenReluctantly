@@ -7,17 +7,17 @@ Last updated: 2026-11-23 (TL4 briefed; gameplay-dev building, while the director
 
 ## In progress
 - **TL4, watch-mode fidelity and TL3b nits** (ROADMAP; DECISIONS "TL4 brief"). Optional `safe to chain` work while the director plays `playtest-2026-11-23-M4a`. The repo runs.
-  - **Built:** gameplay-dev 0eeb22f, 3103566, 92e9342 (the cadence fix, nits 3 and 4) and the remainder sitting after f78f27c (nit 1: ScriptedInput replayed its presses after a scene swap, now carried across; nit 2 test; a kill-on-close Job Object in both wrappers). Watched off-preset `-Scale 4`: 2/4 before the fix (old cadence), 4/4 after. Hashes unchanged. Suite 2949, 0 failures. No Remaining list except the watched `-Scale 1` re-check, which goes to qa.
+  - **Built:** gameplay-dev 0eeb22f, 3103566, 92e9342 (the cadence fix, nits 3 and 4) and the remainder sitting after f78f27c (nit 1: ScriptedInput replayed its presses after a scene swap, now carried across; nit 2 test; a kill-on-close Job Object in both wrappers). Watched off-preset `-Scale 4`: 2/4 before the fix (old cadence), 4/4 after. Hashes unchanged. Suite 2949, 0 failures. **qa PASS f072262** (`docs/reviews/2026-11-23-tl4-qa.md`): hashes and SIM1 25/19/34/34 unchanged after the job guard; watched off Rogue 4/4 at both `-Scale 1` and `-Scale 4`, about 60 decisions per game-second at both; suite 2952 / 218.
 
 ## Exact next step
-1. qa reviews TL4 (0eeb22f..HEAD). Then the docs pass, then close. No tag.
+1. tech-writer docs pass for TL4 (0eeb22f..f072262), then close. No tag.
 2. Then UX1c, a ux polish sitting from Known issues (display only; brief not yet written).
 3. **Still waiting on the director's play of `playtest-2026-11-23-M4a`** ("The one ask"). It unblocks BAL1 and BD3c (`needs your play first`). BAL1 inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot), HP1's relic numbers.
 
-**Next role:** qa (TL4).
+**Next role:** tech-writer (TL4 docs pass).
 
-## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21; suite from TL3b qa 5bcb17a)
-- Suite 2937 in 215 suites expected (2933 / 214 measured at TL3b qa 5bcb17a, plus its 4 cases), 0 failures; a full run takes about 27 minutes, so run it in the background.
+## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21; suite from TL4 qa f072262)
+- Suite 2952 in 218 suites (TL4 qa f072262), 0 failures; a full run takes about 23-27 minutes, so run it in the background.
 - Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 (unchanged; act 1 untouched).
 - Formulated (`-BotProfile formulated`, pooled 36, SIM2a-4 ba86ffc..bbdcb09): human Rogue 22, Wizard 25; off 36, 34. `-Route first` human 24 / 17; shop off human 26 / 25; Wizard removals off 24.
 - SIM1 `-Route first`: human Rogue 25/36 (over its 21 ceiling, waived for HP1, to BAL1), Wizard 19/36 (re-measured 87b944b and 1c5250f); off 34/36, 34/36. Floors 12 / 10 / 31 / 30, ceiling 21 / 20 (MAP.md §11.4). SIM1's human preset presses slots at random (no PlanPolicy).
@@ -26,7 +26,7 @@ Last updated: 2026-11-23 (TL4 briefed; gameplay-dev building, while the director
 - Late shares for a Bleed Rogue: Bleed 12.5%, Fire 22.8%, Burn 10.0%. Relic Burn share 21.1% (4 of 19). Thesis Wizard late Fire share about 26%.
 
 ## Pending for the next docs pass
-- README "Last verification" and the "Running tests" suite count are stale (2869 / 2813; now 2937 in 215 suites).
+- README "Last verification" and the "Running tests" suite count are stale (2869 / 2813; now 2952 in 218 suites). In the TL4 handoff.
 
 ## Known issues
 - **The game closed on its own during the director's run (2026-11-20, about 21:44), while gameplay-dev's SIM2a-3 sims ran from the same working tree.** Cause unknown; the evidence rotated out. TL3a (293572a) stops tools writing to `user://logs`, so a future game log survives. The shared `.godot` import cache suspect remains: the director plays from a separate worktree of the tag (`git worktree add ../cr-play <tag>`) or while no agent runs.
@@ -40,6 +40,7 @@ Last updated: 2026-11-23 (TL4 briefed; gameplay-dev building, while the director
 - (TL4 fixes these; drop them at close) TL3b qa nits (5bcb17a): `press any_key` logs twice when the tap swaps the scene (harmless, F13 unbound; look if a bound action is pressed at a scene swap); the `act_transition` test checks the preset string only, not that seed 1 still offers `burnout_syndrome`; the `leveraged_dash` alias is unreachable; `-AtBossAttack` with no boss attack waits for ANCHOR_TIMEOUT and can orphan the Godot child if the wrapper is killed. Fix in the next tooling sitting.
 - ScreenshotCapture restarts its clock on a scene swap, so `map_beat_skip`'s 2.0 s shot fires about 2 s after the swap (TL4 note; not a blocker).
 - Watch mode at `-Scale 4`: `_process`-driven systems (spawner, statuses, boss) still step once per rendered frame. That costs 1-2 `src` sittings, only if the numbers ever call for it (TL4).
+- TL4 qa nits (f072262, non-blocking): the watch restore tests only grep the source (a try/finally or save-and-restore of the originals would be sturdier); parallel watched runs share `user://run_save.json` and log a warning, which can make a won batch exit 1 (run watched runs one at a time); `tools/run_tests.ps1` isn't job-guarded.
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
 **D-numbers:** D21-D55 answered. Next free: D56. No eyes open. Next eyes number: 68.

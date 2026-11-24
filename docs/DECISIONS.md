@@ -3146,3 +3146,9 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
 - **`-AtBossAttack` fail-fast is a heuristic:** it needs a `boss*` scenario key, or `--run-room=` / `--run-node=`. A non-boss room still waits for the timeout. Rejected: resolving the room's real content in the wrapper (too much for a nit).
 - **The orphaned-child fix was reverted:** an owned `Start-Process` lost the exit code on PowerShell 5.1. It goes to the Remaining list as a Job Object fix.
 - **game-lead:** the Remaining item 4 (re-watching `-Scale 1` on the final code) goes to qa's review, not to the fresh gameplay-dev sitting. qa re-watches anyway, so a separate run would be paid for twice.
+
+
+## 2026-11-23 - TL4 qa triage (game-lead)
+- **No playtester smoke for TL4.** Nothing player-visible changed. The one playtester-tool behaviour change (ScriptedInput no longer replays its presses after a scene swap) was run for real by qa on `map_beat_skip`: one press, and the PNG shows the fight screen. Same call as TL3b. Rejected: a playtester session repeating qa's run.
+- qa's nits go to Known issues for a later tooling sitting. None blocks.
+- **Earlier watched `-Scale 4` evidence** (the Milestone 3 playtest's watched losses, the M4a smoke) ran at about 15 decisions per game-second, so it understated the bot. No re-watch now. Difficulty calls already rest on headless SIM (the M3 review), and the next milestone playtest watches at the fixed cadence. Rejected: re-running the M3 watched set (costly, and it informs no pending decision).

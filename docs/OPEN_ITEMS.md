@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-11-24 (your M4b play notes recorded)
-**Status:** **Thanks for the play.** Your notes are recorded: the map no longer starts a room on its own (UX1d, done; it'll be in your next play tag), eyes 68-70 are kept as they are, a larger boss rotation and a Battlemage subclass are in the GDD. BAL1 (balance) is unblocked and goes after UX1d. One new question: D56 (does the Battlemage rework still happen). Your play build is still `playtest-2026-11-23-M4b`.
+**Status:** **Thanks for the play.** Your notes are recorded: the map no longer starts a room on its own (UX1d, done; it'll be in your next play tag), eyes 68-70 are kept as they are, a larger boss rotation and a Battlemage subclass are in the GDD. BAL1 (balance) is next: four sittings, the first only measures. It won't move your difficulty ceilings or touch the Battlemage's own cards while D56 is open. One new question: D56 (does the Battlemage rework still happen). Your play build is still `playtest-2026-11-23-M4b`.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 
@@ -28,7 +28,9 @@ Next new number: D57.
 
 ## Needs your eyes
 
-None right now.
+Reply with the number and a word or two. **Each item has a default. If it's still unanswered when the slice after the one that added it closes, the default applies and it moves to `docs/RESOLVED.md` (your rule, 2026-11-12).**
+
+- **71. Thesis Defense's big hit, next time you play a Thesis Wizard** (`godot --path ../cr-play -- --class=wizard --deck=wizard-thesis --full-deck --run-room=10`). At 6 Charge it hits for 67, up to 157 with the Reading List relic. It shares the Attack: Single slot with Footnotes, the card that builds the Charge. Too big, fine, or does the shared slot feel awkward? This was parked "for BAL1 with your feel" (old eyes 61). **Default: keep both as built.** Added with BAL1's brief; it expires at the close of the slice after BAL1.
 
 ## Later, optional
 

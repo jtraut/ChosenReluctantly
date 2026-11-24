@@ -6,13 +6,14 @@
 Last updated: 2026-11-24 (director's M4b play notes recorded; UX1d briefed). Latest tag `playtest-2026-11-23-M4b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **Nothing in progress.** UX1d closed 2026-11-24 (no map auto-start; docs pass 72f6478). The repo runs. After pulling, run `godot --headless --path . --import` once. The director's play build is still `playtest-2026-11-23-M4b`; UX1d rides in the next tag.
+- **BAL1 briefed (ROADMAP, four sittings A-D), not started.** UX1d closed 2026-11-24. The repo runs. After pulling, run `godot --headless --path . --import` once. The director's play build is still `playtest-2026-11-23-M4b`; UX1d rides in BAL1's tag.
 
 ## Exact next step
-1. **game-lead writes the BAL1 brief** (unblocked by the director's M4b play). Inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot), HP1's relic numbers, BD3b's "Deferred" list. BAL1 must not tune the Battlemage deck away from how it plays now while D56 is open.
-2. **BD3c waits on D56.** The TL4 qa nits, the hit-flash capture hook and retiring the stale `map_beat_skip` preset (with its `tl3b_capture_test` case; also fix the `map_mini_boss` preset description) wait for an optional tools sitting (`safe to chain`).
+1. **gameplay-dev runs BAL1-A (measure only)** from the ROADMAP brief. SIM1 at 72 runs a row is long: run the sims in the background.
+2. After A: game-lead reads the ranked list, writes the gold proposal for the director if the numbers support one, then BAL1-B.
+3. **BD3c waits on D56.** Optional tools sitting (`safe to chain`): the TL4 qa nits, the hit-flash capture hook, retiring `map_beat_skip` (with its `tl3b_capture_test` case) and fixing the `map_mini_boss` preset description.
 
-**Next role:** game-lead (BAL1 brief), then gameplay-dev.
+**Next role:** gameplay-dev (BAL1-A).
 
 ## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21; suite from TL4 qa f072262)
 - Suite 2966 in 221 suites measured (UX1d qa 1c2bee7), 0 failures; a full run takes about 23-27 minutes, so run it in the background.
@@ -24,7 +25,8 @@ Last updated: 2026-11-24 (director's M4b play notes recorded; UX1d briefed). Lat
 - Late shares for a Bleed Rogue: Bleed 12.5%, Fire 22.8%, Burn 10.0%. Relic Burn share 21.1% (4 of 19). Thesis Wizard late Fire share about 26%.
 
 ## Pending for the next docs pass
-- None. (README's older "Last verification" section still shows UX1c-era figures; refresh at BAL1's pass.)
+- README's older "Last verification" section still shows UX1c-era figures; refresh at BAL1's pass.
+- Process change for the CHANGELOG: BAL1 re-briefed as four `safe to chain` sittings (DECISIONS "BAL1 brief"); old eyes 61 re-asked as eyes 71.
 
 ## Known issues
 - **The game closed on its own during the director's run (2026-11-20, about 21:44), while gameplay-dev's SIM2a-3 sims ran from the same working tree.** Cause unknown; the evidence rotated out. TL3a (293572a) stops tools writing to `user://logs`, so a future game log survives. The shared `.godot` import cache suspect remains: the director plays from a separate worktree of the tag (`git worktree add ../cr-play <tag>`) or while no agent runs.
@@ -40,7 +42,7 @@ Last updated: 2026-11-24 (director's M4b play notes recorded; UX1d briefed). Lat
 - UX1c smoke (76be1c5), minor: the ready and cooling card plates are now close in tone, so cooling reads only through dimmed text and the bar (a stronger cooling cue if players miss it); a live check of a Wizard hit right after its violet Heavy; a 7-pile bar tower under the status text near the top of the screen in a real fight; `ux1c_hit` captures can't time the 0.15 s flash (a capture hook to hold it).
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D55 answered; D56 open (BD3c rework). Next free: D57. No eyes open. Next eyes number: 71.
+**D-numbers:** D21-D55 answered; D56 open (BD3c rework). Next free: D57. Eyes 71 open (BAL1 brief; expires at the close of the slice after BAL1). Next eyes number: 72.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths. A role that stops with a `Remaining:` list gets a fresh agent, never a resumed one.
 

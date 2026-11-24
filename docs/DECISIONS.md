@@ -3186,3 +3186,11 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
 - **UX1d goes before BAL1.** It's the director's own ask, small, and flow only, so the bot and headless numbers BAL1 measures don't move.
 - **UX1d removes the beat instead of setting `auto_advance_seconds` to 0.** The GDD now says never, so a dormant knob is dead code. [A 0 knob: cheaper, but it invites someone to turn it back on.]
 - **No playtester smoke check for UX1d.** It removes a timer; qa's real-UI shot of a single-option map after 5 s idle shows the whole change, and the director sees it in his next play. [A smoke check: one more agent session for one screen.]
+
+## 2026-11-24 - BAL1 brief (game-lead; advisor-reviewed)
+- **BAL1 is four sittings, and the first one measures only (A, then B, C, D).** HP1's triage promised "re-read it with more seeds before touching the +4 or the ceiling", and qa's attribution (19 / 24 / 25) says the trip is mostly offer reshuffle. Seeds go from 3 to 6 (72 runs a row) so tuning acts on real outliers. [One tuning sitting: over-size, and it would tune 36-run noise.]
+- **All sittings are `safe to chain`.** They tune slices the director has now played.
+- **The DF1 ceilings don't move, and the gating bot isn't swapped.** Both would quietly undo D51 = C. If the ceiling can't be met without director-set numbers, the sitting stops with a proposal.
+- **The Battlemage's own cards and relic are frozen while D56 is open, and the Wizard sitting goes last.** The Wizard ceiling sits at exactly 20/36, so shared changes can move the Battlemage. Before and after rows make any drift visible.
+- **Gold is a proposal, not a tune.** Cutting income contradicts GDD §4a; a gold sink is design.
+- **Eyes 61's "revisit in BAL1 with the director's feel" becomes eyes 71.** His notes gave no feel on it, so it can't be tuned from sim numbers alone. Default: keep it as built.

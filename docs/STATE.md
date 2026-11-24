@@ -3,17 +3,17 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-23 (re-tagged; waiting for the director's play). Latest tag `playtest-2026-11-23-M4a`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-23 (TL4 briefed; gameplay-dev building, while the director plays M4a). Latest tag `playtest-2026-11-23-M4a`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **Nothing in progress.** The director's play build is now `playtest-2026-11-23-M4a` (main after TL3; smoke check fcfa8d5, no blocker; DECISIONS "Re-tag the director's play build"). The repo runs. After pulling, run `godot --headless --path . --import` once.
+- **TL4, watch-mode fidelity and TL3b nits** (ROADMAP; DECISIONS "TL4 brief"). gameplay-dev building from 97e85d6+. Optional `safe to chain` work while the director plays `playtest-2026-11-23-M4a` (smoke fcfa8d5, no blocker). The repo runs.
 
 ## Exact next step
-1. **Wait for the director's play of `playtest-2026-11-23-M4a`** ("The one ask" in OPEN_ITEMS). It unblocks BAL1 and BD3c (both `needs your play first`).
-2. When he has played: game-lead records his notes, then writes the BAL1 brief. Inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot), HP1's relic numbers.
-3. Optional while waiting (`safe to chain`, not briefed): a ux polish sitting from Known issues (display only; no camera framing or flash timing changes), and a tooling sitting for the TL3b qa nits.
+1. gameplay-dev builds TL4 (Part 1 A/B first; stop if cadence isn't the cause). Then qa (short), then the docs pass, then close. No tag.
+2. Then UX1c, a ux polish sitting from Known issues (display only; brief not yet written).
+3. **Still waiting on the director's play of `playtest-2026-11-23-M4a`** ("The one ask"). It unblocks BAL1 and BD3c (`needs your play first`). BAL1 inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot), HP1's relic numbers.
 
-**Next role:** none until the director plays (game-lead then).
+**Next role:** gameplay-dev (TL4).
 
 ## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21; suite from TL3b qa 5bcb17a)
 - Suite 2937 in 215 suites expected (2933 / 214 measured at TL3b qa 5bcb17a, plus its 4 cases), 0 failures; a full run takes about 27 minutes, so run it in the background.

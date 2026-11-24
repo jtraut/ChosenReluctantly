@@ -1696,7 +1696,7 @@ un_offer_report.ps1`.
 - **Carried into the next milestone playtest:** the hand-scripted captures of `--deck=wizard-thesis`, `--deck=wizard-ward-battlemage` and the loadout screen, 1366x768, and a run with a build-aware bot.
 
 ### Run order
-UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> TL3 (`safe to chain`, while the director plays BD3b) -> BAL1 and BD3c (`needs your play first`) -> the meta design pass (passive tree and the §8 account-wide layer; the D55 default points here) -> subclasses, Water, SIM2.
+UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> TL3 (`safe to chain`, while the director plays BD3b) -> TL4 and UX1c (optional, `safe to chain`, while he plays M4a) -> BAL1 and BD3c (`needs your play first`) -> the meta design pass (passive tree and the §8 account-wide layer; the D55 default points here) -> subclasses, Water, SIM2.
 
 - [x] **UX1a, combat HUD readability. Done 2026-11-20** (ux 1abef8c; qa PASS e732d2e; playtest b06a637, no blocker; docs pass d7dc951; no tag, display only). Eyes 62-64 expired at this close, defaults kept. Original header: **UX1a, combat HUD readability (ux-designer, one sitting, well under 150 calls). `safe to chain`** (it changes no feel or balance; display only).
   - **Goal:** a crowded fight reads at a glance. The evidence is the shots `rogue-s3-crowded-fight.png`, `rogue-s3-act2-miniboss.png`, `rogue-s1off-final-boss.png` and `wizard-s1off-final-boss-half-hp.png`, plus STATE Known issues "Next ux polish".
@@ -1852,6 +1852,24 @@ UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> TL3 (`safe to chain`, whil
     - **Built 2026-11-23:** gameplay-dev d6122ba. `act_transition` takes the boss relic (that screen has no skip); `--run-hp=N`; `--press=<t>:any_key` (raw F13); `-AtBossAttack` accepts label names via `tools/boss_attack.ps1`; presets `act_transition_hurt`, `map_beat_skip`. Debug-only hooks in `src/debug/ScriptedInput.gd`, `CaptureArgs.gd`, `src/run/MapLaunch.gd`, `RunController.gd`, `RunSave.gd` (HP lives in RunState; the map beat needs a raw key). 11 tests (`tl3b_capture_test.gd`); suite 2933; hashes and SIM1 human Rogue 25/36 unchanged. Watch fidelity: likely per-frame bot decisions at scale 4, unconfirmed, about 0.5-1 sitting to fix (STATE Known issues). Next: qa.
     - **qa PASS 2026-11-23** (5bcb17a; `docs/reviews/2026-11-23-tl3b-qa.md`). Suite 2933 / 214, plus qa's 4 cases (2937 / 215). Presets run for real; `--run-hp` edge cases refused; hashes and SIM1 human Rogue 25/36 unchanged; `user://logs` unchanged. Four non-blocking nits (STATE Known issues). No playtester smoke (DECISIONS "TL3b qa triage"). Next: docs pass.
   - **Then:** one tech-writer docs pass for TL3a and TL3b (README lines for new flags, CHANGELOG), then close. No tag (tooling only).
+- [ ] **TL4, watch-mode fidelity and TL3b nits (game-lead, 2026-11-23; DECISIONS "TL4 brief"). gameplay-dev, one sitting, well under 150 tool calls. `safe to chain`** (tools only; headless results must not move). Runs while BAL1 and BD3c wait for the director's play of `playtest-2026-11-23-M4a`.
+  - **Goal:** a watched bot run at `-Scale 4` plays about as well as headless, so playtester difficulty evidence can be trusted. Known issue: off preset 2/4 watched vs 35/36 SIM1; TL3b (d6122ba) could not reproduce it headless at `-Scale 4`. Lead, unconfirmed: the windowed bot decides once per rendered frame (`tools/wave_sim.gd`, `await process_frame` in the room loop), so at scale 4 it reacts at about 15 Hz of game time.
+  - **Part 1, confirm (do this first):** a windowed A/B. Same seeds, off preset, `-Scale 4` vs `-Scale 1`, with vsync off and on (or a capped vs uncapped frame rate). Log decisions per game-second in each. If decision cadence doesn't explain the gap, **report the real cause and a cost estimate, and stop** (commit the findings; Part 2 doesn't run).
+  - **Part 2, fix (only if Part 1 confirms):** make the bot's decision cadence independent of the render rate in windowed mode. Either step decisions on physics ticks, or run a windowed-only inner tick. Headless must stay byte-identical.
+  - **Part 3, the TL3b qa nits (5bcb17a), only if budget remains, otherwise a `Remaining:` list:**
+    1. `press any_key` logs twice when the tap swaps the scene. Check that a bound action pressed at a scene swap doesn't double-fire.
+    2. The `act_transition` test also asserts that seed 1 still offers `burnout_syndrome`.
+    3. Remove or reach the `leveraged_dash` alias.
+    4. `-AtBossAttack` with no boss attack fails fast instead of waiting for ANCHOR_TIMEOUT, and the wrapper doesn't orphan the Godot child when killed.
+  - **Acceptance:**
+    - Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 and SIM1 `-Route first` 25/19/34/34 reproduce unchanged.
+    - After the fix, watched off-preset runs at `-Scale 4` and `-Scale 1` (at least 4 seeds each) win at roughly the headless rate, and decisions per game-second are about the same at both scales. Report both tables.
+    - New tests for whatever changed; suite 0 failures (expected 2937 / 215 plus the new cases). Run the full suite in the background (about 27 minutes).
+    - `src/` untouched unless a debug-only hook is needed (say why).
+  - **Files likely touched:** `tools/wave_sim.gd`, `tools/run_wave_sim.ps1`, `tools/boss_attack.ps1`, `src/debug/ScriptedInput.gd`, tests under `tests/`.
+  - **GDD:** §12 "Automated QA". No design change.
+  - **Machine:** windowed Godot runs on the director's machine. The director should play from a separate worktree (`git worktree add ../cr-play playtest-2026-11-23-M4a`) or while no agent runs.
+  - Then qa (short). No playtester smoke unless a playtester preset changes behaviour. Then the docs pass (also fixes README's stale suite counts, 2869 / 2813 -> current). No tag.
 - [ ] **BAL1, deferred balance (first balance item after the Milestone 3 playtest). `needs your play first`.** The list is BD3b's "Deferred" (game-lead, 2026-11-18; DECISIONS "BD3b brief"). Brief written after the milestone playtest review.
 - [ ] **BD3c, melee Wizard: the Ward Battlemage rework (director, 2026-11-20, D54 = A; GDD §4a; BUILD_DEPTH W-D). `needs your play first`.**
   - **Why it waits:** the director plays W-D in the Milestone 3 playtest first. The brief is written after the milestone playtest review, alongside BAL1.

@@ -3131,3 +3131,10 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
 - **Call:** the BD3b play ask points at `playtest-2026-11-20-BD3b` (492078f), which predates HP1 (dd4f802), UX1a and UX1b (106 commits behind main). BAL1 tunes HP1's relic numbers, so a play of the old tag wouldn't clear BAL1's `needs your play first` gate. Run one playtester smoke check on main (HP1 had none; TL3b added debug hooks under `src/`), then cut `playtest-2026-11-23-M4a` on main and repoint "The one ask" to it.
 - **Why:** cheaper than any new slice, and it must land before he starts playing the old tag.
 - **Rejected:** keeping the old tag (BAL1 would tune unplayed HP1 numbers); a ux polish slice first (would delay the tag; it can follow).
+
+
+## 2026-11-23 - TL4 brief: optional work while the director plays (game-lead)
+- **Call:** "continue the pass" came with no play notes, so BAL1 and BD3c stay blocked. Run the optional `safe to chain` sittings one at a time: TL4 (watch-mode fidelity, then the TL3b qa nits) first, then a ux polish sitting (UX1c).
+- **Why tooling first:** watch mode at `-Scale 4` decides whether playtester evidence on difficulty can be trusted at BAL1 and the next milestone playtest. The ux items are cosmetic and can wait a sitting.
+- **Scope guard:** TL4 confirms the cause with a windowed A/B before fixing anything. If the cause isn't the bot's per-frame decision cadence, it reports and stops. The fix may not change headless results (four hashes, SIM1 25/19/34/34).
+- **Rejected:** ux polish first (less evidence value); idling until the director plays (wastes a free window on work that doesn't depend on him); fixing without the A/B (the cause is unconfirmed).

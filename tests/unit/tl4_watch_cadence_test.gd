@@ -79,7 +79,3 @@ func test_at_boss_attack_without_a_boss_exits_2_at_once() -> void:
 	assert_str(String(result["text"])).contains("needs a boss")
 	assert_int(Time.get_ticks_msec() - started).is_less(20000)
 
-
-func test_capture_wrapper_owns_its_godot_child() -> void:
-	var text: String = FileAccess.get_file_as_string("res://tools/capture_screenshot.ps1")
-	assert_str(text).contains("Start-Process").contains("$child.Kill()")

@@ -87,16 +87,11 @@ Push-Location $root
 try {
     if ($TrueSize) {
         # tools/VpCapture.tscn hosts Main in a SubViewport of exactly this size; same scenario/capture args.
-        $godotArgs = @(Get-ToolLogArgs "capture") + @("--path", ".", "res://tools/VpCapture.tscn", "--", "--size=$TrueSize") + $userArgs
+        & $godot @(Get-ToolLogArgs "capture") --path . res://tools/VpCapture.tscn -- "--size=$TrueSize" @userArgs
     } else {
-        $godotArgs = @(Get-ToolLogArgs "capture") + @("--path", ".", "--resolution", $Resolution, "--") + $userArgs
+        & $godot @(Get-ToolLogArgs "capture") --path . --resolution $Resolution -- @userArgs
     }
-    # TL4: run Godot as a child we own, so killing this script (finally below) does not orphan a window.
-    $quoted = $godotArgs | ForEach-Object { if ("$_" -match '[\s"]') { '"' + ("$_" -replace '"', '\"') + '"' } else { "$_" } }
-    $child = Start-Process -FilePath $godot -ArgumentList $quoted -NoNewWindow -PassThru
-    $child.WaitForExit()
-    exit $child.ExitCode
+    exit $LASTEXITCODE
 } finally {
-    if ($child -and -not $child.HasExited) { $child.Kill() }
     Pop-Location
 }

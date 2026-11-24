@@ -6,16 +6,16 @@
 Last updated: 2026-11-23 (TL4 closed; UX1c briefed, while the director plays M4a). Latest tag `playtest-2026-11-23-M4a`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **UX1c, display polish** (ROADMAP; DECISIONS "UX1c brief"). ux-designer built 0371dd0 (all four items; the card strip is only partly fixed without a camera change). Eyes 68-70 added. Optional `safe to chain` work while the director plays `playtest-2026-11-23-M4a`. The repo runs.
+- **UX1c, display polish** (ROADMAP; DECISIONS "UX1c brief"). ux-designer built 0371dd0 (all four items; the card strip is only partly fixed without a camera change). Eyes 68-70 added. **qa PASS 91dfbe4** (`docs/reviews/2026-11-23-ux1c-qa.md`): the suite was red on one guard test (slice5 `hp_bar` keys) and qa added the missing cases; hashes unchanged; soak OK. Optional `safe to chain` work while the director plays `playtest-2026-11-23-M4a`. The repo runs.
 
 ## Exact next step
-1. qa reviews UX1c (0371dd0; full suite). Then a playtester smoke check, the docs pass, and close. No tag, display only.
+1. playtester smoke check of UX1c. Then the docs pass, and close. No tag, display only.
 2. **Still waiting on the director's play of `playtest-2026-11-23-M4a`** ("The one ask"). It unblocks BAL1 and BD3c (`needs your play first`). BAL1 inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot), HP1's relic numbers.
 
-**Next role:** qa (UX1c).
+**Next role:** playtester (UX1c smoke).
 
 ## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21; suite from TL4 qa f072262)
-- Suite 2952 in 218 suites (TL4 qa f072262), 0 failures; a full run takes about 23-27 minutes, so run it in the background.
+- Suite 2972 in 220 suites expected (UX1c qa 91dfbe4: 2965 / 219 measured with one guard test red, then fixed, plus 7 qa cases; re-measure at the next full run), 0 failures; a full run takes about 23-27 minutes, so run it in the background.
 - Hashes 3172486861 / 916264160 / 1317880580 / 3476063471 (unchanged; act 1 untouched).
 - Formulated (`-BotProfile formulated`, pooled 36, SIM2a-4 ba86ffc..bbdcb09): human Rogue 22, Wizard 25; off 36, 34. `-Route first` human 24 / 17; shop off human 26 / 25; Wizard removals off 24.
 - SIM1 `-Route first`: human Rogue 25/36 (over its 21 ceiling, waived for HP1, to BAL1), Wizard 19/36 (re-measured 87b944b and 1c5250f); off 34/36, 34/36. Floors 12 / 10 / 31 / 30, ceiling 21 / 20 (MAP.md §11.4). SIM1's human preset presses slots at random (no PlanPolicy).

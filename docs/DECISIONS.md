@@ -3166,3 +3166,9 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
 - **Card strip: denser plates** (ready alpha 0x50 -> 0xb0, cooling 0xc0 -> 0xee). The HUD always draws above the 3D world, so layering couldn't help. A test keeps cooling at least 0.15 denser than ready. Rejected: camera framing, which is feel and needs the director's play first. Eyes 70.
 - **The Performance Review readout is on the pause relic list only.** The chip row has no tooltip, and offer screens show relics not yet held.
 - **Two capture scenarios added:** `ux1c_strip`, `ux1c_hit`.
+
+
+## 2026-11-23 - UX1c qa triage (game-lead)
+- **Keep the Mandatory Wellness Pack's "Now: +4 max HP" line**, though the brief asked for no line on other relics. It is true, it is consistent with any relic that has given max HP, and it costs nothing. Rejected: restricting it to the elite-scaling relic, which adds a special case for a line that only repeats the rule text.
+- **Process note for ux-designer and gameplay-dev:** a new key in a validated config block needs its guard-test case in the same commit. Run the guard suites (`slice5_qa_test` and the like) before handing back.
+- **Violet next to the Wizard's Heavy (`#a070ff`):** the playtester smoke judges whether a Wizard hit flash reads as its own cast. Eyes 68 covers the fallback.

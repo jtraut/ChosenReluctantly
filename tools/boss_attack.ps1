@@ -17,6 +17,8 @@ function Resolve-BossAttack {
             }
         }
     }
+    # TL4: a label name that is also an attack id ("Leveraged dash" -> leveraged_dash, the id of the first dash) is the id itself, never an alias of the chained second one.
+    foreach ($key in @($aliases.Keys)) { if ($ids.Contains($key)) { $aliases.Remove($key) } }
     $valid = @($ids) + @($aliases.Keys | ForEach-Object { "$_ (= $($aliases[$_]))" })
     $id = ""
     if ($ids.Contains($Name)) { $id = $Name }

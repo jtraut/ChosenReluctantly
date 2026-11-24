@@ -61,6 +61,18 @@ if ($AtBossAttack) {
         exit 2
     }
     $AtBossAttack = $resolved.Id
+    # TL4: with no scenario and no --run-room / --run-node there is no boss to wait for, and the game would sit for ScreenshotCapture's 90 s ANCHOR_TIMEOUT before exiting 1.
+    $hasBossRoom = $false
+    foreach ($arg in @($Extra | ForEach-Object { $_ -split "," })) { if ($arg -match '^--run-(room|node)=') { $hasBossRoom = $true } }
+    $scenarioHasBoss = $false
+    if ($Scenario) {
+        $scenarioEntry = (Get-Content -Raw (Join-Path $root "data/scenarios.json") | ConvertFrom-Json).PSObject.Properties[$Scenario]
+        if ($scenarioEntry) { $scenarioHasBoss = @($scenarioEntry.Value.PSObject.Properties.Name | Where-Object { $_ -like "boss*" }).Count -gt 0 }
+    }
+    if (-not $scenarioHasBoss -and -not $hasBossRoom) {
+        Write-Error "-AtBossAttack needs a boss: give a boss -Scenario (one with boss_attacks, boss_phase or boss_indices in data/scenarios.json) or -Extra '--run-room=<boss room>' (as the boss_smash preset does); otherwise no boss ever starts and the capture would wait 90 s."
+        exit 2
+    }
 }
 if (-not [System.IO.Path]::IsPathRooted($Out)) { $Out = Join-Path $root $Out }
 $userArgs = @("--screenshot-after=$After", "--screenshot-out=$Out")
@@ -75,11 +87,16 @@ Push-Location $root
 try {
     if ($TrueSize) {
         # tools/VpCapture.tscn hosts Main in a SubViewport of exactly this size; same scenario/capture args.
-        & $godot @(Get-ToolLogArgs "capture") --path . res://tools/VpCapture.tscn -- "--size=$TrueSize" @userArgs
+        $godotArgs = @(Get-ToolLogArgs "capture") + @("--path", ".", "res://tools/VpCapture.tscn", "--", "--size=$TrueSize") + $userArgs
     } else {
-        & $godot @(Get-ToolLogArgs "capture") --path . --resolution $Resolution -- @userArgs
+        $godotArgs = @(Get-ToolLogArgs "capture") + @("--path", ".", "--resolution", $Resolution, "--") + $userArgs
     }
-    exit $LASTEXITCODE
+    # TL4: run Godot as a child we own, so killing this script (finally below) does not orphan a window.
+    $quoted = $godotArgs | ForEach-Object { if ("$_" -match '[\s"]') { '"' + ("$_" -replace '"', '\"') + '"' } else { "$_" } }
+    $child = Start-Process -FilePath $godot -ArgumentList $quoted -NoNewWindow -PassThru
+    $child.WaitForExit()
+    exit $child.ExitCode
 } finally {
+    if ($child -and -not $child.HasExited) { $child.Kill() }
     Pop-Location
 }

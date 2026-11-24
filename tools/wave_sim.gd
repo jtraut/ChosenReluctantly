@@ -1179,6 +1179,7 @@ func _run_whole(run_seed: int) -> void:
 		await _watch_end(result)
 		Engine.physics_ticks_per_second = 60
 		Engine.max_physics_steps_per_frame = 8
+		Input.use_accumulated_input = true
 	if relay != null and relay.hit_landed.is_connected(tally):
 		relay.hit_landed.disconnect(tally)
 	_damage_by_run.append(_damage_run)
@@ -1251,6 +1252,7 @@ func _run_whole(run_seed: int) -> void:
 func _watch_physics_rate() -> void:
 	Engine.physics_ticks_per_second = int(round(60.0 * _scale))
 	Engine.max_physics_steps_per_frame = maxi(8, int(ceil(_scale)) * 2)
+	Input.use_accumulated_input = false  # parse_input_event would otherwise buffer the bot's slot and attack presses to the next rendered frame, up to scale - 1 ticks late
 
 
 func _watch_types(rooms: Array[Dictionary]) -> String:

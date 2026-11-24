@@ -6,14 +6,16 @@
 Last updated: 2026-11-23 (TL4 briefed; gameplay-dev building, while the director plays M4a). Latest tag `playtest-2026-11-23-M4a`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **TL4, watch-mode fidelity and TL3b nits** (ROADMAP; DECISIONS "TL4 brief"). gameplay-dev building from 97e85d6+. Optional `safe to chain` work while the director plays `playtest-2026-11-23-M4a` (smoke fcfa8d5, no blocker). The repo runs.
+- **TL4, watch-mode fidelity and TL3b nits** (ROADMAP; DECISIONS "TL4 brief"). Optional `safe to chain` work while the director plays `playtest-2026-11-23-M4a`. The repo runs.
+  - **Built so far:** gameplay-dev 0eeb22f, 3103566, 92e9342. Part 1 confirmed: at `-Scale 4` the watched bot decided at about 15 per game-second, against 60 at `-Scale 1`. Fixed in watch mode only: 60 x scale physics ticks, per-tick decisions, unbuffered input. Watched off-preset `-Scale 4` went from 2/4 (legacy) to 4/4; `-Scale 1` was 3/4. Hashes and SIM1 25/19/34/34 unchanged. Suite 2944, 0 failures. Nits 3 and 4 (the fail-fast half) are done.
+  - **Remaining (from 92e9342):** (1) diagnose nit 1, `any_key` logging twice at a scene swap (`src/debug/ScriptedInput.gd`); (2) nit 2, assert that seed 1 offers `burnout_syndrome` (`tests/unit/tl3b_capture_test.gd`); (3) the orphaned Godot child on a hard kill (a Job Object in `tools/capture_screenshot.ps1` and `tools/run_wave_sim.ps1`); (4) optional: re-run the watched `-Scale 1` arm on the final code.
 
 ## Exact next step
-1. gameplay-dev builds TL4 (Part 1 A/B first; stop if cadence isn't the cause). Then qa (short), then the docs pass, then close. No tag.
+1. A fresh gameplay-dev sitting takes the TL4 Remaining list. Then qa (short), then the docs pass, then close. No tag.
 2. Then UX1c, a ux polish sitting from Known issues (display only; brief not yet written).
 3. **Still waiting on the director's play of `playtest-2026-11-23-M4a`** ("The one ask"). It unblocks BAL1 and BD3c (`needs your play first`). BAL1 inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot), HP1's relic numbers.
 
-**Next role:** gameplay-dev (TL4).
+**Next role:** gameplay-dev (TL4 Remaining).
 
 ## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21; suite from TL3b qa 5bcb17a)
 - Suite 2937 in 215 suites expected (2933 / 214 measured at TL3b qa 5bcb17a, plus its 4 cases), 0 failures; a full run takes about 27 minutes, so run it in the background.

@@ -1,7 +1,7 @@
 # Director open items
 
 Last updated: 2026-11-24 (your M4b play notes recorded)
-**Status:** **Thanks for the play.** Your notes are recorded: the map won't start a room on its own any more (UX1d, next), eyes 68-70 are kept as they are, a larger boss rotation and a Battlemage subclass are in the GDD. BAL1 (balance) is unblocked and goes after UX1d. One new question: D56 (does the Battlemage rework still happen). Your play build is still `playtest-2026-11-23-M4b`.
+**Status:** **Thanks for the play.** Your notes are recorded: the map no longer starts a room on its own (UX1d, done; it'll be in your next play tag), eyes 68-70 are kept as they are, a larger boss rotation and a Battlemage subclass are in the GDD. BAL1 (balance) is unblocked and goes after UX1d. One new question: D56 (does the Battlemage rework still happen). Your play build is still `playtest-2026-11-23-M4b`.
 
 Only active items live here. Everything you've answered or acknowledged is in `docs/RESOLVED.md` (newest first). Owned by game-lead. Answer in chat with the ID, for example "D31 = A".
 

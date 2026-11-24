@@ -1885,7 +1885,7 @@ UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> TL3 (`safe to chain`, whil
   - **Files likely touched:** HUD and relic UI scenes and scripts under `src/ui/` and `scenes/ui/`, the Rogue's hit flash colour (data or the Juice and Player colour constant), tests.
   - **GDD:** §12 readability; §9 relics (HP1). No design change.
   - Then qa, then a playtester smoke check (player-visible), then the docs pass. No tag.
-- [ ] **UX1d, no auto-start on the map (director, 2026-11-24; GDD §9 "The player always starts the next room"). ux-designer, one short sitting, well under 150 tool calls. `safe to chain`** (the director's own ask; flow only, no gameplay numbers).
+- [x] **UX1d done 2026-11-24** (ux 638b787, c41a17f; qa PASS 1c2bee7, suite 2966 / 221; docs pass 72f6478; no smoke check; no tag, rides in the next play tag). Original header: **UX1d, no auto-start on the map (director, 2026-11-24; GDD §9 "The player always starts the next room"). ux-designer, one short sitting, well under 150 tool calls. `safe to chain`** (the director's own ask; flow only, no gameplay numbers).
   - **Goal:** the run never picks or starts a room for the player. Today UX1b's single-option beat (`MapScreen` `_start_beat` / `skip_beat`, `map_screen.auto_advance_seconds` 1.0 in `data/ui.json`, the `beat_line` / `beat_hint` texts) picks the only reachable node after about 1 s.
   - **Acceptance:**
     1. With exactly one reachable node, the map waits indefinitely for a click or Enter on that node. The one node may stay highlighted and focused, so one Enter still starts it. The line and hint read as for any pick (no "picking for you" text).

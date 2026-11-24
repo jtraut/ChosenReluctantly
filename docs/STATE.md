@@ -6,14 +6,13 @@
 Last updated: 2026-11-24 (director's M4b play notes recorded; UX1d briefed). Latest tag `playtest-2026-11-23-M4b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **UX1d (no auto-start on the map): built (ux 638b787, c41a17f), qa PASS 1c2bee7 (suite 2966 / 221 measured, 0 failures; hashes unchanged), docs pass next.** Audit: no other screen starts a room without a press. The `map_beat_skip` capture preset is now meaningless (kept: `tl3b_capture_test` asserts it); retire it in a tools sitting. The director played M4b on 2026-11-24. The repo runs. After pulling, run `godot --headless --path . --import` once.
+- **Nothing in progress.** UX1d closed 2026-11-24 (no map auto-start; docs pass 72f6478). The repo runs. After pulling, run `godot --headless --path . --import` once. The director's play build is still `playtest-2026-11-23-M4b`; UX1d rides in the next tag.
 
 ## Exact next step
-1. **tech-writer docs pass for UX1d**, then then the docs pass, then game-lead closes it. No smoke check (DECISIONS "Director's M4b play recorded").
-2. **Then game-lead writes the BAL1 brief** (now unblocked). Inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot), HP1's relic numbers, BD3b's "Deferred" list. BAL1 must not tune the Battlemage deck away from how it plays now while D56 is open.
-3. **BD3c waits on D56.** The TL4 qa nits and the hit-flash capture hook wait for a tooling sitting (optional, `safe to chain`).
+1. **game-lead writes the BAL1 brief** (unblocked by the director's M4b play). Inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot), HP1's relic numbers, BD3b's "Deferred" list. BAL1 must not tune the Battlemage deck away from how it plays now while D56 is open.
+2. **BD3c waits on D56.** The TL4 qa nits, the hit-flash capture hook and retiring the stale `map_beat_skip` preset (with its `tl3b_capture_test` case; also fix the `map_mini_boss` preset description) wait for an optional tools sitting (`safe to chain`).
 
-**Next role:** tech-writer (UX1d docs pass).
+**Next role:** game-lead (BAL1 brief), then gameplay-dev.
 
 ## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21; suite from TL4 qa f072262)
 - Suite 2966 in 221 suites measured (UX1d qa 1c2bee7), 0 failures; a full run takes about 23-27 minutes, so run it in the background.
@@ -25,10 +24,7 @@ Last updated: 2026-11-24 (director's M4b play notes recorded; UX1d briefed). Lat
 - Late shares for a Bleed Rogue: Bleed 12.5%, Fire 22.8%, Burn 10.0%. Relic Burn share 21.1% (4 of 19). Thesis Wizard late Fire share about 26%.
 
 ## Pending for the next docs pass
-- `[Director decision]` 2026-11-24: the map never auto-starts a room, even with one path (GDD §9, MAP.md); this reverses game-lead's UX1b beat.
-- `[Director decision]` 2026-11-24: Battlemage is a Wizard subclass (GDD §6); the Battlemage deck "feels fun, synergies working" (ROADMAP BD3c, D56 asked).
-- `[Director decision]` 2026-11-24: a larger boss rotation, more than one boss per act (GDD §10), at content planning after Milestone 4.
-- RESOLVED: eyes 68 (violet hit flash: OK), 69 (HP bar stacking: fine), 70 (darker card strip: looks good), all answered 2026-11-24, defaults kept, text in 02a202c:docs/OPEN_ITEMS.md. "Later" items answered: a second boss per act (yes, GDD §10) and Battlemage as a Wizard subclass (yes, GDD §6), same commit. "The one ask" (play M4b) done 2026-11-24.
+- None. (README's older "Last verification" section still shows UX1c-era figures; refresh at BAL1's pass.)
 
 ## Known issues
 - **The game closed on its own during the director's run (2026-11-20, about 21:44), while gameplay-dev's SIM2a-3 sims ran from the same working tree.** Cause unknown; the evidence rotated out. TL3a (293572a) stops tools writing to `user://logs`, so a future game log survives. The shared `.godot` import cache suspect remains: the director plays from a separate worktree of the tag (`git worktree add ../cr-play <tag>`) or while no agent runs.

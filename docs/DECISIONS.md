@@ -3152,3 +3152,9 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
 - **No playtester smoke for TL4.** Nothing player-visible changed. The one playtester-tool behaviour change (ScriptedInput no longer replays its presses after a scene swap) was run for real by qa on `map_beat_skip`: one press, and the PNG shows the fight screen. Same call as TL3b. Rejected: a playtester session repeating qa's run.
 - qa's nits go to Known issues for a later tooling sitting. None blocks.
 - **Earlier watched `-Scale 4` evidence** (the Milestone 3 playtest's watched losses, the M4a smoke) ran at about 15 decisions per game-second, so it understated the bot. No re-watch now. Difficulty calls already rest on headless SIM (the M3 review), and the next milestone playtest watches at the fixed cadence. Rejected: re-running the M3 watched set (costly, and it informs no pending decision).
+
+
+## 2026-11-23 - UX1c brief (game-lead)
+- **Call:** the second optional sitting from "TL4 brief". It takes the four ux leftovers from Known issues: the Performance Review readout, the Rogue hit flash colour, the 6+ pile overlap, and the card strip overlap.
+- **Why `safe to chain`:** display only. The hit flash changes colour, not timing. The card strip fix is layering only; if it needs camera framing it stops, since framing is feel.
+- **Rejected:** folding these into BAL1, which would delay cheap readability fixes behind the director's play; a camera framing change, which needs his play first.

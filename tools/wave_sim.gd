@@ -181,6 +181,10 @@ var _policy_rng := RandomNumberGenerator.new()
 var _watch_dir: String = ""
 var _watch: WatchMode = null
 var _watch_crowd_best: int = 0
+## TL4: bot decisions (calls of _bot_step) in the room being played, for the decisions-per-game-second line (watch mode or --decision-log; off otherwise, so headless output is unchanged).
+var _decisions: int = 0
+var _decision_log: bool = false
+var _legacy_cadence: bool = false  # TL4 A/B only: watch mode as it was before TL4 (decide per rendered frame, physics at 60 Hz)
 var _watch_boss_shots: int = 0
 var _watch_run_room: int = 1  # TL3a: the run-wide room number of the room being played (the fight shots quote it)
 var _watch_last_kind: String = ""
@@ -205,6 +209,10 @@ func _ready() -> void:
 			_idle = true
 		elif arg == "--god":
 			_god = true
+		elif arg == "--legacy-cadence":
+			_legacy_cadence = true
+		elif arg == "--decision-log":
+			_decision_log = true
 		elif arg == "--trace":
 			_trace = true
 		elif arg == "--run":
@@ -735,6 +743,7 @@ func _bot_drive(want: Vector3) -> void:
 
 
 func _bot_step(enemies: Array[Enemy]) -> void:
+	_decisions += 1
 	if _human_on:
 		_human_flush()
 	if _idle:
@@ -1061,6 +1070,8 @@ func _run_whole(run_seed: int) -> void:
 	var run_sim_total: float = 0.0
 	if _watch_dir != "":
 		_watch = WatchMode.new()
+		if not _legacy_cadence:
+			_watch_physics_rate()
 		_watch.begin(_watch_dir, RunSession.selected_character, run_seed)
 		_watch_crowd_best = 0
 		_watch.say("RUN seed %d, class %s, bot preset %s, route %s, time_scale %.0f" % [run_seed, RunSession.selected_character, _bot_settings.preset_name, ("map, policy " + (_route_policy if _route_policy != "" else "first")) if not _route.is_empty() else "straight run (no map)", _scale])
@@ -1094,7 +1105,13 @@ func _run_whole(run_seed: int) -> void:
 		_watch_run_room = rooms_played + 1
 		if _watch != null:
 			_watch.say("ROOM %d of %d (%s, wave %s): start HP %.0f/%.0f" % [rooms_played + 1, rooms_in_run, String(rooms[room_index]["type"]), String(rooms[room_index]["wave_id"]), controller.state().hp, controller.state().max_hp])
+		_decisions = 0
 		var room_result: String = await _play_room(run_seed, controller, rooms[room_index])
+		if _watch != null or _decision_log:
+			var room_line: String = "DECISIONS room %d: %d decisions in %.1f game s = %.1f per game s (physics %d Hz, time_scale %.1f)" % [rooms_played + 1, _decisions, _sim_time, float(_decisions) / maxf(_sim_time, 0.001), Engine.physics_ticks_per_second, _scale]
+			print(room_line)
+			if _watch != null:
+				_watch.say(room_line)
 		if _watch != null:
 			_watch.say("ROOM %d result %s: %.1f sim s, lowest HP %.0f, HP now %.0f" % [rooms_played + 1, room_result, _sim_time, _room_min_hp, _player.health.current_health if is_instance_valid(_player) else 0.0])
 		(result["room_s"] as Array).append(snappedf(_sim_time, 0.1))
@@ -1160,6 +1177,8 @@ func _run_whole(run_seed: int) -> void:
 		rooms_played += 0 if event_fight_next else 1
 	if _watch != null:
 		await _watch_end(result)
+		Engine.physics_ticks_per_second = 60
+		Engine.max_physics_steps_per_frame = 8
 	if relay != null and relay.hit_landed.is_connected(tally):
 		relay.hit_landed.disconnect(tally)
 	_damage_by_run.append(_damage_run)
@@ -1227,6 +1246,12 @@ func _run_whole(run_seed: int) -> void:
 
 
 # ---- TL2 watch mode (--watch-shots=<dir>): every function here runs only when _watch is set, so the headless sim never reaches it ----
+
+## TL4: windowed time_scale multiplies the physics delta, not the tick count, so -Scale 4 would step the world 15 times a game second (each step 1/15 s). Raising the tick rate by the scale restores 60 steps per game second (each 1/60 s, as headless and at -Scale 1) and lets _play_room decide on every one.
+func _watch_physics_rate() -> void:
+	Engine.physics_ticks_per_second = int(round(60.0 * _scale))
+	Engine.max_physics_steps_per_frame = maxi(8, int(ceil(_scale)) * 2)
+
 
 func _watch_types(rooms: Array[Dictionary]) -> String:
 	var types: Array[String] = []
@@ -1562,7 +1587,11 @@ func _play_room(run_seed: int, controller: RunController, room: Dictionary) -> S
 	var hp_before: float = _player.health.current_health
 	while true:
 		Engine.time_scale = _scale
-		await get_tree().process_frame
+		if _watch != null and not _legacy_cadence:
+			# TL4: watch mode is windowed. There time_scale multiplies the physics step but not the tick rate, so at -Scale 4 the game ran 15 steps of 1/15 s per game second and the bot decided once per rendered frame. _watch_physics_rate() gives 60 ticks per game second again; deciding per physics tick keeps the bot at 60 Hz at any scale and frame rate. Headless keeps its per-frame step, so its results do not move.
+			await get_tree().physics_frame
+		else:
+			await get_tree().process_frame
 		# HP lost over the run (info for the sim reports): every drop between two frames, healing not netted off.
 		_damage_taken += maxf(hp_before - _player.health.current_health, 0.0)
 		hp_before = _player.health.current_health
@@ -1589,6 +1618,7 @@ func _play_room(run_seed: int, controller: RunController, room: Dictionary) -> S
 		_track_boss(enemies)
 		if _watch != null:
 			await _watch_fight_shots(enemies, int(room["index"]))
+			enemies = _enemies()  # the shots await frames: enemies may have died or been freed meanwhile
 		_bot_step(enemies)
 		if _god:
 			_player.health.heal(9999.0)

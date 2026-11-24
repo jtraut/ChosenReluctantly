@@ -31,7 +31,7 @@
 #   A bare --watch-shots (no folder) is refused with a message. CROWD and BOSS lines quote the run-wide room number and the act-local one; "HP at end" is the player's current HP on a loss.
 #   The same lines are printed as "WATCH ..." in the console. Watching at -Scale 1 is real time (a three-act run is about half an hour); -Scale 3 or 4 is faster (it drops --fixed-fps, so the run does not repeat exactly from its seed).
 # Fails on a failed check OR any ERROR / SCRIPT ERROR / WARNING line in the engine output.
-param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets, [int]$StartRoom = 0, [switch]$Plan, [string]$Relics = "", [int]$RelicCap = 0, [string]$Swap = "", [switch]$NoRelics, [string]$Route = "", [switch]$Map, [switch]$NoMap, [switch]$Merchant, [int]$Acts = 0, [string]$BotPreset = "", [double]$BotDelay = -1, [double]$BotAimError = -1, [double]$BotHesitation = -1, [string]$Shots = "", [string]$BotProfile = "", [string]$FormulatedOff = "")
+param([int]$Seed = 1, [int]$Seconds = 90, [int]$Runs = 1, [double]$Scale = 1, [switch]$God, [switch]$Idle, [switch]$Run, [int]$RoomTimeout = 240, [string]$Deck = "", [switch]$LightHeavyOnly, [string]$Class = "", [switch]$WizardNoKite, [switch]$BossLog, [switch]$DodgePellets, [int]$StartRoom = 0, [switch]$Plan, [string]$Relics = "", [int]$RelicCap = 0, [string]$Swap = "", [switch]$NoRelics, [string]$Route = "", [switch]$Map, [switch]$NoMap, [switch]$Merchant, [int]$Acts = 0, [string]$BotPreset = "", [double]$BotDelay = -1, [double]$BotAimError = -1, [double]$BotHesitation = -1, [string]$Shots = "", [string]$BotProfile = "", [string]$FormulatedOff = "", [switch]$DecisionLog, [switch]$NoVsync, [switch]$LegacyCadence)
 
 . "$PSScriptRoot/sim_log.ps1"
 $root = Split-Path -Parent $PSScriptRoot
@@ -58,6 +58,8 @@ if ($Scale -gt 1) {
 $extra = @("--seed=$Seed", "--seconds=$Seconds", "--runs=$Runs", "--scale=$Scale")
 if ($God) { $extra += "--god" }
 if ($Idle) { $extra += "--idle" }
+if ($LegacyCadence) { $extra += "--legacy-cadence" }
+if ($DecisionLog) { $extra += "--decision-log" }
 if ($Deck) { $extra += "--sim-deck=$Deck" }
 if ($LightHeavyOnly) { $extra += "--light-heavy-only" }
 if ($Class) { $extra += "--sim-class=$Class" }
@@ -93,6 +95,7 @@ try {
     $lines = New-Object System.Collections.Generic.List[string]
     $headless = @("--headless")
     if ($Shots) { $headless = @() }  # TL2: a window is needed to take screenshots
+    if ($NoVsync) { $headless += "--disable-vsync" }  # TL4: windowed A/B only; lets the frame rate run uncapped
     & $godot @headless @fixedFps @(Get-ToolLogArgs "wave_sim") --path . res://tools/WaveSim.tscn -- @extra 2>&1 | ForEach-Object { $text = "$_"; $lines.Add($text); Write-Host $text }
     $code = $LASTEXITCODE
     $out = $lines -join "`n"

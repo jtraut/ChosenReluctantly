@@ -672,6 +672,11 @@ func test_hp_bar_block_validates_every_key() -> void:
 		"armor_tint": ["zzz", 5],
 		"colors": ["x", {"fill": "#e2483f"}, {"fill": "nope", "ghost": "#fff", "back": "#fff", "frame": "#fff", "burn": "#fff", "bleed": "#fff"}],
 		"resistance_tints": ["x", {"fire": "nope"}],
+		# UX1c crowd layout keys (qa added; the guard below failed on them in the UX1c hand-off).
+		"stack_row_height": [0.0, -0.1, "x", null],
+		"stack_gap": [-0.1, "x", null],
+		"stack_max_rows": [-1, 2.5, "x", null],
+		"stack_smooth": [-1.0, "x", null],
 	}
 	for key: String in bad_values:
 		for bad: Variant in bad_values[key]:

@@ -6,13 +6,13 @@
 Last updated: 2026-11-23 (TL4 closed; UX1c briefed, while the director plays M4a). Latest tag `playtest-2026-11-23-M4a`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **UX1c, display polish** (ROADMAP; DECISIONS "UX1c brief"). ux-designer building from the UX1c brief commit. Optional `safe to chain` work while the director plays `playtest-2026-11-23-M4a`. The repo runs.
+- **UX1c, display polish** (ROADMAP; DECISIONS "UX1c brief"). ux-designer built 0371dd0 (all four items; the card strip is only partly fixed without a camera change). Eyes 68-70 added. Optional `safe to chain` work while the director plays `playtest-2026-11-23-M4a`. The repo runs.
 
 ## Exact next step
-1. ux-designer builds UX1c. Then qa, a playtester smoke check, the docs pass, and close. No tag, display only.
+1. qa reviews UX1c (0371dd0; full suite). Then a playtester smoke check, the docs pass, and close. No tag, display only.
 2. **Still waiting on the director's play of `playtest-2026-11-23-M4a`** ("The one ask"). It unblocks BAL1 and BD3c (`needs your play first`). BAL1 inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot), HP1's relic numbers.
 
-**Next role:** ux-designer (UX1c).
+**Next role:** qa (UX1c).
 
 ## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21; suite from TL4 qa f072262)
 - Suite 2952 in 218 suites (TL4 qa f072262), 0 failures; a full run takes about 23-27 minutes, so run it in the background.
@@ -39,7 +39,7 @@ Last updated: 2026-11-23 (TL4 closed; UX1c briefed, while the director plays M4a
 - TL4 qa nits (f072262, non-blocking): the watch restore tests only grep the source (a try/finally or save-and-restore of the originals would be sturdier); parallel watched runs share `user://run_save.json` and log a warning, which can make a won batch exit 1 (run watched runs one at a time); `tools/run_tests.ps1` isn't job-guarded.
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D55 answered. Next free: D56. No eyes open. Next eyes number: 68.
+**D-numbers:** D21-D55 answered. Next free: D56. Eyes 68-70 open (UX1c; they expire at the close of the slice after UX1c). Next eyes number: 71.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths. A role that stops with a `Remaining:` list gets a fresh agent, never a resumed one.
 

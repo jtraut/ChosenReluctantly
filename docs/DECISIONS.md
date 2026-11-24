@@ -3158,3 +3158,11 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
 - **Call:** the second optional sitting from "TL4 brief". It takes the four ux leftovers from Known issues: the Performance Review readout, the Rogue hit flash colour, the 6+ pile overlap, and the card strip overlap.
 - **Why `safe to chain`:** display only. The hit flash changes colour, not timing. The card strip fix is layering only; if it needs camera framing it stops, since framing is feel.
 - **Rejected:** folding these into BAL1, which would delay cheap readability fixes behind the director's play; a camera framing change, which needs his play first.
+
+
+## 2026-11-23 - UX1c build calls (ux-designer; logged by game-lead)
+- **Hit flash violet** Color(0.65, 0.35, 1.0), up from Color(1, .3, .3). The duration stays 0.15 s. The constant is shared, so the Wizard flashes violet too. Why: every other hue is taken by an element or status. Rejected: white, which enemies use for their own hit flash. Eyes 68.
+- **Crowd HP bars stack upward** along the camera's up axis: row 0.3, gap 0.04, at most 5 rows, eased, set in `data/ui.json` `hp_bars`. A lone bar never moves. Rejected: spreading bars sideways, which detaches them from their enemies. Eyes 69.
+- **Card strip: denser plates** (ready alpha 0x50 -> 0xb0, cooling 0xc0 -> 0xee). The HUD always draws above the 3D world, so layering couldn't help. A test keeps cooling at least 0.15 denser than ready. Rejected: camera framing, which is feel and needs the director's play first. Eyes 70.
+- **The Performance Review readout is on the pause relic list only.** The chip row has no tooltip, and offer screens show relics not yet held.
+- **Two capture scenarios added:** `ux1c_strip`, `ux1c_hit`.

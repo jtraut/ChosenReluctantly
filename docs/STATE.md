@@ -6,13 +6,13 @@
 Last updated: 2026-11-23 (TL4 closed; UX1c briefed, while the director plays M4a). Latest tag `playtest-2026-11-23-M4a`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **UX1c, display polish** (ROADMAP; DECISIONS "UX1c brief"). ux-designer built 0371dd0 (all four items; the card strip is only partly fixed without a camera change). Eyes 68-70 added. **qa PASS 91dfbe4** (`docs/reviews/2026-11-23-ux1c-qa.md`): the suite was red on one guard test (slice5 `hp_bar` keys) and qa added the missing cases; hashes unchanged; soak OK. Optional `safe to chain` work while the director plays `playtest-2026-11-23-M4a`. The repo runs.
+- **UX1c, display polish** (ROADMAP; DECISIONS "UX1c brief"). ux-designer built 0371dd0 (all four items; the card strip is only partly fixed without a camera change). Eyes 68-70 added. **qa PASS 91dfbe4** (`docs/reviews/2026-11-23-ux1c-qa.md`): the suite was red on one guard test (slice5 `hp_bar` keys) and qa added the missing cases; hashes unchanged; soak OK. **Playtester smoke 76be1c5: NO BLOCKER.** Optional `safe to chain` work while the director plays `playtest-2026-11-23-M4a`. The repo runs.
 
 ## Exact next step
-1. playtester smoke check of UX1c. Then the docs pass, and close. No tag, display only.
+1. tech-writer docs pass for UX1c (0371dd0..76be1c5), then close. No tag, display only.
 2. **Still waiting on the director's play of `playtest-2026-11-23-M4a`** ("The one ask"). It unblocks BAL1 and BD3c (`needs your play first`). BAL1 inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot), HP1's relic numbers.
 
-**Next role:** playtester (UX1c smoke).
+**Next role:** tech-writer (UX1c docs pass).
 
 ## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21; suite from TL4 qa f072262)
 - Suite 2972 in 220 suites expected (UX1c qa 91dfbe4: 2965 / 219 measured with one guard test red, then fixed, plus 7 qa cases; re-measure at the next full run), 0 failures; a full run takes about 23-27 minutes, so run it in the background.
@@ -37,6 +37,7 @@ Last updated: 2026-11-23 (TL4 closed; UX1c briefed, while the director plays M4a
 - ScreenshotCapture restarts its clock on a scene swap, so `map_beat_skip`'s 2.0 s shot fires about 2 s after the swap (TL4 note; not a blocker).
 - Watch mode at `-Scale 4`: `_process`-driven systems (spawner, statuses, boss) still step once per rendered frame. That costs 1-2 `src` sittings, only if the numbers ever call for it (TL4).
 - TL4 qa nits (f072262, non-blocking): the watch restore tests only grep the source (a try/finally or save-and-restore of the originals would be sturdier); parallel watched runs share `user://run_save.json` and log a warning, which can make a won batch exit 1 (run watched runs one at a time); `tools/run_tests.ps1` isn't job-guarded.
+- UX1c smoke (76be1c5), minor: the ready and cooling card plates are now close in tone, so cooling reads only through dimmed text and the bar (a stronger cooling cue if players miss it); a live check of a Wizard hit right after its violet Heavy; a 7-pile bar tower under the status text near the top of the screen in a real fight; `ux1c_hit` captures can't time the 0.15 s flash (a capture hook to hold it).
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
 **D-numbers:** D21-D55 answered. Next free: D56. Eyes 68-70 open (UX1c; they expire at the close of the slice after UX1c). Next eyes number: 71.

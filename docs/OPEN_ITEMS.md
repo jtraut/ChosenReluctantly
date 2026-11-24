@@ -34,7 +34,7 @@ Added by UX1c (on main, not in the M4a tag yet). Pictures are in `docs/playtests
 
 - **68. Getting hit now flashes violet** (it was pink-red, which looked like an enemy colour; both classes flash violet now). See `hit-after-1366x768.png`. Is violet OK? **Default: keep violet.** The fallback is dark navy.
 - **69. When 6+ enemies bunch up, their HP bars stack into rows** instead of overlapping (at most 5 rows). See `crowd-after-1366x768.png`. Does the stack read clearly, and is its height OK? **Default: keep.** The fallback is at most 3 rows, or off.
-- **70. The card strip's backing is darker**, so an enemy walking under it no longer fights the card text. The enemy is dimmed, not hidden. See `strip-after-1366x768.png`. **Default: keep.** Keeping enemies out from under the strip would mean moving the camera; that's a feel change for after your play.
+- **70. The card strip's backing is darker**, so an enemy walking under it no longer fights the card text. The enemy is dimmed, not hidden. See `strip-after-1366x768.png`. **Default: keep.** Keeping enemies out from under the strip would mean moving the camera; that's a feel change for after your play. (The playtester notes that ready and cooling cards now look closer; cooling shows through dimmed text and the bar. Say "70 stronger cue" if you want that boosted.)
 
 ## Later, optional
 

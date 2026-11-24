@@ -15,6 +15,7 @@ Owner: game-lead. Status: **[PROPOSED]**, written 2026-11-03 for GDD §9 "Branch
 - **Room 10:** one boss node. Every room-9 node leads to it.
 - **Choices per step:** from any node you can go to 1-3 nodes in the next room, in neighbouring columns only. Most nodes offer 2. Routes can cross over at shared nodes, but their lines never cross on screen.
 - **The whole map is visible from the start** (D32 default), so you can plan a route, for example "two elites, then the merchant".
+- **The player always starts the next room [DIRECTOR DECISION, 2026-11-24]** (GDD §9): no auto-pick or auto-start, even with only one reachable node.
 - **Reading direction:** the map reads **left to right**, with room 1 on the left and the boss on the right. Ten columns fit a 16:9 screen better than ten rows.
 
 ```

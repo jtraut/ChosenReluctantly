@@ -3179,3 +3179,10 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
 - **Why it's safe:** no play notes have come in, so he likely hasn't started. The changes since M4a are tools (TL4, plus a debug-only `--press` hook) and display (UX1c). The UX1c smoke check (76be1c5) ran on main containing both, with no blocker. Same reasoning as "Re-tag the director's play build".
 - **Also:** no slice closes before his play, so eyes 68-70 don't expire unseen.
 - **Rejected:** keeping M4a and asking him to check 68 on main (two builds to juggle, and his M4a notes would spend time on things already fixed).
+
+## 2026-11-24 - Director's M4b play recorded; UX1d brief (game-lead)
+- **The M4b play counts as "the one ask" for BAL1.** BAL1 and BD3c were gated on his play, not on the vision check. Vision check round 2 and a timed run stay open in OPEN_ITEMS; BAL1 doesn't need them to start. [Hold BAL1 until the vision check is answered: it blocks the only balance work on a survey.]
+- **BD3c waits on D56.** His note that the current Battlemage "feels fun" sits against D54's rework direction, and a rework costs four sittings and is hard to reverse. That's his call. [Run BD3c as planned: it could rework away a build he just said he likes.]
+- **UX1d goes before BAL1.** It's the director's own ask, small, and flow only, so the bot and headless numbers BAL1 measures don't move.
+- **UX1d removes the beat instead of setting `auto_advance_seconds` to 0.** The GDD now says never, so a dormant knob is dead code. [A 0 knob: cheaper, but it invites someone to turn it back on.]
+- **No playtester smoke check for UX1d.** It removes a timer; qa's real-UI shot of a single-option map after 5 s idle shows the whole change, and the director sees it in his next play. [A smoke check: one more agent session for one screen.]

@@ -3,18 +3,18 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-23 (TL4 and UX1c closed; re-tagged M4b; waiting for the director's play). Latest tag `playtest-2026-11-23-M4b`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-24 (director's M4b play notes recorded; UX1d briefed). Latest tag `playtest-2026-11-23-M4b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **Nothing in progress.** TL4 and UX1c are closed (optional `safe to chain` work while the director plays). The director's play build is now `playtest-2026-11-23-M4b` (e7ebd14: M4a plus TL4 tools and UX1c display; smoke 76be1c5 on main, no blocker; DECISIONS "Re-tag as M4b"). The repo runs. After pulling, run `godot --headless --path . --import` once.
+- **UX1d (no auto-start on the map), briefed in ROADMAP, not started.** The director played M4b on 2026-11-24. The repo runs. After pulling, run `godot --headless --path . --import` once.
 
 ## Exact next step
-1. **Wait for the director's play of `playtest-2026-11-23-M4b`** ("The one ask" in OPEN_ITEMS). It unblocks BAL1 and BD3c (both `needs your play first`).
-2. When he has played: game-lead records his notes and the answers to eyes 68-70, then writes the BAL1 brief. Inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot), HP1's relic numbers.
-3. **Don't close another slice before he plays:** that would expire eyes 68-70 unseen. The TL4 qa nits and the hit-flash capture hook wait for a tooling sitting after his play.
-4. The suite baseline 2972 / 220 is expected, not measured (the last full run, 2965 / 219, was red on one guard test qa then fixed). BAL1's qa measures it.
+1. **ux-designer builds UX1d** (ROADMAP brief), then qa, then the docs pass, then game-lead closes it. No smoke check (DECISIONS "Director's M4b play recorded").
+2. **Then game-lead writes the BAL1 brief** (now unblocked). Inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot), HP1's relic numbers, BD3b's "Deferred" list. BAL1 must not tune the Battlemage deck away from how it plays now while D56 is open.
+3. **BD3c waits on D56.** The TL4 qa nits and the hit-flash capture hook wait for a tooling sitting (optional, `safe to chain`).
+4. The suite baseline 2972 / 220 is expected, not measured. UX1d's qa measures it.
 
-**Next role:** none until the director plays (game-lead then).
+**Next role:** ux-designer (UX1d).
 
 ## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21; suite from TL4 qa f072262)
 - Suite 2972 in 220 suites expected (UX1c qa 91dfbe4: 2965 / 219 measured with one guard test red, then fixed, plus 7 qa cases; re-measure at the next full run), 0 failures; a full run takes about 23-27 minutes, so run it in the background.
@@ -26,11 +26,14 @@ Last updated: 2026-11-23 (TL4 and UX1c closed; re-tagged M4b; waiting for the di
 - Late shares for a Bleed Rogue: Bleed 12.5%, Fire 22.8%, Burn 10.0%. Relic Burn share 21.1% (4 of 19). Thesis Wizard late Fire share about 26%.
 
 ## Pending for the next docs pass
-- None.
+- `[Director decision]` 2026-11-24: the map never auto-starts a room, even with one path (GDD §9, MAP.md); this reverses game-lead's UX1b beat.
+- `[Director decision]` 2026-11-24: Battlemage is a Wizard subclass (GDD §6); the Battlemage deck "feels fun, synergies working" (ROADMAP BD3c, D56 asked).
+- `[Director decision]` 2026-11-24: a larger boss rotation, more than one boss per act (GDD §10), at content planning after Milestone 4.
+- RESOLVED: eyes 68 (violet hit flash: OK), 69 (HP bar stacking: fine), 70 (darker card strip: looks good), all answered 2026-11-24, defaults kept, text in 02a202c:docs/OPEN_ITEMS.md. "Later" items answered: a second boss per act (yes, GDD §10) and Battlemage as a Wizard subclass (yes, GDD §6), same commit. "The one ask" (play M4b) done 2026-11-24.
 
 ## Known issues
 - **The game closed on its own during the director's run (2026-11-20, about 21:44), while gameplay-dev's SIM2a-3 sims ran from the same working tree.** Cause unknown; the evidence rotated out. TL3a (293572a) stops tools writing to `user://logs`, so a future game log survives. The shared `.godot` import cache suspect remains: the director plays from a separate worktree of the tag (`git worktree add ../cr-play <tag>`) or while no agent runs.
-- Next ux polish: a "now +N" readout for Performance Review (HP1); the Rogue's pink-red hit flash briefly reads as an enemy colour; a 6+ pile's HP bars and pips overlap each other (UX1b playtest).
+- Next ux polish: a "now +N" readout for Performance Review (HP1).
 - In `docs/playtests/img/ux1b/crowd-1152x648_0.png` an enemy overlaps the top edge of the bottom-right card strip (camera framing or card layering). Not fixed in UX1b; a later ux polish item.
 - **BAL1: the SIM1 human Rogue is 25/36 after HP1, over its 21 ceiling** (waived for HP1, DECISIONS "HP1 build triage"). Thin margins to carry into BAL1: SIM1 human Wizard exactly at its ceiling (20/36), off Wizard 1 above its floor (31/30), Wizard `relic` median 14.0, W-B removal pain +22% to +28%.
 - Wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
@@ -42,9 +45,9 @@ Last updated: 2026-11-23 (TL4 and UX1c closed; re-tagged M4b; waiting for the di
 - UX1c smoke (76be1c5), minor: the ready and cooling card plates are now close in tone, so cooling reads only through dimmed text and the bar (a stronger cooling cue if players miss it); a live check of a Wizard hit right after its violet Heavy; a 7-pile bar tower under the status text near the top of the screen in a real fight; `ux1c_hit` captures can't time the 0.15 s flash (a capture hook to hold it).
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
-**D-numbers:** D21-D55 answered. Next free: D56. Eyes 68-70 open (UX1c; they expire at the close of the slice after UX1c). Next eyes number: 71.
+**D-numbers:** D21-D55 answered; D56 open (BD3c rework). Next free: D57. No eyes open. Next eyes number: 71.
 
 **Orchestration:** game-lead has the `Agent` tool. Restart with `claude --agent game-lead` and say "continue the pass". Run roles one at a time; each role commits only its own paths. A role that stops with a `Remaining:` list gets a fresh agent, never a resumed one.
 
 ## Open questions
-All director-facing items are in `docs/OPEN_ITEMS.md`: the BD3b play; the round 2 vision check; and, under "Later, optional", a second boss per act and Battlemage as a Wizard subclass.
+All director-facing items are in `docs/OPEN_ITEMS.md`: D56; the round 2 vision check and a timed run; under "Later, optional", class names and the research digest.

@@ -1696,7 +1696,7 @@ un_offer_report.ps1`.
 - **Carried into the next milestone playtest:** the hand-scripted captures of `--deck=wizard-thesis`, `--deck=wizard-ward-battlemage` and the loadout screen, 1366x768, and a run with a build-aware bot.
 
 ### Run order
-UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> TL3 (`safe to chain`, while the director plays BD3b) -> TL4 and UX1c (optional, `safe to chain`, while he plays M4a) -> BAL1 and BD3c (`needs your play first`) -> the meta design pass (passive tree and the §8 account-wide layer; the D55 default points here) -> subclasses, Water, SIM2.
+UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> TL3 (`safe to chain`, while the director plays BD3b) -> TL4 and UX1c (optional, `safe to chain`, while he plays M4a) -> UX1d (director's M4b note, `safe to chain`) -> BAL1 and BD3c (`needs your play first`; the director played M4b on 2026-11-24, so they are unblocked, BD3c subject to D56) -> the meta design pass (passive tree and the §8 account-wide layer; the D55 default points here) -> subclasses, Water, SIM2.
 
 - [x] **UX1a, combat HUD readability. Done 2026-11-20** (ux 1abef8c; qa PASS e732d2e; playtest b06a637, no blocker; docs pass d7dc951; no tag, display only). Eyes 62-64 expired at this close, defaults kept. Original header: **UX1a, combat HUD readability (ux-designer, one sitting, well under 150 calls). `safe to chain`** (it changes no feel or balance; display only).
   - **Goal:** a crowded fight reads at a glance. The evidence is the shots `rogue-s3-crowded-fight.png`, `rogue-s3-act2-miniboss.png`, `rogue-s1off-final-boss.png` and `wizard-s1off-final-boss-half-hp.png`, plus STATE Known issues "Next ux polish".
@@ -1885,9 +1885,18 @@ UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> TL3 (`safe to chain`, whil
   - **Files likely touched:** HUD and relic UI scenes and scripts under `src/ui/` and `scenes/ui/`, the Rogue's hit flash colour (data or the Juice and Player colour constant), tests.
   - **GDD:** §12 readability; §9 relics (HP1). No design change.
   - Then qa, then a playtester smoke check (player-visible), then the docs pass. No tag.
+- [ ] **UX1d, no auto-start on the map (director, 2026-11-24; GDD §9 "The player always starts the next room"). ux-designer, one short sitting, well under 150 tool calls. `safe to chain`** (the director's own ask; flow only, no gameplay numbers).
+  - **Goal:** the run never picks or starts a room for the player. Today UX1b's single-option beat (`MapScreen` `_start_beat` / `skip_beat`, `map_screen.auto_advance_seconds` 1.0 in `data/ui.json`, the `beat_line` / `beat_hint` texts) picks the only reachable node after about 1 s.
+  - **Acceptance:**
+    1. With exactly one reachable node, the map waits indefinitely for a click or Enter on that node. The one node may stay highlighted and focused, so one Enter still starts it. The line and hint read as for any pick (no "picking for you" text).
+    2. Remove the beat (code, the data key, its texts and `UiConfig` default) rather than leaving a 0 knob, since the GDD now says never. Update `tests/unit/ux1b_test.gd` and add a test that the single-option map is still in PICK mode, with no room started, after several seconds of idle frames.
+    3. Audit every other screen between rooms (reward, rest, merchant, event, relic give-up, the act change, Continue on a saved run) for anything that starts the next room without a press, and list them in the hand-back. Fix any timer-driven one the same way; if one needs a gameplay-dev hook, stop and report it.
+    4. Bot and headless paths are unchanged (the beat was human-only): the four hashes don't move.
+  - **Files likely:** `src/ui/MapScreen.gd`, `src/ui/UiConfig.gd`, `data/ui.json`, `tests/unit/ux1b_test.gd`, a new `tests/unit/ux1d_test.gd`.
+  - Then qa (a test plus one real-UI shot of a single-option map after 5 s idle), the docs pass, close. No playtester smoke check (DECISIONS "UX1d brief"). No tag on its own; it rides in the next play tag.
 - [ ] **BAL1, deferred balance (first balance item after the Milestone 3 playtest). `needs your play first`.** The list is BD3b's "Deferred" (game-lead, 2026-11-18; DECISIONS "BD3b brief"). Brief written after the milestone playtest review.
 - [ ] **BD3c, melee Wizard: the Ward Battlemage rework (director, 2026-11-20, D54 = A; GDD §4a; BUILD_DEPTH W-D). `needs your play first`.**
-  - **Why it waits:** the director plays W-D in the Milestone 3 playtest first. The brief is written after the milestone playtest review, alongside BAL1.
+  - **Why it waits:** the director plays W-D in the Milestone 3 playtest first. **He played it on 2026-11-24: "the battlemage feels fun and working synergies so far", and Battlemage is a good Wizard subclass (GDD §6). Whether this rework still runs, or the melee spellblade becomes the Battlemage subclass instead, is D56.** The brief is written after the milestone playtest review, alongside BAL1.
   - **Goal:** an aggressive, tankier "spellblade" Wizard. It has short-range single and AoE bursts, a ward that pays off when you close in, and a key relic that makes light and heavy melee.
   - **Known risks, written down now because they decided D54:**
     - The kiting plan bot can't measure a melee build, so it needs a close-range mode first.

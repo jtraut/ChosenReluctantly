@@ -2,6 +2,25 @@
 
 A plain-language history of the project for the director, grouped by date (from git commit dates). **Newest entry first:** new entries are always added directly under this header, never at the bottom. Hashes in parentheses are short git commit IDs.
 
+## 2026-11-24 (UX1d, the map never picks a room; director play notes)
+
+No tag, no new third-party assets. Commit range d7f6298..1c2bee7. Code: ux-designer 638b787, c41a17f; qa 1c2bee7 (`docs/reviews/2026-11-24-ux1d-qa.md`, PASS; screenshot `docs/playtests/img/ux1d/map_single_option_5s.png`). Suite: 2966 cases in 221 suites, 0 failures (qa measured). Sim hashes unchanged.
+
+**Changed**
+- [Director decision] The map never picks or starts a room on its own, even with one path left (GDD section 9, `docs/MAP.md`). This reverses game-lead's UX1b call. The one reachable node stays highlighted and focused; Enter or a click starts it (638b787).
+- Removed UX1b's single-option beat: the beat code and `human_session`/`automated_session` in `src/ui/MapScreen.gd`; `map_screen.auto_advance_seconds` (old value 1.0) from `data/ui.json` and `src/ui/UiConfig.gd`; `beat_line`/`beat_hint` from `data/run.json`; the `automated_session` line in `tools/wave_sim.gd`; `tools/probe_human_session.gd` and `tools/ProbeHumanSession.tscn` (deleted) (638b787).
+- An audit found no other between-room screen that starts a room without a press (638b787).
+
+**Added**
+- `tests/unit/ux1d_test.gd` (5 cases); `tests/unit/ux1b_test.gd` lost its 11 beat cases (638b787, c41a17f).
+
+**Docs and process**
+- [Director decision] Battlemage is a Wizard subclass (GDD section 6). He said the current `wizard-ward-battlemage` deck "feels fun, synergies working". Whether the BD3c rework still runs is now open as D56 (d7f6298).
+- [Director decision] A larger boss rotation, more than one boss per act, is preferred (GDD section 10); it is planned at content planning after Milestone 4 (d7f6298).
+- The director played `playtest-2026-11-23-M4b` and his notes are recorded in d7f6298. Eyes 68 to 70 answered "keep" (see `docs/RESOLVED.md`). The vision check round 2 and a timed run are still open.
+- Capture tip from qa: `tools/capture.ps1 -Preset map_mini_boss -After "5.0"` shows the single-option map idle; explicit parameters override the preset. The `map_beat_skip` preset is stale (its beat is gone) and stays until a tools sitting retires it, because `tests/unit/tl3b_capture_test.gd` reads it.
+- README and ARCHITECTURE updated to match (beat paragraph, probe tool, `any_key` wording, preset rows, suite count).
+
 ## 2026-11-23 (UX1c, display polish)
 
 Display only: gameplay numbers and the four sim hashes are unchanged (3172486861 / 916264160 / 1317880580 / 3476063471). No tag, no new third-party assets, no director decisions. Commit range 0371dd0..76be1c5. Code: ux-designer 0371dd0; qa 91dfbe4 (`docs/reviews/2026-11-23-ux1c-qa.md`, PASS); playtester smoke 76be1c5 (`docs/playtests/2026-11-23-ux1c-smoke.md`, NO BLOCKER). Suite: 2972 cases in 220 suites expected, not measured (the last full run, 2965 in 219, was before qa's guard fix and 7 new cases).

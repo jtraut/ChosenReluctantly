@@ -2,6 +2,19 @@
 
 The archive of the director's answered, received and acknowledged items, moved here from `docs/OPEN_ITEMS.md`. Owned by tech-writer (director, 2026-11-02). Newest dated section first; IDs (D19, call 16, checklist item 33) are kept so they can be searched. Old entries change only to fix a factual error.
 
+## 2026-11-24 (UX1d close, director play notes)
+
+All answered 2026-11-24. The original text is at `git show 02a202c:docs/OPEN_ITEMS.md`. His notes are recorded in d7f6298.
+
+| ID | Question | Your answer | Where it went |
+|---|---|---|---|
+| Eyes 68 | Does the violet player hit flash read well? | "Violet ok" | Default kept (UX1c as built). |
+| Eyes 69 | Do crowd HP bars stacking into rows work? | "Stacking is fine" | Default kept. |
+| Eyes 70 | Is the darker card strip backing right? | "Card strip looks good" | Default kept. |
+| Later | A second boss per act? | Yes, a larger boss rotation is preferable. | GDD section 10; planned at content planning after Milestone 4. |
+| Later | Battlemage as a Wizard subclass? | Yes. He said the current `wizard-ward-battlemage` deck "feels fun, synergies working". | GDD section 6; whether the BD3c rework still runs is open as D56. |
+| The one ask | Play `playtest-2026-11-23-M4b`. | Done 2026-11-24. | Notes in d7f6298. The vision check round 2 and a timed run are still open. |
+
 ## 2026-11-21 (SIM2a close)
 
 ### Director play note, 2026-11-20 (partial run)

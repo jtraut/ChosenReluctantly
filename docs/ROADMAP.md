@@ -1870,7 +1870,7 @@ UX1a -> UX1b -> HP1 -> SIM2a (all `safe to chain`) -> TL3 (`safe to chain`, whil
   - **GDD:** §12 "Automated QA". No design change.
   - **Machine:** windowed Godot runs on the director's machine. The director should play from a separate worktree (`git worktree add ../cr-play playtest-2026-11-23-M4a`) or while no agent runs.
   - Then qa (short). No playtester smoke unless a playtester preset changes behaviour. Then the docs pass (also fixes README's stale suite counts, 2869 / 2813 -> current). No tag.
-- [ ] **UX1c, display polish (game-lead, 2026-11-23; DECISIONS "UX1c brief"). ux-designer, one sitting, well under 150 tool calls. `safe to chain`** (display only: no camera framing, no flash timing, no gameplay numbers).
+- [x] **UX1c, display polish. Done 2026-11-23** (ux 0371dd0; qa PASS 91dfbe4, with a guard test fix; playtest smoke 76be1c5, no blocker; docs pass c3bc75a; no tag, display only). Eyes 68-70 added. The card strip is only partly fixed: camera framing is deferred as feel. Original header: **UX1c, display polish (game-lead, 2026-11-23; DECISIONS "UX1c brief"). ux-designer, one sitting, well under 150 tool calls. `safe to chain`** (display only: no camera framing, no flash timing, no gameplay numbers).
   - **Goal:** clear the four ux leftovers in STATE Known issues.
   - **Items:**
     1. **Performance Review readout.** Show its current bonus where the relic is shown (tooltip or relic strip), for example "now +2 max HP". The data is in `RunState.relic_max_hp` / `RunMaxHp` (HP1). If a getter is missing, add a read-only one and say so; no rule change.

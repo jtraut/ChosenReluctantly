@@ -3,16 +3,17 @@
 > **Director: what's waiting on you is in `docs/OPEN_ITEMS.md`.**
 > **History: closed slices are in `docs/ROADMAP.md` and `docs/CHANGELOG.md` (newest first). Code map: `docs/ARCHITECTURE.md`. Full STATE history before the 2026-11-12 trim: `git show dca0975:docs/STATE.md`.**
 
-Last updated: 2026-11-23 (TL4 closed; UX1c briefed, while the director plays M4a). Latest tag `playtest-2026-11-23-M4a`. STATE holds only what's live (CLAUDE.md "Cost controls").
+Last updated: 2026-11-23 (TL4 and UX1c closed; waiting for the director's play). Latest tag `playtest-2026-11-23-M4a`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **UX1c, display polish** (ROADMAP; DECISIONS "UX1c brief"). ux-designer built 0371dd0 (all four items; the card strip is only partly fixed without a camera change). Eyes 68-70 added. **qa PASS 91dfbe4** (`docs/reviews/2026-11-23-ux1c-qa.md`): the suite was red on one guard test (slice5 `hp_bar` keys) and qa added the missing cases; hashes unchanged; soak OK. **Playtester smoke 76be1c5: NO BLOCKER.** Optional `safe to chain` work while the director plays `playtest-2026-11-23-M4a`. The repo runs.
+- **Nothing in progress.** TL4 and UX1c are closed (optional `safe to chain` work while the director plays). The director's play build is still `playtest-2026-11-23-M4a`; main adds TL4 (tools) and UX1c (display) on top of it. The repo runs. After pulling, run `godot --headless --path . --import` once.
 
 ## Exact next step
-1. tech-writer docs pass for UX1c (0371dd0..76be1c5), then close. No tag, display only.
-2. **Still waiting on the director's play of `playtest-2026-11-23-M4a`** ("The one ask"). It unblocks BAL1 and BD3c (`needs your play first`). BAL1 inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot), HP1's relic numbers.
+1. **Wait for the director's play of `playtest-2026-11-23-M4a`** ("The one ask" in OPEN_ITEMS). It unblocks BAL1 and BD3c (both `needs your play first`).
+2. When he has played: game-lead records his notes and the answers to eyes 68-70, then writes the BAL1 brief. Inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot), HP1's relic numbers.
+3. Optional while waiting (`safe to chain`, not briefed): a tooling sitting for the TL4 qa nits and the capture hook for the hit flash.
 
-**Next role:** tech-writer (UX1c docs pass).
+**Next role:** none until the director plays (game-lead then).
 
 ## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21; suite from TL4 qa f072262)
 - Suite 2972 in 220 suites expected (UX1c qa 91dfbe4: 2965 / 219 measured with one guard test red, then fixed, plus 7 qa cases; re-measure at the next full run), 0 failures; a full run takes about 23-27 minutes, so run it in the background.

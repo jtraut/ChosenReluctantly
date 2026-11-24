@@ -6,15 +6,15 @@
 Last updated: 2026-11-24 (director's M4b play notes recorded; UX1d briefed). Latest tag `playtest-2026-11-23-M4b`. STATE holds only what's live (CLAUDE.md "Cost controls").
 
 ## In progress
-- **UX1d (no auto-start on the map), briefed in ROADMAP, not started.** The director played M4b on 2026-11-24. The repo runs. After pulling, run `godot --headless --path . --import` once.
+- **UX1d (no auto-start on the map): built (ux 638b787, c41a17f), qa next.** Audit: no other screen starts a room without a press. Hashes and full suite not yet run. The `map_beat_skip` capture preset is now meaningless (kept: `tl3b_capture_test` asserts it); retire it in a tools sitting. The director played M4b on 2026-11-24. The repo runs. After pulling, run `godot --headless --path . --import` once.
 
 ## Exact next step
-1. **ux-designer builds UX1d** (ROADMAP brief), then qa, then the docs pass, then game-lead closes it. No smoke check (DECISIONS "Director's M4b play recorded").
+1. **qa reviews UX1d** (ROADMAP brief), then then the docs pass, then game-lead closes it. No smoke check (DECISIONS "Director's M4b play recorded").
 2. **Then game-lead writes the BAL1 brief** (now unblocked). Inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot), HP1's relic numbers, BD3b's "Deferred" list. BAL1 must not tune the Battlemage deck away from how it plays now while D56 is open.
 3. **BD3c waits on D56.** The TL4 qa nits and the hit-flash capture hook wait for a tooling sitting (optional, `safe to chain`).
 4. The suite baseline 2972 / 220 is expected, not measured. UX1d's qa measures it.
 
-**Next role:** ux-designer (UX1d).
+**Next role:** qa (UX1d).
 
 ## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21; suite from TL4 qa f072262)
 - Suite 2972 in 220 suites expected (UX1c qa 91dfbe4: 2965 / 219 measured with one guard test red, then fixed, plus 7 qa cases; re-measure at the next full run), 0 failures; a full run takes about 23-27 minutes, so run it in the background.

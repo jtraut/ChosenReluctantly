@@ -61,7 +61,8 @@ var _last_emitted_dodge_max: int = -1
 ## Input action names per slot index, built once (formatting them each frame allocates strings).
 const USE_ACTIONS: Array[StringName] = [&"slot_1", &"slot_2", &"slot_3", &"slot_4", &"slot_5"]
 const SWAP_ACTIONS: Array[StringName] = [&"dead_card_swap_1", &"dead_card_swap_2", &"dead_card_swap_3", &"dead_card_swap_4", &"dead_card_swap_5"]
-const HIT_FLASH_COLOR := Color(1.0, 0.3, 0.3)
+## UX1c: violet, not the old pink-red (1.0, 0.3, 0.3), which read as an enemy colour (enemies are red and hot pink, their own hit flash is white). Colour only: the duration is unchanged.
+const HIT_FLASH_COLOR := Color(0.65, 0.35, 1.0)
 const HIT_FLASH_DURATION := 0.15
 const KNOCKBACK_DECAY := 18.0
 const DEATH_FLASH_WHITE := Color(1.0, 1.0, 1.0)

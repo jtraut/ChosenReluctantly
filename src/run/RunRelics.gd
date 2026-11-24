@@ -179,8 +179,21 @@ static func owned_display(state: RunState, ctx: Dictionary) -> Array[Dictionary]
 		var shown: Dictionary = display(relic_id, ctx)
 		var relic: Dictionary = ((ctx.get("relics", {}) as Dictionary).get("by_id", {}) as Dictionary).get(relic_id, {})
 		shown["now"] = current_text(relic, stats, ctx)
+		if String(shown["now"]) == "":
+			shown["now"] = max_hp_text(state, relic_id, ctx)
 		result.append(shown)
 	return result
+
+
+## HP1 readout (UX1c): what a max HP relic has given this run so far ("Now: +2 max HP"), from RunState.relic_max_hp (the amount RunMaxHp really added).
+## "" for a relic that holds no boost (or before it has given any). Display only.
+static func max_hp_text(state: RunState, relic_id: String, ctx: Dictionary) -> String:
+	var ui: Dictionary = (ctx.get("relics", {}) as Dictionary).get("ui", {})
+	var format: String = String(ui.get("now_format", ""))
+	var amount_format: String = String(ui.get("max_hp_now", ""))
+	if not state.relic_max_hp.has(relic_id) or format == "" or not format.contains("%s") or amount_format == "" or not amount_format.contains("%d"):
+		return ""
+	return format % (amount_format % roundi(float(state.relic_max_hp[relic_id])))
 
 
 ## The relics given up this run, as display dictionaries.

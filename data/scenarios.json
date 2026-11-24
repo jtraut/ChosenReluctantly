@@ -1218,6 +1218,30 @@
         "groups": [ { "scene": "res://scenes/enemies/BossBrute.tscn", "count": 1 } ],
         "boss_attacks": ["wet_floor"]
     },
+    "ux1c_strip": {
+        "_note": "UX1c capture: idle enemies placed low on the screen so they sit under the bottom card strip (card strip vs enemy).",
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "enemy_max_health": 3000,
+        "enemies_idle": true,
+        "disable_auto_attack": true,
+        "deck": ["fire_fine_burn_then", "fire_kindling", "fire_hot_head", "rogue_drive_by", "neutral_healing_potion"],
+        "origin_offset": [2.2, 0.0, 6.2],
+        "spacing": [1.4, 0.9],
+        "columns": 3,
+        "groups": [ { "scene": "res://scenes/enemies/MeleeChaser.tscn", "count": 6 } ]
+    },
+    "ux1c_hit": {
+        "_note": "UX1c capture: one melee chaser starts next to the player and swings at once, so the player's hit flash colour can be captured.",
+        "disable_spawner": true,
+        "player_max_health": 9999,
+        "enemy_max_health": 3000,
+        "disable_auto_attack": true,
+        "origin_offset": [0.0, 0.0, -1.3],
+        "spacing": [1.0, 1.0],
+        "columns": 1,
+        "groups": [ { "scene": "res://scenes/enemies/MeleeChaser.tscn", "count": 1 } ]
+    },
     "ux1b_crowd": {
         "_note": "UX1b capture: 7 idle enemies in a tight pile at the player, all Burning and Bleeding, an Area card cast so their digits land together (crowd digit placement).",
         "disable_spawner": true,

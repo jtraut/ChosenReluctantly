@@ -32,6 +32,12 @@ const DEFAULT_HP_BARS: Dictionary = {
 	"armor_tint": "#c9d3da",
 	"default_resistance_tint": "#cfd8dc",
 	"resistance_tints": {"fire": "#ff8a3d", "water": "#4aa8ff"},
+	# UX1c crowd layout (HpBarLayout): the clear gap between stacked bars (world units), the most a bar is lifted (in bar heights; 0 turns the layout off),
+	# and the easing rate (1/s; 0 snaps).
+	"stack_row_height": 0.3,
+	"stack_gap": 0.04,
+	"stack_max_rows": 5,
+	"stack_smooth": 14.0,
 }
 
 ## Player death beat: slow_mo_scale in (0, 1], durations in real seconds > 0.
@@ -435,6 +441,14 @@ static func validate_hp_bars(block: Dictionary) -> Array[String]:
 	for key: String in ["border", "resist_border", "y_offset", "ghost_delay"]:
 		if not _is_number(block.get(key)) or float(block[key]) < 0.0:
 			problems.append("%s must be a number >= 0" % key)
+	if not _is_number(block.get("stack_row_height")) or float(block["stack_row_height"]) <= 0.0:
+		problems.append("stack_row_height must be a number > 0")
+	if not _is_number(block.get("stack_gap")) or float(block["stack_gap"]) < 0.0:
+		problems.append("stack_gap must be a number >= 0")
+	if not _is_number(block.get("stack_max_rows")) or float(block["stack_max_rows"]) < 0.0 or float(block["stack_max_rows"]) != floorf(float(block["stack_max_rows"])):
+		problems.append("stack_max_rows must be a whole number >= 0")
+	if not _is_number(block.get("stack_smooth")) or float(block["stack_smooth"]) < 0.0:
+		problems.append("stack_smooth must be a number >= 0")
 	var priority: Variant = block.get("render_priority")
 	if typeof(priority) != TYPE_INT and not (typeof(priority) == TYPE_FLOAT and not is_nan(float(priority)) and float(priority) == floorf(float(priority))):
 		problems.append("render_priority must be a whole number")

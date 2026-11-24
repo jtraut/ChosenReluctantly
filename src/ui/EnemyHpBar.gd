@@ -38,6 +38,8 @@ var _bleed_id: String = "bleed"
 var _burning: bool = false
 var _bleeding: bool = false
 var _rank: String = EnemyConfig.DEFAULT_RANK
+## UX1c: how far the crowd layout (HpBarStacker) has lifted this bar, screen-up, in world units.
+var _lift: float = 0.0
 
 
 ## The owner's enemy rank ("normal", "elite", "boss"), for visibility modes such as
@@ -123,6 +125,7 @@ func _ready() -> void:
 	_bleed_id = str(config["bleed_status_id"])
 	position = Vector3(0.0, float(config["y_offset"]), 0.0)
 	visible = false
+	HpBarStacker.register(self)
 	var owner_enemy := get_parent() as Enemy
 	if owner_enemy != null and owner_enemy.enemy_id != "":
 		_rank = EnemyConfig.rank_for(owner_enemy.enemy_id)
@@ -184,6 +187,43 @@ func _process(delta: float) -> void:
 
 
 # ---- Signal handlers ----
+
+func _exit_tree() -> void:
+	HpBarStacker.unregister(self)
+
+
+## UX1c: where the bar stands with no crowd lift (the owner's head), in world space.
+func base_global_position() -> Vector3:
+	var host := get_parent() as Node3D
+	return host.global_position + Vector3(0.0, float(_shared_config["y_offset"]), 0.0) if host != null else global_position
+
+
+func lift() -> float:
+	return _lift
+
+
+## UX1c: lifts the bar `amount` along the camera's up axis `up` (0 puts it back on its owner's head). Display only.
+func set_lift(amount: float, up: Vector3) -> void:
+	_lift = maxf(amount, 0.0)
+	if _lift <= 0.0:
+		position = Vector3(0.0, float(_shared_config["y_offset"]), 0.0)
+	else:
+		global_position = base_global_position() + up * _lift
+
+
+## The shared bar config (stack settings included), for the layout.
+static func shared_config() -> Dictionary:
+	_ensure_shared()
+	return _shared_config
+
+
+## UX1c: a bar's footprint in the camera plane (world units): the bar plus one status pip wide, and `stack_row_height` tall (a little under the
+## pip-tall quad, so a deep pile stays short; the pip glyph is the quad's full height, the bar itself is thinner).
+static func footprint() -> Vector2:
+	_ensure_shared()
+	var quad_h: float = float(_shared_config["height"]) * maxf(float(_shared_config["pip_scale"]), 1.0)
+	return Vector2(float(_shared_config["width"]) + quad_h + 0.04, float(_shared_config["stack_row_height"]))
+
 
 func _on_health_changed(current: float, maximum: float) -> void:
 	var new_fill: float = fill_ratio(current, maximum)

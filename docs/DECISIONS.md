@@ -3172,3 +3172,10 @@ Read `docs/playtests/2026-11-20-milestone-3.md` and opened all 16 shots in `docs
 - **Keep the Mandatory Wellness Pack's "Now: +4 max HP" line**, though the brief asked for no line on other relics. It is true, it is consistent with any relic that has given max HP, and it costs nothing. Rejected: restricting it to the elite-scaling relic, which adds a special case for a line that only repeats the rule text.
 - **Process note for ux-designer and gameplay-dev:** a new key in a validated config block needs its guard-test case in the same commit. Run the guard suites (`slice5_qa_test` and the like) before handing back.
 - **Violet next to the Wizard's Heavy (`#a070ff`):** the playtester smoke judges whether a Wizard hit flash reads as its own cast. Eyes 68 covers the fallback.
+
+
+## 2026-11-23 - Re-tag as M4b (game-lead)
+- **Call:** cut `playtest-2026-11-23-M4b` on main after UX1c and repoint "The one ask" to it. M4a predates UX1c, so the director couldn't see eyes 68-70 live. The violet flash on the Wizard can only be judged in motion, and the playtester couldn't capture it.
+- **Why it's safe:** no play notes have come in, so he likely hasn't started. The changes since M4a are tools (TL4, plus a debug-only `--press` hook) and display (UX1c). The UX1c smoke check (76be1c5) ran on main containing both, with no blocker. Same reasoning as "Re-tag the director's play build".
+- **Also:** no slice closes before his play, so eyes 68-70 don't expire unseen.
+- **Rejected:** keeping M4a and asking him to check 68 on main (two builds to juggle, and his M4a notes would spend time on things already fixed).

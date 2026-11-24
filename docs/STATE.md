@@ -7,15 +7,14 @@ Last updated: 2026-11-23 (TL4 briefed; gameplay-dev building, while the director
 
 ## In progress
 - **TL4, watch-mode fidelity and TL3b nits** (ROADMAP; DECISIONS "TL4 brief"). Optional `safe to chain` work while the director plays `playtest-2026-11-23-M4a`. The repo runs.
-  - **Built so far:** gameplay-dev 0eeb22f, 3103566, 92e9342. Part 1 confirmed: at `-Scale 4` the watched bot decided at about 15 per game-second, against 60 at `-Scale 1`. Fixed in watch mode only: 60 x scale physics ticks, per-tick decisions, unbuffered input. Watched off-preset `-Scale 4` went from 2/4 (legacy) to 4/4; `-Scale 1` was 3/4. Hashes and SIM1 25/19/34/34 unchanged. Suite 2944, 0 failures. Nits 3 and 4 (the fail-fast half) are done.
-  - **Remaining (from 92e9342):** (1) diagnose nit 1, `any_key` logging twice at a scene swap (`src/debug/ScriptedInput.gd`); (2) nit 2, assert that seed 1 offers `burnout_syndrome` (`tests/unit/tl3b_capture_test.gd`); (3) the orphaned Godot child on a hard kill (a Job Object in `tools/capture_screenshot.ps1` and `tools/run_wave_sim.ps1`); (4) optional: re-run the watched `-Scale 1` arm on the final code.
+  - **Built:** gameplay-dev 0eeb22f, 3103566, 92e9342 (the cadence fix, nits 3 and 4) and the remainder sitting after f78f27c (nit 1: ScriptedInput replayed its presses after a scene swap, now carried across; nit 2 test; a kill-on-close Job Object in both wrappers). Watched off-preset `-Scale 4`: 2/4 before the fix (old cadence), 4/4 after. Hashes unchanged. Suite 2949, 0 failures. No Remaining list except the watched `-Scale 1` re-check, which goes to qa.
 
 ## Exact next step
-1. A fresh gameplay-dev sitting takes the TL4 Remaining list. Then qa (short), then the docs pass, then close. No tag.
+1. qa reviews TL4 (0eeb22f..HEAD). Then the docs pass, then close. No tag.
 2. Then UX1c, a ux polish sitting from Known issues (display only; brief not yet written).
 3. **Still waiting on the director's play of `playtest-2026-11-23-M4a`** ("The one ask"). It unblocks BAL1 and BD3c (`needs your play first`). BAL1 inputs: the human Rogue 25/36 over its 21 ceiling, the DF1 ceiling text, leftover gold (median 496-535 even for the formulated bot), HP1's relic numbers.
 
-**Next role:** gameplay-dev (TL4 Remaining).
+**Next role:** qa (TL4).
 
 ## Current baselines (SIM2a-4 qa f6c9db1, 2026-11-21; suite from TL3b qa 5bcb17a)
 - Suite 2937 in 215 suites expected (2933 / 214 measured at TL3b qa 5bcb17a, plus its 4 cases), 0 failures; a full run takes about 27 minutes, so run it in the background.
@@ -32,13 +31,15 @@ Last updated: 2026-11-23 (TL4 briefed; gameplay-dev building, while the director
 ## Known issues
 - **The game closed on its own during the director's run (2026-11-20, about 21:44), while gameplay-dev's SIM2a-3 sims ran from the same working tree.** Cause unknown; the evidence rotated out. TL3a (293572a) stops tools writing to `user://logs`, so a future game log survives. The shared `.godot` import cache suspect remains: the director plays from a separate worktree of the tag (`git worktree add ../cr-play <tag>`) or while no agent runs.
 - Next ux polish: a "now +N" readout for Performance Review (HP1); the Rogue's pink-red hit flash briefly reads as an enemy colour; a 6+ pile's HP bars and pips overlap each other (UX1b playtest).
-- **Watch mode at `-Scale 4` makes the bot much weaker than headless** (off preset 2/4 watched vs 35/36 SIM1). TL3b finding (d6122ba): not reproduced headless at `-Scale 4` (4/4). Likely cause, unconfirmed: the windowed bot decides once per rendered frame (`tools/wave_sim.gd` `await process_frame`), so at scale 4 it reacts at about 15 Hz of game time. Next: a windowed A/B with vsync off; fix about 0.5-1 sitting (decision step on physics ticks, or a windowed-only tick), with a hash re-check. Until then, judge difficulty at `-Scale 1-2` or headless.
+- **(TL4 fixes this; drop it at close)** **Watch mode at `-Scale 4` makes the bot much weaker than headless** (off preset 2/4 watched vs 35/36 SIM1). TL3b finding (d6122ba): not reproduced headless at `-Scale 4` (4/4). Likely cause, unconfirmed: the windowed bot decides once per rendered frame (`tools/wave_sim.gd` `await process_frame`), so at scale 4 it reacts at about 15 Hz of game time. Next: a windowed A/B with vsync off; fix about 0.5-1 sitting (decision step on physics ticks, or a windowed-only tick), with a hash re-check. Until then, judge difficulty at `-Scale 1-2` or headless.
 - In `docs/playtests/img/ux1b/crowd-1152x648_0.png` an enemy overlaps the top edge of the bottom-right card strip (camera framing or card layering). Not fixed in UX1b; a later ux polish item.
 - **BAL1: the SIM1 human Rogue is 25/36 after HP1, over its 21 ceiling** (waived for HP1, DECISIONS "HP1 build triage"). Thin margins to carry into BAL1: SIM1 human Wizard exactly at its ceiling (20/36), off Wizard 1 above its floor (31/30), Wizard `relic` median 14.0, W-B removal pain +22% to +28%.
 - Wall-clock test waits remain in `attack_meter_test.gd:79`, `player_attack_test.gd:86`, `slice1_qa_test.gd:69` and `slice4_qa_test.gd:320`.
 - Human-bot Kindling boss parity with relics is 67%, under 70% (qa DF1; not a DF1 regression).
 - An old git stash (`stash@{0}`, from 85cd564) is still in the repo; the director decides whether to drop it.
-- TL3b qa nits (5bcb17a): `press any_key` logs twice when the tap swaps the scene (harmless, F13 unbound; look if a bound action is pressed at a scene swap); the `act_transition` test checks the preset string only, not that seed 1 still offers `burnout_syndrome`; the `leveraged_dash` alias is unreachable; `-AtBossAttack` with no boss attack waits for ANCHOR_TIMEOUT and can orphan the Godot child if the wrapper is killed. Fix in the next tooling sitting.
+- (TL4 fixes these; drop them at close) TL3b qa nits (5bcb17a): `press any_key` logs twice when the tap swaps the scene (harmless, F13 unbound; look if a bound action is pressed at a scene swap); the `act_transition` test checks the preset string only, not that seed 1 still offers `burnout_syndrome`; the `leveraged_dash` alias is unreachable; `-AtBossAttack` with no boss attack waits for ANCHOR_TIMEOUT and can orphan the Godot child if the wrapper is killed. Fix in the next tooling sitting.
+- ScreenshotCapture restarts its clock on a scene swap, so `map_beat_skip`'s 2.0 s shot fires about 2 s after the swap (TL4 note; not a blocker).
+- Watch mode at `-Scale 4`: `_process`-driven systems (spawner, statuses, boss) still step once per rendered frame. That costs 1-2 `src` sittings, only if the numbers ever call for it (TL4).
 - Re-run the reload soak whenever Main, Juice, Player or the autoloads change.
 
 **D-numbers:** D21-D55 answered. Next free: D56. No eyes open. Next eyes number: 68.
